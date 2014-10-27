@@ -65,6 +65,9 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Returns true if the sync is currently being setup for the first time.
   jboolean IsFirstSetupInProgress(JNIEnv* env, jobject obj);
 
+  // Returns true if encrypting everything is allowed.
+  jboolean IsEncryptEverythingAllowed(JNIEnv* env, jobject obj);
+
   // Returns true if the user is currently encrypting everything.
   jboolean IsEncryptEverythingEnabled(JNIEnv* env, jobject obj);
 

@@ -316,6 +316,17 @@ public class ProfileSyncService {
     }
 
     /**
+     * Checks if encrypting all the data types is allowed.
+     *
+     * @return true if encrypting all data types is allowed, false if only passwords are allowed to
+     * be encrypted.
+     */
+    public boolean isEncryptEverythingAllowed() {
+        assert isSyncInitialized();
+        return nativeIsEncryptEverythingAllowed(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
      * Checks if the all the data types are encrypted.
      *
      * @return true if all data types are encrypted, false if only passwords are encrypted.
@@ -579,6 +590,7 @@ public class ProfileSyncService {
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncInitialized(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsFirstSetupInProgress(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsEncryptEverythingAllowed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);
     private native void nativeEnableEncryptEverything(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphraseRequiredForDecryption(

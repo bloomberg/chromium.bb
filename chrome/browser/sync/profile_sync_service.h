@@ -667,6 +667,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT;
 
+  // Returns true if encrypting all the sync data is allowed. If this method
+  // returns false, EnableEncryptEverything() should not be called.
+  virtual bool EncryptEverythingAllowed() const;
+
+  // Sets whether encrypting all the sync data is allowed or not.
+  virtual void SetEncryptEverythingAllowed(bool allowed);
+
   // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
   // after calling this to force the encryption to occur.
   virtual void EnableEncryptEverything();
@@ -1045,6 +1052,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // The current set of encrypted types.  Always a superset of
   // syncer::Cryptographer::SensitiveTypes().
   syncer::ModelTypeSet encrypted_types_;
+
+  // Whether encrypting everything is allowed.
+  bool encrypt_everything_allowed_;
 
   // Whether we want to encrypt everything.
   bool encrypt_everything_;

@@ -218,6 +218,7 @@ ProfileSyncService::ProfileSyncService(
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
+      encrypt_everything_allowed_(true),
       encrypt_everything_(false),
       encryption_pending_(false),
       configure_status_(DataTypeManager::UNKNOWN),
@@ -1362,6 +1363,7 @@ void ProfileSyncService::OnEncryptedTypesChanged(
     bool encrypt_everything) {
   encrypted_types_ = encrypted_types;
   encrypt_everything_ = encrypt_everything;
+  DCHECK(encrypt_everything_allowed_ || !encrypt_everything_);
   DVLOG(1) << "Encrypted types changed to "
            << syncer::ModelTypeSetToString(encrypted_types_)
            << " (encrypt everything is set to "
@@ -2194,7 +2196,18 @@ bool ProfileSyncService::SetDecryptionPassphrase(
   }
 }
 
+bool ProfileSyncService::EncryptEverythingAllowed() const {
+  return encrypt_everything_allowed_;
+}
+
+void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
+  DCHECK(allowed || !backend_initialized() || !EncryptEverythingEnabled());
+  encrypt_everything_allowed_ = allowed;
+}
+
 void ProfileSyncService::EnableEncryptEverything() {
+  DCHECK(EncryptEverythingAllowed());
+
   // Tests override backend_initialized() to always return true, so we
   // must check that instead of |backend_initialized_|.
   // TODO(akalin): Fix the above. :/

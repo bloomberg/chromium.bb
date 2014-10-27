@@ -14,13 +14,13 @@ cr.exportPath('options');
  *             bookmarksRegistered: boolean,
  *             bookmarksSynced: boolean,
  *             encryptAllData: boolean,
+ *             encryptAllDataAllowed: boolean,
  *             enterGooglePassphraseBody: (string|undefined),
  *             enterPassphraseBody: (string|undefined),
  *             extensionsEnforced: boolean,
  *             extensionsRegistered: boolean,
  *             extensionsSynced: boolean,
  *             fullEncryptionBody: string,
- *             isSupervised: boolean,
  *             passphraseFailed: boolean,
  *             passwordsEnforced: boolean,
  *             passwordsRegistered: boolean,
@@ -668,7 +668,7 @@ cr.define('options', function() {
 
       $('sync-custom-passphrase-container').hidden = false;
       $('sync-new-encryption-section-container').hidden = false;
-      $('customize-sync-encryption-new').hidden = args.isSupervised;
+      $('customize-sync-encryption-new').hidden = !args.encryptAllDataAllowed;
 
       $('sync-existing-passphrase-container').hidden = true;
 

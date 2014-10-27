@@ -201,6 +201,12 @@ jboolean ProfileSyncServiceAndroid::IsFirstSetupInProgress(
   return sync_service_->FirstSetupInProgress();
 }
 
+jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(
+    JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return sync_service_->EncryptEverythingAllowed();
+}
+
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequired(JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return sync_service_->IsPassphraseRequired();
