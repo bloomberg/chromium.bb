@@ -218,6 +218,9 @@ function load() {
                                 [$('pointer-settings-button')]);
     PageManager.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
+    PageManager.registerOverlay(PowerOverlay.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('power-settings-button')]);
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
   }

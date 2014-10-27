@@ -1686,6 +1686,8 @@
       'browser/ui/webui/options/chromeos/keyboard_handler.h',
       'browser/ui/webui/options/chromeos/pointer_handler.cc',
       'browser/ui/webui/options/chromeos/pointer_handler.h',
+      'browser/ui/webui/options/chromeos/power_handler.cc',
+      'browser/ui/webui/options/chromeos/power_handler.h',
       'browser/ui/webui/options/chromeos/proxy_handler.cc',
       'browser/ui/webui/options/chromeos/proxy_handler.h',
       'browser/ui/webui/options/chromeos/stats_options_handler.cc',

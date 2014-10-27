@@ -453,6 +453,13 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-margin-start: 0.6em;
 }
 
+#battery-icon {
+  display: inline-block;
+  height: 25px;
+  vertical-align: middle;
+  width: 25px;
+}
+
 div[guestmode=true] :-webkit-any(
 <if expr="not chromeos">
     #searchBox,

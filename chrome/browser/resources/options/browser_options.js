@@ -269,6 +269,11 @@ cr.define('options', function() {
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
+        $('power-settings-button').onclick = function(evt) {
+          PageManager.showPageByName('power-overlay');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ShowPowerSettings']);
+        };
         $('battery-button').onclick = function(evt) {
           WebsiteSettingsManager.showWebsiteSettings('battery');
         };
@@ -1979,6 +1984,29 @@ cr.define('options', function() {
       else
         element.disabled = false;
     },
+
+    /**
+     * Sets the icon in the battery section.
+     * @param {string} iconData The data representing the icon to display.
+     * @private
+     */
+    setBatteryIcon_: function(iconData) {
+      $('battery-icon').style.backgroundImage = 'url(' + iconData + ')';
+      $('battery-icon').hidden = false;
+    },
+
+    /**
+     * Sets the text for the battery section.
+     * @param {string} statusText The battery status, with a relevant label.
+     * @private
+     */
+    setBatteryStatusText_: function(statusText) {
+      $('battery').hidden = !statusText.length;
+      if (statusText.length) {
+        $('battery-status').textContent = statusText;
+        chrome.send('requestBatteryIcon');
+      }
+    },
   };
 
   //Forward public APIs to private implementations.
@@ -1997,6 +2025,8 @@ cr.define('options', function() {
     'setAccountPictureManaged',
     'setWallpaperManaged',
     'setAutoOpenFileTypesDisplayed',
+    'setBatteryIcon',
+    'setBatteryStatusText',
     'setBluetoothState',
     'setCanSetTime',
     'setFontSize',

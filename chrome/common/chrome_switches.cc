@@ -514,6 +514,9 @@ const char kEnablePanels[]                  = "enable-panels";
 const char kEnablePluginPlaceholderShadowDom[] =
     "enable-plugin-placeholder-shadow-dom";
 
+// Enables the Power overlay in Settings.
+const char kEnablePowerOverlay[]            = "enable-power-overlay";
+
 // Enables showing unregistered printers in print preview
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
@@ -1358,6 +1361,13 @@ bool SettingsWindowEnabled() {
       ::switches::kEnableSettingsWindow);
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+bool PowerOverlayEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnablePowerOverlay);
+}
+#endif
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

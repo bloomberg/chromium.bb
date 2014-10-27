@@ -149,6 +149,7 @@ extern const char kEnableOriginChipOnSrp[];
 extern const char kEnablePanels[];
 extern const char kEnablePermissionsBubbles[];
 extern const char kEnablePluginPlaceholderShadowDom[];
+extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnablePrivetStorage[];
 extern const char kEnableProfiling[];
@@ -398,6 +399,10 @@ extern const char kFileManagerExtensionPath[];
 
 bool AboutInSettingsEnabled();
 bool SettingsWindowEnabled();
+
+#if defined(OS_CHROMEOS)
+bool PowerOverlayEnabled();
+#endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

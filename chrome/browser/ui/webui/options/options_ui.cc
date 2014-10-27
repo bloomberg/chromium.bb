@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/pointer_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
@@ -326,6 +327,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::KeyboardHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::PowerHandler());
 
   chromeos::options::PointerHandler* pointer_handler =
       new chromeos::options::PointerHandler();

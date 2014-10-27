@@ -1826,6 +1826,27 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
     Language
   </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_BATTERY_STATUS_LABEL" desc="The prefix to the battery status in the device section.">
+    Battery - <ph name="status">$1<ex>56% - 2:03 left</ex></ph>
+  </message>
+  <message name="IDS_OPTIONS_BATTERY_STATUS" desc="The battery status in the device section and 'Power' overlay while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+    <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="hour">$2<ex>2</ex></ph>:<ph name="minute">$3<ex>03</ex></ph> left
+  </message>
+  <message name="IDS_OPTIONS_BATTERY_STATUS_CHARGING" desc="The battery status in the device section and 'Power' overlay while the battery is charging, showing the battery power as a percentage and the time left until the battery is full.">
+    <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="hour">$2<ex>2</ex></ph>:<ph name="minute">$3<ex>03</ex></ph> until full
+  </message>
+  <message name="IDS_OPTIONS_BATTERY_STATUS_SHORT" desc="The battery status in the device section and 'Power' overlay when the time left cannot be shown.">
+    <ph name="percentage">$1<ex>56</ex></ph>%
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_POWER_SETTINGS_BUTTON" desc="Text on button to take user to the 'Power' overlay.">
+    Manage power
+  </message>
+  <message name="IDS_OPTIONS_POWER_OVERLAY_TITLE" desc="The title for the 'Power' overlay.">
+    Power
+  </message>
+  <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
+    Battery:
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION" desc="The 'Battery' button on the chrome://settings page.">
     Battery...
   </message>
