@@ -6,13 +6,18 @@
 
 #include "core/inspector/InspectorAnimationAgent.h"
 
+#include "core/animation/Animation.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/ElementAnimation.h"
+#include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/StringKeyframe.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
+#include "platform/Decimal.h"
 
 namespace blink {
 
@@ -84,6 +89,19 @@ static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleKeyf
     return keyframeObject.release();
 }
 
+static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
+{
+    RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->propertySetForInspector().get()->ensureCSSStyleDeclaration(), 0);
+    Decimal decimal = Decimal::fromDouble(keyframe->offset() * 100);
+    String offset = decimal.toString();
+    offset.append("%");
+
+    RefPtr<TypeBuilder::Animation::KeyframeStyle> keyframeObject = TypeBuilder::Animation::KeyframeStyle::create()
+        .setOffset(offset)
+        .setStyle(inspectorStyle->buildObjectForStyle());
+    return keyframeObject.release();
+}
+
 static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRuleKeyframes(const StyleRuleKeyframes* keyframesRule)
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
@@ -97,16 +115,43 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRule
     return keyframesObject.release();
 }
 
+static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const Animation* animation)
+{
+    if (!animation->effect()->isKeyframeEffectModel())
+        return nullptr;
+    const KeyframeEffectModelBase* effect = toKeyframeEffectModelBase(animation->effect());
+    WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(effect->getFrames());
+    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
+
+    for (const auto& keyframe : normalizedKeyframes) {
+        // Ignore CSS Transitions
+        if (!keyframe.get()->isStringKeyframe())
+            continue;
+        const StringKeyframe* stringKeyframe = toStringKeyframe(keyframe.get());
+        keyframes->addItem(buildObjectForStringKeyframe(stringKeyframe));
+    }
+    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframesObject = TypeBuilder::Animation::KeyframesRule::create()
+        .setKeyframes(keyframes);
+    return keyframesObject.release();
+}
+
 static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframesRule(const Element& element, const AnimationPlayer& player)
 {
     StyleResolver& styleResolver = element.ownerDocument()->ensureStyleResolver();
-    // FIXME: Add support for web anim
     CSSAnimations& cssAnimations = element.activeAnimations()->cssAnimations();
     const AtomicString animationName = cssAnimations.getAnimationNameForInspector(player);
-    ASSERT(animationName);
-    const StyleRuleKeyframes* keyframes = cssAnimations.matchScopedKeyframesRule(&styleResolver, &element, animationName.impl());
+    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule;
 
-    return buildObjectForStyleRuleKeyframes(keyframes);
+    if (!animationName.isNull()) {
+        // CSS Animations
+        const StyleRuleKeyframes* keyframes = cssAnimations.matchScopedKeyframesRule(&styleResolver, &element, animationName.impl());
+        keyframeRule = buildObjectForStyleRuleKeyframes(keyframes);
+    } else {
+        // Web Animations
+        keyframeRule = buildObjectForAnimationKeyframes(toAnimation(player.source()));
+    }
+
+    return keyframeRule;
 }
 
 void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray)
@@ -120,15 +165,8 @@ void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorStrin
     for (WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >::iterator it = players.begin(); it != players.end(); ++it) {
         AnimationPlayer& player = *(it->get());
         m_idToAnimationPlayer.set(playerId(player), &player);
-        RefPtr<TypeBuilder::Animation::AnimationPlayer> animationPlayerObject;
-        // FIXME: Add support for web animations
-        if (!element->activeAnimations()->cssAnimations().getAnimationNameForInspector(player).isNull()) {
-            RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = buildObjectForKeyframesRule(*element, player);
-            animationPlayerObject = buildObjectForAnimationPlayer(player, keyframeRule.release());
-        } else {
-            animationPlayerObject = buildObjectForAnimationPlayer(player);
-        }
-        animationPlayersArray->addItem(animationPlayerObject);
+        RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = buildObjectForKeyframesRule(*element, player);
+        animationPlayersArray->addItem(buildObjectForAnimationPlayer(player, keyframeRule));
     }
 }
 

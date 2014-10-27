@@ -27,6 +27,7 @@ public:
         return m_propertySet->propertyAt(static_cast<unsigned>(index)).value();
     }
     virtual PropertySet properties() const override;
+    RefPtrWillBeMember<MutableStylePropertySet> propertySetForInspector() const { return m_propertySet; }
 
     virtual void trace(Visitor*) override;
 

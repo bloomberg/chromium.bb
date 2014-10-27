@@ -103,6 +103,8 @@ public:
         ensureInterpolationEffect(element);
     }
 
+    static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
+
 protected:
     static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
 
