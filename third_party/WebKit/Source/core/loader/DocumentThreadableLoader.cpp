@@ -270,7 +270,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     // Allow same origin requests to continue after allowing clients to audit the redirect.
     if (isAllowedRedirect(request.url())) {
         if (m_client->isDocumentThreadableLoaderClient())
-            static_cast<DocumentThreadableLoaderClient*>(m_client)->willSendRequest(request, redirectResponse);
+            static_cast<DocumentThreadableLoaderClient*>(m_client)->willFollowRedirect(request, redirectResponse);
         return;
     }
 

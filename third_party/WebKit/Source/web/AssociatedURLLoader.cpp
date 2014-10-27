@@ -123,16 +123,17 @@ class AssociatedURLLoader::ClientAdapter final : public DocumentThreadableLoader
 public:
     static PassOwnPtr<ClientAdapter> create(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
 
-    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) override;
-    virtual void willSendRequest(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) override;
-
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) override;
-    virtual void didDownloadData(int /*dataLength*/) override;
-    virtual void didReceiveData(const char*, unsigned /*dataLength*/) override;
-    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) override;
-    virtual void didFail(const ResourceError&) override;
-    virtual void didFailRedirectCheck() override;
+    // ThreadableLoaderClient
+    void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    void didDownloadData(int /*dataLength*/) override;
+    void didReceiveData(const char*, unsigned /*dataLength*/) override;
+    void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+    void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) override;
+    void didFail(const ResourceError&) override;
+    void didFailRedirectCheck() override;
+    // DocumentThreadableLoaderClient
+    void willFollowRedirect(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) override;
 
     // Sets an error to be reported back to the client, asychronously.
     void setDelayedError(const ResourceError&);
@@ -176,7 +177,7 @@ AssociatedURLLoader::ClientAdapter::ClientAdapter(AssociatedURLLoader* loader, W
     ASSERT(m_client);
 }
 
-void AssociatedURLLoader::ClientAdapter::willSendRequest(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
+void AssociatedURLLoader::ClientAdapter::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
     if (!m_client)
         return;
