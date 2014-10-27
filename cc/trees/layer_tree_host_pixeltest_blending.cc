@@ -233,30 +233,26 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
 
     if ((flags & kUseAntialiasing) && (type == PIXEL_TEST_GL)) {
       // Anti aliasing causes differences up to 7 pixels at the edges.
-      int large_error_allowed = 7;
+      // Several pixels have 9 units difference on the alpha channel.
+      int large_error_allowed = (flags & kUseMasks) ? 7 : 9;
       // Blending results might differ with one pixel.
       int small_error_allowed = 1;
       // Most of the errors are one pixel errors.
-      float percentage_pixels_small_error = 12.5f;
+      float percentage_pixels_small_error = (flags & kUseMasks) ? 7.7f : 12.1f;
       // Because of anti-aliasing, around 3% of pixels (at the edges) have
       // bigger errors (from small_error_allowed + 1 to large_error_allowed).
-      float percentage_pixels_error = 15.0f;
+      float percentage_pixels_error = (flags & kUseMasks) ? 12.4f : 15.f;
       // The average error is still close to 1.
-      float average_error_allowed_in_bad_pixels = 1.3f;
+      float average_error_allowed_in_bad_pixels =
+          (flags & kUseMasks) ? 1.3f : 1.f;
 
       // The sepia filter generates more small errors, but the number of large
       // errors remains around 3%.
       if (flags & kUseColorMatrix) {
-        percentage_pixels_small_error = 26.f;
-        percentage_pixels_error = 29.f;
+        percentage_pixels_small_error = (flags & kUseMasks) ? 14.0f : 26.f;
+        percentage_pixels_error = (flags & kUseMasks) ? 18.5f : 29.f;
+        average_error_allowed_in_bad_pixels = (flags & kUseMasks) ? 0.9f : 0.7f;
       }
-
-      // Anti-aliased pixels in combination with non-separable blend modes and
-      // a white background produces several black pixels (6 for these tests).
-      // Having a mask will hide the black pixels.
-      // TODO(rosca): fix this issue for non-separable blend modes.
-      if (!(flags & kUseMasks))
-        large_error_allowed = 255;
 
       pixel_comparator_.reset(
           new FuzzyPixelComparator(false,  // discard_alpha

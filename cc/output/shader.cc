@@ -804,12 +804,12 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
         float outLum = luminance(outColor);
         float minComp = min(min(outColor.r, outColor.g), outColor.b);
         float maxComp = max(max(outColor.r, outColor.g), outColor.b);
-        if (minComp < 0.0) {
+        if (minComp < 0.0 && outLum != minComp) {
           outColor = outLum +
                      ((outColor - vec3(outLum, outLum, outLum)) * outLum) /
                          (outLum - minComp);
         }
-        if (maxComp > alpha) {
+        if (maxComp > alpha && maxComp != outLum) {
           outColor =
               outLum +
               ((outColor - vec3(outLum, outLum, outLum)) * (alpha - outLum)) /
