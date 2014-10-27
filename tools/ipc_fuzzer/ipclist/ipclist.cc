@@ -49,6 +49,7 @@ static bool check_msgtable() {
   exemptions.push_back(TestMsgStart);
   exemptions.push_back(FirefoxImporterUnittestMsgStart);
   exemptions.push_back(ShellMsgStart);
+  exemptions.push_back(LayoutTestMsgStart);
   exemptions.push_back(MetroViewerMsgStart);
   exemptions.push_back(CCMsgStart);  // Nothing but param traits.
   exemptions.push_back(CldDataProviderMsgStart); // Conditional build.

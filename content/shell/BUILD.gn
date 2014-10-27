@@ -123,6 +123,8 @@ static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_win.cc",
     "browser/webkit_test_controller.cc",
     "browser/webkit_test_controller.h",
+    "common/layout_test/layout_test_messages.cc",
+    "common/layout_test/layout_test_messages.h",
     "common/leak_detection_result.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",

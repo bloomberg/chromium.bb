@@ -28,6 +28,7 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/public/test/layouttest_support.h"
+#include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
@@ -261,7 +262,7 @@ WebString WebKitTestRunner::RegisterIsolatedFileSystem(
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
     files.push_back(base::FilePath::FromUTF16Unsafe(absolute_filenames[i]));
   std::string filesystem_id;
-  Send(new ShellViewHostMsg_RegisterIsolatedFileSystem(
+  Send(new LayoutTestHostMsg_RegisterIsolatedFileSystem(
       routing_id(), files, &filesystem_id));
   return WebString::fromUTF8(filesystem_id);
 }
@@ -290,7 +291,7 @@ WebURL WebKitTestRunner::LocalFileToDataURL(const WebURL& file_url) {
     return WebURL();
 
   std::string contents;
-  Send(new ShellViewHostMsg_ReadFileToString(
+  Send(new LayoutTestHostMsg_ReadFileToString(
         routing_id(), local_path, &contents));
 
   std::string contents_base64;
@@ -404,17 +405,17 @@ void WebKitTestRunner::EvaluateInWebInspector(long call_id,
 }
 
 void WebKitTestRunner::ClearAllDatabases() {
-  Send(new ShellViewHostMsg_ClearAllDatabases(routing_id()));
+  Send(new LayoutTestHostMsg_ClearAllDatabases(routing_id()));
 }
 
 void WebKitTestRunner::SetDatabaseQuota(int quota) {
-  Send(new ShellViewHostMsg_SetDatabaseQuota(routing_id(), quota));
+  Send(new LayoutTestHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
 blink::WebNotificationPresenter::Permission
 WebKitTestRunner::CheckWebNotificationPermission(const GURL& origin) {
   int permission = blink::WebNotificationPresenter::PermissionNotAllowed;
-  Send(new ShellViewHostMsg_CheckWebNotificationPermission(
+  Send(new LayoutTestHostMsg_CheckWebNotificationPermission(
           routing_id(),
           origin,
           &permission));
@@ -423,16 +424,16 @@ WebKitTestRunner::CheckWebNotificationPermission(const GURL& origin) {
 
 void WebKitTestRunner::GrantWebNotificationPermission(const GURL& origin,
                                                       bool permission_granted) {
-  Send(new ShellViewHostMsg_GrantWebNotificationPermission(
+  Send(new LayoutTestHostMsg_GrantWebNotificationPermission(
       routing_id(), origin, permission_granted));
 }
 
 void WebKitTestRunner::ClearWebNotificationPermissions() {
-  Send(new ShellViewHostMsg_ClearWebNotificationPermissions(routing_id()));
+  Send(new LayoutTestHostMsg_ClearWebNotificationPermissions(routing_id()));
 }
 
 void WebKitTestRunner::SimulateWebNotificationClick(const std::string& title) {
-  Send(new ShellViewHostMsg_SimulateWebNotificationClick(routing_id(), title));
+  Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title));
 }
 
 void WebKitTestRunner::SetDeviceScaleFactor(float factor) {
@@ -471,7 +472,7 @@ void WebKitTestRunner::SetFocus(WebTestProxyBase* proxy, bool focus) {
 }
 
 void WebKitTestRunner::SetAcceptAllCookies(bool accept) {
-  Send(new ShellViewHostMsg_AcceptAllCookies(routing_id(), accept));
+  Send(new LayoutTestHostMsg_AcceptAllCookies(routing_id(), accept));
 }
 
 std::string WebKitTestRunner::PathToLocalResource(const std::string& resource) {
@@ -521,7 +522,7 @@ void WebKitTestRunner::CloseRemainingWindows() {
 }
 
 void WebKitTestRunner::DeleteAllCookies() {
-  Send(new ShellViewHostMsg_DeleteAllCookies(routing_id()));
+  Send(new LayoutTestHostMsg_DeleteAllCookies(routing_id()));
 }
 
 int WebKitTestRunner::NavigationEntryCount() {

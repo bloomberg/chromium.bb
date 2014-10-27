@@ -12,7 +12,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
-#include "content/shell/common/shell_messages.h"
+#include "content/shell/common/layout_test/layout_test_messages.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
@@ -28,7 +28,7 @@ LayoutTestMessageFilter::LayoutTestMessageFilter(
     storage::DatabaseTracker* database_tracker,
     storage::QuotaManager* quota_manager,
     net::URLRequestContextGetter* request_context_getter)
-    : BrowserMessageFilter(ShellMsgStart),
+    : BrowserMessageFilter(LayoutTestMsgStart),
       render_process_id_(render_process_id),
       database_tracker_(database_tracker),
       quota_manager_(quota_manager),
@@ -40,30 +40,31 @@ LayoutTestMessageFilter::~LayoutTestMessageFilter() {
 
 void LayoutTestMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  if (message.type() == ShellViewHostMsg_ClearAllDatabases::ID)
+  if (message.type() == LayoutTestHostMsg_ClearAllDatabases::ID)
     *thread = BrowserThread::FILE;
-  if (message.type() == ShellViewHostMsg_SimulateWebNotificationClick::ID)
+  if (message.type() == LayoutTestHostMsg_SimulateWebNotificationClick::ID)
     *thread = BrowserThread::UI;
 }
 
 bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ReadFileToString, OnReadFileToString)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ReadFileToString, OnReadFileToString)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearAllDatabases, OnClearAllDatabases)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CheckWebNotificationPermission,
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearAllDatabases,
+                        OnClearAllDatabases)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_CheckWebNotificationPermission,
                         OnCheckWebNotificationPermission)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_GrantWebNotificationPermission,
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_GrantWebNotificationPermission,
                         OnGrantWebNotificationPermission)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearWebNotificationPermissions,
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearWebNotificationPermissions,
                         OnClearWebNotificationPermissions)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SimulateWebNotificationClick,
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_AcceptAllCookies, OnAcceptAllCookies)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DeleteAllCookies, OnDeleteAllCookies)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
