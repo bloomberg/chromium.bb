@@ -293,8 +293,7 @@ int main(int argc, char *argv[]) {
     base::SplitString(whitelist, ',', &whitelisted_ips);
   }
   if (!cmd_line->HasSwitch("silent")) {
-    printf(
-        "Starting ChromeDriver (v%s) on port %d\n", kChromeDriverVersion, port);
+    printf("Starting ChromeDriver %s on port %d\n", kChromeDriverVersion, port);
     if (!allow_remote) {
       printf("Only local connections are allowed.\n");
     } else if (!whitelisted_ips.empty()) {
