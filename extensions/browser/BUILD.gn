@@ -406,6 +406,8 @@ source_set("browser") {
       "management_policy.h",
       "mojo/keep_alive_impl.cc",
       "mojo/keep_alive_impl.h",
+      "mojo/service_registration_manager.cc",
+      "mojo/service_registration_manager.h",
       "mojo/stash_backend.cc",
       "mojo/stash_backend.h",
       "pref_names.cc",

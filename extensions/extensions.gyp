@@ -709,6 +709,8 @@
         'browser/management_policy.h',
         'browser/mojo/keep_alive_impl.cc',
         'browser/mojo/keep_alive_impl.h',
+        'browser/mojo/service_registration_manager.cc',
+        'browser/mojo/service_registration_manager.h',
         'browser/mojo/stash_backend.cc',
         'browser/mojo/stash_backend.h',
         'browser/notification_types.h',

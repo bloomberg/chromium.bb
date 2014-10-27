@@ -21,6 +21,7 @@ extern const char kEnableEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActionRedesign[];
 extern const char kEnableMimeHandlerView[];
+extern const char kEnableMojoSerialService[];
 extern const char kEnableOverrideBookmarksUI[];
 extern const char kEnableRemoteAssistance[];
 extern const char kErrorConsole[];

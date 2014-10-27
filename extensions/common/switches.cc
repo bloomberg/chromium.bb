@@ -50,6 +50,9 @@ const char kEnableExtensionActionRedesign[] =
 // kEnableScriptsRequireAction.
 const char kEnableMimeHandlerView[] = "enable-mime-handler-view";
 
+// Enables the mojo implementation of the serial API.
+const char kEnableMojoSerialService[] = "enable-mojo-serial-service";
+
 // Enables extensions to hide bookmarks UI elements.
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 
