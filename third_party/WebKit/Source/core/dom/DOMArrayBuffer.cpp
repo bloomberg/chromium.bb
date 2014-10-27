@@ -23,12 +23,20 @@ v8::Handle<v8::Object> DOMArrayBuffer::wrap(v8::Handle<v8::Object> creationConte
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, data(), byteLength());
 
+    // Only when we create a new wrapper, let V8 know that we allocated and
+    // associated a new memory block with the wrapper. Note that
+    // setDeallocationObserver implicitly calls
+    // DOMArrayBufferDeallocationObserver::blinkAllocatedMemory.
     buffer()->setDeallocationObserver(DOMArrayBufferDeallocationObserver::instance());
+
     return associateWithWrapper(wrapperTypeInfo, wrapper, isolate);
 }
 
 v8::Handle<v8::Object> DOMArrayBuffer::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
+    // This function does not set a deallocation observer to the underlying
+    // array buffer.  It's a caller's duty.
+
     return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperTypeInfo, wrapper, isolate);
 }
 

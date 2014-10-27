@@ -779,13 +779,15 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
         return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();
     }
 
+    // Transfer the ownership of the allocated memory to an ArrayBuffer without
+    // copying.
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    // This special way to create ArrayBuffer via ArrayBufferContents makes the
-    // underlying ArrayBufferContents not call ArrayBufferDeallocationObserver::
-    // blinkAllocatedMemory. The array buffer created by V8 already called it,
-    // so we shouldn't call it.
-    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), DOMArrayBufferDeallocationObserver::instance());
+    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), 0);
     RefPtr<{{cpp_class}}> buffer = {{cpp_class}}::create(contents);
+    // Since this transfer doesn't allocate new memory, do not call
+    // DOMArrayBufferDeallocationObserver::blinkAllocatedMemory.
+    buffer->buffer()->setDeallocationObserverWithoutAllocationNotification(
+        DOMArrayBufferDeallocationObserver::instance());
     buffer->associateWithWrapper(buffer->wrapperTypeInfo(), object, v8::Isolate::GetCurrent());
 
     return blink::toScriptWrappableBase(object)->toImpl<{{cpp_class}}>();

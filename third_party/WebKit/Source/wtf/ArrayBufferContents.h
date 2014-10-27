@@ -65,6 +65,12 @@ public:
             m_deallocationObserver->blinkAllocatedMemory(m_sizeInBytes);
         }
     }
+    void setDeallocationObserverWithoutAllocationNotification(ArrayBufferDeallocationObserver* observer)
+    {
+        if (!m_deallocationObserver) {
+            m_deallocationObserver = observer;
+        }
+    }
 
     void transfer(ArrayBufferContents& other);
     void copyTo(ArrayBufferContents& other);
