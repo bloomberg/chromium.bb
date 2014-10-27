@@ -47,6 +47,7 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_fillGradient(other.m_fillGradient)
     , m_fillPattern(other.m_fillPattern)
     , m_looper(other.m_looper)
+    , m_dropShadowImageFilter(other.m_dropShadowImageFilter)
     , m_textDrawingMode(other.m_textDrawingMode)
     , m_alpha(other.m_alpha)
     , m_colorFilter(other.m_colorFilter)
@@ -202,6 +203,16 @@ void GraphicsContextState::clearDrawLooper()
     m_looper.clear();
     m_strokePaint.setLooper(0);
     m_fillPaint.setLooper(0);
+}
+
+void GraphicsContextState::setDropShadowImageFilter(PassRefPtr<SkImageFilter> dropShadowImageFilter)
+{
+    m_dropShadowImageFilter = dropShadowImageFilter;
+}
+
+void GraphicsContextState::clearDropShadowImageFilter()
+{
+    m_dropShadowImageFilter.clear();
 }
 
 void GraphicsContextState::setAlphaAsFloat(float alpha)

@@ -1923,10 +1923,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
             }
 
             // Draw only the shadow.
-            OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-            drawLooperBuilder->addShadow(shadowOffset, shadowBlur, shadowColor,
-                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-            context->setDrawLooper(drawLooperBuilder.release());
+            context->setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha, DrawShadowOnly);
 
             if (hasBorderRadius) {
                 RoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.radii());

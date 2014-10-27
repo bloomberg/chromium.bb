@@ -49,7 +49,7 @@ void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, con
     ASSERT(normSrcRect.width() <= m_image->width() && normSrcRect.height() <= m_image->height());
 
     SkPaint paint;
-    ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, blendMode);
+    ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, blendMode, !currentFrameKnownToBeOpaque());
 
     SkRect srcSkRect = WebCoreFloatRectToSKRect(normSrcRect);
     SkRect dstSkRect = WebCoreFloatRectToSKRect(normDstRect);

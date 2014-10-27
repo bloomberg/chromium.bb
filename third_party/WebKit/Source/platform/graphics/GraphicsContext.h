@@ -342,7 +342,7 @@ public:
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,
         DrawLooperBuilder::ShadowAlphaMode = DrawLooperBuilder::ShadowRespectsAlpha, ShadowMode = DrawShadowAndForeground);
-    void clearShadow() { clearDrawLooper(); }
+    void clearShadow() { clearDrawLooper(); clearDropShadowImageFilter(); }
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
@@ -401,6 +401,7 @@ public:
         const SkRect& destRect,
         CompositeOperator,
         WebBlendMode,
+        bool isBitmapWithAlpha,
         bool isLazyDecoded = false,
         bool isDataComplete = true) const;
 
@@ -449,6 +450,10 @@ private:
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void concat(const SkMatrix&);
     void drawRRect(const SkRRect&, const SkPaint&);
+
+    void setDropShadowImageFilter(PassRefPtr<SkImageFilter>);
+    void clearDropShadowImageFilter();
+    SkImageFilter* dropShadowImageFilter() const { return immutableState()->dropShadowImageFilter(); }
 
     // Apply deferred paint state saves
     void realizePaintSave()

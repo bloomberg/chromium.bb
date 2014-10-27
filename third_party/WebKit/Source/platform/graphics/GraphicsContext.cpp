@@ -51,6 +51,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "third_party/skia/include/effects/SkMatrixImageFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
@@ -326,6 +327,18 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         drawLooperBuilder->addUnmodifiedContent();
     }
     setDrawLooper(drawLooperBuilder.release());
+
+    if (shadowTransformMode == DrawLooperBuilder::ShadowIgnoresTransforms
+        && shadowAlphaMode == DrawLooperBuilder::ShadowRespectsAlpha) {
+        // This image filter will be used in place of the drawLooper created above but only for drawing non-opaque bitmaps;
+        // see preparePaintForDrawRectToRect().
+        SkColor skColor = color.rgb();
+        // These constants are from RadiusToSigma() from DrawLooperBuilder.cpp.
+        const SkScalar sigma = 0.288675f * blur + 0.5f;
+        SkDropShadowImageFilter::ShadowMode dropShadowMode = shadowMode == DrawShadowAndForeground ? SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode : SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode;
+        RefPtr<SkImageFilter> filter = adoptRef(SkDropShadowImageFilter::Create(offset.width(), offset.height(), sigma, sigma, skColor, dropShadowMode));
+        setDropShadowImageFilter(filter);
+    }
 }
 
 void GraphicsContext::setDrawLooper(PassOwnPtr<DrawLooperBuilder> drawLooperBuilder)
@@ -344,9 +357,25 @@ void GraphicsContext::clearDrawLooper()
     mutableState()->clearDrawLooper();
 }
 
+void GraphicsContext::setDropShadowImageFilter(PassRefPtr<SkImageFilter> imageFilter)
+{
+    if (contextDisabled())
+        return;
+
+    mutableState()->setDropShadowImageFilter(imageFilter);
+}
+
+void GraphicsContext::clearDropShadowImageFilter()
+{
+    if (contextDisabled())
+        return;
+
+    mutableState()->clearDropShadowImageFilter();
+}
+
 bool GraphicsContext::hasShadow() const
 {
-    return !!immutableState()->drawLooper();
+    return !!immutableState()->drawLooper() || !!immutableState()->dropShadowImageFilter();
 }
 
 bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
@@ -1966,13 +1995,18 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     const SkRect& destRect,
     CompositeOperator compositeOp,
     WebBlendMode blendMode,
+    bool isBitmapWithAlpha,
     bool isLazyDecoded,
     bool isDataComplete) const
 {
     paint->setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     paint->setColorFilter(this->colorFilter());
     paint->setAlpha(this->getNormalizedAlpha());
-    paint->setLooper(this->drawLooper());
+    if (this->dropShadowImageFilter() && isBitmapWithAlpha) {
+        paint->setImageFilter(this->dropShadowImageFilter());
+    } else {
+        paint->setLooper(this->drawLooper());
+    }
     paint->setAntiAlias(shouldDrawAntiAliased(this, destRect));
 
     InterpolationQuality resampling;

@@ -164,9 +164,10 @@ void NativeImageSkia::draw(
     TRACE_EVENT0("skia", "NativeImageSkia::draw");
 
     bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap());
+    bool isOpaque = bitmap().isOpaque();
 
     SkPaint paint;
-    context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, compositeOp, blendMode, isLazyDecoded, isDataComplete());
+    context->preparePaintForDrawRectToRect(&paint, srcRect, destRect, compositeOp, blendMode, !isOpaque, isLazyDecoded, isDataComplete());
     // We want to filter it if we decided to do interpolation above, or if
     // there is something interesting going on with the matrix (like a rotation).
     // Note: for serialization, we will want to subset the bitmap first so we

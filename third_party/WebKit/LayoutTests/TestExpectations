@@ -525,6 +525,15 @@ crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-sign-verify.html [ Failure P
 # This test needs to be updated to use a non-svg font.
 crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]
 
+crbug.com/100703 fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/canvas/philip/tests/2d.shadow.image.transparent.2.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/canvas/philip/tests/2d.shadow.canvas.transparent.2.html [ NeedsRebaseline ]
+crbug.com/100703 fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/100703 fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+crbug.com/100703 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ NeedsRebaseline ]
+
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
