@@ -115,11 +115,10 @@ void FileChange::Update(const base::FilePath file_path,
 void FileChange::Update(const base::FilePath file_path,
                         const ResourceEntry& entry,
                         FileChange::ChangeType change) {
-  FileType type = !entry.has_file_info()
-                      ? FILE_TYPE_UNKNOWN
-                      : entry.file_info().is_directory() ? FILE_TYPE_DIRECTORY
-                                                         : FILE_TYPE_FILE;
-
+  FileType type =
+      entry.deleted() ? FILE_TYPE_UNKNOWN : entry.file_info().is_directory()
+                                                ? FILE_TYPE_DIRECTORY
+                                                : FILE_TYPE_FILE;
   Update(file_path, type, change);
 }
 
