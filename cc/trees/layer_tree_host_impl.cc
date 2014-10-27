@@ -1183,12 +1183,6 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   recycle_tree_ = nullptr;
 }
 
-void LayerTreeHostImpl::ResetRecycleTreeForTesting() {
-  if (recycle_tree_)
-    recycle_tree_->DetachLayerTree();
-  recycle_tree_ = nullptr;
-}
-
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 
@@ -1286,7 +1280,7 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
     if (!layer->HasValidTilePriorities())
       continue;
 
-    PictureLayerImpl* twin_layer = layer->GetTwinLayer();
+    PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer();
 
     // Ignore the twin layer when tile priorities are invalid.
     // TODO(vmpstr): Iterators should handle this instead. crbug.com/381704

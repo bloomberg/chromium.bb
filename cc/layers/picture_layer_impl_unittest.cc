@@ -138,12 +138,23 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.CreatePendingTree();
     host_impl_.pending_tree()->SetPageScaleFactorAndLimits(1.f, 0.25f, 100.f);
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-    // Clear recycled tree.
-    pending_tree->DetachLayerTree();
 
-    scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
-    pending_layer->SetDrawsContent(true);
+    // Steal from the recycled tree.
+    scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
+    DCHECK_IMPLIES(old_pending_root, old_pending_root->id() == id_);
+
+    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    if (old_pending_root) {
+      pending_layer.reset(
+          static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
+      pending_layer->SetPile(pile);
+    } else {
+      pending_layer =
+          FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
+      pending_layer->SetDrawsContent(true);
+    }
+    // The bounds() just mirror the pile size.
+    pending_layer->SetBounds(pending_layer->pile()->tiling_size());
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -2049,10 +2060,6 @@ TEST_F(PictureLayerImplTest, ShareTilesOnNextFrame) {
       host_impl_.pending_tree()->root_layer());
   pending_layer_->set_invalidation(second_invalidate);
 
-  // TODO(danakj): Remove this when twins are set up better.
-  // https://codereview.chromium.org/676953003/
-  pending_layer_->DoPostCommitInitializationIfNeeded();
-
   PictureLayerTiling* pending_tiling = pending_layer_->tilings()->tiling_at(0);
   PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(0);
 
@@ -2313,6 +2320,7 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
 
   // Update the draw properties: sync from active tree should happen here.
   host_impl_.pending_tree()->UpdateDrawProperties();
+  EXPECT_FALSE(pending_layer_->needs_post_commit_initialization());
 
   // Another sanity check.
   ASSERT_EQ(1.f, pending_layer_->MinimumContentsScale());
@@ -4202,8 +4210,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
       // All tiles are unoccluded on the pending tree.
       EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
-      Tile* twin_tile =
-          pending_layer_->GetTwinTiling(tiling)->TileAt(iter.i(), iter.j());
+      Tile* twin_tile = pending_layer_->GetPendingOrActiveTwinTiling(tiling)
+                            ->TileAt(iter.i(), iter.j());
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
           tile->content_rect(), 1.0f / tile->contents_scale());
 
@@ -4237,8 +4245,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
         continue;
       const Tile* tile = *iter;
 
-      Tile* twin_tile =
-          active_layer_->GetTwinTiling(tiling)->TileAt(iter.i(), iter.j());
+      Tile* twin_tile = active_layer_->GetPendingOrActiveTwinTiling(tiling)
+                            ->TileAt(iter.i(), iter.j());
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
           tile->content_rect(), 1.0f / tile->contents_scale());
 
@@ -4415,6 +4423,33 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
                                    total_expected_occluded_tile_count);
 }
 
+TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {
+  gfx::Size tile_size(102, 102);
+  gfx::Size layer_bounds(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pile);
+  EXPECT_FALSE(pending_layer_->GetPendingOrActiveTwinLayer());
+
+  ActivateTree();
+  EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinLayer());
+
+  SetupPendingTree(pile);
+  EXPECT_TRUE(pending_layer_->GetPendingOrActiveTwinLayer());
+  EXPECT_TRUE(active_layer_->GetPendingOrActiveTwinLayer());
+  EXPECT_EQ(pending_layer_, active_layer_->GetPendingOrActiveTwinLayer());
+  EXPECT_EQ(active_layer_, pending_layer_->GetPendingOrActiveTwinLayer());
+
+  ActivateTree();
+  EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinLayer());
+
+  // Make an empty pending tree.
+  host_impl_.CreatePendingTree();
+  host_impl_.pending_tree()->DetachLayerTree();
+  EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinLayer());
+}
+
 TEST_F(PictureLayerImplTest, RecycledTwinLayer) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
@@ -4436,7 +4471,9 @@ TEST_F(PictureLayerImplTest, RecycledTwinLayer) {
   EXPECT_TRUE(active_layer_->GetRecycledTwinLayer());
   EXPECT_EQ(old_pending_layer_, active_layer_->GetRecycledTwinLayer());
 
-  host_impl_.ResetRecycleTreeForTesting();
+  // Make an empty pending tree.
+  host_impl_.CreatePendingTree();
+  host_impl_.pending_tree()->DetachLayerTree();
   EXPECT_FALSE(active_layer_->GetRecycledTwinLayer());
 }
 

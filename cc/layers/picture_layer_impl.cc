@@ -90,6 +90,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
 }
 
 PictureLayerImpl::~PictureLayerImpl() {
+  if (twin_layer_)
+    twin_layer_->twin_layer_ = nullptr;
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
 }
 
@@ -110,10 +112,15 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   LayerImpl::PushPropertiesTo(base_layer);
 
-  // When the pending tree pushes to the active tree, the pending twin
-  // becomes recycled.
-  layer_impl->twin_layer_ = nullptr;
-  twin_layer_ = nullptr;
+  // Twin relationships should never change once established.
+  DCHECK_IMPLIES(twin_layer_, twin_layer_ == layer_impl);
+  DCHECK_IMPLIES(twin_layer_, layer_impl->twin_layer_ == this);
+  // The twin relationship does not need to exist before the first
+  // PushPropertiesTo from pending to active layer since before that the active
+  // layer can not have a pile or tilings, it has only been created and inserted
+  // into the tree at that point.
+  twin_layer_ = layer_impl;
+  layer_impl->twin_layer_ = this;
 
   layer_impl->pile_ = pile_;
 
@@ -566,10 +573,16 @@ gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
   return visible_rect_in_content_space;
 }
 
-PictureLayerImpl* PictureLayerImpl::GetRecycledTwinLayer() {
-  // TODO(vmpstr): Maintain recycled twin as a member. crbug.com/407418
-  return static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindRecycleTreeLayerById(id()));
+PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {
+  if (!twin_layer_ || !twin_layer_->IsOnActiveOrPendingTree())
+    return nullptr;
+  return twin_layer_;
+}
+
+PictureLayerImpl* PictureLayerImpl::GetRecycledTwinLayer() const {
+  if (!twin_layer_ || twin_layer_->IsOnActiveOrPendingTree())
+    return nullptr;
+  return twin_layer_;
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -641,16 +654,20 @@ const Region* PictureLayerImpl::GetPendingInvalidation() {
   if (layer_tree_impl()->IsPendingTree())
     return &invalidation_;
   DCHECK(layer_tree_impl()->IsActiveTree());
-  if (PictureLayerImpl* twin_layer = GetTwinLayer())
+  if (PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer())
     return &twin_layer->invalidation_;
   return nullptr;
 }
 
-const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
+const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
     const PictureLayerTiling* tiling) const {
-  if (!twin_layer_)
+  PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
+  if (!twin_layer)
     return nullptr;
-  return twin_layer_->tilings_->TilingAtScale(tiling->contents_scale());
+  // TODO(danakj): Remove this when no longer swapping tilings.
+  if (!twin_layer->tilings_)
+    return nullptr;
+  return twin_layer->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
 PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
@@ -803,6 +820,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 
 void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling) {
+  if (!tilings_)
+    return;
   if (!CanHaveTilingWithScale(tiling->contents_scale()))
     return;
   tilings_->AddTiling(tiling->contents_scale(), pile_->tiling_size());
@@ -858,16 +877,12 @@ void PictureLayerImpl::DoPostCommitInitialization() {
   if (!tilings_)
     tilings_ = make_scoped_ptr(new PictureLayerTilingSet(this));
 
-  DCHECK(!twin_layer_);
-  twin_layer_ = static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindActiveTreeLayerById(id()));
-  if (twin_layer_) {
-    DCHECK(!twin_layer_->twin_layer_);
-    twin_layer_->twin_layer_ = this;
+  PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
+  if (twin_layer) {
     // If the twin has never been pushed to, do not sync from it.
     // This can happen if this function is called during activation.
-    if (!twin_layer_->needs_post_commit_initialization_)
-      SyncFromActiveLayer(twin_layer_);
+    if (!twin_layer->needs_post_commit_initialization_)
+      SyncFromActiveLayer(twin_layer);
   }
 
   needs_post_commit_initialization_ = false;
@@ -882,8 +897,8 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
 
   DCHECK(pile_->HasRecordings());
 
-  if (twin_layer_)
-    twin_layer_->SyncTiling(tiling);
+  if (PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer())
+    twin_layer->SyncTiling(tiling);
 
   return tiling;
 }
@@ -1127,7 +1142,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
       raster_contents_scale_, ideal_contents_scale_);
   float twin_low_res_scale = 0.f;
 
-  PictureLayerImpl* twin = twin_layer_;
+  PictureLayerImpl* twin = GetPendingOrActiveTwinLayer();
   if (twin && twin->CanHaveTilings()) {
     min_acceptable_high_res_scale = std::min(
         min_acceptable_high_res_scale,
@@ -1136,10 +1151,14 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
         max_acceptable_high_res_scale,
         std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
 
-    for (size_t i = 0; i < twin->tilings_->num_tilings(); ++i) {
-      PictureLayerTiling* tiling = twin->tilings_->tiling_at(i);
-      if (tiling->resolution() == LOW_RESOLUTION)
-        twin_low_res_scale = tiling->contents_scale();
+    // TODO(danakj): Remove the tilings_ check when we create them in the
+    // constructor.
+    if (twin->tilings_) {
+      for (size_t i = 0; i < twin->tilings_->num_tilings(); ++i) {
+        PictureLayerTiling* tiling = twin->tilings_->tiling_at(i);
+        if (tiling->resolution() == LOW_RESOLUTION)
+          twin_low_res_scale = tiling->contents_scale();
+      }
     }
   }
 
@@ -1174,7 +1193,8 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
   // Remove tilings on this tree and the twin tree.
   for (size_t i = 0; i < to_remove.size(); ++i) {
-    const PictureLayerTiling* twin_tiling = GetTwinTiling(to_remove[i]);
+    const PictureLayerTiling* twin_tiling =
+        GetPendingOrActiveTwinTiling(to_remove[i]);
     // Only remove tilings from the twin layer if they have
     // NON_IDEAL_RESOLUTION.
     if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)

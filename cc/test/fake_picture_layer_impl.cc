@@ -97,6 +97,16 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
   return result;
 }
 
+void FakePictureLayerImpl::SetPile(scoped_refptr<PicturePileImpl> pile) {
+  pile_.swap(pile);
+  if (tilings()) {
+    for (size_t i = 0; i < num_tilings(); ++i) {
+      tilings()->tiling_at(i)->UpdateTilesToCurrentPile(Region(),
+                                                        pile_->tiling_size());
+    }
+  }
+}
+
 void FakePictureLayerImpl::SetAllTilesVisible() {
   WhichTree tree =
       layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;

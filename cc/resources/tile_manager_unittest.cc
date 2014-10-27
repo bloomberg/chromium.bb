@@ -100,12 +100,23 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   void SetupPendingTree(scoped_refptr<PicturePileImpl> pile) {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-    // Clear recycled tree.
-    pending_tree->DetachLayerTree();
 
-    scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
-    pending_layer->SetDrawsContent(true);
+    // Steal from the recycled tree.
+    scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
+    DCHECK_IMPLIES(old_pending_root, old_pending_root->id() == id_);
+
+    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    if (old_pending_root) {
+      pending_layer.reset(
+          static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
+      pending_layer->SetPile(pile);
+    } else {
+      pending_layer =
+          FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
+      pending_layer->SetDrawsContent(true);
+    }
+    // The bounds() just mirror the pile size.
+    pending_layer->SetBounds(pending_layer->pile()->tiling_size());
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(

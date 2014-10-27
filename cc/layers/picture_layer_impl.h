@@ -122,7 +122,7 @@ class CC_EXPORT PictureLayerImpl
   PicturePileImpl* GetPile() override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   const Region* GetPendingInvalidation() override;
-  const PictureLayerTiling* GetTwinTiling(
+  const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override;
   PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
@@ -144,7 +144,7 @@ class CC_EXPORT PictureLayerImpl
   void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
 
   // Functions used by tile manager.
-  PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
+  PictureLayerImpl* GetPendingOrActiveTwinLayer() const;
   bool IsOnActiveOrPendingTree() const;
   // Virtual for testing.
   virtual bool HasValidTilePriorities() const;
@@ -168,7 +168,7 @@ class CC_EXPORT PictureLayerImpl
   float SnappedContentsScale(float new_contents_scale);
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
-  PictureLayerImpl* GetRecycledTwinLayer();
+  PictureLayerImpl* GetRecycledTwinLayer() const;
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)

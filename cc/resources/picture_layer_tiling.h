@@ -44,7 +44,7 @@ class CC_EXPORT PictureLayerTilingClient {
   // This invalidation region defines the area (if any, it can by null) that
   // tiles can not be shared between pending and active trees.
   virtual const Region* GetPendingInvalidation() = 0;
-  virtual const PictureLayerTiling* GetTwinTiling(
+  virtual const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
   virtual PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) = 0;

@@ -77,8 +77,9 @@ const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {
   return &invalidation_;
 }
 
-const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
-      const PictureLayerTiling* tiling) const {
+const PictureLayerTiling*
+FakePictureLayerTilingClient::GetPendingOrActiveTwinTiling(
+    const PictureLayerTiling* tiling) const {
   return twin_tiling_;
 }
 

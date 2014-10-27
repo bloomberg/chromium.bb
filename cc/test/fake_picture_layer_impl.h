@@ -80,10 +80,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   PictureLayerTiling* LowResTiling() const;
   size_t num_tilings() const { return tilings_->num_tilings(); }
 
-  PictureLayerImpl* twin_layer() { return twin_layer_; }
-  void set_twin_layer(PictureLayerImpl* twin) { twin_layer_ = twin; }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   PicturePileImpl* pile() { return pile_.get(); }
+  void SetPile(scoped_refptr<PicturePileImpl> pile);
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }
