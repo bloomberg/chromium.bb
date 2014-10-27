@@ -177,6 +177,15 @@
         "ThawtePrimaryRootCA_G3",
         "ThawtePrimaryRootCA"
       ]
+    },
+    {
+      "name": "facebook",
+      "static_spki_hashes": [
+        "SymantecClass3EVG3",
+        "DigiCertECCSecureServerCA",
+        "DigiCertEVRoot",
+        "FacebookBackup"
+      ]
     }
   ],
 
@@ -1382,7 +1391,27 @@
     { "name": "southside-crew.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "tickopa.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "wieninternational.at", "include_subdomains": true, "mode": "force-https" },
-    { "name": "fleximus.org", "include_subdomains": true, "mode": "force-https" }
+    { "name": "fleximus.org", "include_subdomains": true, "mode": "force-https" },
+
+    // Facebook would like to have pinning enforced on (*.)facebook.com and
+    // HSTS enforced on specific names. We can't (yet) represent that in JSON
+    // So we're currently only applying pinning on the specific names.
+    { "name": "facebook.com", "mode": "force-https", "pins": "facebook" },
+    { "name": "www.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "m.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "tablet.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "secure.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "pixel.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "apps.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "upload.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "developers.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "touch.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "mbasic.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "code.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "t.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "mtouch.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "business.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
+    { "name": "research.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
