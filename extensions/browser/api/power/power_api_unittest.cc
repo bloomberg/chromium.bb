@@ -128,12 +128,12 @@ class PowerSaveBlockerStubManager {
 
 class PowerApiTest : public ApiUnitTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ApiUnitTest::SetUp();
     manager_.reset(new PowerSaveBlockerStubManager(browser_context()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     manager_.reset();
     ApiUnitTest::TearDown();
   }

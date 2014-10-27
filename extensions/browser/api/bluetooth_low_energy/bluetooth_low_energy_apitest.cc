@@ -93,7 +93,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
  public:
   BluetoothLowEnergyApiTest() {}
 
-  virtual ~BluetoothLowEnergyApiTest() {}
+  ~BluetoothLowEnergyApiTest() override {}
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();

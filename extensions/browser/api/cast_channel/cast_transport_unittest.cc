@@ -180,7 +180,7 @@ class CastTransportTest : public testing::Test {
             base::TimeTicks())) {
     transport_.reset(new CastTransport(&mock_socket_, &delegate_, logger_));
   }
-  virtual ~CastTransportTest() {}
+  ~CastTransportTest() override {}
 
  protected:
   MockCastTransportDelegate delegate_;

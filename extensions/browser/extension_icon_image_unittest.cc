@@ -125,7 +125,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
         io_thread_(BrowserThread::IO),
         notification_service_(content::NotificationService::Create()) {}
 
-  virtual ~ExtensionIconImageTest() {}
+  ~ExtensionIconImageTest() override {}
 
   void WaitForImageLoad() {
     quit_in_image_loaded_ = true;
@@ -167,7 +167,7 @@ class ExtensionIconImageTest : public ExtensionsTest,
   }
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     file_thread_.Start();
     io_thread_.Start();
   }

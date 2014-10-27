@@ -47,7 +47,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
                              public views::WidgetObserver {
  public:
   NativeAppWindowViews();
-  virtual ~NativeAppWindowViews();
+  ~NativeAppWindowViews() override;
   void Init(extensions::AppWindow* app_window,
             const extensions::AppWindow::CreateParams& create_params);
 
@@ -73,103 +73,97 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
       const extensions::AppWindow::CreateParams& create_params);
 
   // ui::BaseWindow implementation.
-  virtual bool IsActive() const override;
-  virtual bool IsMaximized() const override;
-  virtual bool IsMinimized() const override;
-  virtual bool IsFullscreen() const override;
-  virtual gfx::NativeWindow GetNativeWindow() override;
-  virtual gfx::Rect GetRestoredBounds() const override;
-  virtual ui::WindowShowState GetRestoredState() const override;
-  virtual gfx::Rect GetBounds() const override;
-  virtual void Show() override;
-  virtual void ShowInactive() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual void Activate() override;
-  virtual void Deactivate() override;
-  virtual void Maximize() override;
-  virtual void Minimize() override;
-  virtual void Restore() override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual void FlashFrame(bool flash) override;
-  virtual bool IsAlwaysOnTop() const override;
-  virtual void SetAlwaysOnTop(bool always_on_top) override;
+  bool IsActive() const override;
+  bool IsMaximized() const override;
+  bool IsMinimized() const override;
+  bool IsFullscreen() const override;
+  gfx::NativeWindow GetNativeWindow() override;
+  gfx::Rect GetRestoredBounds() const override;
+  ui::WindowShowState GetRestoredState() const override;
+  gfx::Rect GetBounds() const override;
+  void Show() override;
+  void ShowInactive() override;
+  void Hide() override;
+  void Close() override;
+  void Activate() override;
+  void Deactivate() override;
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  void FlashFrame(bool flash) override;
+  bool IsAlwaysOnTop() const override;
+  void SetAlwaysOnTop(bool always_on_top) override;
 
   // WidgetDelegate implementation.
-  virtual void OnWidgetMove() override;
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual bool CanResize() const override;
-  virtual bool CanMaximize() const override;
-  virtual bool CanMinimize() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool ShouldShowWindowTitle() const override;
-  virtual bool ShouldShowWindowIcon() const override;
-  virtual void SaveWindowPlacement(const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) override;
-  virtual void DeleteDelegate() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
-  virtual views::View* GetContentsView() override;
-  virtual bool ShouldDescendIntoChildForEventHandling(
+  void OnWidgetMove() override;
+  views::View* GetInitiallyFocusedView() override;
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  bool ShouldShowWindowIcon() const override;
+  void SaveWindowPlacement(const gfx::Rect& bounds,
+                           ui::WindowShowState show_state) override;
+  void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
+  bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
 
   // WidgetObserver implementation.
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) override;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // WebContentsObserver implementation.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override;
-  virtual void RenderViewHostChanged(
-      content::RenderViewHost* old_host,
-      content::RenderViewHost* new_host) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override;
 
   // views::View implementation.
-  virtual void Layout() override;
-  virtual void ViewHierarchyChanged(
+  void Layout() override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual gfx::Size GetMaximumSize() const override;
-  virtual void OnFocus() override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  void OnFocus() override;
 
   // NativeAppWindow implementation.
-  virtual void SetFullscreen(int fullscreen_types) override;
-  virtual bool IsFullscreenOrPending() const override;
-  virtual void UpdateWindowIcon() override;
-  virtual void UpdateWindowTitle() override;
-  virtual void UpdateBadgeIcon() override;
-  virtual void UpdateDraggableRegions(
+  void SetFullscreen(int fullscreen_types) override;
+  bool IsFullscreenOrPending() const override;
+  void UpdateWindowIcon() override;
+  void UpdateWindowTitle() override;
+  void UpdateBadgeIcon() override;
+  void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
-  virtual SkRegion* GetDraggableRegion() override;
-  virtual void UpdateShape(scoped_ptr<SkRegion> region) override;
-  virtual void HandleKeyboardEvent(
+  SkRegion* GetDraggableRegion() override;
+  void UpdateShape(scoped_ptr<SkRegion> region) override;
+  void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
-  virtual bool IsFrameless() const override;
-  virtual bool HasFrameColor() const override;
-  virtual SkColor ActiveFrameColor() const override;
-  virtual SkColor InactiveFrameColor() const override;
-  virtual gfx::Insets GetFrameInsets() const override;
-  virtual void HideWithApp() override;
-  virtual void ShowWithApp() override;
-  virtual void UpdateShelfMenu() override;
-  virtual gfx::Size GetContentMinimumSize() const override;
-  virtual gfx::Size GetContentMaximumSize() const override;
-  virtual void SetContentSizeConstraints(const gfx::Size& min_size,
-                                         const gfx::Size& max_size) override;
-  virtual bool CanHaveAlphaEnabled() const override;
-  virtual void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsFrameless() const override;
+  bool HasFrameColor() const override;
+  SkColor ActiveFrameColor() const override;
+  SkColor InactiveFrameColor() const override;
+  gfx::Insets GetFrameInsets() const override;
+  void HideWithApp() override;
+  void ShowWithApp() override;
+  void UpdateShelfMenu() override;
+  gfx::Size GetContentMinimumSize() const override;
+  gfx::Size GetContentMaximumSize() const override;
+  void SetContentSizeConstraints(const gfx::Size& min_size,
+                                 const gfx::Size& max_size) override;
+  bool CanHaveAlphaEnabled() const override;
+  void SetVisibleOnAllWorkspaces(bool always_visible) override;
 
   // web_modal::WebContentsModalDialogHost implementation.
-  virtual gfx::NativeView GetHostView() const override;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override;
-  virtual gfx::Size GetMaximumDialogSize() override;
-  virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) override;
-  virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) override;
+  gfx::NativeView GetHostView() const override;
+  gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  gfx::Size GetMaximumDialogSize() override;
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
  private:
   // Informs modal dialogs that they need to update their positions.

@@ -45,7 +45,7 @@ class GuestViewManagerTest : public extensions::ExtensionsTest {
  public:
   GuestViewManagerTest() :
     notification_service_(content::NotificationService::Create()) {}
-  virtual ~GuestViewManagerTest() {}
+  ~GuestViewManagerTest() override {}
 
   scoped_ptr<WebContents> CreateWebContents() {
     return scoped_ptr<WebContents>(

@@ -20,11 +20,9 @@ using error_test_util::CreateNewRuntimeError;
 class ErrorMapUnitTest : public testing::Test {
  public:
   ErrorMapUnitTest() { }
-  virtual ~ErrorMapUnitTest() { }
+  ~ErrorMapUnitTest() override {}
 
-  virtual void SetUp() override {
-    testing::Test::SetUp();
-  }
+  void SetUp() override { testing::Test::SetUp(); }
 
  protected:
   ErrorMap errors_;

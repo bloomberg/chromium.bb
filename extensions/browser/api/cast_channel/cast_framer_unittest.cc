@@ -15,9 +15,9 @@ namespace cast_channel {
 class CastFramerTest : public testing::Test {
  public:
   CastFramerTest() {}
-  virtual ~CastFramerTest() {}
+  ~CastFramerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     cast_message_.set_protocol_version(CastMessage::CASTV2_1_0);
     cast_message_.set_source_id("source");
     cast_message_.set_destination_id("destination");

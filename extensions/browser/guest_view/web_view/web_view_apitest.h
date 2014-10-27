@@ -41,10 +41,10 @@ class WebViewAPITest : public AppShellTest {
   void SendMessageToEmbedder(const std::string& message);
 
   // content::BrowserTestBase implementation.
-  virtual void RunTestOnMainThreadLoop() override;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void RunTestOnMainThreadLoop() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
@@ -56,7 +56,7 @@ class WebViewAPITest : public AppShellTest {
 
 class WebViewDPIAPITest : public WebViewAPITest {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
   static float scale() { return 2.0f; }
 };
 

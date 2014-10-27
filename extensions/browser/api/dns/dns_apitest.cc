@@ -26,13 +26,13 @@ class DnsApiTest : public ShellApiTest {
   DnsApiTest() : resolver_creator_(new MockHostResolverCreator()) {}
 
  private:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
     HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();
     ShellApiTest::TearDownOnMainThread();

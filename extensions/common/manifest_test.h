@@ -22,7 +22,7 @@ namespace extensions {
 class ManifestTest : public testing::Test {
  public:
   ManifestTest();
-  virtual ~ManifestTest();
+  ~ManifestTest() override;
 
  protected:
   // Helper class that simplifies creating methods that take either a filename

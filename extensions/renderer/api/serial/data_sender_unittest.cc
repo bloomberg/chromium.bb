@@ -16,7 +16,7 @@ class DataSenderTest : public ApiTestBase {
  public:
   DataSenderTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ApiTestBase::SetUp();
     env()->RegisterModule("async_waiter", IDR_ASYNC_WAITER_JS);
     env()->RegisterModule("data_sender", IDR_DATA_SENDER_JS);
@@ -28,7 +28,7 @@ class DataSenderTest : public ApiTestBase {
         base::Bind(&DataSenderTest::CreateDataSink, base::Unretained(this)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (receiver_.get()) {
       receiver_->ShutDown();
       receiver_ = NULL;

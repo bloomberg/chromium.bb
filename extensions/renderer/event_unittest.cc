@@ -10,7 +10,7 @@ namespace extensions {
 namespace {
 
 class EventUnittest : public ModuleSystemTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     ModuleSystemTest::SetUp();
 
     env()->RegisterModule(kEventBindings, IDR_EVENT_BINDINGS_JS);

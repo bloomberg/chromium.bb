@@ -72,8 +72,8 @@ class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
 class ApiTestBase : public ModuleSystemTest {
  protected:
   ApiTestBase();
-  virtual ~ApiTestBase();
-  virtual void SetUp() override;
+  ~ApiTestBase() override;
+  void SetUp() override;
   void RunTest(const std::string& file_name, const std::string& test_name);
   TestServiceProvider* service_provider() { return service_provider_; }
 

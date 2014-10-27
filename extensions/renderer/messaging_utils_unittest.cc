@@ -24,7 +24,7 @@ class MessagingUtilsUnittest : public ModuleSystemTest {
   }
 
  private:
-  virtual void SetUp() override {
+  void SetUp() override {
     ModuleSystemTest::SetUp();
 
     env()->RegisterModule("messaging_utils", IDR_MESSAGING_UTILS_JS);

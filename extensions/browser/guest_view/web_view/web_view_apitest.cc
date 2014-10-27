@@ -45,9 +45,7 @@ const char kTestWebSocketPort[] = "testWebSocketPort";
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
  public:
-  virtual std::string ToResponseString() const override {
-    return std::string();
-  }
+  std::string ToResponseString() const override { return std::string(); }
 };
 
 // Handles |request| by serving a redirect response if the |User-Agent| is
@@ -82,7 +80,7 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   }
 
   // WebContentsObserver.
-  virtual void WasHidden() override {
+  void WasHidden() override {
     hidden_observed_ = true;
     hidden_callback_.Run();
   }

@@ -349,9 +349,9 @@ class CastSocketTest : public testing::Test {
       : logger_(new Logger(
             scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
             base::TimeTicks())) {}
-  virtual ~CastSocketTest() {}
+  ~CastSocketTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a few test messages
     for (size_t i = 0; i < arraysize(test_messages_); i++) {
       CreateStringMessage("urn:cast", "1", "2", kTestData[i],
@@ -363,7 +363,7 @@ class CastSocketTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (socket_.get()) {
       EXPECT_CALL(handler_, OnCloseComplete(net::OK));
       socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,

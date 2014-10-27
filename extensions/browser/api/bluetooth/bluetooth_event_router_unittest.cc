@@ -43,7 +43,7 @@ class BluetoothEventRouterTest : public ExtensionsTest {
     router_->SetAdapterForTest(mock_adapter_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // It's important to destroy the router before the browser context keyed
     // services so it removes itself as an ExtensionRegistry observer.
     router_.reset(NULL);

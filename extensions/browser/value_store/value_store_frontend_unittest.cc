@@ -21,7 +21,7 @@ class ValueStoreFrontendTest : public testing::Test {
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     base::FilePath test_data_dir;
@@ -33,7 +33,7 @@ class ValueStoreFrontendTest : public testing::Test {
     ResetStorage();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     base::MessageLoop::current()->RunUntilIdle();  // wait for storage to delete
     storage_.reset();
   }

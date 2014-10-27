@@ -23,7 +23,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     converter_.reset(V8ValueConverter::create());
     strategy_.reset(new ActivityLogConverterStrategy());
     converter_->SetFunctionAllowed(true);

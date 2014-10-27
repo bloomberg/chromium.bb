@@ -30,7 +30,7 @@ class CastChannelLoggerTest : public testing::Test {
       : clock_(new base::SimpleTestTickClock),
         logger_(new Logger(scoped_ptr<base::TickClock>(clock_),
                            base::TimeTicks())) {}
-  virtual ~CastChannelLoggerTest() {}
+  ~CastChannelLoggerTest() override {}
 
   bool Uncompress(const char* input, int length, std::string* output) {
     z_stream stream = {0};

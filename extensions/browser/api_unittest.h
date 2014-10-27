@@ -37,7 +37,7 @@ namespace extensions {
 class ApiUnitTest : public ExtensionsTest {
  public:
   ApiUnitTest();
-  virtual ~ApiUnitTest();
+  ~ApiUnitTest() override;
 
   const Extension* extension() const { return extension_.get(); }
   scoped_refptr<Extension> extension_ref() { return extension_; }
@@ -47,7 +47,7 @@ class ApiUnitTest : public ExtensionsTest {
 
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Various ways of running an API function. These methods take ownership of
   // |function|. |args| should be in JSON format, wrapped in a list.

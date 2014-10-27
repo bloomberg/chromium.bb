@@ -77,7 +77,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
     extensions_browser_client()->set_extension_system_factory(
         &extension_system_factory_);
   }
-  virtual ~LazyBackgroundTaskQueueTest() {}
+  ~LazyBackgroundTaskQueueTest() override {}
 
   int task_run_count() { return task_run_count_; }
 

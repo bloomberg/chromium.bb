@@ -44,13 +44,13 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
         ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ResetFrontend();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     frontend_.reset();
     // Execute any pending deletion tasks.
     message_loop_.RunUntilIdle();

@@ -19,7 +19,7 @@ class StashServiceTest : public testing::Test, public mojo::ErrorHandler {
 
   StashServiceTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     expecting_error_ = false;
     expected_event_ = EVENT_NONE;
     stash_backend_.reset(new StashBackend);

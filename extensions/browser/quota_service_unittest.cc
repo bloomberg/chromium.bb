@@ -128,8 +128,8 @@ class QuotaServiceTest : public testing::Test {
         extension_c_("c"),
         loop_(),
         ui_thread_(BrowserThread::UI, &loop_) {}
-  virtual void SetUp() { service_.reset(new QuotaService()); }
-  virtual void TearDown() {
+  void SetUp() override { service_.reset(new QuotaService()); }
+  void TearDown() override {
     loop_.RunUntilIdle();
     service_.reset();
   }

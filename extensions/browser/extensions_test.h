@@ -30,7 +30,7 @@ class TestExtensionsBrowserClient;
 class ExtensionsTest : public testing::Test {
  public:
   ExtensionsTest();
-  virtual ~ExtensionsTest();
+  ~ExtensionsTest() override;
 
   // Returned as a BrowserContext since most users don't need methods from
   // TestBrowserContext.
@@ -43,8 +43,8 @@ class ExtensionsTest : public testing::Test {
   }
 
   // testing::Test overrides:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   scoped_ptr<content::ContentClient> content_client_;

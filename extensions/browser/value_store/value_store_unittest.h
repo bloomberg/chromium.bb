@@ -24,8 +24,8 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   ValueStoreTest();
   virtual ~ValueStoreTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<ValueStore> storage_;

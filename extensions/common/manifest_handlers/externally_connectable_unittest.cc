@@ -21,7 +21,7 @@ namespace errors = externally_connectable_errors;
 class ExternallyConnectableTest : public ManifestTest {
  public:
   ExternallyConnectableTest() {}
-  virtual ~ExternallyConnectableTest() {}
+  ~ExternallyConnectableTest() override {}
 
  protected:
   ExternallyConnectableInfo* GetExternallyConnectableInfo(

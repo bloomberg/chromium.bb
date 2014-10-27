@@ -69,7 +69,7 @@ class ProcessManagerTest : public ExtensionsTest {
         &process_manager_delegate_);
   }
 
-  virtual ~ProcessManagerTest() {}
+  ~ProcessManagerTest() override {}
 
   // Use original_context() to make it clear it is a non-incognito context.
   BrowserContext* original_context() { return browser_context(); }

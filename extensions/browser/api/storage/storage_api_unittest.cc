@@ -43,7 +43,7 @@ class StorageApiUnittest : public ApiUnitTest {
  public:
   StorageApiUnittest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ApiUnitTest::SetUp();
     extensions_browser_client()->set_extension_system_factory(
         &extension_system_factory_);

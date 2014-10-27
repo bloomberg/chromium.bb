@@ -19,9 +19,9 @@ namespace {
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
   MockWebContentsDelegate() : requested_(false), checked_(false) {}
-  virtual ~MockWebContentsDelegate() {}
+  ~MockWebContentsDelegate() override {}
 
-  virtual void RequestMediaAccessPermission(
+  void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override {
@@ -30,10 +30,9 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
       request_message_loop_runner_->Quit();
   }
 
-  virtual bool CheckMediaAccessPermission(
-      content::WebContents* web_contents,
-      const GURL& security_origin,
-      content::MediaStreamType type) override {
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override {
     checked_ = true;
     if (check_message_loop_runner_.get())
       check_message_loop_runner_->Quit();
@@ -82,12 +81,12 @@ class WebViewMediaAccessAPITest : public WebViewAPITest {
   }
 
   // content::BrowserTestBase implementation
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebViewAPITest::SetUpOnMainThread();
     StartTestServer();
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     WebViewAPITest::TearDownOnMainThread();
     StopTestServer();
   }

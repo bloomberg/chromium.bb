@@ -48,8 +48,8 @@ class AppWindowGeometryCacheTest : public ExtensionsTest {
       : ui_thread_(BrowserThread::UI, &ui_message_loop_) {}
 
   // testing::Test overrides:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void AddGeometryAndLoadExtension(const std::string& extension_id,
                                    const std::string& window_id,

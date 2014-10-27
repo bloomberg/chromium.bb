@@ -394,7 +394,7 @@ class SerialApiTest : public ApiTestBase {
  public:
   SerialApiTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ApiTestBase::SetUp();
     env()->RegisterModule("async_waiter", IDR_ASYNC_WAITER_JS);
     env()->RegisterModule("data_receiver", IDR_DATA_RECEIVER_JS);

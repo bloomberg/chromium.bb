@@ -8,7 +8,7 @@ namespace extensions {
 
 class ApiTestBaseTest : public ApiTestBase {
  public:
-  virtual void SetUp() override { ApiTestBase::SetUp(); }
+  void SetUp() override { ApiTestBase::SetUp(); }
 };
 
 TEST_F(ApiTestBaseTest, TestEnvironment) {

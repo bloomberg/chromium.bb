@@ -44,7 +44,7 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
         adapter_powered_(false),
         adapter_discoverable_(false) {}
 
-  virtual ~BluetoothPrivateApiTest() {}
+  ~BluetoothPrivateApiTest() override {}
 
   void SetUpOnMainThread() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
