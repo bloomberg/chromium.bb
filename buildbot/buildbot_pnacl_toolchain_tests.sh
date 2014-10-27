@@ -158,7 +158,7 @@ tc-test-bot() {
 
   # Build the un-sandboxed toolchain. The build script outputs its own buildbot
   # annotations.
-  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync --gcc\
+  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync \
     --install ${INSTALL_SUBDIR}
 
   # Linking the tests require additional sdk libraries like libnacl.
