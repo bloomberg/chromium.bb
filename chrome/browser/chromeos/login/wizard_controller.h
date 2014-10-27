@@ -20,7 +20,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 
 class PrefRegistrySimple;
@@ -57,7 +59,9 @@ class UserImageScreen;
 // interacts with screen controllers to move the user between screens.
 class WizardController : public ScreenObserver,
                          public ScreenManager,
-                         public EulaScreen::Delegate {
+                         public EulaScreen::Delegate,
+                         public ControllerPairingScreen::Delegate,
+                         public HostPairingScreen::Delegate {
  public:
   // Observes screen changes.
   class Observer {
@@ -240,12 +244,6 @@ class WizardController : public ScreenObserver,
   // Overridden from ScreenObserver:
   virtual void OnExit(ExitCodes exit_code) override;
   virtual void ShowCurrentScreen() override;
-  virtual void SetHostConfiguration() override;
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) override;
   virtual ErrorScreen* GetErrorScreen() override;
   virtual void ShowErrorScreen() override;
   virtual void HideErrorScreen(BaseScreen* parent_screen) override;
@@ -253,6 +251,16 @@ class WizardController : public ScreenObserver,
   // Overridden from EulaScreen::Delegate:
   virtual void SetUsageStatisticsReporting(bool val) override;
   virtual bool GetUsageStatisticsReporting() const override;
+
+  // Override from ControllerPairingScreen::Delegate:
+  virtual void SetHostConfiguration() override;
+
+  // Override from HostPairingScreen::Delegate:
+  virtual void ConfigureHost(bool accepted_eula,
+                             const std::string& lang,
+                             const std::string& timezone,
+                             bool send_reports,
+                             const std::string& keyboard_layout) override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

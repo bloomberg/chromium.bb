@@ -21,6 +21,7 @@ ControllerPairingScreen::ControllerPairingScreen(
     : BaseScreen(observer),
       actor_(actor),
       shark_controller_(shark_controller),
+      delegate_(nullptr),
       current_stage_(ControllerPairingController::STAGE_NONE),
       device_preselected_(false) {
   actor_->SetDelegate(this);
@@ -31,6 +32,10 @@ ControllerPairingScreen::~ControllerPairingScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
   shark_controller_->RemoveObserver(this);
+}
+
+void ControllerPairingScreen::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void ControllerPairingScreen::CommitContextChanges() {
@@ -99,7 +104,8 @@ void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {
       break;
     }
     case ControllerPairingController::STAGE_PAIRING_DONE: {
-      get_screen_observer()->SetHostConfiguration();
+      if (delegate_)
+        delegate_->SetHostConfiguration();
       break;
     }
     case ControllerPairingController::STAGE_HOST_UPDATE_IN_PROGRESS: {

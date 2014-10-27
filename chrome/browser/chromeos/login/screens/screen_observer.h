@@ -59,14 +59,6 @@ class ScreenObserver {
   // Forces current screen showing.
   virtual void ShowCurrentScreen() = 0;
 
-  // Set remora configuration from shark.
-  virtual void SetHostConfiguration() = 0;
-  virtual void ConfigureHost(bool accepted_eula,
-                             const std::string& lang,
-                             const std::string& timezone,
-                             bool send_reports,
-                             const std::string& keyboard_layout) = 0;
-
   virtual ErrorScreen* GetErrorScreen() = 0;
   virtual void ShowErrorScreen() = 0;
   virtual void HideErrorScreen(BaseScreen* parent_screen) = 0;

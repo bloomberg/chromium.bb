@@ -45,12 +45,6 @@ class DeviceDisabledScreenTest : public testing::Test, public ScreenObserver {
   // ScreenObserver:
   MOCK_METHOD1(OnExit, void(ExitCodes));
   void ShowCurrentScreen() override;
-  void SetHostConfiguration() override;
-  void ConfigureHost(bool accepted_eula,
-                     const std::string& lang,
-                     const std::string& timezone,
-                     bool send_reports,
-                     const std::string& keyboard_layout) override;
   ErrorScreen* GetErrorScreen() override;
   void ShowErrorScreen() override;
   void HideErrorScreen(BaseScreen* parent_screen) override;
@@ -93,17 +87,6 @@ void DeviceDisabledScreenTest::TearDown() {
 }
 
 void DeviceDisabledScreenTest::ShowCurrentScreen() {
-}
-
-void DeviceDisabledScreenTest::SetHostConfiguration() {
-}
-
-void DeviceDisabledScreenTest::ConfigureHost(
-    bool accepted_eula,
-    const std::string& lang,
-    const std::string& timezone,
-    bool send_reports,
-    const std::string& keyboard_layout) {
 }
 
 ErrorScreen* DeviceDisabledScreenTest::GetErrorScreen() {

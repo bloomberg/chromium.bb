@@ -32,12 +32,10 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
-#include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -340,18 +338,25 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
       shark_controller_.reset(
           new pairing_chromeos::BluetoothControllerPairingController());
     }
-    return new ControllerPairingScreen(
-        this, oobe_display_->GetControllerPairingScreenActor(),
-        shark_controller_.get());
+    scoped_ptr<chromeos::ControllerPairingScreen> screen(
+        new ControllerPairingScreen(
+            this,
+            oobe_display_->GetControllerPairingScreenActor(),
+            shark_controller_.get()));
+    screen->SetDelegate(this);
+    return screen.release();
   } else if (screen_name == kHostPairingScreenName) {
     if (!remora_controller_) {
       remora_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController());
       remora_controller_->StartPairing();
     }
-    return new HostPairingScreen(this,
-                                 oobe_display_->GetHostPairingScreenActor(),
-                                 remora_controller_.get());
+    scoped_ptr<HostPairingScreen> screen(
+        new HostPairingScreen(this,
+                              oobe_display_->GetHostPairingScreenActor(),
+                              remora_controller_.get()));
+    screen->SetDelegate(this);
+    return screen.release();
   } else if (screen_name == kDeviceDisabledScreenName) {
     return new chromeos::DeviceDisabledScreen(
         this, oobe_display_->GetDeviceDisabledScreenActor());
@@ -1038,6 +1043,34 @@ bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
 }
 
+void WizardController::SetHostConfiguration() {
+  if (shark_controller_) {
+    NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
+    shark_controller_->SetHostConfiguration(
+        true,  // Eula must be accepted before we get this far.
+        network_actor->GetApplicationLocale(),
+        network_actor->GetTimezone(),
+        GetUsageStatisticsReporting(),
+        network_actor->GetInputMethod());
+  }
+}
+
+void WizardController::ConfigureHost(bool accepted_eula,
+                                     const std::string& lang,
+                                     const std::string& timezone,
+                                     bool send_reports,
+                                     const std::string& keyboard_layout) {
+  VLOG(1) << "ConfigureHost locale=" << lang << ", timezone=" << timezone
+          << ", keyboard_layout=" << keyboard_layout;
+  if (accepted_eula)  // Always true.
+    StartupUtils::MarkEulaAccepted();
+  SetUsageStatisticsReporting(send_reports);
+  NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
+  network_actor->SetApplicationLocale(lang);
+  network_actor->SetTimezone(timezone);
+  network_actor->SetInputMethod(keyboard_layout);
+}
+
 void WizardController::OnAccessibilityStatusChanged(
     const AccessibilityStatusEventDetails& details) {
   enum AccessibilityNotificationType type = details.notification_type;
@@ -1271,35 +1304,6 @@ void WizardController::OnSharkConnected(
       FROM_HERE, shark_connection_listener_.release());
   shark_controller_detected_ = true;
   ShowHostPairingScreen();
-}
-
-void WizardController::SetHostConfiguration() {
-  if (shark_controller_) {
-    NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
-    shark_controller_->SetHostConfiguration(
-        true,  // Eula must be accepted before we get this far.
-        network_actor->GetApplicationLocale(),
-        network_actor->GetTimezone(),
-        GetUsageStatisticsReporting(),
-        network_actor->GetInputMethod());
-  }
-}
-
-void WizardController::ConfigureHost(bool accepted_eula,
-                                     const std::string& lang,
-                                     const std::string& timezone,
-                                     bool send_reports,
-                                     const std::string& keyboard_layout) {
-  VLOG(1) << "ConfigureHost locale=" << lang
-          << ", timezone=" << timezone
-          << ", keyboard_layout=" << keyboard_layout;
-  if (accepted_eula) // Always true.
-    StartupUtils::MarkEulaAccepted();
-  SetUsageStatisticsReporting(send_reports);
-  NetworkScreenActor* network_actor = oobe_display_->GetNetworkScreenActor();
-  network_actor->SetApplicationLocale(lang);
-  network_actor->SetTimezone(timezone);
-  network_actor->SetInputMethod(keyboard_layout);
 }
 
 }  // namespace chromeos

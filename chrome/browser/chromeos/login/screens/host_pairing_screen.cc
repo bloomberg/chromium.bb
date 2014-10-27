@@ -20,6 +20,7 @@ HostPairingScreen::HostPairingScreen(
     : BaseScreen(observer),
       actor_(actor),
       remora_controller_(remora_controller),
+      delegate_(nullptr),
       current_stage_(HostPairingController::STAGE_NONE) {
   actor_->SetDelegate(this);
   remora_controller_->AddObserver(this);
@@ -29,6 +30,10 @@ HostPairingScreen::~HostPairingScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
   remora_controller_->RemoveObserver(this);
+}
+
+void HostPairingScreen::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void HostPairingScreen::CommitContextChanges() {
@@ -92,8 +97,10 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
           << ", keyboard_layout=" << keyboard_layout;
 
   remora_controller_->RemoveObserver(this);
-  get_screen_observer()->ConfigureHost(accepted_eula, lang, timezone,
-                                       send_reports, keyboard_layout);
+  if (delegate_) {
+    delegate_->ConfigureHost(
+        accepted_eula, lang, timezone, send_reports, keyboard_layout);
+  }
   get_screen_observer()->OnExit(WizardController::HOST_PAIRING_FINISHED);
 }
 

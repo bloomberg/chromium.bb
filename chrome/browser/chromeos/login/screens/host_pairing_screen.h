@@ -18,9 +18,21 @@ class HostPairingScreen
       public pairing_chromeos::HostPairingController::Observer,
       public HostPairingScreenActor::Delegate {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void ConfigureHost(bool accepted_eula,
+                               const std::string& lang,
+                               const std::string& timezone,
+                               bool send_reports,
+                               const std::string& keyboard_layout) = 0;
+  };
+
   HostPairingScreen(ScreenObserver* observer, HostPairingScreenActor* actor,
                     pairing_chromeos::HostPairingController* remora_controller);
   virtual ~HostPairingScreen();
+
+  void SetDelegate(Delegate* delegate);
 
  private:
   typedef pairing_chromeos::HostPairingController::Stage Stage;
@@ -53,6 +65,8 @@ class HostPairingScreen
 
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::HostPairingController* remora_controller_;
+
+  Delegate* delegate_;
 
   // Current stage of pairing process.
   Stage current_stage_;

@@ -19,11 +19,21 @@ class ControllerPairingScreen
       public pairing_chromeos::ControllerPairingController::Observer,
       public ControllerPairingScreenActor::Delegate {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Set remora configuration from shark.
+    virtual void SetHostConfiguration() = 0;
+  };
+
   ControllerPairingScreen(
       ScreenObserver* observer,
       ControllerPairingScreenActor* actor,
       pairing_chromeos::ControllerPairingController* shark_controller);
   virtual ~ControllerPairingScreen();
+
+  void SetDelegate(Delegate* delegate);
 
  private:
   typedef pairing_chromeos::ControllerPairingController::Stage Stage;
@@ -55,6 +65,8 @@ class ControllerPairingScreen
 
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::ControllerPairingController* shark_controller_;
+
+  Delegate* delegate_;
 
   // Current stage of pairing process.
   Stage current_stage_;
