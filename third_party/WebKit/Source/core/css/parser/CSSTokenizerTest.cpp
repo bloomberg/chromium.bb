@@ -183,14 +183,14 @@ TEST(CSSTokenizerTest, IdentToken)
     TEST_TOKENS("-_underscore", ident("-_underscore"));
     TEST_TOKENS("-text", ident("-text"));
     TEST_TOKENS("-\\6d", ident("-m"));
+    TEST_TOKENS("--abc", ident("--abc"));
+    TEST_TOKENS("--", ident("--"));
+    TEST_TOKENS("--11", ident("--11"));
+    TEST_TOKENS("---", ident("---"));
     TEST_TOKENS(fromUChar32(0x2003), ident(fromUChar32(0x2003))); // em-space
     TEST_TOKENS(fromUChar32(0xA0), ident(fromUChar32(0xA0))); // non-breaking space
     TEST_TOKENS(fromUChar32(0x1234), ident(fromUChar32(0x1234)));
     TEST_TOKENS(fromUChar32(0x12345), ident(fromUChar32(0x12345)));
-    // FIXME: These are idents in the editor's draft
-    // TEST_TOKENS("--abc", ident("--abc"));
-    // TEST_TOKENS("--", ident("--"));
-    // TEST_TOKENS("---", ident("---"));
     // FIXME: Preprocessing is supposed to replace U+0000 with U+FFFD
     // TEST_TOKENS("\0", ident(fromUChar32(0xFFFD)));
 }
@@ -243,7 +243,6 @@ TEST(CSSTokenizerTest, NumberToken)
     TEST_TOKENS("-12.34E+2", number(NumberValueType, -1234));
 
     TEST_TOKENS("+ 5", delim('+'), whitespace, number(IntegerValueType, 5));
-    TEST_TOKENS("--11", delim('-'), number(IntegerValueType, -11));
     TEST_TOKENS("-+12", delim('-'), number(IntegerValueType, 12));
     TEST_TOKENS("+-21", delim('+'), number(IntegerValueType, -21));
     TEST_TOKENS("++22", delim('+'), number(IntegerValueType, 22));

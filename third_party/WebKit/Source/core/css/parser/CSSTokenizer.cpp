@@ -508,18 +508,15 @@ bool CSSTokenizer::nextCharsAreNumber()
     return areNumber;
 }
 
-// http://www.w3.org/TR/css3-syntax/#would-start-an-identifier
+// http://dev.w3.org/csswg/css-syntax/#would-start-an-identifier
 bool CSSTokenizer::nextCharsAreIdentifier(UChar first)
 {
     UChar second = m_input.nextInputChar();
     if (isNameStart(first) || twoCharsAreValidEscape(first, second))
         return true;
 
-    if (first == '-') {
-        if (isNameStart(m_input.nextInputChar()))
-            return true;
-        return nextTwoCharsAreValidEscape();
-    }
+    if (first == '-')
+        return isNameStart(second) || second == '-' || nextTwoCharsAreValidEscape();
 
     return false;
 }
