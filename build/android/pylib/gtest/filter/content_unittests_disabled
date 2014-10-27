@@ -1,8 +1,5 @@
 # List of suppressions
 
-# crbug.com/104950
-DeviceOrientationProviderTest.ObserverNotRemoved
-DeviceOrientationProviderTest.StartFailing
 # crbug.com/139095
 RenderWidgetTest.OnMsgPaintAtSize
 # crbug.com/147549
