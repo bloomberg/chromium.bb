@@ -364,11 +364,6 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
     switches::kEnableExtensionActivityLogTesting);
 
   // Check if the watchdog extension is previously installed and active.
-  // It was originally a boolean, but we've had to move to an integer. Handle
-  // the legacy case.
-  // TODO(felt): In M34, remove the legacy code & old pref.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActiveOld))
-    profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive, 1);
   watchdog_apps_active_ =
       profile_->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive);
 
@@ -519,10 +514,6 @@ void ActivityLog::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kWatchdogExtensionActive,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWatchdogExtensionActiveOld,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

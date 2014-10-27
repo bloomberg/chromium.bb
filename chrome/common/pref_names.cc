@@ -2247,9 +2247,6 @@ const char kEnableDRM[] = "settings.privacy.drm_enabled";
 // ActivityLog initialization before the extension system is initialized.
 const char kWatchdogExtensionActive[] =
     "profile.extensions.activity_log.num_consumers_active";
-// The old version was a bool.
-const char kWatchdogExtensionActiveOld[] =
-    "profile.extensions.activity_log.watchdog_extension_active";
 
 #if defined(OS_ANDROID)
 // A list of partner bookmark rename/remove mappings.

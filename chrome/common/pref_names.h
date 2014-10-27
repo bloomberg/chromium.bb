@@ -781,8 +781,6 @@ extern const char kDRMSalt[];
 extern const char kEnableDRM[];
 
 extern const char kWatchdogExtensionActive[];
-// TODO(felt): Remove old string in M34.
-extern const char kWatchdogExtensionActiveOld[];
 
 #if defined(OS_ANDROID)
 extern const char kPartnerBookmarkMappings[];
