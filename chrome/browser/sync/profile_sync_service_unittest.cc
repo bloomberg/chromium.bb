@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,6 +36,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace content {
 class BrowserContext;
@@ -616,6 +618,25 @@ TEST_F(ProfileSyncServiceTest, GetSyncServiceURL) {
   command_line.AppendSwitchASCII(switches::kSyncServiceURL, "https://foo/bar");
   EXPECT_EQ("https://foo/bar",
             ProfileSyncService::GetSyncServiceURL(command_line).spec());
+}
+
+// Verify that LastSyncedTime is cleared when the user signs out.
+TEST_F(ProfileSyncServiceTest, ClearLastSyncedTimeOnSignOut) {
+  IssueTestTokens();
+  CreateService(AUTO_START);
+  ExpectDataTypeManagerCreation(1);
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+  EXPECT_TRUE(service()->SyncActive());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW),
+            service()->GetLastSyncedTimeString());
+
+  // Sign out.
+  service()->DisableForUser();
+  PumpLoop();
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER),
+            service()->GetLastSyncedTimeString());
 }
 
 }  // namespace

@@ -987,10 +987,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // This specifies where to find the sync server.
   const GURL sync_service_url_;
 
-  // The last time we detected a successful transition from SYNCING state.
-  // Our backend notifies us whenever we should take a new snapshot.
-  base::Time last_synced_time_;
-
   // The time that OnConfigureStart is called. This member is zero if
   // OnConfigureStart has not yet been called, and is reset to zero once
   // OnConfigureDone is called.
