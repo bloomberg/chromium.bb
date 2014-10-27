@@ -41,24 +41,6 @@
 
 namespace blink {
 
-static FontDescription& smallSystemFont()
-{
-    DEFINE_STATIC_LOCAL(FontDescription, font, ());
-    return font;
-}
-
-static FontDescription& menuFont()
-{
-    DEFINE_STATIC_LOCAL(FontDescription, font, ());
-    return font;
-}
-
-static FontDescription& labelFont()
-{
-    DEFINE_STATIC_LOCAL(FontDescription, font, ());
-    return font;
-}
-
 // Converts |points| to pixels. One point is 1/72 of an inch.
 static float pointsToPixels(float points)
 {
@@ -118,74 +100,51 @@ static float systemFontSize(const LOGFONT& font)
 }
 
 // static
-void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescription& fontDescription)
+void RenderThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily)
 {
-    // This logic owes much to RenderThemeSafari.cpp.
-    FontDescription* cachedDesc = 0;
-    AtomicString faceName;
-    float fontSize = 0;
-    switch (valueID) {
-    case CSSValueSmallCaption:
-        cachedDesc = &smallSystemFont();
-        if (!smallSystemFont().isAbsoluteSize()) {
-            NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            faceName = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
-            fontSize = systemFontSize(metrics.lfSmCaptionFont);
-        }
+    fontStyle = FontStyleNormal;
+    fontWeight = FontWeightNormal;
+
+    switch (systemFontID) {
+    case CSSValueSmallCaption: {
+        NONCLIENTMETRICS metrics;
+        getNonClientMetrics(&metrics);
+        fontSize = systemFontSize(metrics.lfSmCaptionFont);
+        fontFamily = AtomicString(metrics.lfSmCaptionFont.lfFaceName, wcslen(metrics.lfSmCaptionFont.lfFaceName));
         break;
-    case CSSValueMenu:
-        cachedDesc = &menuFont();
-        if (!menuFont().isAbsoluteSize()) {
-            NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            faceName = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
-            fontSize = systemFontSize(metrics.lfMenuFont);
-        }
+    }
+    case CSSValueMenu: {
+        NONCLIENTMETRICS metrics;
+        getNonClientMetrics(&metrics);
+        fontSize = systemFontSize(metrics.lfMenuFont);
+        fontFamily = AtomicString(metrics.lfMenuFont.lfFaceName, wcslen(metrics.lfMenuFont.lfFaceName));
         break;
-    case CSSValueStatusBar:
-        cachedDesc = &labelFont();
-        if (!labelFont().isAbsoluteSize()) {
-            NONCLIENTMETRICS metrics;
-            getNonClientMetrics(&metrics);
-            faceName = metrics.lfStatusFont.lfFaceName;
-            fontSize = systemFontSize(metrics.lfStatusFont);
-        }
+    }
+    case CSSValueStatusBar: {
+        NONCLIENTMETRICS metrics;
+        getNonClientMetrics(&metrics);
+        fontSize = systemFontSize(metrics.lfStatusFont);
+        fontFamily = metrics.lfStatusFont.lfFaceName;
         break;
+    }
     case CSSValueWebkitMiniControl:
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
-        faceName = defaultGUIFont();
         // Why 2 points smaller? Because that's what Gecko does.
         fontSize = s_defaultFontSize - pointsToPixels(2);
+        fontFamily = defaultGUIFont();
         break;
     default:
-        faceName = defaultGUIFont();
         fontSize = s_defaultFontSize;
+        fontFamily = defaultGUIFont();
         break;
     }
-
-    if (!cachedDesc)
-        cachedDesc = &fontDescription;
-
-    if (fontSize) {
-        cachedDesc->firstFamily().setFamily(faceName);
-        cachedDesc->setIsAbsoluteSize(true);
-        cachedDesc->setGenericFamily(FontDescription::NoFamily);
-        cachedDesc->setSpecifiedSize(fontSize);
-        cachedDesc->setWeight(FontWeightNormal);
-        cachedDesc->setStyle(FontStyleNormal);
-    }
-    fontDescription = *cachedDesc;
 }
 
 // static
 void RenderThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
 {
     s_defaultFontSize = static_cast<float>(fontSize);
-
-    // Reset cached fonts.
-    smallSystemFont() = menuFont() = labelFont() = FontDescription();
 }
 
 } // namespace blink

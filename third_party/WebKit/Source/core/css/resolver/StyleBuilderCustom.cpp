@@ -842,28 +842,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         state.style()->clearContent();
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFont(StyleResolverState&)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFont(StyleResolverState&)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFont(StyleResolverState& state, CSSValue* value)
-{
-    // Only System Font identifiers should come through this method
-    // all other values should have been handled when the shorthand
-    // was expanded by the parser.
-    // FIXME: System Font identifiers should not hijack this
-    // short-hand CSSProperty like this (crbug.com/353932)
-    state.style()->setLineHeight(RenderStyle::initialLineHeight());
-    state.setLineHeightValue(0);
-    state.fontBuilder().fromSystemFont(toCSSPrimitiveValue(value)->getValueID(), state.style()->effectiveZoom());
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())

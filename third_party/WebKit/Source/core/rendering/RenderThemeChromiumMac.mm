@@ -238,65 +238,37 @@ static FontWeight toFontWeight(NSInteger appKitFontWeight)
     return fontWeights[appKitFontWeight - 1];
 }
 
-void RenderThemeChromiumMac::systemFont(CSSValueID cssValueId, FontDescription& fontDescription) const
+static inline NSFont* systemNSFont(CSSValueID systemFontID)
 {
-    DEFINE_STATIC_LOCAL(FontDescription, systemFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, smallSystemFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, menuFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, labelFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, miniControlFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, smallControlFont, ());
-    DEFINE_STATIC_LOCAL(FontDescription, controlFont, ());
-
-    FontDescription* cachedDesc;
-    NSFont* font = nil;
-    switch (cssValueId) {
+    switch (systemFontID) {
     case CSSValueSmallCaption:
-        cachedDesc = &smallSystemFont;
-        if (!smallSystemFont.isAbsoluteSize())
-            font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-        break;
+        return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
     case CSSValueMenu:
-        cachedDesc = &menuFont;
-        if (!menuFont.isAbsoluteSize())
-            font = [NSFont menuFontOfSize:[NSFont systemFontSize]];
-        break;
+        return [NSFont menuFontOfSize:[NSFont systemFontSize]];
     case CSSValueStatusBar:
-        cachedDesc = &labelFont;
-        if (!labelFont.isAbsoluteSize())
-            font = [NSFont labelFontOfSize:[NSFont labelFontSize]];
-        break;
+        return [NSFont labelFontOfSize:[NSFont labelFontSize]];
     case CSSValueWebkitMiniControl:
-        cachedDesc = &miniControlFont;
-        if (!miniControlFont.isAbsoluteSize())
-            font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
-        break;
+        return [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
     case CSSValueWebkitSmallControl:
-        cachedDesc = &smallControlFont;
-        if (!smallControlFont.isAbsoluteSize())
-            font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]];
-        break;
+        return [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]];
     case CSSValueWebkitControl:
-        cachedDesc = &controlFont;
-        if (!controlFont.isAbsoluteSize())
-            font = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-        break;
+        return [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
     default:
-        cachedDesc = &systemFont;
-        if (!systemFont.isAbsoluteSize())
-            font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+        return [NSFont systemFontOfSize:[NSFont systemFontSize]];
     }
+}
 
-    if (font) {
-        NSFontManager *fontManager = [NSFontManager sharedFontManager];
-        cachedDesc->setIsAbsoluteSize(true);
-        cachedDesc->setGenericFamily(FontDescription::NoFamily);
-        cachedDesc->firstFamily().setFamily([font webCoreFamilyName]);
-        cachedDesc->setSpecifiedSize([font pointSize]);
-        cachedDesc->setWeight(toFontWeight([fontManager weightOfFont:font]));
-        cachedDesc->setStyle([fontManager traitsOfFont:font] & NSItalicFontMask ? FontStyleItalic : FontStyleNormal);
-    }
-    fontDescription = *cachedDesc;
+void RenderThemeChromiumMac::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const
+{
+    NSFont* font = systemNSFont(systemFontID);
+    if (!font)
+        return;
+
+    NSFontManager *fontManager = [NSFontManager sharedFontManager];
+    fontStyle = ([fontManager traitsOfFont:font] & NSItalicFontMask) ? FontStyleItalic : FontStyleNormal;
+    fontWeight = toFontWeight([fontManager weightOfFont:font]);
+    fontSize = [font pointSize];
+    fontFamily = [font webCoreFamilyName];
 }
 
 static RGBA32 convertNSColorToColor(NSColor *color)

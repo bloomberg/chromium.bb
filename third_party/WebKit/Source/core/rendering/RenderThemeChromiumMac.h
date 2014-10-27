@@ -54,7 +54,7 @@ public:
     virtual void platformColorsDidChange() override;
 
     // System fonts.
-    virtual void systemFont(CSSValueID, FontDescription&) const override;
+    virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const override;
 
     virtual int minimumMenuListSize(RenderStyle*) const override;
 

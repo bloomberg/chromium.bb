@@ -122,7 +122,7 @@ bool StylePropertySerializer::StylePropertySetForSerializer::shouldProcessProper
     // Since "all" is expanded, we don't need to process "all".
     // We should not process expanded shorthands (e.g. font, background,
     // and so on) either.
-    if (isExpandedShorthandForAll(propertyID) || propertyID == CSSPropertyAll)
+    if (isExpandedShorthand(propertyID) || propertyID == CSSPropertyAll)
         return false;
     // We should not serialize internal properties.
     if (isInternalProperty(propertyID))
@@ -221,7 +221,7 @@ String StylePropertySerializer::asText() const
         CSSPropertyID shorthandPropertyID = CSSPropertyInvalid;
         CSSPropertyID borderFallbackShorthandProperty = CSSPropertyInvalid;
         String value;
-        ASSERT(!isExpandedShorthandForAll(propertyID));
+        ASSERT(!isExpandedShorthand(propertyID));
 
         switch (propertyID) {
         case CSSPropertyBackgroundAttachment:

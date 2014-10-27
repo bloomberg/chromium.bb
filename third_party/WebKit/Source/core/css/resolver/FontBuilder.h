@@ -49,7 +49,6 @@ public:
     void didChangeFontParameters(bool);
 
     void inheritFrom(const FontDescription&);
-    void fromSystemFont(CSSValueID, float effectiveZoom);
 
     FontFamily standardFontFamily() const;
     AtomicString standardFontFamilyName() const;

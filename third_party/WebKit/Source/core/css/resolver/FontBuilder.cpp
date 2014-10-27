@@ -93,28 +93,6 @@ void FontBuilder::didChangeFontParameters(bool changed)
     m_fontDirty |= changed;
 }
 
-void FontBuilder::fromSystemFont(CSSValueID valueId, float effectiveZoom)
-{
-    FontDescriptionChangeScope scope(this);
-
-    FontDescription fontDescription;
-    RenderTheme::theme().systemFont(valueId, fontDescription);
-
-    // Double-check and see if the theme did anything. If not, don't bother updating the font.
-    if (!fontDescription.isAbsoluteSize())
-        return;
-
-    // Make sure the rendering mode and printer font settings are updated.
-    const Settings* settings = m_document.settings();
-    ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
-    if (!settings)
-        return;
-
-    // Handle the zoom factor.
-    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(fontDescription, effectiveZoom, fontDescription.specifiedSize()));
-    scope.set(fontDescription);
-}
-
 FontFamily FontBuilder::standardFontFamily() const
 {
     FontFamily family;

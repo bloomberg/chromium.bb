@@ -138,7 +138,8 @@ public:
     virtual double caretBlinkInterval() const { return 0.5; }
 
     // System fonts and colors for CSS.
-    virtual void systemFont(CSSValueID, FontDescription&) const = 0;
+    virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const = 0;
+    void systemFont(CSSValueID systemFontID, FontDescription&);
     virtual Color systemColor(CSSValueID) const;
 
     virtual int minimumMenuListSize(RenderStyle*) const { return 0; }

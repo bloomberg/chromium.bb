@@ -64,7 +64,7 @@ public:
     virtual double caretBlinkInterval() const override;
 
     // System fonts.
-    virtual void systemFont(CSSValueID, FontDescription&) const override;
+    virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const;
 
     virtual int minimumMenuListSize(RenderStyle*) const override;
 

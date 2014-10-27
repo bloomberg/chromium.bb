@@ -49,6 +49,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSReflectValue.h"
@@ -1397,11 +1398,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyFont:
         // [ [ 'font-style' || 'font-variant' || 'font-weight' ]? 'font-size' [ / 'line-height' ]?
         // 'font-family' ] | caption | icon | menu | message-box | small-caption | status-bar | inherit
-        if (id >= CSSValueCaption && id <= CSSValueStatusBar)
-            validPrimitive = true;
-        else
-            return parseFont(important);
-        break;
+        if (num == 1 && id >= CSSValueCaption && id <= CSSValueStatusBar) {
+            parseSystemFont(important);
+            return true;
+        }
+        return parseFont(important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
     case CSSPropertyWebkitColumns:
@@ -4436,6 +4437,30 @@ bool CSSPropertyParser::parseFont(bool important)
         return false;
 
     return true;
+}
+
+void CSSPropertyParser::parseSystemFont(bool important)
+{
+    ASSERT(m_valueList->size() == 1);
+    CSSValueID systemFontID = m_valueList->valueAt(0)->id;
+    ASSERT(systemFontID >= CSSValueCaption && systemFontID <= CSSValueStatusBar);
+    m_valueList->next();
+
+    FontStyle fontStyle = FontStyleNormal;
+    FontWeight fontWeight = FontWeightNormal;
+    float fontSize = 0;
+    AtomicString fontFamily;
+    RenderTheme::theme().systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
+
+    ShorthandScope scope(this, CSSPropertyFont);
+    addProperty(CSSPropertyFontStyle, cssValuePool().createIdentifierValue(fontStyle == FontStyleItalic ? CSSValueItalic : CSSValueNormal), important);
+    addProperty(CSSPropertyFontWeight, cssValuePool().createValue(fontWeight), important);
+    addProperty(CSSPropertyFontSize, cssValuePool().createValue(fontSize, CSSPrimitiveValue::CSS_PX), important);
+    RefPtr<CSSValueList> fontFamilyList = CSSValueList::createCommaSeparated();
+    fontFamilyList->append(cssValuePool().createFontFamilyValue(fontFamily));
+    addProperty(CSSPropertyFontFamily, fontFamilyList.release(), important);
+    addProperty(CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyLineHeight, cssValuePool().createIdentifierValue(CSSValueNormal), important);
 }
 
 class FontFamilyValueBuilder {

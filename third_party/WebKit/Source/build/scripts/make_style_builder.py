@@ -66,8 +66,6 @@ class StyleBuilderWriter(css_properties.CSSProperties):
             property['should_declare_functions'] = not property['use_handlers_for'] and not property['longhands'] \
                                                    and not property['direction_aware'] and not property['builder_skip']
 
-        self._properties['CSSPropertyFont']['should_declare_functions'] = True
-
     @template_expander.use_jinja('StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
     def generate_style_builder_functions_h(self):
