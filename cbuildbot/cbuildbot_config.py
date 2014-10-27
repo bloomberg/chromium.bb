@@ -1786,7 +1786,7 @@ internal_paladin.add_config('master-paladin',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com',
                            'tree', 'build', 'lab'],
-  sanity_check_slaves=['link-tot-paladin'],
+  sanity_check_slaves=['wolf-tot-paladin'],
   trybot_list=False,
 )
 
@@ -1800,25 +1800,25 @@ internal_paladin.add_config('master-paladin',
 # master_paladin = internal_paladin.add_config(...)
 # master_paladin.AddSlave(internal_paladin.add_config(...))
 
-# Sanity check builder, part of the CQ but builds without the patches
-# under test.
+# Old sanity check builder. This has been replaced by wolf-tot-paladin.
+# TODO(dnj): Remove this once wolf-tot-paladin is removed from the waterfall.
 internal_paladin.add_config('link-tot-paladin',
   boards=['link'],
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
   hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
+  important=False,
 )
 
-# Sanity check builder, aspiring to replace 'link-tot-paladin' once it is
-# verified.
+# Sanity check builder, part of the CQ but builds without the patches
+# under test.
 internal_paladin.add_config('wolf-tot-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
   hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
-  important=False,
 )
 
 internal_paladin.add_config('x86-mario-paladin',
