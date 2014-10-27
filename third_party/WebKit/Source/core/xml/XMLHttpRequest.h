@@ -144,9 +144,6 @@ public:
     // For Inspector.
     void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionState&);
 
-    // Expose HTTP validation methods for other untrusted requests.
-    static AtomicString uppercaseKnownHTTPMethod(const AtomicString&);
-
     XMLHttpRequestUpload* upload();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);

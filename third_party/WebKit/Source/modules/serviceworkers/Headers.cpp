@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Iterator.h"
 #include "core/fetch/FetchUtils.h"
-#include "core/xml/XMLHttpRequest.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

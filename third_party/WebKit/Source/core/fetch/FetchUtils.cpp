@@ -164,4 +164,29 @@ bool FetchUtils::isSimpleOrForbiddenRequest(const String& method, const HTTPHead
     return true;
 }
 
+AtomicString FetchUtils::normalizeMethod(const AtomicString& method)
+{
+    // https://fetch.spec.whatwg.org/#concept-method-normalize
+
+    // We place GET and POST first because they are more commonly used than
+    // others.
+    const char* const methods[] = {
+        "GET",
+        "POST",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+        "PUT",
+    };
+
+    for (const auto& known : methods) {
+        if (equalIgnoringCase(method, known)) {
+            // Don't bother allocating a new string if it's already all
+            // uppercase.
+            return method == known ? method : known;
+        }
+    }
+    return method;
+}
+
 } // namespace blink

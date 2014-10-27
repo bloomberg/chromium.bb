@@ -10,7 +10,6 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/xml/XMLHttpRequest.h"
 #include "modules/serviceworkers/FetchManager.h"
 #include "modules/serviceworkers/RequestInit.h"
 #include "platform/network/HTTPParsers.h"
@@ -67,7 +66,7 @@ Request* Request::createRequestWithRequestData(ExecutionContext* context, FetchR
         }
         // FIXME: "2. Add case correction as in XMLHttpRequest?"
         // "3. Set |request|'s method to |method|."
-        request->setMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(AtomicString(init.method)));
+        request->setMethod(FetchUtils::normalizeMethod(AtomicString(init.method)));
     }
     // "12. Let |r| be a new Request object associated with |request|, Headers
     // object."

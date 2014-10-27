@@ -35,7 +35,6 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
-#include "core/xml/XMLHttpRequest.h"
 #include "platform/Timer.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -331,7 +330,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         WebString method = newRequest.httpMethod();
         allowLoad = isValidHTTPToken(method) && FetchUtils::isUsefulMethod(method);
         if (allowLoad) {
-            newRequest.setHTTPMethod(XMLHttpRequest::uppercaseKnownHTTPMethod(method));
+            newRequest.setHTTPMethod(FetchUtils::normalizeMethod(method));
             HTTPRequestHeaderValidator validator;
             newRequest.visitHTTPHeaderFields(&validator);
             allowLoad = validator.isSafe();

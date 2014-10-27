@@ -554,28 +554,6 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
     m_includeCredentials = value;
 }
 
-AtomicString XMLHttpRequest::uppercaseKnownHTTPMethod(const AtomicString& method)
-{
-    // Valid methods per step-5 of http://xhr.spec.whatwg.org/#the-open()-method.
-    const char* const methods[] = {
-        "DELETE",
-        "GET",
-        "HEAD",
-        "OPTIONS",
-        "POST",
-        "PUT" };
-
-    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(methods); ++i) {
-        if (equalIgnoringCase(method, methods[i])) {
-            // Don't bother allocating a new string if it's already all uppercase.
-            if (method == methods[i])
-                return method;
-            return methods[i];
-        }
-    }
-    return method;
-}
-
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, ExceptionState& exceptionState)
 {
     open(method, url, true, exceptionState);
@@ -629,7 +607,7 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
         }
     }
 
-    m_method = uppercaseKnownHTTPMethod(method);
+    m_method = FetchUtils::normalizeMethod(method);
 
     m_url = url;
 
