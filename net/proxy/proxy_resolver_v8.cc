@@ -133,7 +133,7 @@ class V8ExternalASCIILiteral
 const size_t kMaxStringBytesForCopy = 256;
 
 // Converts a V8 String to a UTF8 std::string.
-std::string V8StringToUTF8(v8::Handle<v8::String> s) {
+std::string V8StringToUTF8(v8::Local<v8::String> s) {
   int len = s->Length();
   std::string result;
   if (len > 0)
@@ -142,7 +142,7 @@ std::string V8StringToUTF8(v8::Handle<v8::String> s) {
 }
 
 // Converts a V8 String to a UTF16 base::string16.
-base::string16 V8StringToUTF16(v8::Handle<v8::String> s) {
+base::string16 V8StringToUTF16(v8::Local<v8::String> s) {
   int len = s->Length();
   base::string16 result;
   // Note that the reinterpret cast is because on Windows string16 is an alias
@@ -189,7 +189,7 @@ v8::Local<v8::String> ASCIILiteralToV8String(v8::Isolate* isolate,
 
 // Stringizes a V8 object by calling its toString() method. Returns true
 // on success. This may fail if the toString() throws an exception.
-bool V8ObjectToUTF16String(v8::Handle<v8::Value> object,
+bool V8ObjectToUTF16String(v8::Local<v8::Value> object,
                            base::string16* utf16_result,
                            v8::Isolate* isolate) {
   if (object.IsEmpty())
@@ -373,7 +373,7 @@ class ProxyResolverV8::Context {
       return ERR_PAC_SCRIPT_FAILED;
     }
 
-    v8::Handle<v8::Value> argv[] = {
+    v8::Local<v8::Value> argv[] = {
       ASCIIStringToV8String(isolate_, query_url.spec()),
       ASCIIStringToV8String(isolate_, query_url.HostNoBrackets()),
     };
@@ -512,7 +512,7 @@ class ProxyResolverV8::Context {
   }
 
   // Handle an exception thrown by V8.
-  void HandleError(v8::Handle<v8::Message> message) {
+  void HandleError(v8::Local<v8::Message> message) {
     base::string16 error_message;
     int line_number = -1;
 
@@ -526,7 +526,7 @@ class ProxyResolverV8::Context {
 
   // Compiles and runs |script| in the current V8 context.
   // Returns OK on success, otherwise an error code.
-  int RunScript(v8::Handle<v8::String> script, const char* script_name) {
+  int RunScript(v8::Local<v8::String> script, const char* script_name) {
     v8::TryCatch try_catch;
 
     // Compile the script.
