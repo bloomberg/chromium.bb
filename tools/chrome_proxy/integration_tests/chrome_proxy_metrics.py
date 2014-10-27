@@ -257,6 +257,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
                 str(retry_time_high)))
 
   def VerifyAllProxiesBypassed(self, tab):
+    """Verify that all proxies are bypassed for 1 to 5 minutes."""
     if tab:
       info = GetProxyInfoFromNetworkInternals(tab)
       if not info['enabled']:
@@ -343,7 +344,6 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
           '(eligible_response_count=%d, bypass_count=%d)\n' % (
               eligible_response_count, bypass_count))
 
-    self.VerifyAllProxiesBypassed(tab)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'cors_bypass', 'count', bypass_count))
 
@@ -407,8 +407,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       raise ChromeProxyMetricException, (
           'Chrome proxy should be enabled. proxy info: %s' % info)
     proxies = info['proxies']
-    if (proxies != expected_proxies and
-        proxies != self.ProxyListForDev(expected_proxies)):
+    if (set(proxies) != set(expected_proxies) and
+        set(proxies) != set(self.ProxyListForDev(expected_proxies))):
       raise ChromeProxyMetricException, (
           'Wrong effective proxies (%s). Expect: "%s"' % (
           str(proxies), str(expected_proxies)))
@@ -417,8 +417,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     if 'badProxies' in info and info['badProxies']:
       bad_proxies = [p['proxy'] for p in info['badProxies']
                      if 'proxy' in p and p['proxy']]
-    if (bad_proxies != expected_bad_proxies and
-        bad_proxies != self.ProxyListForDev(expected_bad_proxies)):
+    if (set(bad_proxies) != set(expected_bad_proxies) and
+        set(bad_proxies) != set(self.ProxyListForDev(expected_bad_proxies))):
       raise ChromeProxyMetricException, (
           'Wrong bad proxies (%s). Expect: "%s"' % (
           str(bad_proxies), str(expected_bad_proxies)))
