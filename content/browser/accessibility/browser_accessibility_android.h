@@ -86,6 +86,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   BrowserAccessibilityAndroid();
 
   bool HasOnlyStaticTextChildren() const;
+  bool HasOnlyTextAndImageChildren() const;
   bool IsIframe() const;
 
   void NotifyLiveRegionUpdate(base::string16& aria_live);

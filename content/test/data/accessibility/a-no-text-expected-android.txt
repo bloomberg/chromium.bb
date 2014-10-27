@@ -8,3 +8,5 @@ android.webkit.WebView focusable focused scrollable
         android.view.View clickable focusable name='dest6'
         android.view.View clickable focusable name='dest7'
         android.view.View clickable focusable name='dest.8'
+        android.view.View clickable focusable name='greenbox'
+        android.view.View clickable focusable name='greenbox'
