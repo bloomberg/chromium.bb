@@ -36,7 +36,7 @@ class VolumeControlDelegate;
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
  public:
   AcceleratorController();
-  virtual ~AcceleratorController();
+  ~AcceleratorController() override;
 
   // A list of possible ways in which an accelerator should be restricted before
   // processing. Any target registered with this controller should respect
@@ -96,8 +96,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
 
   // Overridden from ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual bool CanHandleAccelerators() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
 
   void SetBrightnessControlDelegate(
       scoped_ptr<BrightnessControlDelegate> brightness_control_delegate);

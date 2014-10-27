@@ -74,9 +74,9 @@ TooltipController* GetController() {
 class TooltipControllerTest : public AshTestBase {
  public:
   TooltipControllerTest() {}
-  virtual ~TooltipControllerTest() {}
+  ~TooltipControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     helper_.reset(new TooltipControllerTestHelper(GetController()));
   }

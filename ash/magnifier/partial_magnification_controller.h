@@ -23,7 +23,7 @@ class PartialMagnificationController
     public views::WidgetObserver {
  public:
   PartialMagnificationController();
-  virtual ~PartialMagnificationController();
+  ~PartialMagnificationController() override;
 
   // Enables (or disables if |enabled| is false) partial screen magnifier
   // feature.
@@ -63,13 +63,13 @@ class PartialMagnificationController
   void RemoveZoomWidgetObservers();
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // Overridden from WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // True if the magnified window is in motion of zooming or un-zooming effect.
   // Otherwise, false.

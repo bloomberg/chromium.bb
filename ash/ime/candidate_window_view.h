@@ -29,7 +29,7 @@ class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
   };
 
   explicit CandidateWindowView(gfx::NativeView parent);
-  virtual ~CandidateWindowView();
+  ~CandidateWindowView() override;
   views::Widget* InitWidget();
 
   // Adds the given observer. The ownership is not transferred.
@@ -74,8 +74,7 @@ class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
   friend class CandidateWindowViewTest;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void SelectCandidateAt(int index_in_page);
   void UpdateVisibility();

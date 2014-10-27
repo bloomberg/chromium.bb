@@ -48,14 +48,12 @@ namespace {
 class TestDelegate : public views::WidgetDelegateView {
  public:
   explicit TestDelegate(bool system_modal) : system_modal_(system_modal) {}
-  virtual ~TestDelegate() {}
+  ~TestDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
+  views::View* GetContentsView() override { return this; }
 
-  virtual ui::ModalType GetModalType() const override {
+  ui::ModalType GetModalType() const override {
     return system_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
   }
 
@@ -69,7 +67,7 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
                              public aura::client::FocusChangeObserver {
  public:
   DeleteOnBlurDelegate() : window_(NULL) {}
-  virtual ~DeleteOnBlurDelegate() {}
+  ~DeleteOnBlurDelegate() override {}
 
   void SetWindow(aura::Window* window) {
     window_ = window;
@@ -78,13 +76,11 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
 
  private:
   // aura::test::TestWindowDelegate overrides:
-  virtual bool CanFocus() override {
-    return true;
-  }
+  bool CanFocus() override { return true; }
 
   // aura::client::FocusChangeObserver implementation:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override {
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
     if (window_ == lost_focus)
       delete window_;
   }
@@ -526,9 +522,7 @@ TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
 class DestroyedWindowObserver : public aura::WindowObserver {
  public:
   DestroyedWindowObserver() : destroyed_(false), window_(NULL) {}
-  virtual ~DestroyedWindowObserver() {
-    Shutdown();
-  }
+  ~DestroyedWindowObserver() override { Shutdown(); }
 
   void SetWindow(Window* window) {
     window_ = window;
@@ -538,7 +532,7 @@ class DestroyedWindowObserver : public aura::WindowObserver {
   bool destroyed() const { return destroyed_; }
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(Window* window) override {
+  void OnWindowDestroying(Window* window) override {
     destroyed_ = true;
     Shutdown();
   }
@@ -614,10 +608,10 @@ TEST_F(NoSessionRootWindowControllerTest, Event) {
 class VirtualKeyboardRootWindowControllerTest
     : public RootWindowControllerTest {
  public:
-  VirtualKeyboardRootWindowControllerTest() {};
-  virtual ~VirtualKeyboardRootWindowControllerTest() {};
+  VirtualKeyboardRootWindowControllerTest() {}
+  ~VirtualKeyboardRootWindowControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
@@ -634,7 +628,7 @@ class MockTextInputClient : public ui::DummyTextInputClient {
   MockTextInputClient() :
       ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
 
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) override {
+  void EnsureCaretInRect(const gfx::Rect& rect) override {
     visible_rect_ = rect;
   }
 
@@ -653,7 +647,7 @@ class TargetHitTestEventHandler : public ui::test::TestEventHandler {
   TargetHitTestEventHandler() {}
 
   // ui::test::TestEventHandler overrides.
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       ui::test::TestEventHandler::OnMouseEvent(event);
     event->StopPropagation();

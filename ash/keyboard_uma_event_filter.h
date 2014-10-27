@@ -17,10 +17,10 @@ namespace ash {
 class KeyboardUMAEventFilter : public ui::EventHandler {
  public:
   KeyboardUMAEventFilter();
-  virtual ~KeyboardUMAEventFilter();
+  ~KeyboardUMAEventFilter() override;
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   // The timestamp of the last character keystroke.

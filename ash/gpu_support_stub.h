@@ -15,13 +15,13 @@ namespace ash {
 class ASH_EXPORT GPUSupportStub : public GPUSupport {
  public:
   GPUSupportStub();
-  virtual ~GPUSupportStub();
+  ~GPUSupportStub() override;
 
  private:
   // Overridden from GPUSupport:
-  virtual bool IsPanelFittingDisabled() const override;
-  virtual void DisableGpuWatchdog() override;
-  virtual void GetGpuProcessHandles(
+  bool IsPanelFittingDisabled() const override;
+  void DisableGpuWatchdog() override;
+  void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GPUSupportStub);

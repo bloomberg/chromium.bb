@@ -14,11 +14,11 @@ namespace ash {
 class ASH_EXPORT VirtualKeyboardController : public ShellObserver {
  public:
   VirtualKeyboardController();
-  virtual ~VirtualKeyboardController();
+  ~VirtualKeyboardController() override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() override;
-  virtual void OnMaximizeModeEnded() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);

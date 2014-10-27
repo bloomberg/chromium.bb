@@ -15,12 +15,12 @@ class ASH_EXPORT AcceleratorDelegate
     : NON_EXPORTED_BASE(public wm::AcceleratorDelegate) {
  public:
   AcceleratorDelegate();
-  virtual ~AcceleratorDelegate();
+  ~AcceleratorDelegate() override;
 
   // wm::AcceleratorDelegate:
-  virtual bool ProcessAccelerator(const ui::KeyEvent& event,
-                                  const ui::Accelerator& accelerator,
-                                  KeyType key_type) override;
+  bool ProcessAccelerator(const ui::KeyEvent& event,
+                          const ui::Accelerator& accelerator,
+                          KeyType key_type) override;
 
  private:
   // Returns true if the window should be allowed a chance to handle

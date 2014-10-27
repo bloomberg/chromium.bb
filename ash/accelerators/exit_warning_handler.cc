@@ -68,11 +68,11 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     SetLayoutManager(new views::FillLayout);
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(width_, height_);
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(kWindowBackgroundColor);
@@ -80,7 +80,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     state->name = accessible_name_;
     state->role = ui::AX_ROLE_ALERT;
   }

@@ -40,12 +40,12 @@ const int kInfolistHideDelayMilliSeconds = 500;
 class InfolistBorder : public views::BubbleBorder {
  public:
   InfolistBorder();
-  virtual ~InfolistBorder();
+  ~InfolistBorder() override;
 
   // views::BubbleBorder implementation.
-  virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
-                              const gfx::Size& contents_size) const override;
-  virtual gfx::Insets GetInsets() const override;
+  gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
+                      const gfx::Size& contents_size) const override;
+  gfx::Insets GetInsets() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InfolistBorder);
@@ -88,13 +88,13 @@ class InfolistEntryView : public views::View {
   InfolistEntryView(const ui::InfolistEntry& entry,
                     const gfx::FontList& title_font_list,
                     const gfx::FontList& description_font_list);
-  virtual ~InfolistEntryView();
+  ~InfolistEntryView() override;
 
   void SetEntry(const ui::InfolistEntry& entry);
 
  private:
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   void UpdateBackground();
 

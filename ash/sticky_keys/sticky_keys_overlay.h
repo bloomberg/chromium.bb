@@ -31,7 +31,7 @@ class StickyKeysOverlayView;
 class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
  public:
   StickyKeysOverlay();
-  virtual ~StickyKeysOverlay();
+  ~StickyKeysOverlay() override;
 
   // Shows or hides the overlay.
   void Show(bool visible);
@@ -56,12 +56,9 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
   gfx::Rect CalculateOverlayBounds();
 
   // gfx::LayerAnimationObserver overrides:
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
 
   bool is_visible_;
   scoped_ptr<views::Widget> overlay_widget_;

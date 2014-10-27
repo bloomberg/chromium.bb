@@ -13,11 +13,10 @@ namespace ash {
 class NestedAcceleratorDelegate : public wm::NestedAcceleratorDelegate {
  public:
   NestedAcceleratorDelegate();
-  virtual ~NestedAcceleratorDelegate();
+  ~NestedAcceleratorDelegate() override;
 
   // wm::AcceleratorDispatcher::Delegate
-  virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) override;
+  Result ProcessAccelerator(const ui::Accelerator& accelerator) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NestedAcceleratorDelegate);

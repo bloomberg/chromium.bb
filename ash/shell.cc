@@ -155,13 +155,12 @@ using views::Widget;
 class AshVisibilityController : public ::wm::VisibilityController {
  public:
   AshVisibilityController() {}
-  virtual ~AshVisibilityController() {}
+  ~AshVisibilityController() override {}
 
  private:
   // Overridden from ::wm::VisibilityController:
-  virtual bool CallAnimateOnChildWindowVisibilityChanged(
-      aura::Window* window,
-      bool visible) override {
+  bool CallAnimateOnChildWindowVisibilityChanged(aura::Window* window,
+                                                 bool visible) override {
     return AnimateOnChildWindowVisibilityChanged(window, visible);
   }
 

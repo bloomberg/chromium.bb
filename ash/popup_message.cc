@@ -54,7 +54,7 @@ class PopupMessage::MessageBubble : public views::BubbleDelegateView {
 
  private:
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // Each component (width/height) can force a size override for that component
   // if not 0.

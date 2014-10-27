@@ -47,7 +47,7 @@ class StickyKeyOverlayLabel : public views::Label {
  public:
   explicit StickyKeyOverlayLabel(const std::string& key_name);
 
-  virtual ~StickyKeyOverlayLabel();
+  ~StickyKeyOverlayLabel() override;
 
   StickyKeyState state() const { return state_; }
 
@@ -105,10 +105,10 @@ class StickyKeysOverlayView : public views::WidgetDelegateView {
  public:
   StickyKeysOverlayView();
 
-  virtual ~StickyKeysOverlayView();
+  ~StickyKeysOverlayView() override;
 
   // views::WidgetDelegateView overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   void SetKeyState(ui::EventFlags modifier, StickyKeyState state);
 

@@ -39,10 +39,10 @@ class ASH_EXPORT KeyHoldDetector : public ui::EventHandler {
   };
 
   explicit KeyHoldDetector(scoped_ptr<Delegate> delegate);
-  virtual ~KeyHoldDetector();
+  ~KeyHoldDetector() override;
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* key_event) override;
+  void OnKeyEvent(ui::KeyEvent* key_event) override;
 
  private:
   // A state to keep track of one click and click and hold operation.

@@ -65,10 +65,10 @@ void InitCandidateWindowWithCandidatesFilled(
 class CandidateWindowViewTest : public views::ViewsTestBase {
  public:
   CandidateWindowViewTest() {}
-  virtual ~CandidateWindowViewTest() {}
+  ~CandidateWindowViewTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
     candidate_window_view_ = new CandidateWindowView(GetContext());
     candidate_window_view_->InitWidget();

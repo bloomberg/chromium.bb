@@ -213,50 +213,33 @@ void SetUsesEasyResizeTargeter(aura::Window* container) {
 class EmptyWindowDelegate : public aura::WindowDelegate {
  public:
   EmptyWindowDelegate() {}
-  virtual ~EmptyWindowDelegate() {}
+  ~EmptyWindowDelegate() override {}
 
   // aura::WindowDelegate overrides:
-  virtual gfx::Size GetMinimumSize() const override {
-    return gfx::Size();
-  }
-  virtual gfx::Size GetMaximumSize() const override {
-    return gfx::Size();
-  }
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) override {
-  }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override {
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override {}
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
-  virtual int GetNonClientComponent(
-      const gfx::Point& point) const override {
+  int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;
   }
-  virtual bool ShouldDescendIntoChildForEventHandling(
+  bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) override {
     return false;
   }
-  virtual bool CanFocus() override {
-    return false;
-  }
-  virtual void OnCaptureLost() override {
-  }
-  virtual void OnPaint(gfx::Canvas* canvas) override {
-  }
-  virtual void OnDeviceScaleFactorChanged(
-      float device_scale_factor) override {
-  }
-  virtual void OnWindowDestroying(aura::Window* window) override {}
-  virtual void OnWindowDestroyed(aura::Window* window) override {
-    delete this;
-  }
-  virtual void OnWindowTargetVisibilityChanged(bool visible) override {
-  }
-  virtual bool HasHitTestMask() const override {
-    return false;
-  }
-  virtual void GetHitTestMask(gfx::Path* mask) const override {}
+  bool CanFocus() override { return false; }
+  void OnCaptureLost() override {}
+  void OnPaint(gfx::Canvas* canvas) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnWindowDestroying(aura::Window* window) override {}
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
+  void OnWindowTargetVisibilityChanged(bool visible) override {}
+  bool HasHitTestMask() const override { return false; }
+  void GetHitTestMask(gfx::Path* mask) const override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);

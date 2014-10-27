@@ -75,34 +75,34 @@ class MagnificationControllerImpl : virtual public MagnificationController,
                                     public ui::InputMethodObserver {
  public:
   MagnificationControllerImpl();
-  virtual ~MagnificationControllerImpl();
+  ~MagnificationControllerImpl() override;
 
   // MagnificationController overrides:
-  virtual void SetEnabled(bool enabled) override;
-  virtual bool IsEnabled() const override;
-  virtual void SetScale(float scale, bool animate) override;
-  virtual float GetScale() const override { return scale_; }
-  virtual void MoveWindow(int x, int y, bool animate) override;
-  virtual void MoveWindow(const gfx::Point& point, bool animate) override;
-  virtual gfx::Point GetWindowPosition() const override {
+  void SetEnabled(bool enabled) override;
+  bool IsEnabled() const override;
+  void SetScale(float scale, bool animate) override;
+  float GetScale() const override { return scale_; }
+  void MoveWindow(int x, int y, bool animate) override;
+  void MoveWindow(const gfx::Point& point, bool animate) override;
+  gfx::Point GetWindowPosition() const override {
     return gfx::ToFlooredPoint(origin_);
   }
-  virtual void SetScrollDirection(ScrollDirection direction) override;
+  void SetScrollDirection(ScrollDirection direction) override;
 
   // For test
-  virtual gfx::Point GetPointOfInterestForTesting() override {
+  gfx::Point GetPointOfInterestForTesting() override {
     return point_of_interest_;
   }
 
  private:
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* root_window) override;
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowDestroying(aura::Window* root_window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.
@@ -149,9 +149,9 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   void ValidateScale(float* scale);
 
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Moves the view port when |point| is located within
   // |x_panning_margin| and |y_pannin_margin| to the edge of the visible
@@ -165,16 +165,13 @@ class MagnificationControllerImpl : virtual public MagnificationController,
                            int y_target_margin);
 
   // ui::InputMethodObserver:
-  virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnFocus() override {}
-  virtual void OnBlur() override {}
-  virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) override {}
-  virtual void OnShowImeIfNeeded() override {}
-  virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowImeIfNeeded() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
 
   // Target root window. This must not be NULL.
   aura::Window* root_window_;

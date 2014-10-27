@@ -45,15 +45,11 @@ void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
   ModalWidgetDelegate() {}
-  virtual ~ModalWidgetDelegate() {}
+  ~ModalWidgetDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
-  }
+  views::View* GetContentsView() override { return this; }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
@@ -65,11 +61,11 @@ class MoveWindowByClickEventHandler : public ui::EventHandler {
  public:
   explicit MoveWindowByClickEventHandler(aura::Window* target)
       : target_(target) {}
-  virtual ~MoveWindowByClickEventHandler() {}
+  ~MoveWindowByClickEventHandler() override {}
 
  private:
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_RELEASED) {
       aura::Window::Windows root_windows = Shell::GetAllRootWindows();
       DCHECK_LT(1u, root_windows.size());
@@ -87,7 +83,7 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
   explicit EventLocationRecordingEventHandler() {
     reset();
   }
-  virtual ~EventLocationRecordingEventHandler() {}
+  ~EventLocationRecordingEventHandler() override {}
 
   std::string GetLocationsAndReset() {
     std::string result =
@@ -98,7 +94,7 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
 
  private:
   // ui::EventHandler overrides:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) {
       location_ = event->location();
@@ -120,14 +116,14 @@ class EventLocationRecordingEventHandler : public ui::EventHandler {
 class EventLocationHandler : public ui::EventHandler {
  public:
   EventLocationHandler() {}
-  virtual ~EventLocationHandler() {}
+  ~EventLocationHandler() override {}
 
   const gfx::Point& press_location() const { return press_location_; }
   const gfx::Point& release_location() const { return release_location_; }
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED)
       press_location_ = event->location();
     else if (event->type() == ui::ET_MOUSE_RELEASED)

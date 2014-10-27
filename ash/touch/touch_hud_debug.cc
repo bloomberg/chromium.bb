@@ -257,7 +257,7 @@ class TouchHudCanvas : public views::View {
     paint_.setStyle(SkPaint::kFill_Style);
   }
 
-  virtual ~TouchHudCanvas() {}
+  ~TouchHudCanvas() override {}
 
   void SetScale(int scale) {
     if (scale_ == scale)
@@ -308,7 +308,7 @@ class TouchHudCanvas : public views::View {
   }
 
   // Overridden from views::View.
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     for (int i = 0; i < kMaxPaths; ++i) {
       if (paths_[i].countPoints() == 0)
         continue;

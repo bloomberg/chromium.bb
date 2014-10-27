@@ -17,21 +17,19 @@ namespace ash {
 class AshFocusManagerFactory : public views::FocusManagerFactory {
  public:
   AshFocusManagerFactory();
-  virtual ~AshFocusManagerFactory();
+  ~AshFocusManagerFactory() override;
 
  protected:
   // views::FocusManagerFactory overrides:
-  virtual views::FocusManager* CreateFocusManager(
-      views::Widget* widget,
-      bool desktop_widget) override;
+  views::FocusManager* CreateFocusManager(views::Widget* widget,
+                                          bool desktop_widget) override;
 
  private:
   class Delegate : public views::FocusManagerDelegate {
    public:
     // views::FocusManagerDelegate overrides:
-    virtual bool ProcessAccelerator(
-        const ui::Accelerator& accelerator) override;
-    virtual ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
+    bool ProcessAccelerator(const ui::Accelerator& accelerator) override;
+    ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
         const ui::Accelerator& accelerator) const override;
   };
 

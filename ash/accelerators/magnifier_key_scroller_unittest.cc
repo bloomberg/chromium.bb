@@ -17,10 +17,10 @@ namespace {
 class KeyEventDelegate : public aura::test::TestWindowDelegate {
  public:
   KeyEventDelegate() {}
-  virtual ~KeyEventDelegate() {}
+  ~KeyEventDelegate() override {}
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override {
+  void OnKeyEvent(ui::KeyEvent* event) override {
     key_event.reset(new ui::KeyEvent(
         event->type(), event->key_code(), event->flags()));
   }

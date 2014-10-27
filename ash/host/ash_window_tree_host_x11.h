@@ -21,37 +21,36 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
                                         public aura::EnvObserver {
  public:
   explicit AshWindowTreeHostX11(const gfx::Rect& initial_bounds);
-  virtual ~AshWindowTreeHostX11();
+  ~AshWindowTreeHostX11() override;
 
  private:
   // AshWindowTreeHost:
-  virtual void ToggleFullScreen() override;
-  virtual bool ConfineCursorToRootWindow() override;
-  virtual void UnConfineCursor() override;
-  virtual void SetRootWindowTransformer(
+  void ToggleFullScreen() override;
+  bool ConfineCursorToRootWindow() override;
+  void UnConfineCursor() override;
+  void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) override;
-  virtual gfx::Insets GetHostInsets() const override;
-  virtual aura::WindowTreeHost* AsWindowTreeHost() override;
-  virtual void UpdateDisplayID(int64 id1, int64 id2) override;
-  virtual void PrepareForShutdown() override;
+  gfx::Insets GetHostInsets() const override;
+  aura::WindowTreeHost* AsWindowTreeHost() override;
+  void UpdateDisplayID(int64 id1, int64 id2) override;
+  void PrepareForShutdown() override;
 
   // aura::WindowTreehost:
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual gfx::Transform GetRootTransform() const override;
-  virtual void SetRootTransform(const gfx::Transform& transform) override;
-  virtual gfx::Transform GetInverseRootTransform() const override;
-  virtual void UpdateRootWindowSize(const gfx::Size& host_size) override;
-  virtual void OnCursorVisibilityChangedNative(bool show) override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Transform GetRootTransform() const override;
+  void SetRootTransform(const gfx::Transform& transform) override;
+  gfx::Transform GetInverseRootTransform() const override;
+  void UpdateRootWindowSize(const gfx::Size& host_size) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
 
   // aura::WindowTreeHostX11:
-  virtual void OnConfigureNotify() override;
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event)
-      override;
+  void OnConfigureNotify() override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event) override;
 
   // EnvObserver overrides.
-  virtual void OnWindowInitialized(aura::Window* window) override;
-  virtual void OnHostInitialized(aura::WindowTreeHost* host) override;
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
 
 #if defined(OS_CHROMEOS)
   // Set the CrOS touchpad "tap paused" property. It is used to temporarily

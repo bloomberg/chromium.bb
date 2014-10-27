@@ -30,7 +30,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
     desktop_widget_->AddObserver(this);
   }
 
-  virtual ~ShowWallpaperAnimationObserver() {
+  ~ShowWallpaperAnimationObserver() override {
     StopObservingImplicitAnimations();
     if (desktop_widget_)
       desktop_widget_->RemoveObserver(this);
@@ -38,22 +38,20 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsScheduled() override {
+  void OnImplicitAnimationsScheduled() override {
     if (is_initial_animation_) {
       root_window_controller_->
           HandleInitialDesktopBackgroundAnimationStarted();
     }
   }
 
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     root_window_controller_->OnWallpaperAnimationFinished(desktop_widget_);
     delete this;
   }
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) override {
-    delete this;
-  }
+  void OnWidgetDestroying(views::Widget* widget) override { delete this; }
 
   RootWindowController* root_window_controller_;
   views::Widget* desktop_widget_;

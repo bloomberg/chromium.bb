@@ -25,10 +25,10 @@ class ASH_EXPORT DesktopBackgroundWidgetController
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
 
-  virtual ~DesktopBackgroundWidgetController();
+  ~DesktopBackgroundWidgetController() override;
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Set bounds of component that draws background.
   void SetBounds(gfx::Rect bounds);

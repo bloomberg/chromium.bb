@@ -49,22 +49,21 @@ class ASH_EXPORT TouchHudDebug : public TouchObserverHUD {
   Mode mode() const { return mode_; }
 
   // Overriden from TouchObserverHUD.
-  virtual void Clear() override;
+  void Clear() override;
 
  private:
-  virtual ~TouchHudDebug();
+  ~TouchHudDebug() override;
 
   void SetMode(Mode mode);
 
   void UpdateTouchPointLabel(int index);
 
   // Overriden from TouchObserverHUD.
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
-  virtual void SetHudForRootWindowController(
-      RootWindowController* controller) override;
-  virtual void UnsetHudForRootWindowController(
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
+  void SetHudForRootWindowController(RootWindowController* controller) override;
+  void UnsetHudForRootWindowController(
       RootWindowController* controller) override;
 
   static const int kMaxTouchPoints = 32;

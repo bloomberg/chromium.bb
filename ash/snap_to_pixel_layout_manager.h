@@ -16,18 +16,18 @@ namespace ash {
 class ASH_EXPORT SnapToPixelLayoutManager : public aura::LayoutManager {
  public:
   explicit SnapToPixelLayoutManager(aura::Window* container);
-  virtual ~SnapToPixelLayoutManager();
+  ~SnapToPixelLayoutManager() override;
 
  protected:
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visibile) override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SnapToPixelLayoutManager);

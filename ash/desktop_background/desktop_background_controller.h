@@ -58,7 +58,7 @@ class ASH_EXPORT DesktopBackgroundController
   };
 
   DesktopBackgroundController();
-  virtual ~DesktopBackgroundController();
+  ~DesktopBackgroundController() override;
 
   BackgroundMode desktop_background_mode() const {
     return desktop_background_mode_;
@@ -97,10 +97,10 @@ class ASH_EXPORT DesktopBackgroundController
   bool MoveDesktopToUnlockedContainer();
 
   // DisplayController::Observer:
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
-  virtual void OnRootWindowAdded(aura::Window* root_window) override;
+  void OnRootWindowAdded(aura::Window* root_window) override;
 
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who

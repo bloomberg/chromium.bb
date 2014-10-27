@@ -31,7 +31,7 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   // |degrees| are clockwise. |layer| is the target of the animation. Does not
   // take ownership of |layer|.
   ScreenRotation(int degrees, ui::Layer* layer);
-  virtual ~ScreenRotation();
+  ~ScreenRotation() override;
 
  private:
   // Generates the intermediate transformation matrices used during the
@@ -39,11 +39,10 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   void InitTransform(ui::Layer* layer);
 
   // Implementation of ui::LayerAnimationDelegate
-  virtual void OnStart(ui::LayerAnimationDelegate* delegate) override;
-  virtual bool OnProgress(double t,
-                          ui::LayerAnimationDelegate* delegate) override;
-  virtual void OnGetTarget(TargetValue* target) const override;
-  virtual void OnAbort(ui::LayerAnimationDelegate* delegate) override;
+  void OnStart(ui::LayerAnimationDelegate* delegate) override;
+  bool OnProgress(double t, ui::LayerAnimationDelegate* delegate) override;
+  void OnGetTarget(TargetValue* target) const override;
+  void OnAbort(ui::LayerAnimationDelegate* delegate) override;
 
   scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
 

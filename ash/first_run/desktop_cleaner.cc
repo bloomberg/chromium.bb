@@ -41,7 +41,7 @@ class ContainerHider : public aura::WindowObserver,
     layer->SetOpacity(0.0);
   }
 
-  virtual ~ContainerHider() {
+  ~ContainerHider() override {
     if (container_was_hidden_ || !container_)
       return;
     if (!WasAnimationCompletedForProperty(ui::LayerAnimationElement::OPACITY)) {
@@ -57,12 +57,10 @@ class ContainerHider : public aura::WindowObserver,
 
  private:
   // Overriden from ui::ImplicitAnimationObserver.
-  virtual void OnImplicitAnimationsCompleted() override {
-    container_->Hide();
-  }
+  void OnImplicitAnimationsCompleted() override { container_->Hide(); }
 
   // Overriden from aura::WindowObserver.
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     DCHECK(window == container_);
     container_ = NULL;
   }
@@ -81,11 +79,11 @@ class NotificationBlocker : public message_center::NotificationBlocker {
     NotifyBlockingStateChanged();
   }
 
-  virtual ~NotificationBlocker() {};
+  ~NotificationBlocker() override {}
 
  private:
   // Overriden from message_center::NotificationBlocker.
-  virtual bool ShouldShowNotificationAsPopup(
+  bool ShouldShowNotificationAsPopup(
       const message_center::NotifierId& notifier_id) const override {
     return false;
   }

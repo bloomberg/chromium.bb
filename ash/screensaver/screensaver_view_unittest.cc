@@ -21,9 +21,9 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
     webview_test_helper_.reset(new views::WebViewTestHelper());
   }
 
-  virtual ~ScreensaverViewTest() {}
+  ~ScreensaverViewTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     RunAllPendingInMessageLoop();
   }

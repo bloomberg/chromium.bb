@@ -72,13 +72,13 @@ class TouchPointView : public views::View,
   }
 
  private:
-  virtual ~TouchPointView() {
+  ~TouchPointView() override {
     GetWidget()->RemoveObserver(this);
     parent()->RemoveChildView(this);
   }
 
   // Overridden from views::View.
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     int alpha = kProjectionAlpha;
     if (fadeout_)
       alpha = static_cast<int>(fadeout_->CurrentValueBetween(alpha, 0));
@@ -100,22 +100,22 @@ class TouchPointView : public views::View,
   }
 
   // Overridden from gfx::AnimationDelegate.
-  virtual void AnimationEnded(const gfx::Animation* animation) override {
+  void AnimationEnded(const gfx::Animation* animation) override {
     DCHECK_EQ(fadeout_.get(), animation);
     delete this;
   }
 
-  virtual void AnimationProgressed(const gfx::Animation* animation) override {
+  void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(fadeout_.get(), animation);
     SchedulePaint();
   }
 
-  virtual void AnimationCanceled(const gfx::Animation* animation) override {
+  void AnimationCanceled(const gfx::Animation* animation) override {
     AnimationEnded(animation);
   }
 
   // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) override {
+  void OnWidgetDestroying(views::Widget* widget) override {
     if (fadeout_)
       fadeout_->Stop();
     else

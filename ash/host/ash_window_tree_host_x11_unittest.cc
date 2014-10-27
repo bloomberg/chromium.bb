@@ -29,10 +29,10 @@ class RootWindowEventHandler : public ui::EventHandler {
         last_touch_location_(0, 0) {
     target_->AddPreTargetHandler(this);
   }
-  virtual ~RootWindowEventHandler() { target_->RemovePreTargetHandler(this); }
+  ~RootWindowEventHandler() override { target_->RemovePreTargetHandler(this); }
 
   // ui::EventHandler:
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     last_touch_id_ = event->touch_id();
     last_touch_type_ = event->type();
     last_touch_location_ = event->location();
@@ -59,7 +59,7 @@ namespace ash {
 
 class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
 #if defined(OS_CHROMEOS)
@@ -69,7 +69,7 @@ class AshWindowTreeHostX11Test : public aura::test::AuraTestBase {
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     aura::test::AuraTestBase::TearDown();
 
 #if defined(OS_CHROMEOS)

@@ -47,13 +47,13 @@ class ScreensaverView : public views::WidgetDelegateView,
   friend class test::ScreensaverViewTest;
 
   explicit ScreensaverView(const GURL& url);
-  virtual ~ScreensaverView();
+  ~ScreensaverView() override;
 
   // views::WidgetDelegate overrides.
-  virtual views::View* GetContentsView() override;
+  views::View* GetContentsView() override;
 
   // content::WebContentsObserver overrides.
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   void Show();
   void Close();

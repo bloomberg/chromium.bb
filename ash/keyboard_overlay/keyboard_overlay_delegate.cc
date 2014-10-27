@@ -33,10 +33,10 @@ class PaintMessageHandler
       public base::SupportsWeakPtr<PaintMessageHandler> {
  public:
   explicit PaintMessageHandler(views::Widget* widget) : widget_(widget) {}
-  virtual ~PaintMessageHandler() {}
+  ~PaintMessageHandler() override {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   void DidPaint(const base::ListValue* args);

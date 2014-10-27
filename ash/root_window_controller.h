@@ -105,7 +105,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Returns container which contains a given |window|.
   static aura::Window* GetContainerForWindow(aura::Window* window);
 
-  virtual ~RootWindowController();
+  ~RootWindowController() override;
 
   AshWindowTreeHost* ash_host() { return ash_host_.get(); }
   const AshWindowTreeHost* ash_host() const { return ash_host_.get(); }
@@ -267,8 +267,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void DisableTouchHudProjection();
 
   // Overridden from ShellObserver.
-  virtual void OnLoginStateChanged(user::LoginStatus status) override;
-  virtual void OnTouchHudProjectionToggled(bool enabled) override;
+  void OnLoginStateChanged(user::LoginStatus status) override;
+  void OnTouchHudProjectionToggled(bool enabled) override;
 
   scoped_ptr<AshWindowTreeHost> ash_host_;
   RootWindowLayoutManager* root_window_layout_;

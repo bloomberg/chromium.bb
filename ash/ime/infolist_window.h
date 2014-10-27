@@ -26,7 +26,7 @@ class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
  public:
   InfolistWindow(views::View* candidate_window,
                  const std::vector<ui::InfolistEntry>& entries);
-  virtual ~InfolistWindow();
+  ~InfolistWindow() override;
   void InitWidget();
 
   // Updates infolist contents with |entries|.
@@ -42,7 +42,7 @@ class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
 
  private:
   // views::WidgetDelegate implementation.
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // The list of visible entries. Owned by views hierarchy.
   std::vector<InfolistEntryView*> entry_views_;

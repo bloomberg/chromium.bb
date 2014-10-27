@@ -18,13 +18,13 @@ namespace ash {
 class ASH_EXPORT HighContrastController : public ShellObserver {
  public:
   HighContrastController();
-  virtual ~HighContrastController();
+  ~HighContrastController() override;
 
   // Set high contrast mode and update all available displays.
   void SetEnabled(bool enabled);
 
   // ShellObserver:
-  virtual void OnRootWindowAdded(aura::Window* root_window) override;
+  void OnRootWindowAdded(aura::Window* root_window) override;
 
  private:
   // Update high contrast mode on the passed display.

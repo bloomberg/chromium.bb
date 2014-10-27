@@ -27,27 +27,26 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
       : root_window_(root_window), transform_(transform) {}
 
   // RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const override { return transform_; }
+  gfx::Transform GetTransform() const override { return transform_; }
 
-  virtual gfx::Transform GetInverseTransform() const override {
+  gfx::Transform GetInverseTransform() const override {
     gfx::Transform invert;
     if (!transform_.GetInverse(&invert))
       return transform_;
     return invert;
   }
 
-  virtual gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const
-      override {
+  gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
     gfx::Rect bounds(host_size);
     gfx::RectF new_bounds(ui::ConvertRectToDIP(root_window_->layer(), bounds));
     transform_.TransformRect(&new_bounds);
     return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
   }
 
-  virtual gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
+  gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
 
  private:
-  virtual ~SimpleRootWindowTransformer() {}
+  ~SimpleRootWindowTransformer() override {}
 
   const aura::Window* root_window_;
   const gfx::Transform transform_;

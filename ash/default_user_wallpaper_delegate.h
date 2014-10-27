@@ -15,20 +15,19 @@ namespace ash {
 class ASH_EXPORT DefaultUserWallpaperDelegate : public UserWallpaperDelegate {
  public:
   DefaultUserWallpaperDelegate() {}
-  virtual ~DefaultUserWallpaperDelegate() {}
+  ~DefaultUserWallpaperDelegate() override {}
 
   // UserWallpaperDelegate overrides:
-  virtual int GetAnimationType() override;
-  virtual int GetAnimationDurationOverride() override;
-  virtual void SetAnimationDurationOverride(
-      int animation_duration_in_ms) override;
-  virtual bool ShouldShowInitialAnimation() override;
-  virtual void UpdateWallpaper(bool clear_cache) override;
-  virtual void InitializeWallpaper() override;
-  virtual void OpenSetWallpaperPage() override;
-  virtual bool CanOpenSetWallpaperPage() override;
-  virtual void OnWallpaperAnimationFinished() override;
-  virtual void OnWallpaperBootAnimationFinished() override;
+  int GetAnimationType() override;
+  int GetAnimationDurationOverride() override;
+  void SetAnimationDurationOverride(int animation_duration_in_ms) override;
+  bool ShouldShowInitialAnimation() override;
+  void UpdateWallpaper(bool clear_cache) override;
+  void InitializeWallpaper() override;
+  void OpenSetWallpaperPage() override;
+  bool CanOpenSetWallpaperPage() override;
+  void OnWallpaperAnimationFinished() override;
+  void OnWallpaperBootAnimationFinished() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultUserWallpaperDelegate);

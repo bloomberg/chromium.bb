@@ -61,7 +61,7 @@ class WallpaperResizerTest : public testing::Test,
   WallpaperResizerTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
-  virtual ~WallpaperResizerTest() {}
+  ~WallpaperResizerTest() override {}
 
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
@@ -79,9 +79,7 @@ class WallpaperResizerTest : public testing::Test,
     message_loop_.Run();
   }
 
-  virtual void OnWallpaperResized() override {
-    message_loop_.Quit();
-  }
+  void OnWallpaperResized() override { message_loop_.Quit(); }
 
  private:
   base::MessageLoop message_loop_;

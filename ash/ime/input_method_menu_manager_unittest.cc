@@ -18,11 +18,10 @@ TEST(InputMethodMenuManagerTest, TestGetSingleton) {
 class MockObserver : public InputMethodMenuManager::Observer {
  public:
   MockObserver() : input_method_menu_item_changed_count_(0) {}
-  virtual ~MockObserver() {}
+  ~MockObserver() override {}
 
   // Called when the list of menu items is changed.
-  virtual void InputMethodMenuItemChanged(
-      InputMethodMenuManager* manager) override {
+  void InputMethodMenuItemChanged(InputMethodMenuManager* manager) override {
     input_method_menu_item_changed_count_++;
   }
   int input_method_menu_item_changed_count_;
@@ -32,15 +31,13 @@ class InputMethodMenuManagerStatefulTest : public testing::Test{
  public:
   InputMethodMenuManagerStatefulTest()
       : observer_(new MockObserver()) {}
-  virtual ~InputMethodMenuManagerStatefulTest() {}
-  virtual void SetUp() override {
+  ~InputMethodMenuManagerStatefulTest() override {}
+  void SetUp() override {
     menu_manager_ = InputMethodMenuManager::GetInstance();
     menu_manager_->AddObserver(observer_.get());
   }
 
-  virtual void TearDown() override {
-    menu_manager_->RemoveObserver(observer_.get());
-  }
+  void TearDown() override { menu_manager_->RemoveObserver(observer_.get()); }
 
   InputMethodMenuManager* menu_manager_;
   scoped_ptr<MockObserver> observer_;
