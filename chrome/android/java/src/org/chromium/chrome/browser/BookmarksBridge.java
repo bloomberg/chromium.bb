@@ -268,7 +268,6 @@ public class BookmarksBridge {
     /**
      * @return The BookmarkId for Mobile folder node
      */
-    @VisibleForTesting
     public BookmarkId getMobileFolderId() {
         assert mIsNativeBookmarkModelLoaded;
         return nativeGetMobileFolderId(mNativeBookmarksBridge);
