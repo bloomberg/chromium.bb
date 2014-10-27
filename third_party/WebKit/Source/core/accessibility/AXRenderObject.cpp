@@ -1333,7 +1333,9 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
         return 0;
 
     Node* node = hitTestResult.innerNode();
-    if (node->isInShadowTree())
+
+    // Allow the hit test to return media control buttons.
+    if (node->isInShadowTree() && (!isHTMLInputElement(*node) || !node->isMediaControlElement()))
         node = node->shadowHost();
 
     if (isHTMLAreaElement(node))
