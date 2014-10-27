@@ -4,9 +4,11 @@
 
 #include "ui/views/controls/button/menu_button.h"
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
@@ -26,6 +28,12 @@ class MenuButtonTest : public ViewsTestBase {
  public:
   MenuButtonTest() : widget_(nullptr), button_(nullptr) {}
   ~MenuButtonTest() override {}
+
+  void SetUp() override {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableTouchFeedback);
+    ViewsTestBase::SetUp();
+  }
 
   void TearDown() override {
     if (widget_ && !widget_->IsClosed())
@@ -389,5 +397,35 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
   EXPECT_EQ(Button::STATE_NORMAL, menu_button_listener.last_source_state());
 }
 #endif
+
+// Tests that the button enters a hovered state upon a tap down, before becoming
+// pressed at activation.
+TEST_F(MenuButtonTest, TouchFeedbackDuringTap) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.set_current_location(gfx::Point(10, 10));
+  generator.PressTouch();
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+
+  generator.ReleaseTouch();
+  EXPECT_EQ(Button::STATE_PRESSED, menu_button_listener.last_source_state());
+}
+
+// Tests that a move event that exits the button returns it to the normal state,
+// and that the button did not activate the listener.
+TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
+  generator.set_current_location(gfx::Point(10, 10));
+  generator.PressTouch();
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+
+  generator.MoveTouch(gfx::Point(10, 30));
+  generator.ReleaseTouch();
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  EXPECT_EQ(nullptr, menu_button_listener.last_source());
+}
 
 }  // namespace views

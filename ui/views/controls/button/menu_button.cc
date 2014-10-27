@@ -9,6 +9,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
@@ -205,12 +206,23 @@ void MenuButton::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state() != STATE_DISABLED && ShouldEnterPushedState(*event) &&
-      !Activate()) {
-    // When |Activate()| returns |false|, it means that a menu is shown and
-    // has handled the gesture event. So, there is no need to further process
-    // the gesture event here.
-    return;
+  if (state() != STATE_DISABLED) {
+    if (ShouldEnterPushedState(*event) && !Activate()) {
+      // When |Activate()| returns |false|, it means that a menu is shown and
+      // has handled the gesture event. So, there is no need to further process
+      // the gesture event here.
+      return;
+    }
+    if (switches::IsTouchFeedbackEnabled()) {
+      if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+        event->SetHandled();
+        SetState(Button::STATE_HOVERED);
+      } else if (state() == Button::STATE_HOVERED &&
+                 (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+                  event->type() == ui::ET_GESTURE_END)) {
+        SetState(Button::STATE_NORMAL);
+      }
+    }
   }
   LabelButton::OnGestureEvent(event);
 }
