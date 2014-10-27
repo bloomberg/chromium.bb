@@ -23,12 +23,6 @@ class KeyMobileSitesPage(page_module.Page):
   def RunRepaint(self, action_runner):
     action_runner.RepaintContinuously(seconds=5)
 
-  def RunTaskExecutionTime(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
-    action_runner.ScrollPage()
-    interaction.End()
-
 
 class Page1(KeyMobileSitesPage):
 

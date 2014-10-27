@@ -14,7 +14,7 @@ class TestTaskExecutionTimePage(page_module.Page):
     super(TestTaskExecutionTimePage, self).__init__(
         'file://blank.html', page_set, base_dir)
 
-  def RunTaskExecutionTime(self, action_runner):
+  def RunSmoothness(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()

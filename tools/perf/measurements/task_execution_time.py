@@ -23,7 +23,7 @@ class TaskExecutionTime(page_test.PageTest):
   _NUMBER_OF_RESULTS_TO_DISPLAY = 10
 
   def __init__(self):
-    super(TaskExecutionTime, self).__init__('RunTaskExecutionTime')
+    super(TaskExecutionTime, self).__init__('RunSmoothness')
     self._renderer_thread = None
 
   def WillNavigateToPage(self, page, tab):

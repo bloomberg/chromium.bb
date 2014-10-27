@@ -19,12 +19,6 @@ class ToughSchedulingCasesPage(page_module.Page):
     action_runner.ScrollPage()
     interaction.End()
 
-  def RunTaskExecutionTime(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
-    action_runner.ScrollPage()
-    interaction.End()
-
 
 class Page1(ToughSchedulingCasesPage):
 
