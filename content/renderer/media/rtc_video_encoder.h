@@ -47,7 +47,6 @@ class CONTENT_EXPORT RTCVideoEncoder
  public:
   RTCVideoEncoder(
       webrtc::VideoCodecType type,
-      media::VideoCodecProfile profile,
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories);
   ~RTCVideoEncoder() override;
 
@@ -77,15 +76,13 @@ class CONTENT_EXPORT RTCVideoEncoder
 
   void NotifyError(int32_t error);
 
-  void RecordInitEncodeUMA(int32_t init_retval);
+  void RecordInitEncodeUMA(int32_t init_retval,
+                           media::VideoCodecProfile profile);
 
   base::ThreadChecker thread_checker_;
 
   // The video codec type, as reported to WebRTC.
   const webrtc::VideoCodecType video_codec_type_;
-
-  // The video codec profile, to configure the encoder to encode to.
-  const media::VideoCodecProfile video_codec_profile_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

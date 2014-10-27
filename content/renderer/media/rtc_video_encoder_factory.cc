@@ -44,21 +44,6 @@ void VEAToWebRTCCodecs(
   }
 }
 
-// Translate from cricket::WebRtcVideoEncoderFactory::VideoCodec to
-// media::VideoCodecProfile.  Pick a default profile for each codec type.
-media::VideoCodecProfile WebRTCCodecToVideoCodecProfile(
-    webrtc::VideoCodecType type) {
-  switch (type) {
-    case webrtc::kVideoCodecVP8:
-      return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecH264:
-    case webrtc::kVideoCodecGeneric:
-      return media::H264PROFILE_MAIN;
-    default:
-      return media::VIDEO_CODEC_PROFILE_UNKNOWN;
-  }
-}
-
 }  // anonymous namespace
 
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
@@ -83,8 +68,7 @@ webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
   }
   if (!found)
     return NULL;
-  return new RTCVideoEncoder(
-      type, WebRTCCodecToVideoCodecProfile(type), gpu_factories_);
+  return new RTCVideoEncoder(type, gpu_factories_);
 }
 
 const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&
