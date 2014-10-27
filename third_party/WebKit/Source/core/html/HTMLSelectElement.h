@@ -113,7 +113,6 @@ public:
     int activeSelectionEndListIndex() const;
     void setActiveSelectionAnchorIndex(int);
     void setActiveSelectionEndIndex(int);
-    void updateListBoxSelection(bool deselectOtherOptions);
 
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
@@ -189,6 +188,7 @@ private:
     void listBoxDefaultEventHandler(Event*);
     void setOptionsChangedOnRenderer();
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
+    void updateListBoxSelection(bool deselectOtherOptions, bool scroll = true);
 
     enum SkipDirection {
         SkipBackwards = -1,
