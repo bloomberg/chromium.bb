@@ -37,14 +37,6 @@ class SkTextBlob;
 
 namespace blink {
 
-class FloatPoint;
-class Font;
-class GraphicsContext;
-class GlyphBuffer;
-class SimpleFontData;
-struct GlyphData;
-struct SimpleShaper;
-
 class PLATFORM_EXPORT TextRun {
     WTF_MAKE_FAST_ALLOCATED;
 public:

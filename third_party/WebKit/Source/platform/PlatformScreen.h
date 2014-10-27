@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class FloatRect;
 class Widget;
 
 PLATFORM_EXPORT int screenDepth(Widget*);

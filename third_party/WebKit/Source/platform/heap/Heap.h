@@ -120,7 +120,6 @@ class HeapStats;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
-template<typename T> class CrossThreadPersistent;
 
 #if ENABLE(GC_PROFILE_HEAP)
 class TracedValue;

@@ -34,8 +34,6 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/ImageBufferSurface.h"
 
-class SkImage;
-
 namespace blink {
 
 // This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted

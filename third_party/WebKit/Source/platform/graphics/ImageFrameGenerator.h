@@ -42,7 +42,6 @@
 namespace blink {
 
 class ImageDecoder;
-class ImagePlanes;
 class SharedBuffer;
 
 class PLATFORM_EXPORT ImageDecoderFactory {
