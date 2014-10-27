@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 // ScopedObserver is used to keep track of the set of sources an object has
 // attached itself to as an observer. When ScopedObserver is destroyed it
@@ -30,7 +31,9 @@ class ScopedObserver {
 
   // Remove the object passed to the constructor as an observer from |source|.
   void Remove(Source* source) {
-    sources_.erase(std::find(sources_.begin(), sources_.end(), source));
+    auto it = std::find(sources_.begin(), sources_.end(), source);
+    DCHECK(it != sources_.end());
+    sources_.erase(it);
     source->RemoveObserver(observer_);
   }
 

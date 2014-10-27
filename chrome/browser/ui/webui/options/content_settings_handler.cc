@@ -497,7 +497,14 @@ void ContentSettingsHandler::InitializeHandler() {
                      base::Unretained(this)));
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, context));
-  observer_.Add(Profile::FromWebUI(web_ui())->GetHostContentSettingsMap());
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  observer_.Add(profile->GetHostContentSettingsMap());
+  if (profile->HasOffTheRecordProfile()) {
+    auto map = profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+    if (!observer_.IsObserving(map))
+      observer_.Add(map);
+  }
 }
 
 void ContentSettingsHandler::InitializePage() {
@@ -529,16 +536,22 @@ void ContentSettingsHandler::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (content::Source<Profile>(source).ptr()->IsOffTheRecord()) {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile->IsOffTheRecord() &&
+          observer_.IsObserving(profile->GetHostContentSettingsMap())) {
         web_ui()->CallJavascriptFunction(
             "ContentSettingsExceptionsArea.OTRProfileDestroyed");
+        observer_.Remove(profile->GetHostContentSettingsMap());
       }
       break;
     }
 
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      if (content::Source<Profile>(source).ptr()->IsOffTheRecord())
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (profile->IsOffTheRecord()) {
         UpdateAllOTRExceptionsViewsFromModel();
+        observer_.Add(profile->GetHostContentSettingsMap());
+      }
       break;
     }
 
