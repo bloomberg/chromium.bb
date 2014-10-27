@@ -49,8 +49,13 @@ MessageWindowImpl.prototype.sendReply_ = function(
  * @private
  */
 MessageWindowImpl.prototype.updateSize_ = function() {
-  var borderY = window.outerHeight - window.innerHeight;
-  window.resizeTo(window.outerWidth, document.body.clientHeight + borderY);
+  var outerBounds = chrome.app.window.current().outerBounds;
+  var innerBounds = chrome.app.window.current().innerBounds;
+  var borderY = outerBounds.height - innerBounds.height;
+  window.resizeTo(outerBounds.width, document.body.clientHeight + borderY);
+  // Sometimes, resizing the window causes its position to be reset to (0, 0),
+  // so restore it explicitly.
+  window.moveTo(outerBounds.left, outerBounds.top);
 };
 
 /**

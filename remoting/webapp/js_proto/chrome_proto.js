@@ -364,6 +364,10 @@ var AppWindow = function() {
   this.onFullscreened = null;
   /** @type {string} */
   this.id = '';
+  /** @type {Bounds} */
+  this.outerBounds = null;
+  /** @type {Bounds} */
+  this.innerBounds = null;
 };
 
 AppWindow.prototype.close = function() {};
@@ -397,6 +401,18 @@ var LaunchData = function() {
   this.id = '';
   /** @type {Array.<{type: string, entry: FileEntry}>} */
   this.items = [];
+};
+
+/** @constructor */
+function Bounds() {
+  /** @type {number} */
+  this.left = 0;
+  /** @type {number} */
+  this.top = 0;
+  /** @type {number} */
+  this.width = 0;
+  /** @type {number} */
+  this.height = 0;
 };
 
 /** @constructor */
