@@ -91,7 +91,6 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
   base::FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<storage::AsyncFileUtilAdapter> file_util_;
-  scoped_ptr<storage::WatcherManager> watcher_manager_;
   scoped_ptr<QuotaUtil> quota_util_;
   storage::UpdateObserverList update_observers_;
   storage::ChangeObserverList change_observers_;

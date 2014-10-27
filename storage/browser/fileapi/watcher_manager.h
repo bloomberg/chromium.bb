@@ -27,35 +27,24 @@ class FileSystemURL;
 // can assume that they don't get any null callbacks.
 class WatcherManager {
  public:
+  enum Action { CHANGED, REMOVED };
+
   typedef base::Callback<void(base::File::Error result)> StatusCallback;
-
-  // Observes watched entries.
-  class Observer {
-   public:
-    Observer() {}
-    virtual ~Observer() {}
-
-    // Notifies about an entry represented by |url| being changed.
-    virtual void OnEntryChanged(const FileSystemURL& url) = 0;
-
-    // Notifies about an entry represented by |url| being removed.
-    virtual void OnEntryRemoved(const FileSystemURL& url) = 0;
-  };
+  typedef base::Callback<void(Action action)> NotificationCallback;
 
   virtual ~WatcherManager() {}
-
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
-  virtual bool HasObserver(Observer* observer) const = 0;
 
   // Observes a directory entry. If the |recursive| mode is not supported then
   // FILE_ERROR_INVALID_OPERATION must be returned as an error. If the |url| is
   // already watched, or setting up the watcher fails, then |callback|
   // must be called with a specific error code. Otherwise |callback| must be
-  // called with the FILE_OK error code.
-  virtual void WatchDirectory(const FileSystemURL& url,
-                              bool recursive,
-                              const StatusCallback& callback) = 0;
+  // called with the FILE_OK error code. |notification_callback| is called for
+  // every change related to the watched directory.
+  virtual void WatchDirectory(
+      const FileSystemURL& url,
+      bool recursive,
+      const StatusCallback& callback,
+      const NotificationCallback& notification_callback) = 0;
 
   // Stops observing an entry represented by |url|.
   virtual void UnwatchEntry(const FileSystemURL& url,
