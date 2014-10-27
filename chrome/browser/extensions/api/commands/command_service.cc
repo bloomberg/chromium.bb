@@ -550,14 +550,14 @@ void CommandService::AssignKeybindings(const Extension* extension) {
 
 bool CommandService::CanAutoAssign(const Command &command,
                                    const Extension* extension) {
-  // Media Keys are non-exclusive, so allow auto-assigning them.
-  if (Command::IsMediaKey(command.accelerator()))
-    return true;
-
   // Extensions are allowed to auto-assign updated keys if the user has not
   // changed from the previous value.
   if (IsCommandShortcutUserModified(extension, command.command_name()))
     return false;
+
+  // Media Keys are non-exclusive, so allow auto-assigning them.
+  if (Command::IsMediaKey(command.accelerator()))
+    return true;
 
   if (command.global()) {
     using namespace extensions;

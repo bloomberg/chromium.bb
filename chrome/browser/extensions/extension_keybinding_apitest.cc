@@ -37,7 +37,11 @@ const char kId[] = "pgoakhfeplldmjheffidklpoklkppipp";
 // Default keybinding to use for emulating user-defined shortcut overrides. The
 // test extensions use Alt+Shift+F and Alt+Shift+H.
 const char kAltShiftG[] = "Alt+Shift+G";
-}
+
+// Named command for media key overwrite test.
+const char kMediaKeyTestCommand[] = "test_mediakeys_update";
+
+} // namespace
 
 class CommandsApiTest : public ExtensionApiTest {
  public:
@@ -668,6 +672,60 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   // Verify it has a command of Alt+Shift+G.
   accelerator = command_service->FindCommandByName(
       kId, manifest_values::kBrowserActionCommandEvent).accelerator();
+  EXPECT_EQ(ui::VKEY_G, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_TRUE(accelerator.IsShiftDown());
+  EXPECT_TRUE(accelerator.IsAltDown());
+}
+
+// Test that Media keys do not overwrite previous settings.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+    MediaKeyShortcutChangedOnUpdateAfterBeingReassignedByUser) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.
+      AppendASCII("keybinding").AppendASCII("keybinding.pem");
+  base::FilePath path_v1 = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("mk_v1"),
+      scoped_temp_dir.path().AppendASCII("mk_v1.crx"),
+      pem_path,
+      base::FilePath());
+  base::FilePath path_v2_reassigned = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("keybinding").AppendASCII("update")
+                    .AppendASCII("mk_v2"),
+      scoped_temp_dir.path().AppendASCII("mk_v2.crx"),
+      pem_path,
+      base::FilePath());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  CommandService* command_service = CommandService::Get(browser()->profile());
+
+  // Install v1 of the extension.
+  ASSERT_TRUE(InstallExtension(path_v1, 1));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of MediaPlayPause.
+  ui::Accelerator accelerator = command_service->FindCommandByName(
+      kId, kMediaKeyTestCommand).accelerator();
+  EXPECT_EQ(ui::VKEY_MEDIA_PLAY_PAUSE, accelerator.key_code());
+  EXPECT_FALSE(accelerator.IsCtrlDown());
+  EXPECT_FALSE(accelerator.IsShiftDown());
+  EXPECT_FALSE(accelerator.IsAltDown());
+
+  // Simulate the user setting the keybinding to Alt+Shift+G.
+  command_service->UpdateKeybindingPrefs(
+      kId, kMediaKeyTestCommand, kAltShiftG);
+
+  // Update to version 2 with different keybinding assigned.
+  EXPECT_TRUE(UpdateExtension(kId, path_v2_reassigned, 0));
+  EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
+              NULL);
+
+  // Verify it has a command of Alt+Shift+G.
+  accelerator = command_service->FindCommandByName(
+      kId, kMediaKeyTestCommand).accelerator();
   EXPECT_EQ(ui::VKEY_G, accelerator.key_code());
   EXPECT_FALSE(accelerator.IsCtrlDown());
   EXPECT_TRUE(accelerator.IsShiftDown());
