@@ -102,6 +102,7 @@ void EnsureNonEmptyTitleAndContent(std::string* title, std::string* content) {
 
 std::string ReplaceHtmlTemplateValues(
     const std::string& title,
+    const std::string& textDirection,
     const std::string& content,
     const std::string& loading_indicator_class,
     const std::string& original_url,
@@ -121,6 +122,7 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(original_url);                                  // $7
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $8
+  substitutions.push_back(textDirection);                                 // $9
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
@@ -160,7 +162,8 @@ const std::string GetUnsafePartialArticleHtml(
   EnsureNonEmptyTitleAndContent(&title, &unsafe_article_html);
   std::string original_url = page_proto->url();
   return ReplaceHtmlTemplateValues(
-      title, unsafe_article_html, "visible", original_url, theme, font_family);
+      title, page_proto->text_direction(), unsafe_article_html, "visible",
+      original_url, theme, font_family);
 }
 
 const std::string GetUnsafeArticleHtml(
@@ -170,6 +173,7 @@ const std::string GetUnsafeArticleHtml(
   DCHECK(article_proto);
   std::string title;
   std::string unsafe_article_html;
+  std::string text_direction = "";
   if (article_proto->has_title() && article_proto->pages_size() > 0 &&
       article_proto->pages(0).has_html()) {
     title = net::EscapeForHTML(article_proto->title());
@@ -178,6 +182,7 @@ const std::string GetUnsafeArticleHtml(
       unsafe_output_stream << article_proto->pages(page_num).html();
     }
     unsafe_article_html = unsafe_output_stream.str();
+    text_direction = article_proto->pages(0).text_direction();
   }
 
   EnsureNonEmptyTitleAndContent(&title, &unsafe_article_html);
@@ -188,7 +193,8 @@ const std::string GetUnsafeArticleHtml(
   }
 
   return ReplaceHtmlTemplateValues(
-      title, unsafe_article_html, "hidden", original_url, theme, font_family);
+      title, text_direction, unsafe_article_html, "hidden", original_url,
+      theme, font_family);
 }
 
 const std::string GetErrorPageHtml(
@@ -199,7 +205,7 @@ const std::string GetErrorPageHtml(
   std::string content = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT);
   return ReplaceHtmlTemplateValues(
-      title, content, "hidden", "", theme, font_family);
+      title, "", content, "hidden", "", theme, font_family);
 }
 
 const std::string GetCss() {

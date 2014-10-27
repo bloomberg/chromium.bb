@@ -39,4 +39,7 @@ message DistilledPageProto {
 
   // Debug information about this page.
   optional DebugInfo debug_info = 6;
+
+  // text directionality
+  optional string text_direction = 7;
 }

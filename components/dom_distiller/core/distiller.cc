@@ -161,6 +161,13 @@ void DistillerImpl::OnPageDistillationFinished(
           distiller_result->debug_info().log());
     }
 
+    if (distiller_result->has_text_direction()) {
+      page_data->distilled_page_proto->data.set_text_direction(
+          distiller_result->text_direction());
+    } else {
+      page_data->distilled_page_proto->data.set_text_direction("auto");
+    }
+
     if (distiller_result->has_pagination_info()) {
       proto::PaginationInfo pagination_info =
           distiller_result->pagination_info();
