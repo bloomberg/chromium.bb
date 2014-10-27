@@ -40,6 +40,7 @@ public:
     HTMLSelectElement* ownerSelectElement() const;
 
     String groupLabelText() const;
+    HTMLDivElement& optGroupLabelElement() const;
 
 private:
     explicit HTMLOptGroupElement(Document&);
@@ -59,7 +60,6 @@ private:
 
     void updateGroupLabel();
     void recalcSelectOptions();
-    HTMLDivElement& optGroupLabelElement() const;
 
     RefPtr<RenderStyle> m_style;
 };

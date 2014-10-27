@@ -35,11 +35,13 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -104,11 +106,16 @@ LayoutUnit RenderListBox::itemHeight() const
     HTMLSelectElement* select = selectElement();
     if (!select)
         return 0;
-    RenderObject* baseItemRenderer = firstChild();
+    Element* baseItem = ElementTraversal::firstChild(*select);
+    if (!baseItem)
+        return defaultItemHeight();
+    if (isHTMLOptGroupElement(baseItem))
+        baseItem = &toHTMLOptGroupElement(baseItem)->optGroupLabelElement();
+    else if (!isHTMLOptionElement(baseItem))
+        return defaultItemHeight();
+    RenderObject* baseItemRenderer = baseItem->renderer();
     if (!baseItemRenderer)
         return defaultItemHeight();
-    if (baseItemRenderer->node() && isHTMLOptGroupElement(baseItemRenderer->node()))
-        baseItemRenderer = baseItemRenderer->slowFirstChild();
     if (!baseItemRenderer || !baseItemRenderer->isBox())
         return defaultItemHeight();
     return toRenderBox(baseItemRenderer)->height();
