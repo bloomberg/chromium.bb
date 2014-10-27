@@ -101,27 +101,25 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
 class NativePanelTestingViews : public NativePanelTesting {
  public:
   explicit NativePanelTestingViews(PanelView* panel_view);
-  virtual ~NativePanelTestingViews();
+  ~NativePanelTestingViews() override;
 
  private:
-  virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location, panel::ClickModifier modifier) override;
-  virtual void ReleaseMouseButtonTitlebar(
-      panel::ClickModifier modifier) override;
-  virtual void DragTitlebar(const gfx::Point& mouse_location) override;
-  virtual void CancelDragTitlebar() override;
-  virtual void FinishDragTitlebar() override;
-  virtual bool VerifyDrawingAttention() const override;
-  virtual bool VerifyActiveState(bool is_active) override;
-  virtual bool VerifyAppIcon() const override;
-  virtual bool VerifySystemMinimizeState() const override;
-  virtual bool IsWindowVisible() const override;
-  virtual bool IsWindowSizeKnown() const override;
-  virtual bool IsAnimatingBounds() const override;
-  virtual bool IsButtonVisible(
-      panel::TitlebarButtonType button_type) const override;
-  virtual panel::CornerStyle GetWindowCornerStyle() const override;
-  virtual bool EnsureApplicationRunOnForeground() override;
+  void PressLeftMouseButtonTitlebar(const gfx::Point& mouse_location,
+                                    panel::ClickModifier modifier) override;
+  void ReleaseMouseButtonTitlebar(panel::ClickModifier modifier) override;
+  void DragTitlebar(const gfx::Point& mouse_location) override;
+  void CancelDragTitlebar() override;
+  void FinishDragTitlebar() override;
+  bool VerifyDrawingAttention() const override;
+  bool VerifyActiveState(bool is_active) override;
+  bool VerifyAppIcon() const override;
+  bool VerifySystemMinimizeState() const override;
+  bool IsWindowVisible() const override;
+  bool IsWindowSizeKnown() const override;
+  bool IsAnimatingBounds() const override;
+  bool IsButtonVisible(panel::TitlebarButtonType button_type) const override;
+  panel::CornerStyle GetWindowCornerStyle() const override;
+  bool EnsureApplicationRunOnForeground() override;
 
   PanelView* panel_view_;
 };

@@ -38,26 +38,26 @@ class PanelStackView : public NativePanelStackWindow,
                        public gfx::AnimationDelegate {
  public:
   explicit PanelStackView(NativePanelStackWindowDelegate* delegate);
-  virtual ~PanelStackView();
+  ~PanelStackView() override;
 
  protected:
   // Overridden from NativePanelStackWindow:
-  virtual void Close() override;
-  virtual void AddPanel(Panel* panel) override;
-  virtual void RemovePanel(Panel* panel) override;
-  virtual void MergeWith(NativePanelStackWindow* another) override;
-  virtual bool IsEmpty() const override;
-  virtual bool HasPanel(Panel* panel) const override;
-  virtual void MovePanelsBy(const gfx::Vector2d& delta) override;
-  virtual void BeginBatchUpdatePanelBounds(bool animate) override;
-  virtual void AddPanelBoundsForBatchUpdate(
-      Panel* panel, const gfx::Rect& new_bounds) override;
-  virtual void EndBatchUpdatePanelBounds() override;
-  virtual bool IsAnimatingPanelBounds() const override;
-  virtual void Minimize() override;
-  virtual bool IsMinimized() const override;
-  virtual void DrawSystemAttention(bool draw_attention) override;
-  virtual void OnPanelActivated(Panel* panel) override;
+  void Close() override;
+  void AddPanel(Panel* panel) override;
+  void RemovePanel(Panel* panel) override;
+  void MergeWith(NativePanelStackWindow* another) override;
+  bool IsEmpty() const override;
+  bool HasPanel(Panel* panel) const override;
+  void MovePanelsBy(const gfx::Vector2d& delta) override;
+  void BeginBatchUpdatePanelBounds(bool animate) override;
+  void AddPanelBoundsForBatchUpdate(Panel* panel,
+                                    const gfx::Rect& new_bounds) override;
+  void EndBatchUpdatePanelBounds() override;
+  bool IsAnimatingPanelBounds() const override;
+  void Minimize() override;
+  bool IsMinimized() const override;
+  void DrawSystemAttention(bool draw_attention) override;
+  void OnPanelActivated(Panel* panel) override;
 
  private:
   typedef std::list<Panel*> Panels;
@@ -66,13 +66,13 @@ class PanelStackView : public NativePanelStackWindow,
   typedef std::map<Panel*, gfx::Rect> BoundsUpdates;
 
   // Overridden from views::WidgetFocusChangeListener:
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) override;
+  void OnNativeFocusChange(gfx::NativeView focused_before,
+                           gfx::NativeView focused_now) override;
 
   // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   // Updates the bounds of panels as specified in batch update data.
   void UpdatePanelsBounds();
