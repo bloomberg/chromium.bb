@@ -3369,20 +3369,6 @@
    fun:_ZNK5blink17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
 {
-   bug_417093
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
-   fun:_ZN5blink7RawData6createEv
-   fun:_ZN5blink6Stream7addDataEPKcm
-   fun:_ZN5blink14XMLHttpRequest14didReceiveDataEPKci
-   fun:_ZThn80_N5blink14XMLHttpRequest14didReceiveDataEPKci
-   fun:_ZN5blink24DocumentThreadableLoader18handleReceivedDataEPKci
-   fun:_ZN5blink24DocumentThreadableLoader12dataReceivedEPNS_8ResourceEPKci
-   fun:_ZThn16_N5blink24DocumentThreadableLoader12dataReceivedEPNS_8ResourceEPKci
-}
-{
    bug_417119
    Memcheck:Leak
    fun:_Znw*
