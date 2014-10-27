@@ -148,30 +148,36 @@ def rebase_branch(branch, parent, start_hash):
         git.squash_current_branch(merge_base=start_hash)
         git.rebase(parent, start_hash, branch)
       else:
+        print "Failed!"
+        print
+
         # rebase and leave in mid-rebase state.
         # This second rebase attempt should always fail in the same
         # way that the first one does.  If it magically succeeds then
         # something very strange has happened.
         second_rebase_ret = git.rebase(parent, start_hash, branch)
-        assert(not second_rebase_ret.success)
-        print "Failed!"
-        print
-        print "Here's what git-rebase (squashed) had to say:"
-        print
-        print squash_ret.stdout
-        print squash_ret.stderr
-        print textwrap.dedent(
-        """\
-        Squashing failed. You probably have a real merge conflict.
+        if second_rebase_ret.success: # pragma: no cover
+          print "Second rebase succeeded unexpectedly!"
+          print "Please see: http://crbug.com/425696"
+          print "First rebased failed with:"
+          print rebase_ret.stderr
+        else:
+          print "Here's what git-rebase (squashed) had to say:"
+          print
+          print squash_ret.stdout
+          print squash_ret.stderr
+          print textwrap.dedent(
+          """\
+          Squashing failed. You probably have a real merge conflict.
 
-        Your working copy is in mid-rebase. Either:
-         * completely resolve like a normal git-rebase; OR
-         * abort the rebase and mark this branch as dormant:
-               git config branch.%s.dormant true
+          Your working copy is in mid-rebase. Either:
+           * completely resolve like a normal git-rebase; OR
+           * abort the rebase and mark this branch as dormant:
+                 git config branch.%s.dormant true
 
-        And then run `git rebase-update` again to resume.
-        """ % branch)
-        return False
+          And then run `git rebase-update` again to resume.
+          """ % branch)
+          return False
   else:
     print '%s up-to-date' % branch
 

@@ -83,7 +83,6 @@ def main(argv):
   assert svn_repo is not None, 'Unable to find svn repo for %s' % match.group(1)
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
 
-  prefix = upstream.rsplit('/')[0]
   set_config('svn-remote.svn.url', svn_repo)
   set_config('svn-remote.svn.fetch',
              '%s:refs/remotes/%s' % (svn_path, upstream))
