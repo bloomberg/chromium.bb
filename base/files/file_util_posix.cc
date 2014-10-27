@@ -322,7 +322,9 @@ bool CopyDirectory(const FilePath& from_path,
     }
 
     if (S_ISDIR(from_stat.st_mode)) {
-      if (mkdir(target_path.value().c_str(), from_stat.st_mode & 01777) != 0 &&
+      if (mkdir(target_path.value().c_str(),
+                (from_stat.st_mode & 01777) | S_IRUSR | S_IXUSR | S_IWUSR) !=
+              0 &&
           errno != EEXIST) {
         DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
                     << target_path.value() << " errno = " << errno;
