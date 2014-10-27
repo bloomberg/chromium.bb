@@ -45,8 +45,6 @@ class DeviceDisabledScreenTest : public testing::Test, public ScreenObserver {
   // ScreenObserver:
   MOCK_METHOD1(OnExit, void(ExitCodes));
   void ShowCurrentScreen() override;
-  void OnSetUserNamePassword(const std::string& username,
-                             const std::string& password) override;
   void SetHostConfiguration() override;
   void ConfigureHost(bool accepted_eula,
                      const std::string& lang,
@@ -95,11 +93,6 @@ void DeviceDisabledScreenTest::TearDown() {
 }
 
 void DeviceDisabledScreenTest::ShowCurrentScreen() {
-}
-
-void DeviceDisabledScreenTest::OnSetUserNamePassword(
-    const std::string& username,
-    const std::string& password) {
 }
 
 void DeviceDisabledScreenTest::SetHostConfiguration() {

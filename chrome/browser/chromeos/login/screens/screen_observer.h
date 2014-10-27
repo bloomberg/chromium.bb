@@ -59,11 +59,6 @@ class ScreenObserver {
   // Forces current screen showing.
   virtual void ShowCurrentScreen() = 0;
 
-  // Notify about new user names and password. It is used to autologin
-  // just created user without asking the same info once again.
-  virtual void OnSetUserNamePassword(const std::string& username,
-                                     const std::string& password) = 0;
-
   // Set remora configuration from shark.
   virtual void SetHostConfiguration() = 0;
   virtual void ConfigureHost(bool accepted_eula,

@@ -1019,12 +1019,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
   }
 }
 
-void WizardController::OnSetUserNamePassword(const std::string& username,
-                                             const std::string& password) {
-  username_ = username;
-  password_ = password;
-}
-
 void WizardController::ShowErrorScreen() {
   VLOG(1) << "Showing error screen.";
   SetCurrentScreen(GetScreen(kErrorScreenName));

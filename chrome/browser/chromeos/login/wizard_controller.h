@@ -240,8 +240,6 @@ class WizardController : public ScreenObserver,
   // Overridden from ScreenObserver:
   virtual void OnExit(ExitCodes exit_code) override;
   virtual void ShowCurrentScreen() override;
-  virtual void OnSetUserNamePassword(const std::string& username,
-                                     const std::string& password) override;
   virtual void SetHostConfiguration() override;
   virtual void ConfigureHost(bool accepted_eula,
                              const std::string& lang,
@@ -269,9 +267,6 @@ class WizardController : public ScreenObserver,
 
   // Changes status area visibility.
   void SetStatusAreaVisible(bool visible);
-
-  // Logs in the specified user via default login screen.
-  void Login(const std::string& username, const std::string& password);
 
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
@@ -336,9 +331,6 @@ class WizardController : public ScreenObserver,
 
   // Screen that was active before, or NULL for login screen.
   BaseScreen* previous_screen_;
-
-  std::string username_;
-  std::string password_;
 
   // True if running official BUILD.
   bool is_official_build_;
