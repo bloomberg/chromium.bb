@@ -10,7 +10,7 @@ ADDRESS_HOME_LINE1 | creditCard.billingContact.address.addressLine1 | Address li
 ADDRESS_HOME_LINE2 | creditCard.billingContact.address.addressLine2 | Address line 2: (optional) |  | creditCard.cardType.code_1-default
 ADDRESS_HOME_CITY | creditCard.billingContact.address.city | City: |  | creditCard.cardType.code_1-default
 ADDRESS_HOME_STATE | creditCard.billingContact.address.state | State: | -1 | creditCard.cardType.code_1-default
-UNKNOWN_TYPE | creditCard.billingContact.address.postalCode | Zip code: |  | creditCard.cardType.code_1-default
+ADDRESS_HOME_ZIP | creditCard.billingContact.address.postalCode | Zip code: |  | creditCard.cardType.code_1-default
 EMAIL_ADDRESS | user.email | email address: |  | creditCard.cardType.code_1-default
 PHONE_HOME_CITY_CODE | user.phone.areaCode | phone: |  | creditCard.cardType.code_1-default
 PHONE_HOME_NUMBER | user.phone.exchangeNumber | – |  | creditCard.cardType.code_1-default
