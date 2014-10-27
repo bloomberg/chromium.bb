@@ -184,7 +184,7 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     context->restore();
 }
 
-bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, RenderStyle*, GraphicsContext*& context)
+bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);

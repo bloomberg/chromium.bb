@@ -53,7 +53,7 @@ void RenderSVGResourceMasker::removeClientFromCache(RenderObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool RenderSVGResourceMasker::prepareEffect(RenderObject* object, RenderStyle*, GraphicsContext*& context)
+bool RenderSVGResourceMasker::prepareEffect(RenderObject* object, GraphicsContext*& context)
 {
     ASSERT(object);
     ASSERT(context);

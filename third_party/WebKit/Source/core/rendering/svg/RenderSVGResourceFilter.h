@@ -64,7 +64,7 @@ public:
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) override;
 
-    bool prepareEffect(RenderObject*, RenderStyle*, GraphicsContext*&);
+    bool prepareEffect(RenderObject*, GraphicsContext*&);
     void finishEffect(RenderObject*, GraphicsContext*&);
 
     FloatRect resourceBoundingBox(const RenderObject*);

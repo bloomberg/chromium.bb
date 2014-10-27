@@ -138,7 +138,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     if (!isRenderingMask) {
         if (RenderSVGResourceMasker* masker = resources->masker()) {
-            if (!masker->prepareEffect(m_object, style, m_paintInfo->context))
+            if (!masker->prepareEffect(m_object, m_paintInfo->context))
                 return;
             m_masker = masker;
             m_renderingFlags |= PostApplyResources;
@@ -161,7 +161,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             // Return with false here may mean that we don't need to draw the content
             // (because it was either drawn before or empty) but we still need to apply the filter.
             m_renderingFlags |= PostApplyResources;
-            if (!m_filter->prepareEffect(m_object, style, m_paintInfo->context))
+            if (!m_filter->prepareEffect(m_object, m_paintInfo->context))
                 return;
 
             // Since we're caching the resulting bitmap and do not invalidate it on paint invalidation rect
