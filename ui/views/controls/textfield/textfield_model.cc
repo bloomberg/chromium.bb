@@ -160,7 +160,7 @@ class InsertEdit : public Edit {
   }
 
   // Edit implementation.
-  virtual bool DoMerge(const Edit* edit) override {
+  bool DoMerge(const Edit* edit) override {
     if (edit->type() != INSERT_EDIT || new_text_end() != edit->new_text_start_)
       return false;
     // If continuous edit, merge it.
@@ -193,7 +193,7 @@ class ReplaceEdit : public Edit {
   }
 
   // Edit implementation.
-  virtual bool DoMerge(const Edit* edit) override {
+  bool DoMerge(const Edit* edit) override {
     if (edit->type() == DELETE_EDIT ||
         new_text_end() != edit->old_text_start_ ||
         edit->old_text_start_ != edit->new_text_start_)
@@ -223,7 +223,7 @@ class DeleteEdit : public Edit {
   }
 
   // Edit implementation.
-  virtual bool DoMerge(const Edit* edit) override {
+  bool DoMerge(const Edit* edit) override {
     if (edit->type() != DELETE_EDIT)
       return false;
 

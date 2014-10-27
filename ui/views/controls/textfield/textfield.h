@@ -52,7 +52,7 @@ class VIEWS_EXPORT Textfield : public View,
   static size_t GetCaretBlinkMs();
 
   Textfield();
-  virtual ~Textfield();
+  ~Textfield() override;
 
   // Set the controller for this textfield.
   void set_controller(TextfieldController* controller) {
@@ -205,111 +205,106 @@ class VIEWS_EXPORT Textfield : public View,
   bool HasTextBeingDragged();
 
   // View overrides:
-  virtual gfx::Insets GetInsets() const override;
-  virtual int GetBaseline() const override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual ui::TextInputClient* GetTextInputClient() override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  virtual bool SkipDefaultKeyEventProcessing(
-      const ui::KeyEvent& event) override;
-  virtual bool GetDropFormats(
+  gfx::Insets GetInsets() const override;
+  int GetBaseline() const override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  ui::TextInputClient* GetTextInputClient() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+  bool GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
-  virtual bool CanDrop(const ui::OSExchangeData& data) override;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  virtual void OnDragExited() override;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
-  virtual void OnDragDone() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
-  virtual void OnVisibleBoundsChanged() override;
-  virtual void OnEnabledChanged() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual gfx::Point GetKeyboardContextMenuLocation() override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  bool CanDrop(const ui::OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  void OnDragDone() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
+  void OnEnabledChanged() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  gfx::Point GetKeyboardContextMenuLocation() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // TextfieldModel::Delegate overrides:
-  virtual void OnCompositionTextConfirmedOrCleared() override;
+  void OnCompositionTextConfirmedOrCleared() override;
 
   // ContextMenuController overrides:
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // DragController overrides:
-  virtual void WriteDragDataForView(View* sender,
-                                    const gfx::Point& press_pt,
-                                    ui::OSExchangeData* data) override;
-  virtual int GetDragOperationsForView(View* sender,
-                                       const gfx::Point& p) override;
-  virtual bool CanStartDragForView(View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) override;
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            ui::OSExchangeData* data) override;
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override;
 
   // ui::TouchEditable overrides:
-  virtual void SelectRect(const gfx::Point& start,
-                          const gfx::Point& end) override;
-  virtual void MoveCaretTo(const gfx::Point& point) override;
-  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override;
-  virtual gfx::Rect GetBounds() override;
-  virtual gfx::NativeView GetNativeView() const override;
-  virtual void ConvertPointToScreen(gfx::Point* point) override;
-  virtual void ConvertPointFromScreen(gfx::Point* point) override;
-  virtual bool DrawsHandles() override;
-  virtual void OpenContextMenu(const gfx::Point& anchor) override;
-  virtual void DestroyTouchSelection() override;
+  void SelectRect(const gfx::Point& start, const gfx::Point& end) override;
+  void MoveCaretTo(const gfx::Point& point) override;
+  void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override;
+  gfx::Rect GetBounds() override;
+  gfx::NativeView GetNativeView() const override;
+  void ConvertPointToScreen(gfx::Point* point) override;
+  void ConvertPointFromScreen(gfx::Point* point) override;
+  bool DrawsHandles() override;
+  void OpenContextMenu(const gfx::Point& anchor) override;
+  void DestroyTouchSelection() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
   // ui::TextInputClient overrides:
-  virtual void SetCompositionText(
-      const ui::CompositionText& composition) override;
-  virtual void ConfirmCompositionText() override;
-  virtual void ClearCompositionText() override;
-  virtual void InsertText(const base::string16& text) override;
-  virtual void InsertChar(base::char16 ch, int flags) override;
-  virtual gfx::NativeWindow GetAttachedWindow() const override;
-  virtual ui::TextInputType GetTextInputType() const override;
-  virtual ui::TextInputMode GetTextInputMode() const override;
-  virtual int GetTextInputFlags() const override;
-  virtual bool CanComposeInline() const override;
-  virtual gfx::Rect GetCaretBounds() const override;
-  virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) const override;
-  virtual bool HasCompositionText() const override;
-  virtual bool GetTextRange(gfx::Range* range) const override;
-  virtual bool GetCompositionTextRange(gfx::Range* range) const override;
-  virtual bool GetSelectionRange(gfx::Range* range) const override;
-  virtual bool SetSelectionRange(const gfx::Range& range) override;
-  virtual bool DeleteRange(const gfx::Range& range) override;
-  virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) const override;
-  virtual void OnInputMethodChanged() override;
-  virtual bool ChangeTextDirectionAndLayoutAlignment(
+  void SetCompositionText(const ui::CompositionText& composition) override;
+  void ConfirmCompositionText() override;
+  void ClearCompositionText() override;
+  void InsertText(const base::string16& text) override;
+  void InsertChar(base::char16 ch, int flags) override;
+  gfx::NativeWindow GetAttachedWindow() const override;
+  ui::TextInputType GetTextInputType() const override;
+  ui::TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
+  bool CanComposeInline() const override;
+  gfx::Rect GetCaretBounds() const override;
+  bool GetCompositionCharacterBounds(uint32 index,
+                                     gfx::Rect* rect) const override;
+  bool HasCompositionText() const override;
+  bool GetTextRange(gfx::Range* range) const override;
+  bool GetCompositionTextRange(gfx::Range* range) const override;
+  bool GetSelectionRange(gfx::Range* range) const override;
+  bool SetSelectionRange(const gfx::Range& range) override;
+  bool DeleteRange(const gfx::Range& range) override;
+  bool GetTextFromRange(const gfx::Range& range,
+                        base::string16* text) const override;
+  void OnInputMethodChanged() override;
+  bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
-  virtual void ExtendSelectionAndDelete(size_t before, size_t after) override;
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) override;
-  virtual void OnCandidateWindowShown() override;
-  virtual void OnCandidateWindowUpdated() override;
-  virtual void OnCandidateWindowHidden() override;
-  virtual bool IsEditingCommandEnabled(int command_id) override;
-  virtual void ExecuteEditingCommand(int command_id) override;
+  void ExtendSelectionAndDelete(size_t before, size_t after) override;
+  void EnsureCaretInRect(const gfx::Rect& rect) override;
+  void OnCandidateWindowShown() override;
+  void OnCandidateWindowUpdated() override;
+  void OnCandidateWindowHidden() override;
+  bool IsEditingCommandEnabled(int command_id) override;
+  void ExecuteEditingCommand(int command_id) override;
 
  protected:
   // Returns the TextfieldModel's text/cursor/selection rendering model.
