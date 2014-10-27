@@ -270,6 +270,11 @@ void URLRequestFileJob::DidOpen(int result) {
   DCHECK_GE(remaining_bytes_, 0);
 
   if (remaining_bytes_ > 0 && byte_range_.first_byte_position() != 0) {
+    // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedProfile tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestFileJob::DidOpen 1"));
+
     int rv = stream_->Seek(base::File::FROM_BEGIN,
                            byte_range_.first_byte_position(),
                            base::Bind(&URLRequestFileJob::DidSeek,
