@@ -24,7 +24,7 @@ namespace corewm {
 class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
  public:
   explicit TooltipAura(gfx::ScreenType screen_type);
-  virtual ~TooltipAura();
+  ~TooltipAura() override;
 
   // Trims the tooltip to fit in the width |max_width|, setting |text| to the
   // clipped result, |width| to the width (in pixels) of the clipped text
@@ -49,15 +49,15 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   void DestroyWidget();
 
   // Tooltip:
-  virtual void SetText(aura::Window* window,
-                       const base::string16& tooltip_text,
-                       const gfx::Point& location) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual bool IsVisible() override;
+  void SetText(aura::Window* window,
+               const base::string16& tooltip_text,
+               const gfx::Point& location) override;
+  void Show() override;
+  void Hide() override;
+  bool IsVisible() override;
 
   // WidgetObserver:
-  virtual void OnWidgetDestroying(Widget* widget) override;
+  void OnWidgetDestroying(Widget* widget) override;
 
   const gfx::ScreenType screen_type_;
 

@@ -173,12 +173,12 @@ class Column : public LayoutElement {
       is_padding_(is_padding),
       master_column_(NULL) {}
 
-  virtual ~Column() {}
+  ~Column() override {}
 
   GridLayout::Alignment h_align() { return h_align_; }
   GridLayout::Alignment v_align() { return v_align_; }
 
-  virtual void ResetSize() override;
+  void ResetSize() override;
 
  private:
   friend class ColumnSet;
@@ -190,7 +190,7 @@ class Column : public LayoutElement {
   // to that size. This should only be used for the master column.
   void UnifySameSizedColumnSizes();
 
-  virtual void AdjustSize(int size) override;
+  void AdjustSize(int size) override;
 
   const GridLayout::Alignment h_align_;
   const GridLayout::Alignment v_align_;
@@ -267,9 +267,9 @@ class Row : public LayoutElement {
       max_descent_(0) {
   }
 
-  virtual ~Row() {}
+  ~Row() override {}
 
-  virtual void ResetSize() override {
+  void ResetSize() override {
     max_ascent_ = max_descent_ = 0;
     SetSize(height_);
   }

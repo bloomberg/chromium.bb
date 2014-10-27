@@ -40,7 +40,7 @@ class VIEWS_EXPORT TouchEditingMenuController {
 class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
                                           public ButtonListener {
  public:
-  virtual ~TouchEditingMenuView();
+  ~TouchEditingMenuView() override;
 
   // If there are no actions available for the menu, returns NULL. Otherwise,
   // returns a new instance of TouchEditingMenuView.
@@ -58,13 +58,13 @@ class VIEWS_EXPORT TouchEditingMenuView : public BubbleDelegateView,
                        gfx::NativeView context);
 
   // views::WidgetDelegate overrides:
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Overridden from BubbleDelegateView.
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Queries the |controller_| for what elements to show in the menu and sizes
   // the menu appropriately.

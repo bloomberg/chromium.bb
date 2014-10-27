@@ -19,7 +19,7 @@ namespace views {
 class TestingView : public View, public ViewTargeterDelegate {
  public:
   TestingView() : can_process_events_within_subtree_(true) {}
-  virtual ~TestingView() {}
+  ~TestingView() override {}
 
   // Reset all test state.
   void Reset() { can_process_events_within_subtree_ = true; }
@@ -34,7 +34,7 @@ class TestingView : public View, public ViewTargeterDelegate {
   }
 
   // View:
-  virtual bool CanProcessEventsWithinSubtree() const override {
+  bool CanProcessEventsWithinSubtree() const override {
     return can_process_events_within_subtree_;
   }
 
@@ -49,7 +49,7 @@ class TestingView : public View, public ViewTargeterDelegate {
 class TestMaskedView : public View, public MaskedTargeterDelegate {
  public:
   TestMaskedView() {}
-  virtual ~TestMaskedView() {}
+  ~TestMaskedView() override {}
 
   // A call-through function to MaskedTargeterDelegate::DoesIntersectRect().
   bool TestDoesIntersectRect(const View* target, const gfx::Rect& rect) const {
@@ -58,7 +58,7 @@ class TestMaskedView : public View, public MaskedTargeterDelegate {
 
  private:
   // MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const override {
+  bool GetHitTestMask(gfx::Path* mask) const override {
     DCHECK(mask);
     SkScalar w = SkIntToScalar(width());
     SkScalar h = SkIntToScalar(height());
@@ -82,7 +82,7 @@ namespace test {
 class ViewTargeterTest : public ViewsTestBase {
  public:
   ViewTargeterTest() {}
-  virtual ~ViewTargeterTest() {}
+  ~ViewTargeterTest() override {}
 
   void SetGestureHandler(internal::RootView* root_view, View* handler) {
     root_view->gesture_handler_ = handler;

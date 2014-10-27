@@ -39,7 +39,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
                                     public gfx::AnimationContainerObserver {
  public:
   explicit BoundsAnimator(View* view);
-  virtual ~BoundsAnimator();
+  ~BoundsAnimator() override;
 
   // Starts animating |view| from its current bounds to |target|. If there is
   // already an animation running for the view it's stopped and a new one
@@ -144,15 +144,14 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
                                 AnimationEndType type);
 
   // gfx::AnimationDelegate overrides.
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   // gfx::AnimationContainerObserver overrides.
-  virtual void AnimationContainerProgressed(
+  void AnimationContainerProgressed(
       gfx::AnimationContainer* container) override;
-  virtual void AnimationContainerEmpty(
-      gfx::AnimationContainer* container) override;
+  void AnimationContainerEmpty(gfx::AnimationContainer* container) override;
 
   // Parent of all views being animated.
   View* parent_;

@@ -18,13 +18,13 @@ namespace test {
 class TestWidgetObserver : public WidgetObserver {
  public:
   explicit TestWidgetObserver(Widget* widget);
-  virtual ~TestWidgetObserver();
+  ~TestWidgetObserver() override;
 
   bool widget_closed() const { return widget_ == NULL; }
 
  private:
   // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) override;
+  void OnWidgetDestroying(Widget* widget) override;
 
   Widget* widget_;
 

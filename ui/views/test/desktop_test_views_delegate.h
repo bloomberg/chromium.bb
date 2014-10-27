@@ -15,11 +15,11 @@ namespace views {
 class DesktopTestViewsDelegate : public TestViewsDelegate {
  public:
   DesktopTestViewsDelegate();
-  virtual ~DesktopTestViewsDelegate();
+  ~DesktopTestViewsDelegate() override;
 
   // Overridden from ViewsDelegate:
-  virtual void OnBeforeWidgetInit(Widget::InitParams* params,
-                            internal::NativeWidgetDelegate* delegate) override;
+  void OnBeforeWidgetInit(Widget::InitParams* params,
+                          internal::NativeWidgetDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopTestViewsDelegate);

@@ -26,7 +26,7 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
                                       public TextfieldController {
  public:
   ColorChooserView(ColorChooserListener* listener, SkColor initial_color);
-  virtual ~ColorChooserView();
+  ~ColorChooserView() override;
 
   // Called when its color value is changed in the web contents.
   void OnColorChanged(SkColor color);
@@ -48,17 +48,17 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
   class SelectedColorPatchView;
 
   // WidgetDelegate overrides:
-  virtual bool CanMinimize() const override;
-  virtual View* GetInitiallyFocusedView() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual void WindowClosing() override;
-  virtual View* GetContentsView() override;
+  bool CanMinimize() const override;
+  View* GetInitiallyFocusedView() override;
+  ui::ModalType GetModalType() const override;
+  void WindowClosing() override;
+  View* GetContentsView() override;
 
   // TextfieldController overrides:
-  virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  void ContentsChanged(Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // The current color in HSV coordinate.
   SkScalar hsv_[3];

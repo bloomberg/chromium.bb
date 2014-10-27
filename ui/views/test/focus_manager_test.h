@@ -17,20 +17,20 @@ class FocusChangeListener;
 class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
  public:
   FocusManagerTest();
-  virtual ~FocusManagerTest();
+  ~FocusManagerTest() override;
 
   // Convenience to obtain the focus manager for the test's hosting widget.
   FocusManager* GetFocusManager();
 
   // Overridden from ViewsTestBase:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Overridden from WidgetDelegate:
-  virtual View* GetContentsView() override;
-  virtual Widget* GetWidget() override;
-  virtual const Widget* GetWidget() const override;
-  virtual void GetAccessiblePanes(std::vector<View*>* panes) override;
+  View* GetContentsView() override;
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
+  void GetAccessiblePanes(std::vector<View*>* panes) override;
 
  protected:
   // Called after the Widget is initialized and the content view is added.
@@ -58,16 +58,14 @@ typedef std::pair<View*, View*> ViewPair;
 class TestFocusChangeListener : public FocusChangeListener {
  public:
   TestFocusChangeListener();
-  virtual ~TestFocusChangeListener();
+  ~TestFocusChangeListener() override;
 
   const std::vector<ViewPair>& focus_changes() const { return focus_changes_; }
   void ClearFocusChanges();
 
   // Overridden from FocusChangeListener:
-  virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) override;
-  virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) override;
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
  private:
   // A vector of which views lost/gained focus.
@@ -82,7 +80,7 @@ typedef std::pair<gfx::NativeView, gfx::NativeView> NativeViewPair;
 class TestWidgetFocusChangeListener : public WidgetFocusChangeListener {
  public:
   TestWidgetFocusChangeListener();
-  virtual ~TestWidgetFocusChangeListener();
+  ~TestWidgetFocusChangeListener() override;
 
   const std::vector<NativeViewPair>& focus_changes() const {
     return focus_changes_;
@@ -90,8 +88,8 @@ class TestWidgetFocusChangeListener : public WidgetFocusChangeListener {
   void ClearFocusChanges();
 
   // Overridden from WidgetFocusChangeListener:
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) override;
+  void OnNativeFocusChange(gfx::NativeView focused_before,
+                           gfx::NativeView focused_now) override;
 
  private:
   // Pairs of (focused_before, focused_now) parameters we've received via calls

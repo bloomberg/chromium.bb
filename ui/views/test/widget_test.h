@@ -49,11 +49,11 @@ namespace test {
 class NativeWidgetCapture : public PlatformNativeWidget {
  public:
   explicit NativeWidgetCapture(internal::NativeWidgetDelegate* delegate);
-  virtual ~NativeWidgetCapture();
+  ~NativeWidgetCapture() override;
 
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual bool HasCapture() const override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  bool HasCapture() const override;
 
  private:
   bool mouse_capture_;
@@ -64,7 +64,7 @@ class NativeWidgetCapture : public PlatformNativeWidget {
 class WidgetTest : public ViewsTestBase {
  public:
   WidgetTest();
-  virtual ~WidgetTest();
+  ~WidgetTest() override;
 
   NativeWidget* CreatePlatformNativeWidget(
       internal::NativeWidgetDelegate* delegate);

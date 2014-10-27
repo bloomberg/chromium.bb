@@ -49,15 +49,15 @@ class TooltipControllerTestHelper {
 class TooltipTestView : public views::View {
  public:
   TooltipTestView();
-  virtual ~TooltipTestView();
+  ~TooltipTestView() override;
 
   void set_tooltip_text(base::string16 tooltip_text) {
     tooltip_text_ = tooltip_text;
   }
 
   // Overridden from views::View
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
  private:
   base::string16 tooltip_text_;

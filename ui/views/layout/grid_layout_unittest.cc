@@ -24,9 +24,7 @@ class SettableSizeView : public View {
     pref_ = pref;
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
-    return pref_;
-  }
+  gfx::Size GetPreferredSize() const override { return pref_; }
 
  private:
    gfx::Size pref_;
@@ -39,11 +37,11 @@ class FlexibleView : public View {
     circumference_ = circumference;
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(0, circumference_ / 2);
   }
 
-  virtual int GetHeightForWidth(int width) const override {
+  int GetHeightForWidth(int width) const override {
     return std::max(0, circumference_ / 2 - width);
   }
 

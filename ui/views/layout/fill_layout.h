@@ -21,13 +21,12 @@ namespace views {
 class VIEWS_EXPORT FillLayout : public LayoutManager {
  public:
   FillLayout();
-  virtual ~FillLayout();
+  ~FillLayout() override;
 
   // Overridden from LayoutManager:
-  virtual void Layout(View* host) override;
-  virtual gfx::Size GetPreferredSize(const View* host) const override;
-  virtual int GetPreferredHeightForWidth(const View* host,
-                                         int width) const override;
+  void Layout(View* host) override;
+  gfx::Size GetPreferredSize(const View* host) const override;
+  int GetPreferredHeightForWidth(const View* host, int width) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FillLayout);

@@ -23,7 +23,7 @@ class View;
 class VIEWS_EXPORT MaskedTargeterDelegate : public ViewTargeterDelegate {
  public:
   MaskedTargeterDelegate() {}
-  virtual ~MaskedTargeterDelegate() {}
+  ~MaskedTargeterDelegate() override {}
 
   // Sets the hit-test mask for the view which implements this interface,
   // in that view's local coordinate space. Returns whether a valid mask
@@ -31,8 +31,8 @@ class VIEWS_EXPORT MaskedTargeterDelegate : public ViewTargeterDelegate {
   virtual bool GetHitTestMask(gfx::Path* mask) const = 0;
 
   // ViewTargeterDelegate:
-  virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const override;
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MaskedTargeterDelegate);

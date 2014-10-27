@@ -19,11 +19,10 @@ class VIEWS_EXPORT MouseWatcherViewHost : public MouseWatcherHost {
   // the y coordinate is between the origin of the view and height of the view
   // plus 10.
   MouseWatcherViewHost(View* view, const gfx::Insets& hot_zone_insets);
-  virtual ~MouseWatcherViewHost();
+  ~MouseWatcherViewHost() override;
 
   // MouseWatcherHost.
-  virtual bool Contains(const gfx::Point& screen_point,
-                        MouseEventType type) override;
+  bool Contains(const gfx::Point& screen_point, MouseEventType type) override;
 
  private:
   bool IsCursorInViewZone(const gfx::Point& screen_point);

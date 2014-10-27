@@ -57,7 +57,7 @@ bool GetColorFromText(const base::string16& text, SkColor* result) {
 // interface.
 class LocatedEventHandlerView : public views::View {
  public:
-  virtual ~LocatedEventHandlerView() {}
+  ~LocatedEventHandlerView() override {}
 
  protected:
   LocatedEventHandlerView() {}
@@ -66,17 +66,17 @@ class LocatedEventHandlerView : public views::View {
   virtual void ProcessEventAtLocation(const gfx::Point& location) = 0;
 
   // views::View overrides:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     ProcessEventAtLocation(event.location());
     return true;
   }
 
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override {
+  bool OnMouseDragged(const ui::MouseEvent& event) override {
     ProcessEventAtLocation(event.location());
     return true;
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP ||
         event->type() == ui::ET_GESTURE_TAP_DOWN ||
         event->IsScrollGestureEvent()) {
@@ -123,11 +123,11 @@ class ColorChooserView::HueView : public LocatedEventHandlerView {
 
  private:
   // LocatedEventHandlerView overrides:
-  virtual void ProcessEventAtLocation(const gfx::Point& point) override;
+  void ProcessEventAtLocation(const gfx::Point& point) override;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   ColorChooserView* chooser_view_;
   int level_;
@@ -235,11 +235,11 @@ class ColorChooserView::SaturationValueView : public LocatedEventHandlerView {
 
  private:
   // LocatedEventHandlerView overrides:
-  virtual void ProcessEventAtLocation(const gfx::Point& point) override;
+  void ProcessEventAtLocation(const gfx::Point& point) override;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   ColorChooserView* chooser_view_;
   SkScalar hue_;

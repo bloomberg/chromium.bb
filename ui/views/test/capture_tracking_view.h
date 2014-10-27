@@ -15,7 +15,7 @@ namespace test {
 class CaptureTrackingView : public views::View {
  public:
   CaptureTrackingView();
-  virtual ~CaptureTrackingView();
+  ~CaptureTrackingView() override;
 
   // Returns true if OnMousePressed() has been invoked.
   bool got_press() const { return got_press_; }
@@ -26,8 +26,8 @@ class CaptureTrackingView : public views::View {
   void reset() { got_press_ = got_capture_lost_ = false; }
 
   // Overridden from views::View
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
 
  private:
   // See description above getters.

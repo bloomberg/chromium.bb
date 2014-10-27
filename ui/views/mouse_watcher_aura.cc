@@ -31,12 +31,12 @@ class MouseWatcher::Observer : public ui::EventHandler {
     aura::Env::GetInstance()->AddPreTargetHandler(this);
   }
 
-  virtual ~Observer() {
+  ~Observer() override {
     aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
 
   // ui::EventHandler implementation:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED:

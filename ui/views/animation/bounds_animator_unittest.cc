@@ -22,7 +22,7 @@ class TestBoundsAnimator : public BoundsAnimator {
   }
 
  protected:
-  virtual SlideAnimation* CreateAnimation() override {
+  SlideAnimation* CreateAnimation() override {
     SlideAnimation* animation = BoundsAnimator::CreateAnimation();
     animation->SetSlideDuration(10);
     return animation;
@@ -36,9 +36,7 @@ class OwnedDelegate : public gfx::AnimationDelegate {
  public:
   OwnedDelegate() {}
 
-  virtual ~OwnedDelegate() {
-    deleted_ = true;
-  }
+  ~OwnedDelegate() override { deleted_ = true; }
 
   static bool GetAndClearDeleted() {
     bool value = deleted_;
@@ -53,7 +51,7 @@ class OwnedDelegate : public gfx::AnimationDelegate {
   }
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationCanceled(const Animation* animation) override {
+  void AnimationCanceled(const Animation* animation) override {
     canceled_ = true;
   }
 
@@ -72,7 +70,7 @@ class TestView : public View {
  public:
   TestView() {}
 
-  virtual void SchedulePaintInRect(const gfx::Rect& r) override {
+  void SchedulePaintInRect(const gfx::Rect& r) override {
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else

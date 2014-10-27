@@ -30,12 +30,12 @@ class ViewsTestHelperAura : public ViewsTestHelper {
  public:
   ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
                       ui::ContextFactory* context_factory);
-  virtual ~ViewsTestHelperAura();
+  ~ViewsTestHelperAura() override;
 
   // Overridden from ViewsTestHelper:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
-  virtual gfx::NativeWindow GetContext() override;
+  void SetUp() override;
+  void TearDown() override;
+  gfx::NativeWindow GetContext() override;
 
  private:
   ui::ContextFactory* context_factory_;

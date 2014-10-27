@@ -17,7 +17,7 @@ namespace views {
 class TestViewsDelegate : public ViewsDelegate {
  public:
   TestViewsDelegate();
-  virtual ~TestViewsDelegate();
+  ~TestViewsDelegate() override;
 
   // If set to |true|, forces widgets that do not provide a native widget to use
   // DesktopNativeWidgetAura instead of whatever the default native widget would
@@ -31,9 +31,8 @@ class TestViewsDelegate : public ViewsDelegate {
   }
 
   // ViewsDelegate:
-  virtual void OnBeforeWidgetInit(
-      Widget::InitParams* params,
-      internal::NativeWidgetDelegate* delegate) override;
+  void OnBeforeWidgetInit(Widget::InitParams* params,
+                          internal::NativeWidgetDelegate* delegate) override;
 
  private:
   bool use_desktop_native_widgets_;

@@ -71,11 +71,11 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     ui::TouchSelectionControllerFactory::SetInstance(views_tsc_factory_.get());
   }
 
-  virtual ~TouchSelectionControllerImplTest() {
+  ~TouchSelectionControllerImplTest() override {
     ui::TouchSelectionControllerFactory::SetInstance(NULL);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (textfield_widget_ && !textfield_widget_->IsClosed())
       textfield_widget_->Close();
     if (widget_ && !widget_->IsClosed())
@@ -570,64 +570,50 @@ class TestTouchEditable : public ui::TouchEditable {
     cursor_rect_ = cursor_rect;
   }
 
-  virtual ~TestTouchEditable() {}
+  ~TestTouchEditable() override {}
 
  private:
   // Overridden from ui::TouchEditable.
-  virtual void SelectRect(
-      const gfx::Point& start, const gfx::Point& end) override {
+  void SelectRect(const gfx::Point& start, const gfx::Point& end) override {
     NOTREACHED();
   }
-  virtual void MoveCaretTo(const gfx::Point& point) override {
-    NOTREACHED();
-  }
-  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override {
+  void MoveCaretTo(const gfx::Point& point) override { NOTREACHED(); }
+  void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) override {
     *p1 = *p2 = cursor_rect_;
   }
-  virtual gfx::Rect GetBounds() override {
-    return gfx::Rect(bounds_.size());
-  }
-  virtual gfx::NativeView GetNativeView() const override {
-    return window_;
-  }
-  virtual void ConvertPointToScreen(gfx::Point* point) override {
+  gfx::Rect GetBounds() override { return gfx::Rect(bounds_.size()); }
+  gfx::NativeView GetNativeView() const override { return window_; }
+  void ConvertPointToScreen(gfx::Point* point) override {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(window_->GetRootWindow());
     if (screen_position_client)
       screen_position_client->ConvertPointToScreen(window_, point);
   }
-  virtual void ConvertPointFromScreen(gfx::Point* point) override {
+  void ConvertPointFromScreen(gfx::Point* point) override {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(window_->GetRootWindow());
     if (screen_position_client)
       screen_position_client->ConvertPointFromScreen(window_, point);
   }
-  virtual bool DrawsHandles() override {
-    return false;
-  }
-  virtual void OpenContextMenu(const gfx::Point& anchor) override {
-    NOTREACHED();
-  }
-  virtual void DestroyTouchSelection() override {
-    NOTREACHED();
-  }
+  bool DrawsHandles() override { return false; }
+  void OpenContextMenu(const gfx::Point& anchor) override { NOTREACHED(); }
+  void DestroyTouchSelection() override { NOTREACHED(); }
 
   // Overridden from ui::SimpleMenuModel::Delegate.
-  virtual bool IsCommandIdChecked(int command_id) const override {
+  bool IsCommandIdChecked(int command_id) const override {
     NOTREACHED();
     return false;
   }
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdEnabled(int command_id) const override {
     NOTREACHED();
     return false;
   }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override {
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override {
     NOTREACHED();
     return false;
   }
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  void ExecuteCommand(int command_id, int event_flags) override {
     NOTREACHED();
   }
 
@@ -730,21 +716,19 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
 class TestTouchEditingMenuController : public TouchEditingMenuController {
  public:
   TestTouchEditingMenuController() {}
-  virtual ~TestTouchEditingMenuController() {}
+  ~TestTouchEditingMenuController() override {}
 
   // Overriden from TouchEditingMenuController.
-  virtual bool IsCommandIdEnabled(int command_id) const override {
+  bool IsCommandIdEnabled(int command_id) const override {
     // Return true, since we want the menu to have all |kMenuCommandCount|
     // available commands.
     return true;
   }
-  virtual void ExecuteCommand(int command_id, int event_flags) override {
+  void ExecuteCommand(int command_id, int event_flags) override {
     NOTREACHED();
   }
-  virtual void OpenContextMenu() override {
-    NOTREACHED();
-  }
-  virtual void OnMenuClosed(TouchEditingMenuView* menu) override {}
+  void OpenContextMenu() override { NOTREACHED(); }
+  void OnMenuClosed(TouchEditingMenuView* menu) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTouchEditingMenuController);

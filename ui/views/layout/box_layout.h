@@ -63,7 +63,7 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
             int inside_border_horizontal_spacing,
             int inside_border_vertical_spacing,
             int between_child_spacing);
-  virtual ~BoxLayout();
+  ~BoxLayout() override;
 
   void set_main_axis_alignment(MainAxisAlignment main_axis_alignment) {
     main_axis_alignment_ = main_axis_alignment;
@@ -98,13 +98,12 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   void SetDefaultFlex(int default_flex);
 
   // Overridden from views::LayoutManager:
-  virtual void Installed(View* host) override;
-  virtual void Uninstalled(View* host) override;
-  virtual void ViewRemoved(View* host, View* view) override;
-  virtual void Layout(View* host) override;
-  virtual gfx::Size GetPreferredSize(const View* host) const override;
-  virtual int GetPreferredHeightForWidth(const View* host,
-                                         int width) const override;
+  void Installed(View* host) override;
+  void Uninstalled(View* host) override;
+  void ViewRemoved(View* host, View* view) override;
+  void Layout(View* host) override;
+  gfx::Size GetPreferredSize(const View* host) const override;
+  int GetPreferredHeightForWidth(const View* host, int width) const override;
 
  private:
   // Returns the flex for the specified |view|.

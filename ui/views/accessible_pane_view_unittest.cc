@@ -21,10 +21,9 @@ class TestBarView : public AccessiblePaneView,
                     public ButtonListener {
  public:
   TestBarView();
-  virtual ~TestBarView();
+  ~TestBarView() override;
 
-  virtual void ButtonPressed(Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
   LabelButton* child_button() const { return child_button_.get(); }
   LabelButton* second_child_button() const {
     return second_child_button_.get();
@@ -32,7 +31,7 @@ class TestBarView : public AccessiblePaneView,
   LabelButton* third_child_button() const { return third_child_button_.get(); }
   LabelButton* not_child_button() const { return not_child_button_.get(); }
 
-  virtual View* GetDefaultFocusableChild() override;
+  View* GetDefaultFocusableChild() override;
 
  private:
   void Init();

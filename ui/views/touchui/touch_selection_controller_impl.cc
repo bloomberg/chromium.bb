@@ -133,12 +133,11 @@ class TouchHandleWindowTargeter : public wm::MaskedWindowTargeter {
   TouchHandleWindowTargeter(aura::Window* window,
                             EditingHandleView* handle_view);
 
-  virtual ~TouchHandleWindowTargeter() {}
+  ~TouchHandleWindowTargeter() override {}
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const override;
+  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override;
 
   EditingHandleView* handle_view_;
 
@@ -165,16 +164,12 @@ class TouchSelectionControllerImpl::EditingHandleView
     set_owned_by_client();
   }
 
-  virtual ~EditingHandleView() {
-    SetWidgetVisible(false, false);
-  }
+  ~EditingHandleView() override { SetWidgetVisible(false, false); }
 
   // Overridden from views::WidgetDelegateView:
-  virtual bool WidgetHasHitTestMask() const override {
-    return true;
-  }
+  bool WidgetHasHitTestMask() const override { return true; }
 
-  virtual void GetWidgetHitTestMask(gfx::Path* mask) const override {
+  void GetWidgetHitTestMask(gfx::Path* mask) const override {
     gfx::Size image_size = GetHandleImageSize();
     mask->addRect(SkIntToScalar(0), SkIntToScalar(selection_rect_.height()),
         SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
@@ -182,12 +177,12 @@ class TouchSelectionControllerImpl::EditingHandleView
             kSelectionHandleVertPadding));
   }
 
-  virtual void DeleteDelegate() override {
+  void DeleteDelegate() override {
     // We are owned and deleted by TouchSelectionController.
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     if (draw_invisible_)
       return;
     gfx::Size image_size = GetHandleImageSize();
@@ -205,7 +200,7 @@ class TouchSelectionControllerImpl::EditingHandleView
         kSelectionHandleHorizPadding, selection_rect_.height());
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     event->SetHandled();
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -230,7 +225,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     }
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     gfx::Size image_size = GetHandleImageSize();
     return gfx::Size(image_size.width() + 2 * kSelectionHandleHorizPadding,
                      image_size.height() + selection_rect_.height() +

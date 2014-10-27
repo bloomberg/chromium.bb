@@ -97,11 +97,11 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   // Constructs a new HorizontalPainter loading the specified image names.
   // The images must be in the order left, right and center.
   explicit HorizontalPainter(const int image_resource_names[]);
-  virtual ~HorizontalPainter();
+  ~HorizontalPainter() override;
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
+  gfx::Size GetMinimumSize() const override;
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   // The image chunks.

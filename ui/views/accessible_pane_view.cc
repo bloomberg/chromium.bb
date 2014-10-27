@@ -24,14 +24,14 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
         accessible_pane_view_(pane_view) {}
 
  protected:
-  virtual View* GetParent(View* v) override {
+  View* GetParent(View* v) override {
     return accessible_pane_view_->ContainsForFocusSearch(root(), v) ?
         accessible_pane_view_->GetParentForFocusSearch(v) : NULL;
   }
 
   // Returns true if |v| is contained within the hierarchy rooted at |root|.
   // Subclasses can override this if they need custom focus search behavior.
-  virtual bool Contains(View* root, const View* v) override {
+  bool Contains(View* root, const View* v) override {
     return accessible_pane_view_->ContainsForFocusSearch(root, v);
   }
 

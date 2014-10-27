@@ -48,11 +48,11 @@ class SimpleTestView : public View {
     set_id(view_id);
   }
 
-  virtual void OnFocus() override {
+  void OnFocus() override {
     event_list_->push_back(FocusTestEvent(ON_FOCUS, id()));
   }
 
-  virtual void OnBlur() override {
+  void OnBlur() override {
     event_list_->push_back(FocusTestEvent(ON_BLUR, id()));
   }
 
@@ -165,12 +165,12 @@ class TestAcceleratorTarget : public ui::AcceleratorTarget {
         process_accelerator_(process_accelerator),
         can_handle_accelerators_(true) {}
 
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     ++accelerator_count_;
     return process_accelerator_;
   }
 
-  virtual bool CanHandleAccelerators() const override {
+  bool CanHandleAccelerators() const override {
     return can_handle_accelerators_;
   }
 
@@ -425,15 +425,13 @@ class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
         accelerator_count_(0) {
   }
 
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     ++accelerator_count_;
     focus_manager_->UnregisterAccelerator(accelerator, this);
     return true;
   }
 
-  virtual bool CanHandleAccelerators() const override {
-    return true;
-  }
+  bool CanHandleAccelerators() const override { return true; }
 
   int accelerator_count() const { return accelerator_count_; }
 
@@ -482,7 +480,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
         dtor_tracker_(dtor_tracker) {
     }
 
-    virtual ~FocusManagerDtorTracked() {
+    ~FocusManagerDtorTracked() override {
       dtor_tracker_->push_back("FocusManagerDtorTracked");
     }
 
@@ -498,8 +496,8 @@ class FocusManagerDtorTest : public FocusManagerTest {
         : dtor_tracker_(dtor_tracker) {
     }
 
-    virtual FocusManager* CreateFocusManager(Widget* widget,
-                                             bool desktop_widget) override {
+    FocusManager* CreateFocusManager(Widget* widget,
+                                     bool desktop_widget) override {
       return new FocusManagerDtorTracked(widget, dtor_tracker_);
     }
 
@@ -516,7 +514,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
           dtor_tracker_(dtor_tracker) {
       SetStyle(STYLE_BUTTON);
     };
-    virtual ~LabelButtonDtorTracked() {
+    ~LabelButtonDtorTracked() override {
       dtor_tracker_->push_back("LabelButtonDtorTracked");
     }
 
@@ -529,14 +527,14 @@ class FocusManagerDtorTest : public FocusManagerTest {
         : dtor_tracker_(dtor_tracker) {
     }
 
-    virtual ~WindowDtorTracked() {
+    ~WindowDtorTracked() override {
       dtor_tracker_->push_back("WindowDtorTracked");
     }
 
     DtorTrackVector* dtor_tracker_;
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     ViewsTestBase::SetUp();
     FocusManagerFactory::Install(new TestFocusManagerFactory(&dtor_tracker_));
     // Create WindowDtorTracked that uses FocusManagerDtorTracked.
@@ -551,7 +549,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
     widget->Show();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     FocusManagerFactory::Install(NULL);
     ViewsTestBase::TearDown();
   }
@@ -568,7 +566,7 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
 
   void set_view_to_focus(View* view) { view_to_focus_ = view; }
 
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override {
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
     view_to_focus_->RequestFocus();
   }
 
@@ -703,16 +701,16 @@ class FocusManagerArrowKeyTraversalTest : public FocusManagerTest {
   FocusManagerArrowKeyTraversalTest()
       : previous_arrow_key_traversal_enabled_(false) {
   }
-  virtual ~FocusManagerArrowKeyTraversalTest() {}
+  ~FocusManagerArrowKeyTraversalTest() override {}
 
   // FocusManagerTest overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     FocusManagerTest::SetUp();
 
     previous_arrow_key_traversal_enabled_ =
       FocusManager::arrow_key_traversal_enabled();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     FocusManager::set_arrow_key_traversal_enabled(
         previous_arrow_key_traversal_enabled_);
     FocusManagerTest::TearDown();
@@ -786,7 +784,7 @@ class TextInputTestView : public View {
  public:
   TextInputTestView() {}
 
-  virtual ui::TextInputClient* GetTextInputClient() override {
+  ui::TextInputClient* GetTextInputClient() override {
     return &text_input_client_;
   }
 
@@ -845,18 +843,18 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
   explicit AdvanceFocusWidgetDelegate(Widget* widget)
       : widget_(widget),
         should_advance_focus_to_parent_(false) {}
-  virtual ~AdvanceFocusWidgetDelegate() {}
+  ~AdvanceFocusWidgetDelegate() override {}
 
   void set_should_advance_focus_to_parent(bool value) {
     should_advance_focus_to_parent_ = value;
   }
 
   // WidgetDelegate overrides:
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const override {
+  bool ShouldAdvanceFocusToTopLevelWidget() const override {
     return should_advance_focus_to_parent_;
   }
-  virtual Widget* GetWidget() override { return widget_; }
-  virtual const Widget* GetWidget() const override { return widget_; }
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
 
  private:
   Widget* widget_;

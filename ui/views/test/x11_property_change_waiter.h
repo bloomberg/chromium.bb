@@ -22,7 +22,7 @@ namespace views {
 class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
  public:
   X11PropertyChangeWaiter(XID window, const char* property);
-  virtual ~X11PropertyChangeWaiter();
+  ~X11PropertyChangeWaiter() override;
 
   // Blocks till the value of |property_| changes.
   virtual void Wait();
@@ -37,8 +37,8 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
 
  private:
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   XID x_window_;
   const char* property_;

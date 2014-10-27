@@ -21,11 +21,11 @@ namespace views {
 class VIEWS_EXPORT RoundRectPainter : public Painter {
  public:
   RoundRectPainter(SkColor border_color, int corner_radius);
-  virtual ~RoundRectPainter();
+  ~RoundRectPainter() override;
 
   // Painter:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
+  gfx::Size GetMinimumSize() const override;
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
   const SkColor border_color_;

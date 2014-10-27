@@ -26,9 +26,9 @@ class TestButton : public Button {
 class NativeViewAccessibilityTest : public ViewsTestBase {
  public:
   NativeViewAccessibilityTest() {}
-  virtual ~NativeViewAccessibilityTest() {}
+  ~NativeViewAccessibilityTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
     button_.reset(new TestButton());
     button_->SetSize(gfx::Size(20, 20));
@@ -39,7 +39,7 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
     label_accessibility_ = NativeViewAccessibility::Create(label_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     button_accessibility_->Destroy();
     button_accessibility_ = NULL;
     label_accessibility_->Destroy();

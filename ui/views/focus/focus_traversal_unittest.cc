@@ -89,8 +89,8 @@ const int kThumbnailSuperStarID = count++;
 class DummyComboboxModel : public ui::ComboboxModel {
  public:
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override { return 10; }
-  virtual base::string16 GetItemAt(int index) override {
+  int GetItemCount() const override { return 10; }
+  base::string16 GetItemAt(int index) override {
     return ASCIIToUTF16("Item ") + base::IntToString16(index);
   }
 };
@@ -108,7 +108,7 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from View:
-  virtual FocusTraversable* GetPaneFocusTraversable() override {
+  FocusTraversable* GetPaneFocusTraversable() override {
     if (focus_search_)
       return this;
     else
@@ -116,15 +116,9 @@ class PaneView : public View, public FocusTraversable {
   }
 
   // Overridden from FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() override {
-    return focus_search_;
-  }
-  virtual FocusTraversable* GetFocusTraversableParent() override {
-    return NULL;
-  }
-  virtual View* GetFocusTraversableParentView() override {
-    return NULL;
-  }
+  views::FocusSearch* GetFocusSearch() override { return focus_search_; }
+  FocusTraversable* GetFocusTraversableParent() override { return NULL; }
+  View* GetFocusTraversableParentView() override { return NULL; }
 
  private:
   FocusSearch* focus_search_;
@@ -140,17 +134,17 @@ class BorderView : public NativeViewHost {
     SetFocusable(false);
   }
 
-  virtual ~BorderView() {}
+  ~BorderView() override {}
 
   virtual internal::RootView* GetContentsRootView() {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual FocusTraversable* GetFocusTraversable() override {
+  FocusTraversable* GetFocusTraversable() override {
     return static_cast<internal::RootView*>(widget_->GetRootView());
   }
 
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     NativeViewHost::ViewHierarchyChanged(details);
 
@@ -183,9 +177,9 @@ class BorderView : public NativeViewHost {
 
 class FocusTraversalTest : public FocusManagerTest {
  public:
-  virtual ~FocusTraversalTest();
+  ~FocusTraversalTest() override;
 
-  virtual void InitContentView() override;
+  void InitContentView() override;
 
  protected:
   FocusTraversalTest();

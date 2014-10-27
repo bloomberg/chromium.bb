@@ -75,9 +75,9 @@ TooltipController* GetController(Widget* widget) {
 class TooltipControllerTest : public aura::test::AuraTestBase {
  public:
   TooltipControllerTest() : view_(NULL) {}
-  virtual ~TooltipControllerTest() {}
+  ~TooltipControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
 #if defined(OS_CHROMEOS)
     views_delegate_.reset(new TestViewsDelegate);
 #else
@@ -103,7 +103,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     generator_.reset(new ui::test::EventGenerator(GetRootWindow()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined(OS_CHROMEOS)
     root_window()->RemovePreTargetHandler(controller_.get());
     aura::client::SetTooltipClient(root_window(), NULL);
@@ -414,22 +414,20 @@ int IndexInParent(const aura::Window* window) {
 class TestScreenPositionClient : public aura::client::ScreenPositionClient {
  public:
   TestScreenPositionClient() {}
-  virtual ~TestScreenPositionClient() {}
+  ~TestScreenPositionClient() override {}
 
   // ScreenPositionClient overrides:
-  virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) override {
-  }
-  virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) override {
-  }
-  virtual void ConvertHostPointToScreen(aura::Window* root_gwindow,
-                                        gfx::Point* point) override {
+  void ConvertPointToScreen(const aura::Window* window,
+                            gfx::Point* point) override {}
+  void ConvertPointFromScreen(const aura::Window* window,
+                              gfx::Point* point) override {}
+  void ConvertHostPointToScreen(aura::Window* root_gwindow,
+                                gfx::Point* point) override {
     NOTREACHED();
   }
-  virtual void SetBounds(aura::Window* window,
-                         const gfx::Rect& bounds,
-                         const gfx::Display& display) override {
+  void SetBounds(aura::Window* window,
+                 const gfx::Rect& bounds,
+                 const gfx::Display& display) override {
     window->SetBounds(bounds);
   }
 
@@ -442,9 +440,9 @@ class TestScreenPositionClient : public aura::client::ScreenPositionClient {
 class TooltipControllerCaptureTest : public TooltipControllerTest {
  public:
   TooltipControllerCaptureTest() {}
-  virtual ~TooltipControllerCaptureTest() {}
+  ~TooltipControllerCaptureTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TooltipControllerTest::SetUp();
     aura::client::SetScreenPositionClient(GetRootWindow(),
                                           &screen_position_client_);
@@ -455,7 +453,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen());
     desktop_screen_.reset();
@@ -552,26 +550,20 @@ namespace {
 class TestTooltip : public Tooltip {
  public:
   TestTooltip() : is_visible_(false) {}
-  virtual ~TestTooltip() {}
+  ~TestTooltip() override {}
 
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Tooltip:
-  virtual void SetText(aura::Window* window,
-                       const base::string16& tooltip_text,
-                       const gfx::Point& location) override {
+  void SetText(aura::Window* window,
+               const base::string16& tooltip_text,
+               const gfx::Point& location) override {
     tooltip_text_ = tooltip_text;
     location_ = location;
   }
-  virtual void Show() override {
-    is_visible_ = true;
-  }
-  virtual void Hide() override {
-    is_visible_ = false;
-  }
-  virtual bool IsVisible() override {
-    return is_visible_;
-  }
+  void Show() override { is_visible_ = true; }
+  void Hide() override { is_visible_ = false; }
+  bool IsVisible() override { return is_visible_; }
   const gfx::Point& location() { return location_; }
 
  private:
@@ -588,9 +580,9 @@ class TestTooltip : public Tooltip {
 class TooltipControllerTest2 : public aura::test::AuraTestBase {
  public:
   TooltipControllerTest2() : test_tooltip_(new TestTooltip) {}
-  virtual ~TooltipControllerTest2() {}
+  ~TooltipControllerTest2() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
@@ -602,7 +594,7 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
     generator_.reset(new ui::test::EventGenerator(root_window()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     root_window()->RemovePreTargetHandler(controller_.get());
     aura::client::SetTooltipClient(root_window(), NULL);
     controller_.reset();
@@ -663,9 +655,9 @@ TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
 class TooltipControllerTest3 : public aura::test::AuraTestBase {
  public:
   TooltipControllerTest3() : test_tooltip_(new TestTooltip) {}
-  virtual ~TooltipControllerTest3() {}
+  ~TooltipControllerTest3() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
@@ -687,7 +679,7 @@ class TooltipControllerTest3 : public aura::test::AuraTestBase {
     SetTooltipClient(GetRootWindow(), controller_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     GetRootWindow()->RemovePreTargetHandler(controller_.get());
     aura::client::SetTooltipClient(GetRootWindow(), NULL);
 

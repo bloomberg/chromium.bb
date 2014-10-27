@@ -29,13 +29,11 @@ class ViewStorage;
 class VIEWS_EXPORT ExternalFocusTracker : public FocusChangeListener {
  public:
   ExternalFocusTracker(View* parent_view, FocusManager* focus_manager);
-  virtual ~ExternalFocusTracker();
+  ~ExternalFocusTracker() override;
 
   // FocusChangeListener:
-  virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) override;
-  virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) override;
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
   // Focuses last focused view which is not a child of parent view and is not
   // parent view itself. Returns true if focus for a view was requested, false

@@ -14,9 +14,7 @@ namespace {
 
 class BoxLayoutTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    host_.reset(new View);
-  }
+  void SetUp() override { host_.reset(new View); }
 
   scoped_ptr<View> host_;
 };

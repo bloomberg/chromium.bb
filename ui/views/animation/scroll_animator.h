@@ -29,7 +29,7 @@ class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {
  public:
   // The ScrollAnimator does not own the delegate. Uses default acceleration.
   explicit ScrollAnimator(ScrollDelegate* delegate);
-  virtual ~ScrollAnimator();
+  ~ScrollAnimator() override;
 
   // Use this if you would prefer different acceleration than the default.
   void set_acceleration(float acceleration) { acceleration_ = acceleration; }
@@ -41,9 +41,9 @@ class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {
 
  private:
   // Implementation of gfx::AnimationDelegate.
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   ScrollDelegate* delegate_;
 

@@ -24,7 +24,7 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
                                         public FocusTraversable {
  public:
   AccessiblePaneView();
-  virtual ~AccessiblePaneView();
+  ~AccessiblePaneView() override;
 
   // Set focus to the pane with complete keyboard access.
   // Focus will be restored to the last focused view if the user escapes.
@@ -40,23 +40,20 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   virtual bool SetPaneFocusAndFocusDefault();
 
   // Overridden from View:
-  virtual FocusTraversable* GetPaneFocusTraversable() override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
-      override;
-  virtual void SetVisible(bool flag) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void RequestFocus() override;
+  FocusTraversable* GetPaneFocusTraversable() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void SetVisible(bool flag) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void RequestFocus() override;
 
   // Overridden from FocusChangeListener:
-  virtual void OnWillChangeFocus(View* focused_before,
-                                 View* focused_now) override;
-  virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) override;
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override;
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
   // Overridden from FocusTraversable:
-  virtual FocusSearch* GetFocusSearch() override;
-  virtual FocusTraversable* GetFocusTraversableParent() override;
-  virtual View* GetFocusTraversableParentView() override;
+  FocusSearch* GetFocusSearch() override;
+  FocusTraversable* GetFocusTraversableParent() override;
+  View* GetFocusTraversableParentView() override;
 
   // For testing only.
   const ui::Accelerator& home_key() const { return home_key_; }

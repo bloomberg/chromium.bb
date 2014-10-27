@@ -63,7 +63,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
       NativeThemeGetter;
 
-  virtual ~LinuxUI() {}
+  ~LinuxUI() override {}
 
   // Sets the dynamically loaded singleton that draws the desktop native UI.
   static void SetInstance(LinuxUI* instance);
