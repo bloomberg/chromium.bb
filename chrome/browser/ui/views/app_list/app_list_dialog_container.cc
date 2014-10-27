@@ -33,10 +33,10 @@ namespace {
 class AppListOverlayBackground : public views::Background {
  public:
   AppListOverlayBackground() {}
-  virtual ~AppListOverlayBackground() {}
+  ~AppListOverlayBackground() override {}
 
   // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
     // The radius of the app list overlay (the dialog's background).
     // TODO(sashab): Using SupportsShadow() from app_list_view.cc, make this
     // 1px smaller on platforms that support shadows.
@@ -71,11 +71,11 @@ class AppListDialogContainer : public views::DialogDelegateView,
     close_button_->AddAccelerator(escape);
     AddChildView(close_button_);
   }
-  virtual ~AppListDialogContainer() {}
+  ~AppListDialogContainer() override {}
 
  private:
   // Overridden from views::View:
-  virtual void Layout() override {
+  void Layout() override {
     // Margin of the close button from the top right-hand corner of the dialog.
     const int kCloseButtonDialogMargin = 10;
 
@@ -88,27 +88,22 @@ class AppListDialogContainer : public views::DialogDelegateView,
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() override {
-    return GetContentsView();
-  }
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_WINDOW;
-  }
-  virtual void WindowClosing() override {
+  views::View* GetInitiallyFocusedView() override { return GetContentsView(); }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
+  void WindowClosing() override {
     if (!close_callback_.is_null())
       close_callback_.Run();
   }
-  virtual views::ClientView* CreateClientView(views::Widget* widget) override {
+  views::ClientView* CreateClientView(views::Widget* widget) override {
     return new views::ClientView(widget, GetContentsView());
   }
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     return new views::NativeFrameView(widget);
   }
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == close_button_) {
       GetWidget()->Close();
     } else {
@@ -129,12 +124,12 @@ class AppListDialogContainer : public views::DialogDelegateView,
 class FullSizeBubbleFrameView : public views::BubbleFrameView {
  public:
   FullSizeBubbleFrameView() : views::BubbleFrameView(gfx::Insets()) {}
-  virtual ~FullSizeBubbleFrameView() {}
+  ~FullSizeBubbleFrameView() override {}
 
  private:
   // Overridden from views::ViewTargeterDelegate:
-  virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const override {
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override {
     // Make sure click events can still reach the close button, even if the
     // ClientView overlaps it.
     if (IsCloseButtonVisible() && GetCloseButtonBounds().Intersects(rect))
@@ -143,7 +138,7 @@ class FullSizeBubbleFrameView : public views::BubbleFrameView {
   }
 
   // Overridden from views::View:
-  virtual gfx::Insets GetInsets() const override { return gfx::Insets(); }
+  gfx::Insets GetInsets() const override { return gfx::Insets(); }
 
   DISALLOW_COPY_AND_ASSIGN(FullSizeBubbleFrameView);
 };
@@ -160,26 +155,22 @@ class NativeDialogContainer : public views::DialogDelegateView {
     SetLayoutManager(new views::FillLayout());
     AddChildView(dialog_body_);
   }
-  virtual ~NativeDialogContainer() {}
+  ~NativeDialogContainer() override {}
 
  private:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override { return size_; }
+  gfx::Size GetPreferredSize() const override { return size_; }
 
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_WINDOW;
-  }
-  virtual void WindowClosing() override {
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
+  void WindowClosing() override {
     if (!close_callback_.is_null())
       close_callback_.Run();
   }
 
   // Overridden from views::DialogDelegate:
-  virtual int GetDialogButtons() const override {
-    return ui::DIALOG_BUTTON_NONE;
-  }
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
     scoped_ptr<views::BubbleBorder> border(
