@@ -95,6 +95,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoActive:
     case CSSSelector::PseudoChecked:
     case CSSSelector::PseudoEnabled:
+    case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoDefault:
     case CSSSelector::PseudoDisabled:
     case CSSSelector::PseudoOptional:
@@ -160,7 +161,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
-    case CSSSelector::PseudoFullPageMedia:
     case CSSSelector::PseudoCornerPresent:
     case CSSSelector::PseudoDecrement:
     case CSSSelector::PseudoIncrement:
