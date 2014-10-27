@@ -429,7 +429,7 @@ weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm
 
 weston_multi_resource_SOURCES = clients/multi-resource.c
 weston_multi_resource_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lrt -lm
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
