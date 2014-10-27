@@ -55,7 +55,7 @@ private:
 
 String toHexString(const void* p)
 {
-    return String::format("0x%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(p)));
+    return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(p)));
 }
 
 void setNodeInfo(TracedValue* value, Node* node, const char* idFieldName, const char* nameFieldName = 0)

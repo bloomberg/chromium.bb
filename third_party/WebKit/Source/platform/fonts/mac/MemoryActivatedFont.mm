@@ -40,7 +40,7 @@ namespace blink {
 
 namespace {
 
-typedef HashMap<uint32, MemoryActivatedFont*> FontContainerRefMemoryFontHash;
+typedef HashMap<uint32_t, MemoryActivatedFont*> FontContainerRefMemoryFontHash;
 typedef HashMap<WTF::String, MemoryActivatedFont*> FontNameMemoryFontHash;
 
 // Caching:

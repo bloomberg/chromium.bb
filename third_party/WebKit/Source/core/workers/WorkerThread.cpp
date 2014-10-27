@@ -54,8 +54,8 @@
 namespace blink {
 
 namespace {
-const int64 kShortIdleHandlerDelayMs = 1000;
-const int64 kLongIdleHandlerDelayMs = 10*1000;
+const int64_t kShortIdleHandlerDelayMs = 1000;
+const int64_t kLongIdleHandlerDelayMs = 10*1000;
 
 class MicrotaskRunner : public WebThread::TaskObserver {
 public:
@@ -136,7 +136,7 @@ public:
 
         // See BlinkPlatformImpl::setSharedTimerFireInterval for explanation of
         // why ceil is used in the interval calculation.
-        int64 delay = static_cast<int64>(ceil(interval * 1000));
+        int64_t delay = static_cast<int64_t>(ceil(interval * 1000));
 
         if (delay < 0) {
             delay = 0;
@@ -465,7 +465,7 @@ bool WorkerThread::isCurrentThread() const
 void WorkerThread::idleHandler()
 {
     ASSERT(m_workerGlobalScope.get());
-    int64 delay = kLongIdleHandlerDelayMs;
+    int64_t delay = kLongIdleHandlerDelayMs;
 
     // Do a script engine idle notification if the next event is distant enough.
     const double kMinIdleTimespan = 0.3;

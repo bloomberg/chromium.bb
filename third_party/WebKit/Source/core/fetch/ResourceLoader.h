@@ -78,7 +78,7 @@ public:
     void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
     void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) override;
     void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) override;
-    void didFinishLoading(blink::WebURLLoader*, double finishTime, int64 encodedDataLength) override;
+    void didFinishLoading(blink::WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
     void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
     void didDownloadData(blink::WebURLLoader*, int, int) override;
 

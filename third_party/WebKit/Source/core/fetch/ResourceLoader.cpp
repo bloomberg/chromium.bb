@@ -224,7 +224,7 @@ void ResourceLoader::didDownloadData(blink::WebURLLoader*, int length, int encod
     m_resource->didDownloadData(length);
 }
 
-void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64 encodedDataLength)
+void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength)
 {
     // If load has been cancelled after finishing (which could happen with a
     // JavaScript that changes the window location), do nothing.
@@ -457,7 +457,7 @@ void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int 
     m_resource->appendData(data, length);
 }
 
-void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, int64 encodedDataLength)
+void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     m_connectionState = ConnectionStateFinishedLoading;
@@ -542,7 +542,7 @@ void ResourceLoader::requestSynchronously()
     if (m_state == Terminated)
         return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
-    int64 encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : blink::WebURLLoaderClient::kUnknownEncodedDataLength;
+    int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : blink::WebURLLoaderClient::kUnknownEncodedDataLength;
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
