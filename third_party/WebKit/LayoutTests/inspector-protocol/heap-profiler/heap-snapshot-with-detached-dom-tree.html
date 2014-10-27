@@ -9,13 +9,15 @@ if (window.testRunner) {
 
 function createDetachedDomTreeAndRunTest()
 {
-    gc();
+    if (window.gc)
+        window.gc();
     window.retaining_wrapper = document.createElement("div");
     var t = document.createElement("div");
     retaining_wrapper.appendChild(t);
     t.appendChild(document.createElement("div"));
 
-    runTest();
+    if (window.testRunner)
+        runTest();
 }
 
 function test()
@@ -40,7 +42,7 @@ function test()
         for (var iter = node.edges(); iter.hasNext(); iter.next()) {
             var node = iter.edge.node();
             if (detachedDOMTreeRE.test(node.className())) {
-                if ("Detached DOM tree / 4 entries" === node.name()) {
+                if ("Detached DOM tree / 3 entries" === node.name()) {
                     if (detachedDomTreeFound)
                         return InspectorTest.fail("second " + node.name());
                     detachedDomTreeFound = true;
