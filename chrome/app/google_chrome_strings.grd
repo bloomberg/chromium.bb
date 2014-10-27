@@ -201,7 +201,7 @@ Chrome supports. -->
         Task Manager - Google Chrome
       </message>
       <message name="IDS_SESSION_CRASHED_VIEW_MESSAGE" desc="Message shown when the last session didn't exit cleanly.">
-        Google Chrome didn't shut down correctly. To reopen the pages you had open, click Restore.
+        Chrome didn't shut down correctly.
       </message>
       <message name="IDS_SESSION_CRASHED_VIEW_UMA_OPTIN" desc="Text besides the checkbox to let users optin to UMA in the restore from previous crash bubble.">
         Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK">$1<ex>usage statistics</ex></ph> to Google
