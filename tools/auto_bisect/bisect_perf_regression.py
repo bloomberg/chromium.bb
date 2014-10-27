@@ -35,6 +35,7 @@ Example usage using git hashes:
 import copy
 import errno
 import hashlib
+import logging
 import optparse
 import os
 import re
@@ -192,15 +193,16 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_path):
   target_file = os.path.join(destination_path, os.path.basename(source_path))
   try:
     if cloud_storage.Exists(bucket_name, source_path):
-      print 'Fetching file from gs//%s/%s ...' % (bucket_name, source_path)
+      logging.info('Fetching file from gs//%s/%s ...',
+                   bucket_name, source_path)
       cloud_storage.Get(bucket_name, source_path, destination_path)
       if os.path.exists(target_file):
         return target_file
     else:
-      print ('File gs://%s/%s not found in cloud storage.' % (
-          bucket_name, source_path))
+      logging.info('File gs://%s/%s not found in cloud storage.',
+                    bucket_name, source_path)
   except Exception as e:
-    print 'Something went wrong while fetching file from cloud: %s' % e
+    logging.warn('Something went wrong while fetching file from cloud: %s', e)
     if os.path.exists(target_file):
       os.remove(target_file)
   return None
@@ -257,7 +259,7 @@ def ExtractZip(filename, output_dir, verbose=True):
     zf = zipfile.ZipFile(filename)
     for name in zf.namelist():
       if verbose:
-        print 'Extracting %s' % name
+        logging.info('Extracting %s', name)
       zf.extract(name, output_dir)
       if bisect_utils.IsMacHost():
         # Restore permission bits.
@@ -371,7 +373,7 @@ def _WaitUntilBuildIsReady(
     if elapsed_time > max_timeout:
       return (None, 'Timed out: %ss without build' % max_timeout)
 
-    print 'Time elapsed: %ss without build.' % elapsed_time
+    logging.info('Time elapsed: %ss without build.', elapsed_time)
     time.sleep(poll_interval)
     # For some reason, mac bisect bots were not flushing stdout periodically.
     # As a result buildbot command is timed-out. Flush stdout on all platforms
@@ -442,14 +444,14 @@ def _UpdateDEPSForAngle(revision, depot, deps_file):
           r'(?<=angle\.git@)([a-fA-F0-9]{40})(?=")', re.MULTILINE)
       match = re.search(angle_rev_pattern, deps_contents)
       if not match:
-        print 'Could not find angle revision information in DEPS file.'
+        logging.info('Could not find angle revision information in DEPS file.')
         return False
       new_data = re.sub(angle_rev_pattern, revision, deps_contents)
     # Write changes to DEPS file
     WriteStringToFile(new_data, deps_file)
     return True
   except IOError, e:
-    print 'Something went wrong while updating DEPS file, %s' % e
+    logging.warn('Something went wrong while updating DEPS file, %s', e)
   return False
 
 
@@ -757,8 +759,8 @@ def _BuilderTryjob(git_revision, bot_name, bisect_job_name, patch=None):
     if returncode:
       raise RunGitError('Could not execute tryjob: %s.\n Error: %s' % (
                          'git %s' % ' '.join(try_cmd), output))
-    print ('Try job successfully submitted.\n TryJob Details: %s\n%s' % (
-           'git %s' % ' '.join(try_cmd), output))
+    logging.info('Try job successfully submitted.\n TryJob Details: %s\n%s',
+           'git %s' % ' '.join(try_cmd), output)
   finally:
     # Delete patch file if exists
     try:
@@ -891,7 +893,7 @@ class BisectPerformanceMetrics(object):
       results = {}
       for depot_name, depot_revision in parse_results.iteritems():
         depot_revision = depot_revision.strip('@')
-        print depot_name, depot_revision
+        logging.warn(depot_name, depot_revision)
         for cur_name, cur_data in bisect_utils.DEPOT_DEPS_NAME.iteritems():
           if (cur_data.has_key('deps_var') and
               cur_data['deps_var'] == depot_name):
@@ -1129,10 +1131,10 @@ class BisectPerformanceMetrics(object):
           fetch_build, bot_name, self.opts.builder_host,
           self.opts.builder_port, build_request_id, build_timeout)
       if not target_file:
-        print '%s [revision: %s]' % (error_msg, git_revision)
+        logging.warn('%s [revision: %s]', error_msg, git_revision)
     except RunGitError as e:
-      print ('Failed to post builder try job for revision: [%s].\n'
-             'Error: %s' % (git_revision, e))
+      logging.warn('Failed to post builder try job for revision: [%s].\n'
+             'Error: %s', git_revision, e)
 
     return target_file
 
@@ -1193,12 +1195,12 @@ class BisectPerformanceMetrics(object):
         else:
           raise IOError('Missing extracted folder %s ' % output_dir)
 
-      print 'Moving build from %s to %s' % (
-          output_dir, target_build_output_dir)
+      logging.info('Moving build from %s to %s',
+                   output_dir, target_build_output_dir)
       shutil.move(output_dir, target_build_output_dir)
       return True
     except Exception as e:
-      print 'Something went wrong while extracting archive file: %s' % e
+      logging.info('Something went wrong while extracting archive file: %s', e)
       self.BackupOrRestoreOutputDirectory(restore=True)
       # Cleanup any leftovers from unzipping.
       if os.path.exists(output_dir):
@@ -1239,7 +1241,7 @@ class BisectPerformanceMetrics(object):
       commit_position = source_control.GetCommitPosition(
           git_revision, self.depot_registry.GetDepotDir(depot))
       if not commit_position:
-        print 'Could not determine commit position for %s' % git_revision
+        logging.warn('Could not determine commit position for %s', git_revision)
         return None
       # Update the revision information for the given depot
       new_data = re.sub(deps_revision, str(commit_position), deps_contents)
@@ -1281,7 +1283,7 @@ class BisectPerformanceMetrics(object):
     deps_var = bisect_utils.DEPOT_DEPS_NAME[depot]['deps_var']
     # Don't update DEPS file if deps_var is not set in DEPOT_DEPS_NAME.
     if not deps_var:
-      print 'DEPS update not supported for Depot: %s', depot
+      logging.warn('DEPS update not supported for Depot: %s', depot)
       return False
 
     # Hack for Angle repository. In the DEPS file, "vars" dictionary variable
@@ -1301,7 +1303,7 @@ class BisectPerformanceMetrics(object):
         WriteStringToFile(updated_deps_content, deps_file)
         return True
     except IOError, e:
-      print 'Something went wrong while updating DEPS file. [%s]' % e
+      logging.warn('Something went wrong while updating DEPS file. [%s]', e)
     return False
 
   def CreateDEPSPatch(self, depot, revision):
@@ -2372,7 +2374,7 @@ class BisectPerformanceMetrics(object):
                    '\'good\' - \'bad\' range of revisions represent an '
                    'improvement (and not a regression).')
           return BisectResults(error=error)
-        print message, "Therefore we continue to bisect."
+        logging.info(message + "Therefore we continue to bisect.")
 
       bisect_state = BisectState(target_depot, revision_list)
       revision_states = bisect_state.GetRevisionStates()
@@ -2871,8 +2873,19 @@ class BisectOptions(object):
     return opts
 
 
-def main():
+def _ConfigureLogging():
+  """Trivial logging config.
 
+  Configures logging to output any messages at or above INFO to standard out,
+  without any additional formatting.
+  """
+  logging_format = '%(message)s'
+  logging.basicConfig(
+      stream=logging.sys.stdout, level=logging.INFO, format=logging_format)
+
+
+def main():
+  _ConfigureLogging()
   try:
     opts = BisectOptions()
     opts.ParseCommandLine()
@@ -2922,7 +2935,8 @@ def main():
       # The perf dashboard scrapes the "results" step in order to comment on
       # bugs. If you change this, please update the perf dashboard as well.
       bisect_utils.OutputAnnotationStepStart('Results')
-    print 'Error: %s' % e.message
+    print 'Error: ', e.message
+    logging.warn('A RuntimeError was caught: %s', e.message)
     if opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
   return 1
