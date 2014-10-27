@@ -195,7 +195,7 @@ MetadataCache.prototype.currentEvictionThreshold_ = function() {
  *
  * @param {Array.<Entry>} entries The list of entries.
  * @param {string} type The metadata type.
- * @param {function(Object)} callback The metadata is passed to callback.
+ * @param {?function(Object)} callback The metadata is passed to callback.
  *     The callback is called asynchronously.
  */
 MetadataCache.prototype.get = function(entries, type, callback) {
@@ -208,7 +208,7 @@ MetadataCache.prototype.get = function(entries, type, callback) {
  *
  * @param {Array.<Entry>} entries The list of entries.
  * @param {string} type The metadata type.
- * @param {function(Object)} callback The metadata is passed to callback.
+ * @param {?function(Object)} callback The metadata is passed to callback.
  *     The callback is called asynchronously.
  */
 MetadataCache.prototype.getLatest = function(entries, type, callback) {
@@ -222,7 +222,7 @@ MetadataCache.prototype.getLatest = function(entries, type, callback) {
  * @param {string} type The metadata type.
  * @param {boolean} refresh True to get the latest value and refresh the cache,
  *     false to get the value from the cache.
- * @param {function(Object)} callback The metadata is passed to callback.
+ * @param {?function(Object)} callback The metadata is passed to callback.
  *     The callback is called asynchronously.
  * @private
  */

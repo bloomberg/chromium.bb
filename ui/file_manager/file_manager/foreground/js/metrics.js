@@ -41,39 +41,54 @@ metrics.convertName_ = function(name) {
 
 /**
  * Wrapper method for calling chrome.fileManagerPrivate safely.
- * @param {string} name Method name.
+ * @param {string} methodName Method name.
  * @param {Array.<Object>} args Arguments.
  * @private
  */
-metrics.call_ = function(name, args) {
+metrics.call_ = function(methodName, args) {
   try {
-    chrome.metricsPrivate[name].apply(chrome.metricsPrivate, args);
+    chrome.metricsPrivate[methodName].apply(chrome.metricsPrivate, args);
   } catch (e) {
     console.error(e.stack);
   }
+  if (metrics.log)
+    console.log('chrome.metricsPrivate.' + methodName, args);
 };
 
 /**
- * Create a decorator function that calls a chrome.metricsPrivate function
- * with the same name and correct parameters.
- *
- * @param {string} name Method name.
+ * Records a value than can range from 1 to 10,000.
+ * @param {string} name Short metric name.
+ * @param {number} value Value to be recorded.
  */
-metrics.decorate = function(name) {
-  metrics[name] = function() {
-    var args = Array.apply(null, arguments);
-    args[0] = metrics.convertName_(args[0]);
-    metrics.call_(name, args);
-    if (metrics.log) {
-      console.log('chrome.metricsPrivate.' + name, args);
-    }
-  };
+metrics.recordMediumCount = function(name, value) {
+  metrics.call_('recordMediumCount', [metrics.convertName_(name), value]);
 };
 
-metrics.decorate('recordMediumCount');
-metrics.decorate('recordSmallCount');
-metrics.decorate('recordTime');
-metrics.decorate('recordUserAction');
+/**
+ * Records a value than can range from 1 to 100.
+ * @param {string} name Short metric name.
+ * @param {number} value Value to be recorded.
+ */
+metrics.recordSmallCount = function(name, value) {
+  metrics.call_('recordSmallCount', [metrics.convertName_(name), value]);
+};
+
+/**
+ * Records an elapsed time of no more than 10 seconds.
+ * @param {string} name Short metric name.
+ * @param {number} time Time to be recorded in milliseconds.
+ */
+metrics.recordTime = function(name, time) {
+  metrics.call_('recordTime', [metrics.convertName_(name), time]);
+};
+
+/**
+ * Records an action performed by the user.
+ * @param {string} name Short metric name.
+ */
+metrics.recordUserAction = function(name) {
+  metrics.call_('recordUserAction', [metrics.convertName_(name)]);
+};
 
 /**
  * Complete the time interval recording.
@@ -124,8 +139,4 @@ metrics.recordEnum = function(name, value, validValues) {
     'buckets': boundaryValue + 1
   };
   metrics.call_('recordValue', [metricDescr, index]);
-  if (metrics.log) {
-    console.log('chrome.metricsPrivate.recordValue',
-        [metricDescr.metricName, index, value]);
-  }
 };

@@ -179,10 +179,12 @@ function ProgressCenterPanel(element) {
 
   /**
    * Open view containing multiple progress items.
-   * @type {Element}
+   * @type {!HTMLDivElement}
    * @private
    */
-  this.openView_ = this.element_.querySelector('#progress-center-open-view');
+  this.openView_ = assertInstanceof(
+      queryRequiredElement(this.element_, '#progress-center-open-view'),
+      HTMLDivElement);
 
   /**
    * Close view that is a summarized progress item.
