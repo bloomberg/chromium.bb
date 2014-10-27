@@ -11,7 +11,6 @@
 
 namespace blink {
 class WebServiceWorkerProvider;
-class WebString;
 }  // namespace blink
 
 namespace content {
@@ -35,10 +34,6 @@ class MockWebPushClient : public blink::WebPushClient {
 
  private:
   // WebPushClient implementation.
-  virtual void registerPushMessaging(
-      const blink::WebString& sender_id,
-      blink::WebPushRegistrationCallbacks* callbacks,
-      blink::WebServiceWorkerProvider* service_worker_provider);
   virtual void registerPushMessaging(
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);

@@ -38,13 +38,6 @@ bool PushMessagingDispatcher::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PushMessagingDispatcher::registerPushMessaging(
-    const WebString& sender_id,
-    blink::WebPushRegistrationCallbacks* callbacks,
-    blink::WebServiceWorkerProvider* service_worker_provider) {
-  registerPushMessaging(callbacks, service_worker_provider);
-}
-
-void PushMessagingDispatcher::registerPushMessaging(
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider) {
   RenderFrameImpl::FromRoutingID(routing_id())->manifest_manager()->GetManifest(

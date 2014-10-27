@@ -20,7 +20,6 @@ class Message;
 
 namespace blink {
 class WebServiceWorkerProvider;
-class WebString;
 }  // namespace blink
 
 namespace content {
@@ -38,11 +37,6 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
-  // TODO(peter): Remove this signature of registerPushMessaging.
-  virtual void registerPushMessaging(
-      const blink::WebString& sender_id,
-      blink::WebPushRegistrationCallbacks* callbacks,
-      blink::WebServiceWorkerProvider* service_worker_provider);
   virtual void registerPushMessaging(
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);

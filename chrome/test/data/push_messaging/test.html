@@ -24,8 +24,7 @@
 
     function registerPush() {
       navigator.serviceWorker.ready.then(function() {
-        // TODO(peter): Remove the argument once Blink no longer requires it.
-        navigator.push.register('DEPRECATED').then(function(pushRegistration) {
+        navigator.push.register().then(function(pushRegistration) {
           sendResultToTest(pushRegistration.pushEndpoint + ' - ' + pushRegistration.pushRegistrationId);
         }, sendErrorToTest);
       }, sendErrorToTest);
