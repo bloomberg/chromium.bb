@@ -33,6 +33,9 @@
 #include "content/child/child_thread.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
+#include "content/child/notifications/notification_dispatcher.h"
+#include "content/child/notifications/notification_manager.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_gesture_curve_impl.h"
 #include "content/child/web_url_loader_impl.h"
@@ -425,6 +428,9 @@ BlinkPlatformImpl::BlinkPlatformImpl()
   if (ChildThread::current()) {
     geofencing_provider_.reset(new WebGeofencingProviderImpl(
         ChildThread::current()->thread_safe_sender()));
+    thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
+    notification_dispatcher_ =
+        ChildThread::current()->notification_dispatcher();
   }
 }
 
@@ -1017,6 +1023,16 @@ blink::WebCrypto* BlinkPlatformImpl::crypto() {
 
 blink::WebGeofencingProvider* BlinkPlatformImpl::geofencingProvider() {
   return geofencing_provider_.get();
+}
+
+blink::WebNotificationManager*
+BlinkPlatformImpl::notificationManager() {
+  if (!thread_safe_sender_.get() || !notification_dispatcher_.get())
+    return nullptr;
+
+  return NotificationManager::ThreadSpecificInstance(
+      thread_safe_sender_.get(),
+      notification_dispatcher_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

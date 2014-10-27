@@ -910,6 +910,8 @@
       'browser/net/view_blob_internals_job_factory.h',
       'browser/net/view_http_cache_job_factory.cc',
       'browser/net/view_http_cache_job_factory.h',
+      'browser/notification_message_filter.cc',
+      'browser/notification_message_filter.h',
       'browser/notification_service_impl.cc',
       'browser/notification_service_impl.h',
       'browser/power_monitor_message_broadcaster.cc',

@@ -33,6 +33,8 @@ class MessageLoop;
 
 namespace content {
 class FlingCurveConfiguration;
+class NotificationDispatcher;
+class ThreadSafeSender;
 class WebCryptoImpl;
 class WebGeofencingProviderImpl;
 
@@ -154,6 +156,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebWorkerRunLoop& runLoop);
   virtual blink::WebCrypto* crypto();
   virtual blink::WebGeofencingProvider* geofencingProvider();
+  virtual blink::WebNotificationManager* notificationManager();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -178,6 +181,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
   base::ThreadLocalStorage::Slot current_thread_slot_;
   WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 };
 
 }  // namespace content

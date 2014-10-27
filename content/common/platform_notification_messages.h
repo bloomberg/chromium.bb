@@ -5,6 +5,7 @@
 // Messages for platform-native notifications using the Web Notification API.
 // Multiply-included message file, hence no include guard.
 
+#include "content/public/common/show_desktop_notification_params.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebNotificationPermission.h"
 #include "url/gurl.h"
@@ -28,3 +29,14 @@ IPC_MESSAGE_ROUTED2(PlatformNotificationMsg_PermissionRequestComplete,
 IPC_MESSAGE_ROUTED2(PlatformNotificationHostMsg_RequestPermission,
                     GURL /* origin */,
                     int /* request_id */)
+
+IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_Show,
+                     int /* notification_id */,
+                     content::ShowDesktopNotificationHostMsgParams /* params */)
+
+IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_Close,
+                     int /* notification_id */)
+
+IPC_SYNC_MESSAGE_CONTROL1_1(PlatformNotificationHostMsg_CheckPermission,
+                            GURL /* origin */,
+                            blink::WebNotificationPermission /* result */)

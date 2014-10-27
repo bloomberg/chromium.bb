@@ -70,6 +70,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
+#include "content/browser/notification_message_filter.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -848,6 +849,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(),
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
+  AddFilter(new NotificationMessageFilter(
+      GetID(),
+      resource_context));
   AddFilter(new GamepadBrowserMessageFilter());
   AddFilter(new DeviceLightMessageFilter());
   AddFilter(new DeviceMotionMessageFilter());

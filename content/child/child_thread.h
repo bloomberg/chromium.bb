@@ -43,6 +43,7 @@ class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class GeofencingMessageFilter;
+class NotificationDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -121,6 +122,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   QuotaDispatcher* quota_dispatcher() const {
     return quota_dispatcher_.get();
+  }
+
+  NotificationDispatcher* notification_dispatcher() const {
+    return notification_dispatcher_.get();
   }
 
   IPC::SyncMessageFilter* sync_message_filter() const {
@@ -242,6 +247,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
+
+  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
