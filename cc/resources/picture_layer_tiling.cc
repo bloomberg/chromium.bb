@@ -126,7 +126,8 @@ Tile* PictureLayerTiling::CreateTile(int i,
     if (Tile* candidate_tile = twin_tiling->TileAt(i, j)) {
       gfx::Rect rect =
           gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
-      if (!client_->GetInvalidation()->Intersects(rect)) {
+      const Region* invalidation = client_->GetPendingInvalidation();
+      if (!invalidation || !invalidation->Intersects(rect)) {
         DCHECK(!candidate_tile->is_shared());
         DCHECK_EQ(i, candidate_tile->tiling_i_index());
         DCHECK_EQ(j, candidate_tile->tiling_j_index());

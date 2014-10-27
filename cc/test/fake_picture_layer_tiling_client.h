@@ -33,7 +33,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void SetTileSize(const gfx::Size& tile_size);
   gfx::Size TileSize() const { return tile_size_; }
 
-  const Region* GetInvalidation() override;
+  const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const override;
   PictureLayerTiling* GetRecycledTwinTiling(

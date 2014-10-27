@@ -106,8 +106,8 @@ class FixedInvalidationPictureLayerTilingClient
   }
 
   // This is the only function that returns something different from the base
-  // client.
-  const Region* GetInvalidation() override { return &invalidation_; }
+  // client. Avoids sharing tiles in this area.
+  const Region* GetPendingInvalidation() override { return &invalidation_; }
 
   const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const override {

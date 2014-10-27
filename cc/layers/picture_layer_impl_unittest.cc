@@ -2026,6 +2026,66 @@ TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   EXPECT_FALSE(active_layer_->needs_post_commit_initialization());
 }
 
+TEST_F(PictureLayerImplTest, ShareTilesOnNextFrame) {
+  SetupDefaultTrees(gfx::Size(1500, 1500));
+
+  PictureLayerTiling* tiling = pending_layer_->AddTiling(1.f);
+  gfx::Rect first_invalidate = tiling->TilingDataForTesting().TileBounds(0, 0);
+  first_invalidate.Inset(tiling->TilingDataForTesting().border_texels(),
+                         tiling->TilingDataForTesting().border_texels());
+  gfx::Rect second_invalidate = tiling->TilingDataForTesting().TileBounds(1, 1);
+  second_invalidate.Inset(tiling->TilingDataForTesting().border_texels(),
+                          tiling->TilingDataForTesting().border_texels());
+
+  // Make a pending tree with an invalidated raster tile 0,0.
+  tiling->CreateAllTilesForTesting();
+  pending_layer_->set_invalidation(first_invalidate);
+
+  // Activate and make a pending tree with an invalidated raster tile 1,1.
+  ActivateTree();
+
+  host_impl_.CreatePendingTree();
+  pending_layer_ = static_cast<FakePictureLayerImpl*>(
+      host_impl_.pending_tree()->root_layer());
+  pending_layer_->set_invalidation(second_invalidate);
+
+  // TODO(danakj): Remove this when twins are set up better.
+  // https://codereview.chromium.org/676953003/
+  pending_layer_->DoPostCommitInitializationIfNeeded();
+
+  PictureLayerTiling* pending_tiling = pending_layer_->tilings()->tiling_at(0);
+  PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(0);
+
+  pending_tiling->CreateAllTilesForTesting();
+
+  // Tile 0,0 should be shared, but tile 1,1 should not be.
+  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
+  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+  EXPECT_NE(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
+  EXPECT_TRUE(pending_tiling->TileAt(0, 0)->is_shared());
+  EXPECT_TRUE(pending_tiling->TileAt(1, 0)->is_shared());
+  EXPECT_TRUE(pending_tiling->TileAt(0, 1)->is_shared());
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1)->is_shared());
+
+  // Drop the tiles on the active tree and recreate them. The same tiles
+  // should be shared or not.
+  active_tiling->ComputeTilePriorityRects(
+      ACTIVE_TREE, gfx::Rect(), 1.f, 1.0, Occlusion());
+  EXPECT_TRUE(active_tiling->AllTilesForTesting().empty());
+  active_tiling->CreateAllTilesForTesting();
+
+  // Tile 0,0 should be shared, but tile 1,1 should not be.
+  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
+  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+  EXPECT_NE(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
+  EXPECT_TRUE(pending_tiling->TileAt(0, 0)->is_shared());
+  EXPECT_TRUE(pending_tiling->TileAt(1, 0)->is_shared());
+  EXPECT_TRUE(pending_tiling->TileAt(0, 1)->is_shared());
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1)->is_shared());
+}
+
 TEST_F(PictureLayerImplTest, ShareTilesOnSync) {
   SetupDefaultTrees(gfx::Size(1500, 1500));
   AddDefaultTilingsWithInvalidation(gfx::Rect());
