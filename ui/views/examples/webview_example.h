@@ -20,10 +20,10 @@ namespace examples {
 class WebViewExample : public ExampleBase {
  public:
   explicit WebViewExample(content::BrowserContext* browser_context);
-  virtual ~WebViewExample();
+  ~WebViewExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   WebView* webview_;

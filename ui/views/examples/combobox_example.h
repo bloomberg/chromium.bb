@@ -17,11 +17,11 @@ namespace examples {
 class VIEWS_EXAMPLES_EXPORT ComboboxModelExample : public ui::ComboboxModel {
  public:
   ComboboxModelExample();
-  virtual ~ComboboxModelExample();
+  ~ComboboxModelExample() override;
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExample);
@@ -31,14 +31,14 @@ class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
                                               public ComboboxListener {
  public:
   ComboboxExample();
-  virtual ~ComboboxExample();
+  ~ComboboxExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) override;
+  void OnPerformAction(Combobox* combobox) override;
 
   ComboboxModelExample combobox_model_;
   Combobox* combobox_;

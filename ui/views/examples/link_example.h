@@ -16,14 +16,14 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
                                           public LinkListener {
  public:
   LinkExample();
-  virtual ~LinkExample();
+  ~LinkExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // LinkListener:
-  virtual void LinkClicked(Link* source, int event_flags) override;
+  void LinkClicked(Link* source, int event_flags) override;
 
   Link* link_;
 

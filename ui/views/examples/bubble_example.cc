@@ -54,7 +54,7 @@ class ExampleBubble : public BubbleDelegateView {
        : BubbleDelegateView(anchor, arrow) {}
 
  protected:
-  virtual void Init() override {
+  void Init() override {
     SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 50, 50, 0));
     AddChildView(new Label(GetArrowName(arrow())));
   }

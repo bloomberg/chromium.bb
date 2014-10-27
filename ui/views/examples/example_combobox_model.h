@@ -14,11 +14,11 @@ namespace examples {
 class ExampleComboboxModel : public ui::ComboboxModel {
  public:
   ExampleComboboxModel(const char** strings, int count);
-  virtual ~ExampleComboboxModel();
+  ~ExampleComboboxModel() override;
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   const char** strings_;

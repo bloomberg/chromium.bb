@@ -23,11 +23,11 @@ namespace {
 class DialogExample : public DialogDelegateView {
  public:
   DialogExample();
-  virtual ~DialogExample();
-  virtual base::string16 GetWindowTitle() const override;
-  virtual View* CreateExtraView() override;
-  virtual View* CreateTitlebarExtraView() override;
-  virtual View* CreateFootnoteView() override;
+  ~DialogExample() override;
+  base::string16 GetWindowTitle() const override;
+  View* CreateExtraView() override;
+  View* CreateTitlebarExtraView() override;
+  View* CreateFootnoteView() override;
 };
 
 DialogExample::DialogExample() {

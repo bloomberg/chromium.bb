@@ -20,10 +20,10 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
                                             public ButtonListener {
  public:
   WidgetExample();
-  virtual ~WidgetExample();
+  ~WidgetExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // Button tags used to identify various commands.
@@ -41,7 +41,7 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
   void ShowWidget(View* sender, Widget::InitParams params);
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetExample);
 };

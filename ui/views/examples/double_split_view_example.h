@@ -16,10 +16,10 @@ namespace examples {
 class VIEWS_EXAMPLES_EXPORT DoubleSplitViewExample : public ExampleBase {
  public:
   DoubleSplitViewExample();
-  virtual ~DoubleSplitViewExample();
+  ~DoubleSplitViewExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // The SingleSplitViews to be embedded.

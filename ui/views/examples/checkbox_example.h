@@ -19,14 +19,14 @@ class VIEWS_EXAMPLES_EXPORT CheckboxExample : public ExampleBase,
                                               public ButtonListener {
  public:
   CheckboxExample();
-  virtual ~CheckboxExample();
+  ~CheckboxExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // The only control in this test.
   Checkbox* button_;

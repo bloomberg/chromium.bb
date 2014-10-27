@@ -14,10 +14,10 @@ namespace examples {
 class VIEWS_EXAMPLES_EXPORT ThrobberExample : public ExampleBase {
  public:
   ThrobberExample();
-  virtual ~ThrobberExample();
+  ~ThrobberExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThrobberExample);

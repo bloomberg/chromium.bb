@@ -24,10 +24,10 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
                                           public ComboboxListener {
  public:
   TextExample();
-  virtual ~TextExample();
+  ~TextExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // Creates and adds a check box to the layout.
@@ -40,10 +40,10 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
                         int count);
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* button, const ui::Event& event) override;
+  void ButtonPressed(Button* button, const ui::Event& event) override;
 
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) override;
+  void OnPerformAction(Combobox* combobox) override;
 
   class TextExampleView;
   // The content of the scroll view.

@@ -69,7 +69,7 @@ class TextExample::TextExampleView : public View {
       elide_(gfx::NO_ELIDE) {
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     View::OnPaint(canvas);
     const gfx::Rect bounds = GetContentsBounds();
     const SkColor color = SK_ColorDKGRAY;

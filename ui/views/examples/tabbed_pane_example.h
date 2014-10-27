@@ -23,17 +23,17 @@ class VIEWS_EXAMPLES_EXPORT TabbedPaneExample : public ExampleBase,
                                                 public TabbedPaneListener {
  public:
   TabbedPaneExample();
-  virtual ~TabbedPaneExample();
+  ~TabbedPaneExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // TabbedPaneListener:
-  virtual void TabSelectedAt(int index) override;
+  void TabSelectedAt(int index) override;
 
   // Print the status of the tab in the status area.
   void PrintStatus();

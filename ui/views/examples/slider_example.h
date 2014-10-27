@@ -18,17 +18,17 @@ class VIEWS_EXAMPLES_EXPORT SliderExample : public ExampleBase,
                                             public SliderListener {
  public:
   SliderExample();
-  virtual ~SliderExample();
+  ~SliderExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   // SliderListener:
-  virtual void SliderValueChanged(Slider* sender,
-                                  float value,
-                                  float old_value,
-                                  SliderChangeReason reason) override;
+  void SliderValueChanged(Slider* sender,
+                          float value,
+                          float old_value,
+                          SliderChangeReason reason) override;
 
   Slider* slider_;
   Label* label_;

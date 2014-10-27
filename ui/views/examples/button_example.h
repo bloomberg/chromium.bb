@@ -21,16 +21,16 @@ class VIEWS_EXAMPLES_EXPORT ButtonExample : public ExampleBase,
                                             public ButtonListener {
  public:
   ButtonExample();
-  virtual ~ButtonExample();
+  ~ButtonExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
  private:
   void LabelButtonPressed(const ui::Event& event);
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Example buttons.
   LabelButton* label_button_;

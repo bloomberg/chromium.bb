@@ -23,20 +23,20 @@ class VIEWS_EXAMPLES_EXPORT MultilineExample : public ExampleBase,
                                                public ButtonListener {
  public:
   MultilineExample();
-  virtual ~MultilineExample();
+  ~MultilineExample() override;
 
   // ExampleBase:
-  virtual void CreateExampleView(View* container) override;
+  void CreateExampleView(View* container) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
   class RenderTextView;
 
   // TextfieldController:
-  virtual void ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) override;
+  void ContentsChanged(Textfield* sender,
+                       const base::string16& new_contents) override;
 
   RenderTextView* render_text_view_;
   Label* label_;

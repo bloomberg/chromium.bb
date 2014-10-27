@@ -34,10 +34,10 @@ class PreferredSizeLabel : public Label {
   PreferredSizeLabel() : Label() {
     SetBorder(Border::CreateSolidBorder(1, SK_ColorGRAY));
   }
-  virtual ~PreferredSizeLabel() {}
+  ~PreferredSizeLabel() override {}
 
   // Label:
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(50, Label::GetPreferredSize().height());
   }
 
