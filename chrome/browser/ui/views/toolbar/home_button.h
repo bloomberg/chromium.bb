@@ -14,19 +14,19 @@ class Browser;
 class HomeButton : public ToolbarButton {
  public:
   HomeButton(views::ButtonListener* listener, Browser* browser);
-  virtual ~HomeButton();
+  ~HomeButton() override;
 
   // ToolbarButton:
-  virtual bool GetDropFormats(
+  bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) override;
-  virtual bool CanDrop(const OSExchangeData& data) override;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  bool CanDrop(const OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
  private:
   // ToolbarButton:
-  virtual void NotifyClick(const ui::Event& event) override;
+  void NotifyClick(const ui::Event& event) override;
 
   Browser* browser_;
 

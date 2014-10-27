@@ -25,14 +25,13 @@ class BackButton : public ToolbarButton {
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
   BackButton(views::ButtonListener* listener, ui::MenuModel* model);
-  virtual ~BackButton();
+  ~BackButton() override;
 
   void SetLeadingMargin(int margin);
 
  protected:
-  virtual gfx::Rect GetThemePaintRect() const override;
-  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      override;
+  gfx::Rect GetThemePaintRect() const override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
 
  private:
   // Any leading margin to be applied. Used when the back button is in

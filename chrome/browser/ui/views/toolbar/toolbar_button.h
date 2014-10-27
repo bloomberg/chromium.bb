@@ -25,7 +25,7 @@ class ToolbarButton : public views::LabelButton,
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
   ToolbarButton(views::ButtonListener* listener, ui::MenuModel* model);
-  virtual ~ToolbarButton();
+  ~ToolbarButton() override;
 
   // Set up basic mouseover border behavior.
   // Should be called before first paint.
@@ -36,29 +36,28 @@ class ToolbarButton : public views::LabelButton,
   bool IsMenuShowing() const;
 
   // views::LabelButton:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   // Showing the drop down results in a MouseCaptureLost, we need to ignore it.
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      override;
+  void OnMouseCaptureLost() override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
 
   // views::ContextMenuController:
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
  protected:
   // Overridden from CustomButton. Returns true if the button should become
   // pressed when a user holds the mouse down over the button. For this
   // implementation, both left and right mouse buttons can trigger a change
   // to the PUSHED state.
-  virtual bool ShouldEnterPushedState(const ui::Event& event) override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();

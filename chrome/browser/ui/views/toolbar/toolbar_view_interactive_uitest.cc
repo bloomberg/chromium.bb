@@ -25,7 +25,7 @@
 class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
  public:
   ToolbarViewInteractiveUITest();
-  virtual ~ToolbarViewInteractiveUITest();
+  ~ToolbarViewInteractiveUITest() override;
 
  protected:
   ToolbarView* toolbar_view() { return toolbar_view_; }
@@ -46,9 +46,9 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
   void FinishDragAndDrop(const base::Closure& quit_closure);
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   ToolbarView* toolbar_view_;
 

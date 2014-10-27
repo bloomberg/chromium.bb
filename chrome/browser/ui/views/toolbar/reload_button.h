@@ -35,7 +35,7 @@ class ReloadButton : public ToolbarButton,
   static const char kViewClassName[];
 
   explicit ReloadButton(CommandUpdater* command_updater);
-  virtual ~ReloadButton();
+  ~ReloadButton() override;
 
   // Ask for a specified button state.  If |force| is true this will be applied
   // immediately.
@@ -47,26 +47,25 @@ class ReloadButton : public ToolbarButton,
   void LoadImages();
 
   // ToolbarButton:
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual const char* GetClassName() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool ShouldShowMenu() override;
-  virtual void ShowDropDownMenu(ui::MenuSourceType source_type) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  const char* GetClassName() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  bool ShouldShowMenu() override;
+  void ShowDropDownMenu(ui::MenuSourceType source_type) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* /* button */,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* /* button */,
+                     const ui::Event& event) override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool IsCommandIdVisible(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   friend class ReloadButtonTest;

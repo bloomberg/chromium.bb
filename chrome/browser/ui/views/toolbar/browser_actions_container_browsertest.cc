@@ -331,8 +331,7 @@ class BrowserActionsContainerOverflowTest
  public:
   BrowserActionsContainerOverflowTest() : main_bar_(NULL), model_(NULL) {
   }
-  virtual ~BrowserActionsContainerOverflowTest() {
-  }
+  ~BrowserActionsContainerOverflowTest() override {}
 
  protected:
   // Returns true if the order of the BrowserActionViews in |main_bar_|
@@ -351,9 +350,9 @@ class BrowserActionsContainerOverflowTest
   extensions::ExtensionToolbarModel* model() { return model_; }
 
  private:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
-  virtual void TearDownOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // The main BrowserActionsContainer (owned by the browser view).
   BrowserActionsContainer* main_bar_;

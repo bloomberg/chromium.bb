@@ -36,14 +36,14 @@ class HomePageUndoBubble : public views::BubbleDelegateView,
  private:
   HomePageUndoBubble(Browser* browser, bool undo_value_is_ntp,
                      const GURL& undo_url, views::View* anchor_view);
-  virtual ~HomePageUndoBubble();
+  ~HomePageUndoBubble() override;
 
   // views::BubbleDelegateView:
-  virtual void Init() override;
-  virtual void WindowClosing() override;
+  void Init() override;
+  void WindowClosing() override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   static HomePageUndoBubble* home_page_undo_bubble_;
 

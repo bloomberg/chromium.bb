@@ -69,45 +69,43 @@ class BrowserActionView : public views::MenuButton,
         BrowserActionView* view) = 0;
 
    protected:
-    virtual ~Delegate() {}
+    ~Delegate() override {}
   };
 
   BrowserActionView(scoped_ptr<ToolbarActionViewController> view_controller,
                     Browser* browser,
                     Delegate* delegate);
-  virtual ~BrowserActionView();
+  ~BrowserActionView() override;
 
   // Called to update the display to match the browser action's state.
   void UpdateState();
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // MenuButton behavior overrides.  These methods all default to LabelButton
   // behavior unless this button is a popup.  In that case, it uses MenuButton
   // behavior.  MenuButton has the notion of a child popup being shown where the
   // button will stay in the pushed state until the "menu" (a popup in this
   // case) is dismissed.
-  virtual bool Activate() override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      override;
+  bool Activate() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
 
   // ToolbarActionViewDelegate: (public because called by others).
-  virtual content::WebContents* GetCurrentWebContents() const override;
+  content::WebContents* GetCurrentWebContents() const override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_.get();
@@ -119,26 +117,25 @@ class BrowserActionView : public views::MenuButton,
 
  private:
   // Overridden from views::View:
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual void OnDragDone() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) override;
+  void OnDragDone() override;
+  gfx::Size GetPreferredSize() const override;
+  void PaintChildren(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) override;
 
   // ToolbarActionViewDelegate:
-  virtual views::View* GetAsView() override;
-  virtual bool IsShownInMenu() override;
-  virtual views::FocusManager* GetFocusManagerForAccelerator() override;
-  virtual views::Widget* GetParentForContextMenu() override;
-  virtual ToolbarActionViewController* GetPreferredPopupViewController()
-      override;
-  virtual views::View* GetReferenceViewForPopup() override;
-  virtual views::MenuButton* GetContextMenuButton() override;
-  virtual void HideActivePopup() override;
-  virtual void OnIconUpdated() override;
-  virtual void OnPopupShown(bool grant_tab_permissions) override;
-  virtual void CleanupPopup() override;
+  views::View* GetAsView() override;
+  bool IsShownInMenu() override;
+  views::FocusManager* GetFocusManagerForAccelerator() override;
+  views::Widget* GetParentForContextMenu() override;
+  ToolbarActionViewController* GetPreferredPopupViewController() override;
+  views::View* GetReferenceViewForPopup() override;
+  views::MenuButton* GetContextMenuButton() override;
+  void HideActivePopup() override;
+  void OnIconUpdated() override;
+  void OnPopupShown(bool grant_tab_permissions) override;
+  void CleanupPopup() override;
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   // This needs to be destroyed after |view_controller_|, because

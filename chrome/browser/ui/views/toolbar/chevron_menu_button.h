@@ -20,7 +20,7 @@ class ChevronMenuButton : public views::MenuButton,
  public:
   explicit ChevronMenuButton(
       BrowserActionsContainer* browser_actions_container);
-  virtual ~ChevronMenuButton();
+  ~ChevronMenuButton() override;
 
   // Closes the overflow menu (and any context menu), if it is open.
   void CloseMenu();
@@ -29,20 +29,19 @@ class ChevronMenuButton : public views::MenuButton,
   class MenuController;
 
   // views::MenuButton:
-  virtual scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const
-      override;
-  virtual bool GetDropFormats(int* formats,
+  scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  bool GetDropFormats(
+      int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
-  virtual bool AreDropTypesRequired() override;
-  virtual bool CanDrop(const ui::OSExchangeData& data) override;
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) override;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  virtual void OnDragExited() override;
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  bool AreDropTypesRequired() override;
+  bool CanDrop(const ui::OSExchangeData& data) override;
+  void OnDragEntered(const ui::DropTargetEvent& event) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(View* source, const gfx::Point& point)
-      override;
+  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
 
   // Shows the overflow menu.
   void ShowOverflowMenu(bool for_drop);

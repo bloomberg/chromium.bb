@@ -23,7 +23,7 @@ class ExtensionToolbarMenuView : public views::View,
                                  public BrowserActionsContainerObserver {
  public:
   ExtensionToolbarMenuView(Browser* browser, WrenchMenu* wrench_menu);
-  virtual ~ExtensionToolbarMenuView();
+  ~ExtensionToolbarMenuView() override;
 
   // Returns whether the wrench menu should show this view. This is true when
   // either |container_| has icons to display or the menu was opened for a drag-
@@ -31,13 +31,13 @@ class ExtensionToolbarMenuView : public views::View,
   bool ShouldShow();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void Layout() override;
 
  private:
   // BrowserActionsContainerObserver:
-  virtual void OnBrowserActionDragDone() override;
+  void OnBrowserActionDragDone() override;
 
   // Closes the |wrench_menu_|.
   void CloseWrenchMenu();

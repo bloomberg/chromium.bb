@@ -24,37 +24,36 @@ const char kMockId[] = "mock_action";
 class MockComponentAction : public ToolbarActionViewController {
  public:
   MockComponentAction() : click_count_(0u), id_(kMockId) {}
-  virtual ~MockComponentAction() {}
+  ~MockComponentAction() override {}
 
   // ToolbarActionButtonController:
-  virtual const std::string& GetId() const override { return id_; }
-  virtual void SetDelegate(ToolbarActionViewDelegate* delegate) override {}
-  virtual gfx::Image GetIcon(content::WebContents* web_contents) override {
+  const std::string& GetId() const override { return id_; }
+  void SetDelegate(ToolbarActionViewDelegate* delegate) override {}
+  gfx::Image GetIcon(content::WebContents* web_contents) override {
     return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_BROWSER_ACTION);
   }
-  virtual gfx::ImageSkia GetIconWithBadge() override {
+  gfx::ImageSkia GetIconWithBadge() override {
     return *GetIcon(nullptr).ToImageSkia();
   }
-  virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
-      const override {
+  base::string16 GetAccessibleName(
+      content::WebContents* web_contents) const override {
     return base::ASCIIToUTF16("Component Action");
   }
-  virtual base::string16 GetTooltip(content::WebContents* web_contents)
-      const override {
+  base::string16 GetTooltip(content::WebContents* web_contents) const override {
     return GetAccessibleName(web_contents);
   }
-  virtual bool IsEnabled(content::WebContents* web_contents) const override {
+  bool IsEnabled(content::WebContents* web_contents) const override {
     return true;
   }
-  virtual bool HasPopup(content::WebContents* web_contents) const override {
+  bool HasPopup(content::WebContents* web_contents) const override {
     return true;
   }
-  virtual void HidePopup() override {}
-  virtual gfx::NativeView GetPopupNativeView() override { return nullptr; }
-  virtual bool CanDrag() const override { return false; }
-  virtual bool IsMenuRunning() const override { return false; }
-  virtual bool ExecuteAction(bool by_user) override {
+  void HidePopup() override {}
+  gfx::NativeView GetPopupNativeView() override { return nullptr; }
+  bool CanDrag() const override { return false; }
+  bool IsMenuRunning() const override { return false; }
+  bool ExecuteAction(bool by_user) override {
     ++click_count_;
     return false;
   }
@@ -75,8 +74,8 @@ class MockComponentToolbarActionsFactory
   virtual ~MockComponentToolbarActionsFactory();
 
   // ComponentToolbarActionsFactory:
-  virtual ScopedVector<ToolbarActionViewController>
-      GetComponentToolbarActions() override;
+  ScopedVector<ToolbarActionViewController> GetComponentToolbarActions()
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);
@@ -102,9 +101,9 @@ MockComponentToolbarActionsFactory::GetComponentToolbarActions() {
 class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
  protected:
   ComponentToolbarActionsBrowserTest() {}
-  virtual ~ComponentToolbarActionsBrowserTest() {}
+  ~ComponentToolbarActionsBrowserTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
         extensions::FeatureSwitch::extension_action_redesign(), true));
