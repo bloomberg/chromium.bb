@@ -254,6 +254,13 @@ void DoLoadExtension(Profile* profile,
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();
+#if defined(USE_ATHENA)
+  // ExtensionService is not properly initialized for Athena yet.
+  // http://crbug.com/426787
+  if (!extension_service)
+    return;
+#endif
+  DCHECK(extension_service);
   if (extension_service->GetExtensionById(extension_id, false))
     return;
   const std::string loaded_extension_id =
