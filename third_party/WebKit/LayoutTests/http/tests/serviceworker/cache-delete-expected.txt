@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Service Worker: Cache.delete 
+PASS Cache.delete with no arguments 
+PASS Cache.delete called with a string URL 
+PASS Cache.delete called with a Request object 
+PASS Cache.delete with a Request object containing used body 
+PASS Cache.delete with a non-existent entry 
+FAIL Cache.delete with CacheQueryOptions.* assert_true: Cache.delete should resolve with "true" if an entry was successfully deleted. expected true got false
+PASS Cache.delete with CacheQueryOptions.* that don't match 
+Harness: the test ran to completion.
+
