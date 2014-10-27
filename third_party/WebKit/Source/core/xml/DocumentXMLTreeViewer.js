@@ -315,7 +315,7 @@ installClass("Document", function(DocumentPrototype) {
     {
         var comment = createHTMLElement('span');
         comment.classList.add('comment');
-        comment.classList.add('webkit-html-comment');
+        comment.classList.add('html-comment');
         comment.textContent = commentString;
         return comment;
     }
@@ -338,7 +338,7 @@ installClass("Document", function(DocumentPrototype) {
     function createTag(node, isClosing, isEmpty)
     {
         var tag = createHTMLElement('span');
-        tag.classList.add('webkit-html-tag');
+        tag.classList.add('html-tag');
 
         var stringBeforeAttrs = '<';
         if (isClosing)
@@ -365,17 +365,17 @@ installClass("Document", function(DocumentPrototype) {
     function createAttribute(attributeNode)
     {
         var attribute = createHTMLElement('span');
-        attribute.classList.add('webkit-html-attribute');
+        attribute.classList.add('html-attribute');
 
         var attributeName = createHTMLElement('span');
-        attributeName.classList.add('webkit-html-attribute-name');
+        attributeName.classList.add('html-attribute-name');
         attributeName.textContent = attributeNode.name;
 
         var textBefore = document.createTextNode(' ');
         var textBetween = document.createTextNode('="');
 
         var attributeValue = createHTMLElement('span');
-        attributeValue.classList.add('webkit-html-attribute-value');
+        attributeValue.classList.add('html-attribute-value');
         attributeValue.textContent = attributeNode.value;
 
         var textAfter = document.createTextNode('"');
