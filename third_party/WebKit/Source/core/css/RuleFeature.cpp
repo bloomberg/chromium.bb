@@ -122,6 +122,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoSelection:
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
+    case CSSSelector::PseudoWebKitCustomElement:
     case CSSSelector::PseudoUnresolved:
     case CSSSelector::PseudoContent:
     case CSSSelector::PseudoHost:
@@ -170,7 +171,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     case CSSSelector::PseudoFullScreen:
     case CSSSelector::PseudoFullScreenDocument:
     case CSSSelector::PseudoFullScreenAncestor:
-    case CSSSelector::PseudoWebKitCustomElement:
     case CSSSelector::PseudoCue:
     case CSSSelector::PseudoFutureCue:
     case CSSSelector::PseudoPastCue:
