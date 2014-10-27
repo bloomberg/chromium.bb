@@ -26,19 +26,16 @@ class TestTransientWindowObserver : public TransientWindowObserver {
   TestTransientWindowObserver() : add_count_(0), remove_count_(0) {
   }
 
-  virtual ~TestTransientWindowObserver() {
-  }
+  ~TestTransientWindowObserver() override {}
 
   int add_count() const { return add_count_; }
   int remove_count() const { return remove_count_; }
 
   // TransientWindowObserver overrides:
-  virtual void OnTransientChildAdded(Window* window,
-                                     Window* transient) override {
+  void OnTransientChildAdded(Window* window, Window* transient) override {
     add_count_++;
   }
-  virtual void OnTransientChildRemoved(Window* window,
-                                       Window* transient) override {
+  void OnTransientChildRemoved(Window* window, Window* transient) override {
     remove_count_++;
   }
 
@@ -52,14 +49,14 @@ class TestTransientWindowObserver : public TransientWindowObserver {
 class TransientWindowManagerTest : public aura::test::AuraTestBase {
  public:
   TransientWindowManagerTest() {}
-  virtual ~TransientWindowManagerTest() {}
+  ~TransientWindowManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AuraTestBase::SetUp();
     wm_state_.reset(new wm::WMState);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     wm_state_.reset();
     AuraTestBase::TearDown();
   }
@@ -349,7 +346,7 @@ class DestroyedTrackingDelegate : public aura::test::TestWindowDelegate {
       : name_(name),
         results_(results) {}
 
-  virtual void OnWindowDestroyed(aura::Window* window) override {
+  void OnWindowDestroyed(aura::Window* window) override {
     results_->push_back(name_);
   }
 
@@ -457,17 +454,15 @@ class StackingMadrigalLayoutManager : public aura::LayoutManager {
       : root_window_(root_window) {
     root_window_->SetLayoutManager(this);
   }
-  virtual ~StackingMadrigalLayoutManager() {
-  }
+  ~StackingMadrigalLayoutManager() override {}
 
  private:
   // Overridden from LayoutManager:
-  virtual void OnWindowResized() override {}
-  virtual void OnWindowAddedToLayout(Window* child) override {}
-  virtual void OnWillRemoveWindowFromLayout(Window* child) override {}
-  virtual void OnWindowRemovedFromLayout(Window* child) override {}
-  virtual void OnChildWindowVisibilityChanged(Window* child,
-                                              bool visible) override {
+  void OnWindowResized() override {}
+  void OnWindowAddedToLayout(Window* child) override {}
+  void OnWillRemoveWindowFromLayout(Window* child) override {}
+  void OnWindowRemovedFromLayout(Window* child) override {}
+  void OnChildWindowVisibilityChanged(Window* child, bool visible) override {
     Window::Windows::const_iterator it = root_window_->children().begin();
     Window* last_window = NULL;
     for (; it != root_window_->children().end(); ++it) {
@@ -481,8 +476,8 @@ class StackingMadrigalLayoutManager : public aura::LayoutManager {
       last_window = *it;
     }
   }
-  virtual void SetChildBounds(Window* child,
-                              const gfx::Rect& requested_bounds) override {
+  void SetChildBounds(Window* child,
+                      const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
@@ -497,8 +492,7 @@ class StackingMadrigalVisibilityClient : public aura::client::VisibilityClient {
       : ignored_window_(NULL) {
     aura::client::SetVisibilityClient(root_window, this);
   }
-  virtual ~StackingMadrigalVisibilityClient() {
-  }
+  ~StackingMadrigalVisibilityClient() override {}
 
   void set_ignored_window(Window* ignored_window) {
     ignored_window_ = ignored_window;
@@ -506,7 +500,7 @@ class StackingMadrigalVisibilityClient : public aura::client::VisibilityClient {
 
  private:
   // Overridden from client::VisibilityClient:
-  virtual void UpdateLayerVisibility(Window* window, bool visible) override {
+  void UpdateLayerVisibility(Window* window, bool visible) override {
     if (!visible) {
       if (window == ignored_window_)
         window->layer()->set_delegate(NULL);

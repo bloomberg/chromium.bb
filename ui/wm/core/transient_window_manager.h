@@ -32,7 +32,7 @@ class WM_EXPORT TransientWindowManager : public aura::WindowObserver {
  public:
   typedef std::vector<aura::Window*> Windows;
 
-  virtual ~TransientWindowManager();
+  ~TransientWindowManager() override;
 
   // Returns the TransientWindowManager for |window|. This never returns NULL.
   static TransientWindowManager* Get(aura::Window* window);
@@ -80,14 +80,12 @@ class WM_EXPORT TransientWindowManager : public aura::WindowObserver {
   void UpdateTransientChildVisibility(bool visible);
 
   // WindowObserver:
-  virtual void OnWindowParentChanged(aura::Window* window,
-                                     aura::Window* parent) override;
-  virtual void OnWindowVisibilityChanging(aura::Window* window,
-                                          bool visible) override;
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) override;
-  virtual void OnWindowStackingChanged(aura::Window* window) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   aura::Window* window_;
   aura::Window* transient_parent_;

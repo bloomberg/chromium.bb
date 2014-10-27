@@ -16,7 +16,7 @@ class WM_EXPORT VisibilityController
     : public aura::client::VisibilityClient {
  public:
   VisibilityController();
-  virtual ~VisibilityController();
+  ~VisibilityController() override;
 
  protected:
   // Subclasses override if they want to call a different implementation of
@@ -28,8 +28,7 @@ class WM_EXPORT VisibilityController
 
  private:
   // Overridden from aura::client::VisibilityClient:
-  virtual void UpdateLayerVisibility(aura::Window* window,
-                                     bool visible) override;
+  void UpdateLayerVisibility(aura::Window* window, bool visible) override;
 
   DISALLOW_COPY_AND_ASSIGN(VisibilityController);
 };

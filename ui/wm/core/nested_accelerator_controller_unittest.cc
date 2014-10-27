@@ -40,10 +40,10 @@ class MockDispatcher : public ui::PlatformEventDispatcher {
 
  private:
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override {
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override {
     return true;
   }
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override {
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;
     return ui::POST_DISPATCH_NONE;
@@ -57,16 +57,16 @@ class MockDispatcher : public ui::PlatformEventDispatcher {
 class TestTarget : public ui::AcceleratorTarget {
  public:
   TestTarget() : accelerator_pressed_count_(0) {}
-  virtual ~TestTarget() {}
+  ~TestTarget() override {}
 
   int accelerator_pressed_count() const { return accelerator_pressed_count_; }
 
   // Overridden from ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     accelerator_pressed_count_++;
     return true;
   }
-  virtual bool CanHandleAccelerators() const override { return true; }
+  bool CanHandleAccelerators() const override { return true; }
 
  private:
   int accelerator_pressed_count_;
@@ -101,11 +101,10 @@ class MockNestedAcceleratorDelegate : public NestedAcceleratorDelegate {
  public:
   MockNestedAcceleratorDelegate()
       : accelerator_manager_(new ui::AcceleratorManager) {}
-  virtual ~MockNestedAcceleratorDelegate() {}
+  ~MockNestedAcceleratorDelegate() override {}
 
   // NestedAcceleratorDelegate:
-  virtual Result ProcessAccelerator(
-      const ui::Accelerator& accelerator) override {
+  Result ProcessAccelerator(const ui::Accelerator& accelerator) override {
     return accelerator_manager_->Process(accelerator) ?
         RESULT_PROCESSED : RESULT_NOT_PROCESSED;
   }
@@ -125,9 +124,9 @@ class MockNestedAcceleratorDelegate : public NestedAcceleratorDelegate {
 class NestedAcceleratorTest : public aura::test::AuraTestBase {
  public:
   NestedAcceleratorTest() {}
-  virtual ~NestedAcceleratorTest() {}
+  ~NestedAcceleratorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AuraTestBase::SetUp();
     delegate_ = new MockNestedAcceleratorDelegate();
     nested_accelerator_controller_.reset(
@@ -136,7 +135,7 @@ class NestedAcceleratorTest : public aura::test::AuraTestBase {
                                       nested_accelerator_controller_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     aura::client::SetDispatcherClient(root_window(), NULL);
     AuraTestBase::TearDown();
     delegate_ = NULL;

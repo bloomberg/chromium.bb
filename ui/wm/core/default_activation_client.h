@@ -32,24 +32,23 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
   explicit DefaultActivationClient(aura::Window* root_window);
 
   // Overridden from aura::client::ActivationClient:
-  virtual void AddObserver(
+  void AddObserver(aura::client::ActivationChangeObserver* observer) override;
+  void RemoveObserver(
       aura::client::ActivationChangeObserver* observer) override;
-  virtual void RemoveObserver(
-      aura::client::ActivationChangeObserver* observer) override;
-  virtual void ActivateWindow(aura::Window* window) override;
-  virtual void DeactivateWindow(aura::Window* window) override;
-  virtual aura::Window* GetActiveWindow() override;
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) override;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) override;
-  virtual bool CanActivateWindow(aura::Window* window) const override;
+  void ActivateWindow(aura::Window* window) override;
+  void DeactivateWindow(aura::Window* window) override;
+  aura::Window* GetActiveWindow() override;
+  aura::Window* GetActivatableWindow(aura::Window* window) override;
+  aura::Window* GetToplevelWindow(aura::Window* window) override;
+  bool CanActivateWindow(aura::Window* window) const override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   class Deleter;
 
-  virtual ~DefaultActivationClient();
+  ~DefaultActivationClient() override;
   void RemoveActiveWindow(aura::Window* window);
 
   // This class explicitly does NOT store the active window in a window property

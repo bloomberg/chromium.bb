@@ -40,14 +40,14 @@ class WMTestHelper : public aura::client::WindowTreeClient {
  public:
   WMTestHelper(const gfx::Size& default_window_size,
                ui::ContextFactory* context_factory);
-  virtual ~WMTestHelper();
+  ~WMTestHelper() override;
 
   aura::WindowTreeHost* host() { return host_.get(); }
 
   // Overridden from client::WindowTreeClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
-                                         const gfx::Rect& bounds) override;
+  aura::Window* GetDefaultParent(aura::Window* context,
+                                 aura::Window* window,
+                                 const gfx::Rect& bounds) override;
 
  private:
   scoped_ptr<aura::WindowTreeHost> host_;

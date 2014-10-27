@@ -27,7 +27,7 @@ class WM_EXPORT InputMethodEventFilter
       public ui::internal::InputMethodDelegate {
  public:
   explicit InputMethodEventFilter(gfx::AcceleratedWidget widget);
-  virtual ~InputMethodEventFilter();
+  ~InputMethodEventFilter() override;
 
   void SetInputMethodPropertyInRootWindow(aura::Window* root_window);
 
@@ -35,10 +35,10 @@ class WM_EXPORT InputMethodEventFilter
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Overridden from ui::internal::InputMethodDelegate:
-  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
 
   scoped_ptr<ui::InputMethod> input_method_;
 

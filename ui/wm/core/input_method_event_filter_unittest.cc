@@ -33,7 +33,7 @@ class TestTextInputClient : public ui::DummyTextInputClient {
  public:
   explicit TestTextInputClient(aura::Window* window) : window_(window) {}
 
-  virtual aura::Window* GetAttachedWindow() const override { return window_; }
+  aura::Window* GetAttachedWindow() const override { return window_; }
 
  private:
   aura::Window* window_;
@@ -44,10 +44,10 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 class InputMethodEventFilterTest : public aura::test::AuraTestBase {
  public:
   InputMethodEventFilterTest() {}
-  virtual ~InputMethodEventFilterTest() {}
+  ~InputMethodEventFilterTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     aura::test::AuraTestBase::SetUp();
 
     root_window()->AddPreTargetHandler(&root_filter_);
@@ -66,7 +66,7 @@ class InputMethodEventFilterTest : public aura::test::AuraTestBase {
         test_input_client_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     test_window_.reset();
     root_filter_.RemoveHandler(&test_filter_);
     root_filter_.RemoveHandler(input_method_event_filter_.get());

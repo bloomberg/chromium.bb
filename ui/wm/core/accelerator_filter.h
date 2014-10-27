@@ -22,10 +22,10 @@ class AcceleratorDelegate;
 class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
  public:
   AcceleratorFilter(scoped_ptr<AcceleratorDelegate> delegate);
-  virtual ~AcceleratorFilter();
+  ~AcceleratorFilter() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   scoped_ptr<AcceleratorDelegate> delegate_;

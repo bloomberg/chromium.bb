@@ -20,7 +20,7 @@ class WM_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
                            const gfx::Insets& mouse_extend,
                            const gfx::Insets& touch_extend);
 
-  virtual ~EasyResizeWindowTargeter();
+  ~EasyResizeWindowTargeter() override;
 
  protected:
   void set_mouse_extend(const gfx::Insets& mouse_extend) {
@@ -32,9 +32,8 @@ class WM_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
   }
 
   // ui::EventTargeter:
-  virtual bool EventLocationInsideBounds(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
+  bool EventLocationInsideBounds(ui::EventTarget* target,
+                                 const ui::LocatedEvent& event) const override;
 
  private:
   // Returns true if the hit testing (EventLocationInsideBounds()) should use

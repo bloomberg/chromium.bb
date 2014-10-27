@@ -47,9 +47,7 @@ class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
   WindowAnimationsTest() {}
 
-  virtual void TearDown() override {
-    AuraTestBase::TearDown();
-  }
+  void TearDown() override { AuraTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
@@ -255,16 +253,13 @@ TEST_F(WindowAnimationsTest, HideAnimationDetachLayersWithTransientChildren) {
 class NotifyHideCompletedAnimationHost : public aura::client::AnimationHost {
  public:
   NotifyHideCompletedAnimationHost() : hide_completed_(false) {}
-  virtual ~NotifyHideCompletedAnimationHost() {}
+  ~NotifyHideCompletedAnimationHost() override {}
 
   // Overridden from TestWindowDelegate:
-  virtual void OnWindowHidingAnimationCompleted() override {
-    hide_completed_ = true;
-  }
+  void OnWindowHidingAnimationCompleted() override { hide_completed_ = true; }
 
-  virtual void SetHostTransitionOffsets(
-      const gfx::Vector2d& top_left,
-      const gfx::Vector2d& bottom_right) override {}
+  void SetHostTransitionOffsets(const gfx::Vector2d& top_left,
+                                const gfx::Vector2d& bottom_right) override {}
 
   bool hide_completed() const { return hide_completed_; }
 

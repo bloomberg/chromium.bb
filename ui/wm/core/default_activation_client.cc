@@ -20,10 +20,10 @@ class DefaultActivationClient::Deleter : public aura::WindowObserver {
   }
 
  private:
-  virtual ~Deleter() {}
+  ~Deleter() override {}
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override {
+  void OnWindowDestroyed(aura::Window* window) override {
     DCHECK_EQ(window, root_window_);
     root_window_->RemoveObserver(this);
     delete client_;

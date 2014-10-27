@@ -37,7 +37,7 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
         reactivation_count_(0),
         reactivation_requested_window_(NULL),
         reactivation_actual_window_(NULL) {}
-  virtual ~FocusNotificationObserver() {}
+  ~FocusNotificationObserver() override {}
 
   void ExpectCounts(int activation_changed_count, int focus_changed_count) {
     EXPECT_EQ(activation_changed_count, activation_changed_count_);
@@ -55,21 +55,20 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override {
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override {
     ++activation_changed_count_;
   }
-  virtual void OnAttemptToReactivateWindow(
-      aura::Window* request_active,
-      aura::Window* actual_active) override {
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override {
     ++reactivation_count_;
     reactivation_requested_window_ = request_active;
     reactivation_actual_window_ = actual_active;
   }
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override {
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
     ++focus_changed_count_;
   }
 
@@ -105,7 +104,7 @@ class RecordingActivationAndFocusChangeObserver
     aura::client::GetActivationClient(root_)->AddObserver(this);
     aura::client::GetFocusClient(root_)->AddObserver(this);
   }
-  virtual ~RecordingActivationAndFocusChangeObserver() {
+  ~RecordingActivationAndFocusChangeObserver() override {
     aura::client::GetActivationClient(root_)->RemoveObserver(this);
     aura::client::GetFocusClient(root_)->RemoveObserver(this);
   }
@@ -115,15 +114,15 @@ class RecordingActivationAndFocusChangeObserver
   }
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override {
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override {
     if (lost_active && lost_active == deleter_->GetDeletedWindow())
       was_notified_with_deleted_window_ = true;
   }
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override {
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
     if (lost_focus && lost_focus == deleter_->GetDeletedWindow())
       was_notified_with_deleted_window_ = true;
   }
@@ -153,13 +152,13 @@ class DeleteOnLoseActivationChangeObserver :
         did_delete_(false) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
   }
-  virtual ~DeleteOnLoseActivationChangeObserver() {
+  ~DeleteOnLoseActivationChangeObserver() override {
     aura::client::GetActivationClient(root_)->RemoveObserver(this);
   }
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override {
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override {
     if (window_ && lost_active == window_) {
       delete lost_active;
       did_delete_ = true;
@@ -167,7 +166,7 @@ class DeleteOnLoseActivationChangeObserver :
   }
 
   // Overridden from WindowDeleter:
-  virtual aura::Window* GetDeletedWindow() override {
+  aura::Window* GetDeletedWindow() override {
     return did_delete_ ? window_ : NULL;
   }
 
@@ -190,13 +189,13 @@ class DeleteOnLoseFocusChangeObserver
         did_delete_(false) {
     aura::client::GetFocusClient(root_)->AddObserver(this);
   }
-  virtual ~DeleteOnLoseFocusChangeObserver() {
+  ~DeleteOnLoseFocusChangeObserver() override {
     aura::client::GetFocusClient(root_)->RemoveObserver(this);
   }
 
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override {
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
     if (window_ && lost_focus == window_) {
       delete lost_focus;
       did_delete_ = true;
@@ -204,7 +203,7 @@ class DeleteOnLoseFocusChangeObserver
   }
 
   // Overridden from WindowDeleter:
-  virtual aura::Window* GetDeletedWindow() override {
+  aura::Window* GetDeletedWindow() override {
     return did_delete_ ? window_ : NULL;
   }
 
@@ -223,7 +222,7 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
     aura::client::GetActivationClient(root_window_)->AddObserver(this);
     aura::client::GetFocusClient(root_window_)->AddObserver(this);
   }
-  virtual ~ScopedFocusNotificationObserver() {
+  ~ScopedFocusNotificationObserver() override {
     aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
     aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
   }
@@ -242,7 +241,7 @@ class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
     aura::client::SetFocusChangeObserver(target_, this);
     tracker_.Add(target_);
   }
-  virtual ~ScopedTargetFocusNotificationObserver() {
+  ~ScopedTargetFocusNotificationObserver() override {
     if (tracker_.Contains(target_)) {
       aura::client::SetActivationChangeObserver(target_, NULL);
       aura::client::SetFocusChangeObserver(target_, NULL);
@@ -266,8 +265,8 @@ class ScopedFocusedTextInputClientChanger
 
  private:
   // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override {
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
     ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
         text_input_client_);
   }
@@ -279,15 +278,11 @@ class ScopedFocusedTextInputClientChanger
 class SimpleEventHandler : public ui::EventHandler {
  public:
   SimpleEventHandler() {}
-  virtual ~SimpleEventHandler() {}
+  ~SimpleEventHandler() override {}
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
-    event->SetHandled();
-  }
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
-    event->SetHandled();
-  }
+  void OnMouseEvent(ui::MouseEvent* event) override { event->SetHandled(); }
+  void OnGestureEvent(ui::GestureEvent* event) override { event->SetHandled(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleEventHandler);
@@ -299,7 +294,7 @@ class FocusShiftingActivationObserver
   explicit FocusShiftingActivationObserver(aura::Window* activated_window)
       : activated_window_(activated_window),
         shift_focus_to_(NULL) {}
-  virtual ~FocusShiftingActivationObserver() {}
+  ~FocusShiftingActivationObserver() override {}
 
   void set_shift_focus_to(aura::Window* shift_focus_to) {
     shift_focus_to_ = shift_focus_to;
@@ -307,8 +302,8 @@ class FocusShiftingActivationObserver
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override {
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override {
     // Shift focus to a child. This should prevent the default focusing from
     // occurring in FocusController::FocusWindow().
     if (gained_active == activated_window_) {
@@ -338,33 +333,30 @@ class TestFocusRules : public BaseFocusRules {
   }
 
   // Overridden from BaseFocusRules:
-  virtual bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(aura::Window* window) const override {
     // In FocusControllerTests, only the RootWindow has activatable children.
     return window->GetRootWindow() == window;
   }
-  virtual bool CanActivateWindow(aura::Window* window) const override {
+  bool CanActivateWindow(aura::Window* window) const override {
     // Restricting focus to a non-activatable child window means the activatable
     // parent outside the focus restriction is activatable.
     bool can_activate =
         CanFocusOrActivate(window) || window->Contains(focus_restriction_);
     return can_activate ? BaseFocusRules::CanActivateWindow(window) : false;
   }
-  virtual bool CanFocusWindow(aura::Window* window) const override {
+  bool CanFocusWindow(aura::Window* window) const override {
     return CanFocusOrActivate(window) ?
         BaseFocusRules::CanFocusWindow(window) : false;
   }
-  virtual aura::Window* GetActivatableWindow(
-      aura::Window* window) const override {
+  aura::Window* GetActivatableWindow(aura::Window* window) const override {
     return BaseFocusRules::GetActivatableWindow(
         CanFocusOrActivate(window) ? window : focus_restriction_);
   }
-  virtual aura::Window* GetFocusableWindow(
-      aura::Window* window) const override {
+  aura::Window* GetFocusableWindow(aura::Window* window) const override {
     return BaseFocusRules::GetFocusableWindow(
         CanFocusOrActivate(window) ? window : focus_restriction_);
   }
-  virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) const override {
+  aura::Window* GetNextActivatableWindow(aura::Window* ignore) const override {
     aura::Window* next_activatable =
         BaseFocusRules::GetNextActivatableWindow(ignore);
     return CanFocusOrActivate(next_activatable) ?
@@ -387,7 +379,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   FocusControllerTestBase() {}
 
   // Overridden from aura::test::AuraTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     wm_state_.reset(new wm::WMState);
     // FocusController registers itself as an Env observer so it can catch all
     // window initializations, including the root_window()'s, so we create it
@@ -430,7 +422,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
         aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(), 3,
         gfx::Rect(125, 125, 50, 50), root_window());
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     root_window()->RemovePreTargetHandler(focus_controller_.get());
     aura::test::AuraTestBase::TearDown();
     test_focus_rules_ = NULL;  // Owned by FocusController.
@@ -518,14 +510,14 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   }
 
   // Overridden from FocusControllerTestBase:
-  virtual void BasicFocus() override {
+  void BasicFocus() override {
     EXPECT_EQ(NULL, GetFocusedWindow());
     FocusWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
     FocusWindowById(2);
     EXPECT_EQ(2, GetFocusedWindowId());
   }
-  virtual void BasicActivation() override {
+  void BasicActivation() override {
     EXPECT_EQ(NULL, GetActiveWindow());
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
@@ -538,7 +530,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     DeactivateWindow(GetActiveWindow());
     EXPECT_EQ(1, GetActiveWindowId());
   }
-  virtual void FocusEvents() override {
+  void FocusEvents() override {
     ScopedFocusNotificationObserver root_observer(root_window());
     ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
     ScopedTargetFocusNotificationObserver observer2(root_window(), 2);
@@ -557,7 +549,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     observer1.ExpectCounts(2, 2);
     observer2.ExpectCounts(1, 1);
   }
-  virtual void DuplicateFocusEvents() override {
+  void DuplicateFocusEvents() override {
     // Focusing an existing focused window should not resend focus events.
     ScopedFocusNotificationObserver root_observer(root_window());
     ScopedTargetFocusNotificationObserver observer1(root_window(), 1);
@@ -573,7 +565,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     root_observer.ExpectCounts(1, 1);
     observer1.ExpectCounts(1, 1);
   }
-  virtual void ActivationEvents() override {
+  void ActivationEvents() override {
     ActivateWindowById(1);
 
     ScopedFocusNotificationObserver root_observer(root_window());
@@ -589,7 +581,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     observer1.ExpectCounts(1, 1);
     observer2.ExpectCounts(1, 1);
   }
-  virtual void ReactivationEvents() override {
+  void ReactivationEvents() override {
     ActivateWindowById(1);
     ScopedFocusNotificationObserver root_observer(root_window());
     EXPECT_EQ(0, root_observer.reactivation_count());
@@ -603,7 +595,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(root_window()->GetChildById(1),
               root_observer.reactivation_actual_window());
   }
-  virtual void DuplicateActivationEvents() override {
+  void DuplicateActivationEvents() override {
     // Activating an existing active window should not resend activation events.
     ActivateWindowById(1);
 
@@ -625,7 +617,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     observer1.ExpectCounts(1, 1);
     observer2.ExpectCounts(1, 1);
   }
-  virtual void ShiftFocusWithinActiveWindow() override {
+  void ShiftFocusWithinActiveWindow() override {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(1, GetFocusedWindowId());
@@ -634,7 +626,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     FocusWindowById(12);
     EXPECT_EQ(12, GetFocusedWindowId());
   }
-  virtual void ShiftFocusToChildOfInactiveWindow() override {
+  void ShiftFocusToChildOfInactiveWindow() override {
     ActivateWindowById(2);
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());
@@ -642,7 +634,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(11, GetFocusedWindowId());
   }
-  virtual void ShiftFocusToParentOfFocusedWindow() override {
+  void ShiftFocusToParentOfFocusedWindow() override {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
     FocusWindowById(11);
@@ -651,7 +643,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // Focus should _not_ shift to the parent of the already-focused window.
     EXPECT_EQ(11, GetFocusedWindowId());
   }
-  virtual void FocusRulesOverride() override {
+  void FocusRulesOverride() override {
     EXPECT_EQ(NULL, GetFocusedWindow());
     FocusWindowById(11);
     EXPECT_EQ(11, GetFocusedWindowId());
@@ -667,7 +659,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     FocusWindowById(12);
     EXPECT_EQ(12, GetFocusedWindowId());
   }
-  virtual void ActivationRulesOverride() override {
+  void ActivationRulesOverride() override {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetActiveWindowId());
     EXPECT_EQ(1, GetFocusedWindowId());
@@ -687,7 +679,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());
   }
-  virtual void ShiftFocusOnActivation() override {
+  void ShiftFocusOnActivation() override {
     // When a window is activated, by default that window is also focused.
     // An ActivationChangeObserver may shift focus to another window within the
     // same activatable window.
@@ -729,7 +721,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     ActivateWindowById(1);
     EXPECT_EQ(1, GetFocusedWindowId());
   }
-  virtual void ShiftFocusOnActivationDueToHide() override {
+  void ShiftFocusOnActivationDueToHide() override {
     // Similar to ShiftFocusOnActivation except the activation change is
     // triggered by hiding the active window.
     ActivateWindowById(1);
@@ -755,12 +747,12 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     client->RemoveObserver(observer.get());
   }
-  virtual void NoShiftActiveOnActivation() override {
+  void NoShiftActiveOnActivation() override {
     // When a window is activated, we need to prevent any change to activation
     // from being made in response to an activation change notification.
   }
 
-  virtual void NoFocusChangeOnClickOnCaptureWindow() override {
+  void NoFocusChangeOnClickOnCaptureWindow() override {
     scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
         new aura::client::DefaultCaptureClient(root_window()));
     // Clicking on a window which has capture should not cause a focus change
@@ -781,7 +773,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   }
 
   // Verifies focus change is honored while capture held.
-  virtual void ChangeFocusWhenNothingFocusedAndCaptured() override {
+  void ChangeFocusWhenNothingFocusedAndCaptured() override {
     scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
         new aura::client::DefaultCaptureClient(root_window()));
     aura::Window* w1 = root_window()->GetChildById(1);
@@ -800,7 +792,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Verifies if a window that loses activation or focus is deleted during
   // observer notification we don't pass the deleted window to other observers.
-  virtual void DontPassDeletedWindow() override {
+  void DontPassDeletedWindow() override {
     FocusWindowById(1);
 
     EXPECT_EQ(1, GetActiveWindowId());
@@ -839,7 +831,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Verifies if the focused text input client is cleared when a window gains
   // or loses the focus.
-  virtual void FocusedTextInputClient() override {
+  void FocusedTextInputClient() override {
     ui::TextInputFocusManager* text_input_focus_manager =
         ui::TextInputFocusManager::GetInstance();
     ui::DummyTextInputClient text_input_client;
@@ -883,16 +875,14 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
 
  private:
   // Overridden from FocusControllerTestBase:
-  virtual void FocusWindowDirect(aura::Window* window) override {
-    FocusWindow(window);
-  }
-  virtual void ActivateWindowDirect(aura::Window* window) override {
+  void FocusWindowDirect(aura::Window* window) override { FocusWindow(window); }
+  void ActivateWindowDirect(aura::Window* window) override {
     ActivateWindow(window);
   }
-  virtual void DeactivateWindowDirect(aura::Window* window) override {
+  void DeactivateWindowDirect(aura::Window* window) override {
     DeactivateWindow(window);
   }
-  virtual bool IsInputEvent() override { return false; }
+  bool IsInputEvent() override { return false; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerApiTest);
 };
@@ -921,21 +911,21 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
 
  private:
   // Overridden from FocusControllerTestBase:
-  virtual void FocusWindowDirect(aura::Window* window) override {
+  void FocusWindowDirect(aura::Window* window) override {
     ui::test::EventGenerator generator(root_window(), window);
     generator.ClickLeftButton();
   }
-  virtual void ActivateWindowDirect(aura::Window* window) override {
+  void ActivateWindowDirect(aura::Window* window) override {
     ui::test::EventGenerator generator(root_window(), window);
     generator.ClickLeftButton();
   }
-  virtual void DeactivateWindowDirect(aura::Window* window) override {
+  void DeactivateWindowDirect(aura::Window* window) override {
     aura::Window* next_activatable =
         test_focus_rules()->GetNextActivatableWindow(window);
     ui::test::EventGenerator generator(root_window(), next_activatable);
     generator.ClickLeftButton();
   }
-  virtual bool IsInputEvent() override { return true; }
+  bool IsInputEvent() override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerMouseEventTest);
 };
@@ -946,21 +936,21 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
 
  private:
   // Overridden from FocusControllerTestBase:
-  virtual void FocusWindowDirect(aura::Window* window) override {
+  void FocusWindowDirect(aura::Window* window) override {
     ui::test::EventGenerator generator(root_window(), window);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
-  virtual void ActivateWindowDirect(aura::Window* window) override {
+  void ActivateWindowDirect(aura::Window* window) override {
     ui::test::EventGenerator generator(root_window(), window);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
-  virtual void DeactivateWindowDirect(aura::Window* window) override {
+  void DeactivateWindowDirect(aura::Window* window) override {
     aura::Window* next_activatable =
         test_focus_rules()->GetNextActivatableWindow(window);
     ui::test::EventGenerator generator(root_window(), next_activatable);
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
-  virtual bool IsInputEvent() override { return true; }
+  bool IsInputEvent() override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerGestureEventTest);
 };
@@ -984,7 +974,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
   virtual void PostDispostionChangeExpectations() {}
 
   // Overridden from FocusControllerTestBase:
-  virtual void BasicFocus() override {
+  void BasicFocus() override {
     EXPECT_EQ(NULL, GetFocusedWindow());
 
     aura::Window* w211 = root_window()->GetChildById(211);
@@ -995,7 +985,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     // BasicFocusRules passes focus to the parent.
     EXPECT_EQ(parent_ ? 2 : 21, GetFocusedWindowId());
   }
-  virtual void BasicActivation() override {
+  void BasicActivation() override {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
 
     EXPECT_EQ(NULL, GetActiveWindow());
@@ -1008,7 +998,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     EXPECT_EQ(3, GetActiveWindowId());
     PostDispostionChangeExpectations();
   }
-  virtual void FocusEvents() override {
+  void FocusEvents() override {
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
 
@@ -1021,7 +1011,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     root_observer.ExpectCounts(0, 1);
     observer211.ExpectCounts(0, 1);
   }
-  virtual void ActivationEvents() override {
+  void ActivationEvents() override {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
 
     aura::Window* w2 = root_window()->GetChildById(2);
@@ -1039,7 +1029,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
     observer2.ExpectCounts(1, 1);
     observer3.ExpectCounts(1, 1);
   }
-  virtual void FocusRulesOverride() override {
+  void FocusRulesOverride() override {
     EXPECT_EQ(NULL, GetFocusedWindow());
     aura::Window* w211 = root_window()->GetChildById(211);
     FocusWindow(w211);
@@ -1053,7 +1043,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
     test_focus_rules()->set_focus_restriction(NULL);
   }
-  virtual void ActivationRulesOverride() override {
+  void ActivationRulesOverride() override {
     DCHECK(!parent_) << "Activation tests don't support parent changes.";
 
     aura::Window* w1 = root_window()->GetChildById(1);
@@ -1096,7 +1086,7 @@ class FocusControllerHideTest : public FocusControllerImplicitTestBase {
       : FocusControllerImplicitTestBase(parent) {}
 
   // Overridden from FocusControllerImplicitTestBase:
-  virtual void ChangeWindowDisposition(aura::Window* window) override {
+  void ChangeWindowDisposition(aura::Window* window) override {
     GetDispositionWindow(window)->Hide();
   }
 
@@ -1124,7 +1114,7 @@ class FocusControllerDestructionTest : public FocusControllerImplicitTestBase {
       : FocusControllerImplicitTestBase(parent) {}
 
   // Overridden from FocusControllerImplicitTestBase:
-  virtual void ChangeWindowDisposition(aura::Window* window) override {
+  void ChangeWindowDisposition(aura::Window* window) override {
     delete GetDispositionWindow(window);
   }
 
@@ -1153,12 +1143,12 @@ class FocusControllerRemovalTest : public FocusControllerImplicitTestBase {
       : FocusControllerImplicitTestBase(parent) {}
 
   // Overridden from FocusControllerImplicitTestBase:
-  virtual void ChangeWindowDisposition(aura::Window* window) override {
+  void ChangeWindowDisposition(aura::Window* window) override {
     aura::Window* disposition_window = GetDispositionWindow(window);
     disposition_window->parent()->RemoveChild(disposition_window);
     window_owner_.reset(disposition_window);
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     window_owner_.reset();
     FocusControllerImplicitTestBase::TearDown();
   }

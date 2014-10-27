@@ -35,13 +35,11 @@ namespace {
 class ConsumeGestureEventFilter : public ui::EventHandler {
  public:
   ConsumeGestureEventFilter() {}
-  virtual ~ConsumeGestureEventFilter() {}
+  ~ConsumeGestureEventFilter() override {}
 
  private:
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* e) override {
-    e->StopPropagation();
-  }
+  void OnGestureEvent(ui::GestureEvent* e) override { e->StopPropagation(); }
 
   DISALLOW_COPY_AND_ASSIGN(ConsumeGestureEventFilter);
 };

@@ -26,9 +26,7 @@ class TestUserActivityObserver : public UserActivityObserver {
   void reset_stats() { num_invocations_ = 0; }
 
   // UserActivityObserver implementation.
-  virtual void OnUserActivity(const ui::Event* event) override {
-    num_invocations_++;
-  }
+  void OnUserActivity(const ui::Event* event) override { num_invocations_++; }
 
  private:
   // Number of times that OnUserActivity() has been called.
@@ -40,9 +38,9 @@ class TestUserActivityObserver : public UserActivityObserver {
 class UserActivityDetectorTest : public aura::test::AuraTestBase {
  public:
   UserActivityDetectorTest() {}
-  virtual ~UserActivityDetectorTest() {}
+  ~UserActivityDetectorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AuraTestBase::SetUp();
     observer_.reset(new TestUserActivityObserver);
     detector_.reset(new UserActivityDetector);
@@ -52,7 +50,7 @@ class UserActivityDetectorTest : public aura::test::AuraTestBase {
     detector_->set_now_for_test(now_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     detector_->RemoveObserver(observer_.get());
     AuraTestBase::TearDown();
   }

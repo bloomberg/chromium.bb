@@ -63,18 +63,18 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
       : window_(window) {
     window_->AddObserver(this);
   }
-  virtual ~HidingWindowAnimationObserverBase() {
+  ~HidingWindowAnimationObserverBase() override {
     if (window_)
       window_->RemoveObserver(this);
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     WindowInvalid();
   }
 
-  virtual void OnWindowDestroyed(aura::Window* window) override {
+  void OnWindowDestroyed(aura::Window* window) override {
     DCHECK_EQ(window, window_);
     WindowInvalid();
   }
@@ -165,10 +165,10 @@ class ImplicitHidingWindowAnimationObserver
   ImplicitHidingWindowAnimationObserver(
       aura::Window* window,
       ui::ScopedLayerAnimationSettings* settings);
-  virtual ~ImplicitHidingWindowAnimationObserver() {}
+  ~ImplicitHidingWindowAnimationObserver() override {}
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImplicitHidingWindowAnimationObserver);
@@ -400,7 +400,7 @@ class RotateHidingWindowAnimationObserver
  public:
   explicit RotateHidingWindowAnimationObserver(aura::Window* window)
       : HidingWindowAnimationObserverBase(window) {}
-  virtual ~RotateHidingWindowAnimationObserver() {}
+  ~RotateHidingWindowAnimationObserver() override {}
 
   // Destroys itself after |last_sequence| ends or is aborted. Does not take
   // ownership of |last_sequence|, which should not be NULL.
@@ -409,15 +409,13 @@ class RotateHidingWindowAnimationObserver
   }
 
   // ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     OnAnimationCompleted();
   }
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
     OnAnimationCompleted();
   }
-  virtual void OnLayerAnimationScheduled(
+  void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
 
  private:

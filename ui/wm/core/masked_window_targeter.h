@@ -17,7 +17,7 @@ namespace wm {
 class WM_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
  public:
   explicit MaskedWindowTargeter(aura::Window* masked_window);
-  virtual ~MaskedWindowTargeter();
+  ~MaskedWindowTargeter() override;
 
  protected:
   // Sets the hit-test mask for |window| in |mask| (in |window|'s local
@@ -25,9 +25,8 @@ class WM_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
   virtual bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const = 0;
 
   // ui::EventTargeter:
-  virtual bool EventLocationInsideBounds(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
+  bool EventLocationInsideBounds(ui::EventTarget* target,
+                                 const ui::LocatedEvent& event) const override;
 
  private:
   aura::Window* masked_window_;

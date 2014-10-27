@@ -16,7 +16,7 @@ namespace wm {
 class WM_EXPORT BaseFocusRules : public FocusRules {
  protected:
   BaseFocusRules();
-  virtual ~BaseFocusRules();
+  ~BaseFocusRules() override;
 
   // Returns true if the children of |window| can be activated.
   virtual bool SupportsChildActivation(aura::Window* window) const = 0;
@@ -26,15 +26,13 @@ class WM_EXPORT BaseFocusRules : public FocusRules {
       aura::Window* window) const;
 
   // Overridden from FocusRules:
-  virtual bool IsToplevelWindow(aura::Window* window) const override;
-  virtual bool CanActivateWindow(aura::Window* window) const override;
-  virtual bool CanFocusWindow(aura::Window* window) const override;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) const override;
-  virtual aura::Window* GetActivatableWindow(
-      aura::Window* window) const override;
-  virtual aura::Window* GetFocusableWindow(aura::Window* window) const override;
-  virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) const override;
+  bool IsToplevelWindow(aura::Window* window) const override;
+  bool CanActivateWindow(aura::Window* window) const override;
+  bool CanFocusWindow(aura::Window* window) const override;
+  aura::Window* GetToplevelWindow(aura::Window* window) const override;
+  aura::Window* GetActivatableWindow(aura::Window* window) const override;
+  aura::Window* GetFocusableWindow(aura::Window* window) const override;
+  aura::Window* GetNextActivatableWindow(aura::Window* ignore) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseFocusRules);

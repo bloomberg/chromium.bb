@@ -41,45 +41,39 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
  public:
   // |rules| cannot be NULL.
   explicit FocusController(FocusRules* rules);
-  virtual ~FocusController();
+  ~FocusController() override;
 
  private:
   // Overridden from aura::client::ActivationClient:
-  virtual void AddObserver(
+  void AddObserver(aura::client::ActivationChangeObserver* observer) override;
+  void RemoveObserver(
       aura::client::ActivationChangeObserver* observer) override;
-  virtual void RemoveObserver(
-      aura::client::ActivationChangeObserver* observer) override;
-  virtual void ActivateWindow(aura::Window* window) override;
-  virtual void DeactivateWindow(aura::Window* window) override;
-  virtual aura::Window* GetActiveWindow() override;
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) override;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) override;
-  virtual bool CanActivateWindow(aura::Window* window) const override;
+  void ActivateWindow(aura::Window* window) override;
+  void DeactivateWindow(aura::Window* window) override;
+  aura::Window* GetActiveWindow() override;
+  aura::Window* GetActivatableWindow(aura::Window* window) override;
+  aura::Window* GetToplevelWindow(aura::Window* window) override;
+  bool CanActivateWindow(aura::Window* window) const override;
 
   // Overridden from aura::client::FocusClient:
-  virtual void AddObserver(
-      aura::client::FocusChangeObserver* observer) override;
-  virtual void RemoveObserver(
-      aura::client::FocusChangeObserver* observer) override;
-  virtual void FocusWindow(aura::Window* window) override;
-  virtual void ResetFocusWithinActiveWindow(aura::Window* window) override;
-  virtual aura::Window* GetFocusedWindow() override;
+  void AddObserver(aura::client::FocusChangeObserver* observer) override;
+  void RemoveObserver(aura::client::FocusChangeObserver* observer) override;
+  void FocusWindow(aura::Window* window) override;
+  void ResetFocusWithinActiveWindow(aura::Window* window) override;
+  aura::Window* GetFocusedWindow() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
-  virtual void OnWindowHierarchyChanging(
-      const HierarchyChangeParams& params) override;
-  virtual void OnWindowHierarchyChanged(
-      const HierarchyChangeParams& params) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
   // Internal implementation that sets the focused window, fires events etc.
   // This function must be called with a valid focusable window.

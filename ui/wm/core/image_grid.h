@@ -130,18 +130,17 @@ class WM_EXPORT ImageGrid {
   class ImagePainter : public ui::LayerDelegate {
    public:
     ImagePainter(const gfx::ImageSkia& image) : image_(image) {}
-    virtual ~ImagePainter() {}
+    ~ImagePainter() override {}
 
     // Clips |layer| to |clip_rect|.  Triggers a repaint if the clipping
     // rectangle has changed.  An empty rectangle disables clipping.
     void SetClipRect(const gfx::Rect& clip_rect, ui::Layer* layer);
 
     // ui::LayerDelegate implementation:
-    virtual void OnPaintLayer(gfx::Canvas* canvas) override;
-    virtual void OnDelegatedFrameDamage(
-        const gfx::Rect& damage_rect_in_dip) override;
-    virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-    virtual base::Closure PrepareForLayerBoundsChange() override;
+    void OnPaintLayer(gfx::Canvas* canvas) override;
+    void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+    void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+    base::Closure PrepareForLayerBoundsChange() override;
 
    private:
     friend class TestAPI;

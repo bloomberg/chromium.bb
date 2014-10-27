@@ -29,17 +29,17 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
   bool is_active() const { return !root_windows_.empty(); }
 
   // Overridden from aura::client::CaptureClient:
-  virtual void SetCapture(aura::Window* window) override;
-  virtual void ReleaseCapture(aura::Window* window) override;
-  virtual aura::Window* GetCaptureWindow() override;
-  virtual aura::Window* GetGlobalCaptureWindow() override;
+  void SetCapture(aura::Window* window) override;
+  void ReleaseCapture(aura::Window* window) override;
+  aura::Window* GetCaptureWindow() override;
+  aura::Window* GetGlobalCaptureWindow() override;
 
  private:
   friend class ScopedCaptureClient;
   typedef std::set<aura::Window*> RootWindows;
 
   CaptureController();
-  virtual ~CaptureController();
+  ~CaptureController() override;
 
   // The current capture window. NULL if there is no capture window.
   aura::Window* capture_window_;
@@ -56,7 +56,7 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
 class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
  public:
   explicit ScopedCaptureClient(aura::Window* root);
-  virtual ~ScopedCaptureClient();
+  ~ScopedCaptureClient() override;
 
   // Returns true if there is a CaptureController with at least one RootWindow.
   static bool IsActive();
@@ -66,7 +66,7 @@ class WM_EXPORT ScopedCaptureClient : public aura::WindowObserver {
   }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   // Invoked from destructor and OnWindowDestroyed() to cleanup.
