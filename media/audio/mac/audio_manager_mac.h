@@ -86,7 +86,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void InitializeOnAudioThread();
   void ShutdownOnAudioThread();
 
-  int ChooseBufferSize(int output_sample_rate);
+  int ChooseBufferSize(bool is_input, int sample_rate);
 
   // Notify streams of a device change if the default output device or its
   // sample rate has changed, otherwise does nothing.

@@ -439,7 +439,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
     DLOG(ERROR) << "Invalid device " << device_id;
     return AudioParameters(
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-        kFallbackSampleRate, 16, ChooseBufferSize(kFallbackSampleRate));
+        kFallbackSampleRate, 16, ChooseBufferSize(true, kFallbackSampleRate));
   }
 
   int channels = 0;
@@ -459,7 +459,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
   // Due to the sharing of the input and output buffer sizes, we need to choose
   // the input buffer size based on the output sample rate.  See
   // http://crbug.com/154352.
-  const int buffer_size = ChooseBufferSize(sample_rate);
+  const int buffer_size = ChooseBufferSize(true, sample_rate);
 
   // TODO(xians): query the native channel layout for the specific device.
   return AudioParameters(
@@ -640,7 +640,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     DLOG(ERROR) << "Invalid output device " << output_device_id;
     return input_params.IsValid() ? input_params : AudioParameters(
         AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-        kFallbackSampleRate, 16, ChooseBufferSize(kFallbackSampleRate));
+        kFallbackSampleRate, 16, ChooseBufferSize(false, kFallbackSampleRate));
   }
 
   const bool has_valid_input_params = input_params.IsValid();
@@ -649,7 +649,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
   // Allow pass through buffer sizes.  If concurrent input and output streams
   // exist, they will use the smallest buffer size amongst them.  As such, each
   // stream must be able to FIFO requests appropriately when this happens.
-  int buffer_size = ChooseBufferSize(hardware_sample_rate);
+  int buffer_size = ChooseBufferSize(false, hardware_sample_rate);
   if (has_valid_input_params) {
     buffer_size =
         std::min(kMaximumInputOutputBufferSize,
@@ -717,17 +717,26 @@ void AudioManagerMac::HandleDeviceChanges() {
   NotifyAllOutputDeviceChangeListeners();
 }
 
-int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
-  int buffer_size = kMinimumInputOutputBufferSize;
+int AudioManagerMac::ChooseBufferSize(bool is_input, int sample_rate) {
+  // kMinimumInputOutputBufferSize is too small for the output side because
+  // CoreAudio can get into under-run if the renderer fails delivering data
+  // to the browser within the allowed time by the OS. The workaround is to
+  // use 256 samples as the default output buffer size for sample rates
+  // smaller than 96KHz.
+  // TODO(xians): Remove this workaround after WebAudio supports user defined
+  // buffer size.  See https://github.com/WebAudio/web-audio-api/issues/348
+  // for details.
+  int buffer_size = is_input ?
+      kMinimumInputOutputBufferSize : 2 * kMinimumInputOutputBufferSize;
   const int user_buffer_size = GetUserBufferSize();
   if (user_buffer_size) {
     buffer_size = user_buffer_size;
-  } else if (output_sample_rate > 48000) {
+  } else if (sample_rate > 48000) {
     // The default buffer size is too small for higher sample rates and may lead
     // to glitching.  Adjust upwards by multiples of the default size.
-    if (output_sample_rate <= 96000)
+    if (sample_rate <= 96000)
       buffer_size = 2 * kMinimumInputOutputBufferSize;
-    else if (output_sample_rate <= 192000)
+    else if (sample_rate <= 192000)
       buffer_size = 4 * kMinimumInputOutputBufferSize;
   }
 
