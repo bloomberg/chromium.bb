@@ -39,7 +39,10 @@ namespace blink {
 class StorageQuotaClientImpl : public NoBaseWillBeGarbageCollectedFinalized<StorageQuotaClientImpl>, public StorageQuotaClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<StorageQuotaClientImpl> create();
+    static PassOwnPtrWillBeRawPtr<StorageQuotaClientImpl> create()
+    {
+        return adoptPtrWillBeNoop(new StorageQuotaClientImpl());
+    }
 
     virtual ~StorageQuotaClientImpl();
 

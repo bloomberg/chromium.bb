@@ -43,14 +43,14 @@ namespace blink {
 
 class DeprecatedStorageQuotaCallbacksImpl final : public StorageQuotaCallbacks {
 public:
-    static PassOwnPtrWillBeRawPtr<DeprecatedStorageQuotaCallbacksImpl> create(StorageUsageCallback* success, StorageErrorCallback* error)
+    static DeprecatedStorageQuotaCallbacksImpl* create(StorageUsageCallback* success, StorageErrorCallback* error)
     {
-        return adoptPtrWillBeNoop(new DeprecatedStorageQuotaCallbacksImpl(success, error));
+        return new DeprecatedStorageQuotaCallbacksImpl(success, error);
     }
 
-    static PassOwnPtrWillBeRawPtr<DeprecatedStorageQuotaCallbacksImpl> create(StorageQuotaCallback* success, StorageErrorCallback* error)
+    static DeprecatedStorageQuotaCallbacksImpl* create(StorageQuotaCallback* success, StorageErrorCallback* error)
     {
-        return adoptPtrWillBeNoop(new DeprecatedStorageQuotaCallbacksImpl(success, error));
+        return new DeprecatedStorageQuotaCallbacksImpl(success, error);
     }
 
     virtual ~DeprecatedStorageQuotaCallbacksImpl();
@@ -64,9 +64,9 @@ private:
     DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*, StorageErrorCallback*);
     DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback*, StorageErrorCallback*);
 
-    PersistentWillBeMember<StorageUsageCallback> m_usageCallback;
-    PersistentWillBeMember<StorageQuotaCallback> m_quotaCallback;
-    PersistentWillBeMember<StorageErrorCallback> m_errorCallback;
+    Member<StorageUsageCallback> m_usageCallback;
+    Member<StorageQuotaCallback> m_quotaCallback;
+    Member<StorageErrorCallback> m_errorCallback;
 };
 
 } // namespace blink

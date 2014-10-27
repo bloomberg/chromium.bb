@@ -69,8 +69,8 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
     }
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    OwnPtrWillBeRawPtr<StorageQuotaCallbacks> callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
-    Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks.release());
+    StorageQuotaCallbacks* callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
+    Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks);
 }
 
 void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, StorageQuotaCallback* successCallback, StorageErrorCallback* errorCallback)

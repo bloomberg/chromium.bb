@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT StorageQuotaCallbacks : public NoBaseWillBeGarbageCollectedFinalized<StorageQuotaCallbacks> {
+class PLATFORM_EXPORT StorageQuotaCallbacks : public GarbageCollectedFinalized<StorageQuotaCallbacks> {
     WTF_MAKE_NONCOPYABLE(StorageQuotaCallbacks);
 public:
     StorageQuotaCallbacks() { }

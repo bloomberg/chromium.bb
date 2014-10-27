@@ -94,8 +94,8 @@ ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
     }
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    OwnPtrWillBeRawPtr<StorageQuotaCallbacks> callbacks = StorageQuotaCallbacksImpl::create(resolver);
-    Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks.release());
+    StorageQuotaCallbacks* callbacks = StorageQuotaCallbacksImpl::create(resolver);
+    Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks);
     return promise;
 }
 
