@@ -33,6 +33,7 @@ class MockDeviceSettingsObserver : public DeviceSettingsService::Observer {
 
   MOCK_METHOD0(OwnershipStatusChanged, void());
   MOCK_METHOD0(DeviceSettingsUpdated, void());
+  MOCK_METHOD0(OnDeviceSettingsServiceShutdown, void());
 };
 
 }  // namespace

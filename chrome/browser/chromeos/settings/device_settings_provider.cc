@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -449,6 +450,8 @@ DeviceSettingsProvider::DeviceSettingsProvider(
 }
 
 DeviceSettingsProvider::~DeviceSettingsProvider() {
+  if (device_settings_service_->GetOwnerSettingsService())
+    device_settings_service_->GetOwnerSettingsService()->RemoveObserver(this);
   device_settings_service_->RemoveObserver(this);
 }
 
@@ -471,18 +474,50 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
     return;
   }
 
-  if (IsDeviceSetting(path)) {
-    pending_changes_.push_back(PendingQueueElement(path, in_value.DeepCopy()));
-    if (!store_callback_factory_.HasWeakPtrs())
-      SetInPolicy();
-  } else {
+  if (!IsDeviceSetting(path)) {
     NOTREACHED() << "Try to set unhandled cros setting " << path;
+    return;
   }
+
+  if (device_settings_service_->HasPrivateOwnerKey()) {
+    // Directly set setting through OwnerSettingsService.
+    ownership::OwnerSettingsService* service =
+        device_settings_service_->GetOwnerSettingsService();
+    if (!service->Set(path, in_value)) {
+      NotifyObservers(path);
+      return;
+    }
+  } else {
+    // Temporary store new setting in
+    // |device_settings_|. |device_settings_| will be stored on a disk
+    // as soon as an ownership of device the will be taken.
+    OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
+        path, in_value, device_settings_);
+    em::PolicyData data;
+    data.set_username(device_settings_service_->GetUsername());
+    CHECK(device_settings_.SerializeToString(data.mutable_policy_value()));
+
+    // Set the cache to the updated value.
+    UpdateValuesCache(data, device_settings_, TEMPORARILY_UNTRUSTED);
+
+    if (!device_settings_cache::Store(data, g_browser_process->local_state())) {
+      LOG(ERROR) << "Couldn't store to the temp storage.";
+      NotifyObservers(path);
+      return;
+    }
+  }
+
+  bool metrics_value;
+  if (path == kStatsReportingPref && in_value.GetAsBoolean(&metrics_value))
+    ApplyMetricsSetting(false, metrics_value);
 }
 
 void DeviceSettingsProvider::OwnershipStatusChanged() {
   DeviceSettingsService::OwnershipStatus new_ownership_status =
       device_settings_service_->GetOwnershipStatus();
+
+  if (device_settings_service_->GetOwnerSettingsService())
+    device_settings_service_->GetOwnerSettingsService()->AddObserver(this);
 
   // If the device just became owned, write the settings accumulated in the
   // cache to device settings proper. It is important that writing only happens
@@ -504,7 +539,14 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
       new_settings.MergeFrom(device_settings_);
       device_settings_.Swap(&new_settings);
     }
-    StoreDeviceSettings();
+
+    scoped_ptr<em::PolicyData> policy(new em::PolicyData());
+    policy->set_username(device_settings_service_->GetUsername());
+    CHECK(device_settings_.SerializeToString(policy->mutable_policy_value()));
+    if (!device_settings_service_->GetOwnerSettingsService()
+             ->CommitTentativeDeviceSettings(policy.Pass())) {
+      LOG(ERROR) << "Can't store policy";
+    }
   }
 
   // The owner key might have become available, allowing migration to happen.
@@ -518,6 +560,17 @@ void DeviceSettingsProvider::DeviceSettingsUpdated() {
     UpdateAndProceedStoring();
 }
 
+void DeviceSettingsProvider::OnDeviceSettingsServiceShutdown() {
+  device_settings_service_ = nullptr;
+}
+
+void DeviceSettingsProvider::OnTentativeChangesInPolicy(
+    const em::PolicyData& policy_data) {
+  em::ChromeDeviceSettingsProto device_settings;
+  CHECK(device_settings.ParseFromString(policy_data.policy_value()));
+  UpdateValuesCache(policy_data, device_settings, TEMPORARILY_UNTRUSTED);
+}
+
 void DeviceSettingsProvider::RetrieveCachedData() {
   em::PolicyData policy_data;
   if (!device_settings_cache::Retrieve(&policy_data,
@@ -527,261 +580,6 @@ void DeviceSettingsProvider::RetrieveCachedData() {
   }
 
   UpdateValuesCache(policy_data, device_settings_, trusted_status_);
-}
-
-void DeviceSettingsProvider::SetInPolicy() {
-  if (pending_changes_.empty()) {
-    NOTREACHED();
-    return;
-  }
-
-  if (RequestTrustedEntity() != TRUSTED) {
-    // Re-sync device settings before proceeding.
-    device_settings_service_->Load();
-    return;
-  }
-
-  std::string prop(pending_changes_.front().first);
-  scoped_ptr<base::Value> value(pending_changes_.front().second);
-  pending_changes_.pop_front();
-
-  trusted_status_ = TEMPORARILY_UNTRUSTED;
-  if (prop == kAccountsPrefAllowNewUser) {
-    em::AllowNewUsersProto* allow =
-        device_settings_.mutable_allow_new_users();
-    bool allow_value;
-    if (value->GetAsBoolean(&allow_value))
-      allow->set_allow_new_users(allow_value);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefAllowGuest) {
-    em::GuestModeEnabledProto* guest =
-        device_settings_.mutable_guest_mode_enabled();
-    bool guest_value;
-    if (value->GetAsBoolean(&guest_value))
-      guest->set_guest_mode_enabled(guest_value);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefSupervisedUsersEnabled) {
-    em::SupervisedUsersSettingsProto* supervised =
-        device_settings_.mutable_supervised_users_settings();
-    bool supervised_value;
-    if (value->GetAsBoolean(&supervised_value))
-      supervised->set_supervised_users_enabled(supervised_value);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
-    em::ShowUserNamesOnSigninProto* show =
-        device_settings_.mutable_show_user_names();
-    bool show_value;
-    if (value->GetAsBoolean(&show_value))
-      show->set_show_user_names(show_value);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefDeviceLocalAccounts) {
-    em::DeviceLocalAccountsProto* device_local_accounts =
-        device_settings_.mutable_device_local_accounts();
-    device_local_accounts->clear_account();
-    const base::ListValue* accounts_list = NULL;
-    if (value->GetAsList(&accounts_list)) {
-      for (base::ListValue::const_iterator entry(accounts_list->begin());
-           entry != accounts_list->end(); ++entry) {
-        const base::DictionaryValue* entry_dict = NULL;
-        if ((*entry)->GetAsDictionary(&entry_dict)) {
-          em::DeviceLocalAccountInfoProto* account =
-              device_local_accounts->add_account();
-          std::string account_id;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyId, &account_id)) {
-            account->set_account_id(account_id);
-          }
-          int type;
-          if (entry_dict->GetIntegerWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyType, &type)) {
-            account->set_type(
-                static_cast<em::DeviceLocalAccountInfoProto::AccountType>(
-                    type));
-          }
-          std::string kiosk_app_id;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-                  &kiosk_app_id)) {
-            account->mutable_kiosk_app()->set_app_id(kiosk_app_id);
-          }
-        } else {
-          NOTREACHED();
-        }
-      }
-    } else {
-      NOTREACHED();
-    }
-  } else if (prop == kAccountsPrefDeviceLocalAccountAutoLoginId) {
-    em::DeviceLocalAccountsProto* device_local_accounts =
-        device_settings_.mutable_device_local_accounts();
-    std::string id;
-    if (value->GetAsString(&id))
-      device_local_accounts->set_auto_login_id(id);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
-    em::DeviceLocalAccountsProto* device_local_accounts =
-        device_settings_.mutable_device_local_accounts();
-    int delay;
-    if (value->GetAsInteger(&delay))
-      device_local_accounts->set_auto_login_delay(delay);
-    else
-      NOTREACHED();
-  } else if (prop == kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled) {
-    em::DeviceLocalAccountsProto* device_local_accounts =
-        device_settings_.mutable_device_local_accounts();
-    bool enabled;
-    if (value->GetAsBoolean(&enabled))
-      device_local_accounts->set_enable_auto_login_bailout(enabled);
-    else
-      NOTREACHED();
-  } else if (prop ==
-             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline) {
-    em::DeviceLocalAccountsProto* device_local_accounts =
-        device_settings_.mutable_device_local_accounts();
-    bool should_prompt;
-    if (value->GetAsBoolean(&should_prompt))
-      device_local_accounts->set_prompt_for_network_when_offline(should_prompt);
-    else
-      NOTREACHED();
-  } else if (prop == kSignedDataRoamingEnabled) {
-    em::DataRoamingEnabledProto* roam =
-        device_settings_.mutable_data_roaming_enabled();
-    bool roaming_value = false;
-    if (value->GetAsBoolean(&roaming_value))
-      roam->set_data_roaming_enabled(roaming_value);
-    else
-      NOTREACHED();
-  } else if (prop == kReleaseChannel) {
-    em::ReleaseChannelProto* release_channel =
-        device_settings_.mutable_release_channel();
-    std::string channel_value;
-    if (value->GetAsString(&channel_value))
-      release_channel->set_release_channel(channel_value);
-    else
-      NOTREACHED();
-  } else if (prop == kStatsReportingPref) {
-    em::MetricsEnabledProto* metrics =
-        device_settings_.mutable_metrics_enabled();
-    bool metrics_value = false;
-    if (value->GetAsBoolean(&metrics_value))
-      metrics->set_metrics_enabled(metrics_value);
-    else
-      NOTREACHED();
-    ApplyMetricsSetting(false, metrics_value);
-  } else if (prop == kAccountsPrefUsers) {
-    em::UserWhitelistProto* whitelist_proto =
-        device_settings_.mutable_user_whitelist();
-    whitelist_proto->clear_user_whitelist();
-    const base::ListValue* users;
-    if (value->GetAsList(&users)) {
-      for (base::ListValue::const_iterator i = users->begin();
-           i != users->end(); ++i) {
-        std::string email;
-        if ((*i)->GetAsString(&email))
-          whitelist_proto->add_user_whitelist(email);
-      }
-    }
-  } else if (prop == kAccountsPrefEphemeralUsersEnabled) {
-    em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
-        device_settings_.mutable_ephemeral_users_enabled();
-    bool ephemeral_users_enabled_value = false;
-    if (value->GetAsBoolean(&ephemeral_users_enabled_value)) {
-      ephemeral_users_enabled->set_ephemeral_users_enabled(
-          ephemeral_users_enabled_value);
-    } else {
-      NOTREACHED();
-    }
-  } else if (prop == kAllowRedeemChromeOsRegistrationOffers) {
-    em::AllowRedeemChromeOsRegistrationOffersProto* allow_redeem_offers =
-        device_settings_.mutable_allow_redeem_offers();
-    bool allow_redeem_offers_value;
-    if (value->GetAsBoolean(&allow_redeem_offers_value)) {
-      allow_redeem_offers->set_allow_redeem_offers(
-          allow_redeem_offers_value);
-    } else {
-      NOTREACHED();
-    }
-  } else if (prop == kStartUpFlags) {
-    em::StartUpFlagsProto* flags_proto =
-        device_settings_.mutable_start_up_flags();
-    flags_proto->Clear();
-    const base::ListValue* flags;
-    if (value->GetAsList(&flags)) {
-      for (base::ListValue::const_iterator i = flags->begin();
-           i != flags->end(); ++i) {
-        std::string flag;
-        if ((*i)->GetAsString(&flag))
-          flags_proto->add_flags(flag);
-      }
-    }
-  } else if (prop == kSystemUse24HourClock) {
-    em::SystemUse24HourClockProto* use_24hour_clock_proto =
-        device_settings_.mutable_use_24hour_clock();
-    use_24hour_clock_proto->Clear();
-    bool use_24hour_clock_value;
-    if (value->GetAsBoolean(&use_24hour_clock_value)) {
-      use_24hour_clock_proto->set_use_24hour_clock(use_24hour_clock_value);
-    } else {
-      NOTREACHED();
-    }
-  } else if (prop == kAttestationForContentProtectionEnabled) {
-    em::AttestationSettingsProto* attestation_settings =
-        device_settings_.mutable_attestation_settings();
-    bool setting_enabled;
-    if (value->GetAsBoolean(&setting_enabled)) {
-      attestation_settings->set_content_protection_enabled(setting_enabled);
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    // The remaining settings don't support Set(), since they are not
-    // intended to be customizable by the user:
-    //   kAccountsPrefTransferSAMLCookies
-    //   kAppPack
-    //   kDeviceAttestationEnabled
-    //   kDeviceOwner
-    //   kIdleLogoutTimeout
-    //   kIdleLogoutWarningDuration
-    //   kReleaseChannelDelegated
-    //   kReportDeviceActivityTimes
-    //   kReportDeviceBootMode
-    //   kReportDeviceLocation
-    //   kReportDeviceVersionInfo
-    //   kReportDeviceNetworkInterfaces
-    //   kReportDeviceUsers
-    //   kScreenSaverExtensionId
-    //   kScreenSaverTimeout
-    //   kServiceAccountIdentity
-    //   kStartUpUrls
-    //   kSystemTimezonePolicy
-    //   kVariationsRestrictParameter
-
-    LOG(FATAL) << "Device setting " << prop << " is read-only.";
-  }
-
-  em::PolicyData data;
-  data.set_username(device_settings_service_->GetUsername());
-  CHECK(device_settings_.SerializeToString(data.mutable_policy_value()));
-
-  // Set the cache to the updated value.
-  UpdateValuesCache(data, device_settings_, trusted_status_);
-
-  if (ownership_status_ == DeviceSettingsService::OWNERSHIP_TAKEN) {
-    StoreDeviceSettings();
-  } else {
-    if (!device_settings_cache::Store(data, g_browser_process->local_state()))
-      LOG(ERROR) << "Couldn't store to the temp storage.";
-
-    // OnStorePolicyCompleted won't get called in this case so proceed with any
-    // pending operations immediately.
-    if (!pending_changes_.empty())
-      SetInPolicy();
-  }
 }
 
 void DeviceSettingsProvider::UpdateValuesCache(
@@ -927,10 +725,6 @@ DeviceSettingsProvider::TrustedStatus
 void DeviceSettingsProvider::UpdateAndProceedStoring() {
   // Re-sync the cache from the service.
   UpdateFromService();
-
-  // Trigger the next change if necessary.
-  if (trusted_status_ == TRUSTED && !pending_changes_.empty())
-    SetInPolicy();
 }
 
 bool DeviceSettingsProvider::UpdateFromService() {
@@ -992,18 +786,6 @@ bool DeviceSettingsProvider::UpdateFromService() {
     callbacks[i].Run();
 
   return settings_loaded;
-}
-
-void DeviceSettingsProvider::StoreDeviceSettings() {
-  // Mute all previous callbacks to guarantee the |pending_changes_| queue is
-  // processed serially.
-  store_callback_factory_.InvalidateWeakPtrs();
-
-  device_settings_service_->SignAndStore(
-      scoped_ptr<em::ChromeDeviceSettingsProto>(
-          new em::ChromeDeviceSettingsProto(device_settings_)),
-      base::Bind(&DeviceSettingsProvider::UpdateAndProceedStoring,
-                 store_callback_factory_.GetWeakPtr()));
 }
 
 void DeviceSettingsProvider::AttemptMigration() {

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/ownership_export.h"
@@ -20,6 +21,7 @@
 
 namespace base {
 class TaskRunner;
+class Value;
 }
 
 namespace ownership {
@@ -31,18 +33,41 @@ class PublicKey;
 // which deal with ownership, keypairs and owner-related settings.
 class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
  public:
-  typedef base::Callback<void(std::string policy_blob)>
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when signed policy was stored, or when an error happed during
+    // policy storage..
+    virtual void OnSignedPolicyStored(bool success) {}
+
+    // Called when tentative changes were made to policy, but the policy still
+    // not signed and stored.
+    //
+    // TODO (ygorshenin@, crbug.com/230018): get rid of the method
+    // since it creates DeviceSettingsService's dependency on
+    // OwnerSettingsService.
+    virtual void OnTentativeChangesInPolicy(
+        const enterprise_management::PolicyData& policy_data) {}
+  };
+
+  typedef base::Callback<void(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response)>
       AssembleAndSignPolicyAsyncCallback;
 
   typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
 
   explicit OwnerSettingsService(
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
-  ~OwnerSettingsService() override;
+  virtual ~OwnerSettingsService();
 
   base::WeakPtr<OwnerSettingsService> as_weak_ptr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  void AddObserver(Observer* observer);
+
+  void RemoveObserver(Observer* observer);
 
   // Returns whether current user is owner or not. When this method
   // is called too early, incorrect result can be returned because
@@ -60,12 +85,24 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
       scoped_ptr<enterprise_management::PolicyData> policy,
       const AssembleAndSignPolicyAsyncCallback& callback);
 
-  // Signs |settings| with the private half of the owner key and sends
-  // the resulting policy blob for storage. The
-  // result of the operation is reported through |callback|.
-  virtual void SignAndStorePolicyAsync(
-      scoped_ptr<enterprise_management::PolicyData> policy,
-      const base::Closure& callback) = 0;
+  // Checks whether |setting| is handled by OwnerSettingsService.
+  virtual bool HandlesSetting(const std::string& setting) = 0;
+
+  // Sets |setting| value to |value|.
+  virtual bool Set(const std::string& setting, const base::Value& value) = 0;
+
+  // Sets a bunch of device settings accumulated before ownership gets
+  // established.
+  //
+  // TODO (ygorshenin@, crbug.com/230018): that this is a temporary
+  // solution and should be removed.
+  virtual bool CommitTentativeDeviceSettings(
+      scoped_ptr<enterprise_management::PolicyData> policy) = 0;
+
+  bool SetBoolean(const std::string& setting, bool value);
+  bool SetInteger(const std::string& setting, int value);
+  bool SetDouble(const std::string& setting, double value);
+  bool SetString(const std::string& setting, const std::string& value);
 
  protected:
   void ReloadKeypair();
@@ -88,6 +125,8 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   std::vector<IsOwnerCallback> pending_is_owner_callbacks_;
+
+  ObserverList<Observer> observers_;
 
   base::ThreadChecker thread_checker_;
 

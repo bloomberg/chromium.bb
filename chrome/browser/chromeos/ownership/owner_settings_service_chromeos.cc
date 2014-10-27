@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -42,8 +43,6 @@ using ownership::PublicKey;
 namespace chromeos {
 
 namespace {
-
-DeviceSettingsService* g_device_settings_service_for_testing = NULL;
 
 bool IsOwnerInTests(const std::string& user_id) {
   if (user_id.empty() ||
@@ -147,23 +146,20 @@ void DoesPrivateKeyExistAsync(
       callback);
 }
 
-DeviceSettingsService* GetDeviceSettingsService() {
-  if (g_device_settings_service_for_testing)
-    return g_device_settings_service_for_testing;
-  return DeviceSettingsService::IsInitialized() ? DeviceSettingsService::Get()
-                                                : NULL;
-}
-
 }  // namespace
 
 OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
+    DeviceSettingsService* device_settings_service,
     Profile* profile,
     const scoped_refptr<OwnerKeyUtil>& owner_key_util)
     : ownership::OwnerSettingsService(owner_key_util),
+      device_settings_service_(device_settings_service),
       profile_(profile),
       waiting_for_profile_creation_(true),
       waiting_for_tpm_token_(true),
-      weak_factory_(this) {
+      has_pending_changes_(false),
+      weak_factory_(this),
+      store_settings_factory_(this) {
   if (TPMTokenLoader::IsInitialized()) {
     TPMTokenLoader::TPMTokenStatus tpm_token_status =
         TPMTokenLoader::Get()->IsTPMTokenEnabled(
@@ -178,13 +174,22 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   }
 
+  if (device_settings_service_)
+    device_settings_service_->AddObserver(this);
+
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
                  content::Source<Profile>(profile_));
+
+  UpdateFromService();
 }
 
 OwnerSettingsServiceChromeOS::~OwnerSettingsServiceChromeOS() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (device_settings_service_)
+    device_settings_service_->RemoveObserver(this);
+
   if (DBusThreadManager::IsInitialized() &&
       DBusThreadManager::Get()->GetSessionManagerClient()) {
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
@@ -201,19 +206,43 @@ void OwnerSettingsServiceChromeOS::OnTPMTokenReady(
   ReloadKeypair();
 }
 
-void OwnerSettingsServiceChromeOS::SignAndStorePolicyAsync(
-    scoped_ptr<em::PolicyData> policy,
-    const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  SignAndStoreSettingsOperation* operation = new SignAndStoreSettingsOperation(
-      base::Bind(&OwnerSettingsServiceChromeOS::HandleCompletedOperation,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
-      policy.Pass());
-  operation->set_owner_settings_service(weak_factory_.GetWeakPtr());
-  pending_operations_.push_back(operation);
-  if (pending_operations_.front() == operation)
-    StartNextOperation();
+bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
+  return DeviceSettingsProvider::IsDeviceSetting(setting);
+}
+
+bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
+                                       const base::Value& value) {
+  if (!IsOwner() && !IsOwnerInTests(user_id_))
+    return false;
+
+  UpdateDeviceSettings(setting, value, device_settings_);
+  em::PolicyData policy_data;
+  policy_data.set_username(user_id_);
+  CHECK(device_settings_.SerializeToString(policy_data.mutable_policy_value()));
+  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
+                    observers_,
+                    OnTentativeChangesInPolicy(policy_data));
+  has_pending_changes_ = true;
+  StoreDeviceSettings();
+  return true;
+}
+
+bool OwnerSettingsServiceChromeOS::CommitTentativeDeviceSettings(
+    scoped_ptr<enterprise_management::PolicyData> policy) {
+  if (!IsOwner() && !IsOwnerInTests(user_id_))
+    return false;
+  if (policy->username() != user_id_) {
+    LOG(ERROR) << "Username mismatch: " << policy->username() << " vs. "
+               << user_id_;
+    return false;
+  }
+  CHECK(device_settings_.ParseFromString(policy->policy_value()));
+  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
+                    observers_,
+                    OnTentativeChangesInPolicy(*policy));
+  has_pending_changes_ = true;
+  StoreDeviceSettings();
+  return true;
 }
 
 void OwnerSettingsServiceChromeOS::Observe(
@@ -242,6 +271,20 @@ void OwnerSettingsServiceChromeOS::OwnerKeySet(bool success) {
     ReloadKeypair();
 }
 
+void OwnerSettingsServiceChromeOS::OwnershipStatusChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  StoreDeviceSettings();
+}
+
+void OwnerSettingsServiceChromeOS::DeviceSettingsUpdated() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  StoreDeviceSettings();
+}
+
+void OwnerSettingsServiceChromeOS::OnDeviceSettingsServiceShutdown() {
+  device_settings_service_ = nullptr;
+}
+
 // static
 void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
     const std::string& user_hash,
@@ -261,10 +304,251 @@ void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
 }
 
 // static
-void OwnerSettingsServiceChromeOS::SetDeviceSettingsServiceForTesting(
-    DeviceSettingsService* device_settings_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_device_settings_service_for_testing = device_settings_service;
+scoped_ptr<em::PolicyData> OwnerSettingsServiceChromeOS::AssemblePolicy(
+    const std::string& user_id,
+    const em::PolicyData* policy_data,
+    const em::ChromeDeviceSettingsProto* settings) {
+  scoped_ptr<em::PolicyData> policy(new em::PolicyData());
+  if (policy_data) {
+    // Preserve management settings.
+    if (policy_data->has_management_mode())
+      policy->set_management_mode(policy_data->management_mode());
+    if (policy_data->has_request_token())
+      policy->set_request_token(policy_data->request_token());
+    if (policy_data->has_device_id())
+      policy->set_device_id(policy_data->device_id());
+  } else {
+    // If there's no previous policy data, this is the first time the device
+    // setting is set. We set the management mode to NOT_MANAGED initially.
+    policy->set_management_mode(em::PolicyData::NOT_MANAGED);
+  }
+  policy->set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
+  policy->set_timestamp(
+      (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
+  policy->set_username(user_id);
+  if (!settings->SerializeToString(policy->mutable_policy_value()))
+    return scoped_ptr<em::PolicyData>();
+
+  return policy.Pass();
+}
+
+// static
+void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
+    const std::string& path,
+    const base::Value& value,
+    enterprise_management::ChromeDeviceSettingsProto& settings) {
+  if (path == kAccountsPrefAllowNewUser) {
+    em::AllowNewUsersProto* allow = settings.mutable_allow_new_users();
+    bool allow_value;
+    if (value.GetAsBoolean(&allow_value)) {
+      allow->set_allow_new_users(allow_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (path == kAccountsPrefAllowGuest) {
+    em::GuestModeEnabledProto* guest = settings.mutable_guest_mode_enabled();
+    bool guest_value;
+    if (value.GetAsBoolean(&guest_value))
+      guest->set_guest_mode_enabled(guest_value);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefSupervisedUsersEnabled) {
+    em::SupervisedUsersSettingsProto* supervised =
+        settings.mutable_supervised_users_settings();
+    bool supervised_value;
+    if (value.GetAsBoolean(&supervised_value))
+      supervised->set_supervised_users_enabled(supervised_value);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefShowUserNamesOnSignIn) {
+    em::ShowUserNamesOnSigninProto* show = settings.mutable_show_user_names();
+    bool show_value;
+    if (value.GetAsBoolean(&show_value))
+      show->set_show_user_names(show_value);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefDeviceLocalAccounts) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        settings.mutable_device_local_accounts();
+    device_local_accounts->clear_account();
+    const base::ListValue* accounts_list = NULL;
+    if (value.GetAsList(&accounts_list)) {
+      for (base::ListValue::const_iterator entry(accounts_list->begin());
+           entry != accounts_list->end();
+           ++entry) {
+        const base::DictionaryValue* entry_dict = NULL;
+        if ((*entry)->GetAsDictionary(&entry_dict)) {
+          em::DeviceLocalAccountInfoProto* account =
+              device_local_accounts->add_account();
+          std::string account_id;
+          if (entry_dict->GetStringWithoutPathExpansion(
+                  kAccountsPrefDeviceLocalAccountsKeyId, &account_id)) {
+            account->set_account_id(account_id);
+          }
+          int type;
+          if (entry_dict->GetIntegerWithoutPathExpansion(
+                  kAccountsPrefDeviceLocalAccountsKeyType, &type)) {
+            account->set_type(
+                static_cast<em::DeviceLocalAccountInfoProto::AccountType>(
+                    type));
+          }
+          std::string kiosk_app_id;
+          if (entry_dict->GetStringWithoutPathExpansion(
+                  kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                  &kiosk_app_id)) {
+            account->mutable_kiosk_app()->set_app_id(kiosk_app_id);
+          }
+        } else {
+          NOTREACHED();
+        }
+      }
+    } else {
+      NOTREACHED();
+    }
+  } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginId) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        settings.mutable_device_local_accounts();
+    std::string id;
+    if (value.GetAsString(&id))
+      device_local_accounts->set_auto_login_id(id);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        settings.mutable_device_local_accounts();
+    int delay;
+    if (value.GetAsInteger(&delay))
+      device_local_accounts->set_auto_login_delay(delay);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        settings.mutable_device_local_accounts();
+    bool enabled;
+    if (value.GetAsBoolean(&enabled))
+      device_local_accounts->set_enable_auto_login_bailout(enabled);
+    else
+      NOTREACHED();
+  } else if (path ==
+             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline) {
+    em::DeviceLocalAccountsProto* device_local_accounts =
+        settings.mutable_device_local_accounts();
+    bool should_prompt;
+    if (value.GetAsBoolean(&should_prompt))
+      device_local_accounts->set_prompt_for_network_when_offline(should_prompt);
+    else
+      NOTREACHED();
+  } else if (path == kSignedDataRoamingEnabled) {
+    em::DataRoamingEnabledProto* roam = settings.mutable_data_roaming_enabled();
+    bool roaming_value = false;
+    if (value.GetAsBoolean(&roaming_value))
+      roam->set_data_roaming_enabled(roaming_value);
+    else
+      NOTREACHED();
+  } else if (path == kReleaseChannel) {
+    em::ReleaseChannelProto* release_channel =
+        settings.mutable_release_channel();
+    std::string channel_value;
+    if (value.GetAsString(&channel_value))
+      release_channel->set_release_channel(channel_value);
+    else
+      NOTREACHED();
+  } else if (path == kStatsReportingPref) {
+    em::MetricsEnabledProto* metrics = settings.mutable_metrics_enabled();
+    bool metrics_value = false;
+    if (value.GetAsBoolean(&metrics_value))
+      metrics->set_metrics_enabled(metrics_value);
+    else
+      NOTREACHED();
+  } else if (path == kAccountsPrefUsers) {
+    em::UserWhitelistProto* whitelist_proto = settings.mutable_user_whitelist();
+    whitelist_proto->clear_user_whitelist();
+    const base::ListValue* users;
+    if (value.GetAsList(&users)) {
+      for (base::ListValue::const_iterator i = users->begin();
+           i != users->end();
+           ++i) {
+        std::string email;
+        if ((*i)->GetAsString(&email))
+          whitelist_proto->add_user_whitelist(email);
+      }
+    }
+  } else if (path == kAccountsPrefEphemeralUsersEnabled) {
+    em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
+        settings.mutable_ephemeral_users_enabled();
+    bool ephemeral_users_enabled_value = false;
+    if (value.GetAsBoolean(&ephemeral_users_enabled_value)) {
+      ephemeral_users_enabled->set_ephemeral_users_enabled(
+          ephemeral_users_enabled_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (path == kAllowRedeemChromeOsRegistrationOffers) {
+    em::AllowRedeemChromeOsRegistrationOffersProto* allow_redeem_offers =
+        settings.mutable_allow_redeem_offers();
+    bool allow_redeem_offers_value;
+    if (value.GetAsBoolean(&allow_redeem_offers_value)) {
+      allow_redeem_offers->set_allow_redeem_offers(allow_redeem_offers_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (path == kStartUpFlags) {
+    em::StartUpFlagsProto* flags_proto = settings.mutable_start_up_flags();
+    flags_proto->Clear();
+    const base::ListValue* flags;
+    if (value.GetAsList(&flags)) {
+      for (base::ListValue::const_iterator i = flags->begin();
+           i != flags->end();
+           ++i) {
+        std::string flag;
+        if ((*i)->GetAsString(&flag))
+          flags_proto->add_flags(flag);
+      }
+    }
+  } else if (path == kSystemUse24HourClock) {
+    em::SystemUse24HourClockProto* use_24hour_clock_proto =
+        settings.mutable_use_24hour_clock();
+    use_24hour_clock_proto->Clear();
+    bool use_24hour_clock_value;
+    if (value.GetAsBoolean(&use_24hour_clock_value)) {
+      use_24hour_clock_proto->set_use_24hour_clock(use_24hour_clock_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (path == kAttestationForContentProtectionEnabled) {
+    em::AttestationSettingsProto* attestation_settings =
+        settings.mutable_attestation_settings();
+    bool setting_enabled;
+    if (value.GetAsBoolean(&setting_enabled)) {
+      attestation_settings->set_content_protection_enabled(setting_enabled);
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    // The remaining settings don't support Set(), since they are not
+    // intended to be customizable by the user:
+    //   kAccountsPrefTransferSAMLCookies
+    //   kAppPack
+    //   kDeviceAttestationEnabled
+    //   kDeviceOwner
+    //   kIdleLogoutTimeout
+    //   kIdleLogoutWarningDuration
+    //   kReleaseChannelDelegated
+    //   kReportDeviceActivityTimes
+    //   kReportDeviceBootMode
+    //   kReportDeviceLocation
+    //   kReportDeviceVersionInfo
+    //   kReportDeviceNetworkInterfaces
+    //   kReportDeviceUsers
+    //   kScreenSaverExtensionId
+    //   kScreenSaverTimeout
+    //   kServiceAccountIdentity
+    //   kStartUpUrls
+    //   kSystemTimezonePolicy
+    //   kVariationsRestrictParameter
+
+    LOG(FATAL) << "Device setting " << path << " is read-only.";
+  }
 }
 
 void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
@@ -272,8 +556,8 @@ void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
 
   user_id_ = profile_->GetProfileName();
   const bool is_owner = IsOwner() || IsOwnerInTests(user_id_);
-  if (is_owner && GetDeviceSettingsService())
-    GetDeviceSettingsService()->InitOwner(user_id_, weak_factory_.GetWeakPtr());
+  if (is_owner && device_settings_service_)
+    device_settings_service_->InitOwner(user_id_, weak_factory_.GetWeakPtr());
 }
 
 void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
@@ -294,44 +578,58 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
                  callback));
 }
 
-void OwnerSettingsServiceChromeOS::StartNextOperation() {
-  DeviceSettingsService* service = GetDeviceSettingsService();
-  if (!pending_operations_.empty() && service &&
-      service->session_manager_client()) {
-    pending_operations_.front()->Start(
-        service->session_manager_client(), owner_key_util_, public_key_);
-  }
+void OwnerSettingsServiceChromeOS::StoreDeviceSettings() {
+  if (!has_pending_changes_ || store_settings_factory_.HasWeakPtrs())
+    return;
+  if (!UpdateFromService())
+    return;
+  scoped_ptr<em::PolicyData> policy = AssemblePolicy(
+      user_id_, device_settings_service_->policy_data(), &device_settings_);
+  has_pending_changes_ = false;
+  bool rv = AssembleAndSignPolicyAsync(
+      content::BrowserThread::GetBlockingPool(),
+      policy.Pass(),
+      base::Bind(&OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned,
+                 store_settings_factory_.GetWeakPtr()));
+  if (!rv)
+    OnSignedPolicyStored(false /* success */);
 }
 
-void OwnerSettingsServiceChromeOS::HandleCompletedOperation(
-    const base::Closure& callback,
-    SessionManagerOperation* operation,
-    DeviceSettingsService::Status status) {
-  DCHECK_EQ(operation, pending_operations_.front());
-
-  DeviceSettingsService* service = GetDeviceSettingsService();
-  if (status == DeviceSettingsService::STORE_SUCCESS) {
-    service->set_policy_data(operation->policy_data().Pass());
-    service->set_device_settings(operation->device_settings().Pass());
+void OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned(
+    scoped_ptr<em::PolicyFetchResponse> policy_response) {
+  if (!policy_response.get() || !device_settings_service_) {
+    OnSignedPolicyStored(false /* success */);
+    return;
   }
+  device_settings_service_->Store(
+      policy_response.Pass(),
+      base::Bind(&OwnerSettingsServiceChromeOS::OnSignedPolicyStored,
+                 store_settings_factory_.GetWeakPtr(),
+                 true /* success */));
+}
 
-  if ((operation->public_key().get() && !public_key_.get()) ||
-      (operation->public_key().get() && public_key_.get() &&
-       operation->public_key()->data() != public_key_->data())) {
-    // Public part changed so we need to reload private part too.
-    ReloadKeypair();
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
-        content::Source<OwnerSettingsServiceChromeOS>(this),
-        content::NotificationService::NoDetails());
+void OwnerSettingsServiceChromeOS::OnSignedPolicyStored(bool success) {
+  store_settings_factory_.InvalidateWeakPtrs();
+  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
+                    observers_,
+                    OnSignedPolicyStored(success));
+  StoreDeviceSettings();
+  if (!success)
+    has_pending_changes_ = true;
+}
+
+bool OwnerSettingsServiceChromeOS::UpdateFromService() {
+  if (!device_settings_service_ ||
+      device_settings_service_->status() !=
+          DeviceSettingsService::STORE_SUCCESS ||
+      !device_settings_service_->device_settings()) {
+    return false;
   }
-  service->OnSignAndStoreOperationCompleted(status);
-  if (!callback.is_null())
-    callback.Run();
-
-  pending_operations_.pop_front();
-  delete operation;
-  StartNextOperation();
+  enterprise_management::ChromeDeviceSettingsProto settings =
+      *device_settings_service_->device_settings();
+  settings.MergeFrom(device_settings_);
+  device_settings_.Swap(&settings);
+  return true;
 }
 
 }  // namespace chromeos

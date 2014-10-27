@@ -143,6 +143,7 @@ class ConsumerManagementService
   // chromeos::DeviceSettingsService::Observer:
   virtual void OwnershipStatusChanged() override;
   virtual void DeviceSettingsUpdated() override;
+  virtual void OnDeviceSettingsServiceShutdown() override;
 
  private:
   void OnGetBootAttributeDone(

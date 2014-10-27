@@ -40,6 +40,7 @@ class AttestationDevicePolicyTest
     virtual void DeviceSettingsUpdated() override {
       operation_complete_ = true;
     }
+    virtual void OnDeviceSettingsServiceShutdown() override {}
 
  protected:
   AttestationDevicePolicyTest() : operation_complete_(false) {}

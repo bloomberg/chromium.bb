@@ -54,6 +54,7 @@ class DeviceCloudPolicyStoreChromeOS
   // chromeos::DeviceSettingsService::Observer:
   virtual void OwnershipStatusChanged() override;
   virtual void DeviceSettingsUpdated() override;
+  virtual void OnDeviceSettingsServiceShutdown() override;
 
  private:
   // Create a validator for |policy| with basic device policy configuration and

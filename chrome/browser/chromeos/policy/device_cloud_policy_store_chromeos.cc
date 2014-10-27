@@ -98,6 +98,10 @@ void DeviceCloudPolicyStoreChromeOS::DeviceSettingsUpdated() {
     UpdateFromService();
 }
 
+void DeviceCloudPolicyStoreChromeOS::OnDeviceSettingsServiceShutdown() {
+  device_settings_service_ = nullptr;
+}
+
 scoped_ptr<DeviceCloudPolicyValidator>
     DeviceCloudPolicyStoreChromeOS::CreateValidator(
         const em::PolicyFetchResponse& policy) {

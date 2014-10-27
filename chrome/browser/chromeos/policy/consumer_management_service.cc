@@ -147,6 +147,10 @@ void ConsumerManagementService::DeviceSettingsUpdated() {
   NotifyStatusChanged();
 }
 
+void ConsumerManagementService::OnDeviceSettingsServiceShutdown() {
+  device_settings_service_ = nullptr;
+}
+
 void ConsumerManagementService::OnGetBootAttributeDone(
     const GetOwnerCallback& callback,
     chromeos::DBusMethodCallStatus call_status,

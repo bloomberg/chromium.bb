@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -81,6 +82,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
     // Gets call after updates to the device settings.
     virtual void DeviceSettingsUpdated() = 0;
+
+    virtual void OnDeviceSettingsServiceShutdown() = 0;
   };
 
   // Manage singleton instance.
@@ -138,6 +141,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
       const base::Closure& callback);
 
   // Sets the management related settings in PolicyData.
+  //
+  // TODO (ygorshenin@, crbug.com/230018): move this to the
+  // OwnerSettingsService.
   void SetManagementSettings(
       enterprise_management::PolicyData::ManagementMode management_mode,
       const std::string& request_token,
@@ -169,6 +175,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   const std::string& GetUsername() const;
 
+  ownership::OwnerSettingsService* GetOwnerSettingsService() const;
+
   // Adds an observer.
   void AddObserver(Observer* observer);
   // Removes an observer.
@@ -183,10 +191,14 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   // Enqueues a new operation. Takes ownership of |operation| and starts it
   // right away if there is no active operation currently.
-  void Enqueue(SessionManagerOperation* operation);
+  void Enqueue(const linked_ptr<SessionManagerOperation>& operation);
 
   // Enqueues a load operation.
   void EnqueueLoad(bool force_key_load);
+
+  // Enqueues a sign and store operation.
+  void EnqueueSignAndStore(scoped_ptr<enterprise_management::PolicyData> policy,
+                           const base::Closure& callback);
 
   // Makes sure there's a reload operation so changes to the settings (and key,
   // in case force_key_load is set) are getting picked up.
@@ -204,19 +216,6 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Updates status and invokes the callback immediately.
   void HandleError(Status status, const base::Closure& callback);
 
-  // Called by OwnerSettingsService when sign-and-store operation completes.
-  void OnSignAndStoreOperationCompleted(Status status);
-
-  void set_policy_data(
-      scoped_ptr<enterprise_management::PolicyData> policy_data) {
-    policy_data_ = policy_data.Pass();
-  }
-
-  void set_device_settings(scoped_ptr<
-      enterprise_management::ChromeDeviceSettingsProto> device_settings) {
-    device_settings_ = device_settings.Pass();
-  }
-
   SessionManagerClient* session_manager_client_;
   scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
@@ -233,9 +232,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   // The queue of pending operations. The first operation on the queue is
   // currently active; it gets removed and destroyed once it completes.
-  std::deque<SessionManagerOperation*> pending_operations_;
+  std::deque<linked_ptr<SessionManagerOperation>> pending_operations_;
 
-  ObserverList<Observer, true> observers_;
+  ObserverList<Observer> observers_;
 
   // For recoverable load errors how many retries are left before we give up.
   int load_retries_left_;

@@ -100,7 +100,6 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
-  TestingProfileManager profile_manager_;
   chromeos::FakeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   ScopedStubEnterpriseInstallAttributes install_attributes_;
@@ -108,6 +107,7 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
       test_device_settings_service_;
   scoped_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;
   chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
+  TestingProfileManager profile_manager_;
 
   scoped_ptr<DeviceCloudPolicyInvalidator> invalidator_;
 };
@@ -116,13 +116,13 @@ DeviceCloudPolicyInvalidatorTest::DeviceCloudPolicyInvalidatorTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       system_request_context_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())),
-      profile_manager_(TestingBrowserProcess::GetGlobal()),
       fake_user_manager_(new chromeos::FakeUserManager),
       user_manager_enabler_(fake_user_manager_),
       install_attributes_("example.com",
                           "user@example.com",
                           "device_id",
-                          DEVICE_MODE_ENTERPRISE) {
+                          DEVICE_MODE_ENTERPRISE),
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {
 }
 
 DeviceCloudPolicyInvalidatorTest::~DeviceCloudPolicyInvalidatorTest() {

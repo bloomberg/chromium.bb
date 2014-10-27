@@ -245,12 +245,15 @@ SignAndStoreSettingsOperation::SignAndStoreSettingsOperation(
     : SessionManagerOperation(callback),
       new_policy_(new_policy.Pass()),
       weak_factory_(this) {
-  DCHECK(new_policy_);
 }
 
 SignAndStoreSettingsOperation::~SignAndStoreSettingsOperation() {}
 
 void SignAndStoreSettingsOperation::Run() {
+  if (!new_policy_) {
+    ReportResult(DeviceSettingsService::STORE_POLICY_ERROR);
+    return;
+  }
   if (!owner_settings_service_) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
@@ -269,7 +272,7 @@ void SignAndStoreSettingsOperation::StartSigning(bool is_owner) {
   bool rv = owner_settings_service_->AssembleAndSignPolicyAsync(
       content::BrowserThread::GetBlockingPool(),
       new_policy_.Pass(),
-      base::Bind(&SignAndStoreSettingsOperation::StoreDeviceSettingsBlob,
+      base::Bind(&SignAndStoreSettingsOperation::StoreDeviceSettings,
                  weak_factory_.GetWeakPtr()));
   if (!rv) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
@@ -277,15 +280,15 @@ void SignAndStoreSettingsOperation::StartSigning(bool is_owner) {
   }
 }
 
-void SignAndStoreSettingsOperation::StoreDeviceSettingsBlob(
-    std::string device_settings_blob) {
-  if (device_settings_blob.empty()) {
+void SignAndStoreSettingsOperation::StoreDeviceSettings(
+    scoped_ptr<em::PolicyFetchResponse> policy_response) {
+  if (!policy_response.get()) {
     ReportResult(DeviceSettingsService::STORE_POLICY_ERROR);
     return;
   }
 
   session_manager_client()->StoreDevicePolicy(
-      device_settings_blob,
+      policy_response->SerializeAsString(),
       base::Bind(&SignAndStoreSettingsOperation::HandleStoreResult,
                  weak_factory_.GetWeakPtr()));
 }

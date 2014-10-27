@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/values.h"
 #include "components/ownership/owner_key_util.h"
 #include "crypto/signature_creator.h"
 
@@ -21,13 +22,15 @@ namespace ownership {
 
 namespace {
 
-std::string AssembleAndSignPolicy(scoped_ptr<em::PolicyData> policy,
-                                  crypto::RSAPrivateKey* private_key) {
+scoped_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
+    scoped_ptr<em::PolicyData> policy,
+    crypto::RSAPrivateKey* private_key) {
   // Assemble the policy.
-  em::PolicyFetchResponse policy_response;
-  if (!policy->SerializeToString(policy_response.mutable_policy_data())) {
+  scoped_ptr<em::PolicyFetchResponse> policy_response(
+      new em::PolicyFetchResponse());
+  if (!policy->SerializeToString(policy_response->mutable_policy_data())) {
     LOG(ERROR) << "Failed to encode policy payload.";
-    return std::string();
+    return scoped_ptr<em::PolicyFetchResponse>(nullptr).Pass();
   }
 
   // Generate the signature.
@@ -35,19 +38,19 @@ std::string AssembleAndSignPolicy(scoped_ptr<em::PolicyData> policy,
       crypto::SignatureCreator::Create(private_key,
                                        crypto::SignatureCreator::SHA1));
   signature_creator->Update(
-      reinterpret_cast<const uint8*>(policy_response.policy_data().c_str()),
-      policy_response.policy_data().size());
+      reinterpret_cast<const uint8*>(policy_response->policy_data().c_str()),
+      policy_response->policy_data().size());
   std::vector<uint8> signature_bytes;
   std::string policy_blob;
   if (!signature_creator->Final(&signature_bytes)) {
     LOG(ERROR) << "Failed to create policy signature.";
-    return std::string();
+    return scoped_ptr<em::PolicyFetchResponse>(nullptr).Pass();
   }
 
-  policy_response.mutable_policy_data_signature()->assign(
+  policy_response->mutable_policy_data_signature()->assign(
       reinterpret_cast<const char*>(vector_as_array(&signature_bytes)),
       signature_bytes.size());
-  return policy_response.SerializeAsString();
+  return policy_response.Pass();
 }
 
 }  // namepace
@@ -59,6 +62,15 @@ OwnerSettingsService::OwnerSettingsService(
 
 OwnerSettingsService::~OwnerSettingsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void OwnerSettingsService::AddObserver(Observer* observer) {
+  if (observer && !observers_.HasObserver(observer))
+    observers_.AddObserver(observer);
+}
+
+void OwnerSettingsService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool OwnerSettingsService::IsOwner() {
@@ -89,6 +101,31 @@ bool OwnerSettingsService::AssembleAndSignPolicyAsync(
       base::Bind(
           &AssembleAndSignPolicy, base::Passed(&policy), private_key_->key()),
       callback);
+}
+
+bool OwnerSettingsService::SetBoolean(const std::string& setting, bool value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::FundamentalValue in_value(value);
+  return Set(setting, in_value);
+}
+
+bool OwnerSettingsService::SetInteger(const std::string& setting, int value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::FundamentalValue in_value(value);
+  return Set(setting, in_value);
+}
+
+bool OwnerSettingsService::SetDouble(const std::string& setting, double value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::FundamentalValue in_value(value);
+  return Set(setting, in_value);
+}
+
+bool OwnerSettingsService::SetString(const std::string& setting,
+                                     const std::string& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::StringValue in_value(value);
+  return Set(setting, in_value);
 }
 
 void OwnerSettingsService::ReloadKeypair() {
