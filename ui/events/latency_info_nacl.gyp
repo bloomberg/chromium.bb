@@ -19,9 +19,11 @@
             '../..',
           ],
           'dependencies': [
-            '<(DEPTH)/base/base_nacl.gyp:base_nacl',
-            '<(DEPTH)/ipc/ipc_nacl.gyp:ipc_nacl',
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain'
+            '../../base/base_nacl.gyp:base_nacl',
+            '../../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../../ipc/ipc_nacl.gyp:ipc_nacl',
+            '../../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
+            '../../native_client/tools.gyp:prep_toolchain'
           ],
           'variables': {
             'nacl_untrusted_build': 1,
@@ -29,6 +31,8 @@
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
           },
           'sources': [
             'latency_info.cc',
@@ -48,8 +52,8 @@
             'nacl_win64_target': 1,
           },
           'dependencies': [
-            '<(DEPTH)/base/base.gyp:base_win64',
-            '<(DEPTH)/ipc/ipc.gyp:ipc_win64',
+            '../../base/base.gyp:base_win64',
+            '../../ipc/ipc.gyp:ipc_win64',
           ],
           'defines': [
             'EVENTS_BASE_IMPLEMENTATION',

@@ -63,6 +63,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libgles2_utils_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libipc_nacl_nonsfi.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/liblatency_info_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libtracing_nacl.a',
                 ],
@@ -87,6 +88,7 @@
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../media/media_nacl.gyp:shared_memory_support_nacl',
+            '../ui/events/latency_info_nacl.gyp:latency_info_nacl',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.
