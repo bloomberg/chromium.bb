@@ -25,13 +25,13 @@ class TextureGenerator : public RenderNodeVisitor {
   typedef std::vector<Tile>::iterator tile_iter;
 
   explicit TextureGenerator(RenderNode* root);
-  virtual ~TextureGenerator() override;
+  ~TextureGenerator() override;
 
   // RenderNodeVisitor functions look for textures and pass them
   // off to HandleTexture (which behaves appropriately depending
   // on which pass we are in.)
-  virtual void BeginVisitRenderNode(RenderNode* node) override;
-  virtual void BeginVisitCCNode(CCNode* node) override;
+  void BeginVisitRenderNode(RenderNode* node) override;
+  void BeginVisitCCNode(CCNode* node) override;
 
  private:
   enum TextureGenStage {

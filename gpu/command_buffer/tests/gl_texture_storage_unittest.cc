@@ -15,7 +15,7 @@ namespace gpu {
 class TextureStorageTest : public testing::Test {
  protected:
   static const GLsizei kResolution = 64;
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kResolution, kResolution);
     gl_.Initialize(options);
@@ -37,9 +37,7 @@ class TextureStorageTest : public testing::Test {
         extensions), "GL_EXT_texture_storage");
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
   GLuint tex_;

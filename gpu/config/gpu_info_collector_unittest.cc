@@ -17,9 +17,9 @@ namespace gpu {
 class GPUInfoCollectorTest : public testing::Test {
  public:
   GPUInfoCollectorTest() {}
-  virtual ~GPUInfoCollectorTest() { }
+  ~GPUInfoCollectorTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)
@@ -91,7 +91,7 @@ class GPUInfoCollectorTest : public testing::Test {
             gl_renderer)));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }

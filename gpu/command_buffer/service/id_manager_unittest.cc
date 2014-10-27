@@ -14,11 +14,9 @@ class IdManagerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   IdManager manager_;
 };

@@ -15,18 +15,16 @@ class ForwardRenderNodeVisitor : public RenderNodeVisitor {
  public:
   ForwardRenderNodeVisitor() {}
 
-  virtual void BeginVisitRenderNode(RenderNode* v) override {
-    NOTREACHED();
-  }
+  void BeginVisitRenderNode(RenderNode* v) override { NOTREACHED(); }
 
-  virtual void BeginVisitCCNode(CCNode* v) override {
+  void BeginVisitCCNode(CCNode* v) override {
     if (!v->drawsContent())
       return;
     ConfigAndActivateShaderForNode(v);
     DrawQuad(v->width(), v->height());
   }
 
-  virtual void BeginVisitContentLayerNode(ContentLayerNode* l) override {
+  void BeginVisitContentLayerNode(ContentLayerNode* l) override {
     if (!l->drawsContent())
       return;
     ConfigAndActivateShaderForTiling(l);

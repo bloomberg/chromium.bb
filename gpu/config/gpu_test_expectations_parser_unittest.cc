@@ -12,14 +12,14 @@ class GPUTestExpectationsParserTest : public testing::Test {
  public:
   GPUTestExpectationsParserTest() { }
 
-  virtual ~GPUTestExpectationsParserTest() { }
+  ~GPUTestExpectationsParserTest() override {}
 
   const GPUTestBotConfig& bot_config() const {
     return bot_config_;
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     bot_config_.set_os(GPUTestConfig::kOsWin7);
     bot_config_.set_build_type(GPUTestConfig::kBuildTypeRelease);
     bot_config_.AddGPUVendor(0x10de);
@@ -27,7 +27,7 @@ class GPUTestExpectationsParserTest : public testing::Test {
     ASSERT_TRUE(bot_config_.IsValid());
   }
 
-  virtual void TearDown() { }
+  void TearDown() override {}
 
  private:
   GPUTestBotConfig bot_config_;

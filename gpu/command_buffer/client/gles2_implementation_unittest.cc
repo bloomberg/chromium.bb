@@ -504,8 +504,8 @@ class GLES2ImplementationTest : public testing::Test {
 
   GLES2ImplementationTest() : commands_(NULL) {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   bool NoCommandsWritten() {
     scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
@@ -628,12 +628,12 @@ void GLES2ImplementationTest::TearDown() {
 
 class GLES2ImplementationManualInitTest : public GLES2ImplementationTest {
  protected:
-  virtual void SetUp() override {}
+  void SetUp() override {}
 };
 
 class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   template <class ResApi>
   void FlushGenerationTest() {

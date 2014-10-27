@@ -20,10 +20,10 @@ using namespace ::testing;
 class MailboxManagerTest : public GpuServiceTest {
  public:
   MailboxManagerTest() {}
-  virtual ~MailboxManagerTest() {}
+  ~MailboxManagerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     feature_info_ = new FeatureInfo;
     manager_ = new MailboxManagerImpl;
@@ -37,9 +37,7 @@ class MailboxManagerTest : public GpuServiceTest {
     DCHECK(manager_->UsesSync());
   }
 
-  virtual void TearDown() {
-    GpuServiceTest::TearDown();
-  }
+  void TearDown() override { GpuServiceTest::TearDown(); }
 
   Texture* CreateTexture() {
     return new Texture(1);
@@ -190,10 +188,10 @@ const GLsizei kMaxTextureDepth = 1;
 class MailboxManagerSyncTest : public MailboxManagerTest {
  public:
   MailboxManagerSyncTest() {}
-  virtual ~MailboxManagerSyncTest() {}
+  ~MailboxManagerSyncTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     MailboxManagerTest::SetUpWithSynchronizer();
     manager2_ = new MailboxManagerSync();
     context_ = new gfx::GLContextStub();
@@ -257,7 +255,7 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
         .RetiresOnSaturation();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     context_->ReleaseCurrent(NULL);
     MailboxManagerTest::TearDown();
   }

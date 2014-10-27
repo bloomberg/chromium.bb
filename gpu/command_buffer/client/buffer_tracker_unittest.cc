@@ -53,7 +53,7 @@ class BufferTrackerTest : public testing::Test {
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
-  virtual void SetUp() {
+  void SetUp() override {
     command_buffer_.reset(new MockClientCommandBufferImpl());
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
@@ -62,7 +62,7 @@ class BufferTrackerTest : public testing::Test {
     buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     buffer_tracker_.reset();
     mapped_memory_.reset();
     helper_.reset();

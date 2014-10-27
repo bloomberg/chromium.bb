@@ -22,7 +22,7 @@ namespace gpu {
 
 class CommandBufferServiceTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     {
       TransferBufferManager* manager = new TransferBufferManager();
       transfer_buffer_manager_.reset(manager);

@@ -17,7 +17,7 @@ namespace gpu {
 
 class GLLoseContextTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     gl2_.Initialize(options);
     options.context_lost_allowed = true;
@@ -26,7 +26,7 @@ class GLLoseContextTest : public testing::Test {
     gl1b_.Initialize(options);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     gl1a_.Destroy();
     gl1b_.Destroy();
     gl2_.Destroy();

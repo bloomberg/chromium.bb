@@ -29,7 +29,7 @@ class QuerySyncManagerTest : public testing::Test {
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
-  virtual void SetUp() {
+  void SetUp() override {
     command_buffer_.reset(new MockClientCommandBuffer());
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
@@ -38,7 +38,7 @@ class QuerySyncManagerTest : public testing::Test {
     sync_manager_.reset(new QuerySyncManager(mapped_memory_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     sync_manager_.reset();
     mapped_memory_.reset();
     helper_.reset();
@@ -83,7 +83,7 @@ class QueryTrackerTest : public testing::Test {
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
 
-  virtual void SetUp() {
+  void SetUp() override {
     command_buffer_.reset(new MockClientCommandBuffer());
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
@@ -92,7 +92,7 @@ class QueryTrackerTest : public testing::Test {
     query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     query_tracker_.reset();
     mapped_memory_.reset();
     helper_.reset();

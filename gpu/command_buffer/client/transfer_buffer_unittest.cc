@@ -36,8 +36,8 @@ class TransferBufferTest : public testing::Test {
       : transfer_buffer_id_(0) {
   }
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   virtual void Initialize(unsigned int size_to_flush) {
     ASSERT_TRUE(transfer_buffer_->Initialize(
@@ -248,8 +248,8 @@ class TransferBufferExpandContractTest : public testing::Test {
       : transfer_buffer_id_(0) {
   }
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   MockClientCommandBufferCanFail* command_buffer() const {
     return command_buffer_.get();

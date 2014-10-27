@@ -20,7 +20,7 @@ namespace gpu {
 // A collection of tests that exercise the GL_CHROMIUM_copy_texture extension.
 class GLCopyTextureCHROMIUMTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     gl_.Initialize(GLManager::Options());
 
     glGenTextures(2, textures_);
@@ -39,7 +39,7 @@ class GLCopyTextureCHROMIUMTest : public testing::Test {
                            textures_[1], 0);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     glDeleteTextures(2, textures_);
     glDeleteFramebuffers(1, &framebuffer_id_);
     gl_.Destroy();

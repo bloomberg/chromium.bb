@@ -10,7 +10,7 @@ namespace gpu {
 class NumberInfoTest : public testing::Test {
  public:
   NumberInfoTest() { }
-  virtual ~NumberInfoTest() { }
+  ~NumberInfoTest() override {}
 
   typedef GpuControlList::FloatInfo FloatInfo;
   typedef GpuControlList::IntInfo IntInfo;

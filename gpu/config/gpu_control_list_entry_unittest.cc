@@ -20,7 +20,7 @@ enum TestFeatureType {
 class GpuControlListEntryTest : public testing::Test {
  public:
   GpuControlListEntryTest() { }
-  virtual ~GpuControlListEntryTest() { }
+  ~GpuControlListEntryTest() override {}
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
@@ -49,7 +49,7 @@ class GpuControlListEntryTest : public testing::Test {
     return GetEntryFromString(json, false);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     gpu_info_.gpu.vendor_id = 0x10de;
     gpu_info_.gpu.device_id = 0x0640;
     gpu_info_.gpu.active = true;
@@ -1080,9 +1080,9 @@ TEST_F(GpuControlListEntryTest, MachineModelVersionException) {
 class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {
  public:
   GpuControlListEntryDualGPUTest() { }
-  virtual ~GpuControlListEntryDualGPUTest() { }
+  ~GpuControlListEntryDualGPUTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Set up a NVIDIA/Intel dual, with NVIDIA as primary and Intel as
     // secondary, and initially Intel is active.
     gpu_info_.gpu.vendor_id = 0x10de;

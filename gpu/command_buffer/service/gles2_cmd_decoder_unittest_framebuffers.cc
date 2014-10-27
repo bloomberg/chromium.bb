@@ -57,7 +57,7 @@ class GLES2DecoderTestWithExtensionsOnGLES2 : public GLES2DecoderTest {
  public:
   GLES2DecoderTestWithExtensionsOnGLES2() {}
 
-  virtual void SetUp() {}
+  void SetUp() override {}
   void Init(const char* extensions) {
     InitState init;
     init.extensions = extensions;

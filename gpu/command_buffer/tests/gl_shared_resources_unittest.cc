@@ -15,7 +15,7 @@ namespace gpu {
 
 class GLSharedResources : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.bind_generates_resource = true;
     gl1_.Initialize(options);
@@ -23,7 +23,7 @@ class GLSharedResources : public testing::Test {
     gl2_.Initialize(options);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     gl1_.Destroy();
     gl2_.Destroy();
   }

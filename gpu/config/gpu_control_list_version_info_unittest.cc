@@ -10,7 +10,7 @@ namespace gpu {
 class VersionInfoTest : public testing::Test {
  public:
   VersionInfoTest() { }
-  virtual ~VersionInfoTest() { }
+  ~VersionInfoTest() override {}
 
   typedef GpuControlList::VersionInfo VersionInfo;
 };

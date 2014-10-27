@@ -33,7 +33,7 @@ class MappedMemoryTestBase : public testing::Test {
  protected:
   static const unsigned int kBufferSize = 1024;
 
-  virtual void SetUp() {
+  void SetUp() override {
     api_mock_.reset(new AsyncAPIMock(true));
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
@@ -98,7 +98,7 @@ void EmptyPoll() {
 class MemoryChunkTest : public MappedMemoryTestBase {
  protected:
   static const int32 kShmId = 123;
-  virtual void SetUp() {
+  void SetUp() override {
     MappedMemoryTestBase::SetUp();
     scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
@@ -109,7 +109,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
                                  base::Bind(&EmptyPoll)));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -163,13 +163,13 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     MappedMemoryTestBase::SetUp();
     manager_.reset(new MappedMemoryManager(
         helper_.get(), base::Bind(&EmptyPoll), MappedMemoryManager::kNoLimit));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
     manager_.reset();

@@ -19,13 +19,13 @@ class CHROMIUMPathRenderingTest : public testing::Test {
   static const GLsizei kResolution = 100;
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kResolution, kResolution);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() { gl_.Destroy(); }
+  void TearDown() override { gl_.Destroy(); }
 
   void ExpectEqualMatrix(const GLfloat* expected, const GLfloat* actual) {
     for (size_t i = 0; i < 16; ++i) {

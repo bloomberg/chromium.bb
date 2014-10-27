@@ -11,11 +11,9 @@ namespace gles2 {
 
 class DebugMarkerManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   DebugMarkerManager manager_;
 };

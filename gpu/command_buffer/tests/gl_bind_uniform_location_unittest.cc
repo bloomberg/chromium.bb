@@ -18,15 +18,13 @@ namespace gpu {
 class BindUniformLocationTest : public testing::Test {
  protected:
   static const GLsizei kResolution = 4;
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kResolution, kResolution);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
 };

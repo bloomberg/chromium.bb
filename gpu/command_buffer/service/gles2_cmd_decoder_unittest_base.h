@@ -69,8 +69,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     engine_->ClearSharedMemory();
   }
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {
@@ -627,9 +627,8 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   }
 
  protected:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
-
+  void SetUp() override;
+  void TearDown() override;
 };
 
 // SpecializedSetup specializations that are needed in multiple unittest files.

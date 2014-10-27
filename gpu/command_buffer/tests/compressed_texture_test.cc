@@ -148,15 +148,13 @@ static void ToRGB888(uint16 rgb565, uint8 rgb888[]) {
 
 class CompressedTextureTest : public ::testing::TestWithParam<GLenum> {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kTextureWidth, kTextureHeight);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLuint LoadProgram() {
     const char* v_shader_src = SHADER(

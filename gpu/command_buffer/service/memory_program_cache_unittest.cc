@@ -76,9 +76,7 @@ class MemoryProgramCacheTest : public GpuServiceTest {
         vertex_shader_(NULL),
         fragment_shader_(NULL),
         shader_cache_count_(0) { }
-  virtual ~MemoryProgramCacheTest() {
-    shader_manager_.Destroy(false);
-  }
+  ~MemoryProgramCacheTest() override { shader_manager_.Destroy(false); }
 
   void ShaderCacheCb(const std::string& key, const std::string& shader) {
     shader_cache_count_++;
@@ -89,7 +87,7 @@ class MemoryProgramCacheTest : public GpuServiceTest {
   const std::string& shader_cache_shader() { return shader_cache_shader_; }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
 
     vertex_shader_ = shader_manager_.CreateShader(kVertexShaderClientId,

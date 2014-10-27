@@ -19,15 +19,13 @@ class GLStreamDrawTest : public testing::Test {
  protected:
   static const int kSize = 4;
 
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kSize, kSize);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
 };

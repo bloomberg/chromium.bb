@@ -12,12 +12,12 @@ class GPUTestConfigTest : public testing::Test {
  public:
   GPUTestConfigTest() { }
 
-  virtual ~GPUTestConfigTest() { }
+  ~GPUTestConfigTest() override {}
 
  protected:
-  virtual void SetUp() { }
+  void SetUp() override {}
 
-  virtual void TearDown() { }
+  void TearDown() override {}
 };
 
 TEST_F(GPUTestConfigTest, EmptyValues) {

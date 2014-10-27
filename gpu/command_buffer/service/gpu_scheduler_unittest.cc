@@ -32,7 +32,7 @@ class GpuSchedulerTest : public testing::Test {
  protected:
   static const int32 kTransferBufferId = 123;
 
-  virtual void SetUp() {
+  void SetUp() override {
     scoped_ptr<base::SharedMemory> shared_memory(new ::base::SharedMemory);
     shared_memory->CreateAndMapAnonymous(kRingBufferSize);
     buffer_ = static_cast<int32*>(shared_memory->memory());
@@ -62,7 +62,7 @@ class GpuSchedulerTest : public testing::Test {
     EXPECT_TRUE(scheduler_->SetGetBuffer(kTransferBufferId));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Ensure that any unexpected tasks posted by the GPU scheduler are executed
     // in order to fail the test.
     base::MessageLoop::current()->RunUntilIdle();

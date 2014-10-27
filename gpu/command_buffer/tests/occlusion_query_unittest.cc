@@ -14,15 +14,13 @@ namespace gpu {
 
 class OcclusionQueryTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(512, 512);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   void DrawRect(float x, float z, float scale, float* color);
 

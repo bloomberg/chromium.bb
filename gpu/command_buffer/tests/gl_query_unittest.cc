@@ -16,13 +16,9 @@ namespace gpu {
 
 class QueryTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    gl_.Initialize(GLManager::Options());
-  }
+  void SetUp() override { gl_.Initialize(GLManager::Options()); }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLManager gl_;
 };

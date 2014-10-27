@@ -14,8 +14,7 @@ namespace gpu {
 
 class CommandBufferSharedTest : public testing::Test {
  protected:
-
-  virtual void SetUp() {
+  void SetUp() override {
     shared_state_.reset(new CommandBufferSharedState());
     shared_state_->Initialize();
   }

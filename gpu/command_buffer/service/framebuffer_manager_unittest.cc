@@ -43,7 +43,7 @@ class FramebufferManagerTest : public GpuServiceTest {
                               kMaxRenderbufferSize,
                               kMaxSamples,
                               kDepth24Supported) {}
-  virtual ~FramebufferManagerTest() {
+  ~FramebufferManagerTest() override {
     manager_.Destroy(false);
     texture_manager_.Destroy(false);
     renderbuffer_manager_.Destroy(false);
@@ -116,16 +116,14 @@ class FramebufferInfoTest : public GpuServiceTest {
                                               kMaxCubemapSize,
                                               kUseDefaultTextures));
   }
-  virtual ~FramebufferInfoTest() {
+  ~FramebufferInfoTest() override {
     manager_.Destroy(false);
     texture_manager_->Destroy(false);
     renderbuffer_manager_.Destroy(false);
   }
 
  protected:
-  virtual void SetUp() {
-    InitializeContext("", "");
-  }
+  void SetUp() override { InitializeContext("", ""); }
 
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUp();
@@ -673,11 +671,10 @@ class FramebufferInfoFloatTest : public FramebufferInfoTest {
   FramebufferInfoFloatTest()
     : FramebufferInfoTest() {
   }
-  virtual ~FramebufferInfoFloatTest() {
-  }
+  ~FramebufferInfoFloatTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     InitializeContext("OpenGL ES 3.0",
         "GL_OES_texture_float GL_EXT_color_buffer_float");
   }

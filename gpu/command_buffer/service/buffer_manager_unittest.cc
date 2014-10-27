@@ -33,7 +33,7 @@ class BufferManagerTestBase : public GpuServiceTest {
     manager_.reset(new BufferManager(memory_tracker, feature_info));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     manager_->Destroy(false);
     manager_.reset();
     error_state_.reset();
@@ -78,14 +78,12 @@ class BufferManagerTestBase : public GpuServiceTest {
 
 class BufferManagerTest : public BufferManagerTestBase {
  protected:
-  virtual void SetUp() {
-    SetUpBase(NULL, NULL, "");
-  }
+  void SetUp() override { SetUpBase(NULL, NULL, ""); }
 };
 
 class BufferManagerMemoryTrackerTest : public BufferManagerTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
     SetUpBase(mock_memory_tracker_.get(), NULL, "");
   }
@@ -95,7 +93,7 @@ class BufferManagerMemoryTrackerTest : public BufferManagerTestBase {
 
 class BufferManagerClientSideArraysTest : public BufferManagerTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     feature_info_ = new FeatureInfo();
     feature_info_->workarounds_.use_client_side_arrays_for_stream_buffers =
       true;

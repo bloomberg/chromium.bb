@@ -19,15 +19,13 @@ class PointCoordTest : public testing::Test {
   static const GLsizei kResolution = 256;
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kResolution, kResolution);
     gl_.Initialize(options);
   }
 
-  virtual void TearDown() {
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   GLuint SetupQuad(GLint position_location, GLfloat pixel_offset);
 

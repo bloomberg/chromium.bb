@@ -14,11 +14,9 @@ namespace gles2 {
 
 class ProgramInfoManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   scoped_ptr<ProgramInfoManager> program_info_manager_;
 };

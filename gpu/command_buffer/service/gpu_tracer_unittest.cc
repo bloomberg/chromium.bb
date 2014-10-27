@@ -163,12 +163,12 @@ class BaseGpuTracerTest : public GpuServiceTest {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     gl_fake_queries_.Reset();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     gl_.reset();
     gl_fake_queries_.Reset();
     GpuServiceTest::TearDown();

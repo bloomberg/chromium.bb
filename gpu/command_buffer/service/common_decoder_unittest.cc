@@ -151,12 +151,9 @@ const int32 MockCommandBufferEngine::kInvalidOffset;
 
 class CommonDecoderTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    decoder_.set_engine(&engine_);
-  }
+  void SetUp() override { decoder_.set_engine(&engine_); }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {

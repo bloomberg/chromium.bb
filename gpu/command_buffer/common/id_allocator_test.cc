@@ -11,8 +11,8 @@ namespace gpu {
 
 class IdAllocatorTest : public testing::Test {
  protected:
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+  void SetUp() override {}
+  void TearDown() override {}
 
   IdAllocator* id_allocator() { return &id_allocator_; }
 

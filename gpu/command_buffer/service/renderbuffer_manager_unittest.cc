@@ -29,7 +29,7 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
         memory_tracker, kMaxSize, kMaxSamples, depth24_supported));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     manager_->Destroy(true);
     manager_.reset();
     GpuServiceTest::TearDown();
@@ -40,7 +40,7 @@ class RenderbufferManagerTestBase : public GpuServiceTest {
 
 class RenderbufferManagerTest : public RenderbufferManagerTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     bool depth24_supported = false;
     SetUpBase(NULL, depth24_supported);
   }
@@ -49,7 +49,7 @@ class RenderbufferManagerTest : public RenderbufferManagerTestBase {
 class RenderbufferManagerMemoryTrackerTest
     : public RenderbufferManagerTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
     bool depth24_supported = false;
     SetUpBase(mock_memory_tracker_.get(), depth24_supported);
@@ -293,7 +293,7 @@ TEST_F(RenderbufferManagerTest, AddToSignature) {
 
 class RenderbufferManagerFormatTest : public RenderbufferManagerTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     bool depth24_supported = true;
     SetUpBase(NULL, depth24_supported);
   }

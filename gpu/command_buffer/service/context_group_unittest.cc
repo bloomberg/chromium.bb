@@ -35,7 +35,7 @@ class ContextGroupTest : public GpuServiceTest {
   ContextGroupTest() {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(

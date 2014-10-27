@@ -10,7 +10,7 @@ namespace gpu {
 class OsInfoTest : public testing::Test {
  public:
   OsInfoTest() { }
-  virtual ~OsInfoTest() { }
+  ~OsInfoTest() override {}
 
   typedef GpuControlList::OsInfo OsInfo;
 };

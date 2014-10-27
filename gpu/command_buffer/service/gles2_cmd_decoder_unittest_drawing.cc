@@ -57,7 +57,7 @@ class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
  public:
   GLES2DecoderGeometryInstancingTest() : GLES2DecoderWithShaderTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     InitState init;
     init.extensions = "GL_ANGLE_instanced_arrays";
     init.gl_version = "opengl es 2.0";

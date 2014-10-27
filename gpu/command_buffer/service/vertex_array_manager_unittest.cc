@@ -25,16 +25,15 @@ class VertexArrayManagerTest : public GpuServiceTest {
   VertexArrayManagerTest() {
   }
 
-  virtual ~VertexArrayManagerTest() {
-  }
+  ~VertexArrayManagerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     manager_.reset(new VertexArrayManager());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     manager_.reset();
     GpuServiceTest::TearDown();
   }

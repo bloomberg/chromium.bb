@@ -136,8 +136,8 @@ class RenderNode {
 class ContentLayerNode : public RenderNode {
  public:
   ContentLayerNode();
-  virtual ~ContentLayerNode();
-  virtual void Accept(RenderNodeVisitor* v) override;
+  ~ContentLayerNode() override;
+  void Accept(RenderNodeVisitor* v) override;
 
   void set_skipsDraw(bool skips) {
     skipsDraw_ = skips;
@@ -155,9 +155,9 @@ class ContentLayerNode : public RenderNode {
 class CCNode : public RenderNode {
  public:
   CCNode();
-  virtual ~CCNode();
+  ~CCNode() override;
 
-  virtual void Accept(RenderNodeVisitor* v) override;
+  void Accept(RenderNodeVisitor* v) override;
 
   ShaderID vertex_shader() {
     return vertex_shader_;

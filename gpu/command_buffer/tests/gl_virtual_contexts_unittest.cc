@@ -26,7 +26,7 @@ class GLVirtualContextsTest : public testing::Test {
   static const uint8 kExpectedRed[4];
   static const uint8 kExpectedGreen[4];
 
-  virtual void SetUp() {
+  void SetUp() override {
     GLManager::Options options;
     options.size = gfx::Size(kSize0, kSize0);
     gl_real_.Initialize(options);
@@ -38,7 +38,7 @@ class GLVirtualContextsTest : public testing::Test {
     gl2_.Initialize(options);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     gl1_.Destroy();
     gl2_.Destroy();
     gl_real_shared_.Destroy();

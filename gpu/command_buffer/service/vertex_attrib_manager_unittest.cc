@@ -26,11 +26,10 @@ class VertexAttribManagerTest : public GpuServiceTest {
   VertexAttribManagerTest() {
   }
 
-  virtual ~VertexAttribManagerTest() {
-  }
+  ~VertexAttribManagerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
 
     for (uint32 ii = 0; ii < kNumVertexAttribs; ++ii) {

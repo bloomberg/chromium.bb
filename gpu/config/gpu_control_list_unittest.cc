@@ -32,7 +32,7 @@ class GpuControlListTest : public testing::Test {
  public:
   GpuControlListTest() { }
 
-  virtual ~GpuControlListTest() { }
+  ~GpuControlListTest() override {}
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
@@ -47,7 +47,7 @@ class GpuControlListTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     gpu_info_.gpu.vendor_id = kNvidiaVendorId;
     gpu_info_.gpu.device_id = 0x0640;
     gpu_info_.driver_vendor = "NVIDIA";
@@ -62,8 +62,7 @@ class GpuControlListTest : public testing::Test {
     gpu_info_.performance_stats.overall = 5.0;
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
  private:
   GPUInfo gpu_info_;

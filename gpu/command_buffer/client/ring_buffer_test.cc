@@ -58,7 +58,7 @@ class BaseRingBufferTest : public testing::Test {
       api_mock_->SetToken(cmd::kSetToken, 1, _args);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     delay_set_token_ = false;
     api_mock_.reset(new AsyncAPIMock(true));
     // ignore noops in the mock - we don't want to inspect the internals of the
@@ -123,7 +123,7 @@ const unsigned int BaseRingBufferTest::kBufferSize;
 // and SetToken are properly forwarded to the engine.
 class RingBufferTest : public BaseRingBufferTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     BaseRingBufferTest::SetUp();
 
     buffer_.reset(new int8[kBufferSize + kBaseOffset]);
@@ -132,7 +132,7 @@ class RingBufferTest : public BaseRingBufferTest {
                                     helper_.get(), buffer_start_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
 

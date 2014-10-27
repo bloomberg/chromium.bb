@@ -43,9 +43,7 @@ void ShaderCacheCb(const std::string& key, const std::string& shader) {}
 class ProgramManagerTest : public GpuServiceTest {
  public:
   ProgramManagerTest() : manager_(NULL, kMaxVaryingVectors) { }
-  virtual ~ProgramManagerTest() {
-    manager_.Destroy(false);
-  }
+  ~ProgramManagerTest() override { manager_.Destroy(false); }
 
  protected:
   ProgramManager manager_;
@@ -131,7 +129,7 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
       :  manager_(NULL, kMaxVaryingVectors), program_(NULL) {
   }
 
-  virtual ~ProgramManagerWithShaderTest() {
+  ~ProgramManagerWithShaderTest() override {
     manager_.Destroy(false);
     shader_manager_.Destroy(false);
   }
@@ -215,7 +213,7 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
     VarCategory category;
   } VarInfo;
 
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
 
     SetupDefaultShaderExpectations();
@@ -1579,13 +1577,13 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
         fragment_shader_(NULL),
         program_(NULL) {
   }
-  virtual ~ProgramManagerWithCacheTest() {
+  ~ProgramManagerWithCacheTest() override {
     manager_.Destroy(false);
     shader_manager_.Destroy(false);
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
 
     vertex_shader_ = shader_manager_.CreateShader(

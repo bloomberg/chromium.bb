@@ -57,7 +57,7 @@ class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
  public:
   GLES2DecoderRGBBackbufferTest() {}
 
-  virtual void SetUp();
+  void SetUp() override;
 };
 
 class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
@@ -65,7 +65,7 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   GLES2DecoderManualInitTest() {}
 
   // Override default setup so nothing gets setup.
-  virtual void SetUp();
+  void SetUp() override;
 
   void DirtyStateMaskTest(GLuint color_bits,
                           bool depth_mask,

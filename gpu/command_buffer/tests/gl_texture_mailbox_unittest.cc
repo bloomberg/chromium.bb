@@ -54,14 +54,14 @@ uint32 ReadTexel(GLuint id, GLint x, GLint y) {
 
 class GLTextureMailboxTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     gl1_.Initialize(GLManager::Options());
     GLManager::Options options;
     options.share_mailbox_manager = &gl1_;
     gl2_.Initialize(options);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     gl1_.Destroy();
     gl2_.Destroy();
   }

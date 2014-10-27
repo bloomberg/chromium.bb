@@ -74,11 +74,11 @@ class FeatureInfoTest : public GpuServiceTest {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Do nothing here, since we are using the explicit Setup*() functions.
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     info_ = NULL;
     GpuServiceTest::TearDown();
   }

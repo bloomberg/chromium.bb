@@ -55,11 +55,10 @@ class TextureManagerTest : public GpuServiceTest {
 
   TextureManagerTest() : feature_info_(new FeatureInfo()) {}
 
-  virtual ~TextureManagerTest() {
-  }
+  ~TextureManagerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     manager_.reset(new TextureManager(NULL,
                                       feature_info_.get(),
@@ -72,7 +71,7 @@ class TextureManagerTest : public GpuServiceTest {
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     manager_->Destroy(false);
     manager_.reset();
     GpuServiceTest::TearDown();
@@ -397,9 +396,7 @@ class TextureTestBase : public GpuServiceTest {
   TextureTestBase()
       : feature_info_(new FeatureInfo()) {
   }
-  virtual ~TextureTestBase() {
-    texture_ref_ = NULL;
-  }
+  ~TextureTestBase() override { texture_ref_ = NULL; }
 
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, std::string extensions) {
@@ -422,7 +419,7 @@ class TextureTestBase : public GpuServiceTest {
     ASSERT_TRUE(texture_ref_.get() != NULL);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (texture_ref_.get()) {
       // If it's not in the manager then setting texture_ref_ to NULL will
       // delete the texture.
@@ -456,14 +453,12 @@ class TextureTestBase : public GpuServiceTest {
 
 class TextureTest : public TextureTestBase {
  protected:
-  virtual void SetUp() {
-    SetUpBase(NULL, std::string());
-  }
+  void SetUp() override { SetUpBase(NULL, std::string()); }
 };
 
 class TextureMemoryTrackerTest : public TextureTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     mock_memory_tracker_ = new StrictMock<MockMemoryTracker>();
     SetUpBase(mock_memory_tracker_.get(), std::string());
   }
@@ -1871,7 +1866,7 @@ TEST_F(TextureTest, AddToSignature) {
 class ProduceConsumeTextureTest : public TextureTest,
                                   public ::testing::WithParamInterface<GLenum> {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     TextureTest::SetUpBase(NULL, "GL_OES_EGL_image_external");
     manager_->CreateTexture(kClient2Id, kService2Id);
     texture2_ = manager_->GetTexture(kClient2Id);
@@ -1880,7 +1875,7 @@ class ProduceConsumeTextureTest : public TextureTest,
       .WillRepeatedly(Return(error_state_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (texture2_.get()) {
       // If it's not in the manager then setting texture2_ to NULL will
       // delete the texture.
@@ -2194,10 +2189,9 @@ class SharedTextureTest : public GpuServiceTest {
 
   SharedTextureTest() : feature_info_(new FeatureInfo()) {}
 
-  virtual ~SharedTextureTest() {
-  }
+  ~SharedTextureTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     memory_tracker1_ = new CountingMemoryTracker;
     texture_manager1_.reset(
@@ -2221,7 +2215,7 @@ class SharedTextureTest : public GpuServiceTest {
     texture_manager2_->Initialize();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     texture_manager2_->Destroy(false);
     texture_manager2_.reset();
     texture_manager1_->Destroy(false);

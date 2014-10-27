@@ -22,9 +22,7 @@ class ShaderManagerTest : public GpuServiceTest {
   ShaderManagerTest() {
   }
 
-  virtual ~ShaderManagerTest() {
-    manager_.Destroy(false);
-  }
+  ~ShaderManagerTest() override { manager_.Destroy(false); }
 
  protected:
   ShaderManager manager_;

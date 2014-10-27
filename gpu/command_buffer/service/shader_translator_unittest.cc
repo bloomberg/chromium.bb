@@ -15,11 +15,10 @@ class ShaderTranslatorTest : public testing::Test {
   ShaderTranslatorTest() {
   }
 
-  virtual ~ShaderTranslatorTest() {
-  }
+  ~ShaderTranslatorTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ShBuiltInResources resources;
     ShInitBuiltInResources(&resources);
     resources.MaxExpressionComplexity = 32;
@@ -37,7 +36,7 @@ class ShaderTranslatorTest : public testing::Test {
         ShaderTranslatorInterface::kGlsl,
         static_cast<ShCompileOptions>(0)));
   }
-  virtual void TearDown() {
+  void TearDown() override {
     vertex_translator_ = NULL;
     fragment_translator_ = NULL;
   }

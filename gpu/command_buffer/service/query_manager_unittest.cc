@@ -34,11 +34,10 @@ class QueryManagerTest : public GpuServiceTest {
 
   QueryManagerTest() {
   }
-  virtual ~QueryManagerTest() {
-  }
+  ~QueryManagerTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     GpuServiceTest::SetUp();
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
@@ -51,7 +50,7 @@ class QueryManagerTest : public GpuServiceTest {
     manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     decoder_.reset();
     manager_->Destroy(false);
     manager_.reset();

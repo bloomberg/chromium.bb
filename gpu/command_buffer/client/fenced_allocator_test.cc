@@ -37,7 +37,7 @@ class BaseFencedAllocatorTest : public testing::Test {
   static const unsigned int kBufferSize = 1024;
   static const int kAllocAlignment = 16;
 
-  virtual void SetUp() {
+  void SetUp() override {
     api_mock_.reset(new AsyncAPIMock(true));
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
@@ -100,14 +100,14 @@ void EmptyPoll() {
 // and SetToken are properly forwarded to the engine.
 class FencedAllocatorTest : public BaseFencedAllocatorTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     BaseFencedAllocatorTest::SetUp();
     allocator_.reset(new FencedAllocator(kBufferSize,
                                          helper_.get(),
                                          base::Bind(&EmptyPoll)));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -463,7 +463,7 @@ TEST_F(FencedAllocatorPollTest, TestPoll) {
 // forwarded to the engine.
 class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     BaseFencedAllocatorTest::SetUp();
 
     // Though allocating this buffer isn't strictly necessary, it makes
@@ -477,7 +477,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
                                                 buffer_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the GpuScheduler posts any tasks, this forces them to run.
     base::MessageLoop::current()->RunUntilIdle();
 

@@ -19,12 +19,9 @@ class GLES2FormatTest : public testing::Test {
  protected:
   static const unsigned char kInitialValue = 0xBD;
 
-  virtual void SetUp() {
-    memset(buffer_, kInitialValue, sizeof(buffer_));
-  }
+  void SetUp() override { memset(buffer_, kInitialValue, sizeof(buffer_)); }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   template <typename T>
   T* GetBufferAs() {

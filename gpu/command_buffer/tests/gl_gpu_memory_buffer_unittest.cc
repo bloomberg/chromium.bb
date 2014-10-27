@@ -37,7 +37,7 @@ static const int kImageBytesPerPixel = 4;
 
 class GpuMemoryBufferTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     gl_.Initialize(GLManager::Options());
     gl_.MakeCurrent();
 
@@ -58,7 +58,7 @@ class GpuMemoryBufferTest : public testing::Test {
                            0);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     glDeleteTextures(2, texture_ids_);
     glDeleteFramebuffers(1, &framebuffer_id_);
 

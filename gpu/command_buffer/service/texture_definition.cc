@@ -114,11 +114,11 @@ class NativeImageBufferEGL : public NativeImageBuffer {
 
  private:
   NativeImageBufferEGL(EGLDisplay display, EGLImageKHR image);
-  virtual ~NativeImageBufferEGL();
-  virtual void AddClient(gfx::GLImage* client) override;
-  virtual void RemoveClient(gfx::GLImage* client) override;
-  virtual bool IsClient(gfx::GLImage* client) override;
-  virtual void BindToTexture(GLenum target) override;
+  ~NativeImageBufferEGL() override;
+  void AddClient(gfx::GLImage* client) override;
+  void RemoveClient(gfx::GLImage* client) override;
+  bool IsClient(gfx::GLImage* client) override;
+  void BindToTexture(GLenum target) override;
 
   EGLDisplay egl_display_;
   EGLImageKHR egl_image_;
