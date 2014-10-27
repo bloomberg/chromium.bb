@@ -263,8 +263,10 @@ message KioskAppInfoProto {
   // specifies the Kiosk App to download and run.
   optional string app_id = 1;
 
-  // Obsolete: Kiosk Apps can only be installed from the Chrome Web Store.
-  optional string OBSOLETE_update_url = 2 [deprecated = true];
+  // Optional extension update URL to download the Kiosk App package from. If
+  // not specified, the app will be downloaded from the standard Chrome Web
+  // Store update URL.
+  optional string update_url = 2;
 }
 
 // Describes a single device-local account.

@@ -198,6 +198,11 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
               entry->kiosk_app().app_id());
         }
+        if (entry->kiosk_app().has_update_url()) {
+          entry_dict->SetStringWithoutPathExpansion(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+              entry->kiosk_app().update_url());
+        }
       } else if (entry->has_deprecated_public_session_id()) {
         // Deprecated public session specification.
         entry_dict->SetStringWithoutPathExpansion(

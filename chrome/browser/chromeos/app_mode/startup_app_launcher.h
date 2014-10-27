@@ -85,9 +85,6 @@ class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
 
-  // Callbacks from ExtensionUpdater.
-  void OnUpdateCheckFinished();
-
   void BeginInstall();
   void OnReadyToLaunch();
   void UpdateAppData();

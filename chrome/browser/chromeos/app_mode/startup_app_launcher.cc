@@ -358,11 +358,6 @@ void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
   delegate_->OnLaunchFailed(error);
 }
 
-void StartupAppLauncher::OnUpdateCheckFinished() {
-  OnReadyToLaunch();
-  UpdateAppData();
-}
-
 void StartupAppLauncher::BeginInstall() {
   KioskAppManager::Get()->InstallFromCache(app_id_);
   if (extensions::ExtensionSystem::Get(profile_)
@@ -390,6 +385,7 @@ void StartupAppLauncher::BeginInstall() {
 
 void StartupAppLauncher::OnReadyToLaunch() {
   ready_to_launch_ = true;
+  UpdateAppData();
   delegate_->OnReadyToLaunch();
 }
 

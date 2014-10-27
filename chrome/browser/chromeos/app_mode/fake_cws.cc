@@ -31,10 +31,34 @@ const char kCrxDownloadPath[] = "/chromeos/app_mode/webstore/downloads/";
 
 }  // namespace
 
+FakeCWS::FakeCWS() : update_check_count_(0) {
+}
+
+FakeCWS::~FakeCWS() {
+}
+
 void FakeCWS::Init(EmbeddedTestServer* embedded_test_server) {
-  SetupWebStore(embedded_test_server->base_url());
-  SetupWebStoreGalleryUrl();
-  SetupCrxDownloadAndUpdateUrls(embedded_test_server);
+  has_update_template_ =
+      "chromeos/app_mode/webstore/update_check/has_update.xml";
+  no_update_template_ = "chromeos/app_mode/webstore/update_check/no_update.xml";
+  update_check_end_point_ = "/update_check.xml";
+
+  SetupWebStoreURL(embedded_test_server->base_url());
+  OverrideGalleryCommandlineSwitches();
+  embedded_test_server->RegisterRequestHandler(
+      base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
+}
+
+void FakeCWS::InitAsPrivateStore(EmbeddedTestServer* embedded_test_server,
+                                 const std::string& update_check_end_point) {
+  has_update_template_ =
+      "chromeos/app_mode/webstore/update_check/has_update_private_store.xml";
+  no_update_template_ = "chromeos/app_mode/webstore/update_check/no_update.xml";
+  update_check_end_point_ = update_check_end_point;
+
+  SetupWebStoreURL(embedded_test_server->base_url());
+  embedded_test_server->RegisterRequestHandler(
+      base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
 }
 
 void FakeCWS::SetUpdateCrx(const std::string& app_id,
@@ -54,7 +78,7 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
   const std::string sha256_hex = base::HexEncode(sha256.c_str(), sha256.size());
 
   SetUpdateCheckContent(
-      "chromeos/app_mode/webstore/update_check/has_update.xml",
+      has_update_template_,
       crx_download_url,
       app_id,
       sha256_hex,
@@ -64,7 +88,7 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
 }
 
 void FakeCWS::SetNoUpdate(const std::string& app_id) {
-  SetUpdateCheckContent("chromeos/app_mode/webstore/update_check/no_update.xml",
+  SetUpdateCheckContent(no_update_template_,
                         GURL(),
                         app_id,
                         "",
@@ -73,39 +97,36 @@ void FakeCWS::SetNoUpdate(const std::string& app_id) {
                         &update_check_content_);
 }
 
-void FakeCWS::SetupWebStore(const GURL& test_server_url) {
+int FakeCWS::GetUpdateCheckCountAndReset() {
+  int current_count = update_check_count_;
+  update_check_count_ = 0;
+  return current_count;
+}
+
+void FakeCWS::SetupWebStoreURL(const GURL& test_server_url) {
   std::string webstore_host(kWebstoreDomain);
   GURL::Replacements replace_webstore_host;
   replace_webstore_host.SetHostStr(webstore_host);
   web_store_url_ = test_server_url.ReplaceComponents(replace_webstore_host);
 }
 
-void FakeCWS::SetupWebStoreGalleryUrl() {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+void FakeCWS::OverrideGalleryCommandlineSwitches() {
+  DCHECK(web_store_url_.is_valid());
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  command_line->AppendSwitchASCII(
       ::switches::kAppsGalleryURL,
       web_store_url_.Resolve("/chromeos/app_mode/webstore").spec());
-}
 
-void FakeCWS::SetupCrxDownloadAndUpdateUrls(
-    EmbeddedTestServer* embedded_test_server) {
-  SetupCrxDownloadUrl();
-  SetupCrxUpdateUrl(embedded_test_server);
-}
-
-void FakeCWS::SetupCrxDownloadUrl() {
   std::string downloads_path = std::string(kCrxDownloadPath).append("%s.crx");
   GURL downloads_url = web_store_url_.Resolve(downloads_path);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ::switches::kAppsGalleryDownloadURL, downloads_url.spec());
-}
+  command_line->AppendSwitchASCII(::switches::kAppsGalleryDownloadURL,
+                                  downloads_url.spec());
 
-void FakeCWS::SetupCrxUpdateUrl(EmbeddedTestServer* embedded_test_server) {
-  GURL update_url = web_store_url_.Resolve("/update_check.xml");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ::switches::kAppsGalleryUpdateURL, update_url.spec());
-
-  embedded_test_server->RegisterRequestHandler(
-      base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
+  GURL update_url = web_store_url_.Resolve(update_check_end_point_);
+  command_line->AppendSwitchASCII(::switches::kAppsGalleryUpdateURL,
+                                  update_url.spec());
 }
 
 void FakeCWS::SetUpdateCheckContent(const std::string& update_check_file,
@@ -133,7 +154,8 @@ scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
   if (!update_check_content_.empty() &&
-      request_path.find("/update_check.xml") != std::string::npos) {
+      request_path.find(update_check_end_point_) != std::string::npos) {
+    ++update_check_count_;
     scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/xml");
