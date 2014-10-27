@@ -386,6 +386,9 @@ EventRouter::EventRouter(Profile* profile)
     : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       device_event_router_(new DeviceEventRouterImpl(profile)),
+      dispatch_directory_change_event_impl_(
+          base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
+                     base::Unretained(this))),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ObserveEvents();
@@ -711,19 +714,63 @@ void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
 }
 
 void EventRouter::OnFileChanged(const drive::FileChange& changed_files) {
+  // In this method, we convert changed_files to a map which can be handled by
+  // HandleFileWatchNotification.
+  //
+  // e.g.
+  // /a/b DIRECTORY:DELETE
+  //
+  // map[/a] = /a/b DIRECTORY:DELETE
+  // map[/a/b] = /a/b DIRECTORY:DELETE
+  //
+  // We used the key of map to match the watched directories of file watchers.
   typedef std::map<base::FilePath, drive::FileChange> FileChangeMap;
+  typedef drive::FileChange::ChangeList::List FileChangeList;
 
   FileChangeMap map;
   const drive::FileChange::Map& changed_file_map = changed_files.map();
-  for (drive::FileChange::Map::const_iterator it = changed_file_map.begin();
-       it != changed_file_map.end();
-       it++) {
-    const base::FilePath& path = it->first;
-    map[path.DirName()].Update(path, it->second);
+  for (auto const& file_change_key_value : changed_file_map) {
+    // Check whether the FileChangeList contains directory deletion.
+    bool contains_directory_deletion = false;
+    const FileChangeList list = file_change_key_value.second.list();
+    for (drive::FileChange::Change const& change : list) {
+      if (change.IsDirectory() && change.IsDelete()) {
+        contains_directory_deletion = true;
+        break;
+      }
+    }
+
+    const base::FilePath& path = file_change_key_value.first;
+    map[path.DirName()].Update(path, file_change_key_value.second);
+
+    // For deletion of a directory, onFileChanged gets different changed_files.
+    // We solve the difference here.
+    //
+    // /a/b is watched, and /a is deleted from Drive (e.g. from Web).
+    // 1. /a/b DELETE:DIRECTORY
+    // 2. /a DELETE:DIRECTORY
+    //
+    // /a/b is watched, and /a is deleted from Files.app.
+    // 1. /a DELETE:DIRECTORY
+    if (contains_directory_deletion) {
+      // Expand the deleted directory path with watched paths.
+      for (WatcherMap::const_iterator file_watchers_it =
+               file_watchers_.lower_bound(path);
+           file_watchers_it != file_watchers_.end(); ++file_watchers_it) {
+        if (path == file_watchers_it->first ||
+            path.IsParent(file_watchers_it->first)) {
+          map[file_watchers_it->first].Update(
+              file_watchers_it->first,
+              drive::FileChange::FileType::FILE_TYPE_DIRECTORY,
+              drive::FileChange::ChangeType::DELETE);
+        }
+      }
+    }
   }
 
-  for (FileChangeMap::const_iterator it = map.begin(); it != map.end(); it++) {
-    HandleFileWatchNotification(&(it->second), it->first, false);
+  for (auto const& file_change_key_value : map) {
+    HandleFileWatchNotification(&(file_change_key_value.second),
+                                file_change_key_value.first, false);
   }
 }
 
@@ -787,6 +834,15 @@ void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
 }
 
 void EventRouter::DispatchDirectoryChangeEvent(
+    const base::FilePath& virtual_path,
+    const drive::FileChange* list,
+    bool got_error,
+    const std::vector<std::string>& extension_ids) {
+  dispatch_directory_change_event_impl_.Run(virtual_path, list, got_error,
+                                            extension_ids);
+}
+
+void EventRouter::DispatchDirectoryChangeEventImpl(
     const base::FilePath& virtual_path,
     const drive::FileChange* list,
     bool got_error,
@@ -965,6 +1021,11 @@ void EventRouter::Observe(int type,
     if (!added_profile->IsOffTheRecord())
       GrantAccessForAddedProfileToRunningInstance(added_profile, profile_);
   }
+}
+
+void EventRouter::SetDispatchDirectoryChangeEventImplForTesting(
+    const DispatchDirectoryChangeEventImplCallback& callback) {
+  dispatch_directory_change_event_impl_ = callback;
 }
 
 }  // namespace file_manager
