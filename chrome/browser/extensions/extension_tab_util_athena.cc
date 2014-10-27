@@ -120,7 +120,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
 bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
                                      WebContents** contents,
                                      int* tab_id) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return false;
 }
 
@@ -131,7 +131,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   TabStripModel** tab_strip,
                                   WebContents** contents,
                                   int* tab_index) {
-  NOTREACHED();  return false;
+  NOTIMPLEMENTED();
+  return false;
 }
 
 GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
