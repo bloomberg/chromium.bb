@@ -22,17 +22,12 @@
 #define CustomFontData_h
 
 #include "platform/PlatformExport.h"
-#include "platform/fonts/Glyph.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include <unicode/uchar.h>
 
 namespace blink {
 
-struct GlyphData;
-class GlyphPage;
 class SimpleFontData;
-struct SimpleShaper;
 
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
 public:
@@ -40,24 +35,17 @@ public:
 
     virtual ~CustomFontData() { }
 
-    virtual void beginLoadIfNeeded() const { };
+    virtual void beginLoadIfNeeded() const { }
     virtual bool isLoading() const { return false; }
     virtual bool isLoadingFallback() const { return false; }
     virtual bool shouldSkipDrawing() const { return false; }
     virtual void clearFontFaceSource() { }
 
     virtual void initializeFontData(SimpleFontData*, float) { }
-    virtual float widthForSVGGlyph(Glyph, float) const { return 0.0f; }
-    virtual bool fillSVGGlyphPage(GlyphPage*, unsigned, unsigned, UChar*, unsigned, const SimpleFontData*) const { return false; }
-    virtual bool applySVGGlyphSelection(SimpleShaper&, GlyphData&, bool, int, unsigned&) const { return false; }
 
 protected:
     CustomFontData() { }
 };
-
-#define DEFINE_CUSTOM_FONT_DATA_TYPE_CASTS(thisType, predicate) \
-    template<typename T> inline thisType* to##thisType(const RefPtr<T>& customFontData) { return to##thisType(customFontData.get()); } \
-    DEFINE_TYPE_CASTS(thisType, CustomFontData, customFontData, customFontData->predicate, customFontData.predicate)
 
 } // namespace blink
 
