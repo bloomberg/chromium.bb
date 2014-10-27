@@ -195,6 +195,10 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   void EnsureAuthenticator();
   void EnsureExtendedAuthenticator();
 
+  // Actual implementation of LoginAsSupervisedUser that is run after trusted
+  // values check.
+  void TrustedLoginAsSupervisedUser(const UserContext& user_context);
+
   // Actual implementantion of PeformLogin that is run after trusted values
   // check.
   void DoPerformLogin(const UserContext& user_context,

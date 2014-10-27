@@ -142,7 +142,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
                                  auth_mode))) {
     return;
   }
-  DoPerformLogin(user_context, auth_mode);
+  DoPerformLogin(user_context_, auth_mode);
 }
 
 void LoginPerformer::DoPerformLogin(const UserContext& user_context,
@@ -178,12 +178,18 @@ void LoginPerformer::LoginAsSupervisedUser(const UserContext& user_context) {
   DCHECK_EQ(chromeos::login::kSupervisedUserDomain,
             gaia::ExtractDomainName(user_context.GetUserID()));
 
-  if (RunTrustedCheck(base::Bind(&LoginPerformer::LoginAsSupervisedUser,
+  user_context_ = user_context;
+
+  if (RunTrustedCheck(base::Bind(&LoginPerformer::TrustedLoginAsSupervisedUser,
                                  weak_factory_.GetWeakPtr(),
                                  user_context_))) {
     return;
   }
+  TrustedLoginAsSupervisedUser(user_context_);
+}
 
+void LoginPerformer::TrustedLoginAsSupervisedUser(
+    const UserContext& user_context) {
   if (!AreSupervisedUsersAllowed()) {
     LOG(ERROR) << "Login attempt of supervised user detected.";
     delegate_->WhiteListCheckFailed(user_context.GetUserID());
