@@ -47,7 +47,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
-#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -66,7 +65,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -85,7 +83,6 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/charger_replacement_handler.h"
-#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -754,16 +751,6 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
   input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
 }
 
-void SystemTrayDelegateChromeOS::ShowNetworkConfigure(
-    const std::string& network_id) {
-  NetworkConfigView::Show(network_id, GetNativeWindow());
-}
-
-bool SystemTrayDelegateChromeOS::EnrollNetwork(
-    const std::string& network_id) {
-  return enrollment::CreateDialog(network_id, GetNativeWindow());
-}
-
 void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
   content::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
   std::string sub_page =
@@ -776,16 +763,6 @@ void SystemTrayDelegateChromeOS::ToggleBluetooth() {
   bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
                                  base::Bind(&base::DoNothing),
                                  base::Bind(&BluetoothPowerFailure));
-}
-
-void SystemTrayDelegateChromeOS::ShowMobileSimDialog() {
-  SimDialogDelegate::ShowDialog(GetNativeWindow(),
-                                SimDialogDelegate::SIM_DIALOG_UNLOCK);
-}
-
-void SystemTrayDelegateChromeOS::ShowMobileSetupDialog(
-    const std::string& service_path) {
-  MobileSetupDialog::Show(service_path);
 }
 
 void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(

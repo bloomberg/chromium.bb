@@ -624,7 +624,7 @@ void MobileActivator::ContinueConnecting() {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
       VLOG(1) << "Connecting to: " << network->path();
-      ash::network_connect::ConnectToNetwork(network->path());
+      ash::NetworkConnect::Get()->ConnectToNetwork(network->path());
     }
   }
 }

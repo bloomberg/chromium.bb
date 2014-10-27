@@ -101,7 +101,7 @@ void WimaxConfigView::UpdateErrorLabel() {
     const NetworkState* wimax = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (wimax && wimax->connection_state() == shill::kStateFailure)
-      error_msg = ash::network_connect::ErrorString(
+      error_msg = ash::NetworkConnect::Get()->GetErrorString(
           wimax->last_error(), wimax->path());
   }
   if (!error_msg.empty()) {
@@ -168,7 +168,7 @@ bool WimaxConfigView::Login() {
                                               false);
   }
 
-  ash::network_connect::ConfigureNetworkAndConnect(
+  ash::NetworkConnect::Get()->ConfigureNetworkAndConnect(
       service_path_, properties, share_network);
   return true;  // dialog will be closed
 }

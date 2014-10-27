@@ -39,6 +39,8 @@ namespace chromeos {
 
 namespace {
 
+const char kDataPromoNotificationId[] = "chrome://settings/internet/data_promo";
+
 const int kNotificationCountPrefDefault = -1;
 
 bool GetBooleanPref(const char* pref_name) {
@@ -121,7 +123,7 @@ const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
 void NotificationClicked(const std::string& service_path,
                          const std::string& info_url) {
   if (info_url.empty())
-    ash::network_connect::ShowNetworkSettings(service_path);
+    ash::NetworkConnect::Get()->ShowNetworkSettings(service_path);
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetPrimaryUserProfile(),
@@ -213,13 +215,9 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
 
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
-          ash::network_connect::kNetworkActivateNotificationId,
-          base::string16() /* title */,
-          message,
-          icon,
+          kDataPromoNotificationId, base::string16() /* title */, message, icon,
           ash::system_notifier::kNotifierNetwork,
-          base::Bind(&NotificationClicked,
-                     default_network->path(), info_url)));
+          base::Bind(&NotificationClicked, default_network->path(), info_url)));
 
   check_for_promo_ = false;
   SetShow3gPromoNotification(false);

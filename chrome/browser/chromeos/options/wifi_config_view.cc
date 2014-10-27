@@ -588,7 +588,7 @@ void WifiConfigView::UpdateErrorLabel() {
   if (error_msg.empty() && !service_path_.empty()) {
     const NetworkState* network = GetNetworkState();
     if (network && network->connection_state() == shill::kStateFailure) {
-      error_msg = ash::network_connect::ErrorString(
+      error_msg = ash::NetworkConnect::Get()->GetErrorString(
           network->last_error(), network->path());
     }
   }
@@ -705,8 +705,8 @@ bool WifiConfigView::Login() {
         shill::kSecurityProperty, security);
 
     // Configure and connect to network.
-    ash::network_connect::CreateConfigurationAndConnect(&properties,
-                                                        share_network);
+    ash::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
+                                                              share_network);
   } else {
     if (!network) {
       // Shill no longer knows about this network (edge case).
@@ -732,9 +732,10 @@ bool WifiConfigView::Login() {
       properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                shill::kTypeEthernetEap);
       share_network = false;
-      ash::network_connect::CreateConfiguration(&properties, share_network);
+      ash::NetworkConnect::Get()->CreateConfiguration(&properties,
+                                                      share_network);
     } else {
-      ash::network_connect::ConfigureNetworkAndConnect(
+      ash::NetworkConnect::Get()->ConfigureNetworkAndConnect(
           service_path_, properties, share_network);
     }
   }

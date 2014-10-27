@@ -78,6 +78,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -179,6 +180,10 @@ class DBusServices {
     // the network manager.
     NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
 
+    // Initialize the NetworkConnect handler.
+    network_connect_delegate_.reset(new NetworkConnectDelegateChromeOS);
+    ash::NetworkConnect::Initialize(network_connect_delegate_.get());
+
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
     UpgradeDetectorChromeos::GetInstance()->Init();
@@ -193,6 +198,9 @@ class DBusServices {
   }
 
   ~DBusServices() {
+    ash::NetworkConnect::Shutdown();
+    network_connect_delegate_.reset();
+
     CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
 
@@ -214,6 +222,7 @@ class DBusServices {
   }
 
  private:
+  scoped_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };

@@ -22,8 +22,10 @@
 namespace {
 
 ash::SystemTray* GetSystemTray() {
-  return ash::Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->system_tray();
+  return ash::Shell::GetPrimaryRootWindowController()
+      ->shelf()
+      ->status_area_widget()
+      ->system_tray();
 }
 
 }  // namespace
@@ -35,21 +37,43 @@ using chromeos::ShillServiceClient;
 namespace ash {
 namespace test {
 
+class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
+ public:
+  NetworkConnectTestDelegate() {}
+  ~NetworkConnectTestDelegate() override {}
+
+  // NetworkConnect::Delegate
+  void ShowNetworkConfigure(const std::string& network_id) override {}
+  void ShowNetworkSettings(const std::string& network_id) override {}
+  bool ShowEnrollNetwork(const std::string& network_id) override {
+    return false;
+  }
+  void ShowMobileSimDialog() override {}
+  void ShowMobileSetupDialog(const std::string& service_path) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);
+};
+
 class NetworkStateNotifierTest : public AshTestBase {
  public:
   NetworkStateNotifierTest() {}
-  virtual ~NetworkStateNotifierTest() {}
+  ~NetworkStateNotifierTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DBusThreadManager::Initialize();
     chromeos::LoginState::Initialize();
     SetupDefaultShillState();
     chromeos::NetworkHandler::Initialize();
     RunAllPendingInMessageLoop();
     AshTestBase::SetUp();
+    network_connect_delegate_.reset(new NetworkConnectTestDelegate);
+    NetworkConnect::Initialize(network_connect_delegate_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
+    NetworkConnect::Shutdown();
+    network_connect_delegate_.reset();
     AshTestBase::TearDown();
     chromeos::LoginState::Shutdown();
     chromeos::NetworkHandler::Shutdown();
@@ -62,8 +86,8 @@ class NetworkStateNotifierTest : public AshTestBase {
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
-    device_test->AddDevice("/device/stub_wifi_device1",
-                           shill::kTypeWifi, "stub_wifi_device1");
+    device_test->AddDevice("/device/stub_wifi_device1", shill::kTypeWifi,
+                           "stub_wifi_device1");
     device_test->AddDevice("/device/stub_cellular_device1",
                            shill::kTypeCellular, "stub_cellular_device1");
 
@@ -75,17 +99,16 @@ class NetworkStateNotifierTest : public AshTestBase {
     service_test->AddService("/service/wifi1", "wifi1_guid", "wifi1",
                              shill::kTypeWifi, shill::kStateIdle,
                              add_to_visible);
-    service_test->SetServiceProperty("wifi1",
-                                     shill::kSecurityProperty,
+    service_test->SetServiceProperty("wifi1", shill::kSecurityProperty,
                                      base::StringValue(shill::kSecurityWep));
-    service_test->SetServiceProperty("wifi1",
-                                     shill::kConnectableProperty,
+    service_test->SetServiceProperty("wifi1", shill::kConnectableProperty,
                                      base::FundamentalValue(true));
-    service_test->SetServiceProperty("wifi1",
-                                     shill::kPassphraseProperty,
+    service_test->SetServiceProperty("wifi1", shill::kPassphraseProperty,
                                      base::StringValue("failure"));
     RunAllPendingInMessageLoop();
   }
+
+  scoped_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifierTest);
@@ -93,13 +116,13 @@ class NetworkStateNotifierTest : public AshTestBase {
 
 TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   EXPECT_FALSE(GetSystemTray()->HasNotificationBubble());
-  ash::network_connect::ConnectToNetwork("wifi1");
+  NetworkConnect::Get()->ConnectToNetwork("wifi1");
   RunAllPendingInMessageLoop();
   // Failure should spawn a notification.
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
   EXPECT_TRUE(message_center->FindVisibleNotificationById(
-      network_connect::kNetworkConnectNotificationId));
+      NetworkStateNotifier::kNetworkConnectNotificationId));
 }
 
 }  // namespace test

@@ -4,10 +4,10 @@
 
 #include "ash/system/chromeos/network/network_state_notifier.h"
 
-#include "ash/shell.h"
 #include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/system_notifier.h"
-#include "ash/system/tray/system_tray_delegate.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,9 +34,6 @@ using chromeos::NetworkTypePattern;
 
 namespace {
 
-const char kNetworkOutOfCreditsNotificationId[] =
-    "chrome://settings/internet/out-of-credits";
-
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
 // Ignore in-progress error.
@@ -58,7 +55,7 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED);
   }
-  if (error_name == ash::network_connect::kErrorActivateFailed) {
+  if (error_name == ash::NetworkConnect::kErrorActivateFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
   }
@@ -70,27 +67,31 @@ void ShowErrorNotification(const std::string& notification_id,
                            const base::string16& title,
                            const base::string16& message,
                            const base::Closure& callback) {
-  int icon_id = (network_type == shill::kTypeCellular) ?
-      IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED :
-      IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+  int icon_id = (network_type == shill::kTypeCellular)
+                    ? IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED
+                    : IDR_AURA_UBER_TRAY_NETWORK_FAILED;
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
-          notification_id,
-          title,
-          message,
-          icon,
-          ash::system_notifier::kNotifierNetworkError,
-          callback));
+          notification_id, title, message, icon,
+          ash::system_notifier::kNotifierNetworkError, callback));
 }
 
 }  // namespace
 
 namespace ash {
 
-NetworkStateNotifier::NetworkStateNotifier()
-    : did_show_out_of_credits_(false),
+const char NetworkStateNotifier::kNetworkConnectNotificationId[] =
+    "chrome://settings/internet/connect";
+const char NetworkStateNotifier::kNetworkActivateNotificationId[] =
+    "chrome://settings/internet/activate";
+const char NetworkStateNotifier::kNetworkOutOfCreditsNotificationId[] =
+    "chrome://settings/internet/out-of-credits";
+
+NetworkStateNotifier::NetworkStateNotifier(NetworkConnect* network_connect)
+    : network_connect_(network_connect),
+      did_show_out_of_credits_(false),
       weak_ptr_factory_(this) {
   if (!NetworkHandler::IsInitialized())
     return;
@@ -102,8 +103,8 @@ NetworkStateNotifier::NetworkStateNotifier()
 NetworkStateNotifier::~NetworkStateNotifier() {
   if (!NetworkHandler::IsInitialized())
     return;
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      this, FROM_HERE);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                 FROM_HERE);
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
@@ -149,7 +150,8 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
   if (default_network && default_network != cellular)
     return;
   if (handler->ConnectingNetworkByType(NetworkTypePattern::NonVirtual()) ||
-      NetworkHandler::Get()->network_connection_handler()
+      NetworkHandler::Get()
+          ->network_connection_handler()
           ->HasPendingConnectRequest())
     return;
 
@@ -158,14 +160,12 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
   if (dtime.InSeconds() > kMinTimeBetweenOutOfCreditsNotifySeconds) {
     out_of_credits_notify_time_ = base::Time::Now();
     base::string16 error_msg = l10n_util::GetStringFUTF16(
-        IDS_NETWORK_OUT_OF_CREDITS_BODY,
-        base::UTF8ToUTF16(cellular->name()));
+        IDS_NETWORK_OUT_OF_CREDITS_BODY, base::UTF8ToUTF16(cellular->name()));
     ShowErrorNotification(
-        kNetworkOutOfCreditsNotificationId,
-        cellular->type(),
-        l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
-        error_msg,
-        base::Bind(&network_connect::ShowNetworkSettings, cellular->path()));
+        kNetworkOutOfCreditsNotificationId, cellular->type(),
+        l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
+        base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                   weak_ptr_factory_.GetWeakPtr(), cellular->path()));
   }
 }
 
@@ -193,14 +193,13 @@ void NetworkStateNotifier::UpdateCellularActivating(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
-          ash::network_connect::kNetworkActivateNotificationId,
+          kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      base::UTF8ToUTF16((cellular->name()))),
-          icon,
-          system_notifier::kNotifierNetwork,
-          base::Bind(&ash::network_connect::ShowNetworkSettings,
-                     cellular->path())));
+          icon, system_notifier::kNotifierNetwork,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                     weak_ptr_factory_.GetWeakPtr(), cellular->path())));
 }
 
 void NetworkStateNotifier::ShowNetworkConnectError(
@@ -220,6 +219,38 @@ void NetworkStateNotifier::ShowNetworkConnectError(
                  weak_ptr_factory_.GetWeakPtr(), error_name, service_path));
 }
 
+void NetworkStateNotifier::ShowMobileActivationError(
+    const std::string& service_path) {
+  const NetworkState* cellular =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  if (!cellular || cellular->type() != shill::kTypeCellular) {
+    NET_LOG_ERROR("ShowMobileActivationError without Cellular network",
+                  service_path);
+    return;
+  }
+  message_center::MessageCenter::Get()->AddNotification(
+      message_center::Notification::CreateSystemNotification(
+          kNetworkActivateNotificationId,
+          l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
+          l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
+                                     base::UTF8ToUTF16(cellular->name())),
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
+          ash::system_notifier::kNotifierNetworkError,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                     weak_ptr_factory_.GetWeakPtr(), service_path)));
+}
+
+void NetworkStateNotifier::RemoveConnectNotification() {
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  if (message_center) {
+    message_center->RemoveNotification(kNetworkConnectNotificationId,
+                                       false /* not by user */);
+  }
+}
+
 void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
     const std::string& error_name,
     const std::string& service_path,
@@ -228,8 +259,8 @@ void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
   shill_properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
   if (chromeos::NetworkState::StateIsConnected(state) ||
       chromeos::NetworkState::StateIsConnecting(state)) {
-    // Network is no longer in an error state. This can happen if an unexpected
-    // Idle state transition occurs, see crbug.com/333955.
+    // Network is no longer in an error state. This can happen if an
+    // unexpected idle state transition occurs, see crbug.com/333955.
     return;
   }
   ShowConnectErrorNotification(error_name, service_path, shill_properties);
@@ -269,9 +300,9 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
             service_path);
     if (network) {
       // Always log last_error, but only use it if shill_error is empty.
-      // TODO(stevenjb): This shouldn't ever be necessary, but is kept here as a
-      // failsafe since more information is better than less when debugging and
-      // we have encountered some strange edge cases before.
+      // TODO(stevenjb): This shouldn't ever be necessary, but is kept here as
+      // a failsafe since more information is better than less when debugging
+      // and we have encountered some strange edge cases before.
       NET_LOG_DEBUG("Notify Network.last_error: " + network->last_error(),
                     service_path);
       if (shill_error.empty())
@@ -283,7 +314,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       return;
     }
 
-    error = network_connect::ErrorString(shill_error, service_path);
+    error = network_connect_->GetErrorString(shill_error, service_path);
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
@@ -302,16 +333,15 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     // network_name should't be empty if network_error_details is set.
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_SERVER_MESSAGE,
-        base::UTF8ToUTF16(network_name),
-        error,
+        base::UTF8ToUTF16(network_name), error,
         base::UTF8ToUTF16(network_error_details));
   } else if (network_name.empty()) {
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME, error);
   } else {
-    error_msg = l10n_util::GetStringFUTF16(IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-                                           base::UTF8ToUTF16(network_name),
-                                           error);
+    error_msg =
+        l10n_util::GetStringFUTF16(IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
+                                   base::UTF8ToUTF16(network_name), error);
   }
 
   std::string network_type;
@@ -319,11 +349,15 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                                                  &network_type);
 
   ShowErrorNotification(
-      network_connect::kNetworkConnectNotificationId,
-      network_type,
-      l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE),
-      error_msg,
-      base::Bind(&network_connect::ShowNetworkSettings, service_path));
+      kNetworkConnectNotificationId, network_type,
+      l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE), error_msg,
+      base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                 weak_ptr_factory_.GetWeakPtr(), service_path));
+}
+
+void NetworkStateNotifier::ShowNetworkSettings(
+    const std::string& service_path) {
+  network_connect_->ShowNetworkSettings(service_path);
 }
 
 }  // namespace ash

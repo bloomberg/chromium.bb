@@ -246,9 +246,9 @@ scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
   // Append Service Path for now.
   dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
   // Append a Chrome specific translated error message.
-  dictionary->SetString(
-      kTagErrorMessage,
-      ash::network_connect::ErrorString(network->error(), network->path()));
+  dictionary->SetString(kTagErrorMessage,
+                        ash::NetworkConnect::Get()->GetErrorString(
+                            network->error(), network->path()));
 
   return dictionary.Pass();
 }
@@ -397,7 +397,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     NOTREACHED();
     return;
   }
-  ash::network_connect::ShowMobileSetup(service_path);
+  ash::NetworkConnect::Get()->ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SetApnCallback(const base::ListValue* args) {
@@ -467,7 +467,7 @@ void InternetOptionsHandler::CarrierStatusCallback() {
     const NetworkState* network =
         handler->FirstNetworkByType(NetworkTypePattern::Cellular());
     if (network && network->path() == details_path_) {
-      ash::network_connect::ActivateCellular(network->path());
+      ash::NetworkConnect::Get()->ActivateCellular(network->path());
       UpdateConnectionData(network->path());
     }
   }
@@ -586,7 +586,7 @@ void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  ash::network_connect::ConnectToNetwork(service_path);
+  ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 void InternetOptionsHandler::StartDisconnectCallback(
@@ -892,7 +892,7 @@ void InternetOptionsHandler::NetworkCommandCallback(
   } else if (command == kTagConfigure) {
     NetworkConfigView::Show(service_path, GetNativeWindow());
   } else if (command == kTagActivate && type == shill::kTypeCellular) {
-    ash::network_connect::ActivateCellular(service_path);
+    ash::NetworkConnect::Get()->ActivateCellular(service_path);
     // Activation may update network properties (e.g. ActivationState), so
     // request them here in case they change.
     UpdateConnectionData(service_path);

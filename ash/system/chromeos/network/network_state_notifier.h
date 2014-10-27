@@ -25,6 +25,8 @@ class NetworkState;
 
 namespace ash {
 
+class NetworkConnect;
+
 // This class has two purposes:
 // 1. ShowNetworkConnectError() gets called after any user initiated connect
 //    failure. This will handle displaying an error notification.
@@ -35,7 +37,7 @@ namespace ash {
 class ASH_EXPORT NetworkStateNotifier :
       public chromeos::NetworkStateHandlerObserver {
  public:
-  NetworkStateNotifier();
+  explicit NetworkStateNotifier(NetworkConnect* network_connect);
   virtual ~NetworkStateNotifier();
 
   // NetworkStateHandlerObserver
@@ -50,6 +52,16 @@ class ASH_EXPORT NetworkStateNotifier :
   // value for the network or a Shill property if available.
   void ShowNetworkConnectError(const std::string& error_name,
                                const std::string& service_path);
+
+  // Show a mobile activation error notification.
+  void ShowMobileActivationError(const std::string& service_path);
+
+  // Removes any existing connect notifications.
+  void RemoveConnectNotification();
+
+  static const char kNetworkConnectNotificationId[];
+  static const char kNetworkActivateNotificationId[];
+  static const char kNetworkOutOfCreditsNotificationId[];
 
  private:
   void ConnectErrorPropertiesSucceeded(
@@ -73,6 +85,10 @@ class ASH_EXPORT NetworkStateNotifier :
   void UpdateCellularOutOfCredits(const chromeos::NetworkState* cellular);
   void UpdateCellularActivating(const chromeos::NetworkState* cellular);
 
+  // Invokes network_connect_->ShowNetworkSettings from a callback.
+  void ShowNetworkSettings(const std::string& service_path);
+
+  NetworkConnect* network_connect_;  // unowned
   std::string last_default_network_;
   bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;

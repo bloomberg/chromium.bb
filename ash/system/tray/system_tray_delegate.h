@@ -251,25 +251,11 @@ class ASH_EXPORT SystemTrayDelegate {
   // Activates an IME property.
   virtual void ActivateIMEProperty(const std::string& key) = 0;
 
-  // Shows UI to configure or activate the network specified by |network_id|,
-  // which may include showing Payment or Portal UI when appropriate.
-  virtual void ShowNetworkConfigure(const std::string& network_id) = 0;
-
-  // Shows UI to enroll the network specified by |network_id| if appropriate
-  // and returns true, otherwise returns false.
-  virtual bool EnrollNetwork(const std::string& network_id) = 0;
-
   // Shows UI to manage bluetooth devices.
   virtual void ManageBluetoothDevices() = 0;
 
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;
-
-  // Shows UI to unlock a mobile sim.
-  virtual void ShowMobileSimDialog() = 0;
-
-  // Shows UI to setup a mobile network.
-  virtual void ShowMobileSetupDialog(const std::string& service_path) = 0;
 
   // Shows UI to connect to an unlisted network of type |type|. On Chrome OS
   // |type| corresponds to a Shill network type.

@@ -142,10 +142,6 @@ class ASH_EXPORT SystemTrayNotifier {
                               const base::string16& helper_name);
   void NotifyScreenShareStop();
   void NotifyLastWindowClosed();
-
-  NetworkStateNotifier* network_state_notifier() {
-    return network_state_notifier_.get();
-  }
 #endif
 
  private:
@@ -169,7 +165,6 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   ObserverList<ScreenShareObserver> screen_share_observers_;
   ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
-  scoped_ptr<NetworkStateNotifier> network_state_notifier_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

@@ -211,25 +211,10 @@ void SystemTrayDelegateCommon::SwitchIME(const std::string& ime_id) {
 void SystemTrayDelegateCommon::ActivateIMEProperty(const std::string& key) {
 }
 
-void SystemTrayDelegateCommon::ShowNetworkConfigure(
-    const std::string& network_id) {
-}
-
-bool SystemTrayDelegateCommon::EnrollNetwork(const std::string& network_id) {
-  return true;
-}
-
 void SystemTrayDelegateCommon::ManageBluetoothDevices() {
 }
 
 void SystemTrayDelegateCommon::ToggleBluetooth() {
-}
-
-void SystemTrayDelegateCommon::ShowMobileSimDialog() {
-}
-
-void SystemTrayDelegateCommon::ShowMobileSetupDialog(
-    const std::string& service_path) {
 }
 
 void SystemTrayDelegateCommon::ShowOtherNetworkDialog(const std::string& type) {

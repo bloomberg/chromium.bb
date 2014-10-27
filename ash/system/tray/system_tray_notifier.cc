@@ -4,16 +4,9 @@
 
 #include "ash/system/tray/system_tray_notifier.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/network/network_state_notifier.h"
-#endif
-
 namespace ash {
 
 SystemTrayNotifier::SystemTrayNotifier() {
-#if defined(OS_CHROMEOS)
-  network_state_notifier_.reset(new NetworkStateNotifier());
-#endif
 }
 
 SystemTrayNotifier::~SystemTrayNotifier() {

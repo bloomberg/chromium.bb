@@ -271,7 +271,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
         list_type_ == LIST_TYPE_VPN ?
         ash::UMA_STATUS_AREA_CONNECT_TO_VPN :
         ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    ash::network_connect::ConnectToNetwork(service_path);
+    ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
   }
 }
 
@@ -587,8 +587,8 @@ void NetworkStateListDetailedView::ToggleMobile() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled =
       handler->IsTechnologyEnabled(NetworkTypePattern::Mobile());
-  ash::network_connect::SetTechnologyEnabled(NetworkTypePattern::Mobile(),
-                                             !enabled);
+  ash::NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Mobile(),
+                                                   !enabled);
 }
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(

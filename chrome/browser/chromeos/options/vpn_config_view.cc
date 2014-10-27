@@ -374,7 +374,8 @@ bool VPNConfigView::Login() {
                                                 false);
     }
 
-    ash::network_connect::CreateConfigurationAndConnect(&properties, shared);
+    ash::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
+                                                              shared);
   } else {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
@@ -386,7 +387,7 @@ bool VPNConfigView::Login() {
     }
     base::DictionaryValue properties;
     SetConfigProperties(&properties);
-    ash::network_connect::ConfigureNetworkAndConnect(
+    ash::NetworkConnect::Get()->ConfigureNetworkAndConnect(
         service_path_, properties, false /* not shared */);
   }
   return true;  // Close dialog.
@@ -999,7 +1000,7 @@ void VPNConfigView::UpdateErrorLabel() {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (vpn && vpn->connection_state() == shill::kStateFailure)
-      error_msg = ash::network_connect::ErrorString(
+      error_msg = ash::NetworkConnect::Get()->GetErrorString(
           vpn->last_error(), vpn->path());
   }
   if (!error_msg.empty()) {

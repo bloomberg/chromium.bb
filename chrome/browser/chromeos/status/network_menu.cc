@@ -61,7 +61,7 @@ bool ShouldHighlightNetwork(const NetworkState* network) {
 void ToggleTechnology(const NetworkTypePattern& technology) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool is_enabled = handler->IsTechnologyEnabled(technology);
-  ash::network_connect::SetTechnologyEnabled(technology, !is_enabled);
+  ash::NetworkConnect::Get()->SetTechnologyEnabled(technology, !is_enabled);
 }
 
 }  // namespace
@@ -217,7 +217,7 @@ class MainMenuModel : public NetworkMenuModel {
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
-  ash::network_connect::ConnectToNetwork(service_path);
+  ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
