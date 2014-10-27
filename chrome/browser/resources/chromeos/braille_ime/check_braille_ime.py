@@ -16,12 +16,20 @@ sys.path.insert(0, os.path.join(_SCRIPT_DIR, '..', 'chromevox', 'tools'))
 from jscompilerwrapper import RunCompiler
 
 
+_CHROME_SOURCE_DIR = os.path.normpath(
+    os.path.join(_SCRIPT_DIR, *[os.path.pardir] * 5))
+
+
 def CheckBrailleIme():
   print 'Compiling braille IME.'
   js_files = [
-      os.path.join(_SCRIPT_DIR, 'main.js'),
-      os.path.join(_SCRIPT_DIR, 'braille_ime.js')]
-  externs = [os.path.join(_SCRIPT_DIR, 'externs.js')]
+      os.path.join(_SCRIPT_DIR, 'braille_ime.js'),
+      os.path.join(_SCRIPT_DIR, 'main.js')]
+  externs = [
+      os.path.join(
+          _CHROME_SOURCE_DIR,
+          'third_party/closure_compiler/externs/chrome_extensions.js'),
+      os.path.join(_SCRIPT_DIR, 'externs.js')]
   return RunCompiler(js_files, externs)
 
 

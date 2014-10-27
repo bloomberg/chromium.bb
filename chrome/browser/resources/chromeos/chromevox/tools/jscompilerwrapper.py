@@ -19,8 +19,8 @@ _CHROME_SOURCE_DIR = os.path.normpath(
 
 # Compiler path.
 _CLOSURE_COMPILER_JAR = os.path.join(
-    _CHROME_SOURCE_DIR, 'third_party', 'WebKit', 'Source', 'devtools',
-    'scripts', 'closure', 'compiler.jar')
+    _CHROME_SOURCE_DIR, 'third_party', 'closure_compiler', 'compiler',
+    'compiler.jar')
 
 # List of compilation errors to enable with the --jscomp_errors flag.
 _JSCOMP_ERRORS = [ 'accessControls', 'checkTypes', 'checkVars', 'invalidCasts',

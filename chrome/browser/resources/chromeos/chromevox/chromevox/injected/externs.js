@@ -4,9 +4,6 @@
 
 Node.prototype.role;
 
-/** @type {Function} */
-Element.prototype.detachEvent;
-
 /**
  * @type {boolean}
  */

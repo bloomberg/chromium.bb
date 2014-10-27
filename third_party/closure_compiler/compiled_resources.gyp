@@ -8,6 +8,7 @@
       'type': 'none',
       'dependencies': [
         '../../chrome/browser/resources/bookmark_manager/js/compiled_resources.gyp:*',
+        '../../chrome/browser/resources/chromeos/braille_ime/compiled_resources.gyp:*',
         '../../chrome/browser/resources/downloads/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
