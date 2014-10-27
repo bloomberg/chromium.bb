@@ -70,6 +70,7 @@ private:
     CSSParserToken solidus(UChar);
     CSSParserToken colon(UChar);
     CSSParserToken semiColon(UChar);
+    CSSParserToken hash(UChar);
     CSSParserToken reverseSolidus(UChar);
     CSSParserToken asciiDigit(UChar);
     CSSParserToken nameStart(UChar);

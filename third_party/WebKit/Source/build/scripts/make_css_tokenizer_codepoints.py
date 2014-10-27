@@ -41,6 +41,7 @@ def token_type(i):
                   '\\': 'reverseSolidus',
                   ':': 'colon',
                   ';': 'semiColon',
+                  '#': 'hash',
                   }
     whitespace = '\n\r\t\f '
     quotes = '"\''

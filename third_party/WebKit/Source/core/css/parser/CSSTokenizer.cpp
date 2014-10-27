@@ -183,6 +183,17 @@ CSSParserToken CSSTokenizer::semiColon(UChar cc)
     return CSSParserToken(SemicolonToken);
 }
 
+CSSParserToken CSSTokenizer::hash(UChar cc)
+{
+    UChar nextChar = m_input.nextInputChar();
+    if (isNameChar(nextChar) || twoCharsAreValidEscape(nextChar, m_input.peek(1))) {
+        HashTokenType type = nextCharsAreIdentifier() ? HashTokenId : HashTokenUnrestricted;
+        return CSSParserToken(type, consumeName());
+    }
+
+    return CSSParserToken(DelimiterToken, cc);
+}
+
 CSSParserToken CSSTokenizer::reverseSolidus(UChar cc)
 {
     if (twoCharsAreValidEscape(cc, m_input.nextInputChar())) {

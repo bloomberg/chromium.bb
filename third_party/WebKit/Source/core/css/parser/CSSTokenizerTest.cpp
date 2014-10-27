@@ -37,6 +37,10 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
         ASSERT_EQ(expected.numericValueType(), actual.numericValueType());
         ASSERT_DOUBLE_EQ(expected.numericValue(), actual.numericValue());
         break;
+    case HashToken:
+        ASSERT_EQ(expected.value(), actual.value());
+        ASSERT_EQ(expected.hashTokenType(), actual.hashTokenType());
+        break;
     default:
         break;
     }
@@ -66,6 +70,7 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
 static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
 static CSSParserToken string(const String& string) { return CSSParserToken(StringToken, string); }
 static CSSParserToken function(const String& string) { return CSSParserToken(FunctionToken, string); }
+static CSSParserToken hash(const String& string, HashTokenType type) { return CSSParserToken(type, string); }
 static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); }
 
 static CSSParserToken number(NumericValueType type, double value)
@@ -224,6 +229,18 @@ TEST(CSSTokenizerTest, StringToken)
     TEST_TOKENS("'bad\fstring", badString, whitespace, ident("string"));
     // FIXME: Preprocessing is supposed to replace U+0000 with U+FFFD
     // TEST_TOKENS("'\0'", string(fromUChar32(0xFFFD)));
+}
+
+TEST(CSSTokenizerTest, HashToken)
+{
+    TEST_TOKENS("#id-selector", hash("id-selector", HashTokenId));
+    TEST_TOKENS("#FF7700", hash("FF7700", HashTokenId));
+    TEST_TOKENS("#3377FF", hash("3377FF", HashTokenUnrestricted));
+    TEST_TOKENS("#\\ ", hash(" ", HashTokenId));
+    TEST_TOKENS("# ", delim('#'), whitespace);
+    TEST_TOKENS("#\\\n", delim('#'), delim('\\'), whitespace);
+    TEST_TOKENS("#\\\r\n", delim('#'), delim('\\'), whitespace);
+    TEST_TOKENS("#!", delim('#'), delim('!'));
 }
 
 TEST(CSSTokenizerTest, NumberToken)

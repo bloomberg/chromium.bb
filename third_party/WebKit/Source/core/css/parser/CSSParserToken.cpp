@@ -53,6 +53,17 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     ASSERT(type == NumberToken);
 }
 
+CSSParserToken::CSSParserToken(HashTokenType type, String value)
+    : m_type(HashToken)
+    , m_value(value)
+    , m_delimiter(0)
+    , m_hashTokenType(type)
+    , m_numericValue(0)
+    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
+    , m_blockType(NotBlock)
+{
+}
+
 void CSSParserToken::convertToDimensionWithUnit(String unit)
 {
     ASSERT(m_type == NumberToken);

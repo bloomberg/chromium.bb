@@ -13,6 +13,7 @@ namespace blink {
 enum CSSParserTokenType {
     IdentToken = 0,
     FunctionToken,
+    HashToken,
     DelimiterToken,
     NumberToken,
     PercentageToken,
@@ -38,6 +39,11 @@ enum NumericValueType {
     NumberValueType,
 };
 
+enum HashTokenType {
+    HashTokenId,
+    HashTokenUnrestricted,
+};
+
 class CSSParserToken {
 public:
     enum BlockType {
@@ -52,6 +58,8 @@ public:
     CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
     CSSParserToken(CSSParserTokenType, double, NumericValueType); // for NumberToken
 
+    CSSParserToken(HashTokenType, String);
+
     // Converts NumberToken to DimensionToken.
     void convertToDimensionWithUnit(String);
 
@@ -64,6 +72,7 @@ public:
     UChar delimiter() const;
     NumericValueType numericValueType() const;
     double numericValue() const;
+    HashTokenType hashTokenType() const { ASSERT(m_type == HashToken); return m_hashTokenType; }
     BlockType blockType() const { return m_blockType; }
     CSSPrimitiveValue::UnitType unitType() const { return m_unit; }
 
@@ -73,6 +82,7 @@ private:
 
     UChar m_delimiter; // Could be rolled into m_value?
 
+    HashTokenType m_hashTokenType;
     NumericValueType m_numericValueType;
     double m_numericValue;
     CSSPrimitiveValue::UnitType m_unit;
