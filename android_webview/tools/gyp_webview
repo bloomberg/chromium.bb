@@ -47,7 +47,6 @@ DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
 
 # TODO: Get rid of this block, crbug.com/334021
 if [[ -n "$CHROME_ANDROID_WEBVIEW_OFFICIAL_BUILD" ]]; then
-  DEFINES+=" logging_like_official_build=1"
   DEFINES+=" tracing_like_official_build=1"
 fi
 
