@@ -36,17 +36,16 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
                                public ui::PlatformEventDispatcher {
  public:
   explicit X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate);
-  virtual ~X11WholeScreenMoveLoop();
+  ~X11WholeScreenMoveLoop() override;
 
   // ui:::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // X11MoveLoop:
-  virtual bool RunMoveLoop(aura::Window* window,
-                           gfx::NativeCursor cursor) override;
-  virtual void UpdateCursor(gfx::NativeCursor cursor) override;
-  virtual void EndMoveLoop() override;
+  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) override;
+  void UpdateCursor(gfx::NativeCursor cursor) override;
+  void EndMoveLoop() override;
 
  private:
   // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if

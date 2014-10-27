@@ -39,12 +39,11 @@ class ActivationWaiter : public X11PropertyChangeWaiter {
         window_(window) {
   }
 
-  virtual ~ActivationWaiter() {
-  }
+  ~ActivationWaiter() override {}
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     XID xid = 0;
     ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
     return xid != window_;
@@ -60,11 +59,10 @@ class MouseMoveCounterHandler : public ui::EventHandler {
  public:
   MouseMoveCounterHandler() : count_(0) {
   }
-  virtual ~MouseMoveCounterHandler() {
-  }
+  ~MouseMoveCounterHandler() override {}
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_MOVED)
       ++count_;
   }
@@ -123,8 +121,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
   DesktopWindowTreeHostX11Test() {
   }
-  virtual ~DesktopWindowTreeHostX11Test() {
-  }
+  ~DesktopWindowTreeHostX11Test() override {}
 
   static void SetUpTestCase() {
     gfx::GLSurface::InitializeOneOffForTests();
@@ -135,7 +132,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   }
 
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -143,7 +140,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     XSynchronize(gfx::GetXDisplay(), True);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), False);
     ViewsTestBase::TearDown();
   }

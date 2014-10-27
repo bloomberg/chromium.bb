@@ -14,13 +14,12 @@ namespace views {
 class DesktopCursorLoaderUpdaterAuraLinux : public DesktopCursorLoaderUpdater {
  public:
   DesktopCursorLoaderUpdaterAuraLinux();
-  virtual ~DesktopCursorLoaderUpdaterAuraLinux();
+  ~DesktopCursorLoaderUpdaterAuraLinux() override;
 
   // Overridden from DesktopCursorLoaderUpdater:
-  virtual void OnCreate(float device_scale_factor,
+  void OnCreate(float device_scale_factor, ui::CursorLoader* loader) override;
+  void OnDisplayUpdated(const gfx::Display& display,
                         ui::CursorLoader* loader) override;
-  virtual void OnDisplayUpdated(const gfx::Display& display,
-                                ui::CursorLoader* loader) override;
 };
 
 }  // namespace views

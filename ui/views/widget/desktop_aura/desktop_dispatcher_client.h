@@ -17,12 +17,11 @@ class VIEWS_EXPORT DesktopDispatcherClient
     : public aura::client::DispatcherClient {
  public:
   DesktopDispatcherClient();
-  virtual ~DesktopDispatcherClient();
+  ~DesktopDispatcherClient() override;
 
-  virtual void PrepareNestedLoopClosures(
-      base::MessagePumpDispatcher* dispatcher,
-      base::Closure* run_closure,
-      base::Closure* quit_closure) override;
+  void PrepareNestedLoopClosures(base::MessagePumpDispatcher* dispatcher,
+                                 base::Closure* run_closure,
+                                 base::Closure* quit_closure) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopDispatcherClient);

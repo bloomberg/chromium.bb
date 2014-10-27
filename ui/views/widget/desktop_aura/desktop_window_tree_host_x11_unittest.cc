@@ -49,12 +49,11 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
   }
 
-  virtual ~WMStateWaiter() {
-  }
+  ~WMStateWaiter() override {}
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> hints;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints)) {
       std::vector<Atom>::iterator it = std::find(
@@ -84,22 +83,16 @@ class ShapedNonClientFrameView : public NonClientFrameView {
   explicit ShapedNonClientFrameView() {
   }
 
-  virtual ~ShapedNonClientFrameView() {
-  }
+  ~ShapedNonClientFrameView() override {}
 
   // NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const override {
-    return bounds();
-  }
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetBoundsForClientView() const override { return bounds(); }
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
     return client_bounds;
   }
-  virtual int NonClientHitTest(const gfx::Point& point) override {
-    return HTNOWHERE;
-  }
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override {
+  int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
     int right = size.width();
     int bottom = size.height();
 
@@ -111,14 +104,10 @@ class ShapedNonClientFrameView : public NonClientFrameView {
     window_mask->lineTo(right - 10, 0);
     window_mask->close();
   }
-  virtual void ResetWindowControls() override {
-  }
-  virtual void UpdateWindowIcon() override {
-  }
-  virtual void UpdateWindowTitle() override {
-  }
-  virtual void SizeConstraintsChanged() override {
-  }
+  void ResetWindowControls() override {}
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShapedNonClientFrameView);
@@ -129,12 +118,10 @@ class ShapedWidgetDelegate : public WidgetDelegateView {
   ShapedWidgetDelegate() {
   }
 
-  virtual ~ShapedWidgetDelegate() {
-  }
+  ~ShapedWidgetDelegate() override {}
 
   // WidgetDelegateView:
-  virtual NonClientFrameView* CreateNonClientFrameView(
-      Widget* widget) override {
+  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
     return new ShapedNonClientFrameView;
   }
 
@@ -202,10 +189,9 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
   DesktopWindowTreeHostX11Test() {
   }
-  virtual ~DesktopWindowTreeHostX11Test() {
-  }
+  ~DesktopWindowTreeHostX11Test() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -213,7 +199,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
     XSynchronize(gfx::GetXDisplay(), True);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     XSynchronize(gfx::GetXDisplay(), False);
     ViewsTestBase::TearDown();
   }

@@ -28,28 +28,24 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
  public:
   DesktopScreenX11();
 
-  virtual ~DesktopScreenX11();
+  ~DesktopScreenX11() override;
 
   // Overridden from gfx::Screen:
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual gfx::NativeWindow GetWindowUnderCursor() override;
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override;
-  virtual int GetNumDisplays() const override;
-  virtual std::vector<gfx::Display> GetAllDisplays() const override;
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const override;
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  virtual gfx::Display GetPrimaryDisplay() const override;
-  virtual void AddObserver(gfx::DisplayObserver* observer) override;
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override;
+  gfx::Point GetCursorScreenPoint() override;
+  gfx::NativeWindow GetWindowUnderCursor() override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  gfx::Display GetPrimaryDisplay() const override;
+  void AddObserver(gfx::DisplayObserver* observer) override;
+  void RemoveObserver(gfx::DisplayObserver* observer) override;
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
  private:
   friend class DesktopScreenX11Test;

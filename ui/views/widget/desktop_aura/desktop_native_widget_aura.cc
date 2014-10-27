@@ -118,7 +118,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   }
 
   // aura::WindowObserver overrides
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     window->RemoveObserver(this);
 
     // If the widget is being destroyed by the OS then we should not try and
@@ -141,9 +141,9 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     delete this;
   }
 
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override {
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     if (top_level_widget_ && window == child_window_)
       top_level_widget_->SetSize(new_bounds.size());
   }
@@ -153,7 +153,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
       : top_level_widget_(NULL),
         child_window_(NULL) {}
 
-  virtual ~DesktopNativeWidgetTopLevelHandler() {}
+  ~DesktopNativeWidgetTopLevelHandler() override {}
 
   Widget* top_level_widget_;
   aura::Window* child_window_;
@@ -169,14 +169,14 @@ class DesktopNativeWidgetAuraWindowTreeClient :
       : root_window_(root_window) {
     aura::client::SetWindowTreeClient(root_window_, this);
   }
-  virtual ~DesktopNativeWidgetAuraWindowTreeClient() {
+  ~DesktopNativeWidgetAuraWindowTreeClient() override {
     aura::client::SetWindowTreeClient(root_window_, NULL);
   }
 
   // Overridden from client::WindowTreeClient:
-  virtual aura::Window* GetDefaultParent(aura::Window* context,
-                                         aura::Window* window,
-                                         const gfx::Rect& bounds) override {
+  aura::Window* GetDefaultParent(aura::Window* context,
+                                 aura::Window* window,
+                                 const gfx::Rect& bounds) override {
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN;
     bool is_menu = window->type() == ui::wm::WINDOW_TYPE_MENU;
@@ -208,7 +208,7 @@ class FocusManagerEventHandler : public ui::EventHandler {
       : desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
   // Implementation of ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override {
+  void OnKeyEvent(ui::KeyEvent* event) override {
     Widget* widget = desktop_native_widget_aura_->GetWidget();
     if (widget && widget->GetFocusManager()->GetFocusedView() &&
         !widget->GetFocusManager()->OnKeyEvent(*event)) {
@@ -226,11 +226,11 @@ class RootWindowDestructionObserver : public aura::WindowObserver {
  public:
   explicit RootWindowDestructionObserver(DesktopNativeWidgetAura* parent)
     : parent_(parent) {}
-  virtual ~RootWindowDestructionObserver() {}
+  ~RootWindowDestructionObserver() override {}
 
  private:
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override {
+  void OnWindowDestroyed(aura::Window* window) override {
     parent_->RootWindowDestroyed();
     window->RemoveObserver(this);
     delete this;

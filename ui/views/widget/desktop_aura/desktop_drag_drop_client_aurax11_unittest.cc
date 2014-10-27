@@ -80,16 +80,15 @@ class ClientMessageEventCollector {
 class TestMoveLoop : public X11MoveLoop {
  public:
   explicit TestMoveLoop(X11MoveLoopDelegate* delegate);
-  virtual ~TestMoveLoop();
+  ~TestMoveLoop() override;
 
   // Returns true if the move loop is running.
   bool IsRunning() const;
 
   // X11MoveLoop:
-  virtual bool RunMoveLoop(aura::Window* window,
-                           gfx::NativeCursor cursor) override;
-  virtual void UpdateCursor(gfx::NativeCursor cursor) override;
-  virtual void EndMoveLoop() override;
+  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) override;
+  void UpdateCursor(gfx::NativeCursor cursor) override;
+  void EndMoveLoop() override;
 
  private:
   // Not owned.
@@ -112,7 +111,7 @@ class TestDragDropClient : public DesktopDragDropClientAuraX11 {
 
   TestDragDropClient(aura::Window* window,
                      DesktopNativeCursorManager* cursor_manager);
-  virtual ~TestDragDropClient();
+  ~TestDragDropClient() override;
 
   // Returns the XID of the window which initiated the drag.
   ::Window source_xwindow() {
@@ -152,10 +151,10 @@ class TestDragDropClient : public DesktopDragDropClientAuraX11 {
 
  private:
   // DesktopDragDropClientAuraX11:
-  virtual scoped_ptr<X11MoveLoop> CreateMoveLoop(
+  scoped_ptr<X11MoveLoop> CreateMoveLoop(
       X11MoveLoopDelegate* delegate) override;
-  virtual ::Window FindWindowFor(const gfx::Point& screen_point) override;
-  virtual void SendXClientEvent(::Window xid, XEvent* event) override;
+  ::Window FindWindowFor(const gfx::Point& screen_point) override;
+  void SendXClientEvent(::Window xid, XEvent* event) override;
 
   // The XID of the window which initiated the drag.
   ::Window source_xid_;
@@ -349,8 +348,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   DesktopDragDropClientAuraX11Test() {
   }
 
-  virtual ~DesktopDragDropClientAuraX11Test() {
-  }
+  ~DesktopDragDropClientAuraX11Test() override {}
 
   int StartDragAndDrop() {
     ui::OSExchangeData data;
@@ -366,7 +364,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   }
 
   // ViewsTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Create widget to initiate the drags.
@@ -386,7 +384,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
     client_->Init();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     client_.reset();
     cursor_manager_.reset();
     widget_.reset();

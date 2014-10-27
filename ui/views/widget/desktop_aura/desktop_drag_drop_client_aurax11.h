@@ -59,7 +59,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       views::DesktopNativeCursorManager* cursor_manager,
       Display* xdisplay,
       ::Window xwindow);
-  virtual ~DesktopDragDropClientAuraX11();
+  ~DesktopDragDropClientAuraX11() override;
 
   // We maintain a mapping of live DesktopDragDropClientAuraX11 objects to
   // their ::Windows. We do this so that we're able to short circuit sending
@@ -80,27 +80,24 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void OnSelectionNotify(const XSelectionEvent& xselection);
 
   // Overridden from aura::client::DragDropClient:
-  virtual int StartDragAndDrop(
-      const ui::OSExchangeData& data,
-      aura::Window* root_window,
-      aura::Window* source_window,
-      const gfx::Point& root_location,
-      int operation,
-      ui::DragDropTypes::DragEventSource source) override;
-  virtual void DragUpdate(aura::Window* target,
-                          const ui::LocatedEvent& event) override;
-  virtual void Drop(aura::Window* target,
-                    const ui::LocatedEvent& event) override;
-  virtual void DragCancel() override;
-  virtual bool IsDragDropInProgress() override;
+  int StartDragAndDrop(const ui::OSExchangeData& data,
+                       aura::Window* root_window,
+                       aura::Window* source_window,
+                       const gfx::Point& root_location,
+                       int operation,
+                       ui::DragDropTypes::DragEventSource source) override;
+  void DragUpdate(aura::Window* target, const ui::LocatedEvent& event) override;
+  void Drop(aura::Window* target, const ui::LocatedEvent& event) override;
+  void DragCancel() override;
+  bool IsDragDropInProgress() override;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // Overridden from X11WholeScreenMoveLoopDelegate:
-  virtual void OnMouseMovement(XMotionEvent* event) override;
-  virtual void OnMouseReleased() override;
-  virtual void OnMoveLoopEnded() override;
+  void OnMouseMovement(XMotionEvent* event) override;
+  void OnMouseReleased() override;
+  void OnMoveLoopEnded() override;
 
  protected:
   // The following methods are virtual for the sake of testing.

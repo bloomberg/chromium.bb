@@ -15,12 +15,11 @@ namespace views {
 class VIEWS_EXPORT DesktopEventClient : public aura::client::EventClient {
  public:
   DesktopEventClient();
-  virtual ~DesktopEventClient();
+  ~DesktopEventClient() override;
 
   // Overridden from aura::client::EventClient:
-  virtual bool CanProcessEventsWithinSubtree(
-      const aura::Window* window) const override;
-  virtual ui::EventTarget* GetToplevelEventTarget() override;
+  bool CanProcessEventsWithinSubtree(const aura::Window* window) const override;
+  ui::EventTarget* GetToplevelEventTarget() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopEventClient);

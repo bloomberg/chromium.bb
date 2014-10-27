@@ -46,12 +46,11 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
     atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomsToCache));
   }
 
-  virtual ~MinimizeWaiter() {
-  }
+  ~MinimizeWaiter() override {}
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       std::vector<Atom>::iterator it = std::find(
@@ -78,11 +77,10 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
         expected_windows_(expected_windows, expected_windows + count) {
   }
 
-  virtual ~StackingClientListWaiter() {
-  }
+  ~StackingClientListWaiter() override {}
 
   // X11PropertyChangeWaiter:
-  virtual void Wait() override {
+  void Wait() override {
     // StackingClientListWaiter may be created after
     // _NET_CLIENT_LIST_STACKING already contains |expected_windows|.
     if (!ShouldKeepOnWaiting(NULL))
@@ -93,7 +91,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  virtual bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
+  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<XID> stack;
     ui::GetXWindowStack(ui::GetX11RootWindow(), &stack);
     for (size_t i = 0; i < expected_windows_.size(); ++i) {
@@ -117,8 +115,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   X11TopmostWindowFinderTest() {
   }
 
-  virtual ~X11TopmostWindowFinderTest() {
-  }
+  ~X11TopmostWindowFinderTest() override {}
 
   // Creates and shows a Widget with |bounds|. The caller takes ownership of
   // the returned widget.
@@ -205,7 +202,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   }
 
   // ViewsTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Make X11 synchronous for our display connection. This does not force the
@@ -217,7 +214,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
     X11DesktopHandler::get();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     XSynchronize(xdisplay(), False);
     ViewsTestBase::TearDown();
   }

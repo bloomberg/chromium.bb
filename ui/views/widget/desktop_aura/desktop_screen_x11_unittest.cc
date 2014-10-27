@@ -27,14 +27,14 @@ class TestDesktopNativeWidgetAura : public views::DesktopNativeWidgetAura {
   explicit TestDesktopNativeWidgetAura(
       views::internal::NativeWidgetDelegate* delegate)
       : views::DesktopNativeWidgetAura(delegate) {}
-  virtual ~TestDesktopNativeWidgetAura() {}
+  ~TestDesktopNativeWidgetAura() override {}
 
   void set_window_component(int window_component) {
     window_component_ = window_component;
   }
 
   // DesktopNativeWidgetAura:
-  virtual int GetNonClientComponent(const gfx::Point& point) const override {
+  int GetNonClientComponent(const gfx::Point& point) const override {
     return window_component_;
   }
 
@@ -55,10 +55,10 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
                              public gfx::DisplayObserver {
  public:
   DesktopScreenX11Test() {}
-  virtual ~DesktopScreenX11Test() {}
+  ~DesktopScreenX11Test() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
     // Initialize the world to the single monitor case.
     std::vector<gfx::Display> displays;
@@ -67,7 +67,7 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     screen_->AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     screen_.reset();
     ViewsTestBase::TearDown();
   }
@@ -111,16 +111,16 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
 
  private:
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override {
+  void OnDisplayAdded(const gfx::Display& new_display) override {
     added_display_.push_back(new_display);
   }
 
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override {
+  void OnDisplayRemoved(const gfx::Display& old_display) override {
     removed_display_.push_back(old_display);
   }
 
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override {
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override {
     changed_display_.push_back(display);
   }
 

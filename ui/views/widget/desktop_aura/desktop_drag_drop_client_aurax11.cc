@@ -108,7 +108,7 @@ class DesktopDragDropClientAuraX11::X11DragContext
   X11DragContext(ui::X11AtomCache* atom_cache,
                  ::Window local_window,
                  const XClientMessageEvent& event);
-  virtual ~X11DragContext();
+  ~X11DragContext() override;
 
   // When we receive an XdndPosition message, we need to have all the data
   // copied from the other window before we process the XdndPosition
@@ -144,8 +144,8 @@ class DesktopDragDropClientAuraX11::X11DragContext
   void MaskOperation(::Atom xdnd_operation, int* drag_operation) const;
 
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // The atom cache owned by our parent.
   ui::X11AtomCache* atom_cache_;

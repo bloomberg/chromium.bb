@@ -30,10 +30,10 @@ class NativeWidgetAura;
 class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
  public:
   explicit X11WindowEventFilter(DesktopWindowTreeHost* window_tree_host);
-  virtual ~X11WindowEventFilter();
+  ~X11WindowEventFilter() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   // Called when the user clicked the caption area.

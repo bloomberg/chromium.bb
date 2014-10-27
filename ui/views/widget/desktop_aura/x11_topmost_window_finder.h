@@ -22,7 +22,7 @@ class VIEWS_EXPORT X11TopmostWindowFinder
     : public ui::EnumerateWindowsDelegate {
  public:
   X11TopmostWindowFinder();
-  virtual ~X11TopmostWindowFinder();
+  ~X11TopmostWindowFinder() override;
 
   // Returns the topmost window at |screen_loc|, ignoring the windows in
   // |ignore|. Returns NULL if the topmost window at |screen_loc| does not
@@ -35,7 +35,7 @@ class VIEWS_EXPORT X11TopmostWindowFinder
 
  private:
   // ui::EnumerateWindowsDelegate:
-  virtual bool ShouldStopIterating(XID xid) override;
+  bool ShouldStopIterating(XID xid) override;
 
   // Returns true if |window| does not not belong to |ignore|, is visible and
   // contains |screen_loc_|.

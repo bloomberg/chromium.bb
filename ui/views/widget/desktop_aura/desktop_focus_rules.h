@@ -12,17 +12,16 @@ namespace views {
 class DesktopFocusRules : public wm::BaseFocusRules {
  public:
   explicit DesktopFocusRules(aura::Window* content_window);
-  virtual ~DesktopFocusRules();
+  ~DesktopFocusRules() override;
 
  private:
   // Overridden from wm::BaseFocusRules:
-  virtual bool CanActivateWindow(aura::Window* window) const override;
-  virtual bool SupportsChildActivation(aura::Window* window) const override;
-  virtual bool IsWindowConsideredVisibleForActivation(
+  bool CanActivateWindow(aura::Window* window) const override;
+  bool SupportsChildActivation(aura::Window* window) const override;
+  bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const override;
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) const override;
-  virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* window) const override;
+  aura::Window* GetToplevelWindow(aura::Window* window) const override;
+  aura::Window* GetNextActivatableWindow(aura::Window* window) const override;
 
   // The content window. This is an activatable window even though it is a
   // child.
