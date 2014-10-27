@@ -29,7 +29,7 @@ class BaseScrollBar;
 class VIEWS_EXPORT BaseScrollBarThumb : public View {
  public:
   explicit BaseScrollBarThumb(BaseScrollBar* scroll_bar);
-  virtual ~BaseScrollBarThumb();
+  ~BaseScrollBarThumb() override;
 
   // Sets the size (width or height) of the thumb to the specified value.
   void SetSize(int size);
@@ -49,12 +49,12 @@ class VIEWS_EXPORT BaseScrollBarThumb : public View {
  protected:
   // View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) override = 0;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
 
   CustomButton::ButtonState GetState() const;
   // Update our state and schedule a repaint when the mouse moves over us.

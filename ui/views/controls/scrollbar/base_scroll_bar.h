@@ -29,7 +29,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                    public MenuDelegate {
  public:
   BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb);
-  virtual ~BaseScrollBar();
+  ~BaseScrollBar() override;
 
   // Get the bounds of the "track" area that the thumb is free to slide within.
   virtual gfx::Rect GetTrackBounds() const = 0;
@@ -66,36 +66,36 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // View overrides:
   virtual gfx::Size GetPreferredSize() const override = 0;
   virtual void Layout() override = 0;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
   // ui::EventHandler overrides:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ScrollBar overrides:
-  virtual void Update(int viewport_size,
-                      int content_size,
-                      int contents_scroll_offset) override;
+  void Update(int viewport_size,
+              int content_size,
+              int contents_scroll_offset) override;
   virtual int GetLayoutSize() const override = 0;
-  virtual int GetPosition() const override;
+  int GetPosition() const override;
 
   // ScrollDelegate overrides:
-  virtual bool OnScroll(float dx, float dy) override;
+  bool OnScroll(float dx, float dy) override;
 
   // ContextMenuController overrides:
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // Menu::Delegate overrides:
-  virtual base::string16 GetLabel(int id) const override;
-  virtual bool IsCommandEnabled(int id) const override;
-  virtual void ExecuteCommand(int id) override;
+  base::string16 GetLabel(int id) const override;
+  bool IsCommandEnabled(int id) const override;
+  void ExecuteCommand(int id) override;
 
  protected:
   // View overrides:

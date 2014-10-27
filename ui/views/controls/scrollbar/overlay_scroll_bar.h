@@ -14,23 +14,23 @@ namespace views {
 class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
  public:
   explicit OverlayScrollBar(bool horizontal);
-  virtual ~OverlayScrollBar();
+  ~OverlayScrollBar() override;
 
  protected:
   // BaseScrollBar overrides:
-  virtual gfx::Rect GetTrackBounds() const override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Rect GetTrackBounds() const override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ScrollBar overrides:
-  virtual int GetLayoutSize() const override;
-  virtual int GetContentOverlapSize() const override;
-  virtual void OnMouseEnteredScrollView(const ui::MouseEvent& event) override;
-  virtual void OnMouseExitedScrollView(const ui::MouseEvent& event) override;
+  int GetLayoutSize() const override;
+  int GetContentOverlapSize() const override;
+  void OnMouseEnteredScrollView(const ui::MouseEvent& event) override;
+  void OnMouseExitedScrollView(const ui::MouseEvent& event) override;
 
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   gfx::SlideAnimation animation_;

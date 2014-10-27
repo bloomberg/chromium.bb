@@ -24,12 +24,12 @@ const SkColor kTrackHoverColor = SkColorSetARGB(32, 0, 0, 0);
 class KennedyScrollBarThumb : public BaseScrollBarThumb {
  public:
   explicit KennedyScrollBarThumb(BaseScrollBar* scroll_bar);
-  virtual ~KennedyScrollBarThumb();
+  ~KennedyScrollBarThumb() override;
 
  protected:
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KennedyScrollBarThumb);

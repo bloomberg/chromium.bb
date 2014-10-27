@@ -16,15 +16,14 @@ class TestScrollBarController : public views::ScrollBarController {
  public:
   virtual ~TestScrollBarController() {}
 
-  virtual void ScrollToPosition(views::ScrollBar* source,
-                                int position) override {
+  void ScrollToPosition(views::ScrollBar* source, int position) override {
     last_source = source;
     last_position = position;
   }
 
-  virtual int GetScrollIncrement(views::ScrollBar* source,
-                                 bool is_page,
-                                 bool is_positive) override {
+  int GetScrollIncrement(views::ScrollBar* source,
+                         bool is_page,
+                         bool is_positive) override {
     last_source = source;
     last_is_page = is_page;
     last_is_positive = is_positive;
@@ -50,7 +49,7 @@ class NativeScrollBarTest : public ViewsTestBase {
  public:
   NativeScrollBarTest() : widget_(NULL), scrollbar_(NULL) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ViewsTestBase::SetUp();
     controller_.reset(new TestScrollBarController());
 
@@ -75,7 +74,7 @@ class NativeScrollBarTest : public ViewsTestBase {
     track_size_ = scrollbar_->GetTrackBounds().width();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     widget_->Close();
     ViewsTestBase::TearDown();
   }

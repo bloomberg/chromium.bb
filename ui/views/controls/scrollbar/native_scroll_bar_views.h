@@ -30,36 +30,33 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
 
   // Creates new scrollbar, either horizontal or vertical.
   explicit NativeScrollBarViews(NativeScrollBar* native_scroll_bar);
-  virtual ~NativeScrollBarViews();
+  ~NativeScrollBarViews() override;
 
  private:
   // View overrides:
-  virtual void Layout() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
 
   // ScrollBar overrides:
-  virtual int GetLayoutSize() const override;
+  int GetLayoutSize() const override;
 
   // BaseScrollBar overrides:
-  virtual void ScrollToPosition(int position) override;
-  virtual int GetScrollIncrement(bool is_page, bool is_positive) override;
+  void ScrollToPosition(int position) override;
+  int GetScrollIncrement(bool is_page, bool is_positive) override;
 
   // BaseButton::ButtonListener overrides:
-  virtual void ButtonPressed(Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // NativeScrollBarWrapper overrides:
-  virtual int GetPosition() const override;
-  virtual View* GetView() override;
-  virtual void Update(int viewport_size,
-                      int content_size,
-                      int current_pos) override;
+  int GetPosition() const override;
+  View* GetView() override;
+  void Update(int viewport_size, int content_size, int current_pos) override;
 
   // Returns the area for the track. This is the area of the scrollbar minus
   // the size of the arrow buttons.
-  virtual gfx::Rect GetTrackBounds() const override;
+  gfx::Rect GetTrackBounds() const override;
 
   // The NativeScrollBar we are bound to.
   NativeScrollBar* native_scroll_bar_;

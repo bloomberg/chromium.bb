@@ -29,7 +29,7 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
 
   // Create new scrollbar, either horizontal or vertical.
   explicit NativeScrollBar(bool is_horiz);
-  virtual ~NativeScrollBar();
+  ~NativeScrollBar() override;
 
   // Return the system sizes.
   static int GetHorizontalScrollBarHeight(const ui::NativeTheme* theme);
@@ -40,25 +40,23 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual const char* GetClassName() const override;
+  const char* GetClassName() const override;
 
   // Overrideen from View for keyboard UI purpose.
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
 
   // Overridden from ui::EventHandler.
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ScrollBar.
-  virtual void Update(int viewport_size,
-                      int content_size,
-                      int current_pos) override;
-  virtual int GetPosition() const override;
-  virtual int GetLayoutSize() const override;
+  void Update(int viewport_size, int content_size, int current_pos) override;
+  int GetPosition() const override;
+  int GetLayoutSize() const override;
 
   // init border
   NativeScrollBarWrapper* native_wrapper_;

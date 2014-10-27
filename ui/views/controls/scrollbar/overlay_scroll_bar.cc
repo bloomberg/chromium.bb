@@ -26,15 +26,15 @@ class OverlayScrollBarThumb : public BaseScrollBarThumb,
                               public gfx::AnimationDelegate {
  public:
   explicit OverlayScrollBarThumb(BaseScrollBar* scroll_bar);
-  virtual ~OverlayScrollBarThumb();
+  ~OverlayScrollBarThumb() override;
 
  protected:
   // View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   double animation_opacity_;

@@ -27,12 +27,12 @@ namespace views {
 class VIEWS_EXPORT BaseScrollBarButton : public CustomButton {
  public:
   explicit BaseScrollBarButton(ButtonListener* listener);
-  virtual ~BaseScrollBarButton();
+  ~BaseScrollBarButton() override;
 
  protected:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
 
  private:
   void RepeaterNotifyClick();

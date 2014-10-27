@@ -57,10 +57,10 @@ class VIEWS_EXPORT ScrollBarController {
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT ScrollBar : public View {
  public:
-  virtual ~ScrollBar();
+  ~ScrollBar() override;
 
   // Overridden from View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Returns whether this scrollbar is horizontal.
   bool IsHorizontal() const;
