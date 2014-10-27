@@ -135,7 +135,7 @@ UserContext ChromeLoginPerformer::TransformSupervisedKey(
 
 void ChromeLoginPerformer::SetupSupervisedUserFlow(const std::string& user_id) {
   SupervisedUserLoginFlow* new_flow = new SupervisedUserLoginFlow(user_id);
-  new_flow->set_host(ChromeUserManager::Get()->GetUserFlow(user_id)->host());
+  new_flow->SetHost(ChromeUserManager::Get()->GetUserFlow(user_id)->host());
   ChromeUserManager::Get()->SetUserFlow(user_id, new_flow);
 }
 

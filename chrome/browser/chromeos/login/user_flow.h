@@ -37,10 +37,7 @@ class UserFlow {
   virtual void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) = 0;
   virtual void LaunchExtraSteps(Profile* profile) = 0;
-
-  void set_host(LoginDisplayHost* host) {
-    host_ = host;
-  }
+  void SetHost(LoginDisplayHost* host);
 
   LoginDisplayHost* host() {
     return host_;

@@ -34,7 +34,9 @@ SupervisedUserCreationFlow::SupervisedUserCreationFlow(
         session_started_(false),
         manager_profile_(NULL) {}
 
-SupervisedUserCreationFlow::~SupervisedUserCreationFlow() {}
+SupervisedUserCreationFlow::~SupervisedUserCreationFlow() {
+  LOG(ERROR) << "Destroyed " << this;
+}
 
 bool SupervisedUserCreationFlow::CanLockScreen() {
   return false;
@@ -95,6 +97,8 @@ bool SupervisedUserCreationFlow::HandlePasswordChangeDetected() {
 
 void SupervisedUserCreationFlow::LaunchExtraSteps(
     Profile* profile) {
+  // TODO(antrim): remove this output once crash is found.
+  LOG(ERROR) << "LaunchExtraSteps for " << this << " host is " << host();
   logged_in_ = true;
   manager_profile_ = profile;
   ProfileHelper::Get()->ProfileStartup(profile, true);
