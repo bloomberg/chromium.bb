@@ -176,7 +176,7 @@
     },
     {
       "test": "app_shell_browsertests",
-      "platforms": ["linux"]
+      "platforms": ["linux", "win"]
     },
     {
       "test": "app_shell_unittests",
