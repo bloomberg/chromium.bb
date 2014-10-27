@@ -283,6 +283,7 @@ public class ContentViewCore
     private ActionMode mActionMode;
     private boolean mUnselectAllOnActionModeDismiss;
     private boolean mPreserveSelectionOnNextLossOfFocus;
+    private SelectActionModeCallback.ActionHandler mActionHandler;
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
@@ -562,8 +563,8 @@ public class ContentViewCore
                             @Override
                             public void onReceiveResult(int resultCode, Bundle resultData) {
                                 getContentViewClient().onImeStateChangeRequested(
-                                        resultCode == InputMethodManager.RESULT_SHOWN ||
-                                        resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN);
+                                        resultCode == InputMethodManager.RESULT_SHOWN
+                                        || resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN);
                                 if (resultCode == InputMethodManager.RESULT_SHOWN) {
                                     // If OSK is newly shown, delay the form focus until
                                     // the onSizeChanged (in order to adjust relative to the
@@ -572,8 +573,8 @@ public class ContentViewCore
                                     // always be called, crbug.com/294908.
                                     getContainerView().getWindowVisibleDisplayFrame(
                                             mFocusPreOSKViewportRect);
-                                } else if (hasFocus() && resultCode ==
-                                        InputMethodManager.RESULT_UNCHANGED_SHOWN) {
+                                } else if (hasFocus() && resultCode
+                                        == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
                                     // If the OSK was already there, focus the form immediately.
                                     assert mWebContents != null;
                                     mWebContents.scrollFocusedEditableNodeIntoView();
@@ -1731,6 +1732,11 @@ public class ContentViewCore
         return mDownloadDelegate;
     }
 
+    @VisibleForTesting
+    public SelectActionModeCallback.ActionHandler getSelectActionHandler() {
+        return mActionHandler;
+    }
+
     private void showSelectActionBar() {
         if (mActionMode != null) {
             mActionMode.invalidate();
@@ -1738,119 +1744,120 @@ public class ContentViewCore
         }
 
         // Start a new action mode with a SelectActionModeCallback.
-        SelectActionModeCallback.ActionHandler actionHandler =
-                new SelectActionModeCallback.ActionHandler() {
-            @Override
-            public void selectAll() {
-                mImeAdapter.selectAll();
-            }
-
-            @Override
-            public void cut() {
-                mImeAdapter.cut();
-            }
-
-            @Override
-            public void copy() {
-                mImeAdapter.copy();
-            }
-
-            @Override
-            public void paste() {
-                mImeAdapter.paste();
-            }
-
-            @Override
-            public void share() {
-                final String query = getSelectedText();
-                if (TextUtils.isEmpty(query)) return;
-
-                Intent send = new Intent(Intent.ACTION_SEND);
-                send.setType("text/plain");
-                send.putExtra(Intent.EXTRA_TEXT, query);
-                try {
-                    Intent i = Intent.createChooser(send, getContext().getString(
-                            R.string.actionbar_share));
-                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    getContext().startActivity(i);
-                } catch (android.content.ActivityNotFoundException ex) {
-                    // If no app handles it, do nothing.
-                }
-            }
-
-            @Override
-            public void search() {
-                final String query = getSelectedText();
-                if (TextUtils.isEmpty(query)) return;
-
-                // See if ContentViewClient wants to override
-                if (getContentViewClient().doesPerformWebSearch()) {
-                    getContentViewClient().performWebSearch(query);
-                    return;
+        if (mActionHandler == null) {
+            mActionHandler = new SelectActionModeCallback.ActionHandler() {
+                @Override
+                public void selectAll() {
+                    mImeAdapter.selectAll();
                 }
 
-                Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
-                i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
-                i.putExtra(SearchManager.QUERY, query);
-                i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
-                if (!(getContext() instanceof Activity)) {
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                @Override
+                public void cut() {
+                    mImeAdapter.cut();
                 }
-                try {
-                    getContext().startActivity(i);
-                } catch (android.content.ActivityNotFoundException ex) {
-                    // If no app handles it, do nothing.
+
+                @Override
+                public void copy() {
+                    mImeAdapter.copy();
                 }
-            }
 
-            @Override
-            public boolean isSelectionPassword() {
-                return mImeAdapter.isSelectionPassword();
-            }
+                @Override
+                public void paste() {
+                    mImeAdapter.paste();
+                }
 
-            @Override
-            public boolean isSelectionEditable() {
-                return mFocusedNodeEditable;
-            }
+                @Override
+                public void share() {
+                    final String query = getSelectedText();
+                    if (TextUtils.isEmpty(query)) return;
 
-            @Override
-            public void onDestroyActionMode() {
-                mActionMode = null;
-                if (mUnselectAllOnActionModeDismiss) {
-                    hideTextHandles();
-                    if (isSelectionEditable()) {
-                        int selectionEnd = Selection.getSelectionEnd(mEditable);
-                        mInputConnection.setSelection(selectionEnd, selectionEnd);
-                    } else {
-                        mImeAdapter.unselect();
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType("text/plain");
+                    send.putExtra(Intent.EXTRA_TEXT, query);
+                    try {
+                        Intent i = Intent.createChooser(send, getContext().getString(
+                                R.string.actionbar_share));
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(i);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        // If no app handles it, do nothing.
                     }
                 }
-                getContentViewClient().onContextualActionBarHidden();
-            }
 
-            @Override
-            public boolean isShareAvailable() {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                return getContext().getPackageManager().queryIntentActivities(intent,
-                        PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
-            }
+                @Override
+                public void search() {
+                    final String query = getSelectedText();
+                    if (TextUtils.isEmpty(query)) return;
 
-            @Override
-            public boolean isWebSearchAvailable() {
-                if (getContentViewClient().doesPerformWebSearch()) return true;
-                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-                intent.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
-                return getContext().getPackageManager().queryIntentActivities(intent,
-                        PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
-            }
-        };
+                    // See if ContentViewClient wants to override
+                    if (getContentViewClient().doesPerformWebSearch()) {
+                        getContentViewClient().performWebSearch(query);
+                        return;
+                    }
+
+                    Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
+                    i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
+                    i.putExtra(SearchManager.QUERY, query);
+                    i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
+                    if (!(getContext() instanceof Activity)) {
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    }
+                    try {
+                        getContext().startActivity(i);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        // If no app handles it, do nothing.
+                    }
+                }
+
+                @Override
+                public boolean isSelectionPassword() {
+                    return mImeAdapter.isSelectionPassword();
+                }
+
+                @Override
+                public boolean isSelectionEditable() {
+                    return mFocusedNodeEditable;
+                }
+
+                @Override
+                public void onDestroyActionMode() {
+                    mActionMode = null;
+                    if (mUnselectAllOnActionModeDismiss) {
+                        hideTextHandles();
+                        if (isSelectionEditable()) {
+                            int selectionEnd = Selection.getSelectionEnd(mEditable);
+                            mInputConnection.setSelection(selectionEnd, selectionEnd);
+                        } else {
+                            mImeAdapter.unselect();
+                        }
+                    }
+                    getContentViewClient().onContextualActionBarHidden();
+                }
+
+                @Override
+                public boolean isShareAvailable() {
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("text/plain");
+                    return getContext().getPackageManager().queryIntentActivities(intent,
+                            PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
+                }
+
+                @Override
+                public boolean isWebSearchAvailable() {
+                    if (getContentViewClient().doesPerformWebSearch()) return true;
+                    Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                    intent.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
+                    return getContext().getPackageManager().queryIntentActivities(intent,
+                            PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
+                }
+            };
+        }
         mActionMode = null;
         // On ICS, startActionMode throws an NPE when getParent() is null.
         if (mContainerView.getParent() != null) {
             assert mWebContents != null;
             mActionMode = mContainerView.startActionMode(
-                    getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
+                    getContentViewClient().getSelectActionModeCallback(getContext(), mActionHandler,
                             mWebContents.isIncognito()));
         }
         mUnselectAllOnActionModeDismiss = true;
@@ -2528,10 +2535,9 @@ public class ContentViewCore
             return mBrowserAccessibilityManager.getAccessibilityNodeProvider();
         }
 
-        if (mNativeAccessibilityAllowed &&
-                !mNativeAccessibilityEnabled &&
-                mNativeContentViewCore != 0 &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (mNativeAccessibilityAllowed && !mNativeAccessibilityEnabled
+                && mNativeContentViewCore != 0
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             mNativeAccessibilityEnabled = true;
             nativeSetAccessibilityEnabled(mNativeContentViewCore, true);
         }
@@ -2579,8 +2585,8 @@ public class ContentViewCore
         try {
             // On JellyBean and higher, native accessibility is the default so script
             // injection is only allowed if enabled via a flag.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
-                    !CommandLine.getInstance().hasSwitch(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
+                    && !CommandLine.getInstance().hasSwitch(
                             ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
                 return false;
             }

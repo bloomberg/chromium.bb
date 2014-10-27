@@ -22,19 +22,20 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
  */
 public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
-            "<html><head><meta name=\"viewport\"" +
-            "content=\"width=device-width, initial-scale=1.1, maximum-scale=1.5\" /></head>" +
-            "<body><form action=\"about:blank\">" +
-            "<input id=\"empty_input_text\" type=\"text\" />" +
-            "<br/><p><span id=\"plain_text_1\">This is Plain Text One</span></p>" +
-            "<br/><p><span id=\"plain_text_2\">This is Plain Text Two</span></p>" +
-            "<br/><input id=\"empty_input_text\" type=\"text\" />" +
-            "<br/><input id=\"input_text\" type=\"text\" value=\"Sample Text\" />" +
-            "<br/><textarea id=\"empty_textarea\" rows=\"2\" cols=\"20\"></textarea>" +
-            "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">Sample Text</textarea>" +
-            "<br/><input id=\"readonly_text\" type=\"text\" readonly value=\"Sample Text\"/>" +
-            "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />" +
-            "</form></body></html>");
+            "<html><head><meta name=\"viewport\""
+            + "content=\"width=device-width, initial-scale=1.1, maximum-scale=1.5\" /></head>"
+            + "<body><form action=\"about:blank\">"
+            + "<input id=\"empty_input_text\" type=\"text\" />"
+            + "<br/><p><span id=\"plain_text_1\">This is Plain Text One</span></p>"
+            + "<br/><p><span id=\"plain_text_2\">This is Plain Text Two</span></p>"
+            + "<br/><input id=\"empty_input_text\" type=\"text\" />"
+            + "<br/><input id=\"input_text\" type=\"text\" value=\"Sample Text\" />"
+            + "<br/><textarea id=\"empty_textarea\" rows=\"2\" cols=\"20\"></textarea>"
+            + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">Sample Text</textarea>"
+            + "<br/><input id=\"readonly_text\" type=\"text\" readonly value=\"Sample Text\"/>"
+            + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
+            + "<br/><input id=\"input_password\" type=\"password\" value=\"Sample Password\" />"
+            + "</form></body></html>");
 
     private ContentViewCore mContentViewCore;
 
@@ -197,6 +198,28 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         DOMUtils.longPressNode(this, mContentViewCore, "disabled_text");
         assertWaitForPastePopupStatus(false);
         assertFalse(mContentViewCore.hasInsertion());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testActionBarConfiguredCorrectlyForInput() throws Throwable {
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        assertTrue(mContentViewCore.getSelectActionHandler().isSelectionEditable());
+        assertFalse(mContentViewCore.getSelectActionHandler().isSelectionPassword());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testActionBarConfiguredCorrectlyForPassword() throws Throwable {
+        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        assertTrue(mContentViewCore.getSelectActionHandler().isSelectionEditable());
+        assertTrue(mContentViewCore.getSelectActionHandler().isSelectionPassword());
     }
 
     private void assertWaitForSelectActionBarVisible(
