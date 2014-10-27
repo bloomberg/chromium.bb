@@ -20,10 +20,10 @@ class TestDialogClientView : public DialogClientView {
                        DialogDelegate* dialog_delegate)
       : DialogClientView(contents_view),
         dialog_(dialog_delegate) {}
-  virtual ~TestDialogClientView() {}
+  ~TestDialogClientView() override {}
 
   // DialogClientView implementation.
-  virtual DialogDelegate* GetDialogDelegate() const override { return dialog_; }
+  DialogDelegate* GetDialogDelegate() const override { return dialog_; }
 
   View* GetContentsView() { return contents_view(); }
 
@@ -45,10 +45,10 @@ class DialogClientViewTest : public ViewsTestBase,
       : dialog_buttons_(ui::DIALOG_BUTTON_NONE),
         extra_view_(NULL),
         footnote_view_(NULL) {}
-  virtual ~DialogClientViewTest() {}
+  ~DialogClientViewTest() override {}
 
   // testing::Test implementation.
-  virtual void SetUp() override {
+  void SetUp() override {
     dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
     contents_.reset(new StaticSizedView(gfx::Size(100, 200)));
     client_view_.reset(new TestDialogClientView(contents_.get(), this));
@@ -57,10 +57,10 @@ class DialogClientViewTest : public ViewsTestBase,
   }
 
   // DialogDelegateView implementation.
-  virtual View* GetContentsView() override { return contents_.get(); }
-  virtual View* CreateExtraView() override { return extra_view_; }
-  virtual View* CreateFootnoteView() override { return footnote_view_; }
-  virtual int GetDialogButtons() const override { return dialog_buttons_; }
+  View* GetContentsView() override { return contents_.get(); }
+  View* CreateExtraView() override { return extra_view_; }
+  View* CreateFootnoteView() override { return footnote_view_; }
+  int GetDialogButtons() const override { return dialog_buttons_; }
 
  protected:
   gfx::Rect GetUpdatedClientBounds() {

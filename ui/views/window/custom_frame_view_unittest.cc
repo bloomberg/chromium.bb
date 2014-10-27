@@ -24,7 +24,7 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   MinimizeAndMaximizeStateControlDelegate()
         : can_maximize_(true),
           can_minimize_(true) {}
-  virtual ~MinimizeAndMaximizeStateControlDelegate() {}
+  ~MinimizeAndMaximizeStateControlDelegate() override {}
 
   void set_can_maximize(bool can_maximize) {
     can_maximize_ = can_maximize;
@@ -35,8 +35,8 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   }
 
   // WidgetDelegate:
-  virtual bool CanMaximize() const override { return can_maximize_; }
-  virtual bool CanMinimize() const override { return can_minimize_; }
+  bool CanMaximize() const override { return can_maximize_; }
+  bool CanMinimize() const override { return can_minimize_; }
 
  private:
   bool can_maximize_;
@@ -50,7 +50,7 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
 class CustomFrameViewTest : public ViewsTestBase {
  public:
   CustomFrameViewTest() {}
-  virtual ~CustomFrameViewTest() {}
+  ~CustomFrameViewTest() override {}
 
   CustomFrameView* custom_frame_view() {
     return custom_frame_view_;
@@ -66,8 +66,8 @@ class CustomFrameViewTest : public ViewsTestBase {
   }
 
   // ViewsTestBase:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   const std::vector<views::FrameButton>& leading_buttons() {

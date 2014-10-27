@@ -30,7 +30,7 @@ class VIEWS_EXPORT ClientView : public View {
   // |widget|, |contents_view| must be valid if you want the initial size of
   // the widget to be based on |contents_view|'s preferred size.
   ClientView(Widget* widget, View* contents_view);
-  virtual ~ClientView() {}
+  ~ClientView() override {}
 
   // Manual RTTI ftw.
   virtual DialogClientView* AsDialogClientView();
@@ -57,17 +57,17 @@ class VIEWS_EXPORT ClientView : public View {
   virtual int NonClientHitTest(const gfx::Point& point);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual gfx::Size GetMaximumSize() const override;
-  virtual void Layout() override;
-  virtual const char* GetClassName() const override;
+  gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  void Layout() override;
+  const char* GetClassName() const override;
 
  protected:
   // Overridden from View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void ViewHierarchyChanged(
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // Accessors for private data members.
