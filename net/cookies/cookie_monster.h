@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -26,8 +27,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace base {
 class Histogram;
@@ -314,6 +314,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Find the key (for lookup in cookies_) based on the given domain.
   // See comment on keys before the CookieMap typedef.
   std::string GetKey(const std::string& domain) const;
+
+  virtual scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      const CookieChangedCallback& callback) override;
 
   bool loaded();
 
@@ -694,6 +699,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // a new CookieMonster is created, or the accepted schemes on a CookieMonster
   // instance are reset back to defaults.
   static bool default_enable_file_scheme_;
+
+  typedef std::map<std::pair<GURL, std::string>,
+                   linked_ptr<CookieChangedCallbackList>> CookieChangedHookMap;
+  CookieChangedHookMap hook_map_;
+
+  void RunCallbacks(const CanonicalCookie& cookie);
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };

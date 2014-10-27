@@ -233,6 +233,16 @@ void PrerenderCookieStore::OnCookieChangedForURL(
   }
 }
 
+scoped_ptr<net::CookieStore::CookieChangedSubscription>
+PrerenderCookieStore::AddCallbackForCookie(
+    const GURL& url,
+    const std::string& name,
+    const CookieChangedCallback& callback) {
+  // TODO(ellyjones): implement?
+  NOTIMPLEMENTED();
+  return scoped_ptr<CookieChangedSubscription>();
+}
+
 PrerenderCookieStore::CookieOperation::CookieOperation() {
 }
 

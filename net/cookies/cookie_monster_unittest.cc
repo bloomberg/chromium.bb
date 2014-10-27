@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -2735,6 +2736,121 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(store.get(), NULL));
 
   EXPECT_EQ("foo=bar; hello=world", GetCookies(cm.get(), url));
+}
+
+class CookieMonsterNotificationTest : public CookieMonsterTest {
+ public:
+  CookieMonsterNotificationTest()
+      : test_url_("http://www.google.com/foo"),
+        store_(new MockPersistentCookieStore),
+        monster_(new CookieMonster(store_.get(), NULL)) {}
+
+  virtual ~CookieMonsterNotificationTest() {}
+
+  CookieMonster* monster() { return monster_.get(); }
+
+ protected:
+  const GURL test_url_;
+
+ private:
+  scoped_refptr<MockPersistentCookieStore> store_;
+  scoped_refptr<CookieMonster> monster_;
+};
+
+void CountCalls(int *calls) {
+  (*calls)++;
+}
+
+TEST_F(CookieMonsterNotificationTest, NoNotifyWithNoCookie) {
+  int calls = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(0, calls);
+}
+
+TEST_F(CookieMonsterNotificationTest, NoNotifyWithInitialCookie) {
+  int calls = 0;
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls)));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(0, calls);
+}
+
+TEST_F(CookieMonsterNotificationTest, NotifyOnSet) {
+  int calls = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls)));
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls);
+}
+
+TEST_F(CookieMonsterNotificationTest, NotifyOnDelete) {
+  int calls = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls)));
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls);
+  DeleteCookie(monster(), test_url_, "abc");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, calls);
+}
+
+TEST_F(CookieMonsterNotificationTest, NotifyOnUpdate) {
+  int calls = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls)));
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls);
+  // Replacing an existing cookie is actually a two-phase delete + set
+  // operation, so we get an extra notification. :(
+  SetCookie(monster(), test_url_, "abc=ghi");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(3, calls);
+}
+
+TEST_F(CookieMonsterNotificationTest, MultipleNotifies) {
+  int calls0 = 0;
+  int calls1 = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub0(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls0)));
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub1(
+      monster()->AddCallbackForCookie(test_url_, "def",
+          base::Bind(&CountCalls, &calls1)));
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls0);
+  EXPECT_EQ(0, calls1);
+  SetCookie(monster(), test_url_, "def=abc");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls0);
+  EXPECT_EQ(1, calls1);
+}
+
+TEST_F(CookieMonsterNotificationTest, MultipleSameNotifies) {
+  int calls0 = 0;
+  int calls1 = 0;
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub0(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls0)));
+  scoped_ptr<CookieStore::CookieChangedSubscription> sub1(
+      monster()->AddCallbackForCookie(test_url_, "abc",
+          base::Bind(&CountCalls, &calls1)));
+  SetCookie(monster(), test_url_, "abc=def");
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(1, calls0);
+  EXPECT_EQ(1, calls1);
 }
 
 }  // namespace net

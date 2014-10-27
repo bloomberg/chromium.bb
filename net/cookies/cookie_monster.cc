@@ -63,7 +63,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
-#include "url/gurl.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -305,6 +304,11 @@ std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
     cookie_line += (*it)->Value();
   }
   return cookie_line;
+}
+
+void RunAsync(scoped_refptr<base::TaskRunner> proxy,
+              const CookieStore::CookieChangedCallback& callback) {
+  proxy->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace
@@ -903,7 +907,6 @@ void CookieMonster::SetCookieWithDetailsAsync(
       new SetCookieWithDetailsTask(this, url, name, value, domain, path,
                                    expiration_time, secure, http_only, priority,
                                    callback);
-
   DoCookieTaskForURL(task, url);
 }
 
@@ -1813,6 +1816,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
                                        const CookieOptions& options) {
   const std::string key(GetKey((*cc)->Domain()));
   bool already_expired = (*cc)->IsExpired(creation_time);
+
   if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
                                 already_expired)) {
     VLOG(kVlogSetCookies) << "SetCookie() not clobbering httponly cookie";
@@ -1831,7 +1835,11 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
           ((*cc)->ExpiryDate() - creation_time).InMinutes());
     }
 
-    InternalInsertCookie(key, cc->release(), true);
+    {
+      CanonicalCookie cookie = *(cc->get());
+      InternalInsertCookie(key, cc->release(), true);
+      RunCallbacks(cookie);
+    }
   } else {
     VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
   }
@@ -1896,6 +1904,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
       delegate_->OnCookieChanged(*cc, true, mapping.cause);
   }
   cookies_.erase(it);
+  RunCallbacks(*cc);
   delete cc;
 }
 
@@ -2301,6 +2310,38 @@ bool CookieMonster::CopyCookiesForKeyToOtherCookieMonster(
 bool CookieMonster::loaded() {
   base::AutoLock autolock(lock_);
   return loaded_;
+}
+
+scoped_ptr<CookieStore::CookieChangedSubscription>
+CookieMonster::AddCallbackForCookie(
+    const GURL& gurl,
+    const std::string& name,
+    const CookieChangedCallback& callback) {
+  base::AutoLock autolock(lock_);
+  std::pair<GURL, std::string> key(gurl, name);
+  if (hook_map_.count(key) == 0)
+    hook_map_[key] = make_linked_ptr(new CookieChangedCallbackList());
+  return hook_map_[key]->Add(base::Bind(
+      &RunAsync, base::MessageLoopProxy::current(), callback));
+}
+
+void CookieMonster::RunCallbacks(const CanonicalCookie& cookie) {
+  lock_.AssertAcquired();
+  CookieOptions opts;
+  opts.set_include_httponly();
+  // Note that the callbacks in hook_map_ are wrapped with MakeAsync(), so they
+  // are guaranteed to not take long - they just post a RunAsync task back to
+  // the appropriate thread's message loop and return. It is important that this
+  // method not run user-supplied callbacks directly, since the CookieMonster
+  // lock is held and it is easy to accidentally introduce deadlocks.
+  for (CookieChangedHookMap::iterator it = hook_map_.begin();
+       it != hook_map_.end(); ++it) {
+    std::pair<GURL, std::string> key = it->first;
+    if (cookie.IncludeForRequestURL(key.first, opts) &&
+        cookie.Name() == key.second) {
+      it->second->Notify();
+    }
+  }
 }
 
 }  // namespace net

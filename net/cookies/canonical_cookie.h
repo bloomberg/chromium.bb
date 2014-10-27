@@ -126,7 +126,7 @@ class NET_EXPORT CanonicalCookie {
   std::string DebugString() const;
 
   // Returns a duplicate of this cookie.
-  CanonicalCookie* Duplicate();
+  CanonicalCookie* Duplicate() const;
 
   // Returns the cookie source when cookies are set for |url|. This function
   // is public for unit test purposes only.

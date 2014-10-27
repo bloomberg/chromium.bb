@@ -394,7 +394,7 @@ std::string CanonicalCookie::DebugString() const {
       static_cast<int64>(creation_date_.ToTimeT()));
 }
 
-CanonicalCookie* CanonicalCookie::Duplicate() {
+CanonicalCookie* CanonicalCookie::Duplicate() const {
   CanonicalCookie* cc = new CanonicalCookie();
   cc->source_ = source_;
   cc->name_ = name_;

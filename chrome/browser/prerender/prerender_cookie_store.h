@@ -84,6 +84,11 @@ class PrerenderCookieStore : public net::CookieStore {
 
   net::CookieMonster* GetCookieMonster() override;
 
+  scoped_ptr<net::CookieStore::CookieChangedSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      const CookieChangedCallback& callback) override;
+
   // Commits the changes made to the underlying cookie store, and switches
   // into forwarding mode. To be called on the IO thread.
   // |cookie_change_urls| will be populated with all URLs for which cookies

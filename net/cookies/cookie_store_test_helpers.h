@@ -65,6 +65,10 @@ class DelayedCookieMonster : public CookieStore {
 
   CookieMonster* GetCookieMonster() override;
 
+  scoped_ptr<CookieStore::CookieChangedSubscription>
+  AddCallbackForCookie(const GURL& url, const std::string& name,
+                       const CookieChangedCallback& callback) override;
+
  private:
 
   // Be called immediately from CookieMonster.

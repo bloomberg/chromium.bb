@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -33,6 +34,9 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   typedef base::Callback<void(const std::string& cookie)> GetCookiesCallback;
   typedef base::Callback<void(bool success)> SetCookiesCallback;
   typedef base::Callback<void(int num_deleted)> DeleteCallback;
+  typedef base::Closure CookieChangedCallback;
+  typedef base::CallbackList<void(void)> CookieChangedCallbackList;
+  typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
 
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
   //
@@ -90,6 +94,20 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
 
   // Returns the underlying CookieMonster.
   virtual CookieMonster* GetCookieMonster() = 0;
+
+  // Add a callback to be notified when the set of cookies named |name| that
+  // would be sent for a request to |url| changes. The returned handle is
+  // guaranteed not to hold a hard reference to the CookieStore object.
+  //
+  // Note that this method consumes memory and CPU per (url, name) pair ever
+  // registered that are still consumed even after all subscriptions for that
+  // (url, name) pair are removed. If this method ever needs to support an
+  // unbounded amount of such pairs, this contract needs to change and
+  // implementors need to be improved to not behave this way.
+  virtual scoped_ptr<CookieChangedSubscription> AddCallbackForCookie(
+      const GURL& url,
+      const std::string& name,
+      const CookieChangedCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<CookieStore>;

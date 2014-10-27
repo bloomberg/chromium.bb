@@ -135,4 +135,13 @@ CookieMonster* DelayedCookieMonster::GetCookieMonster() {
   return cookie_monster_.get();
 }
 
+scoped_ptr<CookieStore::CookieChangedSubscription>
+DelayedCookieMonster::AddCallbackForCookie(
+    const GURL& url,
+    const std::string& name,
+    const CookieChangedCallback& callback) {
+  ADD_FAILURE();
+  return scoped_ptr<CookieStore::CookieChangedSubscription>();
+}
+
 }  // namespace net

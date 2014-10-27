@@ -228,6 +228,13 @@ class MockCookieStore : public CookieStore {
 
   CookieMonster* GetCookieMonster() override { return NULL; }
 
+  scoped_ptr<CookieStore::CookieChangedSubscription>
+  AddCallbackForCookie(const GURL& url, const std::string& name,
+                       const CookieChangedCallback& callback) override {
+    ADD_FAILURE();
+    return scoped_ptr<CookieChangedSubscription>();
+  }
+
   const std::vector<Entry>& entries() const { return entries_; }
 
  private:
