@@ -45,7 +45,7 @@ public:
 
     Request* clone() const;
 
-    void populateWebServiceWorkerRequest(WebServiceWorkerRequest&);
+    void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
 

@@ -52,14 +52,14 @@ public:
 private:
     explicit Cache(WebServiceWorkerCache*);
 
-    ScriptPromise matchImpl(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise matchAllImpl(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise addImpl(ScriptState*, Request*);
-    ScriptPromise addAllImpl(ScriptState*, Vector<Request*>);
-    ScriptPromise deleteImpl(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise putImpl(ScriptState*, Request*, Response*);
+    ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
+    ScriptPromise matchAllImpl(ScriptState*, const Request*, const CacheQueryOptions&);
+    ScriptPromise addImpl(ScriptState*, const Request*);
+    ScriptPromise addAllImpl(ScriptState*, const Vector<const Request*>);
+    ScriptPromise deleteImpl(ScriptState*, const Request*, const CacheQueryOptions&);
+    ScriptPromise putImpl(ScriptState*, const Request*, Response*);
     ScriptPromise keysImpl(ScriptState*);
-    ScriptPromise keysImpl(ScriptState*, Request*, const CacheQueryOptions&);
+    ScriptPromise keysImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
     OwnPtr<WebServiceWorkerCache> m_webCache;
 };

@@ -4,7 +4,7 @@ PASS Cache.add called with no arguments
 FAIL Cache.add called with relative URL specified as a string Cache is not implemented
 FAIL Cache.add called with non-HTTP/HTTPS URL assert_throws: Cache.add should throw a NetworkError for non-HTTP/HTTPS URLs. function "function () { throw e; }" threw object "NotSupportedError: Cache is not implemented" that is not a DOMException NetworkError: property "code" is equal to 9, expected 19
 FAIL Cache.add called with Request object Cache is not implemented
-FAIL Cache.add called with Request object with a used body assert_throws: Cache.add with a Request object with a used body should reject with a TypeError. function "function () { throw e; }" threw object "NotFoundError: Entry was not found." ("NotFoundError") expected object "TypeError" ("TypeError")
+FAIL Cache.add called with Request object with a used body assert_throws: Cache.add with a Request object with a used body should reject with a TypeError. function "function () { throw e; }" threw object "NotSupportedError: Cache is not implemented" ("NotSupportedError") expected object "TypeError" ("TypeError")
 FAIL Cache.add called twice with the same Request object Cache is not implemented
 FAIL Cache.add with request that results in a status of 404 Cache is not implemented
 FAIL Cache.add with request that results in a status of 500 Cache is not implemented

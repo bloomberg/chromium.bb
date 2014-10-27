@@ -297,7 +297,7 @@ Request* Request::clone() const
     return Request::create(*this);
 }
 
-void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest)
+void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest) const
 {
     webRequest.setMethod(method());
     webRequest.setURL(m_request->url());

@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS Service Worker: Cache.put 
 PASS Cache.put called with simple Request and Response 
 PASS Cache.put called with Request and Response from fetch() 
-FAIL Cache.put with Request containing a body assert_false: Cache.put should not consume Request body. expected false got true
+FAIL Cache.put with Request containing a body assert_equals: Cache.put should store response body.: Response.url expected "" but got "https://example.com/foo"
 FAIL Cache.put with a Response containing an empty URL assert_equals: Cache.put should update the cache with new Request and Response.: Response.url expected "" but got "https://example.com/foo"
 PASS Cache.put with an empty response body 
 PASS Cache.put with HTTP 500 response 
