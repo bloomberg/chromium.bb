@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/cras_audio_client_stub_impl.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 
 namespace chromeos {
 
-CrasAudioClientStubImpl::CrasAudioClientStubImpl()
+FakeCrasAudioClient::FakeCrasAudioClient()
     : active_input_node_id_(0),
       active_output_node_id_(0) {
 }
 
-CrasAudioClientStubImpl::~CrasAudioClientStubImpl() {
+FakeCrasAudioClient::~FakeCrasAudioClient() {
 }
 
-void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
-  VLOG(1) << "CrasAudioClientStubImpl is created";
+void FakeCrasAudioClient::Init(dbus::Bus* bus) {
+  VLOG(1) << "FakeCrasAudioClient is created";
 
   // Fake audio output nodes.
   AudioNode node_1;
@@ -60,51 +60,51 @@ void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
   node_list_.push_back(node_5);
 }
 
-void CrasAudioClientStubImpl::AddObserver(Observer* observer) {
+void FakeCrasAudioClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void CrasAudioClientStubImpl::RemoveObserver(Observer* observer) {
+void FakeCrasAudioClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool CrasAudioClientStubImpl::HasObserver(Observer* observer) {
+bool FakeCrasAudioClient::HasObserver(Observer* observer) {
   return observers_.HasObserver(observer);
 }
 
-void CrasAudioClientStubImpl::GetVolumeState(
+void FakeCrasAudioClient::GetVolumeState(
     const GetVolumeStateCallback& callback) {
   callback.Run(volume_state_, true);
 }
 
-void CrasAudioClientStubImpl::GetNodes(const GetNodesCallback& callback,
-                                       const ErrorCallback& error_callback) {
+void FakeCrasAudioClient::GetNodes(const GetNodesCallback& callback,
+                                   const ErrorCallback& error_callback) {
   callback.Run(node_list_, true);
 }
 
-void CrasAudioClientStubImpl::SetOutputNodeVolume(uint64 node_id,
-                                                  int32 volume) {
+void FakeCrasAudioClient::SetOutputNodeVolume(uint64 node_id,
+                                              int32 volume) {
 }
 
-void CrasAudioClientStubImpl::SetOutputUserMute(bool mute_on) {
+void FakeCrasAudioClient::SetOutputUserMute(bool mute_on) {
   volume_state_.output_user_mute = mute_on;
   FOR_EACH_OBSERVER(Observer,
                     observers_,
                     OutputMuteChanged(volume_state_.output_user_mute));
 }
 
-void CrasAudioClientStubImpl::SetInputNodeGain(uint64 node_id,
-                                               int32 input_gain) {
+void FakeCrasAudioClient::SetInputNodeGain(uint64 node_id,
+                                           int32 input_gain) {
 }
 
-void CrasAudioClientStubImpl::SetInputMute(bool mute_on) {
+void FakeCrasAudioClient::SetInputMute(bool mute_on) {
   volume_state_.input_mute = mute_on;
   FOR_EACH_OBSERVER(Observer,
                     observers_,
                     InputMuteChanged(volume_state_.input_mute));
 }
 
-void CrasAudioClientStubImpl::SetActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::SetActiveOutputNode(uint64 node_id) {
   if (active_output_node_id_ == node_id)
     return;
 
@@ -120,7 +120,7 @@ void CrasAudioClientStubImpl::SetActiveOutputNode(uint64 node_id) {
                     ActiveOutputNodeChanged(node_id));
 }
 
-void CrasAudioClientStubImpl::SetActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::SetActiveInputNode(uint64 node_id) {
   if (active_input_node_id_ == node_id)
     return;
 
@@ -136,43 +136,43 @@ void CrasAudioClientStubImpl::SetActiveInputNode(uint64 node_id) {
                     ActiveInputNodeChanged(node_id));
 }
 
-void CrasAudioClientStubImpl::AddActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::AddActiveInputNode(uint64 node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = true;
   }
 }
 
-void CrasAudioClientStubImpl::RemoveActiveInputNode(uint64 node_id) {
+void FakeCrasAudioClient::RemoveActiveInputNode(uint64 node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = false;
   }
 }
 
-void CrasAudioClientStubImpl::SwapLeftRight(uint64 node_id, bool swap) {
+void FakeCrasAudioClient::SwapLeftRight(uint64 node_id, bool swap) {
 }
 
-void CrasAudioClientStubImpl::AddActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::AddActiveOutputNode(uint64 node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = true;
   }
 }
 
-void CrasAudioClientStubImpl::RemoveActiveOutputNode(uint64 node_id) {
+void FakeCrasAudioClient::RemoveActiveOutputNode(uint64 node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
       node_list_[i].active = false;
   }
 }
 
-void CrasAudioClientStubImpl::SetAudioNodesForTesting(
+void FakeCrasAudioClient::SetAudioNodesForTesting(
     const AudioNodeList& audio_nodes) {
   node_list_ = audio_nodes;
 }
 
-void CrasAudioClientStubImpl::SetAudioNodesAndNotifyObserversForTesting(
+void FakeCrasAudioClient::SetAudioNodesAndNotifyObserversForTesting(
     const AudioNodeList& new_nodes) {
   SetAudioNodesForTesting(new_nodes);
   FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());

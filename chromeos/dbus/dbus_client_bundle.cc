@@ -18,7 +18,6 @@
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
-#include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -32,6 +31,7 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
@@ -155,7 +155,7 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
   if (!IsUsingStub(CRAS))
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
-    cras_audio_client_.reset(new CrasAudioClientStubImpl);
+    cras_audio_client_.reset(new FakeCrasAudioClient);
 
   cros_disks_client_.reset(CrosDisksClient::Create(
       IsUsingStub(CROS_DISKS) ? STUB_DBUS_CLIENT_IMPLEMENTATION

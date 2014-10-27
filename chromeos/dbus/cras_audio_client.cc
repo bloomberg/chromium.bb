@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

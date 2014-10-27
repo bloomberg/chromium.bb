@@ -10,8 +10,8 @@
 #include "base/values.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/dbus/audio_node.h"
-#include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -236,7 +236,7 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 class CrasAudioHandlerTest : public testing::Test {
  public:
   CrasAudioHandlerTest() : cras_audio_handler_(NULL),
-                           cras_audio_client_stub_(NULL) {
+                           fake_cras_audio_client_(NULL) {
   }
   virtual ~CrasAudioHandlerTest() {}
 
@@ -253,9 +253,9 @@ class CrasAudioHandlerTest : public testing::Test {
 
   void SetUpCrasAudioHandler(const AudioNodeList& audio_nodes) {
     DBusThreadManager::Initialize();
-    cras_audio_client_stub_ = static_cast<CrasAudioClientStubImpl*>(
+    fake_cras_audio_client_ = static_cast<FakeCrasAudioClient*>(
         DBusThreadManager::Get()->GetCrasAudioClient());
-    cras_audio_client_stub_->SetAudioNodesForTesting(audio_nodes);
+    fake_cras_audio_client_->SetAudioNodesForTesting(audio_nodes);
     audio_pref_handler_ = new AudioDevicesPrefHandlerStub();
     CrasAudioHandler::Initialize(audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
@@ -268,10 +268,10 @@ class CrasAudioHandlerTest : public testing::Test {
       const AudioNodeList& audio_nodes,
       const AudioNode& primary_active_node) {
     DBusThreadManager::Initialize();
-    cras_audio_client_stub_ = static_cast<CrasAudioClientStubImpl*>(
+    fake_cras_audio_client_ = static_cast<FakeCrasAudioClient*>(
         DBusThreadManager::Get()->GetCrasAudioClient());
-    cras_audio_client_stub_->SetAudioNodesForTesting(audio_nodes);
-    cras_audio_client_stub_->SetActiveOutputNode(primary_active_node.id),
+    fake_cras_audio_client_->SetAudioNodesForTesting(audio_nodes);
+    fake_cras_audio_client_->SetActiveOutputNode(primary_active_node.id),
         audio_pref_handler_ = new AudioDevicesPrefHandlerStub();
     CrasAudioHandler::Initialize(audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
@@ -281,7 +281,7 @@ class CrasAudioHandlerTest : public testing::Test {
   }
 
   void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
-    cras_audio_client_stub_->SetAudioNodesAndNotifyObserversForTesting(
+    fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
         audio_nodes);
     message_loop_.RunUntilIdle();
   }
@@ -293,7 +293,7 @@ class CrasAudioHandlerTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   CrasAudioHandler* cras_audio_handler_;  // Not owned.
-  CrasAudioClientStubImpl* cras_audio_client_stub_;  // Not owned.
+  FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
   scoped_ptr<TestObserver> test_observer_;
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
 

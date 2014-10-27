@@ -8,8 +8,8 @@
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio_node.h"
-#include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::AudioDevice;
@@ -25,7 +25,7 @@ class ShellAudioControllerTest : public testing::Test {
     scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
 
-    audio_client_ = new chromeos::CrasAudioClientStubImpl();
+    audio_client_ = new chromeos::FakeCrasAudioClient();
     audio_client_->SetAudioNodesForTesting(AudioNodeList());
     dbus_setter->SetCrasAudioClient(make_scoped_ptr(audio_client_));
 
@@ -67,7 +67,7 @@ class ShellAudioControllerTest : public testing::Test {
     ASSERT_TRUE(false) << "Didn't find ID " << id;
   }
 
-  chromeos::CrasAudioClientStubImpl* audio_client_;  // Not owned.
+  chromeos::FakeCrasAudioClient* audio_client_;  // Not owned.
   chromeos::CrasAudioHandler* audio_handler_;  // Not owned.
   scoped_ptr<ShellAudioController> controller_;
 

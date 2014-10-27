@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_STUB_IMPL_H_
-#define CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_STUB_IMPL_H_
+#ifndef CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
 
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cras_audio_client.h"
@@ -13,10 +13,10 @@ namespace chromeos {
 class CrasAudioHandlerTest;
 
 // The CrasAudioClient implementation used on Linux desktop.
-class CHROMEOS_EXPORT CrasAudioClientStubImpl : public CrasAudioClient {
+class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
  public:
-  CrasAudioClientStubImpl();
-  virtual ~CrasAudioClientStubImpl();
+  FakeCrasAudioClient();
+  virtual ~FakeCrasAudioClient();
 
   // CrasAudioClient overrides:
   virtual void Init(dbus::Bus* bus) override;
@@ -52,9 +52,9 @@ class CHROMEOS_EXPORT CrasAudioClientStubImpl : public CrasAudioClient {
   uint64 active_output_node_id_;
   ObserverList<Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrasAudioClientStubImpl);
+  DISALLOW_COPY_AND_ASSIGN(FakeCrasAudioClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_STUB_IMPL_H_
+#endif  // CHROMEOS_DBUS_FAKE_CRAS_AUDIO_CLIENT_H_
