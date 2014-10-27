@@ -115,6 +115,9 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fUnmapBufferSubData = glUnmapBufferSubDataCHROMIUM;
   functions->fUnmapTexSubImage2D = glUnmapTexSubImage2DCHROMIUM;
   functions->fUseProgram = glUseProgram;
+  functions->fVertexAttrib1f = glVertexAttrib1f;
+  functions->fVertexAttrib2fv = glVertexAttrib2fv;
+  functions->fVertexAttrib3fv = glVertexAttrib3fv;
   functions->fVertexAttrib4fv = glVertexAttrib4fv;
   functions->fVertexAttribPointer = glVertexAttribPointer;
   functions->fViewport = glViewport;

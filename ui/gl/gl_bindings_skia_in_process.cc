@@ -555,6 +555,18 @@ GLvoid StubGLUseProgram(GLuint program) {
   glUseProgram(program);
 }
 
+GLvoid StubGLVertexAttrib1f(GLuint indx, const GLfloat value) {
+  glVertexAttrib1f(indx, value);
+}
+
+GLvoid StubGLVertexAttrib2fv(GLuint indx, const GLfloat* values) {
+  glVertexAttrib2fv(indx, values);
+}
+
+GLvoid StubGLVertexAttrib3fv(GLuint indx, const GLfloat* values) {
+  glVertexAttrib3fv(indx, values);
+}
+
 GLvoid StubGLVertexAttrib4fv(GLuint indx, const GLfloat* values) {
   glVertexAttrib4fv(indx, values);
 }
@@ -708,6 +720,9 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fUniformMatrix3fv = StubGLUniformMatrix3fv;
   functions->fUniformMatrix4fv = StubGLUniformMatrix4fv;
   functions->fUseProgram = StubGLUseProgram;
+  functions->fVertexAttrib1f = StubGLVertexAttrib1f;
+  functions->fVertexAttrib2fv = StubGLVertexAttrib2fv;
+  functions->fVertexAttrib3fv = StubGLVertexAttrib3fv;
   functions->fVertexAttrib4fv = StubGLVertexAttrib4fv;
   functions->fVertexAttribPointer = StubGLVertexAttribPointer;
   functions->fViewport = StubGLViewport;
