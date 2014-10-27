@@ -295,6 +295,9 @@
     'websockets': {
       'filepath': 'Source/modules/websockets/'
     },
+    'xmlhttprequest': {
+      'filepath': 'Source/core/xmlhttprequest/'
+    }
   },
 
   'WATCHLISTS': {
@@ -329,9 +332,9 @@
     'canvas': [ 'cabanier@adobe.com', 'aandrey+blink@chromium.org' ],
     'clipboard': [ 'dcheng@chromium.org', ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
-    'fetch': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
+    'fetch': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org', 'tyoshino+watch@chromium.org' ],
     'layers': [ 'blink-layers+watch@chromium.org' ],
-    'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
+    'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org', 'tyoshino+watch@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
     'test_runner': [ 'jochen+watch@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org',
@@ -419,5 +422,6 @@
     'out_of_process_frames': [ 'dcheng@chromium.org' ],
     'device_light': [ 'timvolodine@chromium.org' ],
     'websockets': [ 'tyoshino+watch@chromium.org', 'yhirano+watch@chromium.org' ],
+    'xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
   },
 }
