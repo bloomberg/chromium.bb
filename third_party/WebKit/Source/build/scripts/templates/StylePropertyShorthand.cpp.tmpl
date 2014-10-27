@@ -48,7 +48,7 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
     if (propertyID == CSSPropertyTextDecoration && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
         return emptyShorthand;
     switch (propertyID) {
-        {% for property_id, property in properties.items() if property.camel_case_name != "marker" %}
+        {% for property_id, property in properties.items() %}
         case {{property_id}}:
             return {{property.lower_camel_name}}Shorthand();
         {% endfor %}
