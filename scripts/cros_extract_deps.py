@@ -156,7 +156,7 @@ def main(argv):
   parser = commandline.ArgumentParser(description="""
 This extracts the dependency tree for the specified package, and outputs it
 to stdout, in a serialized JSON format.""")
-  parser.add_argument('--board', required=True,
+  parser.add_argument('--board', default=None,
                       help='The board to use when computing deps.')
   parser.add_argument('--format', default='deps',
                       choices=['deps', 'cpe'],
@@ -168,9 +168,11 @@ to stdout, in a serialized JSON format.""")
                       help='Which deps to report (defaults to rdeps)')
   known_args, unknown_args = parser.parse_known_args(argv)
 
-  lib_argv = ['--board=%s' % known_args.board,
-              '--root-deps=%s' % known_args.root_deps,
-              '--quiet', '--pretend', '--emptytree']
+  lib_argv = []
+  if known_args.board:
+    lib_argv += ['--board=%s' % known_args.board]
+  lib_argv += ['--root-deps=%s' % known_args.root_deps,
+               '--quiet', '--pretend', '--emptytree']
   lib_argv.extend(unknown_args)
 
   deps = DepGraphGenerator()
