@@ -50,23 +50,22 @@ class UIControlsX11 : public UIControlsAura {
   UIControlsX11(WindowTreeHost* host) : host_(host) {
   }
 
-  virtual bool SendKeyPress(gfx::NativeWindow window,
-                            ui::KeyboardCode key,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command) override {
+  bool SendKeyPress(gfx::NativeWindow window,
+                    ui::KeyboardCode key,
+                    bool control,
+                    bool shift,
+                    bool alt,
+                    bool command) override {
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
   }
-  virtual bool SendKeyPressNotifyWhenDone(
-      gfx::NativeWindow window,
-      ui::KeyboardCode key,
-      bool control,
-      bool shift,
-      bool alt,
-      bool command,
-      const base::Closure& closure) override {
+  bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
+                                  ui::KeyboardCode key,
+                                  bool control,
+                                  bool shift,
+                                  bool alt,
+                                  bool command,
+                                  const base::Closure& closure) override {
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
     if (control)
@@ -98,13 +97,12 @@ class UIControlsX11 : public UIControlsAura {
     return true;
   }
 
-  virtual bool SendMouseMove(long screen_x, long screen_y) override {
+  bool SendMouseMove(long screen_x, long screen_y) override {
     return SendMouseMoveNotifyWhenDone(screen_x, screen_y, base::Closure());
   }
-  virtual bool SendMouseMoveNotifyWhenDone(
-      long screen_x,
-      long screen_y,
-      const base::Closure& closure) override {
+  bool SendMouseMoveNotifyWhenDone(long screen_x,
+                                   long screen_y,
+                                   const base::Closure& closure) override {
     gfx::Point root_location(screen_x, screen_y);
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(host_->window());
@@ -134,13 +132,12 @@ class UIControlsX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseEvents(MouseButton type, int state) override {
+  bool SendMouseEvents(MouseButton type, int state) override {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(
-      MouseButton type,
-      int state,
-      const base::Closure& closure) override {
+  bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                     int state,
+                                     const base::Closure& closure) override {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
@@ -181,10 +178,10 @@ class UIControlsX11 : public UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(MouseButton type) override {
+  bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
-  virtual void RunClosureAfterAllPendingUIEvents(
+  void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
     if (closure.is_null())
       return;

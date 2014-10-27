@@ -16,12 +16,13 @@ namespace test {
 class TestWindowTreeClient : public client::WindowTreeClient {
  public:
   explicit TestWindowTreeClient(Window* root_window);
-  virtual ~TestWindowTreeClient();
+  ~TestWindowTreeClient() override;
 
   // Overridden from client::WindowTreeClient:
-  virtual Window* GetDefaultParent(Window* context,
-                                   Window* window,
-                                   const gfx::Rect& bounds) override;
+  Window* GetDefaultParent(Window* context,
+                           Window* window,
+                           const gfx::Rect& bounds) override;
+
  private:
   Window* root_window_;
 

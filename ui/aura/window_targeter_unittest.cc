@@ -17,13 +17,12 @@ class StaticWindowTargeter : public ui::EventTargeter {
  public:
   explicit StaticWindowTargeter(aura::Window* window)
       : window_(window) {}
-  virtual ~StaticWindowTargeter() {}
+  ~StaticWindowTargeter() override {}
 
  private:
   // ui::EventTargeter:
-  virtual ui::EventTarget* FindTargetForLocatedEvent(
-      ui::EventTarget* root,
-      ui::LocatedEvent* event) override {
+  ui::EventTarget* FindTargetForLocatedEvent(ui::EventTarget* root,
+                                             ui::LocatedEvent* event) override {
     return window_;
   }
 
@@ -35,7 +34,7 @@ class StaticWindowTargeter : public ui::EventTargeter {
 class WindowTargeterTest : public test::AuraTestBase {
  public:
   WindowTargeterTest() {}
-  virtual ~WindowTargeterTest() {}
+  ~WindowTargeterTest() override {}
 
   Window* root_window() { return AuraTestBase::root_window(); }
 };

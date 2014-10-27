@@ -21,11 +21,11 @@ namespace test {
 class AuraTestBase : public testing::Test {
  public:
   AuraTestBase();
-  virtual ~AuraTestBase();
+  ~AuraTestBase() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Creates a normal window parented to |parent|.
   aura::Window* CreateNormalWindow(int id, Window* parent,

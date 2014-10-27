@@ -23,7 +23,7 @@ void InitializeAuraEventGeneratorDelegate();
 class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
  public:
   EventGeneratorDelegateAura();
-  virtual ~EventGeneratorDelegateAura();
+  ~EventGeneratorDelegateAura() override;
 
   // Returns the host for given point.
   virtual WindowTreeHost* GetHostAt(const gfx::Point& point) const = 0;
@@ -35,17 +35,16 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
       const aura::Window* window) const = 0;
 
   // Overridden from ui::test::EventGeneratorDelegate:
-  virtual ui::EventTarget* GetTargetAt(const gfx::Point& location) override;
-  virtual ui::EventSource* GetEventSource(ui::EventTarget* target) override;
-  virtual gfx::Point CenterOfTarget(
-      const ui::EventTarget* target) const override;
-  virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;
-  virtual void ConvertPointFromTarget(const ui::EventTarget* target,
-                                      gfx::Point* point) const override;
-  virtual void ConvertPointToTarget(const ui::EventTarget* target,
-                                    gfx::Point* point) const override;
-  virtual void ConvertPointFromHost(const ui::EventTarget* hosted_target,
-                                    gfx::Point* point) const override;
+  ui::EventTarget* GetTargetAt(const gfx::Point& location) override;
+  ui::EventSource* GetEventSource(ui::EventTarget* target) override;
+  gfx::Point CenterOfTarget(const ui::EventTarget* target) const override;
+  gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;
+  void ConvertPointFromTarget(const ui::EventTarget* target,
+                              gfx::Point* point) const override;
+  void ConvertPointToTarget(const ui::EventTarget* target,
+                            gfx::Point* point) const override;
+  void ConvertPointFromHost(const ui::EventTarget* hosted_target,
+                            gfx::Point* point) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);

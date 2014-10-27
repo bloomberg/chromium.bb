@@ -133,7 +133,7 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
 #endif  // defined(USE_XI2_MT)
   }
 
-  virtual ~TouchEventCalibrate() {
+  ~TouchEventCalibrate() override {
     if (ui::PlatformEventSource::GetInstance())
       ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
   }
@@ -202,7 +202,7 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
 
  private:
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) override {
+  void WillProcessEvent(const ui::PlatformEvent& event) override {
 #if defined(USE_XI2_MT)
     if (event->type == GenericEvent &&
         (event->xgeneric.evtype == XI_TouchBegin ||
@@ -216,7 +216,7 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
 #endif  // defined(USE_XI2_MT)
   }
 
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) override {}
+  void DidProcessEvent(const ui::PlatformEvent& event) override {}
 
   // The difference in screen's native resolution pixels between
   // the border of the touchscreen and the border of the screen,

@@ -99,7 +99,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         flags_(0),
         wait_until_event_(ui::ET_UNKNOWN) {}
 
-  virtual ~GestureEventConsumeDelegate() {}
+  ~GestureEventConsumeDelegate() override {}
 
   void Reset() {
     events_.clear();
@@ -196,7 +196,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     run_loop_->Run();
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
+  void OnGestureEvent(ui::GestureEvent* gesture) override {
     events_.push_back(gesture->type());
     bounding_box_ = gesture->details().bounding_box();
     flags_ = gesture->flags();
@@ -339,14 +339,14 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
         dispatcher_(dispatcher),
         queue_events_(true) {
   }
-  virtual ~QueueTouchEventDelegate() {
+  ~QueueTouchEventDelegate() override {
     while(!queue_.empty()) {
       delete queue_.front();
       queue_.pop();
     }
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     if (queue_events_) {
       queue_.push(new ui::TouchEvent(*event, window_, window_));
       event->StopPropagation();
@@ -409,7 +409,7 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool mouse_release() const { return mouse_release_; }
   bool double_click() const { return double_click_; }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_PRESSED:
         double_click_ = event->flags() & ui::EF_IS_DOUBLE_CLICK;
@@ -536,9 +536,9 @@ class TestEventHandler : public ui::EventHandler {
         touch_pressed_count_(0),
         touch_moved_count_(0) {}
 
-  virtual ~TestEventHandler() {}
+  ~TestEventHandler() override {}
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     switch (event->type()) {
       case ui::ET_TOUCH_RELEASED:
         touch_released_count_++;
@@ -588,11 +588,11 @@ class TestEventHandler : public ui::EventHandler {
 class RemoveOnTouchCancelHandler : public TestEventHandler {
  public:
   RemoveOnTouchCancelHandler() {}
-  virtual ~RemoveOnTouchCancelHandler() {}
+  ~RemoveOnTouchCancelHandler() override {}
 
  private:
   // ui::EventHandler:
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     TestEventHandler::OnTouchEvent(event);
     if (event->type() == ui::ET_TOUCH_CANCELLED) {
       Window* target = static_cast<Window*>(event->target());
@@ -633,7 +633,7 @@ class GestureRecognizerTest : public AuraTestBase,
  public:
   GestureRecognizerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AuraTestBase::SetUp();
     ui::GestureConfiguration::GetInstance()->set_show_press_delay_in_ms(2);
     ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(3);
@@ -2980,12 +2980,12 @@ TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
 class ConsumesTouchMovesDelegate : public GestureEventConsumeDelegate {
  public:
   ConsumesTouchMovesDelegate() : consume_touch_move_(true) {}
-  virtual ~ConsumesTouchMovesDelegate() {}
+  ~ConsumesTouchMovesDelegate() override {}
 
   void set_consume_touch_move(bool consume) { consume_touch_move_ = consume; }
 
  private:
-  virtual void OnTouchEvent(ui::TouchEvent* touch) override {
+  void OnTouchEvent(ui::TouchEvent* touch) override {
     if (consume_touch_move_ && touch->type() == ui::ET_TOUCH_MOVED)
       touch->SetHandled();
     else
@@ -4113,7 +4113,7 @@ class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
 
   void set_window(aura::Window** window) { window_ = window; }
 
-  virtual void OnGestureEvent(ui::GestureEvent* gesture) override {
+  void OnGestureEvent(ui::GestureEvent* gesture) override {
     GestureEventConsumeDelegate::OnGestureEvent(gesture);
     if (gesture->type() != ui::ET_GESTURE_LONG_PRESS)
       return;

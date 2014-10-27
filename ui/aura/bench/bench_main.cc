@@ -57,22 +57,20 @@ class ColoredLayer : public Layer, public LayerDelegate {
     set_delegate(this);
   }
 
-  virtual ~ColoredLayer() {}
+  ~ColoredLayer() override {}
 
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     if (draw_) {
       canvas->DrawColor(color_);
     }
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -97,12 +95,12 @@ class BenchCompositorObserver : public ui::CompositorObserver {
         max_frames_(max_frames) {
   }
 
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) override {}
+  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
 
-  virtual void OnCompositingStarted(Compositor* compositor,
-                                    base::TimeTicks start_time) override {}
+  void OnCompositingStarted(Compositor* compositor,
+                            base::TimeTicks start_time) override {}
 
-  virtual void OnCompositingEnded(Compositor* compositor) override {
+  void OnCompositingEnded(Compositor* compositor) override {
     if (start_time_.is_null()) {
       start_time_ = TimeTicks::Now();
     } else {
@@ -121,10 +119,9 @@ class BenchCompositorObserver : public ui::CompositorObserver {
     }
   }
 
-  virtual void OnCompositingAborted(Compositor* compositor) override {}
+  void OnCompositingAborted(Compositor* compositor) override {}
 
-  virtual void OnCompositingLockStateChanged(
-      Compositor* compositor) override {}
+  void OnCompositingLockStateChanged(Compositor* compositor) override {}
 
   virtual void Draw() {}
 
@@ -222,14 +219,14 @@ class WebGLBench : public BenchCompositorObserver {
     compositor->AddObserver(this);
   }
 
-  virtual ~WebGLBench() {
+  ~WebGLBench() override {
     webgl_.SetShowSolidColorContent();
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
     gl->DeleteFramebuffers(1, &fbo_);
     compositor_->RemoveObserver(this);
   }
 
-  virtual void Draw() override {
+  void Draw() override {
     if (do_draw_) {
       gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
       gl->ClearColor((frames() % kFrames)*1.0/kFrames, 1.f, 0.f, 1.f);
@@ -269,11 +266,9 @@ class SoftwareScrollBench : public BenchCompositorObserver {
         !CommandLine::ForCurrentProcess()->HasSwitch("disable-draw"));
   }
 
-  virtual ~SoftwareScrollBench() {
-    compositor_->RemoveObserver(this);
-  }
+  ~SoftwareScrollBench() override { compositor_->RemoveObserver(this); }
 
-  virtual void Draw() override {
+  void Draw() override {
     layer_->set_color(
         SkColorSetARGBInline(255*(frames() % kFrames)/kFrames, 255, 0, 255));
     layer_->SchedulePaint(gfx::Rect(layer_->bounds().size()));

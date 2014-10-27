@@ -29,7 +29,7 @@ class TestScreen : public gfx::Screen,
   static TestScreen* Create(const gfx::Size& size);
   // Creates a TestScreen that uses fullscreen for the display.
   static TestScreen* CreateFullscreen();
-  virtual ~TestScreen();
+  ~TestScreen() override;
 
   WindowTreeHost* CreateHostForPrimaryDisplay();
 
@@ -43,27 +43,23 @@ class TestScreen : public gfx::Screen,
   gfx::Transform GetUIScaleTransform() const;
 
   // WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroying(Window* window) override;
+  void OnWindowBoundsChanged(Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroying(Window* window) override;
 
   // gfx::Screen overrides:
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual gfx::NativeWindow GetWindowUnderCursor() override;
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override;
-  virtual int GetNumDisplays() const override;
-  virtual std::vector<gfx::Display> GetAllDisplays() const override;
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override;
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  virtual gfx::Display GetPrimaryDisplay() const override;
-  virtual void AddObserver(gfx::DisplayObserver* observer) override;
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override;
+  gfx::Point GetCursorScreenPoint() override;
+  gfx::NativeWindow GetWindowUnderCursor() override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  gfx::Display GetPrimaryDisplay() const override;
+  void AddObserver(gfx::DisplayObserver* observer) override;
+  void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
   explicit TestScreen(const gfx::Rect& screen_bounds);

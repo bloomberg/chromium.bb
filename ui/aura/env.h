@@ -72,7 +72,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   friend class WindowTreeHost;
 
   Env();
-  virtual ~Env();
+  ~Env() override;
 
   // See description of CreateInstance() for deatils of |create_event_source|.
   void Init(bool create_event_source);
@@ -87,10 +87,10 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   void NotifyHostActivated(WindowTreeHost* host);
 
   // Overridden from ui::EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) override;
-  virtual ui::EventTarget* GetParentTarget() override;
-  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
-  virtual ui::EventTargeter* GetEventTargeter() override;
+  bool CanAcceptEvent(const ui::Event& event) override;
+  ui::EventTarget* GetParentTarget() override;
+  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  ui::EventTargeter* GetEventTargeter() override;
 
   ObserverList<EnvObserver> observers_;
 

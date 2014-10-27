@@ -15,21 +15,18 @@ class Window;
 class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
  public:
   WindowTargeter();
-  virtual ~WindowTargeter();
+  ~WindowTargeter() override;
 
  protected:
   // ui::EventTargeter:
-  virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) override;
-  virtual ui::EventTarget* FindTargetForLocatedEvent(
-      ui::EventTarget* root,
-      ui::LocatedEvent* event) override;
-  virtual bool SubtreeCanAcceptEvent(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
-  virtual bool EventLocationInsideBounds(
-      ui::EventTarget* target,
-      const ui::LocatedEvent& event) const override;
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override;
+  ui::EventTarget* FindTargetForLocatedEvent(ui::EventTarget* root,
+                                             ui::LocatedEvent* event) override;
+  bool SubtreeCanAcceptEvent(ui::EventTarget* target,
+                             const ui::LocatedEvent& event) const override;
+  bool EventLocationInsideBounds(ui::EventTarget* target,
+                                 const ui::LocatedEvent& event) const override;
 
  private:
   Window* FindTargetForKeyEvent(Window* root_window,

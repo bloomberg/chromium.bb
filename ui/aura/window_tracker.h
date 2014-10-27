@@ -21,7 +21,7 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
   typedef std::set<Window*> Windows;
 
   WindowTracker();
-  virtual ~WindowTracker();
+  ~WindowTracker() override;
 
   // Returns the set of windows being observed.
   const std::set<Window*>& windows() const { return windows_; }
@@ -37,7 +37,7 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
   bool Contains(Window* window);
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(Window* window) override;
+  void OnWindowDestroying(Window* window) override;
 
  private:
   Windows windows_;
