@@ -1540,9 +1540,7 @@ TEST(HeapTest, BasicFunctionality)
         getHeapStats(&heapStats);
         CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(heapStats.totalAllocatedSpace(), blinkPageSize);
-
-        CheckWithSlack(alloc32 + 32 + sizeof(FinalizedHeapObjectHeader), alloc64, slack);
+            EXPECT_EQ(heapStats.totalAllocatedSpace(), 2 * blinkPageSize);
 
         EXPECT_EQ(alloc32->get(0), 40);
         EXPECT_EQ(alloc32->get(31), 40);

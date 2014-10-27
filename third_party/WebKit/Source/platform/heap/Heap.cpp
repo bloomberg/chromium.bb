@@ -2837,7 +2837,7 @@ void HeapAllocator::backingFree(void* address)
     header->checkHeader();
 
     const GCInfo* gcInfo = header->gcInfo();
-    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
+    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
     HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
     heap->promptlyFreeObject(header);
 }

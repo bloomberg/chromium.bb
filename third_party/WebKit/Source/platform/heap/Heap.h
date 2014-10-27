@@ -1392,7 +1392,7 @@ Address Heap::allocate(size_t size)
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     const GCInfo* gcInfo = GCInfoTrait<T>::get();
-    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
+    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), size);
     BaseHeap* heap = state->heap(heapIndex);
     return static_cast<typename HeapTraits::HeapType*>(heap)->allocate(size, gcInfo);
 }
@@ -1415,11 +1415,12 @@ Address Heap::reallocate(void* previous, size_t size)
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     const GCInfo* gcInfo = GCInfoTrait<T>::get();
-    int heapIndex = HeapTypeTrait<T>::index(gcInfo->hasFinalizer());
+    int heapIndex = HeapTypeTrait<T>::index(gcInfo->hasFinalizer(), size);
     // FIXME: Currently only supports raw allocation on the
     // GeneralHeap. Hence we assume the header is a
     // FinalizedHeapObjectHeader.
-    ASSERT(heapIndex == GeneralHeap || heapIndex == GeneralHeapNonFinalized);
+    ASSERT((General1Heap <= heapIndex && heapIndex <= General4Heap)
+        || (General1HeapNonFinalized <= heapIndex && heapIndex <= General4HeapNonFinalized));
     BaseHeap* heap = state->heap(heapIndex);
     Address address = static_cast<typename HeapTypeTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
     if (!previous) {

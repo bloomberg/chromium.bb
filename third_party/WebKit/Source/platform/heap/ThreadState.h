@@ -176,17 +176,23 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 #define TypedHeapEnumNameNonFinalized(Type) Type##HeapNonFinalized,
 
 enum TypedHeaps {
-    GeneralHeap = 0,
+    General1Heap = 0,
+    General2Heap,
+    General3Heap,
+    General4Heap,
     CollectionBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-    GeneralHeapNonFinalized,
+    General1HeapNonFinalized,
+    General2HeapNonFinalized,
+    General3HeapNonFinalized,
+    General4HeapNonFinalized,
     CollectionBackingHeapNonFinalized,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
     // Values used for iteration of heap segments.
     NumberOfHeaps,
-    FirstFinalizedHeap = GeneralHeap,
-    FirstNonFinalizedHeap = GeneralHeapNonFinalized,
-    NumberOfFinalizedHeaps = GeneralHeapNonFinalized,
+    FirstFinalizedHeap = General1Heap,
+    FirstNonFinalizedHeap = General1HeapNonFinalized,
+    NumberOfFinalizedHeaps = General1HeapNonFinalized,
     NumberOfNonFinalizedHeaps = NumberOfHeaps - NumberOfFinalizedHeaps,
     NonFinalizedHeapOffset = FirstNonFinalizedHeap
 };
@@ -198,9 +204,41 @@ struct HeapIndexTraitBase {
     typedef ThreadHeap<HeaderType> HeapType;
     static const int finalizedIndex = heapIndex;
     static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
-    static int index(bool isFinalized)
+    static int index(bool isFinalized, size_t)
     {
         return isFinalized ? finalizedIndex : nonFinalizedIndex;
+    }
+};
+
+class ThreadState;
+
+// We use four heaps for general type objects depending on their object sizes.
+// Objects whose size is 1 - 3 words go to the first general type heap.
+// Objects whose size is 4 - 7 words go to the second general type heap.
+// Objects whose size is 8 - 15 words go to the third general type heap.
+// Objects whose size is more than 15 words go to the fourth general type heap.
+template<int heapIndex>
+struct GeneralHeapIndexTraitBase {
+    typedef FinalizedHeapObjectHeader HeaderType;
+    typedef ThreadHeap<HeaderType> HeapType;
+    static const int finalizedIndex = heapIndex;
+    static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
+    static int index(bool isFinalized, size_t size)
+    {
+        static const int wordSize = sizeof(void*);
+        int generalHeapOffset = 0;
+        if (size < 8 * wordSize) {
+            if (size < 4 * wordSize)
+                generalHeapOffset = 0;
+            else
+                generalHeapOffset = 1;
+        } else {
+            if (size < 16 * wordSize)
+                generalHeapOffset = 2;
+            else
+                generalHeapOffset = 3;
+        }
+        return generalHeapOffset + (isFinalized ? finalizedIndex : nonFinalizedIndex);
     }
 };
 
@@ -209,9 +247,21 @@ template<int index>
 struct HeapIndexTrait;
 
 template<>
-struct HeapIndexTrait<GeneralHeap> : public HeapIndexTraitBase<GeneralHeap> { };
+struct HeapIndexTrait<General1Heap> : public GeneralHeapIndexTraitBase<General1Heap> { };
 template<>
-struct HeapIndexTrait<GeneralHeapNonFinalized> : public HeapIndexTrait<GeneralHeap> { };
+struct HeapIndexTrait<General1HeapNonFinalized> : public HeapIndexTrait<General1Heap> { };
+template<>
+struct HeapIndexTrait<General2Heap> : public GeneralHeapIndexTraitBase<General2Heap> { };
+template<>
+struct HeapIndexTrait<General2HeapNonFinalized> : public HeapIndexTrait<General2Heap> { };
+template<>
+struct HeapIndexTrait<General3Heap> : public GeneralHeapIndexTraitBase<General3Heap> { };
+template<>
+struct HeapIndexTrait<General3HeapNonFinalized> : public HeapIndexTrait<General3Heap> { };
+template<>
+struct HeapIndexTrait<General4Heap> : public GeneralHeapIndexTraitBase<General4Heap> { };
+template<>
+struct HeapIndexTrait<General4HeapNonFinalized> : public HeapIndexTrait<General4Heap> { };
 
 template<>
 struct HeapIndexTrait<CollectionBackingHeap> : public HeapIndexTraitBase<CollectionBackingHeap> { };
@@ -230,9 +280,10 @@ FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
 #undef DEFINE_TYPED_HEAP_INDEX_TRAIT
 
 // HeapTypeTrait defines which heap to use for particular types.
-// By default objects are allocated in the GeneralHeap.
+// By default objects are allocated in one of the general heaps
+// depending on object size.
 template<typename T>
-struct HeapTypeTrait : public HeapIndexTrait<GeneralHeap> { };
+struct HeapTypeTrait : public HeapIndexTrait<General1Heap> { };
 
 // We don't have any type-based mappings to the CollectionBackingHeap.
 
