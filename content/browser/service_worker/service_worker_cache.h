@@ -29,9 +29,6 @@ namespace content {
 class ChromeBlobStorageContext;
 class ServiceWorkerCacheMetadata;
 
-// TODO(jkarlin): Unload cache backend from memory once the cache object is no
-// longer referenced in javascript.
-
 // Represents a ServiceWorker Cache as seen in
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html.
 // InitializeIfNeeded must be called before calling the other public members.
@@ -103,7 +100,9 @@ class CONTENT_EXPORT ServiceWorkerCache
  private:
   friend class base::RefCounted<ServiceWorkerCache>;
 
+  class BlobReader;
   struct KeysContext;
+  struct PutContext;
   typedef std::vector<disk_cache::Entry*> Entries;
 
   ServiceWorkerCache(
@@ -117,10 +116,16 @@ class CONTENT_EXPORT ServiceWorkerCache
   // operations (those operations waiting for init to finish) won't.
   virtual ~ServiceWorkerCache();
 
-  void PutImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
-               scoped_ptr<ServiceWorkerResponse> response,
-               scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-               const ResponseCallback& callback);
+  // Put callbacks.
+  static void PutImpl(scoped_ptr<PutContext> put_context);
+  static void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
+  static void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
+                                 int expected_bytes,
+                                 int rv);
+  static void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
+                                     scoped_ptr<BlobReader> blob_reader,
+                                     disk_cache::ScopedEntryPtr entry,
+                                     bool success);
 
   // Static callbacks for the Keys function.
   static void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context,
