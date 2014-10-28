@@ -61,7 +61,8 @@ class VideoSource_Private : public Resource {
   int32_t Open(const Var& stream_url,
                const CompletionCallback& cc);
 
-  /// Gets a frame from the video source.
+  /// Gets a frame from the video source. The returned frame is only valid
+  /// until the next call to GetFrame.
   ///
   /// @param[out] frame A <code>VideoFrame_Private</code> to hold a video
   /// frame from the source.

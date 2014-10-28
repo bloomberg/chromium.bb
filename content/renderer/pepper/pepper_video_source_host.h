@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/video_source_handler.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/ppb_image_data.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 
@@ -20,6 +21,7 @@ struct PP_ImageDataDesc;
 
 namespace content {
 
+class PPB_ImageData_Impl;
 class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
@@ -78,6 +80,13 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
   std::string stream_url_;
   scoped_refptr<media::VideoFrame> last_frame_;
   bool get_frame_pending_;
+  // We use only one ImageData resource in order to avoid allocating
+  // shared memory repeatedly. We send the same one each time the plugin
+  // requests a frame. For this to work, the plugin must finish using
+  // the ImageData it receives prior to calling GetFrame, and not access
+  // the ImageData until it gets its next callback to GetFrame.
+  scoped_refptr<PPB_ImageData_Impl> shared_image_;
+  PP_ImageDataDesc shared_image_desc_;
 
   base::WeakPtrFactory<PepperVideoSourceHost> weak_factory_;
 

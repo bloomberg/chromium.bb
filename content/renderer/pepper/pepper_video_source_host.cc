@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
@@ -52,6 +53,7 @@ PepperVideoSourceHost::PepperVideoSourceHost(RendererPpapiHost* host,
       get_frame_pending_(false),
       weak_factory_(this) {
   frame_receiver_ = new FrameReceiver(weak_factory_.GetWeakPtr());
+  memset(&shared_image_desc_, 0, sizeof(shared_image_desc_));
 }
 
 PepperVideoSourceHost::~PepperVideoSourceHost() { Close(); }
@@ -119,45 +121,85 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   const int dst_width = frame->visible_rect().width();
   const int dst_height = frame->visible_rect().height();
 
-  PP_ImageDataDesc image_desc;
+  // Note: We try to reuse the shared memory for the previous frame here. This
+  // means that the previous frame may be overwritten and is no longer valid
+  // after calling this function again.
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
-  ppapi::ScopedPPResource resource(
-      ppapi::ScopedPPResource::PassRef(),
-      ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
-          pp_instance(),
-          ppapi::PPB_ImageData_Shared::SIMPLE,
-          PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-          PP_MakeSize(dst_width, dst_height),
-          false /* init_to_zero */,
-          &image_desc,
-          &image_handle,
-          &byte_count));
-  if (!resource.get()) {
-    SendGetFrameErrorReply(PP_ERROR_FAILED);
-    return;
+  if (shared_image_.get() && dst_width == shared_image_->width() &&
+      dst_height == shared_image_->height()) {
+    // We have already allocated the correct size in shared memory. We need to
+    // duplicate the handle for IPC however, which will close down the
+    // duplicated handle when it's done.
+    int local_fd = 0;
+    if (shared_image_->GetSharedMemory(&local_fd, &byte_count) != PP_OK) {
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
+
+    ppapi::proxy::HostDispatcher* dispatcher =
+        ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
+    if (!dispatcher) {
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
+
+#if defined(OS_WIN)
+    image_handle = dispatcher->ShareHandleWithRemote(
+        reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
+#elif defined(OS_POSIX)
+    image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
+#else
+#error Not implemented.
+#endif
+  } else {
+    // We need to allocate new shared memory.
+    shared_image_ = NULL;  // Release any previous image.
+
+    ppapi::ScopedPPResource resource(
+        ppapi::ScopedPPResource::PassRef(),
+        ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
+            pp_instance(),
+            ppapi::PPB_ImageData_Shared::SIMPLE,
+            PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+            PP_MakeSize(dst_width, dst_height),
+            false /* init_to_zero */,
+            &shared_image_desc_,
+            &image_handle,
+            &byte_count));
+    if (!resource) {
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
+
+    ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
+        enter_resource(resource, false);
+    if (enter_resource.failed()) {
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
+
+    shared_image_ = static_cast<PPB_ImageData_Impl*>(enter_resource.object());
+    if (!shared_image_.get()) {
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
+
+    DCHECK(!shared_image_->IsMapped());  // New memory should not be mapped.
+    if (!shared_image_->Map() || !shared_image_->GetMappedBitmap() ||
+        !shared_image_->GetMappedBitmap()->getPixels()) {
+      shared_image_ = NULL;
+      SendGetFrameErrorReply(PP_ERROR_FAILED);
+      return;
+    }
   }
 
-  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
-      enter_resource(resource, false);
-  if (enter_resource.failed()) {
-    SendGetFrameErrorReply(PP_ERROR_FAILED);
-    return;
-  }
-
-  PPB_ImageData_Impl* image_data =
-      static_cast<PPB_ImageData_Impl*>(enter_resource.object());
-  ImageDataAutoMapper mapper(image_data);
-  if (!mapper.is_valid()) {
-    SendGetFrameErrorReply(PP_ERROR_FAILED);
-    return;
-  }
-
-  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  const SkBitmap* bitmap = shared_image_->GetMappedBitmap();
   if (!bitmap) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
     return;
   }
+
   uint8_t* bitmap_pixels = static_cast<uint8_t*>(bitmap->getPixels());
   if (!bitmap_pixels) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
@@ -194,10 +236,10 @@ void PepperVideoSourceHost::SendGetFrameReply() {
                      dst_height);
 
   ppapi::HostResource host_resource;
-  host_resource.SetHostResource(pp_instance(), resource.get());
+  host_resource.SetHostResource(pp_instance(), shared_image_->GetReference());
 
   // Convert a video timestamp to a PP_TimeTicks (a double, in seconds).
-  PP_TimeTicks timestamp = frame->timestamp().InSecondsF();
+  const PP_TimeTicks timestamp = frame->timestamp().InSecondsF();
 
   ppapi::proxy::SerializedHandle serialized_handle;
   serialized_handle.set_shmem(image_handle, byte_count);
@@ -205,12 +247,9 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
   host()->SendReply(reply_context_,
                     PpapiPluginMsg_VideoSource_GetFrameReply(
-                        host_resource, image_desc, timestamp));
+                        host_resource, shared_image_desc_, timestamp));
 
   reply_context_ = ppapi::host::ReplyMessageContext();
-
-  // Keep a reference once we know this method succeeds.
-  resource.Release();
 }
 
 void PepperVideoSourceHost::SendGetFrameErrorReply(int32_t error) {
@@ -228,6 +267,8 @@ void PepperVideoSourceHost::Close() {
 
   source_handler_.reset(NULL);
   stream_url_.clear();
+
+  shared_image_ = NULL;
 }
 
 }  // namespace content

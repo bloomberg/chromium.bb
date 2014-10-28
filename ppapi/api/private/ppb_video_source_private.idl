@@ -61,7 +61,8 @@ interface PPB_VideoSource_Private {
                [in] PP_CompletionCallback callback);
 
   /**
-   * Gets a frame from the video source.
+   * Gets a frame from the video source. The returned image data is only valid
+   * until the next call to GetFrame.
    * The image data resource inside the returned frame will have its reference
    * count incremented by one and must be managed by the plugin.
    *
