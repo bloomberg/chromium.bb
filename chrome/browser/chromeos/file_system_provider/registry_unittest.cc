@@ -36,14 +36,14 @@ const char kDisplayName[] = "Camera Pictures";
 const char kFileSystemId[] = "camera/pictures/id .!@#$%^&*()_+";
 
 // Stores a provided file system information in preferences together with a
-// fake observed entry.
+// fake watcher.
 void RememberFakeFileSystem(TestingProfile* profile,
                             const std::string& extension_id,
                             const std::string& file_system_id,
                             const std::string& display_name,
                             bool writable,
                             bool supports_notify_tag,
-                            const ObservedEntry& observed_entry) {
+                            const Watcher& watcher) {
   // Warning. Updating this code means that backward compatibility may be
   // broken, what is unexpected and should be avoided.
   TestingPrefServiceSyncable* const pref_service =
@@ -62,24 +62,21 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_systems->SetWithoutPathExpansion(kFileSystemId, file_system);
   extensions.SetWithoutPathExpansion(kExtensionId, file_systems);
 
-  // Remember observed entries.
-  base::DictionaryValue* const observed_entries = new base::DictionaryValue();
-  file_system->SetWithoutPathExpansion(kPrefKeyObservedEntries,
-                                       observed_entries);
-  base::DictionaryValue* const observed_entry_value =
-      new base::DictionaryValue();
-  observed_entries->SetWithoutPathExpansion(observed_entry.entry_path.value(),
-                                            observed_entry_value);
-  observed_entry_value->SetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryEntryPath, observed_entry.entry_path.value());
-  observed_entry_value->SetBooleanWithoutPathExpansion(
-      kPrefKeyObservedEntryRecursive, observed_entry.recursive);
-  observed_entry_value->SetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryLastTag, observed_entry.last_tag);
+  // Remember watchers.
+  base::DictionaryValue* const watchers = new base::DictionaryValue();
+  file_system->SetWithoutPathExpansion(kPrefKeyWatchers, watchers);
+  base::DictionaryValue* const watcher_value = new base::DictionaryValue();
+  watchers->SetWithoutPathExpansion(watcher.entry_path.value(), watcher_value);
+  watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
+                                               watcher.entry_path.value());
+  watcher_value->SetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
+                                                watcher.recursive);
+  watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                               watcher.last_tag);
   base::ListValue* const persistent_origins_value = new base::ListValue();
-  observed_entry_value->SetWithoutPathExpansion(
-      kPrefKeyObservedEntryPersistentOrigins, persistent_origins_value);
-  for (const auto& subscriber_it : observed_entry.subscribers) {
+  watcher_value->SetWithoutPathExpansion(kPrefKeyWatcherPersistentOrigins,
+                                         persistent_origins_value);
+  for (const auto& subscriber_it : watcher.subscribers) {
     if (subscriber_it.second.persistent)
       persistent_origins_value->AppendString(subscriber_it.first.spec());
   }
@@ -101,23 +98,22 @@ class FileSystemProviderRegistryTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-user@example.com");
     registry_.reset(new Registry(profile_));
-    fake_observed_entry_.entry_path =
-        base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
-    fake_observed_entry_.recursive = true;
-    fake_observed_entry_.subscribers[GURL(kTemporaryOrigin)].origin =
+    fake_watcher_.entry_path = base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
+    fake_watcher_.recursive = true;
+    fake_watcher_.subscribers[GURL(kTemporaryOrigin)].origin =
         GURL(kTemporaryOrigin);
-    fake_observed_entry_.subscribers[GURL(kTemporaryOrigin)].persistent = false;
-    fake_observed_entry_.subscribers[GURL(kPersistentOrigin)].origin =
+    fake_watcher_.subscribers[GURL(kTemporaryOrigin)].persistent = false;
+    fake_watcher_.subscribers[GURL(kPersistentOrigin)].origin =
         GURL(kPersistentOrigin);
-    fake_observed_entry_.subscribers[GURL(kPersistentOrigin)].persistent = true;
-    fake_observed_entry_.last_tag = "hello-world";
+    fake_watcher_.subscribers[GURL(kPersistentOrigin)].persistent = true;
+    fake_watcher_.last_tag = "hello-world";
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   scoped_ptr<RegistryInterface> registry_;
-  ObservedEntry fake_observed_entry_;
+  Watcher fake_watcher_;
 };
 
 TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
@@ -128,7 +124,7 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
                          kDisplayName,
                          true /* writable */,
                          true /* supports_notify_tag */,
-                         fake_observed_entry_);
+                         fake_watcher_);
 
   scoped_ptr<RegistryInterface::RestoredFileSystems> restored_file_systems =
       registry_->RestoreFileSystems(kExtensionId);
@@ -142,19 +138,14 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   EXPECT_TRUE(restored_file_system.options.writable);
   EXPECT_TRUE(restored_file_system.options.supports_notify_tag);
 
-  ASSERT_EQ(1u, restored_file_system.observed_entries.size());
-  const auto& restored_observed_entry_it =
-      restored_file_system.observed_entries.find(ObservedEntryKey(
-          fake_observed_entry_.entry_path, fake_observed_entry_.recursive));
-  ASSERT_NE(restored_file_system.observed_entries.end(),
-            restored_observed_entry_it);
+  ASSERT_EQ(1u, restored_file_system.watchers.size());
+  const auto& restored_watcher_it = restored_file_system.watchers.find(
+      WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive));
+  ASSERT_NE(restored_file_system.watchers.end(), restored_watcher_it);
 
-  EXPECT_EQ(fake_observed_entry_.entry_path,
-            restored_observed_entry_it->second.entry_path);
-  EXPECT_EQ(fake_observed_entry_.recursive,
-            restored_observed_entry_it->second.recursive);
-  EXPECT_EQ(fake_observed_entry_.last_tag,
-            restored_observed_entry_it->second.last_tag);
+  EXPECT_EQ(fake_watcher_.entry_path, restored_watcher_it->second.entry_path);
+  EXPECT_EQ(fake_watcher_.recursive, restored_watcher_it->second.recursive);
+  EXPECT_EQ(fake_watcher_.last_tag, restored_watcher_it->second.last_tag);
 }
 
 TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
@@ -165,12 +156,11 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
 
-  ObservedEntries observed_entries;
-  observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
-                                    fake_observed_entry_.recursive)] =
-      fake_observed_entry_;
+  Watchers watchers;
+  watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
+      fake_watcher_;
 
-  registry_->RememberFileSystem(file_system_info, observed_entries);
+  registry_->RememberFileSystem(file_system_info, watchers);
 
   TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
@@ -211,40 +201,39 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
       kPrefKeySupportsNotifyTag, &supports_notify_tag));
   EXPECT_TRUE(supports_notify_tag);
 
-  const base::DictionaryValue* observed_entries_value = NULL;
-  ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(
-      kPrefKeyObservedEntries, &observed_entries_value));
+  const base::DictionaryValue* watchers_value = NULL;
+  ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,
+                                                             &watchers_value));
 
-  const base::DictionaryValue* observed_entry = NULL;
-  ASSERT_TRUE(observed_entries_value->GetDictionaryWithoutPathExpansion(
-      fake_observed_entry_.entry_path.value(), &observed_entry));
+  const base::DictionaryValue* watcher = NULL;
+  ASSERT_TRUE(watchers_value->GetDictionaryWithoutPathExpansion(
+      fake_watcher_.entry_path.value(), &watcher));
 
   std::string entry_path;
-  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryEntryPath, &entry_path));
-  EXPECT_EQ(fake_observed_entry_.entry_path.value(), entry_path);
+  EXPECT_TRUE(watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
+                                                     &entry_path));
+  EXPECT_EQ(fake_watcher_.entry_path.value(), entry_path);
 
   bool recursive = false;
-  EXPECT_TRUE(observed_entry->GetBooleanWithoutPathExpansion(
-      kPrefKeyObservedEntryRecursive, &recursive));
-  EXPECT_EQ(fake_observed_entry_.recursive, recursive);
+  EXPECT_TRUE(watcher->GetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
+                                                      &recursive));
+  EXPECT_EQ(fake_watcher_.recursive, recursive);
 
   std::string last_tag;
-  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryLastTag, &last_tag));
-  EXPECT_EQ(fake_observed_entry_.last_tag, last_tag);
+  EXPECT_TRUE(watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                                     &last_tag));
+  EXPECT_EQ(fake_watcher_.last_tag, last_tag);
 
   const base::ListValue* persistent_origins = NULL;
-  ASSERT_TRUE(observed_entry->GetListWithoutPathExpansion(
-      kPrefKeyObservedEntryPersistentOrigins, &persistent_origins));
-  ASSERT_GT(fake_observed_entry_.subscribers.size(),
-            persistent_origins->GetSize());
+  ASSERT_TRUE(watcher->GetListWithoutPathExpansion(
+      kPrefKeyWatcherPersistentOrigins, &persistent_origins));
+  ASSERT_GT(fake_watcher_.subscribers.size(), persistent_origins->GetSize());
   ASSERT_EQ(1u, persistent_origins->GetSize());
   std::string persistent_origin;
   EXPECT_TRUE(persistent_origins->GetString(0, &persistent_origin));
   const auto& fake_subscriber_it =
-      fake_observed_entry_.subscribers.find(GURL(persistent_origin));
-  ASSERT_NE(fake_observed_entry_.subscribers.end(), fake_subscriber_it);
+      fake_watcher_.subscribers.find(GURL(persistent_origin));
+  ASSERT_NE(fake_watcher_.subscribers.end(), fake_subscriber_it);
   EXPECT_TRUE(fake_subscriber_it->second.persistent);
 }
 
@@ -256,7 +245,7 @@ TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
                          kDisplayName,
                          true /* writable */,
                          true /* supports_notify_tag */,
-                         fake_observed_entry_);
+                         fake_watcher_);
 
   registry_->ForgetFileSystem(kExtensionId, kFileSystemId);
 
@@ -273,7 +262,7 @@ TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
                                                              &file_systems));
 }
 
-TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
+TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   MountOptions options(kFileSystemId, kDisplayName);
   options.writable = true;
   options.supports_notify_tag = true;
@@ -281,15 +270,14 @@ TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
 
-  ObservedEntries observed_entries;
-  observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
-                                    fake_observed_entry_.recursive)] =
-      fake_observed_entry_;
+  Watchers watchers;
+  watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
+      fake_watcher_;
 
-  registry_->RememberFileSystem(file_system_info, observed_entries);
+  registry_->RememberFileSystem(file_system_info, watchers);
 
-  fake_observed_entry_.last_tag = "updated-tag";
-  registry_->UpdateObservedEntryTag(file_system_info, fake_observed_entry_);
+  fake_watcher_.last_tag = "updated-tag";
+  registry_->UpdateWatcherTag(file_system_info, fake_watcher_);
 
   TestingPrefServiceSyncable* const pref_service =
       profile_->GetTestingPrefService();
@@ -310,18 +298,18 @@ TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
       file_systems->GetWithoutPathExpansion(kFileSystemId, &file_system_value));
   ASSERT_TRUE(file_system_value->GetAsDictionary(&file_system));
 
-  const base::DictionaryValue* observed_entries_value = NULL;
-  ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(
-      kPrefKeyObservedEntries, &observed_entries_value));
+  const base::DictionaryValue* watchers_value = NULL;
+  ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,
+                                                             &watchers_value));
 
-  const base::DictionaryValue* observed_entry = NULL;
-  ASSERT_TRUE(observed_entries_value->GetDictionaryWithoutPathExpansion(
-      fake_observed_entry_.entry_path.value(), &observed_entry));
+  const base::DictionaryValue* watcher = NULL;
+  ASSERT_TRUE(watchers_value->GetDictionaryWithoutPathExpansion(
+      fake_watcher_.entry_path.value(), &watcher));
 
   std::string last_tag;
-  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryLastTag, &last_tag));
-  EXPECT_EQ(fake_observed_entry_.last_tag, last_tag);
+  EXPECT_TRUE(watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                                     &last_tag));
+  EXPECT_EQ(fake_watcher_.last_tag, last_tag);
 }
 
 }  // namespace file_system_provider

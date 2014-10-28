@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_UNOBSERVE_ENTRY_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_UNOBSERVE_ENTRY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_REMOVE_WATCHER_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_REMOVE_WATCHER_H_
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,15 +25,15 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-// Unobserves an entry at |entry_path|.
-class UnobserveEntry : public Operation {
+// Removes a watcher at |entry_path| with the |recursive| mode.
+class RemoveWatcher : public Operation {
  public:
-  UnobserveEntry(extensions::EventRouter* event_router,
-                 const ProvidedFileSystemInfo& file_system_info,
-                 const base::FilePath& entry_path,
-                 bool recursive,
-                 const storage::AsyncFileUtil::StatusCallback& callback);
-  virtual ~UnobserveEntry();
+  RemoveWatcher(extensions::EventRouter* event_router,
+                const ProvidedFileSystemInfo& file_system_info,
+                const base::FilePath& entry_path,
+                bool recursive,
+                const storage::AsyncFileUtil::StatusCallback& callback);
+  virtual ~RemoveWatcher();
 
   // Operation overrides.
   virtual bool Execute(int request_id) override;
@@ -49,11 +49,11 @@ class UnobserveEntry : public Operation {
   bool recursive_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(UnobserveEntry);
+  DISALLOW_COPY_AND_ASSIGN(RemoveWatcher);
 };
 
 }  // namespace operations
 }  // namespace file_system_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_UNOBSERVE_ENTRY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_REMOVE_WATCHER_H_

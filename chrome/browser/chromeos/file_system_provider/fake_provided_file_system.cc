@@ -321,10 +321,9 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::WriteFile(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-ProvidedFileSystemInterface::AbortCallback
-FakeProvidedFileSystem::ObserveDirectory(
+ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::AddWatcher(
     const GURL& origin,
-    const base::FilePath& directory_path,
+    const base::FilePath& entry_watcher,
     bool recursive,
     bool persistent,
     const storage::AsyncFileUtil::StatusCallback& callback) {
@@ -332,7 +331,7 @@ FakeProvidedFileSystem::ObserveDirectory(
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
-void FakeProvidedFileSystem::UnobserveEntry(
+void FakeProvidedFileSystem::RemoveWatcher(
     const GURL& origin,
     const base::FilePath& entry_path,
     bool recursive,
@@ -351,8 +350,8 @@ RequestManager* FakeProvidedFileSystem::GetRequestManager() {
   return NULL;
 }
 
-ObservedEntries* FakeProvidedFileSystem::GetObservedEntries() {
-  return &observed_entries_;
+Watchers* FakeProvidedFileSystem::GetWatchers() {
+  return &watchers_;
 }
 
 void FakeProvidedFileSystem::AddObserver(ProvidedFileSystemObserver* observer) {
@@ -367,7 +366,7 @@ void FakeProvidedFileSystem::RemoveObserver(
 }
 
 bool FakeProvidedFileSystem::Notify(
-    const base::FilePath& observed_path,
+    const base::FilePath& entry_path,
     bool recursive,
     ProvidedFileSystemObserver::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,

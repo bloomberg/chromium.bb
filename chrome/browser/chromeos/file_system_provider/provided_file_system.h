@@ -40,9 +40,9 @@ class NotificationManagerInterface;
 // Automatically calls the |update_callback| after all of the callbacks created
 // with |CreateCallback| are called.
 //
-// It's used to update tags of observed entries once a notification about a
-// change are fully handles. It is to make sure that the change notification is
-// fully handled before remembering the new tag.
+// It's used to update tags of watchers once a notification about a change is
+// handled. It is to make sure that the change notification is fully handled
+// before remembering the new tag.
 //
 // It is necessary to update the tag after all observers handle it fully, so
 // in case of shutdown or a crash we get the notifications again.
@@ -137,23 +137,23 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       int64 offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual AbortCallback ObserveDirectory(
+  virtual AbortCallback AddWatcher(
       const GURL& origin,
-      const base::FilePath& directory_path,
+      const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
-  virtual void UnobserveEntry(
+  virtual void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const override;
   virtual RequestManager* GetRequestManager() override;
-  virtual ObservedEntries* GetObservedEntries() override;
+  virtual Watchers* GetWatchers() override;
   virtual void AddObserver(ProvidedFileSystemObserver* observer) override;
   virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
-  virtual bool Notify(const base::FilePath& observed_path,
+  virtual bool Notify(const base::FilePath& entry_path,
                       bool recursive,
                       ProvidedFileSystemObserver::ChangeType change_type,
                       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
@@ -167,20 +167,19 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   void Abort(int operation_request_id,
              const storage::AsyncFileUtil::StatusCallback& callback);
 
-  // Called when observing a directory process is completed with either success
-  // or en error.
-  void OnObserveDirectoryCompleted(
+  // Called when adding a watcher is completed with either success or en error.
+  void OnAddWatcherCompleted(
       const GURL& origin,
-      const base::FilePath& directory_path,
+      const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result);
 
   // Called when all observers finished handling the change notification. It
-  // updates the tag from |last_tag| to |tag| for the entry at |observed_path|.
+  // updates the tag from |last_tag| to |tag| for the entry at |entry_path|.
   void OnNotifyCompleted(
-      const base::FilePath& observed_path,
+      const base::FilePath& entry_path,
       bool recursive,
       ProvidedFileSystemObserver::ChangeType change_type,
       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
@@ -192,7 +191,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   ProvidedFileSystemInfo file_system_info_;
   scoped_ptr<NotificationManagerInterface> notification_manager_;
   scoped_ptr<RequestManager> request_manager_;
-  ObservedEntries observed_entries_;
+  Watchers watchers_;
   ObserverList<ProvidedFileSystemObserver> observers_;
 
   base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_;

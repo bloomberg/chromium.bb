@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
+#include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -19,18 +19,18 @@ class ProvidedFileSystemInfo;
 class RequestManager;
 
 // Observer class to be notified about changes happened to the provided file
-// system, especially observed entries.
+// system, including watched entries.
 class ProvidedFileSystemObserver {
  public:
   struct Change;
 
-  // Type of a change to an observed entry.
+  // Type of a change to a watched entry.
   enum ChangeType { CHANGED, DELETED };
 
   // Lust of changes.
   typedef std::vector<Change> Changes;
 
-  // Describes a change related to an observed directory.
+  // Describes a change related to a watched entry.
   struct Change {
     Change();
     ~Change();
@@ -39,26 +39,25 @@ class ProvidedFileSystemObserver {
     ChangeType change_type;
   };
 
-  // Called when an observed entry is changed, including removals. |callback|
+  // Called when a watched entry is changed, including removals. |callback|
   // *must* be called after the entry change is handled. Once all observers
-  // call the callback, the tag will be updated and OnObservedEntryTagUpdated
+  // call the callback, the tag will be updated and OnWatcherTagUpdated
   // called. The reference to |changes| is valid at least as long as |callback|.
-  virtual void OnObservedEntryChanged(
-      const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntry& observed_entry,
-      ChangeType change_type,
-      const Changes& changes,
-      const base::Closure& callback) = 0;
+  virtual void OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
+                                const Watcher& watcher,
+                                ChangeType change_type,
+                                const Changes& changes,
+                                const base::Closure& callback) = 0;
 
-  // Called after the tag value is updated for the observed entry.
-  virtual void OnObservedEntryTagUpdated(
+  // Called after the tag value is updated for the watcher.
+  virtual void OnWatcherTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntry& observed_entry) = 0;
+      const Watcher& watcher) = 0;
 
-  // Called after the list of observed entries is changed.
-  virtual void OnObservedEntryListChanged(
+  // Called after the list of watchers is changed.
+  virtual void OnWatcherListChanged(
       const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntries& observed_entries) = 0;
+      const Watchers& watchers) = 0;
 };
 
 }  // namespace file_system_provider

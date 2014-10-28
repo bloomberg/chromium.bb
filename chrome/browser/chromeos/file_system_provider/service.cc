@@ -158,8 +158,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
       file_system;
   mount_point_name_to_key_map_[mount_point_name] =
       FileSystemKey(extension_id, options.file_system_id);
-  registry_->RememberFileSystem(file_system_info,
-                                *file_system->GetObservedEntries());
+  registry_->RememberFileSystem(file_system_info, *file_system->GetWatchers());
 
   FOR_EACH_OBSERVER(
       Observer,
@@ -311,9 +310,8 @@ void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
         GetProvidedFileSystem(restored_file_system.extension_id,
                               restored_file_system.options.file_system_id);
     DCHECK(file_system);
-    file_system->GetObservedEntries()->insert(
-        restored_file_system.observed_entries.begin(),
-        restored_file_system.observed_entries.end());
+    file_system->GetWatchers()->insert(restored_file_system.watchers.begin(),
+                                       restored_file_system.watchers.end());
   }
 }
 
@@ -347,28 +345,27 @@ void Service::OnRequestUnmountStatus(
   }
 }
 
-void Service::OnObservedEntryChanged(
-    const ProvidedFileSystemInfo& file_system_info,
-    const ObservedEntry& observed_entry,
-    ChangeType change_type,
-    const Changes& changes,
-    const base::Closure& callback) {
+void Service::OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
+                               const Watcher& watcher,
+                               ChangeType change_type,
+                               const Changes& changes,
+                               const base::Closure& callback) {
   callback.Run();
 }
 
-void Service::OnObservedEntryTagUpdated(
+void Service::OnWatcherTagUpdated(
     const ProvidedFileSystemInfo& file_system_info,
-    const ObservedEntry& observed_entry) {
+    const Watcher& watcher) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
-  registry_->UpdateObservedEntryTag(file_system_info, observed_entry);
+  registry_->UpdateWatcherTag(file_system_info, watcher);
 }
 
-void Service::OnObservedEntryListChanged(
+void Service::OnWatcherListChanged(
     const ProvidedFileSystemInfo& file_system_info,
-    const ObservedEntries& observed_entries) {
-  registry_->RememberFileSystem(file_system_info, observed_entries);
+    const Watchers& watchers) {
+  registry_->RememberFileSystem(file_system_info, watchers);
 }
 
 }  // namespace file_system_provider

@@ -63,15 +63,16 @@ namespace fileSystemProvider {
     DOMString? thumbnail;
   };
 
-  // Represents an observed entry.
-  dictionary ObservedEntry {
+  // Represents a watcher.
+  dictionary Watcher {
     // The path of the entry being observed.
     DOMString entryPath;
 
-    // Whether observing should include all child entries recursively.
+    // Whether watching should include all child entries recursively. It can be
+    // true for directories only.
     boolean recursive;
 
-    // Tag used by the last notification for the observed path.
+    // Tag used by the last notification for the watcher.
     DOMString? lastTag;
   };
 
@@ -91,8 +92,8 @@ namespace fileSystemProvider {
     // directories.
     [nodoc] boolean? supportsNotifyTag;
 
-    // List of observed entries.
-    [nodoc] ObservedEntry[] observedEntries;
+    // List of watchers.
+    [nodoc] Watcher[] watchers;
   };
 
   // Options for the <code>mount()</code> method.
@@ -316,34 +317,35 @@ namespace fileSystemProvider {
     long operationRequestId;
   };
 
-  // Options for the <code>onObserveDirectoryRequested()</code> event.
-  dictionary ObserveDirectoryRequestedOptions {
+  // Options for the <code>onAddWatcherRequested()</code> event.
+  dictionary AddWatcherRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
 
     // The unique identifier of this request.
     long requestId;
 
-    // The path of the directory to be observed.
-    DOMString directoryPath;
+    // The path of the entry to be observed.
+    DOMString entryPath;
 
-    // Whether observing should include all child entries recursively.
+    // Whether observing should include all child entries recursively. It can be
+    // true for directories only.
     boolean recursive;
   };
 
-  // Options for the <code>onUnobserveEntryRequested()</code> event.
-  dictionary UnobserveEntryRequestedOptions {
+  // Options for the <code>onRemoveWatcherRequested()</code> event.
+  dictionary RemoveWatcherRequestedOptions {
     // The identifier of the file system related to this operation.
     DOMString fileSystemId;
 
     // The unique identifier of this request.
     long requestId;
 
-    // Mode of the observed entry.
-    boolean recursive;
-
-    // The path of the entry to be not observed anymore.
+    // The path of the watched entry.
     DOMString entryPath;
+
+    // Mode of the watcher.
+    boolean recursive;
   };
 
   // Information about a change happened to an entry within the observed
@@ -587,15 +589,15 @@ namespace fileSystemProvider {
 
     // Raised when setting a new directory watcher is requested. If an error
     // occurs, then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onObserveDirectoryRequested(
-      ObserveDirectoryRequestedOptions options,
+    [maxListeners=1, nodoc] static void onAddWatcherRequested(
+      AddWatcherRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
 
-    // Raised when the entry should no longer be observed. If an error occurs,
-    // then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onUnobserveEntryRequested(
-      UnobserveEntryRequestedOptions options,
+    // Raised when the watcher should be removed. If an error occurs, then
+    // <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onRemoveWatcherRequested(
+      RemoveWatcherRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
   };

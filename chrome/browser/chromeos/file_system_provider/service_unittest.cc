@@ -92,19 +92,19 @@ class FakeRegistry : public RegistryInterface {
   // RegistryInterface overrides.
   virtual void RememberFileSystem(
       const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntries& observed_entries) override {
+      const Watchers& watchers) override {
     file_system_info_.reset(new ProvidedFileSystemInfo(file_system_info));
-    observed_entries_.reset(new ObservedEntries(observed_entries));
+    watchers_.reset(new Watchers(watchers));
   }
 
   virtual void ForgetFileSystem(const std::string& extension_id,
                                 const std::string& file_system_id) override {
-    if (!file_system_info_.get() || !observed_entries_.get())
+    if (!file_system_info_.get() || !watchers_.get())
       return;
     if (file_system_info_->extension_id() == extension_id &&
         file_system_info_->file_system_id() == file_system_id) {
       file_system_info_.reset();
-      observed_entries_.reset();
+      watchers_.reset();
     }
   }
 
@@ -112,7 +112,7 @@ class FakeRegistry : public RegistryInterface {
       const std::string& extension_id) override {
     scoped_ptr<RestoredFileSystems> result(new RestoredFileSystems);
 
-    if (file_system_info_.get() && observed_entries_.get()) {
+    if (file_system_info_.get() && watchers_.get()) {
       RestoredFileSystem restored_file_system;
       restored_file_system.extension_id = file_system_info_->extension_id();
 
@@ -122,7 +122,7 @@ class FakeRegistry : public RegistryInterface {
       options.writable = file_system_info_->writable();
       options.supports_notify_tag = file_system_info_->supports_notify_tag();
       restored_file_system.options = options;
-      restored_file_system.observed_entries = *observed_entries_.get();
+      restored_file_system.watchers = *watchers_.get();
 
       result->push_back(restored_file_system);
     }
@@ -130,26 +130,23 @@ class FakeRegistry : public RegistryInterface {
     return result;
   }
 
-  virtual void UpdateObservedEntryTag(
-      const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntry& observed_entry) override {
-    ASSERT_TRUE(observed_entries_.get());
-    const ObservedEntries::iterator it = observed_entries_->find(
-        ObservedEntryKey(observed_entry.entry_path, observed_entry.recursive));
-    ASSERT_NE(observed_entries_->end(), it);
-    it->second.last_tag = observed_entry.last_tag;
+  virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                                const Watcher& watcher) override {
+    ASSERT_TRUE(watchers_.get());
+    const Watchers::iterator it =
+        watchers_->find(WatcherKey(watcher.entry_path, watcher.recursive));
+    ASSERT_NE(watchers_->end(), it);
+    it->second.last_tag = watcher.last_tag;
   }
 
   ProvidedFileSystemInfo* const file_system_info() const {
     return file_system_info_.get();
   }
-  ObservedEntries* const observed_entries() const {
-    return observed_entries_.get();
-  }
+  Watchers* const watchers() const { return watchers_.get(); }
 
  private:
   scoped_ptr<ProvidedFileSystemInfo> file_system_info_;
-  scoped_ptr<ObservedEntries> observed_entries_;
+  scoped_ptr<Watchers> watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRegistry);
 };
@@ -198,10 +195,9 @@ class FileSystemProviderServiceTest : public testing::Test {
     // Passes ownership to the service instance.
     service_->SetRegistryForTesting(make_scoped_ptr(registry_));
 
-    fake_observed_entry_.entry_path =
-        base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
-    fake_observed_entry_.recursive = true;
-    fake_observed_entry_.last_tag = "hello-world";
+    fake_watcher_.entry_path = base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
+    fake_watcher_.recursive = true;
+    fake_watcher_.last_tag = "hello-world";
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -213,7 +209,7 @@ class FileSystemProviderServiceTest : public testing::Test {
   scoped_ptr<Service> service_;
   scoped_refptr<extensions::Extension> extension_;
   FakeRegistry* registry_;  // Owned by Service.
-  ObservedEntry fake_observed_entry_;
+  Watcher fake_watcher_;
 };
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
@@ -400,11 +396,10 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   options.supports_notify_tag = true;
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
-  ObservedEntries fake_observed_entries;
-  fake_observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
-                                         fake_observed_entry_.recursive)] =
-      fake_observed_entry_;
-  registry_->RememberFileSystem(file_system_info, fake_observed_entries);
+  Watchers fake_watchers;
+  fake_watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
+      fake_watcher_;
+  registry_->RememberFileSystem(file_system_info, fake_watchers);
 
   EXPECT_EQ(0u, observer.mounts.size());
 
@@ -431,22 +426,17 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
       service_->GetProvidedFileSystem(kExtensionId, kFileSystemId);
   ASSERT_TRUE(file_system);
 
-  const ObservedEntries* const observed_entries =
-      file_system->GetObservedEntries();
-  ASSERT_TRUE(observed_entries);
-  ASSERT_EQ(1u, observed_entries->size());
+  const Watchers* const watchers = file_system->GetWatchers();
+  ASSERT_TRUE(watchers);
+  ASSERT_EQ(1u, watchers->size());
 
-  const ObservedEntries::const_iterator restored_observed_entry_it =
-      observed_entries->find(ObservedEntryKey(fake_observed_entry_.entry_path,
-                                              fake_observed_entry_.recursive));
-  ASSERT_NE(observed_entries->end(), restored_observed_entry_it);
+  const Watchers::const_iterator restored_watcher_it = watchers->find(
+      WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive));
+  ASSERT_NE(watchers->end(), restored_watcher_it);
 
-  EXPECT_EQ(fake_observed_entry_.entry_path,
-            restored_observed_entry_it->second.entry_path);
-  EXPECT_EQ(fake_observed_entry_.recursive,
-            restored_observed_entry_it->second.recursive);
-  EXPECT_EQ(fake_observed_entry_.last_tag,
-            restored_observed_entry_it->second.last_tag);
+  EXPECT_EQ(fake_watcher_.entry_path, restored_watcher_it->second.entry_path);
+  EXPECT_EQ(fake_watcher_.recursive, restored_watcher_it->second.recursive);
+  EXPECT_EQ(fake_watcher_.last_tag, restored_watcher_it->second.last_tag);
 
   service_->RemoveObserver(&observer);
 }
@@ -456,7 +446,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   service_->AddObserver(&observer);
 
   EXPECT_FALSE(registry_->file_system_info());
-  EXPECT_FALSE(registry_->observed_entries());
+  EXPECT_FALSE(registry_->watchers());
 
   EXPECT_TRUE(service_->MountFileSystem(
       kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
@@ -468,7 +458,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   EXPECT_EQ(kDisplayName, registry_->file_system_info()->display_name());
   EXPECT_FALSE(registry_->file_system_info()->writable());
   EXPECT_FALSE(registry_->file_system_info()->supports_notify_tag());
-  ASSERT_TRUE(registry_->observed_entries());
+  ASSERT_TRUE(registry_->watchers());
 
   service_->RemoveObserver(&observer);
 }
@@ -479,13 +469,13 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
 
   {
     EXPECT_FALSE(registry_->file_system_info());
-    EXPECT_FALSE(registry_->observed_entries());
+    EXPECT_FALSE(registry_->watchers());
     EXPECT_TRUE(service_->MountFileSystem(
         kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
 
     EXPECT_EQ(1u, observer.mounts.size());
     EXPECT_TRUE(registry_->file_system_info());
-    EXPECT_TRUE(registry_->observed_entries());
+    EXPECT_TRUE(registry_->watchers());
   }
 
   {
@@ -494,7 +484,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
 
     EXPECT_EQ(1u, observer.unmounts.size());
     EXPECT_TRUE(registry_->file_system_info());
-    EXPECT_TRUE(registry_->observed_entries());
+    EXPECT_TRUE(registry_->watchers());
   }
 
   service_->RemoveObserver(&observer);
@@ -506,13 +496,13 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
 
   {
     EXPECT_FALSE(registry_->file_system_info());
-    EXPECT_FALSE(registry_->observed_entries());
+    EXPECT_FALSE(registry_->watchers());
     EXPECT_TRUE(service_->MountFileSystem(
         kExtensionId, MountOptions(kFileSystemId, kDisplayName)));
 
     EXPECT_EQ(1u, observer.mounts.size());
     EXPECT_TRUE(registry_->file_system_info());
-    EXPECT_TRUE(registry_->observed_entries());
+    EXPECT_TRUE(registry_->watchers());
   }
 
   {
@@ -521,7 +511,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
 
     EXPECT_EQ(1u, observer.unmounts.size());
     EXPECT_FALSE(registry_->file_system_info());
-    EXPECT_FALSE(registry_->observed_entries());
+    EXPECT_FALSE(registry_->watchers());
   }
 
   service_->RemoveObserver(&observer);

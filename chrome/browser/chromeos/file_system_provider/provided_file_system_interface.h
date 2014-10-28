@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
+#include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "url/gurl.h"
 
@@ -176,26 +176,28 @@ class ProvidedFileSystemInterface {
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
-  // Requests observing a directory.
-  virtual AbortCallback ObserveDirectory(
+  // Requests adding a watcher on an entry. |recursive| must not be true for
+  // files.
+  virtual AbortCallback AddWatcher(
       const GURL& origin,
-      const base::FilePath& directory_path,
+      const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
-  // Requests unobserving an entry, which is immediately removed from the
-  // internal list, hence the operation is not abortable.
-  virtual void UnobserveEntry(
+  // Requests removing a watcher, which is immediately deleted from the internal
+  // list, hence the operation is not abortable.
+  virtual void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
-  // Notifies about changes to the observed entries within the file system.
+  // Notifies about changes related to the watcher within the file system.
   // Invoked by the file system implementation. Returns false if the
-  // notification arguments are malformed or the entry is not observed anymore.
-  virtual bool Notify(const base::FilePath& observed_path,
+  // notification arguments are malformed or the entry is not watched anymore.
+  // TODO(mtomasz): Replace [entry_path, recursive] with a watcher id.
+  virtual bool Notify(const base::FilePath& entry_path,
                       bool recursive,
                       ProvidedFileSystemObserver::ChangeType change_type,
                       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
@@ -204,8 +206,8 @@ class ProvidedFileSystemInterface {
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 
-  // Returns a mutable list of observed entries.
-  virtual ObservedEntries* GetObservedEntries() = 0;
+  // Returns a mutable list of watchers.
+  virtual Watchers* GetWatchers() = 0;
 
   // Returns a request manager for the file system.
   virtual RequestManager* GetRequestManager() = 0;

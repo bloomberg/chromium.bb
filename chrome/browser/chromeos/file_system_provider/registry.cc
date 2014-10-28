@@ -27,11 +27,11 @@ const char kPrefKeyFileSystemId[] = "file-system-id";
 const char kPrefKeyDisplayName[] = "display-name";
 const char kPrefKeyWritable[] = "writable";
 const char kPrefKeySupportsNotifyTag[] = "supports-notify-tag";
-const char kPrefKeyObservedEntries[] = "observed-entries";
-const char kPrefKeyObservedEntryEntryPath[] = "entry-path";
-const char kPrefKeyObservedEntryRecursive[] = "recursive";
-const char kPrefKeyObservedEntryLastTag[] = "last-tag";
-const char kPrefKeyObservedEntryPersistentOrigins[] = "persistent-origins";
+const char kPrefKeyWatchers[] = "watchers";
+const char kPrefKeyWatcherEntryPath[] = "entry-path";
+const char kPrefKeyWatcherRecursive[] = "recursive";
+const char kPrefKeyWatcherLastTag[] = "last-tag";
+const char kPrefKeyWatcherPersistentOrigins[] = "persistent-origins";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -47,7 +47,7 @@ Registry::~Registry() {
 
 void Registry::RememberFileSystem(
     const ProvidedFileSystemInfo& file_system_info,
-    const ObservedEntries& observed_entries) {
+    const Watchers& watchers) {
   base::DictionaryValue* const file_system = new base::DictionaryValue();
   file_system->SetStringWithoutPathExpansion(kPrefKeyFileSystemId,
                                              file_system_info.file_system_id());
@@ -58,24 +58,22 @@ void Registry::RememberFileSystem(
   file_system->SetBooleanWithoutPathExpansion(
       kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
 
-  base::DictionaryValue* const observed_entries_value =
-      new base::DictionaryValue();
-  file_system->SetWithoutPathExpansion(kPrefKeyObservedEntries,
-                                       observed_entries_value);
+  base::DictionaryValue* const watchers_value = new base::DictionaryValue();
+  file_system->SetWithoutPathExpansion(kPrefKeyWatchers, watchers_value);
 
-  for (const auto& it : observed_entries) {
-    base::DictionaryValue* const observed_entry = new base::DictionaryValue();
-    observed_entries_value->SetWithoutPathExpansion(
-        it.second.entry_path.value(), observed_entry);
-    observed_entry->SetStringWithoutPathExpansion(
-        kPrefKeyObservedEntryEntryPath, it.second.entry_path.value());
-    observed_entry->SetBooleanWithoutPathExpansion(
-        kPrefKeyObservedEntryRecursive, it.second.recursive);
-    observed_entry->SetStringWithoutPathExpansion(kPrefKeyObservedEntryLastTag,
-                                                  it.second.last_tag);
+  for (const auto& it : watchers) {
+    base::DictionaryValue* const watcher = new base::DictionaryValue();
+    watchers_value->SetWithoutPathExpansion(it.second.entry_path.value(),
+                                            watcher);
+    watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
+                                           it.second.entry_path.value());
+    watcher->SetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
+                                            it.second.recursive);
+    watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                           it.second.last_tag);
     base::ListValue* const persistent_origins_value = new base::ListValue();
-    observed_entry->SetWithoutPathExpansion(
-        kPrefKeyObservedEntryPersistentOrigins, persistent_origins_value);
+    watcher->SetWithoutPathExpansion(kPrefKeyWatcherPersistentOrigins,
+                                     persistent_origins_value);
     for (const auto& subscriber_it : it.second.subscribers) {
       // Only persistent subscribers should be stored in persistent storage.
       // Other ones should not be restired after a restart.
@@ -177,16 +175,15 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     restored_file_system.extension_id = extension_id;
     restored_file_system.options = options;
 
-    // Restore observed entries. It's optional, since this field is new.
-    const base::DictionaryValue* observed_entries = NULL;
-    if (file_system->GetDictionaryWithoutPathExpansion(kPrefKeyObservedEntries,
-                                                       &observed_entries)) {
-      for (base::DictionaryValue::Iterator it(*observed_entries); !it.IsAtEnd();
+    // Restore watchers. It's optional, since this field is new.
+    const base::DictionaryValue* watchers = NULL;
+    if (file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,
+                                                       &watchers)) {
+      for (base::DictionaryValue::Iterator it(*watchers); !it.IsAtEnd();
            it.Advance()) {
-        const base::Value* observed_entry_value = NULL;
-        const base::DictionaryValue* observed_entry = NULL;
-        observed_entries->GetWithoutPathExpansion(it.key(),
-                                                  &observed_entry_value);
+        const base::Value* watcher_value = NULL;
+        const base::DictionaryValue* watcher = NULL;
+        watchers->GetWithoutPathExpansion(it.key(), &watcher_value);
         DCHECK(file_system_value);
 
         std::string entry_path;
@@ -194,27 +191,27 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
         std::string last_tag;
         const base::ListValue* persistent_origins = NULL;
 
-        if (!observed_entry_value->GetAsDictionary(&observed_entry) ||
-            !observed_entry->GetStringWithoutPathExpansion(
-                kPrefKeyObservedEntryEntryPath, &entry_path) ||
-            !observed_entry->GetBooleanWithoutPathExpansion(
-                kPrefKeyObservedEntryRecursive, &recursive) ||
-            !observed_entry->GetStringWithoutPathExpansion(
-                kPrefKeyObservedEntryLastTag, &last_tag) ||
-            !observed_entry->GetListWithoutPathExpansion(
-                kPrefKeyObservedEntryPersistentOrigins, &persistent_origins) ||
+        if (!watcher_value->GetAsDictionary(&watcher) ||
+            !watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
+                                                    &entry_path) ||
+            !watcher->GetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
+                                                     &recursive) ||
+            !watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                                    &last_tag) ||
+            !watcher->GetListWithoutPathExpansion(
+                kPrefKeyWatcherPersistentOrigins, &persistent_origins) ||
             it.key() != entry_path || entry_path.empty() ||
             (!options.supports_notify_tag &&
              (!last_tag.empty() || persistent_origins->GetSize()))) {
-          LOG(ERROR) << "Malformed observed entry information in preferences.";
+          LOG(ERROR) << "Malformed watcher information in preferences.";
           continue;
         }
 
-        ObservedEntry restored_observed_entry;
-        restored_observed_entry.entry_path =
+        Watcher restored_watcher;
+        restored_watcher.entry_path =
             base::FilePath::FromUTF8Unsafe(entry_path);
-        restored_observed_entry.recursive = recursive;
-        restored_observed_entry.last_tag = last_tag;
+        restored_watcher.recursive = recursive;
+        restored_watcher.last_tag = last_tag;
         for (const auto& persistent_origin : *persistent_origins) {
           std::string origin;
           if (persistent_origin->GetAsString(&origin)) {
@@ -222,13 +219,12 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
             continue;
           }
           const GURL origin_as_gurl(origin);
-          restored_observed_entry.subscribers[origin_as_gurl].origin =
-              origin_as_gurl;
-          restored_observed_entry.subscribers[origin_as_gurl].persistent = true;
+          restored_watcher.subscribers[origin_as_gurl].origin = origin_as_gurl;
+          restored_watcher.subscribers[origin_as_gurl].persistent = true;
         }
-        restored_file_system.observed_entries[ObservedEntryKey(
+        restored_file_system.watchers[WatcherKey(
             base::FilePath::FromUTF8Unsafe(entry_path), recursive)] =
-            restored_observed_entry;
+            restored_watcher;
       }
     }
     restored_file_systems->push_back(restored_file_system);
@@ -237,14 +233,13 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
   return restored_file_systems.Pass();
 }
 
-void Registry::UpdateObservedEntryTag(
-    const ProvidedFileSystemInfo& file_system_info,
-    const ObservedEntry& observed_entry) {
+void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                                const Watcher& watcher) {
   PrefService* const pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
 
-  // TODO(mtomasz): Consider optimizing it by moving information about observed
-  // entries, or even file systems to leveldb.
+  // TODO(mtomasz): Consider optimizing it by moving information about watchers
+  // or even file systems to leveldb.
   DictionaryPrefUpdate dict_update(pref_service,
                                    prefs::kFileSystemProviderMounted);
 
@@ -252,23 +247,23 @@ void Registry::UpdateObservedEntryTag(
   // However, since they rely on storage, DCHECKs can't be used.
   base::DictionaryValue* file_systems_per_extension = NULL;
   base::DictionaryValue* file_system = NULL;
-  base::DictionaryValue* observed_entries = NULL;
-  base::DictionaryValue* observed_entry_value = NULL;
+  base::DictionaryValue* watchers = NULL;
+  base::DictionaryValue* watcher_value = NULL;
   if (!dict_update->GetDictionaryWithoutPathExpansion(
           file_system_info.extension_id(), &file_systems_per_extension) ||
       !file_systems_per_extension->GetDictionaryWithoutPathExpansion(
           file_system_info.file_system_id(), &file_system) ||
-      !file_system->GetDictionaryWithoutPathExpansion(kPrefKeyObservedEntries,
-                                                      &observed_entries) ||
-      !observed_entries->GetDictionaryWithoutPathExpansion(
-          observed_entry.entry_path.value(), &observed_entry_value)) {
+      !file_system->GetDictionaryWithoutPathExpansion(kPrefKeyWatchers,
+                                                      &watchers) ||
+      !watchers->GetDictionaryWithoutPathExpansion(watcher.entry_path.value(),
+                                                   &watcher_value)) {
     // Broken preferences.
     LOG(ERROR) << "Broken preferences detected while updating a tag.";
     return;
   }
 
-  observed_entry_value->SetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryLastTag, observed_entry.last_tag);
+  watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
+                                               watcher.last_tag);
 }
 
 }  // namespace file_system_provider

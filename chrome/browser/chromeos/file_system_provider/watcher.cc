@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
+#include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
 namespace chromeos {
 namespace file_system_provider {
 
-ObservedEntryKey::ObservedEntryKey(const base::FilePath& entry_path,
-                                   bool recursive)
+WatcherKey::WatcherKey(const base::FilePath& entry_path, bool recursive)
     : entry_path(entry_path), recursive(recursive) {
 }
 
-ObservedEntryKey::~ObservedEntryKey() {
+WatcherKey::~WatcherKey() {
 }
 
-bool ObservedEntryKey::Comparator::operator()(const ObservedEntryKey& a,
-                                              const ObservedEntryKey& b) const {
+bool WatcherKey::Comparator::operator()(const WatcherKey& a,
+                                        const WatcherKey& b) const {
   if (a.entry_path != b.entry_path)
     return a.entry_path < b.entry_path;
   return a.recursive < b.recursive;
@@ -28,10 +27,10 @@ Subscriber::Subscriber() : persistent(false) {
 Subscriber::~Subscriber() {
 }
 
-ObservedEntry::ObservedEntry() : recursive(false) {
+Watcher::Watcher() : recursive(false) {
 }
 
-ObservedEntry::~ObservedEntry() {
+Watcher::~Watcher() {
 }
 
 }  // namespace file_system_provider

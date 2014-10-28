@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/operations/unobserve_entry.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/add_watcher.h"
 
 #include <string>
 #include <vector>
@@ -31,10 +31,10 @@ const base::FilePath::CharType kEntryPath[] = "/kitty/and/puppy/happy";
 
 }  // namespace
 
-class FileSystemProviderOperationsUnobserveEntryTest : public testing::Test {
+class FileSystemProviderOperationsAddWatcherTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsUnobserveEntryTest() {}
-  virtual ~FileSystemProviderOperationsUnobserveEntryTest() {}
+  FileSystemProviderOperationsAddWatcherTest() {}
+  virtual ~FileSystemProviderOperationsAddWatcherTest() {}
 
   virtual void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -46,103 +46,99 @@ class FileSystemProviderOperationsUnobserveEntryTest : public testing::Test {
   ProvidedFileSystemInfo file_system_info_;
 };
 
-TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute) {
-  using extensions::api::file_system_provider::UnobserveEntryRequestedOptions;
+TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute) {
+  using extensions::api::file_system_provider::AddWatcherRequestedOptions;
 
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  UnobserveEntry unobserve_entry(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  unobserve_entry.SetDispatchEventImplForTesting(
+  AddWatcher add_watcher(NULL,
+                         file_system_info_,
+                         base::FilePath::FromUTF8Unsafe(kEntryPath),
+                         true /* recursive */,
+                         base::Bind(&util::LogStatusCallback, &callback_log));
+  add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
+  EXPECT_TRUE(add_watcher.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
   extensions::Event* event = dispatcher.events()[0];
-  EXPECT_EQ(extensions::api::file_system_provider::OnUnobserveEntryRequested::
-                kEventName,
-            event->event_name);
+  EXPECT_EQ(
+      extensions::api::file_system_provider::OnAddWatcherRequested::kEventName,
+      event->event_name);
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
   const base::DictionaryValue* options_as_value = NULL;
   ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  UnobserveEntryRequestedOptions options;
+  AddWatcherRequestedOptions options;
   ASSERT_TRUE(
-      UnobserveEntryRequestedOptions::Populate(*options_as_value, &options));
+      AddWatcherRequestedOptions::Populate(*options_as_value, &options));
   EXPECT_EQ(kFileSystemId, options.file_system_id);
   EXPECT_EQ(kRequestId, options.request_id);
   EXPECT_EQ(kEntryPath, options.entry_path);
   EXPECT_TRUE(options.recursive);
 }
 
-TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute_NoListener) {
+TEST_F(FileSystemProviderOperationsAddWatcherTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  UnobserveEntry unobserve_entry(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  unobserve_entry.SetDispatchEventImplForTesting(
+  AddWatcher add_watcher(NULL,
+                         file_system_info_,
+                         base::FilePath::FromUTF8Unsafe(kEntryPath),
+                         true /* recursive */,
+                         base::Bind(&util::LogStatusCallback, &callback_log));
+  add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_FALSE(unobserve_entry.Execute(kRequestId));
+  EXPECT_FALSE(add_watcher.Execute(kRequestId));
 }
 
-TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnSuccess) {
+TEST_F(FileSystemProviderOperationsAddWatcherTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  UnobserveEntry unobserve_entry(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  unobserve_entry.SetDispatchEventImplForTesting(
+  AddWatcher add_watcher(NULL,
+                         file_system_info_,
+                         base::FilePath::FromUTF8Unsafe(kEntryPath),
+                         true /* recursive */,
+                         base::Bind(&util::LogStatusCallback, &callback_log));
+  add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
+  EXPECT_TRUE(add_watcher.Execute(kRequestId));
 
-  unobserve_entry.OnSuccess(kRequestId,
-                            scoped_ptr<RequestValue>(new RequestValue()),
-                            false /* has_more */);
+  add_watcher.OnSuccess(kRequestId,
+                        scoped_ptr<RequestValue>(new RequestValue()),
+                        false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
 }
 
-TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnError) {
+TEST_F(FileSystemProviderOperationsAddWatcherTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  UnobserveEntry unobserve_entry(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kEntryPath),
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  unobserve_entry.SetDispatchEventImplForTesting(
+  AddWatcher add_watcher(NULL,
+                         file_system_info_,
+                         base::FilePath::FromUTF8Unsafe(kEntryPath),
+                         true /* recursive */,
+                         base::Bind(&util::LogStatusCallback, &callback_log));
+  add_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(unobserve_entry.Execute(kRequestId));
+  EXPECT_TRUE(add_watcher.Execute(kRequestId));
 
-  unobserve_entry.OnError(kRequestId,
-                          scoped_ptr<RequestValue>(new RequestValue()),
-                          base::File::FILE_ERROR_TOO_MANY_OPENED);
+  add_watcher.OnError(kRequestId,
+                      scoped_ptr<RequestValue>(new RequestValue()),
+                      base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);
 }

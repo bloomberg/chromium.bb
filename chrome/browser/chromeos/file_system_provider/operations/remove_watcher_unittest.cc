@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/operations/observe_directory.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/remove_watcher.h"
 
 #include <string>
 #include <vector>
@@ -27,14 +27,14 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kDirectoryPath[] = "/kitty/and/puppy/happy";
+const base::FilePath::CharType kEntryPath[] = "/kitty/and/puppy/happy";
 
 }  // namespace
 
-class FileSystemProviderOperationsObserveDirectoryTest : public testing::Test {
+class FileSystemProviderOperationsRemoveWatcherTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsObserveDirectoryTest() {}
-  virtual ~FileSystemProviderOperationsObserveDirectoryTest() {}
+  FileSystemProviderOperationsRemoveWatcherTest() {}
+  virtual ~FileSystemProviderOperationsRemoveWatcherTest() {}
 
   virtual void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
@@ -46,27 +46,27 @@ class FileSystemProviderOperationsObserveDirectoryTest : public testing::Test {
   ProvidedFileSystemInfo file_system_info_;
 };
 
-TEST_F(FileSystemProviderOperationsObserveDirectoryTest, Execute) {
-  using extensions::api::file_system_provider::ObserveDirectoryRequestedOptions;
+TEST_F(FileSystemProviderOperationsRemoveWatcherTest, Execute) {
+  using extensions::api::file_system_provider::RemoveWatcherRequestedOptions;
 
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  ObserveDirectory observe_directory(
+  RemoveWatcher remove_watcher(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
-  observe_directory.SetDispatchEventImplForTesting(
+  remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(observe_directory.Execute(kRequestId));
+  EXPECT_TRUE(remove_watcher.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
   extensions::Event* event = dispatcher.events()[0];
-  EXPECT_EQ(extensions::api::file_system_provider::OnObserveDirectoryRequested::
+  EXPECT_EQ(extensions::api::file_system_provider::OnRemoveWatcherRequested::
                 kEventName,
             event->event_name);
   base::ListValue* event_args = event->event_args.get();
@@ -75,74 +75,74 @@ TEST_F(FileSystemProviderOperationsObserveDirectoryTest, Execute) {
   const base::DictionaryValue* options_as_value = NULL;
   ASSERT_TRUE(event_args->GetDictionary(0, &options_as_value));
 
-  ObserveDirectoryRequestedOptions options;
+  RemoveWatcherRequestedOptions options;
   ASSERT_TRUE(
-      ObserveDirectoryRequestedOptions::Populate(*options_as_value, &options));
+      RemoveWatcherRequestedOptions::Populate(*options_as_value, &options));
   EXPECT_EQ(kFileSystemId, options.file_system_id);
   EXPECT_EQ(kRequestId, options.request_id);
-  EXPECT_EQ(kDirectoryPath, options.directory_path);
+  EXPECT_EQ(kEntryPath, options.entry_path);
   EXPECT_TRUE(options.recursive);
 }
 
-TEST_F(FileSystemProviderOperationsObserveDirectoryTest, Execute_NoListener) {
+TEST_F(FileSystemProviderOperationsRemoveWatcherTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  ObserveDirectory observe_directory(
+  RemoveWatcher remove_watcher(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
-  observe_directory.SetDispatchEventImplForTesting(
+  remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_FALSE(observe_directory.Execute(kRequestId));
+  EXPECT_FALSE(remove_watcher.Execute(kRequestId));
 }
 
-TEST_F(FileSystemProviderOperationsObserveDirectoryTest, OnSuccess) {
+TEST_F(FileSystemProviderOperationsRemoveWatcherTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  ObserveDirectory observe_directory(
+  RemoveWatcher remove_watcher(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
-  observe_directory.SetDispatchEventImplForTesting(
+  remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(observe_directory.Execute(kRequestId));
+  EXPECT_TRUE(remove_watcher.Execute(kRequestId));
 
-  observe_directory.OnSuccess(kRequestId,
-                              scoped_ptr<RequestValue>(new RequestValue()),
-                              false /* has_more */);
+  remove_watcher.OnSuccess(kRequestId,
+                           scoped_ptr<RequestValue>(new RequestValue()),
+                           false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
 }
 
-TEST_F(FileSystemProviderOperationsObserveDirectoryTest, OnError) {
+TEST_F(FileSystemProviderOperationsRemoveWatcherTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  ObserveDirectory observe_directory(
+  RemoveWatcher remove_watcher(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      base::FilePath::FromUTF8Unsafe(kEntryPath),
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
-  observe_directory.SetDispatchEventImplForTesting(
+  remove_watcher.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(observe_directory.Execute(kRequestId));
+  EXPECT_TRUE(remove_watcher.Execute(kRequestId));
 
-  observe_directory.OnError(kRequestId,
-                            scoped_ptr<RequestValue>(new RequestValue()),
-                            base::File::FILE_ERROR_TOO_MANY_OPENED);
+  remove_watcher.OnError(kRequestId,
+                         scoped_ptr<RequestValue>(new RequestValue()),
+                         base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);
 }

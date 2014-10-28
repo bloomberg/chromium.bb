@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
 class Profile;
 
@@ -25,11 +25,11 @@ extern const char kPrefKeyFileSystemId[];
 extern const char kPrefKeyDisplayName[];
 extern const char kPrefKeyWritable[];
 extern const char kPrefKeySupportsNotifyTag[];
-extern const char kPrefKeyObservedEntries[];
-extern const char kPrefKeyObservedEntryEntryPath[];
-extern const char kPrefKeyObservedEntryRecursive[];
-extern const char kPrefKeyObservedEntryPersistentOrigins[];
-extern const char kPrefKeyObservedEntryLastTag[];
+extern const char kPrefKeyWatchers[];
+extern const char kPrefKeyWatcherEntryPath[];
+extern const char kPrefKeyWatcherRecursive[];
+extern const char kPrefKeyWatcherPersistentOrigins[];
+extern const char kPrefKeyWatcherLastTag[];
 
 class ProvidedFileSystemInfo;
 
@@ -45,14 +45,13 @@ class Registry : public RegistryInterface {
   // RegistryInterface overrides.
   virtual void RememberFileSystem(
       const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntries& observed_entries) override;
+      const Watchers& watchers) override;
   virtual void ForgetFileSystem(const std::string& extension_id,
                                 const std::string& file_system_id) override;
   virtual scoped_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) override;
-  virtual void UpdateObservedEntryTag(
-      const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntry& observed_entry) override;
+  virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                                const Watcher& watcher) override;
 
  private:
   Profile* profile_;  // Not owned.

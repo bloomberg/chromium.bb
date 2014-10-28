@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OBSERVE_DIRECTORY_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OBSERVE_DIRECTORY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_ADD_WATCHER_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_ADD_WATCHER_H_
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,16 +25,17 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-// Observes a directory. If |recursive| is true, than also observes all of the
-// child entries in within, recursively.
-class ObserveDirectory : public Operation {
+// Adds a watcher. If |recursive| is true, than also watches for all of the
+// child entries in within, recursively. Recursive must not be set to true for
+// files.
+class AddWatcher : public Operation {
  public:
-  ObserveDirectory(extensions::EventRouter* event_router,
-                   const ProvidedFileSystemInfo& file_system_info,
-                   const base::FilePath& directory_path,
-                   bool recursive,
-                   const storage::AsyncFileUtil::StatusCallback& callback);
-  virtual ~ObserveDirectory();
+  AddWatcher(extensions::EventRouter* event_router,
+             const ProvidedFileSystemInfo& file_system_info,
+             const base::FilePath& entry_path,
+             bool recursive,
+             const storage::AsyncFileUtil::StatusCallback& callback);
+  virtual ~AddWatcher();
 
   // Operation overrides.
   virtual bool Execute(int request_id) override;
@@ -46,15 +47,15 @@ class ObserveDirectory : public Operation {
                        base::File::Error error) override;
 
  private:
-  const base::FilePath directory_path_;
+  const base::FilePath entry_path_;
   const bool recursive_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObserveDirectory);
+  DISALLOW_COPY_AND_ASSIGN(AddWatcher);
 };
 
 }  // namespace operations
 }  // namespace file_system_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OBSERVE_DIRECTORY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_ADD_WATCHER_H_

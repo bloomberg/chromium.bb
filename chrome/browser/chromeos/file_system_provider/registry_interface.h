@@ -10,8 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/file_system_provider/watcher.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -21,7 +21,7 @@ class RegistryInterface {
  public:
   struct RestoredFileSystem;
 
-  // List of file systems together with their observed entries to be remounted.
+  // List of file systems together with their watchers to be remounted.
   typedef std::vector<RestoredFileSystem> RestoredFileSystems;
 
   // Information about a file system to be restored.
@@ -31,7 +31,7 @@ class RegistryInterface {
 
     std::string extension_id;
     MountOptions options;
-    ObservedEntries observed_entries;
+    Watchers watchers;
   };
 
   virtual ~RegistryInterface();
@@ -40,7 +40,7 @@ class RegistryInterface {
   // reboot.
   virtual void RememberFileSystem(
       const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntries& observed_entries) = 0;
+      const Watchers& watchers) = 0;
 
   // Removes the file system from preferences, so it is not remounmted anymore
   // after a reboot.
@@ -53,10 +53,9 @@ class RegistryInterface {
   virtual scoped_ptr<RestoredFileSystems> RestoreFileSystems(
       const std::string& extension_id) = 0;
 
-  // Updates a tag for the specified observed entry.
-  virtual void UpdateObservedEntryTag(
-      const ProvidedFileSystemInfo& file_system_info,
-      const ObservedEntry& observed_entry) = 0;
+  // Updates a tag for the specified watcher.
+  virtual void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
+                                const Watcher& watcher) = 0;
 };
 
 }  // namespace file_system_provider
