@@ -8,7 +8,6 @@
 
 #include "content/common/accessibility_messages.h"
 #include "content/common/appcache_messages.h"
-#include "content/common/battery_status_messages.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/cc_messages.h"
 #include "content/common/clipboard_messages.h"

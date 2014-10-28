@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager.h"
+#include "device/battery/battery_status_manager.h"
 
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 
-namespace content {
+namespace device {
 
 namespace {
 
@@ -23,28 +21,24 @@ class PowerManagerObserver
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : callback_(callback), currently_listening_(false) {}
 
-  // Starts listening for updates. It is safe to call this on any thread.
+  // Starts listening for updates.
   void Start() {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      StartOnUI();
-    } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&PowerManagerObserver::StartOnUI, this));
-    }
+    if (currently_listening_)
+      return;
+    chromeos::PowerManagerClient* power_client =
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+    power_client->AddObserver(this);
+    power_client->RequestStatusUpdate();
+    currently_listening_ = true;
   }
 
-  // Stops listening for updates. It is safe to call this on any thread.
+  // Stops listening for updates.
   void Stop() {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      StopOnUI();
-    } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&PowerManagerObserver::StopOnUI, this));
-    }
+    if (!currently_listening_)
+      return;
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+        this);
+    currently_listening_ = false;
   }
 
  private:
@@ -81,31 +75,11 @@ class PowerManagerObserver
     return proto.battery_percent() / kMaxBatteryLevelProto;
   }
 
-  void StartOnUI() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (currently_listening_)
-      return;
-    chromeos::PowerManagerClient* power_client =
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-    power_client->AddObserver(this);
-    power_client->RequestStatusUpdate();
-    currently_listening_ = true;
-  }
-
-  void StopOnUI() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!currently_listening_)
-      return;
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-        this);
-    currently_listening_ = false;
-  }
-
   // chromeos::PowerManagerClient::Observer:
   virtual void PowerChanged(
       const power_manager::PowerSupplyProperties& proto) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    blink::WebBatteryStatus status;
+    BatteryStatus status;
+
     // Use the default values if there is no battery in the system.
     if (IsBatteryPresent(proto)) {
       // The charging status is unreliable if a low power charger is connected
@@ -124,14 +98,14 @@ class PowerManagerObserver
       // the time is unreliable. Keep the default value (which is 0) if the
       // battery is full.
       if (time_unreliable || !status.charging)
-        status.chargingTime = std::numeric_limits<double>::infinity();
+        status.charging_time = std::numeric_limits<double>::infinity();
       else if (!IsBatteryFull(proto))
-        status.chargingTime = proto.battery_time_to_full_sec();
+        status.charging_time = proto.battery_time_to_full_sec();
 
       // Keep the default value for |dischargingTime| (which is +infinity) if
       // the time is unreliable, or if the battery is charging.
       if (!time_unreliable && !status.charging)
-        status.dischargingTime = proto.battery_time_to_empty_sec();
+        status.discharging_time = proto.battery_time_to_empty_sec();
 
       status.level = GetBatteryLevel(proto);
     }
@@ -157,13 +131,11 @@ class BatteryStatusManagerChromeOS
  private:
   // BatteryStatusManager:
   virtual bool StartListeningBatteryChange() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     observer_->Start();
     return true;
   }
 
   virtual void StopListeningBatteryChange() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     observer_->Stop();
   }
 
@@ -181,4 +153,4 @@ scoped_ptr<BatteryStatusManager> BatteryStatusManager::Create(
       new BatteryStatusManagerChromeOS(callback));
 }
 
-}  // namespace content
+}  // namespace device

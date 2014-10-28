@@ -25,6 +25,7 @@ source_set("browser") {
     "//content/browser/speech/proto",
     "//content/public/common:common_sources",
     "//crypto",
+    "//device/battery",
     "//google_apis",
     "//net",
     "//skia",
@@ -268,21 +269,13 @@ source_set("browser") {
     sources -= [ "power_save_blocker_x11.cc", ]
   }
 
-  # Dealing with battery_status_manager_*.cc and *wifi_data_provider_*.cc
-  # is also a bit complicated given android, chromeos, linux and use_dbus.
-  if (is_android || is_chromeos || (is_linux && use_dbus)) {
-    sources -= [ "battery_status/battery_status_manager_default.cc" ]
-  }
-  if (is_chromeos || (is_linux && !use_dbus)) {
-    # This will already have gotten removed for all non-Linux cases.
-    sources -= [
-      "battery_status/battery_status_manager_linux.cc",
-      "geolocation/wifi_data_provider_linux.cc"
-    ]
-  }
-
+  # Dealing with *wifi_data_provider_*.cc is also a bit complicated given
+  # android, chromeos, linux and use_dbus.
   if (is_android) {
     sources -= [ "geolocation/wifi_data_provider_common.cc" ]
+  }
+  if (is_chromeos || (is_linux && !use_dbus)) {
+    sources -= [ "geolocation/wifi_data_provider_linux.cc" ]
   }
   if (is_linux && use_dbus) {
     sources -= [ "geolocation/empty_wifi_data_provider.cc" ]
@@ -414,7 +407,7 @@ source_set("browser") {
   }
 
   if (is_linux && use_dbus) {
-      deps += [ "//dbus" ]
+    deps += [ "//dbus" ]
   }
 
   if (enable_browser_cdms) {

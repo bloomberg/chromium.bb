@@ -2,6 +2,7 @@ include_rules = [
   "+cc/blink",
   "+content/public/renderer",
   "+content/child",
+  "+device/battery",  # For battery status service.
   "+gin",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.

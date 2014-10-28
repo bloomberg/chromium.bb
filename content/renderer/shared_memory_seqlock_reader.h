@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "content/common/shared_memory_seqlock_buffer.h"
 
+namespace content {
 namespace internal {
 
 class SharedMemorySeqLockReaderBase  {
@@ -30,8 +31,6 @@ class SharedMemorySeqLockReaderBase  {
 };
 
 }  // namespace internal
-
-namespace content {
 
 // Template argument Data should be a pod-like structure only containing
 // data fields, such that it is copyable by memcpy method.

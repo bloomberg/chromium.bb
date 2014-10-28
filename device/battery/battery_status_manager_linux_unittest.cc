@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager_linux.h"
+#include "device/battery/battery_status_manager_linux.h"
 
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace device {
 
 namespace {
 
 TEST(BatteryStatusManagerLinuxTest, EmptyDictionary) {
   base::DictionaryValue dictionary;
-  blink::WebBatteryStatus default_status;
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus default_status;
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_EQ(default_status.charging, status.charging);
-  EXPECT_EQ(default_status.chargingTime, status.chargingTime);
-  EXPECT_EQ(default_status.dischargingTime, status.dischargingTime);
+  EXPECT_EQ(default_status.charging_time, status.charging_time);
+  EXPECT_EQ(default_status.discharging_time, status.discharging_time);
   EXPECT_EQ(default_status.level, status.level);
 }
 
@@ -28,11 +28,11 @@ TEST(BatteryStatusManagerLinuxTest, ChargingHalfFull) {
   dictionary.SetDouble("TimeToFull", 0);
   dictionary.SetDouble("Percentage", 50);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(0.5, status.level);
 }
 
@@ -42,11 +42,11 @@ TEST(BatteryStatusManagerLinuxTest, ChargingTimeToFull) {
   dictionary.SetDouble("TimeToFull", 100.f);
   dictionary.SetDouble("Percentage", 1);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(100, status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(100, status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(.01, status.level);
 }
 
@@ -57,11 +57,11 @@ TEST(BatteryStatusManagerLinuxTest, FullyCharged) {
   dictionary.SetDouble("TimeToEmpty", 200);
   dictionary.SetDouble("Percentage", 100);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(0, status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(0, status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(1, status.level);
 }
 
@@ -72,11 +72,11 @@ TEST(BatteryStatusManagerLinuxTest, Discharging) {
   dictionary.SetDouble("TimeToEmpty", 200);
   dictionary.SetDouble("Percentage", 90);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(200, status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(200, status.discharging_time);
   EXPECT_EQ(.9, status.level);
 }
 
@@ -87,11 +87,11 @@ TEST(BatteryStatusManagerLinuxTest, DischargingTimeToEmptyUnknown) {
   dictionary.SetDouble("TimeToEmpty", 0);
   dictionary.SetDouble("Percentage", 90);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(.9, status.level);
 }
 
@@ -102,11 +102,11 @@ TEST(BatteryStatusManagerLinuxTest, DeviceStateUnknown) {
   dictionary.SetDouble("TimeToEmpty", 0);
   dictionary.SetDouble("Percentage", 50);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_TRUE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(.5, status.level);
 }
 
@@ -117,11 +117,11 @@ TEST(BatteryStatusManagerLinuxTest, DeviceStateEmpty) {
   dictionary.SetDouble("TimeToEmpty", 0);
   dictionary.SetDouble("Percentage", 0);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(0, status.level);
 }
 
@@ -130,14 +130,14 @@ TEST(BatteryStatusManagerLinuxTest, LevelRoundedToThreeSignificantDigits) {
   dictionary.SetDouble("State", UPOWER_DEVICE_STATE_DISCHARGING);
   dictionary.SetDouble("Percentage", 14.56);
 
-  blink::WebBatteryStatus status = ComputeWebBatteryStatus(dictionary);
+  BatteryStatus status = ComputeWebBatteryStatus(dictionary);
 
   EXPECT_FALSE(status.charging);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.chargingTime);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.dischargingTime);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.charging_time);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), status.discharging_time);
   EXPECT_EQ(0.15, status.level);
 }
 
 }  // namespace
 
-}  // namespace content
+}  // namespace device

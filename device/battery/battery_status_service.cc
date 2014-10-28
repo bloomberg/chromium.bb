@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_service.h"
+#include "device/battery/battery_status_service.h"
 
 #include "base/bind.h"
-#include "content/browser/battery_status/battery_status_manager.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "device/battery/battery_monitor_impl.h"
+#include "device/battery/battery_status_manager.h"
 
-namespace content {
+namespace device {
 
 BatteryStatusService::BatteryStatusService()
-    : update_callback_(base::Bind(&BatteryStatusService::UpdateBatteryStatus,
+    : main_thread_task_runner_(base::MessageLoop::current()->task_runner()),
+      update_callback_(base::Bind(&BatteryStatusService::NotifyConsumers,
                                   base::Unretained(this))),
       status_updated_(false),
       is_shutdown_(false) {
@@ -30,7 +33,7 @@ BatteryStatusService* BatteryStatusService::GetInstance() {
 
 scoped_ptr<BatteryStatusService::BatteryUpdateSubscription>
 BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_shutdown_);
 
   if (!battery_fetcher_)
@@ -38,10 +41,9 @@ BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
 
   if (callback_list_.empty()) {
     bool success = battery_fetcher_->StartListeningBatteryChange();
-    if (!success) {
-        // Make sure the promise resolves with the default values in Blink.
-        callback.Run(blink::WebBatteryStatus());
-    }
+    // On failure pass the default values back.
+    if (!success)
+      callback.Run(BatteryStatus());
   }
 
   if (status_updated_) {
@@ -53,34 +55,33 @@ BatteryStatusService::AddCallback(const BatteryUpdateCallback& callback) {
 }
 
 void BatteryStatusService::ConsumersChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!is_shutdown_);
+  if (is_shutdown_)
+    return;
 
   if (callback_list_.empty()) {
-      battery_fetcher_->StopListeningBatteryChange();
-      status_updated_ = false;
+    battery_fetcher_->StopListeningBatteryChange();
+    status_updated_ = false;
   }
 }
 
-void BatteryStatusService::UpdateBatteryStatus(
-    const blink::WebBatteryStatus& status) {
+void BatteryStatusService::NotifyConsumers(const BatteryStatus& status) {
   DCHECK(!is_shutdown_);
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&BatteryStatusService::NotifyConsumers,
-                                     base::Unretained(this), status));
+
+  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &BatteryStatusService::NotifyConsumersOnMainThread,
+      base::Unretained(this),
+      status));
 }
 
-void BatteryStatusService::NotifyConsumers(
-    const blink::WebBatteryStatus& status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
+void BatteryStatusService::NotifyConsumersOnMainThread(
+    const BatteryStatus& status) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (callback_list_.empty())
     return;
 
   status_ = status;
   status_updated_ = true;
-  callback_list_.Notify(status);
+  callback_list_.Notify(status_);
 }
 
 void BatteryStatusService::Shutdown() {
@@ -96,11 +97,10 @@ BatteryStatusService::GetUpdateCallbackForTesting() const {
 }
 
 void BatteryStatusService::SetBatteryManagerForTesting(
-    BatteryStatusManager* test_battery_manager) {
-  battery_fetcher_.reset(test_battery_manager);
-  blink::WebBatteryStatus status;
-  status_ = status;
+    scoped_ptr<BatteryStatusManager> test_battery_manager) {
+  battery_fetcher_ = test_battery_manager.Pass();
+  status_ = BatteryStatus();
   status_updated_ = false;
 }
 
-}  // namespace content
+}  // namespace device

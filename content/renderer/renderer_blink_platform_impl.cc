@@ -151,6 +151,9 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
+// Set in startListening() when running layout tests, unset in stopListening(),
+// not owned by us.
+blink::WebBatteryStatusListener* g_test_battery_status_listener = nullptr;
 
 } // namespace
 
@@ -1045,39 +1048,34 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
   // hardware changes. In order to make that happen, they will receive a null
   // thread.
   if (thread && RenderThreadImpl::current()->layout_test_mode())
-    thread = 0;
+    thread = NULL;
 
   switch (type) {
-  case blink::WebPlatformEventDeviceMotion: {
-    return new DeviceMotionEventPump(thread);
-  }
-  case blink::WebPlatformEventDeviceOrientation: {
-    return new DeviceOrientationEventPump(thread);
-  }
-  case blink::WebPlatformEventDeviceLight: {
-    return new DeviceLightEventPump(thread);
-  }
-  case blink::WebPlatformEventBattery: {
-    return new BatteryStatusDispatcher(thread);
-  }
-  case blink::WebPlatformEventGamepad:
-    return new GamepadSharedMemoryReader(thread);
-    break;
-  case blink::WebPlatformEventScreenOrientation:
-    return new ScreenOrientationObserver();
-  default:
-    // A default statement is required to prevent compilation errors when Blink
-    // adds a new type.
-    VLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
-               "unknown type.";
+    case blink::WebPlatformEventDeviceMotion:
+      return new DeviceMotionEventPump(thread);
+    case blink::WebPlatformEventDeviceOrientation:
+      return new DeviceOrientationEventPump(thread);
+    case blink::WebPlatformEventDeviceLight:
+      return new DeviceLightEventPump(thread);
+    case blink::WebPlatformEventGamepad:
+      return new GamepadSharedMemoryReader(thread);
+    case blink::WebPlatformEventScreenOrientation:
+      return new ScreenOrientationObserver();
+    default:
+      // A default statement is required to prevent compilation errors when
+      // Blink adds a new type.
+      VLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
+                 "unknown type.";
   }
 
-  return 0;
+  return NULL;
 }
 
 void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
     scoped_ptr<PlatformEventObserverBase> observer) {
+  DCHECK(type != blink::WebPlatformEventBattery);
+
   if (platform_event_observers_.Lookup(type))
     platform_event_observers_.Remove(type);
   platform_event_observers_.AddWithID(observer.release(), type);
@@ -1086,6 +1084,18 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
 void RendererBlinkPlatformImpl::startListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
+  if (type == blink::WebPlatformEventBattery) {
+    if (RenderThreadImpl::current() &&
+        RenderThreadImpl::current()->layout_test_mode()) {
+      g_test_battery_status_listener =
+          static_cast<blink::WebBatteryStatusListener*>(listener);
+    } else {
+      battery_status_dispatcher_.reset(new BatteryStatusDispatcher(
+          static_cast<blink::WebBatteryStatusListener*>(listener)));
+    }
+    return;
+  }
+
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer) {
     observer = CreatePlatformEventObserverFromType(type);
@@ -1144,6 +1154,12 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
 
 void RendererBlinkPlatformImpl::stopListening(
     blink::WebPlatformEventType type) {
+  if (type == blink::WebPlatformEventBattery) {
+    g_test_battery_status_listener = nullptr;
+    battery_status_dispatcher_.reset();
+    return;
+  }
+
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer)
     return;
@@ -1170,11 +1186,9 @@ void RendererBlinkPlatformImpl::queryStorageUsageAndQuota(
 
 void RendererBlinkPlatformImpl::MockBatteryStatusChangedForTesting(
     const blink::WebBatteryStatus& status) {
-  PlatformEventObserverBase* observer =
-      platform_event_observers_.Lookup(blink::WebPlatformEventBattery);
-  if (!observer)
+  if (!g_test_battery_status_listener)
     return;
-  observer->SendFakeDataForTesting((void*)&status);
+  g_test_battery_status_listener->updateBatteryStatus(status);
 }
 
 }  // namespace content
