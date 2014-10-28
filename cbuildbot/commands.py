@@ -10,6 +10,7 @@ import base64
 import collections
 import fnmatch
 import glob
+import json
 import logging
 import multiprocessing
 import os
@@ -1152,6 +1153,46 @@ def UprevPush(buildroot, overlays, dryrun):
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
+def ExtractDependencies(buildroot, packages, board=None, useflags=None,
+                        cpe_format=False, raw_cmd_result=False):
+  """Extracts dependencies for |packages|.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    packages: A list of packages for which to extract dependencies.
+    board: Board type that was built on this machine.
+    useflags: A list of useflags for this build.
+    cpe_format: Set output format to CPE-only JSON; otherwise,
+      output traditional deps.
+    raw_cmd_result: If set True, returns the CommandResult object.
+      Otherwise, returns the dependencies as a dictionary.
+
+  Returns:
+    Returns the CommandResult object if |raw_cmd_result| is set; returns
+    the dependencies in a dictionary otherwise.
+  """
+  cmd = ['cros_extract_deps']
+  if board:
+    cmd += ['--board', board]
+  if cpe_format:
+    cmd += ['--format=cpe']
+  else:
+    cmd += ['--format=deps']
+  cmd += packages
+  env = {}
+  if useflags:
+    env['USE'] = ' '.join(useflags)
+
+  result = RunBuildScript(buildroot, cmd, enter_chroot=True,
+                          chromite_cmd=True, capture_output=True,
+                          extra_env=env)
+  if raw_cmd_result:
+    return result
+
+  # Parse the result.
+  return json.loads(result.output)
+
+
 def GenerateCPEExport(buildroot, board, useflags=None):
   """Generate CPE export.
 
@@ -1164,15 +1205,9 @@ def GenerateCPEExport(buildroot, board, useflags=None):
     A CommandResult object with the results of running the CPE
     export command.
   """
-  cmd = ['cros_extract_deps', '--format=cpe', '--board=%s' % board,
-         'virtual/target-os']
-  env = {}
-  if useflags:
-    env['USE'] = ' '.join(useflags)
-  result = RunBuildScript(buildroot, cmd, enter_chroot=True,
-                          chromite_cmd=True, capture_output=True,
-                          extra_env=env)
-  return result
+  return ExtractDependencies(
+      buildroot, ['virtual/target-os'], board=board,
+      useflags=useflags, cpe_format=True, raw_cmd_result=True)
 
 
 def GenerateBreakpadSymbols(buildroot, board, debug):

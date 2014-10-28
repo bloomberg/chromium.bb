@@ -164,6 +164,7 @@ class RunAttributes(object):
       'delta_payloads_generated',   # Set by UploadHWTestArtifacts.
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                    # Set by cbuildbot.py:Builder
+      'packages_under_test',        # Set by BuildPackagesStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel

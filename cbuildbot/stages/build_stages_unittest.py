@@ -235,8 +235,8 @@ class BuildPackagesStageTest(AllConfigsTestCase):
 
   def setUp(self):
     self._release_tag = None
-
     self.StartPatcher(BuilderRunMock())
+    self.PatchObject(commands, 'ExtractDependencies', return_value=dict())
 
   def ConstructStage(self):
     self._run.attrs.release_tag = self._release_tag

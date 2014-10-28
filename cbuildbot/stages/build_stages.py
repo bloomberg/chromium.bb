@@ -260,12 +260,29 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     return packages
 
+  def RecordPackagesUnderTest(self, packages_to_build):
+    """Records all packages that may affect the board to BuilderRun."""
+    deps = dict()
+    # Include packages that are built in chroot because they can
+    # affect any board.
+    packages = ['virtual/target-sdk']
+    # Include chromite because we are running cbuildbot.
+    packages += ['chromeos-base/chromite']
+    deps.update(commands.ExtractDependencies(self._build_root, packages))
+
+    # Include packages that will be built as part of the board.
+    deps.update(commands.ExtractDependencies(self._build_root,
+                                             packages_to_build,
+                                             board=self._current_board))
+    cros_build_lib.Info('Recording packages under test')
+    self.board_runattrs.SetParallel('packages_under_test', deps)
+
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
-
     self.VerifyChromeBinpkg()
     packages = self.GetListOfPackagesToBuild()
+    self.RecordPackagesUnderTest(packages)
 
     commands.Build(self._build_root,
                    self._current_board,
