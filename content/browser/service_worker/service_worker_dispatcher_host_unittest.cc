@@ -184,6 +184,57 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
            ServiceWorkerMsg_ServiceWorkerRegistered::ID);
 }
 
+TEST_F(ServiceWorkerDispatcherHostTest,
+       Register_DifferentDirectoryThanScriptShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendRegister(kProviderId,
+               GURL("https://www.example.com/hoge/piyo"),
+               GURL("https://www.example.com/bar/hoge.js"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest,
+       Register_SameDirectoryAsScriptButNoSlashShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendRegister(kProviderId,
+               GURL("https://www.example.com/bar"),
+               GURL("https://www.example.com/bar/hoge.js"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendRegister(
+      kProviderId, GURL(""), GURL("https://www.example.com/bar/hoge.js"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScriptShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendRegister(kProviderId, GURL("https://www.example.com/bar/"), GURL(""));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
 TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureOriginShouldFail) {
   const int64 kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
@@ -277,6 +328,17 @@ TEST_F(ServiceWorkerDispatcherHostTest, Unregister_CrossOriginShouldFail) {
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 }
 
+TEST_F(ServiceWorkerDispatcherHostTest, Unregister_InvalidScopeShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendUnregister(kProviderId, GURL(""));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
 TEST_F(ServiceWorkerDispatcherHostTest, Unregister_NonSecureOriginShouldFail) {
   const int64 kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
@@ -351,6 +413,18 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOriginShouldFail) {
   context()->AddProviderHost(host.Pass());
 
   SendGetRegistration(kProviderId, GURL("https://foo.example.com/"));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest,
+       GetRegistration_InvalidScopeShouldFail) {
+  const int64 kProviderId = 99;  // Dummy value
+  scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
+      kRenderProcessId, kProviderId, context()->AsWeakPtr(), NULL));
+  host->SetDocumentUrl(GURL("https://www.example.com/foo"));
+  context()->AddProviderHost(host.Pass());
+
+  SendGetRegistration(kProviderId, GURL(""));
   EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
 }
 
