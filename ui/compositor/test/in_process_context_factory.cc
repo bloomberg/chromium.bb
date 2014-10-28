@@ -39,8 +39,8 @@ InProcessContextFactory::InProcessContextFactory()
 
 InProcessContextFactory::~InProcessContextFactory() {}
 
-scoped_ptr<cc::OutputSurface> InProcessContextFactory::CreateOutputSurface(
-    Compositor* compositor,
+void InProcessContextFactory::CreateOutputSurface(
+    base::WeakPtr<Compositor> compositor,
     bool software_fallback) {
   DCHECK(!software_fallback);
   blink::WebGraphicsContext3D::Attributes attrs;
@@ -60,7 +60,8 @@ scoped_ptr<cc::OutputSurface> InProcessContextFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderInProcess> context_provider =
       ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
 
-  return make_scoped_ptr(new cc::PixelTestOutputSurface(context_provider));
+  compositor->SetOutputSurface(
+      make_scoped_ptr(new cc::PixelTestOutputSurface(context_provider)));
 }
 
 scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(

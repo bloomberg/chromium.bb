@@ -20,10 +20,10 @@ SurfaceContextFactory::SurfaceContextFactory(Shell* shell, View* view)
 SurfaceContextFactory::~SurfaceContextFactory() {
 }
 
-scoped_ptr<cc::OutputSurface> SurfaceContextFactory::CreateOutputSurface(
-    ui::Compositor* compositor,
+void SurfaceContextFactory::CreateOutputSurface(
+    base::WeakPtr<ui::Compositor> compositor,
     bool software_fallback) {
-  return surface_binding_.CreateOutputSurface();
+  compositor->SetOutputSurface(surface_binding_.CreateOutputSurface());
 }
 
 scoped_refptr<ui::Reflector> SurfaceContextFactory::CreateReflector(

@@ -19,9 +19,8 @@ class SurfaceContextFactory : public ui::ContextFactory {
 
  private:
   // ContextFactory:
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      ui::Compositor* compositor,
-      bool software_fallback) override;
+  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor,
+                           bool software_fallback) override;
   scoped_refptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer) override;

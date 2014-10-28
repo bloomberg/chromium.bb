@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/common/gpu/client/gpu_channel_host.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -43,9 +44,8 @@ class GpuProcessTransportFactory
   CreateOffscreenCommandBufferContext();
 
   // ui::ContextFactory implementation.
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      ui::Compositor* compositor,
-      bool software_fallback) override;
+  void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor,
+                           bool software_fallback) override;
   scoped_refptr<ui::Reflector> CreateReflector(ui::Compositor* source,
                                                ui::Layer* target) override;
   void RemoveReflector(scoped_refptr<ui::Reflector> reflector) override;
@@ -72,8 +72,11 @@ class GpuProcessTransportFactory
   struct PerCompositorData;
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-      CreateContextCommon(int surface_id);
+  void EstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
+                             bool create_software_renderer);
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
+      scoped_refptr<GpuChannelHost> gpu_channel_host,
+      int surface_id);
 
   void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();

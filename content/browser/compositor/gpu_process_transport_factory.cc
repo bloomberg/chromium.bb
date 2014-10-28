@@ -97,7 +97,11 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
-  return CreateContextCommon(0);
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+  scoped_refptr<GpuChannelHost> gpu_channel_host(
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
+  return CreateContextCommon(gpu_channel_host, 0);
 }
 
 scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
@@ -135,11 +139,13 @@ scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
   return scoped_ptr<cc::OverlayCandidateValidator>();
 }
 
-scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
-    ui::Compositor* compositor, bool software_fallback) {
-  PerCompositorData* data = per_compositor_data_[compositor];
+void GpuProcessTransportFactory::CreateOutputSurface(
+    base::WeakPtr<ui::Compositor> compositor,
+    bool software_fallback) {
+  DCHECK(!!compositor);
+  PerCompositorData* data = per_compositor_data_[compositor.get()];
   if (!data)
-    data = CreatePerCompositorData(compositor);
+    data = CreatePerCompositorData(compositor.get());
 
   bool create_software_renderer = software_fallback;
 #if defined(OS_CHROMEOS)
@@ -151,12 +157,37 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
       create_software_renderer = true;
   }
 #endif
-
-  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+    create_software_renderer = true;
 
   if (!create_software_renderer) {
+    CauseForGpuLaunch cause =
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+    BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+        cause,
+        base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
+                   callback_factory_.GetWeakPtr(),
+                   compositor,
+                   create_software_renderer));
+  } else {
+    EstablishedGpuChannel(compositor, create_software_renderer);
+  }
+}
+
+void GpuProcessTransportFactory::EstablishedGpuChannel(
+    base::WeakPtr<ui::Compositor> compositor,
+    bool create_software_renderer) {
+  if (!compositor)
+    return;
+  PerCompositorData* data = per_compositor_data_[compositor.get()];
+  DCHECK(data);
+  scoped_refptr<GpuChannelHost> gpu_channel_host =
+      BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  if (gpu_channel_host.get() && !create_software_renderer) {
     context_provider = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
+        GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
+                                                        data->surface_id),
         "Compositor");
   }
 
@@ -186,14 +217,14 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
       display_surface =
           make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
               output_surface_proxy_,
-              CreateSoftwareOutputDevice(compositor),
-              per_compositor_data_[compositor]->surface_id,
+              CreateSoftwareOutputDevice(compositor.get()),
+              data->surface_id,
               &output_surface_map_,
               compositor->vsync_manager()));
     } else {
       display_surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
           context_provider,
-          per_compositor_data_[compositor]->surface_id,
+          data->surface_id,
           &output_surface_map_,
           compositor->vsync_manager(),
           CreateOverlayCandidateValidator(compositor->widget())));
@@ -207,7 +238,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     display_client->set_surface_output_surface(output_surface.get());
     output_surface->set_display_client(display_client.get());
     data->display_client = display_client.Pass();
-    return output_surface.Pass();
+    compositor->SetOutputSurface(output_surface.Pass());
+    return;
   }
 
   if (!context_provider.get()) {
@@ -216,12 +248,15 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
                  " compositing with browser threaded compositing. Aborting.";
     }
 
-    return make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
-        output_surface_proxy_,
-        CreateSoftwareOutputDevice(compositor),
-        per_compositor_data_[compositor]->surface_id,
-        &output_surface_map_,
-        compositor->vsync_manager()));
+    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
+        new SoftwareBrowserCompositorOutputSurface(
+            output_surface_proxy_,
+            CreateSoftwareOutputDevice(compositor.get()),
+            data->surface_id,
+            &output_surface_map_,
+            compositor->vsync_manager()));
+    compositor->SetOutputSurface(surface.Pass());
+    return;
   }
 
   scoped_ptr<BrowserCompositorOutputSurface> surface;
@@ -229,7 +264,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
     surface.reset(new GpuSurfacelessBrowserCompositorOutputSurface(
         context_provider,
-        per_compositor_data_[compositor]->surface_id,
+        data->surface_id,
         &output_surface_map_,
         compositor->vsync_manager(),
         CreateOverlayCandidateValidator(compositor->widget()),
@@ -240,7 +275,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (!surface)
     surface.reset(new GpuBrowserCompositorOutputSurface(
         context_provider,
-        per_compositor_data_[compositor]->surface_id,
+        data->surface_id,
         &output_surface_map_,
         compositor->vsync_manager(),
         CreateOverlayCandidateValidator(compositor->widget())));
@@ -248,7 +283,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (data->reflector.get())
     data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
 
-  return surface.Pass();
+  compositor->SetOutputSurface(surface.Pass());
 }
 
 scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
@@ -417,7 +452,9 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
+GpuProcessTransportFactory::CreateContextCommon(
+    scoped_refptr<GpuChannelHost> gpu_channel_host,
+    int surface_id) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   blink::WebGraphicsContext3D::Attributes attrs;
@@ -427,10 +464,6 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
   attrs.antialias = false;
   attrs.noAutomaticFlushes = true;
   bool lose_context_when_out_of_memory = true;
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
   if (!gpu_channel_host.get()) {
     LOG(ERROR) << "Failed to establish GPU channel.";
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();

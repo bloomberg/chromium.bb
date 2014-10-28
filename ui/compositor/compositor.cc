@@ -107,7 +107,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       draw_on_compositing_end_(false),
       swap_state_(SWAP_NONE),
       layer_animator_collection_(this),
-      schedule_draw_factory_(this) {
+      weak_ptr_factory_(this) {
   root_web_layer_ = cc::Layer::Create();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -200,6 +200,11 @@ Compositor::~Compositor() {
   context_factory_->RemoveCompositor(this);
 }
 
+void Compositor::SetOutputSurface(
+    scoped_ptr<cc::OutputSurface> output_surface) {
+  host_->SetOutputSurface(output_surface.Pass());
+}
+
 void Compositor::ScheduleDraw() {
   if (compositor_thread_loop_.get()) {
     host_->SetNeedsCommit();
@@ -207,7 +212,7 @@ void Compositor::ScheduleDraw() {
     defer_draw_scheduling_ = true;
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Compositor::Draw, schedule_draw_factory_.GetWeakPtr()));
+        base::Bind(&Compositor::Draw, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -366,8 +371,8 @@ void Compositor::Layout() {
 }
 
 void Compositor::RequestNewOutputSurface(bool fallback) {
-  host_->SetOutputSurface(
-      context_factory_->CreateOutputSurface(this, fallback));
+  context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr(),
+                                        fallback);
 }
 
 void Compositor::DidCommit() {
