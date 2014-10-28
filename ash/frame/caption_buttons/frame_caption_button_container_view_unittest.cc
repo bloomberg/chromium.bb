@@ -21,16 +21,11 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
   TestWidgetDelegate(bool can_maximize, bool can_minimize)
       : can_maximize_(can_maximize), can_minimize_(can_minimize) {}
-  virtual ~TestWidgetDelegate() {
-  }
+  ~TestWidgetDelegate() override {}
 
-  virtual bool CanMaximize() const override {
-    return can_maximize_;
-  }
+  bool CanMaximize() const override { return can_maximize_; }
 
-  virtual bool CanMinimize() const override {
-    return can_minimize_;
-  }
+  bool CanMinimize() const override { return can_minimize_; }
 
  private:
   bool can_maximize_;
@@ -56,8 +51,7 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
   FrameCaptionButtonContainerViewTest() {
   }
 
-  virtual ~FrameCaptionButtonContainerViewTest() {
-  }
+  ~FrameCaptionButtonContainerViewTest() override {}
 
   // Creates a widget which allows maximizing based on |maximize_allowed|.
   // The caller takes ownership of the returned widget.

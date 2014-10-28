@@ -24,9 +24,9 @@ namespace ash {
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
   TestWidgetDelegate() {}
-  virtual ~TestWidgetDelegate() {}
+  ~TestWidgetDelegate() override {}
 
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     custom_frame_view_ = new CustomFrameViewAsh(widget);
     return custom_frame_view_;
@@ -46,31 +46,23 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
  public:
   TestWidgetConstraintsDelegate() {}
-  virtual ~TestWidgetConstraintsDelegate() {}
+  ~TestWidgetConstraintsDelegate() override {}
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() const override {
-    return minimum_size_;
-  }
+  gfx::Size GetMinimumSize() const override { return minimum_size_; }
 
-  virtual gfx::Size GetMaximumSize() const override {
-    return maximum_size_;
-  }
+  gfx::Size GetMaximumSize() const override { return maximum_size_; }
 
-  virtual views::View* GetContentsView() override {
+  views::View* GetContentsView() override {
     // Set this instance as the contents view so that the maximum and minimum
     // size constraints will be used.
     return this;
   }
 
   // views::WidgetDelegate:
-  virtual bool CanMaximize() const override {
-    return true;
-  }
+  bool CanMaximize() const override { return true; }
 
-  virtual bool CanMinimize() const override {
-    return true;
-  }
+  bool CanMinimize() const override { return true; }
 
   void set_minimum_size(const gfx::Size& min_size) {
     minimum_size_ = min_size;
@@ -105,7 +97,7 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
 class CustomFrameViewAshTest : public test::AshTestBase {
  public:
   CustomFrameViewAshTest() {}
-  virtual ~CustomFrameViewAshTest() {}
+  ~CustomFrameViewAshTest() override {}
 
  protected:
   scoped_ptr<views::Widget> CreateWidget(TestWidgetDelegate* delegate) {

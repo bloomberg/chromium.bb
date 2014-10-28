@@ -28,21 +28,13 @@ namespace {
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
   TestWidgetDelegate() {}
-  virtual ~TestWidgetDelegate() {}
+  ~TestWidgetDelegate() override {}
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
-  virtual bool CanResize() const override {
-    return true;
-  }
-  virtual bool CanMaximize() const override {
-    return true;
-  }
-  virtual bool CanMinimize() const override {
-    return true;
-  }
+  views::View* GetContentsView() override { return this; }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
 
   ash::FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
@@ -50,7 +42,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   // Overridden from views::View:
-  virtual void Layout() override {
+  void Layout() override {
     caption_button_container_->Layout();
 
     // Right align the caption button container.
@@ -59,7 +51,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
         preferred_size.width(), preferred_size.height());
   }
 
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       caption_button_container_ =
@@ -91,7 +83,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 class FrameSizeButtonTest : public AshTestBase {
  public:
   FrameSizeButtonTest() {}
-  virtual ~FrameSizeButtonTest() {}
+  ~FrameSizeButtonTest() override {}
 
   // Returns the center point of |view| in screen coordinates.
   gfx::Point CenterPointInScreen(views::View* view) {
@@ -125,7 +117,7 @@ class FrameSizeButtonTest : public AshTestBase {
   }
 
   // AshTestBase overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate();
@@ -407,16 +399,16 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
 class FrameSizeButtonTestRTL : public FrameSizeButtonTest {
  public:
   FrameSizeButtonTestRTL() {}
-  virtual ~FrameSizeButtonTestRTL() {}
+  ~FrameSizeButtonTestRTL() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     original_locale_ = l10n_util::GetApplicationLocale(std::string());
     base::i18n::SetICUDefaultLocale("he");
 
     FrameSizeButtonTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     FrameSizeButtonTest::TearDown();
     base::i18n::SetICUDefaultLocale(original_locale_);
   }

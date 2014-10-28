@@ -29,7 +29,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   static const char kViewClassName[];
 
   FrameCaptionButton(views::ButtonListener* listener, CaptionButtonIcon icon);
-  virtual ~FrameCaptionButton();
+  ~FrameCaptionButton() override;
 
   // Sets the images to use to paint the button. If |animate| is ANIMATE_YES,
   // the button crossfades to the new visuals. If the image ids match those
@@ -50,9 +50,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   void SetAlpha(int alpha);
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   void set_paint_as_active(bool paint_as_active) {
     paint_as_active_ = paint_as_active;
@@ -64,7 +64,7 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
  protected:
   // views::CustomButton override:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Returns the icon image to paint based on |paint_as_active_|.

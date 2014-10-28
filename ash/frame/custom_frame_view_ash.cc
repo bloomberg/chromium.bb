@@ -66,7 +66,7 @@ class CustomFrameViewAshWindowStateDelegate
     window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
   }
-  virtual ~CustomFrameViewAshWindowStateDelegate() {
+  ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
       window_state_->window()->RemoveObserver(this);
@@ -74,7 +74,7 @@ class CustomFrameViewAshWindowStateDelegate
   }
  private:
   // Overridden from ash::wm::WindowStateDelegate:
-  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     bool enter_fullscreen = !window_state->IsFullscreen();
     if (enter_fullscreen) {
       window_state->window()->SetProperty(aura::client::kShowStateKey,
@@ -90,15 +90,14 @@ class CustomFrameViewAshWindowStateDelegate
     return true;
   }
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
     window_state_->window()->RemoveObserver(this);
     window_state_ = NULL;
   }
   // Overridden from ash::wm::WindowStateObserver:
-  virtual void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::wm::WindowStateType old_type) override {
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::wm::WindowStateType old_type) override {
     if (!window_state->IsFullscreen() &&
         !window_state->IsMinimized() &&
         immersive_fullscreen_controller_.get() &&
@@ -132,7 +131,7 @@ class CustomFrameViewAsh::HeaderView
  public:
   // |frame| is the widget that the caption buttons act on.
   explicit HeaderView(views::Widget* frame);
-  virtual ~HeaderView();
+  ~HeaderView() override;
 
   // Schedules a repaint for the entire title.
   void SchedulePaintForTitle();
@@ -156,13 +155,13 @@ class CustomFrameViewAsh::HeaderView
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
 
   // views::View:
-  virtual void Layout() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // ShellObserver:
-  virtual void OnMaximizeModeStarted() override;
-  virtual void OnMaximizeModeEnded() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
   FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
@@ -174,11 +173,11 @@ class CustomFrameViewAsh::HeaderView
 
  private:
   // ImmersiveFullscreenController::Delegate:
-  virtual void OnImmersiveRevealStarted() override;
-  virtual void OnImmersiveRevealEnded() override;
-  virtual void OnImmersiveFullscreenExited() override;
-  virtual void SetVisibleFraction(double visible_fraction) override;
-  virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
+  void OnImmersiveRevealStarted() override;
+  void OnImmersiveRevealEnded() override;
+  void OnImmersiveFullscreenExited() override;
+  void SetVisibleFraction(double visible_fraction) override;
+  std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
   // The widget that the caption buttons act on.
   views::Widget* frame_;
@@ -372,15 +371,15 @@ class CustomFrameViewAsh::OverlayView : public views::View,
                                         public views::ViewTargeterDelegate {
  public:
   explicit OverlayView(HeaderView* header_view);
-  virtual ~OverlayView();
+  ~OverlayView() override;
 
   // views::View:
-  virtual void Layout() override;
+  void Layout() override;
 
  private:
   // views::ViewTargeterDelegate:
-  virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const override;
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   HeaderView* header_view_;
 

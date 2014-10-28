@@ -33,7 +33,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   static const char kViewClassName[];
 
   explicit CustomFrameViewAsh(views::Widget* frame);
-  virtual ~CustomFrameViewAsh();
+  ~CustomFrameViewAsh() override;
 
   // Inits |immersive_fullscreen_controller| so that the controller reveals
   // and hides |header_view_| in immersive fullscreen.
@@ -47,25 +47,23 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
 
   // views::NonClientFrameView:
-  virtual gfx::Rect GetBoundsForClientView() const override;
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetBoundsForClientView() const override;
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
-  virtual int NonClientHitTest(const gfx::Point& point) override;
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override;
-  virtual void ResetWindowControls() override;
-  virtual void UpdateWindowIcon() override;
-  virtual void UpdateWindowTitle() override;
-  virtual void SizeConstraintsChanged() override;
+  int NonClientHitTest(const gfx::Point& point) override;
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void ResetWindowControls() override;
+  void UpdateWindowIcon() override;
+  void UpdateWindowTitle() override;
+  void SizeConstraintsChanged() override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual gfx::Size GetMaximumSize() const override;
-  virtual void SchedulePaintInRect(const gfx::Rect& r) override;
-  virtual void VisibilityChanged(views::View* starting_from,
-                                 bool is_visible) override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  void SchedulePaintInRect(const gfx::Rect& r) override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // Get the view of the header.
   views::View* GetHeaderView();
@@ -77,8 +75,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   friend class TestWidgetConstraintsDelegate;
 
   // views::NonClientFrameView:
-  virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const override;
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   // Returns the container for the minimize/maximize/close buttons that is held
   // by the HeaderView. Used in testing.
