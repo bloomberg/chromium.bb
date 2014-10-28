@@ -117,9 +117,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.
@@ -260,15 +260,15 @@ class VIEWS_EXPORT MenuItemView : public View {
   int GetCommand() const { return command_; }
 
   // Paints the menu item.
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Returns the preferred size of this item.
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // Gets the preferred height for the given |width|. This is only different
   // from GetPreferredSize().width() if the item has a child view with flexible
   // dimensions.
-  virtual int GetHeightForWidth(int width) const override;
+  int GetHeightForWidth(int width) const override;
 
   // Return the preferred dimensions of the item in pixel.
   const MenuItemDimensions& GetDimensions() const;
@@ -305,7 +305,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void ChildrenChanged();
 
   // Sizes any child views.
-  virtual void Layout() override;
+  void Layout() override;
 
   // Returns true if the menu has mnemonics. This only useful on the root menu
   // item.
@@ -328,11 +328,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView(MenuItemView* parent, int command, Type type);
 
   // MenuRunner owns MenuItemView and should be the only one deleting it.
-  virtual ~MenuItemView();
+  ~MenuItemView() override;
 
-  virtual void ChildPreferredSizeChanged(View* child) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
-  virtual const char* GetClassName() const override;
+  const char* GetClassName() const override;
 
   // Returns the preferred size (and padding) of any children.
   virtual gfx::Size GetChildPreferredSize() const;

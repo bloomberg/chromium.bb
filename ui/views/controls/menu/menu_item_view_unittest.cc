@@ -16,15 +16,11 @@ namespace {
 class SquareView : public views::View {
  public:
   SquareView() {}
-  virtual ~SquareView() {}
+  ~SquareView() override {}
 
  private:
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(1, 1);
-  }
-  virtual int GetHeightForWidth(int width) const override {
-    return width;
-  }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(1, 1); }
+  int GetHeightForWidth(int width) const override { return width; }
 };
 
 // A MenuItemView implementation with a public destructor (so we can clean up
@@ -32,7 +28,7 @@ class SquareView : public views::View {
 class TestMenuItemView : public views::MenuItemView {
  public:
   TestMenuItemView() : views::MenuItemView(NULL) {}
-  virtual ~TestMenuItemView() {}
+  ~TestMenuItemView() override {}
 };
 
 }  // namespace

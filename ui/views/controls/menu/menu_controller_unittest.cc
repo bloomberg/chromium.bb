@@ -32,7 +32,7 @@ namespace {
 class TestMenuItemView : public MenuItemView {
  public:
   TestMenuItemView() : MenuItemView(NULL) {}
-  virtual ~TestMenuItemView() {}
+  ~TestMenuItemView() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemView);
@@ -45,7 +45,7 @@ class TestPlatformEventSource : public ui::PlatformEventSource {
     ui::DeviceDataManagerX11::CreateInstance();
 #endif
   }
-  virtual ~TestPlatformEventSource() {}
+  ~TestPlatformEventSource() override {}
 
   uint32_t Dispatch(const ui::PlatformEvent& event) {
     return DispatchEvent(event);
@@ -58,10 +58,10 @@ class TestPlatformEventSource : public ui::PlatformEventSource {
 class TestNullTargeter : public ui::EventTargeter {
  public:
   TestNullTargeter() {}
-  virtual ~TestNullTargeter() {}
+  ~TestNullTargeter() override {}
 
-  virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                              ui::Event* event) override {
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override {
     return NULL;
   }
 
@@ -72,17 +72,16 @@ class TestNullTargeter : public ui::EventTargeter {
 class TestDispatcherClient : public aura::client::DispatcherClient {
  public:
   TestDispatcherClient() : dispatcher_(NULL) {}
-  virtual ~TestDispatcherClient() {}
+  ~TestDispatcherClient() override {}
 
   base::MessagePumpDispatcher* dispatcher() {
     return dispatcher_;
   }
 
   // aura::client::DispatcherClient:
-  virtual void PrepareNestedLoopClosures(
-      base::MessagePumpDispatcher* dispatcher,
-      base::Closure* run_closure,
-      base::Closure* quit_closure) override {
+  void PrepareNestedLoopClosures(base::MessagePumpDispatcher* dispatcher,
+                                 base::Closure* run_closure,
+                                 base::Closure* quit_closure) override {
     scoped_ptr<base::RunLoop> run_loop(new base::RunLoop());
     *quit_closure = run_loop->QuitClosure();
     *run_closure = base::Bind(&TestDispatcherClient::RunNestedDispatcher,
@@ -111,9 +110,7 @@ class TestDispatcherClient : public aura::client::DispatcherClient {
 class MenuControllerTest : public ViewsTestBase {
  public:
   MenuControllerTest() : controller_(NULL) {}
-  virtual ~MenuControllerTest() {
-    ResetMenuController();
-  }
+  ~MenuControllerTest() override { ResetMenuController(); }
 
   // Dispatches |count| number of items, each in a separate iteration of the
   // message-loop, by posting a task.

@@ -57,20 +57,20 @@ class ActivationChangeObserverImpl
     root_->AddPreTargetHandler(this);
   }
 
-  virtual ~ActivationChangeObserverImpl() { Cleanup(); }
+  ~ActivationChangeObserverImpl() override { Cleanup(); }
 
   // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override {
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override {
     if (!controller_->drag_in_progress())
       controller_->CancelAll();
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override { Cleanup(); }
+  void OnWindowDestroying(aura::Window* window) override { Cleanup(); }
 
   // ui::EventHandler:
-  virtual void OnCancelMode(ui::CancelModeEvent* event) override {
+  void OnCancelMode(ui::CancelModeEvent* event) override {
     controller_->CancelAll();
   }
 

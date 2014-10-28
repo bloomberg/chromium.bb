@@ -27,22 +27,22 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
  public:
   explicit MenuRunnerImpl(MenuItemView* menu);
 
-  virtual bool IsRunning() const override;
-  virtual void Release() override;
-  virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                          MenuButton* button,
-                                          const gfx::Rect& bounds,
-                                          MenuAnchorPosition anchor,
-                                          int32 run_types) override;
-  virtual void Cancel() override;
-  virtual base::TimeDelta GetClosingEventTime() const override;
+  bool IsRunning() const override;
+  void Release() override;
+  MenuRunner::RunResult RunMenuAt(Widget* parent,
+                                  MenuButton* button,
+                                  const gfx::Rect& bounds,
+                                  MenuAnchorPosition anchor,
+                                  int32 run_types) override;
+  void Cancel() override;
+  base::TimeDelta GetClosingEventTime() const override;
 
   // MenuControllerDelegate:
-  virtual void DropMenuClosed(NotifyType type, MenuItemView* menu) override;
-  virtual void SiblingMenuCreated(MenuItemView* menu) override;
+  void DropMenuClosed(NotifyType type, MenuItemView* menu) override;
+  void SiblingMenuCreated(MenuItemView* menu) override;
 
  private:
-  virtual ~MenuRunnerImpl();
+  ~MenuRunnerImpl() override;
 
   // Cleans up after the menu is no longer showing. |result| is the menu that
   // the user selected, or NULL if nothing was selected.

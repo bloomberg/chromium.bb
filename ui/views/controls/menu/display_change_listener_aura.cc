@@ -17,13 +17,13 @@ class AuraDisplayChangeListener
       public aura::WindowObserver {
  public:
   AuraDisplayChangeListener(Widget* widget, MenuRunner* menu_runner);
-  virtual ~AuraDisplayChangeListener();
+  ~AuraDisplayChangeListener() override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   MenuRunner* menu_runner_;

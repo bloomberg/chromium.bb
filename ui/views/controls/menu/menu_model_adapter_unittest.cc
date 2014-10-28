@@ -25,102 +25,70 @@ class MenuModelBase : public ui::MenuModel {
         last_activation_(-1) {
   }
 
-  virtual ~MenuModelBase() {
-  }
+  ~MenuModelBase() override {}
 
   // ui::MenuModel implementation:
 
-  virtual bool HasIcons() const override {
-    return false;
-  }
+  bool HasIcons() const override { return false; }
 
-  virtual int GetItemCount() const override {
-    return static_cast<int>(items_.size());
-  }
+  int GetItemCount() const override { return static_cast<int>(items_.size()); }
 
-  virtual ItemType GetTypeAt(int index) const override {
-    return items_[index].type;
-  }
+  ItemType GetTypeAt(int index) const override { return items_[index].type; }
 
-  virtual ui::MenuSeparatorType GetSeparatorTypeAt(
-      int index) const override {
+  ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override {
     return ui::NORMAL_SEPARATOR;
   }
 
-  virtual int GetCommandIdAt(int index) const override {
+  int GetCommandIdAt(int index) const override {
     return index + command_id_base_;
   }
 
-  virtual base::string16 GetLabelAt(int index) const override {
+  base::string16 GetLabelAt(int index) const override {
     return items_[index].label;
   }
 
-  virtual bool IsItemDynamicAt(int index) const override {
-    return false;
-  }
+  bool IsItemDynamicAt(int index) const override { return false; }
 
-  virtual const gfx::FontList* GetLabelFontListAt(int index) const override {
+  const gfx::FontList* GetLabelFontListAt(int index) const override {
     return NULL;
   }
 
-  virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const override {
+  bool GetAcceleratorAt(int index,
+                        ui::Accelerator* accelerator) const override {
     return false;
   }
 
-  virtual bool IsItemCheckedAt(int index) const override {
-    return false;
-  }
+  bool IsItemCheckedAt(int index) const override { return false; }
 
-  virtual int GetGroupIdAt(int index) const override {
-    return 0;
-  }
+  int GetGroupIdAt(int index) const override { return 0; }
 
-  virtual bool GetIconAt(int index, gfx::Image* icon) override {
-    return false;
-  }
+  bool GetIconAt(int index, gfx::Image* icon) override { return false; }
 
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
-      int index) const override {
+  ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
     return NULL;
   }
 
-  virtual bool IsEnabledAt(int index) const override {
-    return true;
-  }
+  bool IsEnabledAt(int index) const override { return true; }
 
-  virtual bool IsVisibleAt(int index) const override {
-    return true;
-  }
+  bool IsVisibleAt(int index) const override { return true; }
 
-  virtual MenuModel* GetSubmenuModelAt(int index) const override {
+  MenuModel* GetSubmenuModelAt(int index) const override {
     return items_[index].submenu;
   }
 
-  virtual void HighlightChangedTo(int index) override {
-  }
+  void HighlightChangedTo(int index) override {}
 
-  virtual void ActivatedAt(int index) override {
-    set_last_activation(index);
-  }
+  void ActivatedAt(int index) override { set_last_activation(index); }
 
-  virtual void ActivatedAt(int index, int event_flags) override {
-    ActivatedAt(index);
-  }
+  void ActivatedAt(int index, int event_flags) override { ActivatedAt(index); }
 
-  virtual void MenuWillShow() override {
-  }
+  void MenuWillShow() override {}
 
-  virtual void MenuClosed() override {
-  }
+  void MenuClosed() override {}
 
-  virtual void SetMenuModelDelegate(
-      ui::MenuModelDelegate* delegate) override {
-  }
+  void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
 
-  virtual ui::MenuModelDelegate* GetMenuModelDelegate() const override {
-    return NULL;
-  }
+  ui::MenuModelDelegate* GetMenuModelDelegate() const override { return NULL; }
 
   // Item definition.
   struct Item {
@@ -164,8 +132,7 @@ class SubmenuModel : public MenuModelBase {
     items_.push_back(Item(TYPE_COMMAND, "submenu item 1", NULL));
   }
 
-  virtual ~SubmenuModel() {
-  }
+  ~SubmenuModel() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SubmenuModel);
@@ -183,8 +150,7 @@ class RootModel : public MenuModelBase {
     items_.push_back(Item(TYPE_RADIO, "radio 4", NULL));
   }
 
-  virtual ~RootModel() {
-  }
+  ~RootModel() override {}
 
  private:
   scoped_ptr<MenuModel> submenu_model_;

@@ -164,7 +164,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   void UpdateSubmenuSelection(SubmenuView* source);
 
   // WidgetObserver overrides:
-  virtual void OnWidgetDestroying(Widget* widget) override;
+  void OnWidgetDestroying(Widget* widget) override;
 
   // Only used for testing.
   bool IsCancelAllTimerRunningForTest();
@@ -298,7 +298,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
                  bool blocking,
                  internal::MenuControllerDelegate* delegate);
 
-  virtual ~MenuController();
+  ~MenuController() override;
 
   // Runs the platform specific bits of the message loop. If |nested_menu| is
   // true we're being asked to run a menu from within a menu (eg a context

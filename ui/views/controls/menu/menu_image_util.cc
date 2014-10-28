@@ -40,9 +40,9 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
                           false),
         selected_(selected) {
   }
-  virtual ~RadioButtonImageSource() {}
+  ~RadioButtonImageSource() override {}
 
-  virtual void Draw(gfx::Canvas* canvas) override {
+  void Draw(gfx::Canvas* canvas) override {
     canvas->Translate(gfx::Vector2d(1, 1));
 
     SkPoint gradient_points[3];
@@ -103,9 +103,9 @@ class SubmenuArrowImageSource : public gfx::CanvasImageSource {
       : gfx::CanvasImageSource(ui::ResourceBundle::GetSharedInstance().
             GetImageNamed(image_id).ToImageSkia()->size(), false),
         image_id_(image_id) {}
-  virtual ~SubmenuArrowImageSource() {}
+  ~SubmenuArrowImageSource() override {}
 
-  virtual void Draw(gfx::Canvas* canvas) override {
+  void Draw(gfx::Canvas* canvas) override {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* r = rb.GetImageNamed(image_id_).ToImageSkia();
     canvas->Scale(-1, 1);

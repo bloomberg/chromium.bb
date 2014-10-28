@@ -26,7 +26,7 @@ class Widget;
 class MenuHost : public Widget {
  public:
   explicit MenuHost(SubmenuView* submenu);
-  virtual ~MenuHost();
+  ~MenuHost() override;
 
   // Initializes and shows the MenuHost.
   // WARNING: |parent| may be NULL.
@@ -56,12 +56,12 @@ class MenuHost : public Widget {
 
  private:
   // Overridden from Widget:
-  virtual internal::RootView* CreateRootView() override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnNativeWidgetDestroyed() override;
-  virtual void OnOwnerClosing() override;
-  virtual void OnDragWillStart() override;
-  virtual void OnDragComplete() override;
+  internal::RootView* CreateRootView() override;
+  void OnMouseCaptureLost() override;
+  void OnNativeWidgetDestroyed() override;
+  void OnOwnerClosing() override;
+  void OnDragWillStart() override;
+  void OnDragComplete() override;
 
   // The view we contain.
   SubmenuView* submenu_;

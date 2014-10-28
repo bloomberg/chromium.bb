@@ -20,8 +20,8 @@ class MenuSeparator : public View {
         parent_menu_item_(parent) {}
 
   // View overrides.
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   // Gets the bounds where the separator should be painted.

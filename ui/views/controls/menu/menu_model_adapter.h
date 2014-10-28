@@ -23,7 +23,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   // The caller retains ownership of the ui::MenuModel instance and
   // must ensure it exists for the lifetime of the adapter.
   explicit MenuModelAdapter(ui::MenuModel* menu_model);
-  virtual ~MenuModelAdapter();
+  ~MenuModelAdapter() override;
 
   // Populate a MenuItemView menu with the ui::MenuModel items
   // (including submenus).
@@ -62,20 +62,18 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
                                        int index);
 
   // views::MenuDelegate implementation.
-  virtual void ExecuteCommand(int id) override;
-  virtual void ExecuteCommand(int id, int mouse_event_flags) override;
-  virtual bool IsTriggerableEvent(MenuItemView* source,
-                                  const ui::Event& e) override;
-  virtual bool GetAccelerator(int id,
-                              ui::Accelerator* accelerator) const override;
-  virtual base::string16 GetLabel(int id) const override;
-  virtual const gfx::FontList* GetLabelFontList(int id) const override;
-  virtual bool IsCommandEnabled(int id) const override;
-  virtual bool IsCommandVisible(int id) const override;
-  virtual bool IsItemChecked(int id) const override;
-  virtual void SelectionChanged(MenuItemView* menu) override;
-  virtual void WillShowMenu(MenuItemView* menu) override;
-  virtual void WillHideMenu(MenuItemView* menu) override;
+  void ExecuteCommand(int id) override;
+  void ExecuteCommand(int id, int mouse_event_flags) override;
+  bool IsTriggerableEvent(MenuItemView* source, const ui::Event& e) override;
+  bool GetAccelerator(int id, ui::Accelerator* accelerator) const override;
+  base::string16 GetLabel(int id) const override;
+  const gfx::FontList* GetLabelFontList(int id) const override;
+  bool IsCommandEnabled(int id) const override;
+  bool IsCommandVisible(int id) const override;
+  bool IsItemChecked(int id) const override;
+  void SelectionChanged(MenuItemView* menu) override;
+  void WillShowMenu(MenuItemView* menu) override;
+  void WillHideMenu(MenuItemView* menu) override;
 
  private:
   // Implementation of BuildMenu().

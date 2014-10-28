@@ -23,18 +23,18 @@ namespace views {
 class MenuMessageLoopAura : public MenuMessageLoop {
  public:
   MenuMessageLoopAura();
-  virtual ~MenuMessageLoopAura();
+  ~MenuMessageLoopAura() override;
 
   // Overridden from MenuMessageLoop:
-  virtual void Run(MenuController* controller,
-                   Widget* owner,
-                   bool nested_menu) override;
-  virtual bool ShouldQuitNow() const override;
-  virtual void QuitNow() override;
-  virtual void RepostEventToWindow(const ui::LocatedEvent& event,
-                                   gfx::NativeWindow window,
-                                   const gfx::Point& screen_loc) override;
-  virtual void ClearOwner() override;
+  void Run(MenuController* controller,
+           Widget* owner,
+           bool nested_menu) override;
+  bool ShouldQuitNow() const override;
+  void QuitNow() override;
+  void RepostEventToWindow(const ui::LocatedEvent& event,
+                           gfx::NativeWindow window,
+                           const gfx::Point& screen_loc) override;
+  void ClearOwner() override;
 
  private:
   // Owner of child windows.

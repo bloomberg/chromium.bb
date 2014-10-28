@@ -16,12 +16,12 @@ namespace internal {
 class MenuEventDispatcher : public ui::PlatformEventDispatcher {
  public:
   explicit MenuEventDispatcher(MenuController* menu_controller);
-  virtual ~MenuEventDispatcher();
+  ~MenuEventDispatcher() override;
 
  private:
   // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   MenuController* menu_controller_;
 

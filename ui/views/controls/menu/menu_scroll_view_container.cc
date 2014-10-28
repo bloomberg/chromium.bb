@@ -40,37 +40,37 @@ class MenuScrollButton : public View {
         pref_height_(MenuItemView::pref_menu_height()) {
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(
         host_->GetMenuItem()->GetMenuConfig().scroll_arrow_height * 2 - 1,
         pref_height_);
   }
 
-  virtual bool CanDrop(const OSExchangeData& data) override {
+  bool CanDrop(const OSExchangeData& data) override {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     return true;  // Always return true so that drop events are targeted to us.
   }
 
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) override {
+  void OnDragEntered(const ui::DropTargetEvent& event) override {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragEnteredScrollButton(
         host_, is_up_);
   }
 
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override {
+  int OnDragUpdated(const ui::DropTargetEvent& event) override {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
-  virtual void OnDragExited() override {
+  void OnDragExited() override {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragExitedScrollButton(host_);
   }
 
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event) override {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     const MenuConfig& config = host_->GetMenuItem()->GetMenuConfig();
 
     // The background.
@@ -139,7 +139,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
     AddChildView(child);
   }
 
-  virtual void ScrollRectToVisible(const gfx::Rect& rect) override {
+  void ScrollRectToVisible(const gfx::Rect& rect) override {
     // NOTE: this assumes we only want to scroll in the y direction.
 
     // If the rect is already visible, do not scroll.
