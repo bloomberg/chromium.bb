@@ -9,6 +9,7 @@ cr.define('options', function() {
   /**
    * Encapsulated handling of the power overlay.
    * @constructor
+   * @extends {cr.ui.pageManager.Page}
    */
   function PowerOverlay() {
     Page.call(this, 'power-overlay',
