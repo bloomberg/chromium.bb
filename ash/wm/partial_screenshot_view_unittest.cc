@@ -21,7 +21,7 @@ class PartialScreenshotViewTest : public test::AshTestBase,
                                   public views::WidgetObserver {
  public:
   PartialScreenshotViewTest() : view_(NULL) {}
-  virtual ~PartialScreenshotViewTest() {
+  ~PartialScreenshotViewTest() override {
     if (view_)
       view_->GetWidget()->RemoveObserver(this);
   }
@@ -40,7 +40,7 @@ class PartialScreenshotViewTest : public test::AshTestBase,
 
  private:
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) override {
+  void OnWidgetDestroying(views::Widget* widget) override {
     if (view_ && view_->GetWidget() == widget)
       view_ = NULL;
     widget->RemoveObserver(this);

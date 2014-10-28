@@ -92,7 +92,7 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
  public:
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       WindowResizer* resizer);
-  virtual ~ScopedWindowResizer();
+  ~ScopedWindowResizer() override;
 
   // Returns true if the drag moves the window and does not resize.
   bool IsMove() const;
@@ -100,11 +100,11 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver overrides:
-  virtual void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                          wm::WindowStateType type) override;
+  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+                                  wm::WindowStateType type) override;
 
  private:
   ToplevelWindowEventHandler* handler_;

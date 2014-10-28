@@ -31,7 +31,7 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
                                    public aura::WindowObserver {
  public:
   LongPressAffordanceHandler();
-  virtual ~LongPressAffordanceHandler();
+  ~LongPressAffordanceHandler() override;
 
   // Displays or removes long press affordance according to the |event|.
   void ProcessEvent(aura::Window* target, ui::GestureEvent* event);
@@ -52,11 +52,11 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
   void SetTapDownTarget(aura::Window* target);
 
   // Overridden from gfx::LinearAnimation.
-  virtual void AnimateToState(double state) override;
-  virtual void AnimationStopped() override;
+  void AnimateToState(double state) override;
+  void AnimationStopped() override;
 
   // Overridden from aura::WindowObserver.
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   scoped_ptr<LongPressAffordanceView> view_;
   gfx::Point tap_down_location_;

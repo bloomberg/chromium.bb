@@ -21,13 +21,13 @@ class SystemGestureEventFilterTest;
 class SystemGestureEventFilter : public ui::EventHandler {
  public:
   SystemGestureEventFilter();
-  virtual ~SystemGestureEventFilter();
+  ~SystemGestureEventFilter() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   friend class ash::test::SystemGestureEventFilterTest;

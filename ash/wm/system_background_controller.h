@@ -28,14 +28,14 @@ namespace ash {
 class SystemBackgroundController : public aura::WindowObserver {
  public:
   SystemBackgroundController(aura::Window* root_window, SkColor color);
-  virtual ~SystemBackgroundController();
+  ~SystemBackgroundController() override;
 
   void SetColor(SkColor color);
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(aura::Window* root,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(aura::Window* root,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   class HostContentLayerDelegate;

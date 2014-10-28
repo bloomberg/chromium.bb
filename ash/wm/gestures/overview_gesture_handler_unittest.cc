@@ -18,7 +18,7 @@ namespace ash {
 class OverviewGestureHandlerTest : public test::AshTestBase {
  public:
   OverviewGestureHandlerTest() {}
-  virtual ~OverviewGestureHandlerTest() {}
+  ~OverviewGestureHandlerTest() override {}
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
     return CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);

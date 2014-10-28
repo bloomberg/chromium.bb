@@ -36,22 +36,22 @@ class ASH_EXPORT ToplevelWindowEventHandler
       public DisplayController::Observer {
  public:
   ToplevelWindowEventHandler();
-  virtual ~ToplevelWindowEventHandler();
+  ~ToplevelWindowEventHandler() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden form aura::client::WindowMoveClient:
-  virtual aura::client::WindowMoveResult RunMoveLoop(
+  aura::client::WindowMoveResult RunMoveLoop(
       aura::Window* source,
       const gfx::Vector2d& drag_offset,
       aura::client::WindowMoveSource move_source) override;
-  virtual void EndMoveLoop() override;
+  void EndMoveLoop() override;
 
   // Overridden form ash::DisplayController::Observer:
-  virtual void OnDisplayConfigurationChanging() override;
+  void OnDisplayConfigurationChanging() override;
 
  private:
   class ScopedWindowResizer;

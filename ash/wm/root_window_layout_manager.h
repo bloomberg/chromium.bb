@@ -31,17 +31,17 @@ namespace ash {
 class RootWindowLayoutManager : public aura::LayoutManager {
  public:
   explicit RootWindowLayoutManager(aura::Window* owner);
-  virtual ~RootWindowLayoutManager();
+  ~RootWindowLayoutManager() override;
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
  private:
   aura::Window* owner_;

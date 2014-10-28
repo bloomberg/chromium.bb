@@ -32,7 +32,7 @@ aura::Window* GetWindowBelow(aura::Window* window) {
 class ScopedShowWindow : public aura::WindowObserver {
  public:
   ScopedShowWindow();
-  virtual ~ScopedShowWindow();
+  ~ScopedShowWindow() override;
 
   // Show |window| at the top of the stacking order.
   void Show(aura::Window* window);
@@ -43,7 +43,7 @@ class ScopedShowWindow : public aura::WindowObserver {
   aura::Window* window() { return window_; }
 
   // aura::WindowObserver:
-  virtual void OnWillRemoveWindow(aura::Window* window) override;
+  void OnWillRemoveWindow(aura::Window* window) override;
 
  private:
   // The window being shown.

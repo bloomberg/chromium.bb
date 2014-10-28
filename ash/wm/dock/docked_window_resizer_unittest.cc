@@ -45,16 +45,14 @@ class DockedWindowResizerTest
   DockedWindowResizerTest() : model_(NULL), window_type_(GetParam()) {}
   virtual ~DockedWindowResizerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
     model_ = test_api.shelf_model();
   }
 
-  virtual void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
  protected:
   enum DockedEdge {

@@ -25,7 +25,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver {
   typedef std::vector<aura::Window*> WindowList;
 
   explicit WindowCycleList(const WindowList& windows);
-  virtual ~WindowCycleList();
+  ~WindowCycleList() override;
 
   bool empty() const { return windows_.empty(); }
 
@@ -39,7 +39,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver {
   // There is a chance a window is destroyed, for example by JS code. We need to
   // take care of that even if it is not intended for the user to close a window
   // while window cycling.
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the

@@ -30,7 +30,7 @@ class AppListControllerTest : public test::AshTestBase,
  public:
   AppListControllerTest();
   virtual ~AppListControllerTest();
-  virtual void SetUp() override;
+  void SetUp() override;
 
   bool IsCentered() const;
 };

@@ -47,13 +47,11 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   explicit TestWindowDelegate(int hittest_code) {
     set_window_component(hittest_code);
   }
-  virtual ~TestWindowDelegate() {}
+  ~TestWindowDelegate() override {}
 
  private:
   // Overridden from aura::Test::TestWindowDelegate:
-  virtual void OnWindowDestroyed(aura::Window* window) override {
-    delete this;
-  }
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
@@ -61,7 +59,7 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 class ToplevelWindowEventHandlerTest : public AshTestBase {
  public:
   ToplevelWindowEventHandlerTest() {}
-  virtual ~ToplevelWindowEventHandlerTest() {}
+  ~ToplevelWindowEventHandlerTest() override {}
 
  protected:
   aura::Window* CreateWindow(int hittest_code) {

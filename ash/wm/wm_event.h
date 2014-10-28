@@ -105,7 +105,7 @@ class ASH_EXPORT WMEvent {
 class SetBoundsEvent : public WMEvent {
 public:
   SetBoundsEvent(WMEventType type, const gfx::Rect& requested_bounds);
-  virtual ~SetBoundsEvent();
+  ~SetBoundsEvent() override;
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 

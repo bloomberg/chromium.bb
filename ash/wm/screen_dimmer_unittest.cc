@@ -18,9 +18,9 @@ namespace test {
 class ScreenDimmerTest : public AshTestBase {
  public:
   ScreenDimmerTest() : dimmer_(NULL) {}
-  virtual ~ScreenDimmerTest() {}
+  ~ScreenDimmerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     dimmer_ = Shell::GetPrimaryRootWindowController()->screen_dimmer();
     test_api_.reset(new ScreenDimmer::TestApi(dimmer_));

@@ -83,7 +83,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   DockedWindowLayoutManager(aura::Window* dock_container,
                             WorkspaceController* workspace_controller);
-  virtual ~DockedWindowLayoutManager();
+  ~DockedWindowLayoutManager() override;
 
   // Disconnects observers before container windows get destroyed.
   void Shutdown();
@@ -148,42 +148,39 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnShelfBoundsChanged();
 
   // SnapLayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visibile) override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
   // ash::ShellObserver:
-  virtual void OnDisplayWorkAreaInsetsChanged() override;
-  virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::Window* root_window) override;
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnDisplayWorkAreaInsetsChanged() override;
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ShelfLayoutManagerObserver:
-  virtual void OnBackgroundUpdated(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) override;
+  void OnBackgroundUpdated(ShelfBackgroundType background_type,
+                           BackgroundAnimatorChangeType change_type) override;
 
   // wm::WindowStateObserver:
-  virtual void OnPreWindowStateTypeChange(
-      wm::WindowState* window_state,
-      wm::WindowStateType old_type) override;
+  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+                                  wm::WindowStateType old_type) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowVisibilityChanging(aura::Window* window,
-                                          bool visible) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
  private:
   class ShelfWindowObserver;
@@ -266,8 +263,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   void UpdateStacking(aura::Window* active_window);
 
   // keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(
-      const gfx::Rect& keyboard_bounds) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
   aura::Window* dock_container_;

@@ -28,9 +28,9 @@ namespace ash {
 class AshNativeCursorManagerTest : public test::AshTestBase {
  public:
   AshNativeCursorManagerTest() {}
-  virtual ~AshNativeCursorManagerTest() {}
+  ~AshNativeCursorManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
 
     ui::RegisterPathProvider();

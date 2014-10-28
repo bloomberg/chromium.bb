@@ -132,7 +132,7 @@ class ImmersiveFullscreenController::BubbleManager
     : public aura::WindowObserver {
  public:
   explicit BubbleManager(ImmersiveFullscreenController* controller);
-  virtual ~BubbleManager();
+  ~BubbleManager() override;
 
   // Start / stop observing changes to |bubble|'s visibility.
   void StartObserving(aura::Window* bubble);
@@ -143,9 +143,8 @@ class ImmersiveFullscreenController::BubbleManager
   void UpdateRevealedLock();
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   ImmersiveFullscreenController* controller_;
 

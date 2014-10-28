@@ -25,9 +25,7 @@ class WindowAnimationsTest : public ash::test::AshTestBase {
  public:
   WindowAnimationsTest() {}
 
-  virtual void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
@@ -47,15 +45,13 @@ class MinimizeAnimationObserver : public ui::LayerAnimationObserver {
 
  protected:
   // ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationScheduled(
+  void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {
     duration_ = animator_->GetTransitionDuration();
     animator_->RemoveObserver(this);
   }
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override {}
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
 
  private:
   ui::LayerAnimator* animator_;

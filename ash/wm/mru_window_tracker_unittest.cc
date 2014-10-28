@@ -18,7 +18,7 @@ namespace ash {
 class MruWindowTrackerTest : public test::AshTestBase {
  public:
   MruWindowTrackerTest() {}
-  virtual ~MruWindowTrackerTest() {}
+  ~MruWindowTrackerTest() override {}
 
   aura::Window* CreateWindow() {
     return CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 400, 400));

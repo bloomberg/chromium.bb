@@ -22,7 +22,7 @@ namespace ash {
 class AlwaysOnTopController : public aura::WindowObserver {
  public:
   AlwaysOnTopController();
-  virtual ~AlwaysOnTopController();
+  ~AlwaysOnTopController() override;
 
   // Sets the container for always on top windows.
   void SetAlwaysOnTopContainer(aura::Window* always_on_top_container);
@@ -32,12 +32,12 @@ class AlwaysOnTopController : public aura::WindowObserver {
 
  private:
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* child) override;
-  virtual void OnWillRemoveWindow(aura::Window* child) override;
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowAdded(aura::Window* child) override;
+  void OnWillRemoveWindow(aura::Window* child) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   aura::Window* always_on_top_container_;
 

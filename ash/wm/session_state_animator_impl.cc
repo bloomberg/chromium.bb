@@ -295,27 +295,23 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
   explicit CallbackAnimationObserver(base::Closure callback)
       : callback_(callback) {
   }
-  virtual ~CallbackAnimationObserver() {
-  }
+  ~CallbackAnimationObserver() override {}
 
  private:
   // Overridden from ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq)
-      override {
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override {
     // Drop foreground once animation is over.
     callback_.Run();
     delete this;
   }
 
-  virtual void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq)
-      override {
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override {
     // Drop foreground once animation is over.
     callback_.Run();
     delete this;
   }
 
-  virtual void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq)
-      override {}
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
   base::Closure callback_;
 
@@ -418,36 +414,32 @@ class SessionStateAnimatorImpl::AnimationSequence
   }
 
   // SessionStateAnimator::AnimationSequence:
-  virtual void StartAnimation(
-      int container_mask,
-      SessionStateAnimator::AnimationType type,
-      SessionStateAnimator::AnimationSpeed speed) override {
+  void StartAnimation(int container_mask,
+                      SessionStateAnimator::AnimationType type,
+                      SessionStateAnimator::AnimationSpeed speed) override {
     animator_->StartAnimationInSequence(container_mask, type, speed, this);
   }
 
  private:
-  virtual ~AnimationSequence() {}
+  ~AnimationSequence() override {}
 
   // ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     sequences_completed_++;
     if (sequences_completed_ == sequences_attached_)
       OnAnimationCompleted();
   }
 
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
     sequences_completed_++;
     if (sequences_completed_ == sequences_attached_)
       OnAnimationAborted();
   }
 
-  virtual void OnLayerAnimationScheduled(
+  void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
 
-  virtual void OnAttachedToSequence(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnAttachedToSequence(ui::LayerAnimationSequence* sequence) override {
     LayerAnimationObserver::OnAttachedToSequence(sequence);
     sequences_attached_++;
   }

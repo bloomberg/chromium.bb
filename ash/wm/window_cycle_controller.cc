@@ -21,10 +21,10 @@ namespace {
 class WindowCycleEventFilter : public ui::EventHandler {
  public:
   WindowCycleEventFilter();
-  virtual ~WindowCycleEventFilter();
+  ~WindowCycleEventFilter() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);

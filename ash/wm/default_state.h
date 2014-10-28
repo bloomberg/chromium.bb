@@ -16,15 +16,14 @@ class SetBoundsEvent;
 class DefaultState : public WindowState::State {
  public:
   explicit DefaultState(WindowStateType initial_state_type);
-  virtual ~DefaultState();
+  ~DefaultState() override;
 
   // WindowState::State overrides:
-  virtual void OnWMEvent(WindowState* window_state,
-                         const WMEvent* event) override;
-  virtual WindowStateType GetType() const override;
-  virtual void AttachState(WindowState* window_state,
-                           WindowState::State* previous_state) override;
-  virtual void DetachState(WindowState* window_state) override;
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override;
+  WindowStateType GetType() const override;
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override;
+  void DetachState(WindowState* window_state) override;
 
  private:
   // Process state dependent events, such as TOGGLE_MAXIMIZED,

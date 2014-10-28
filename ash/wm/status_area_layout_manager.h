@@ -19,12 +19,12 @@ class ShelfWidget;
 class StatusAreaLayoutManager : public SnapToPixelLayoutManager {
  public:
   StatusAreaLayoutManager(aura::Window* container, ShelfWidget* shelf);
-  virtual ~StatusAreaLayoutManager();
+  ~StatusAreaLayoutManager() override;
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
  private:
   // Updates layout of the status area. Effectively calls ShelfLayoutManager

@@ -16,16 +16,15 @@ namespace wm {
 class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
  public:
   AshFocusRules();
-  virtual ~AshFocusRules();
+  ~AshFocusRules() override;
 
  private:
   // Overridden from ::wm::BaseFocusRules:
-  virtual bool SupportsChildActivation(aura::Window* window) const override;
-  virtual bool IsWindowConsideredVisibleForActivation(
+  bool SupportsChildActivation(aura::Window* window) const override;
+  bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const override;
-  virtual bool CanActivateWindow(aura::Window* window) const override;
-  virtual aura::Window* GetNextActivatableWindow(
-      aura::Window* ignore) const override;
+  bool CanActivateWindow(aura::Window* window) const override;
+  aura::Window* GetNextActivatableWindow(aura::Window* ignore) const override;
 
   aura::Window* GetTopmostWindowToActivateForContainerIndex(
       int index,

@@ -18,15 +18,15 @@ class LockWindowState : public wm::WindowState::State {
   // The |window|'s state object will be modified to use this new window mode
   // state handler.
   explicit LockWindowState(aura::Window* window);
-  virtual ~LockWindowState();
+  ~LockWindowState() override;
 
   // WindowState::State overrides:
-  virtual void OnWMEvent(wm::WindowState* window_state,
-                         const wm::WMEvent* event) override;
-  virtual wm::WindowStateType GetType() const override;
-  virtual void AttachState(wm::WindowState* window_state,
-                           wm::WindowState::State* previous_state) override;
-  virtual void DetachState(wm::WindowState* window_state) override;
+  void OnWMEvent(wm::WindowState* window_state,
+                 const wm::WMEvent* event) override;
+  wm::WindowStateType GetType() const override;
+  void AttachState(wm::WindowState* window_state,
+                   wm::WindowState::State* previous_state) override;
+  void DetachState(wm::WindowState* window_state) override;
 
   // Creates new LockWindowState instance and attaches it to |window|.
   static wm::WindowState* SetLockWindowState(aura::Window* window);

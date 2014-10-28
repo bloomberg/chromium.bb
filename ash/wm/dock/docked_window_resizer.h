@@ -27,7 +27,7 @@ class DockedWindowLayoutManager;
 // moving or resizing of a window while it is docked to the side of a screen.
 class ASH_EXPORT DockedWindowResizer : public WindowResizer {
  public:
-  virtual ~DockedWindowResizer();
+  ~DockedWindowResizer() override;
 
   // Creates a new DockWindowResizer. The caller takes ownership of the
   // returned object. The ownership of |next_window_resizer| is taken by the
@@ -36,9 +36,9 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
                                      wm::WindowState* window_state);
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) override;
-  virtual void CompleteDrag() override;
-  virtual void RevertDrag() override;
+  void Drag(const gfx::Point& location, int event_flags) override;
+  void CompleteDrag() override;
+  void RevertDrag() override;
 
  private:
   // Creates DockWindowResizer that adds the ability to attach / detach

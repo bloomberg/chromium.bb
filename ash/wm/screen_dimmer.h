@@ -39,15 +39,15 @@ class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
   };
 
   explicit ScreenDimmer(aura::Window* root_window);
-  virtual ~ScreenDimmer();
+  ~ScreenDimmer() override;
 
   // Dim or undim the root window.
   void SetDimming(bool should_dim);
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(aura::Window* root_window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(aura::Window* root_window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   friend class TestApi;

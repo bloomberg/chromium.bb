@@ -25,7 +25,7 @@ class ResizeShadow;
 class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
  public:
   ResizeShadowController();
-  virtual ~ResizeShadowController();
+  ~ResizeShadowController() override;
 
   // Shows the appropriate shadow for a given |window| and |hit_test| location.
   void ShowShadow(aura::Window* window, int hit_test);
@@ -36,11 +36,10 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
   ResizeShadow* GetShadowForWindowForTest(aura::Window* window);
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(
-      aura::Window* window,
-      const gfx::Rect& old_bounds,
-      const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   typedef std::map<aura::Window*, linked_ptr<ResizeShadow> > WindowShadowMap;

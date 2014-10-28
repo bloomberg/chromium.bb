@@ -29,11 +29,11 @@ class ASH_EXPORT CursorManager : public ::wm::CursorManager {
  public:
   explicit CursorManager(
       scoped_ptr< ::wm::NativeCursorManager> delegate);
-  virtual ~CursorManager();
+  ~CursorManager() override;
 
   // aura::client::CursorClient:
-  virtual bool ShouldHideCursorOnKeyEvent(
-      const ui::KeyEvent& event) const override;
+  bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };

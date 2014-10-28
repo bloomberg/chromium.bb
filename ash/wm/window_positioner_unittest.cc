@@ -106,22 +106,15 @@ namespace {
 class OutOfDisplayDelegate : public views::WidgetDelegate {
  public:
   explicit OutOfDisplayDelegate(views::Widget* widget) : widget_(widget) {}
-  virtual ~OutOfDisplayDelegate() {}
+  ~OutOfDisplayDelegate() override {}
 
   // Overridden from WidgetDelegate:
-  virtual void DeleteDelegate() override {
-    delete this;
-  }
-  virtual views::Widget* GetWidget() override {
-    return widget_;
-  }
-  virtual const views::Widget* GetWidget() const override {
-    return widget_;
-  }
-  virtual bool GetSavedWindowPlacement(
-      const views::Widget* widget,
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const override {
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+  bool GetSavedWindowPlacement(const views::Widget* widget,
+                               gfx::Rect* bounds,
+                               ui::WindowShowState* show_state) const override {
     bounds->SetRect(450, 10, 100, 100);
     *show_state = ui::SHOW_STATE_NORMAL;
     return true;

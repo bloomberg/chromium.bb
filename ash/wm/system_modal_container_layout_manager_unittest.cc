@@ -64,7 +64,7 @@ bool AllRootWindowsHaveModalBackgrounds() {
 class TestWindow : public views::WidgetDelegateView {
  public:
   explicit TestWindow(bool modal) : modal_(modal) {}
-  virtual ~TestWindow() {}
+  ~TestWindow() override {}
 
   // The window needs be closed from widget in order for
   // aura::client::kModalKey property to be reset.
@@ -73,15 +73,11 @@ class TestWindow : public views::WidgetDelegateView {
   }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(50, 50);
-  }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(50, 50); }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
-  virtual ui::ModalType GetModalType() const override {
+  views::View* GetContentsView() override { return this; }
+  ui::ModalType GetModalType() const override {
     return modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_NONE;
   }
 
@@ -95,7 +91,7 @@ class EventTestWindow : public TestWindow {
  public:
   explicit EventTestWindow(bool modal) : TestWindow(modal),
                                          mouse_presses_(0) {}
-  virtual ~EventTestWindow() {}
+  ~EventTestWindow() override {}
 
   aura::Window* OpenTestWindowWithContext(aura::Window* context) {
     views::Widget* widget =
@@ -113,7 +109,7 @@ class EventTestWindow : public TestWindow {
   }
 
   // Overridden from views::View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     mouse_presses_++;
     return false;
   }
@@ -128,14 +124,12 @@ class EventTestWindow : public TestWindow {
 class TransientWindowObserver : public aura::WindowObserver {
  public:
   TransientWindowObserver() : destroyed_(false) {}
-  virtual ~TransientWindowObserver() {}
+  ~TransientWindowObserver() override {}
 
   bool destroyed() const { return destroyed_; }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override {
-    destroyed_ = true;
-  }
+  void OnWindowDestroyed(aura::Window* window) override { destroyed_ = true; }
 
  private:
   bool destroyed_;
@@ -147,7 +141,7 @@ class TransientWindowObserver : public aura::WindowObserver {
 
 class SystemModalContainerLayoutManagerTest : public AshTestBase {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Allow a virtual keyboard (and initialize it per default).
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
@@ -156,7 +150,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard::KeyboardController::GetInstance());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
         keyboard::KeyboardController::GetInstance());
     AshTestBase::TearDown();

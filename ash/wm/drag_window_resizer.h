@@ -19,7 +19,7 @@ class DragWindowController;
 // drag windows across displays.
 class ASH_EXPORT DragWindowResizer : public WindowResizer {
  public:
-  virtual ~DragWindowResizer();
+  ~DragWindowResizer() override;
 
   // Creates a new DragWindowResizer. The caller takes ownership of the
   // returned object. The ownership of |next_window_resizer| is taken by the
@@ -28,9 +28,9 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
                                    wm::WindowState* window_state);
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) override;
-  virtual void CompleteDrag() override;
-  virtual void RevertDrag() override;
+  void Drag(const gfx::Point& location, int event_flags) override;
+  void CompleteDrag() override;
+  void RevertDrag() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);

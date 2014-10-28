@@ -39,7 +39,7 @@ class TestingCursorClientObserver : public aura::client::CursorClientObserver {
   bool did_visibility_change() const { return did_visibility_change_; }
 
   // Overridden from aura::client::CursorClientObserver:
-  virtual void OnCursorVisibilityChanged(bool is_visible) override {
+  void OnCursorVisibilityChanged(bool is_visible) override {
     cursor_visibility_ = is_visible;
     did_visibility_change_ = true;
   }
@@ -64,7 +64,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
         mouse_result_(ui::ER_UNHANDLED) {
   }
 
-  virtual ~CustomEventHandler() {}
+  ~CustomEventHandler() override {}
 
   void set_key_event_handling_result(ui::EventResult result) {
     key_result_ = result;
@@ -75,7 +75,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
   }
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override {
+  void OnKeyEvent(ui::KeyEvent* event) override {
     ui::test::TestEventHandler::OnKeyEvent(event);
     if (key_result_ & ui::ER_HANDLED)
       event->SetHandled();
@@ -83,7 +83,7 @@ class CustomEventHandler : public ui::test::TestEventHandler {
       event->StopPropagation();
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     ui::test::TestEventHandler::OnMouseEvent(event);
     if (mouse_result_ & ui::ER_HANDLED)
       event->SetHandled();
@@ -109,9 +109,7 @@ class NonFocusableDelegate : public aura::test::TestWindowDelegate {
   NonFocusableDelegate() {}
 
  private:
-  virtual bool CanFocus() override {
-    return false;
-  }
+  bool CanFocus() override { return false; }
 
   DISALLOW_COPY_AND_ASSIGN(NonFocusableDelegate);
 };
@@ -121,12 +119,12 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
   HitTestWindowDelegate()
       : hittest_code_(HTNOWHERE) {
   }
-  virtual ~HitTestWindowDelegate() {}
+  ~HitTestWindowDelegate() override {}
   void set_hittest_code(int hittest_code) { hittest_code_ = hittest_code; }
 
  private:
   // Overridden from TestWindowDelegate:
-  virtual int GetNonClientComponent(const gfx::Point& point) const override {
+  int GetNonClientComponent(const gfx::Point& point) const override {
     return hittest_code_;
   }
 

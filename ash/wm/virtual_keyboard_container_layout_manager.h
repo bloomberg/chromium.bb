@@ -17,10 +17,10 @@ namespace ash {
 class VirtualKeyboardContainerLayoutManager : public SnapToPixelLayoutManager {
  public:
   explicit VirtualKeyboardContainerLayoutManager(aura::Window* container);
-  virtual ~VirtualKeyboardContainerLayoutManager();
+  ~VirtualKeyboardContainerLayoutManager() override;
 
   // Overridden from SnapToPixelLayoutManager:
-  virtual void OnWindowResized() override;
+  void OnWindowResized() override;
 
  private:
   aura::Window* parent_container_;

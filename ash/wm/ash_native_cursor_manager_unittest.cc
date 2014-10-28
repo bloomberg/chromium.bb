@@ -36,7 +36,7 @@ namespace {
 class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
  public:
   MouseEventLocationDelegate() {}
-  virtual ~MouseEventLocationDelegate() {}
+  ~MouseEventLocationDelegate() override {}
 
   gfx::Point GetMouseEventLocationAndReset() {
     gfx::Point p = mouse_event_location_;
@@ -44,7 +44,7 @@ class MouseEventLocationDelegate : public aura::test::TestWindowDelegate {
     return p;
   }
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     mouse_event_location_ = event->location();
     event->SetHandled();
   }

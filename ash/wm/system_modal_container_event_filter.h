@@ -18,11 +18,11 @@ class ASH_EXPORT SystemModalContainerEventFilter : public ui::EventHandler {
  public:
   explicit SystemModalContainerEventFilter(
       SystemModalContainerEventFilterDelegate* delegate);
-  virtual ~SystemModalContainerEventFilter();
+  ~SystemModalContainerEventFilter() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   SystemModalContainerEventFilterDelegate* delegate_;

@@ -44,7 +44,7 @@ class DockedWindowLayoutManagerTest
   DockedWindowLayoutManagerTest() : window_type_(GetParam()) {}
   virtual ~DockedWindowLayoutManagerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x600");
     ASSERT_TRUE(test::TestShelfDelegate::instance());

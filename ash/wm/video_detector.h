@@ -58,7 +58,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   static const double kNotifyIntervalSec;
 
   VideoDetector();
-  virtual ~VideoDetector();
+  ~VideoDetector() override;
 
   void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
 
@@ -66,15 +66,15 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   void RemoveObserver(VideoDetectorObserver* observer);
 
   // EnvObserver overrides.
-  virtual void OnWindowInitialized(aura::Window* window) override;
+  void OnWindowInitialized(aura::Window* window) override;
 
   // WindowObserver overrides.
-  virtual void OnDelegatedFrameDamage(aura::Window* window,
-                                      const gfx::Rect& region) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnDelegatedFrameDamage(aura::Window* window,
+                              const gfx::Rect& region) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // ShellObserver overrides.
-  virtual void OnAppTerminating() override;
+  void OnAppTerminating() override;
 
  private:
   class WindowInfo;

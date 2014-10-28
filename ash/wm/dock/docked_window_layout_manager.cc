@@ -87,12 +87,12 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   // views::Widget:
-  virtual void OnNativeWidgetVisibilityChanged(bool visible) override {
+  void OnNativeWidgetVisibilityChanged(bool visible) override {
     views::Widget::OnNativeWidgetVisibilityChanged(visible);
     UpdateBackground();
   }
 
-  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) override {
+  void OnNativeWidgetPaint(gfx::Canvas* canvas) override {
     const gfx::ImageSkia& shelf_background(
         alignment_ == DOCKED_ALIGNMENT_LEFT ?
             shelf_background_left_ : shelf_background_right_);
@@ -127,7 +127,7 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   // BackgroundAnimatorDelegate:
-  virtual void UpdateBackground(int alpha) override {
+  void UpdateBackground(int alpha) override {
     alpha_ = alpha;
     SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
   }
@@ -372,7 +372,7 @@ class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
         ->AddObserver(this);
   }
 
-  virtual ~ShelfWindowObserver() {
+  ~ShelfWindowObserver() override {
     if (docked_layout_manager_->shelf() &&
         docked_layout_manager_->shelf()->shelf_widget())
       docked_layout_manager_->shelf()->shelf_widget()->GetNativeView()
@@ -380,9 +380,9 @@ class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override {
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     shelf_bounds_in_screen_ = ScreenUtil::ConvertRectToScreen(
         window->parent(), new_bounds);
     docked_layout_manager_->OnShelfBoundsChanged();

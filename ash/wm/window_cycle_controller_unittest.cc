@@ -38,9 +38,9 @@ using aura::Window;
 class WindowCycleControllerTest : public test::AshTestBase {
  public:
   WindowCycleControllerTest() {}
-  virtual ~WindowCycleControllerTest() {}
+  ~WindowCycleControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 

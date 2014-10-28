@@ -19,7 +19,7 @@ namespace ash {
 class StackingControllerTest : public test::AshTestBase {
  public:
   StackingControllerTest() {}
-  virtual ~StackingControllerTest() {}
+  ~StackingControllerTest() override {}
 
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);

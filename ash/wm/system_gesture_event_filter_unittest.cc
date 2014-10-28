@@ -47,13 +47,13 @@ namespace {
 class ResizableWidgetDelegate : public views::WidgetDelegateView {
  public:
   ResizableWidgetDelegate() {}
-  virtual ~ResizableWidgetDelegate() {}
+  ~ResizableWidgetDelegate() override {}
 
  private:
-  virtual bool CanResize() const override { return true; }
-  virtual bool CanMaximize() const override { return true; }
-  virtual bool CanMinimize() const override { return true; }
-  virtual void DeleteDelegate() override { delete this; }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
+  void DeleteDelegate() override { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);
 };
@@ -63,14 +63,10 @@ class MaxSizeNCFV : public views::NonClientFrameView {
  public:
   MaxSizeNCFV() {}
  private:
-  virtual gfx::Size GetMaximumSize() const override {
-    return gfx::Size(200, 200);
-  }
-  virtual gfx::Rect GetBoundsForClientView() const override {
-    return gfx::Rect();
-  };
+  gfx::Size GetMaximumSize() const override { return gfx::Size(200, 200); }
+  gfx::Rect GetBoundsForClientView() const override { return gfx::Rect(); };
 
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
+  gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
     return gfx::Rect();
   };
@@ -79,15 +75,12 @@ class MaxSizeNCFV : public views::NonClientFrameView {
   // the parent NonClientView because that makes it more difficult to calculate
   // hittests for regions that are partially obscured by the ClientView, e.g.
   // HTSYSMENU.
-  virtual int NonClientHitTest(const gfx::Point& point) override {
-    return HTNOWHERE;
-  }
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) override {}
-  virtual void ResetWindowControls() override {}
-  virtual void UpdateWindowIcon() override {}
-  virtual void UpdateWindowTitle() override {}
-  virtual void SizeConstraintsChanged() override {}
+  int NonClientHitTest(const gfx::Point& point) override { return HTNOWHERE; }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void ResetWindowControls() override {}
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MaxSizeNCFV);
 };
@@ -95,14 +88,14 @@ class MaxSizeNCFV : public views::NonClientFrameView {
 class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
  public:
   MaxSizeWidgetDelegate() {}
-  virtual ~MaxSizeWidgetDelegate() {}
+  ~MaxSizeWidgetDelegate() override {}
 
  private:
-  virtual bool CanResize() const override { return true; }
-  virtual bool CanMaximize() const override { return false; }
-  virtual bool CanMinimize() const override { return true; }
-  virtual void DeleteDelegate() override { delete this; }
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return false; }
+  bool CanMinimize() const override { return true; }
+  void DeleteDelegate() override { delete this; }
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     return new MaxSizeNCFV;
   }
@@ -115,7 +108,7 @@ class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
 class SystemGestureEventFilterTest : public AshTestBase {
  public:
   SystemGestureEventFilterTest() : AshTestBase() {}
-  virtual ~SystemGestureEventFilterTest() {}
+  ~SystemGestureEventFilterTest() override {}
 
   LongPressAffordanceHandler* GetLongPressAffordance() {
     ShellTestApi shell_test(Shell::GetInstance());
@@ -138,7 +131,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
   }
 
   // Overridden from AshTestBase:
-  virtual void SetUp() override {
+  void SetUp() override {
     // TODO(jonross): TwoFingerDragDelayed() and ThreeFingerGestureStopsDrag()
     // both use hardcoded touch points, assuming that they target empty header
     // space. Window control order now reflects configuration files and can

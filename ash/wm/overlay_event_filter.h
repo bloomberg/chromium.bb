@@ -37,7 +37,7 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   };
 
   OverlayEventFilter();
-  virtual ~OverlayEventFilter();
+  ~OverlayEventFilter() override;
 
   // Starts the filtering of events.  It also notifies the specified
   // |delegate| when a key event means cancel (like Esc).  It holds the
@@ -55,12 +55,12 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   bool IsActive();
 
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // ShellObserver overrides:
-  virtual void OnLoginStateChanged(user::LoginStatus status) override;
-  virtual void OnAppTerminating() override;
-  virtual void OnLockStateChanged(bool locked) override;
+  void OnLoginStateChanged(user::LoginStatus status) override;
+  void OnAppTerminating() override;
+  void OnLockStateChanged(bool locked) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PartialScreenshotViewTest, DontStartOverOverlay);

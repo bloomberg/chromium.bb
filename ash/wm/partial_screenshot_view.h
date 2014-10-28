@@ -35,7 +35,7 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
 
   PartialScreenshotView(OverlayDelegate* overlay_delegate,
                         ScreenshotDelegate* screenshot_delegate);
-  virtual ~PartialScreenshotView();
+  ~PartialScreenshotView() override;
 
   // Initializes partial screenshot UI widget for |root_window|.
   void Init(aura::Window* root_window);
@@ -48,14 +48,14 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   void OnSelectionFinished();
 
   // Overridden from views::View:
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool is_dragging_;
   gfx::Point start_position_;

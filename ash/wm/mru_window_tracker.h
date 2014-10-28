@@ -34,7 +34,7 @@ class ASH_EXPORT MruWindowTracker
 
   explicit MruWindowTracker(
       aura::client::ActivationClient* activation_client);
-  virtual ~MruWindowTracker();
+  ~MruWindowTracker() override;
 
   // Returns the set of windows which can be cycled through. This method creates
   // the vector based on the current set of windows across all valid root
@@ -61,11 +61,11 @@ class ASH_EXPORT MruWindowTracker
   void SetActiveWindow(aura::Window* active_window);
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.
