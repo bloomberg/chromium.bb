@@ -119,7 +119,6 @@ String ServiceWorker::scriptURL() const
 const AtomicString& ServiceWorker::state() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, unknown, ("unknown", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, parsed, ("parsed", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, installing, ("installing", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, installed, ("installed", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, activating, ("activating", AtomicString::ConstructFromLiteral));
@@ -131,8 +130,6 @@ const AtomicString& ServiceWorker::state() const
         // The web platform should never see this internal state
         ASSERT_NOT_REACHED();
         return unknown;
-    case WebServiceWorkerStateParsed:
-        return parsed;
     case WebServiceWorkerStateInstalling:
         return installing;
     case WebServiceWorkerStateInstalled:

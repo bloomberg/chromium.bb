@@ -9,7 +9,6 @@ namespace blink {
 
 enum WebServiceWorkerState {
     WebServiceWorkerStateUnknown,
-    WebServiceWorkerStateParsed,
     WebServiceWorkerStateInstalling,
     WebServiceWorkerStateInstalled,
     WebServiceWorkerStateActivating,

@@ -16,9 +16,8 @@
         }))
       .then(t.step_func(function(sw) {
           sw.addEventListener('statechange', t.step_func(onStateChange(sw)));
-          assert_in_array(sw.state, ['parsed', 'installing'],
-                          'the service worker should be in a state up to ' +
-                          '"installing".');
+          assert_equals(sw.state, 'installing',
+                        'the service worker should be in "installing" state.');
           checkStateTransition(sw.state);
         }))
       .catch(unreached_rejection(t));
@@ -27,9 +26,6 @@
         switch (currentState) {
         case 'test-is-starting':
             break; // anything goes
-        case 'parsed':
-            assert_equals(newState, 'installing');
-            break;
         case 'installing':
             assert_in_array(newState, ['installed', 'redundant']);
             break;

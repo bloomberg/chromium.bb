@@ -49,9 +49,6 @@ t.step(function() {
                 serviceWorkerStates.push(sw.state);
 
                 switch (sw.state) {
-                case 'installing':
-                    assert_equals(lastServiceWorkerState, 'parsed');
-                    break;
                 case 'installed':
                     assert_equals(lastServiceWorkerState, 'installing');
                     break;
@@ -75,7 +72,7 @@ t.step(function() {
 
         Promise.all([sawMessage, sawActive]).then(t.step_func(function() {
             assert_array_equals(serviceWorkerStates,
-                                ['parsed', 'installing', 'installed', 'activating', 'activated'],
+                                ['installing', 'installed', 'activating', 'activated'],
                                 'Service worker should pass through all states');
 
             assert_equals(currentChangeCount, 0,

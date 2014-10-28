@@ -1474,7 +1474,4 @@ crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.ht
 
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
 
-# Temporarily disabled for two-sided patches.
-crbug.com/424081 http/tests/serviceworker/registration-end-to-end.html [ Skip ]
-
 crbug.com/427832 crypto/jwk-import-use-values.html [ Failure ]
