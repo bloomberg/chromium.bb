@@ -82,6 +82,7 @@ void ContentsView::Init(AppListModel* model,
 
   page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
+  ActivePageChanged(false);
 }
 
 void ContentsView::CancelDrag() {
@@ -150,6 +151,18 @@ void ContentsView::SetActivePageInternal(int page_index,
 }
 
 void ContentsView::ActivePageChanged(bool show_search_results) {
+  AppListModel::State state = AppListModel::INVALID_STATE;
+
+  // TODO(calamity): This does not report search results being shown in the
+  // experimental app list as a boolean is currently used to indicate whether
+  // search results are showing. See http://crbug.com/427787/.
+  std::map<int, AppListModel::State>::const_iterator it =
+      view_to_state_.find(pagination_model_.SelectedTargetPage());
+  if (it != view_to_state_.end())
+    state = it->second;
+
+  app_list_main_view_->model()->SetState(state);
+
   // TODO(xiyuan): Highlight default match instead of the first.
   if (IsStateActive(AppListModel::STATE_SEARCH_RESULTS) &&
       search_results_view_->visible()) {
@@ -261,7 +274,13 @@ int ContentsView::AddLauncherPage(views::View* view,
                                   int resource_id,
                                   AppListModel::State state) {
   int page_index = AddLauncherPage(view, resource_id);
-  state_to_view_.insert(std::pair<AppListModel::State, int>(state, page_index));
+  bool success =
+      state_to_view_.insert(std::make_pair(state, page_index)).second;
+  success = success &&
+            view_to_state_.insert(std::make_pair(page_index, state)).second;
+
+  // There shouldn't be duplicates in either map.
+  DCHECK(success);
   return page_index;
 }
 

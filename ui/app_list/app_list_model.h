@@ -57,6 +57,9 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   void SetStatus(Status status);
 
+  void SetState(State state);
+  State state() { return state_; }
+
   // Finds the item matching |id|.
   AppListItem* FindItem(const std::string& id);
 
@@ -177,6 +180,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   scoped_ptr<SearchResults> results_;
 
   Status status_;
+  State state_;
   ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
 

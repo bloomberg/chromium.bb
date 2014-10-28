@@ -164,8 +164,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   ContentsSwitcherView* contents_switcher_view_;
 
   scoped_ptr<views::ViewModel> view_model_;
+
   // Maps State onto |view_model_| indices.
   std::map<AppListModel::State, int> state_to_view_;
+
+  // Maps |view_model_| indices onto State.
+  std::map<int, AppListModel::State> view_to_state_;
 
   // The page that was showing before ShowSearchResults(true) was invoked.
   int page_before_search_;

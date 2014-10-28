@@ -6,6 +6,7 @@
 #define UI_APP_LIST_APP_LIST_MODEL_OBSERVER_H_
 
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_model.h"
 
 namespace app_list {
 
@@ -13,8 +14,12 @@ class AppListItem;
 
 class APP_LIST_EXPORT AppListModelObserver {
  public:
-  // Invoked when AppListModel's status has changed.
+  // Triggered after AppListModel's status has changed.
   virtual void OnAppListModelStatusChanged() {}
+
+  // Triggered after AppListModel's state has changed.
+  virtual void OnAppListModelStateChanged(AppListModel::State old_state,
+                                          AppListModel::State new_state) {}
 
   // Triggered after |item| has been added to the model.
   virtual void OnAppListItemAdded(AppListItem* item) {}

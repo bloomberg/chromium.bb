@@ -113,7 +113,7 @@ class AppListViewTestContext {
  private:
   // Switches the active launcher page in the contents view and lays out to
   // ensure all launcher pages are in the correct position.
-  void ShowContentsViewPageAndVerify(int index);
+  void ShowContentsViewPageAndVerify(AppListModel::State state);
 
   // Shows the app list and waits until a paint occurs.
   void Show();
@@ -198,8 +198,10 @@ void AppListViewTestContext::CheckView(views::View* subview) {
   EXPECT_TRUE(subview->IsDrawn());
 }
 
-void AppListViewTestContext::ShowContentsViewPageAndVerify(int index) {
+void AppListViewTestContext::ShowContentsViewPageAndVerify(
+    AppListModel::State state) {
   ContentsView* contents_view = view_->app_list_main_view()->contents_view();
+  int index = contents_view->GetPageIndexForState(state);
   contents_view->SetActivePage(index);
   contents_view->Layout();
   for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
@@ -207,6 +209,7 @@ void AppListViewTestContext::ShowContentsViewPageAndVerify(int index) {
               contents_view->GetDefaultContentsBounds() ==
                   contents_view->GetPageView(i)->bounds());
   }
+  EXPECT_EQ(state, delegate_->GetTestModel()->state());
 }
 
 void AppListViewTestContext::Show() {
@@ -270,9 +273,11 @@ void AppListViewTestContext::RunDisplayTest() {
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
 
-  EXPECT_TRUE(main_view->contents_view()->IsStateActive(
-      test_type_ == EXPERIMENTAL ? AppListModel::STATE_START
-                                 : AppListModel::STATE_APPS));
+  AppListModel::State expected = test_type_ == EXPERIMENTAL
+                                     ? AppListModel::STATE_START
+                                     : AppListModel::STATE_APPS;
+  EXPECT_TRUE(main_view->contents_view()->IsStateActive(expected));
+  EXPECT_EQ(expected, delegate_->GetTestModel()->state());
 
   Close();
 }
@@ -339,14 +344,11 @@ void AppListViewTestContext::RunStartPageTest() {
     EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
 
     // Show the start page view.
-    ContentsView* contents_view = main_view->contents_view();
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_START));
+    ShowContentsViewPageAndVerify(AppListModel::STATE_START);
     EXPECT_FALSE(main_view->search_box_view()->visible());
 
     gfx::Size view_size(view_->GetPreferredSize());
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+    ShowContentsViewPageAndVerify(AppListModel::STATE_APPS);
     EXPECT_TRUE(main_view->search_box_view()->visible());
 
     // Hiding and showing the search box should not affect the app list's
@@ -477,8 +479,7 @@ void AppListViewTestContext::RunSearchResultsTest() {
 
   AppListMainView* main_view = view_->app_list_main_view();
   ContentsView* contents_view = main_view->contents_view();
-  ShowContentsViewPageAndVerify(
-      contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+  ShowContentsViewPageAndVerify(AppListModel::STATE_APPS);
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   // Show the search results.
@@ -491,11 +492,14 @@ void AppListViewTestContext::RunSearchResultsTest() {
       contents_view->GetDefaultContentsBounds();
   if (test_type_ == EXPERIMENTAL) {
     EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_START));
+    EXPECT_EQ(AppListModel::STATE_START, delegate_->GetTestModel()->state());
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
   } else {
     EXPECT_TRUE(
         contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
+    EXPECT_EQ(AppListModel::STATE_SEARCH_RESULTS,
+              delegate_->GetTestModel()->state());
     EXPECT_EQ(default_contents_bounds,
               contents_view->search_results_view()->bounds());
   }
@@ -507,13 +511,13 @@ void AppListViewTestContext::RunSearchResultsTest() {
 
   // Check that we return to the page that we were on before the search.
   EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_APPS));
+  EXPECT_EQ(AppListModel::STATE_APPS, delegate_->GetTestModel()->state());
   EXPECT_EQ(default_contents_bounds,
             contents_view->apps_container_view()->bounds());
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   if (test_type_ == EXPERIMENTAL) {
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_START));
+    ShowContentsViewPageAndVerify(AppListModel::STATE_START);
 
     // Check that typing into the dummy search box triggers the search page.
     base::string16 search_text = base::UTF8ToUTF16("test");
@@ -529,12 +533,12 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_TRUE(main_view->search_box_view()->visible());
     EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
     EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_START));
+    EXPECT_EQ(AppListModel::STATE_START, delegate_->GetTestModel()->state());
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
 
     // Check that typing into the real search box triggers the search page.
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+    ShowContentsViewPageAndVerify(AppListModel::STATE_APPS);
     EXPECT_EQ(default_contents_bounds,
               contents_view->apps_container_view()->bounds());
 
@@ -551,10 +555,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_TRUE(dummy_search_box->search_box()->text().empty());
 
     // Check that the dummy search box is clear when reshowing the start page.
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
-    ShowContentsViewPageAndVerify(
-        contents_view->GetPageIndexForState(AppListModel::STATE_START));
+    ShowContentsViewPageAndVerify(AppListModel::STATE_APPS);
+    ShowContentsViewPageAndVerify(AppListModel::STATE_START);
     EXPECT_TRUE(dummy_search_box->IsDrawn());
     EXPECT_TRUE(dummy_search_box->search_box()->text().empty());
   }
