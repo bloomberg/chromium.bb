@@ -289,7 +289,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   // name on Android, not 2 or 3 like on Windows or Mac.
 
   // First, always return the |value| attribute if this is an
-  // accessible text.
+  // editable text field.
   if (!value().empty() &&
       (GetRole() == ui::AX_ROLE_EDITABLE_TEXT ||
        GetRole() == ui::AX_ROLE_TEXT_AREA ||
@@ -297,6 +297,12 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
        HasState(ui::AX_STATE_EDITABLE))) {
     return base::UTF8ToUTF16(value());
   }
+
+  // Always prefer visible text if this is a link. Sites sometimes add
+  // a "title" attribute to a link with more information, but we can't
+  // lose the link text.
+  if (!name().empty() && GetRole() == ui::AX_ROLE_LINK)
+    return base::UTF8ToUTF16(name());
 
   // If there's no text value, the basic rule is: prefer description
   // (aria-labelledby or aria-label), then help (title), then name
