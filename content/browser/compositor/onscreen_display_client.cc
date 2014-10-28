@@ -25,6 +25,7 @@ OnscreenDisplayClient::OnscreenDisplayClient(
                                BrowserGpuMemoryBufferManager::current())),
       task_runner_(task_runner),
       scheduled_draw_(false),
+      output_surface_lost_(false),
       deferred_draw_(false),
       pending_frames_(0),
       weak_ptr_factory_(this) {
@@ -63,11 +64,14 @@ void OnscreenDisplayClient::ScheduleDraw() {
 }
 
 void OnscreenDisplayClient::OutputSurfaceLost() {
+  output_surface_lost_ = true;
   surface_display_output_surface_->DidLoseOutputSurface();
 }
 
 void OnscreenDisplayClient::Draw() {
   TRACE_EVENT0("content", "OnscreenDisplayClient::Draw");
+  if (output_surface_lost_)
+    return;
   scheduled_draw_ = false;
   display_->Draw();
 }

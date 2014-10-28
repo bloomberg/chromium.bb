@@ -54,6 +54,7 @@ class OnscreenDisplayClient : cc::DisplayClient {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool scheduled_draw_;
+  bool output_surface_lost_;
   // True if a draw should be scheduled, but it's hit the limit on max frames
   // pending.
   bool deferred_draw_;
