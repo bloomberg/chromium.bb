@@ -69,6 +69,8 @@ source_set("service") {
     "gpu_tracer.h",
     "id_manager.h",
     "id_manager.cc",
+    "image_factory.cc",
+    "image_factory.h",
     "image_manager.cc",
     "image_manager.h",
     "in_process_command_buffer.cc",

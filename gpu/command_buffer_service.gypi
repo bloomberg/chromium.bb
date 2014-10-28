@@ -87,6 +87,8 @@
     'command_buffer/service/gpu_tracer.h',
     'command_buffer/service/id_manager.h',
     'command_buffer/service/id_manager.cc',
+    'command_buffer/service/image_factory.cc',
+    'command_buffer/service/image_factory.h',
     'command_buffer/service/image_manager.cc',
     'command_buffer/service/image_manager.h',
     'command_buffer/service/in_process_command_buffer.cc',
