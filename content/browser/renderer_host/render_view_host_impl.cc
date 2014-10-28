@@ -1021,6 +1021,12 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
+  // If the following DCHECK fails, you have encountered a tricky edge-case that
+  // has evaded reproduction for a very long time. Please report what you were
+  // doing on http://crbug.com/407376, whether or not you can reproduce the
+  // failure.
+  DCHECK_EQ(page_id, page_id_);
+
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
   if (!CanAccessFilesOfPageState(state)) {
