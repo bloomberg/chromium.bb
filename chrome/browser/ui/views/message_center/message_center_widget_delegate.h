@@ -57,27 +57,26 @@ class MessageCenterWidgetDelegate : public views::WidgetDelegate,
                               bool initially_settings_visible,
                               const PositionInfo& pos_info,
                               const base::string16& title);
-  virtual ~MessageCenterWidgetDelegate();
+  ~MessageCenterWidgetDelegate() override;
 
   // WidgetDelegate overrides:
-  virtual View* GetContentsView() override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  View* GetContentsView() override;
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
-  virtual void DeleteDelegate() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
+  void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
   // WidgetObserver overrides:
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) override;
-  virtual void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // View overrides:
-  virtual void PreferredSizeChanged() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual gfx::Size GetMaximumSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void PreferredSizeChanged() override;
+  gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMaximumSize() const override;
+  int GetHeightForWidth(int width) const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  private:
   // Creates and initializes the message center widget.
