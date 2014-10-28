@@ -139,7 +139,7 @@ IPC_MESSAGE_ROUTED0(AccessibilityMsg_Events_ACK)
 // token. Conversely, it ignores IPCs with a reset token if it was not
 // expecting a reset.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_Reset,
-                    int /* reset token */);
+                    int /* reset token */)
 
 // Kill the renderer because we got a fatal error in the accessibility tree
 // and we've already reset too many times.
