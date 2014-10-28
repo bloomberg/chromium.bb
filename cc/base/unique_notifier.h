@@ -38,6 +38,8 @@ class CC_EXPORT UniqueNotifier {
   bool notification_pending_;
 
   base::WeakPtrFactory<UniqueNotifier> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UniqueNotifier);
 };
 
 }  // namespace cc

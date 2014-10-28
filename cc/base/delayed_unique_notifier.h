@@ -54,6 +54,8 @@ class CC_EXPORT DelayedUniqueNotifier {
   bool notification_pending_;
 
   base::WeakPtrFactory<DelayedUniqueNotifier> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedUniqueNotifier);
 };
 
 }  // namespace cc
