@@ -92,6 +92,12 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      }
     ]
   },
   "Linux Tests (dbg)(1)(32)": {
