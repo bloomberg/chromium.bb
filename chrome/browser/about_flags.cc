@@ -1066,7 +1066,7 @@ const Experiment kExperiments[] = {
     "enable-password-generation",
     IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME,
     IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS | kOsMac,
+    kOsWin | kOsLinux | kOsCrOS | kOsMac | kOsAndroid,
     ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnablePasswordGeneration,
                               autofill::switches::kDisablePasswordGeneration)
   },

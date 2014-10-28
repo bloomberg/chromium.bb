@@ -341,8 +341,6 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
     const autofill::PasswordForm& form) {
   // TODO(gcasto): Validate data in PasswordForm.
 
-  // Not yet implemented on other platforms.
-#if defined(USE_AURA) || defined(OS_MACOSX)
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
 
   popup_controller_ =
@@ -356,15 +354,12 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
           web_contents(),
           web_contents()->GetNativeView());
   popup_controller_->Show(true /* display_password */);
-#endif  // defined(USE_AURA) || defined(OS_MACOSX)
 }
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
     const autofill::PasswordForm& form) {
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
-  // Not yet implemented on other platforms.
-#if defined(USE_AURA) || defined(OS_MACOSX)
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_,
@@ -376,7 +371,6 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           web_contents(),
           web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
-#endif  // defined(USE_AURA) || defined(OS_MACOSX)
 }
 
 void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {

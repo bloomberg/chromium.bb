@@ -154,7 +154,7 @@ public class DropdownPopupWindow extends ListPopupWindow {
      * Sets the text direction in the dropdown. Should be called before show().
      * @param isRtl If true, then dropdown text direciton is right to left.
      */
-    protected void setRtl(boolean isRtl) {
+    public void setRtl(boolean isRtl) {
         mRtl = isRtl;
     }
 

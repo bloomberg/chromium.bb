@@ -78,4 +78,10 @@
     <dimen name="app_banner_logo_margin_end">8dp</dimen>
 
     <dimen name="app_banner_star_height">16dp</dimen>
+
+    <!-- Password generation popup dimensions -->
+    <dimen name="password_generation_divider_height">1dp</dimen>
+    <dimen name="password_generation_text_size">14sp</dimen>
+    <dimen name="password_generation_horizontal_margin">10dp</dimen>
+    <dimen name="password_generation_text_vertical_margin">12dp</dimen>
 </resources>

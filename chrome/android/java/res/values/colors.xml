@@ -48,4 +48,9 @@
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>
     <color name="distilled_page_prefs_unselected">#ffffff</color>
+
+    <!-- Password generation popup colors -->
+    <color name="password_generation_divider_color">#e5e5e5</color>
+    <color name="password_generation_explanation_text_color">#909090</color>
+    <color name="password_generation_link_text_color">#5595e3</color>
 </resources>
