@@ -1,8 +1,8 @@
-UNKNOWN_TYPE | creditCard.cardType.code | card type: | -1 | creditCard.cardType.code_1-default
-UNKNOWN_TYPE | creditCard.cardNumber | card number: |  | creditCard.cardType.code_1-default
-UNKNOWN_TYPE | creditCard.expMonth | expiration: | -1 | creditCard.cardType.code_1-default
-UNKNOWN_TYPE | creditCard.expYear | expiration: | -1 | creditCard.cardType.code_1-default
-UNKNOWN_TYPE | creditCard.securityCode | please enter security code: |  | creditCard.cardType.code_1-default
+CREDIT_CARD_TYPE | creditCard.cardType.code | card type: | -1 | creditCard.cardType.code_1-cc
+CREDIT_CARD_NUMBER | creditCard.cardNumber | card number: |  | creditCard.cardType.code_1-cc
+CREDIT_CARD_EXP_MONTH | creditCard.expMonth | expiration: | -1 | creditCard.cardType.code_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | creditCard.expYear | expiration: | -1 | creditCard.cardType.code_1-cc
+CREDIT_CARD_VERIFICATION_CODE | creditCard.securityCode | please enter security code: |  | creditCard.cardType.code_1-cc
 UNKNOWN_TYPE | creditCard.billingContact.shippingAddressAsBillingAddress | Use my Shipping Address | true | creditCard.cardType.code_1-default
 NAME_FIRST | creditCard.billingContact.firstName | first name: |  | creditCard.cardType.code_1-default
 NAME_LAST | creditCard.billingContact.lastName | last name: |  | creditCard.cardType.code_1-default

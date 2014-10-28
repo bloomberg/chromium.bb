@@ -88,14 +88,21 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // "verification number", "card identification number" and others listed
     // in the |pattern| below.
     base::string16 pattern = base::UTF8ToUTF16(autofill::kCardCvcRe);
+    // Some sites use type="tel" for numerical inputs.
     if (!credit_card_field->verification_ &&
-        ParseField(scanner, pattern, &credit_card_field->verification_)) {
+        ParseFieldSpecifics(scanner,
+                            pattern,
+                            MATCH_DEFAULT | MATCH_TELEPHONE,
+                            &credit_card_field->verification_)) {
       continue;
     }
 
     pattern = base::UTF8ToUTF16(autofill::kCardNumberRe);
     AutofillField* current_number_field;
-    if (ParseField(scanner, pattern, &current_number_field)) {
+    if (ParseFieldSpecifics(scanner,
+                            pattern,
+                            MATCH_DEFAULT | MATCH_TELEPHONE,
+                            &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
       // |start_index| on the HTML form.
       size_t start_index = 0;
