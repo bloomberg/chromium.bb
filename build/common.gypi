@@ -1466,9 +1466,6 @@
     # Compile d8 for the host toolset.
     'v8_toolset_for_d8': 'host',
 
-    # Use the chromium skia by default.
-    'use_system_skia%': '0',
-
     # Use brlapi from brltty for braille display support.
     'use_brlapi%': 0,
 
