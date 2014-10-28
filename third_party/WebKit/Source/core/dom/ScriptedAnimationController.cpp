@@ -81,6 +81,12 @@ void ScriptedAnimationController::resume()
     scheduleAnimationIfNeeded();
 }
 
+void ScriptedAnimationController::dispatchEventsAndCallbacksForPrinting()
+{
+    dispatchEvents();
+    callMediaQueryListListeners();
+}
+
 ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(RequestAnimationFrameCallback* callback)
 {
     ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;

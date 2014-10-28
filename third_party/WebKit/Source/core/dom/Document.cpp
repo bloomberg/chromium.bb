@@ -3862,6 +3862,13 @@ void Document::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMem
     ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
 }
 
+void Document::dispatchEventsForPrinting()
+{
+    if (!m_scriptedAnimationController)
+        return;
+    m_scriptedAnimationController->dispatchEventsAndCallbacksForPrinting();
+}
+
 Document::EventFactorySet& Document::eventFactories()
 {
     DEFINE_STATIC_LOCAL(EventFactorySet, s_eventFactory, ());
