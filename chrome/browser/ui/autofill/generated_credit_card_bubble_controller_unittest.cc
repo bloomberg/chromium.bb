@@ -50,7 +50,7 @@ class GeneratedCreditCardBubbleControllerTest : public testing::Test {
             content::WebContentsTester::CreateTestWebContents(
                 &profile_, NULL)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Attaches immediately to |test_web_contents_| so a test version will exist
     // before a non-test version can be created.
     new TestGeneratedCreditCardBubbleController(test_web_contents_.get());

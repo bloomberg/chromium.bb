@@ -63,10 +63,10 @@ const std::vector<OverscrollPref>& GetOverscrollPrefs() {
 class GesturePrefsObserver : public KeyedService {
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
-  virtual ~GesturePrefsObserver();
+  ~GesturePrefsObserver() override;
 
   // KeyedService implementation.
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   // Notification callback invoked when browser-side preferences

@@ -77,7 +77,7 @@ class AppListServiceUnitTest : public testing::Test {
  public:
   AppListServiceUnitTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     SetupWithCommandLine(CommandLine(CommandLine::NO_PROGRAM));
   }
 

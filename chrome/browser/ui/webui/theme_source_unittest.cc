@@ -32,14 +32,14 @@ class WebUISourcesTest : public testing::Test {
   size_t result_data_size_;
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     theme_source_.reset(new ThemeSource(profile_.get()));
     callback_ = base::Bind(&WebUISourcesTest::SendResponse,
                            base::Unretained(this));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     theme_source_.reset();
     profile_.reset();
   }

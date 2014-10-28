@@ -123,7 +123,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create the profile.
     TestingProfile::Builder builder;
     user_prefs_ = new TestingPrefStoreWithCustomReadError;
@@ -153,7 +153,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
     // and then run the message queue to clean up.
     profile_.reset();

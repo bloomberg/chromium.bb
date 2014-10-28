@@ -22,7 +22,7 @@ using content::WebContentsTester;
 class BrowserUnitTest : public BrowserWithTestWindowTest {
  public:
   BrowserUnitTest() {}
-  virtual ~BrowserUnitTest() {}
+  ~BrowserUnitTest() override {}
 
   // Caller owns the memory.
   WebContents* CreateTestWebContents() {
@@ -69,7 +69,7 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
  public:
   BrowserBookmarkBarTest() {}
-  virtual ~BrowserBookmarkBarTest() {}
+  ~BrowserBookmarkBarTest() override {}
 
  protected:
   BookmarkBar::State window_bookmark_bar_state() const {
@@ -78,7 +78,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
   }
 
   // BrowserWithTestWindowTest:
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     static_cast<BookmarkBarStateTestBrowserWindow*>(
         browser()->window())->set_browser(browser());

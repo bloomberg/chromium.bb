@@ -45,7 +45,7 @@ class KeywordEditorControllerTest : public testing::Test,
         added_count_(0),
         removed_count_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     if (simulate_load_failure_)
       util_.model()->OnWebDataServiceRequestDone(0, NULL);
     else
@@ -55,9 +55,7 @@ class KeywordEditorControllerTest : public testing::Test,
     controller_->table_model()->SetObserver(this);
   }
 
-  virtual void TearDown() override {
-    controller_.reset();
-  }
+  void TearDown() override { controller_.reset(); }
 
   void OnModelChanged() override { model_changed_count_++; }
 

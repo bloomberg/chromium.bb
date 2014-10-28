@@ -52,7 +52,7 @@ class OriginChipInfoTest : public ChromeRenderViewHostTestHarness,
     EXPECT_EQ(expect_update, info_->Update(web_contents(), toolbar_model()));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined(OS_CHROMEOS)
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
@@ -61,7 +61,7 @@ class OriginChipInfoTest : public ChromeRenderViewHostTestHarness,
     info_.reset(new OriginChipInfo(this, profile()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     info_.reset();
     toolbar_model_.reset();
 #if defined(OS_CHROMEOS)

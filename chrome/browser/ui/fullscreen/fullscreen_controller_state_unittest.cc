@@ -217,7 +217,7 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
   FullscreenControllerStateUnitTest();
 
   // FullscreenControllerStateTest:
-  virtual void SetUp() override;
+  void SetUp() override;
   BrowserWindow* CreateBrowserWindow() override;
   void ChangeWindowFullscreenState() override;
   const char* GetWindowStateString() override;

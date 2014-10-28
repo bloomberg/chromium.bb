@@ -12,7 +12,7 @@
 class OmniboxControllerTest : public testing::Test {
  protected:
   OmniboxControllerTest();
-  virtual ~OmniboxControllerTest();
+  ~OmniboxControllerTest() override;
 
   void CreateController();
   void AssertProviders(int expected_providers);

@@ -214,13 +214,13 @@ class SuggestionsCombinerTest : public testing::Test {
   }
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     profile_ = new TestingProfile();
     suggestions_handler_ = new SuggestionsHandler();
     combiner_ = new SuggestionsCombiner(suggestions_handler_, profile_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     delete combiner_;
     delete suggestions_handler_;
     delete profile_;

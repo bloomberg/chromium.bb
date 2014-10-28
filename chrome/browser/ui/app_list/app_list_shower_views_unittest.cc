@@ -19,32 +19,26 @@ class FakeAppListShower : public AppListShower {
       : AppListShower(delegate), has_view_(false), visible_(false) {}
 
   // AppListShower:
-  virtual void HandleViewBeingDestroyed() override {
+  void HandleViewBeingDestroyed() override {
     AppListShower::HandleViewBeingDestroyed();
     has_view_ = false;
     visible_ = false;
   }
 
-  virtual bool IsAppListVisible() const override { return visible_; }
+  bool IsAppListVisible() const override { return visible_; }
 
-  virtual app_list::AppListView* MakeViewForCurrentProfile() override {
+  app_list::AppListView* MakeViewForCurrentProfile() override {
     has_view_ = true;
     return NULL;
   }
 
-  virtual void UpdateViewForNewProfile() override {}
+  void UpdateViewForNewProfile() override {}
 
-  virtual void Show() override {
-    visible_ = true;
-  }
+  void Show() override { visible_ = true; }
 
-  virtual void Hide() override {
-    visible_ = false;
-  }
+  void Hide() override { visible_ = false; }
 
-  virtual bool HasView() const override {
-    return has_view_;
-  }
+  bool HasView() const override { return has_view_; }
 
  private:
   bool has_view_;
@@ -62,31 +56,28 @@ class AppListShowerUnitTest : public testing::Test,
       : views_created_(0),
         views_dismissed_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     shower_.reset(new FakeAppListShower(this));
     profile1_ = CreateProfile("p1").Pass();
     profile2_ = CreateProfile("p2").Pass();
   }
 
-  virtual void TearDown() override {
-  }
+  void TearDown() override {}
 
   scoped_ptr<FakeProfile> CreateProfile(const std::string& name) {
     return make_scoped_ptr(new FakeProfile(name));
   }
 
   // AppListShowerDelegate:
-  virtual AppListViewDelegate* GetViewDelegateForCreate() override {
-    return NULL;
-  }
+  AppListViewDelegate* GetViewDelegateForCreate() override { return NULL; }
 
   bool HasKeepAlive() const {
     return shower_->keep_alive_.get() != NULL;
   }
 
-  virtual void OnViewCreated() override { ++views_created_; }
-  virtual void OnViewDismissed() override { ++views_dismissed_; }
-  virtual void MoveNearCursor(app_list::AppListView* view) override {}
+  void OnViewCreated() override { ++views_created_; }
+  void OnViewDismissed() override { ++views_dismissed_; }
+  void MoveNearCursor(app_list::AppListView* view) override {}
 
  protected:
   scoped_ptr<FakeAppListShower> shower_;

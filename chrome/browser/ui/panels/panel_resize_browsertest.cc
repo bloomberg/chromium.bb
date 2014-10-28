@@ -15,8 +15,7 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   PanelResizeBrowserTest() : BasePanelBrowserTest() {
   }
 
-  virtual ~PanelResizeBrowserTest() {
-  }
+  ~PanelResizeBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     BasePanelBrowserTest::SetUpOnMainThread();

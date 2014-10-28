@@ -11,7 +11,7 @@
 class DownloadsUIBrowserTest : public WebUIBrowserTest {
  public:
   DownloadsUIBrowserTest();
-  virtual ~DownloadsUIBrowserTest();
+  ~DownloadsUIBrowserTest() override;
 
  protected:
   // Sets the pref to allow or prohibit deleting history entries.

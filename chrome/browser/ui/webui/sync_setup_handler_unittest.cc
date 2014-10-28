@@ -260,7 +260,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
 class SyncSetupHandlerTest : public testing::Test {
  public:
   SyncSetupHandlerTest() : error_(GoogleServiceAuthError::NONE) {}
-  virtual void SetUp() override {
+  void SetUp() override {
     error_ = GoogleServiceAuthError::AuthErrorNone();
 
     TestingProfile::Builder builder;

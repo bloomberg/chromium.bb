@@ -22,7 +22,7 @@ class UserManagerUIBrowserTest : public InProcessBrowserTest,
   UserManagerUIBrowserTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     InProcessBrowserTest::SetUp();
     DCHECK(switches::IsNewAvatarMenu());
   }

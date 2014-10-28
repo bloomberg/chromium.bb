@@ -13,7 +13,7 @@
 
 class ProfileLoaderUnittest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     last_callback_result_ = NULL;
     profile1_.reset(
         new FakeProfile("p1", base::FilePath(FILE_PATH_LITERAL("profile1"))));

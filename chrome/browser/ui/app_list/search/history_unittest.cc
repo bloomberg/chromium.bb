@@ -33,7 +33,7 @@ const size_t kMaxSecondary = 2;
 class HistoryDataLoadWaiter : public HistoryDataObserver {
  public:
   explicit HistoryDataLoadWaiter(HistoryData* data) : data_(data)  {}
-  virtual ~HistoryDataLoadWaiter() {}
+  ~HistoryDataLoadWaiter() override {}
 
   void Wait() {
     data_->AddObserver(this);
@@ -46,9 +46,7 @@ class HistoryDataLoadWaiter : public HistoryDataObserver {
 
  private:
   // HistoryDataObserver overrides:
-  virtual void OnHistoryDataLoadedFromStore() override {
-    run_loop_->Quit();
-  }
+  void OnHistoryDataLoadedFromStore() override { run_loop_->Quit(); }
 
   HistoryData* data_;  // Not owned.
   scoped_ptr<base::RunLoop> run_loop_;
@@ -89,17 +87,15 @@ class StoreFlushWaiter {
 class SearchHistoryTest : public testing::Test {
  public:
   SearchHistoryTest() {}
-  virtual ~SearchHistoryTest() {}
+  ~SearchHistoryTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     worker_pool_ = new base::SequencedWorkerPool(1, "AppLauncherTest");
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     CreateHistory();
   }
-  virtual void TearDown() override {
-    Flush();
-  }
+  void TearDown() override { Flush(); }
 
   void CreateHistory() {
     const char kStoreDataFileName[] = "app-launcher-test";

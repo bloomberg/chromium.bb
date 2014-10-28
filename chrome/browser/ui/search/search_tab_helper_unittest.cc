@@ -73,7 +73,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
 
 class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
   }
@@ -314,7 +314,7 @@ TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
 
 class SearchTabHelperWindowTest : public BrowserWithTestWindowTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
@@ -401,10 +401,10 @@ TEST_F(SearchTabHelperWindowTest, OnProvisionalLoadFailDontRedirectNonNTP) {
 
 class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
  public:
-  virtual ~SearchTabHelperPrerenderTest() {}
+  ~SearchTabHelperPrerenderTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch",
         "Group1 espv:89 prefetch_results:1 "

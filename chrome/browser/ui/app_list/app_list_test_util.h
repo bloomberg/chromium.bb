@@ -15,9 +15,9 @@ class AppListTestBase : public extensions::ExtensionServiceTestBase {
   static const char kPackagedApp2Id[];
 
   AppListTestBase();
-  virtual ~AppListTestBase();
+  ~AppListTestBase() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_TEST_UTIL_H_

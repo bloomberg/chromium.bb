@@ -116,7 +116,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
  public:
   DownloadsDOMHandlerTest() {}
 
-  virtual ~DownloadsDOMHandlerTest() {}
+  ~DownloadsDOMHandlerTest() override {}
 
   void SetUpOnMainThread() override {
     mock_handler_.reset(new MockDownloadsDOMHandler(download_manager()));

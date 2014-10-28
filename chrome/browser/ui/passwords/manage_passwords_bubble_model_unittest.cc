@@ -25,7 +25,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
             content::WebContentsTester::CreateTestWebContents(&profile_,
                                                               NULL)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create the test UIController here so that it's bound to
     // |test_web_contents_| and therefore accessible to the model.
     new ManagePasswordsUIControllerMock(test_web_contents_.get());
@@ -33,7 +33,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     model_.reset(new ManagePasswordsBubbleModel(test_web_contents_.get()));
   }
 
-  virtual void TearDown() override { model_.reset(); }
+  void TearDown() override { model_.reset(); }
 
   void PretendPasswordWaiting() {
     model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);

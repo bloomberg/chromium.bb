@@ -12,7 +12,7 @@
 class CertificateViewerModalDialogUI : public ui::WebDialogUI {
  public:
   explicit CertificateViewerModalDialogUI(content::WebUI* web_ui);
-  virtual ~CertificateViewerModalDialogUI();
+  ~CertificateViewerModalDialogUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerModalDialogUI);
@@ -22,7 +22,7 @@ class CertificateViewerModalDialogUI : public ui::WebDialogUI {
 class CertificateViewerUI : public ConstrainedWebDialogUI {
  public:
   explicit CertificateViewerUI(content::WebUI* web_ui);
-  virtual ~CertificateViewerUI();
+  ~CertificateViewerUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerUI);

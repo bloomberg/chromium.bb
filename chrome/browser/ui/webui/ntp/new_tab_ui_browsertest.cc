@@ -42,11 +42,9 @@ class NewTabUIBrowserTest : public InProcessBrowserTest {
     logging::SetLogMessageHandler(&HandleMessage);
   }
 
-  virtual ~NewTabUIBrowserTest() {
-    logging::SetLogMessageHandler(NULL);
-  }
+  ~NewTabUIBrowserTest() override { logging::SetLogMessageHandler(NULL); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
     ASSERT_FALSE(had_console_errors);
   }

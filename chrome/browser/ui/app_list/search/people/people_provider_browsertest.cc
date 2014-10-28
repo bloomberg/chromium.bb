@@ -163,7 +163,7 @@ const char kThreeValidResults[] = "{"
 class PeopleProviderTest : public InProcessBrowserTest {
  public:
   PeopleProviderTest() {}
-  virtual ~PeopleProviderTest() {}
+  ~PeopleProviderTest() override {}
 
   // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {

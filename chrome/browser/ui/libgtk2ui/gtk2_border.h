@@ -30,15 +30,15 @@ class Gtk2Border : public views::Border, public ui::NativeThemeObserver {
   Gtk2Border(Gtk2UI* gtk2_ui,
              views::LabelButton* owning_button,
              scoped_ptr<views::LabelButtonBorder> border);
-  virtual ~Gtk2Border();
+  ~Gtk2Border() override;
 
   // Overridden from views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override;
-  virtual gfx::Insets GetInsets() const override;
-  virtual gfx::Size GetMinimumSize() const override;
+  void Paint(const views::View& view, gfx::Canvas* canvas) override;
+  gfx::Insets GetInsets() const override;
+  gfx::Size GetMinimumSize() const override;
 
   // Overridden from views::NativeThemeChangeObserver:
-  virtual void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
  private:
   void PaintState(const ui::NativeTheme::State state,

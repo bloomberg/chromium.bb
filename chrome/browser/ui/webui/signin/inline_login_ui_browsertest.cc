@@ -179,7 +179,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
     // EmbeddedTestServer spawns a thread to initialize socket.

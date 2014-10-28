@@ -66,8 +66,8 @@ void MockSearchModelObserver::VerifyNotificationCount(int expected_count) {
 
 class SearchModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   MockSearchModelObserver mock_observer;
   SearchModel* model;

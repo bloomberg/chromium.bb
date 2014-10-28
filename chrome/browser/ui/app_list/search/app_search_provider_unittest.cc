@@ -31,10 +31,10 @@ bool MoreRelevant(const SearchResult* result1, const SearchResult* result2) {
 class AppSearchProviderTest : public AppListTestBase {
  public:
   AppSearchProviderTest() {}
-  virtual ~AppSearchProviderTest() {}
+  ~AppSearchProviderTest() override {}
 
   // AppListTestBase overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     AppListTestBase::SetUp();
 
     app_search_.reset(new AppSearchProvider(profile_.get(), NULL));

@@ -328,7 +328,7 @@ class BrowserCommandControllerFullscreenTest
     : public BrowserWithTestWindowTest {
  public:
   BrowserCommandControllerFullscreenTest() {}
-  virtual ~BrowserCommandControllerFullscreenTest() {}
+  ~BrowserCommandControllerFullscreenTest() override {}
 
   // BrowserWithTestWindowTest overrides:
   BrowserWindow* CreateBrowserWindow() override {

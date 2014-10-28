@@ -55,7 +55,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
         test_profile_(NULL) {
     settings_manager_->AddObserver(&observer_);
   }
-  virtual ~SettingsWindowManagerTest() {
+  ~SettingsWindowManagerTest() override {
     settings_manager_->RemoveObserver(&observer_);
   }
 

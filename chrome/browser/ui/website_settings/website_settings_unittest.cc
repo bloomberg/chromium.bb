@@ -73,10 +73,9 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
   WebsiteSettingsTest() : cert_id_(0), url_("http://www.example.com") {}
 
-  virtual ~WebsiteSettingsTest() {
-  }
+  ~WebsiteSettingsTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     // Setup stub SSLStatus.
     ssl_.security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
@@ -103,7 +102,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     mock_ui_.reset(new MockWebsiteSettingsUI());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ASSERT_TRUE(website_settings_.get())
         << "No WebsiteSettings instance created.";
     RenderViewHostTestHarness::TearDown();

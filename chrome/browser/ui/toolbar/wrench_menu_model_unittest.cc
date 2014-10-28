@@ -61,7 +61,7 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     prefs_.reset(new TestingPrefServiceSimple());
     chrome::RegisterLocalState(prefs_->registry());
 
@@ -70,7 +70,7 @@ class WrenchMenuModelTest : public BrowserWithTestWindowTest,
     BrowserWithTestWindowTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
     testing_io_thread_state_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);

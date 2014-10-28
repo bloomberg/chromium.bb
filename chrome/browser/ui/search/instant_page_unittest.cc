@@ -49,7 +49,7 @@ class FakePageDelegate : public InstantPage::Delegate {
 
 class InstantPageTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   bool MessageWasSent(uint32 id) {
     return process()->sink().GetFirstMessageMatching(id) != NULL;

@@ -124,9 +124,9 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   AutofillPopupControllerUnitTest()
       : autofill_client_(new MockAutofillClient()),
         autofill_popup_controller_(NULL) {}
-  virtual ~AutofillPopupControllerUnitTest() {}
+  ~AutofillPopupControllerUnitTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
     ContentAutofillDriver::CreateForWebContentsAndDelegate(
@@ -146,7 +146,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
             external_delegate_->GetWeakPtr(),gfx::Rect());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // This will make sure the controller and the view (if any) are both
     // cleaned up.
     if (autofill_popup_controller_)

@@ -38,26 +38,20 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   explicit TestBrowserWindowAura(aura::Window* native_window)
       : native_window_(native_window) {
   }
-  virtual ~TestBrowserWindowAura() {}
+  ~TestBrowserWindowAura() override {}
 
   // TestBrowserWindow overrides:
-  virtual void Show() override {
+  void Show() override {
     native_window_->Show();
     Activate();
   }
-  virtual void Hide() override {
-    native_window_->Hide();
-  }
-  virtual void Activate() override {
+  void Hide() override { native_window_->Hide(); }
+  void Activate() override {
     aura::client::GetActivationClient(
         native_window_->GetRootWindow())->ActivateWindow(native_window_.get());
   }
-  virtual gfx::NativeWindow GetNativeWindow() override {
-    return native_window_.get();
-  }
-  virtual gfx::Rect GetBounds() const override {
-    return native_window_->bounds();
-  }
+  gfx::NativeWindow GetNativeWindow() override { return native_window_.get(); }
+  gfx::Rect GetBounds() const override { return native_window_->bounds(); }
 
   Browser* browser() { return browser_.get(); }
 

@@ -30,7 +30,7 @@ class ChromeNSSCryptoModuleDelegate
                                 const net::HostPortPair& server,
                                 crypto::ScopedPK11Slot slot);
 
-  virtual ~ChromeNSSCryptoModuleDelegate();
+  ~ChromeNSSCryptoModuleDelegate() override;
 
   // Must be called on IO thread. Creates a delegate and returns it
   // synchronously or asynchronously to |callback|. If the delegate could not be
@@ -43,12 +43,12 @@ class ChromeNSSCryptoModuleDelegate
           callback);
 
   // crypto::NSSCryptoModuleDelegate implementation.
-  virtual crypto::ScopedPK11Slot RequestSlot() override;
+  crypto::ScopedPK11Slot RequestSlot() override;
 
   // crypto::CryptoModuleBlockingPasswordDelegate implementation.
-  virtual std::string RequestPassword(const std::string& slot_name,
-                                      bool retry,
-                                      bool* cancelled) override;
+  std::string RequestPassword(const std::string& slot_name,
+                              bool retry,
+                              bool* cancelled) override;
 
  private:
   void ShowDialog(const std::string& slot_name, bool retry);

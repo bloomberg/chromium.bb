@@ -16,7 +16,7 @@ class GestureConfigUI : public content::WebUIController {
  public:
   // Constructs a new GestureConfig for the specified |web_ui|.
   explicit GestureConfigUI(content::WebUI* web_ui);
-  virtual ~GestureConfigUI();
+  ~GestureConfigUI() override;
 
  private:
   // TODO(mohsen): Add a whitelist of preferences that are allowed to be set or

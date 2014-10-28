@@ -54,7 +54,7 @@ bool RunLoopUntil(const base::Callback<bool()>& condition) {
 class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
  public:
   FlashFullscreenInteractiveBrowserTest() {}
-  virtual ~FlashFullscreenInteractiveBrowserTest() {}
+  ~FlashFullscreenInteractiveBrowserTest() override {}
 
  protected:
   content::WebContents* GetActiveWebContents() const {

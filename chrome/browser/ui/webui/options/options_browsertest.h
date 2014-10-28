@@ -16,7 +16,7 @@ class OptionsBrowserTest : public WebUIBrowserTest,
                            public content::WebUIMessageHandler {
  public:
   OptionsBrowserTest();
-  virtual ~OptionsBrowserTest();
+  ~OptionsBrowserTest() override;
 
  protected:
   // Clears the preference at the given |path|.

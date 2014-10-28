@@ -25,9 +25,9 @@ namespace {
 class WindowSizerTest : public InProcessBrowserTest {
  public:
   WindowSizerTest() {}
-  virtual ~WindowSizerTest() {}
+  ~WindowSizerTest() override {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     // Make screens sufficiently wide to host 2 browsers side by side.
     command_line->AppendSwitchASCII("ash-host-window-bounds",
@@ -120,7 +120,7 @@ namespace {
 class WindowSizerContextMenuTest : public WindowSizerTest {
  public:
   WindowSizerContextMenuTest() {}
-  virtual ~WindowSizerContextMenuTest() {}
+  ~WindowSizerContextMenuTest() override {}
 
   static void Step1(gfx::Point release_point) {
     ui_controls::SendMouseEventsNotifyWhenDone(

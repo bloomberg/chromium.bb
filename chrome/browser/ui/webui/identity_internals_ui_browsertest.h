@@ -13,7 +13,7 @@
 class IdentityInternalsUIBrowserTest : public WebUIBrowserTest {
  public:
   IdentityInternalsUIBrowserTest();
-  virtual ~IdentityInternalsUIBrowserTest();
+  ~IdentityInternalsUIBrowserTest() override;
 
  protected:
   void SetupTokenCache(int number_of_tokens);

@@ -17,7 +17,7 @@
 
 class SearchIPCRouterPolicyTest : public BrowserWithTestWindowTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("chrome://blank"));
     SearchTabHelper::CreateForWebContents(web_contents());

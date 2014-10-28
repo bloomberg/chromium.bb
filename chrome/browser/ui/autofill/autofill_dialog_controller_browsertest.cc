@@ -1503,7 +1503,7 @@ class AutofillDialogControllerSecurityTest :
     public AutofillDialogControllerTest {
  public:
   AutofillDialogControllerSecurityTest() {}
-  virtual ~AutofillDialogControllerSecurityTest() {}
+  ~AutofillDialogControllerSecurityTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     CHECK(!command_line->HasSwitch(::switches::kReduceSecurityForTesting));

@@ -52,8 +52,8 @@ class PasswordManagerPresenterTest : public testing::Test {
  protected:
   PasswordManagerPresenterTest() {}
 
-  virtual ~PasswordManagerPresenterTest() {}
-  virtual void SetUp() override {
+  ~PasswordManagerPresenterTest() override {}
+  void SetUp() override {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         &profile_, MockPasswordStoreService::Build);
     mock_controller_.reset(new MockPasswordUIView(&profile_));

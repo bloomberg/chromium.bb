@@ -64,9 +64,9 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
                                     GURL("http://www.google.com/some/url")),
         iframe_request_other_domain_("iframe",
                                      GURL("http://www.youtube.com")) {}
-  virtual ~PermissionBubbleManagerTest() {}
+  ~PermissionBubbleManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
@@ -74,7 +74,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
     manager_.reset(new PermissionBubbleManager(web_contents()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }

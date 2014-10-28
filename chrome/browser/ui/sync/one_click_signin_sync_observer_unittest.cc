@@ -115,7 +115,7 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
         sync_observer_(NULL),
         sync_observer_destroyed_(true) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents_observer_.reset(new MockWebContentsObserver(web_contents()));
     sync_service_ =
@@ -124,7 +124,7 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
                 profile(), OneClickTestProfileSyncService::Build));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Verify that the |sync_observer_| unregistered as an observer from the
     // sync service and freed its memory.
     EXPECT_TRUE(sync_observer_destroyed_);

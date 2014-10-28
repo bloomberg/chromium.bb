@@ -218,8 +218,8 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   OneClickSigninHelperTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Sets up the sign-in manager for tests.  If |username| is
   // is not empty, the profile of the mock WebContents will be connected to
@@ -344,7 +344,7 @@ class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
  public:
   OneClickSigninHelperIOTest();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   TestProfileIOData* CreateTestProfileIOData(Profile::ProfileType profile_type);
 
@@ -858,12 +858,12 @@ MockStarterWrapper::MockStarterWrapper(
 
 class OneClickSyncStarterWrapperTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Let the SyncStarterWrapper delete itself.
     base::RunLoop().RunUntilIdle();
   }

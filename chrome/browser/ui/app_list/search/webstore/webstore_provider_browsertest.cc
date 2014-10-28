@@ -97,7 +97,7 @@ ParsedSearchResult kParsedThreeResults[] = {
 class WebstoreProviderTest : public InProcessBrowserTest {
  public:
   WebstoreProviderTest() {}
-  virtual ~WebstoreProviderTest() {}
+  ~WebstoreProviderTest() override {}
 
   // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {

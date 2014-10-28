@@ -32,7 +32,7 @@ class CertificateViewerModalDialog : public ui::WebDialogDelegate {
   // viewer.
   explicit CertificateViewerModalDialog(
       net::X509Certificate* cert);
-  virtual ~CertificateViewerModalDialog();
+  ~CertificateViewerModalDialog() override;
 
   virtual void Show(content::WebContents* web_contents,
                     gfx::NativeWindow parent);
@@ -42,20 +42,19 @@ class CertificateViewerModalDialog : public ui::WebDialogDelegate {
 
  protected:
   // Overridden from ui::WebDialogDelegate:
-  virtual ui::ModalType GetDialogModalType() const override;
-  virtual base::string16 GetDialogTitle() const override;
-  virtual GURL GetDialogContentURL() const override;
-  virtual void GetWebUIMessageHandlers(
+  ui::ModalType GetDialogModalType() const override;
+  base::string16 GetDialogTitle() const override;
+  GURL GetDialogContentURL() const override;
+  void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
-  virtual void GetDialogSize(gfx::Size* size) const override;
-  virtual std::string GetDialogArgs() const override;
-  virtual void OnDialogShown(
-      content::WebUI* webui,
-      content::RenderViewHost* render_view_host) override;
-  virtual void OnDialogClosed(const std::string& json_retval) override;
-  virtual void OnCloseContents(
-      content::WebContents* source, bool* out_close_dialog) override;
-  virtual bool ShouldShowDialogTitle() const override;
+  void GetDialogSize(gfx::Size* size) const override;
+  std::string GetDialogArgs() const override;
+  void OnDialogShown(content::WebUI* webui,
+                     content::RenderViewHost* render_view_host) override;
+  void OnDialogClosed(const std::string& json_retval) override;
+  void OnCloseContents(content::WebContents* source,
+                       bool* out_close_dialog) override;
+  bool ShouldShowDialogTitle() const override;
 
   // The certificate being viewed.
   scoped_refptr<net::X509Certificate> cert_;
@@ -79,18 +78,18 @@ class CertificateViewerDialog : public CertificateViewerModalDialog {
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
   explicit CertificateViewerDialog(net::X509Certificate* cert);
-  virtual ~CertificateViewerDialog();
+  ~CertificateViewerDialog() override;
 
   // CertificateViewerModalDialog overrides.
-  virtual void Show(content::WebContents* web_contents,
-                    gfx::NativeWindow parent) override;
-  virtual web_modal::NativeWebContentsModalDialog
-  GetNativeWebContentsModalDialog() override;
+  void Show(content::WebContents* web_contents,
+            gfx::NativeWindow parent) override;
+  web_modal::NativeWebContentsModalDialog GetNativeWebContentsModalDialog()
+      override;
 
  protected:
   // Overridden from ui::WebDialogDelegate:
-  virtual GURL GetDialogContentURL() const override;
-  virtual ui::ModalType GetDialogModalType() const override;
+  GURL GetDialogContentURL() const override;
+  ui::ModalType GetDialogModalType() const override;
 
  private:
   ConstrainedWebDialogDelegate* dialog_;
@@ -104,10 +103,10 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
  public:
   CertificateViewerDialogHandler(CertificateViewerModalDialog* dialog,
                                  net::X509Certificate* cert);
-  virtual ~CertificateViewerDialogHandler();
+  ~CertificateViewerDialogHandler() override;
 
   // Overridden from WebUIMessageHandler
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
  private:
   // Brings up the export certificate dialog for the chosen certificate in the

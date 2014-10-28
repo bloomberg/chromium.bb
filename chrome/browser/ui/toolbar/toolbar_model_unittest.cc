@@ -142,10 +142,10 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   ToolbarModelTest(Browser::Type browser_type,
                    chrome::HostDesktopType host_desktop_type,
                    bool hosted_app);
-  virtual ~ToolbarModelTest();
+  ~ToolbarModelTest() override;
 
   // BrowserWithTestWindowTest:
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   void EnableOriginChipFieldTrial();
@@ -234,7 +234,7 @@ void ToolbarModelTest::NavigateAndCheckText(
 class PopupToolbarModelTest : public ToolbarModelTest {
  public:
   PopupToolbarModelTest();
-  virtual ~PopupToolbarModelTest();
+  ~PopupToolbarModelTest() override;
 
   DISALLOW_COPY_AND_ASSIGN(PopupToolbarModelTest);
 };

@@ -40,7 +40,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   };
 
   BasePanelBrowserTest();
-  virtual ~BasePanelBrowserTest();
+  ~BasePanelBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;

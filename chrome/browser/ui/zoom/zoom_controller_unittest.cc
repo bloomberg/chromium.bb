@@ -35,7 +35,7 @@ class TestZoomObserver : public ZoomObserver {
 
 class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     zoom_controller_.reset(new ZoomController(web_contents()));
     zoom_controller_->AddObserver(&zoom_observer_);
@@ -46,7 +46,7 @@ class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
         base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, -1, false);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     zoom_controller_->RemoveObserver(&zoom_observer_);
     zoom_controller_.reset();
     ChromeRenderViewHostTestHarness::TearDown();

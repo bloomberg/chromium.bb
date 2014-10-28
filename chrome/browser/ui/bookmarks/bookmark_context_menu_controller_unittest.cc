@@ -50,7 +50,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     profile_->CreateBookmarkModel(true);
@@ -59,7 +59,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
     AddTestData(model_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
     // Flush the message loop to make application verifiers happy.

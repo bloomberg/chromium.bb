@@ -44,10 +44,9 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
         size_(size) {
   }
 
-  virtual ~ButtonImageSkiaSource() {
-  }
+  ~ButtonImageSkiaSource() override {}
 
-  virtual gfx::ImageSkiaRep GetImageForScale(float scale) override {
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
     int w = size_.width() * scale;
     int h = size_.height() * scale;
     return gfx::ImageSkiaRep(

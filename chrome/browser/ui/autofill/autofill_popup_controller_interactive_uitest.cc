@@ -69,7 +69,7 @@ class AutofillPopupControllerBrowserTest
       public content::WebContentsObserver {
  public:
   AutofillPopupControllerBrowserTest() {}
-  virtual ~AutofillPopupControllerBrowserTest() {}
+  ~AutofillPopupControllerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     content::WebContents* web_contents =

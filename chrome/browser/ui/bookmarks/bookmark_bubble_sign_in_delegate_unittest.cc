@@ -23,7 +23,7 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBubbleSignInDelegateTest() {}
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   class Window : public TestBrowserWindow {

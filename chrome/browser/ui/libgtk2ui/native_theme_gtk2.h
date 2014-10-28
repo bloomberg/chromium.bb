@@ -22,20 +22,20 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   static NativeThemeGtk2* instance();
 
   // Overridden from ui::NativeThemeBase:
-  virtual gfx::Size GetPartSize(Part part,
-                                State state,
-                                const ExtraParams& extra) const override;
-  virtual void Paint(SkCanvas* canvas,
-                     Part part,
-                     State state,
-                     const gfx::Rect& rect,
-                     const ExtraParams& extra) const override;
-  virtual SkColor GetSystemColor(ColorId color_id) const override;
-  virtual void PaintMenuPopupBackground(
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override;
+  void Paint(SkCanvas* canvas,
+             Part part,
+             State state,
+             const gfx::Rect& rect,
+             const ExtraParams& extra) const override;
+  SkColor GetSystemColor(ColorId color_id) const override;
+  void PaintMenuPopupBackground(
       SkCanvas* canvas,
       const gfx::Size& size,
       const MenuBackgroundExtraParams& menu_background) const override;
-  virtual void PaintMenuItemBackground(
+  void PaintMenuItemBackground(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
@@ -43,7 +43,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
 
  private:
   NativeThemeGtk2();
-  virtual ~NativeThemeGtk2();
+  ~NativeThemeGtk2() override;
 
   // Implementation of GetSystemColor.
   GdkColor GetSystemGdkColor(ColorId color_id) const;

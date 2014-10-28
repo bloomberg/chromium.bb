@@ -28,14 +28,13 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
  public:
   explicit X11InputMethodContextImplGtk2(
       ui::LinuxInputMethodContextDelegate* delegate);
-  virtual ~X11InputMethodContextImplGtk2();
+  ~X11InputMethodContextImplGtk2() override;
 
   // Overriden from ui::LinuxInputMethodContext
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
-  virtual void Reset() override;
-  virtual void OnTextInputTypeChanged(ui::TextInputType text_input_type)
-      override;
-  virtual void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
+  bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
+  void Reset() override;
+  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
+  void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
 
  private:
   // Resets the cache of X modifier keycodes.

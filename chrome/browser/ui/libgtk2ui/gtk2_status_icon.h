@@ -30,13 +30,13 @@ class AppIndicatorIconMenu;
 class Gtk2StatusIcon : public views::StatusIconLinux {
  public:
   Gtk2StatusIcon(const gfx::ImageSkia& image, const base::string16& tool_tip);
-  virtual ~Gtk2StatusIcon();
+  ~Gtk2StatusIcon() override;
 
   // Overridden from views::StatusIconLinux:
-  virtual void SetImage(const gfx::ImageSkia& image) override;
-  virtual void SetToolTip(const base::string16& tool_tip) override;
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) override;
-  virtual void RefreshPlatformContextMenu() override;
+  void SetImage(const gfx::ImageSkia& image) override;
+  void SetToolTip(const base::string16& tool_tip) override;
+  void UpdatePlatformContextMenu(ui::MenuModel* menu) override;
+  void RefreshPlatformContextMenu() override;
 
  private:
   CHROMEG_CALLBACK_0(Gtk2StatusIcon, void, OnClick, GtkStatusIcon*);

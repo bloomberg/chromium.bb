@@ -17,7 +17,7 @@ class ListValue;
 class NetInternalsTest : public WebUIBrowserTest {
  protected:
   NetInternalsTest();
-  virtual ~NetInternalsTest();
+  ~NetInternalsTest() override;
 
  private:
   class MessageHandler;

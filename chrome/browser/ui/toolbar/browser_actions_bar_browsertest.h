@@ -20,7 +20,7 @@ class BrowserActionTestUtil;
 class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
  protected:
   BrowserActionsBarBrowserTest();
-  virtual ~BrowserActionsBarBrowserTest();
+  ~BrowserActionsBarBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;

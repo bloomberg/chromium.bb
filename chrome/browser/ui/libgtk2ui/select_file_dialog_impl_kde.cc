@@ -51,25 +51,24 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
                           base::nix::DesktopEnvironment desktop);
 
  protected:
-  virtual ~SelectFileDialogImplKDE();
+  ~SelectFileDialogImplKDE() override;
 
   // BaseShellDialog implementation:
-  virtual bool IsRunning(gfx::NativeWindow parent_window) const override;
+  bool IsRunning(gfx::NativeWindow parent_window) const override;
 
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFileImpl(
-      Type type,
-      const base::string16& title,
-      const base::FilePath& default_path,
-      const FileTypeInfo* file_types,
-      int file_type_index,
-      const base::FilePath::StringType& default_extension,
-      gfx::NativeWindow owning_window,
-      void* params) override;
+  void SelectFileImpl(Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const FileTypeInfo* file_types,
+                      int file_type_index,
+                      const base::FilePath::StringType& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override;
 
  private:
-  virtual bool HasMultipleFileTypeChoicesImpl() override;
+  bool HasMultipleFileTypeChoicesImpl() override;
 
   struct KDialogParams {
     KDialogParams(const std::string& type, const std::string& title,

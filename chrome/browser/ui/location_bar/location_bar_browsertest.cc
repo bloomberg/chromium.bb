@@ -43,7 +43,7 @@ const char kManifestSource[] =
 class LocationBarBrowserTest : public ExtensionBrowserTest {
  public:
   LocationBarBrowserTest() {}
-  virtual ~LocationBarBrowserTest() {}
+  ~LocationBarBrowserTest() override {}
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest,
 class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
  public:
   LocationBarBrowserTestWithRedesign() {}
-  virtual ~LocationBarBrowserTestWithRedesign() {}
+  ~LocationBarBrowserTestWithRedesign() override {}
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override;

@@ -15,7 +15,7 @@ namespace autofill {
 class PopupControllerBaseTest : public ChromeRenderViewHostTestHarness {
  public:
   PopupControllerBaseTest() {}
-  virtual ~PopupControllerBaseTest() {}
+  ~PopupControllerBaseTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PopupControllerBaseTest);

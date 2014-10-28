@@ -22,16 +22,16 @@ class WebContents;
 class WebDragBookmarkHandlerAura : public content::WebDragDestDelegate {
  public:
   WebDragBookmarkHandlerAura();
-  virtual ~WebDragBookmarkHandlerAura();
+  ~WebDragBookmarkHandlerAura() override;
 
   // Overridden from content::WebDragDestDelegate:
-  virtual void DragInitialize(content::WebContents* contents) override;
-  virtual void OnDragOver() override;
-  virtual void OnDragEnter() override;
-  virtual void OnDrop() override;
-  virtual void OnDragLeave() override;
+  void DragInitialize(content::WebContents* contents) override;
+  void OnDragOver() override;
+  void OnDragEnter() override;
+  void OnDrop() override;
+  void OnDragLeave() override;
 
-  virtual void OnReceiveDragData(const ui::OSExchangeData& data) override;
+  void OnReceiveDragData(const ui::OSExchangeData& data) override;
 
  private:
   // The BookmarkTabHelper.

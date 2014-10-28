@@ -16,11 +16,11 @@ class WaitableEvent;
 // for each test.
 class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  public:
-  virtual ~WebUIBidiCheckerBrowserTest();
+  ~WebUIBidiCheckerBrowserTest() override;
 
   // testing::Test implementation.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   WebUIBidiCheckerBrowserTest();

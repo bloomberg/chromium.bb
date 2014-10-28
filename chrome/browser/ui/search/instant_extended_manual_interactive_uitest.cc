@@ -50,7 +50,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         new net::ScopedDefaultHostResolverProc(host_resolver_proc_.get()));
   }
 
-  virtual ~InstantExtendedManualTest() {
+  ~InstantExtendedManualTest() override {
     scoped_host_resolver_proc_.reset();
     host_resolver_proc_ = NULL;
   }

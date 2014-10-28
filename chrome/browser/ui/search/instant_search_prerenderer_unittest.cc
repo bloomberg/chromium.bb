@@ -165,7 +165,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
   InstantSearchPrerendererTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
@@ -430,7 +430,7 @@ class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
    ReuseInstantSearchBasePageTest() {}
 
   protected:
-   virtual void SetUp() override {
+   void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
@@ -471,7 +471,7 @@ TEST_F(ReuseInstantSearchBasePageTest,
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 class TestUsePrerenderPage : public InstantSearchPrerendererTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Disable query extraction flag in field trials.
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch", "Group1 strk:20 query_extraction:0"));

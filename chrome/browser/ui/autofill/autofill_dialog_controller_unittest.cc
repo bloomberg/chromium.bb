@@ -401,12 +401,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   AutofillDialogControllerTest(): form_structure_(NULL) {}
 
   // testing::Test implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     Reset();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (controller_)
       controller_->ViewClosed();
     ChromeRenderViewHostTestHarness::TearDown();

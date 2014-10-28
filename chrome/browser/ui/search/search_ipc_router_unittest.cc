@@ -91,7 +91,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
  public:
   SearchIPCRouterTest() : field_trial_list_(NULL) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("chrome://blank"));
     SearchTabHelper::CreateForWebContents(web_contents());

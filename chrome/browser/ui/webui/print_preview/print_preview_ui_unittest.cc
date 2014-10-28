@@ -43,10 +43,10 @@ bool IsShowingWebContentsModalDialog(WebContents* tab) {
 class PrintPreviewUIUnitTest : public PrintPreviewTest {
  public:
   PrintPreviewUIUnitTest();
-  virtual ~PrintPreviewUIUnitTest();
+  ~PrintPreviewUIUnitTest() override;
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUIUnitTest);
 };

@@ -33,16 +33,16 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   AppIndicatorIcon(std::string id,
                    const gfx::ImageSkia& image,
                    const base::string16& tool_tip);
-  virtual ~AppIndicatorIcon();
+  ~AppIndicatorIcon() override;
 
   // Indicates whether libappindicator so could be opened.
   static bool CouldOpen();
 
   // Overridden from views::StatusIconLinux:
-  virtual void SetImage(const gfx::ImageSkia& image) override;
-  virtual void SetToolTip(const base::string16& tool_tip) override;
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) override;
-  virtual void RefreshPlatformContextMenu() override;
+  void SetImage(const gfx::ImageSkia& image) override;
+  void SetToolTip(const base::string16& tool_tip) override;
+  void UpdatePlatformContextMenu(ui::MenuModel* menu) override;
+  void RefreshPlatformContextMenu() override;
 
  private:
   void SetImageFromFile(const base::FilePath& icon_file_path);

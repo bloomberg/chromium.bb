@@ -15,7 +15,7 @@ class Profile;
 class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
  public:
   ExtensionSettingsUIBrowserTest();
-  virtual ~ExtensionSettingsUIBrowserTest();
+  ~ExtensionSettingsUIBrowserTest() override;
 
  protected:
   // Get the profile to use.

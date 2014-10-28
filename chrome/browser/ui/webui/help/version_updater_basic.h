@@ -12,15 +12,15 @@
 class VersionUpdaterBasic : public VersionUpdater {
  public:
   // VersionUpdater implementation.
-  virtual void CheckForUpdate(const StatusCallback& callback) override;
-  virtual void RelaunchBrowser() const override;
+  void CheckForUpdate(const StatusCallback& callback) override;
+  void RelaunchBrowser() const override;
 
  protected:
   friend class VersionUpdater;
 
   // Clients must use VersionUpdater::Create().
   VersionUpdaterBasic() {}
-  virtual ~VersionUpdaterBasic() {}
+  ~VersionUpdaterBasic() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterBasic);

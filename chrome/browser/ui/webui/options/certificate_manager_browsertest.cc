@@ -29,7 +29,7 @@ using testing::_;
 class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
  public:
   CertificateManagerBrowserTest() {}
-  virtual ~CertificateManagerBrowserTest() {}
+  ~CertificateManagerBrowserTest() override {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {

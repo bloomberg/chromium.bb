@@ -10,7 +10,7 @@
 
 class MostVisitedWebUITest : public WebUIBrowserTest {
  public:
-  virtual ~MostVisitedWebUITest() {}
+  ~MostVisitedWebUITest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();

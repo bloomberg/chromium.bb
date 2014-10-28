@@ -82,7 +82,7 @@ std::vector<std::string> PopulateExpectedPolicy(
 class PolicyUITest : public InProcessBrowserTest {
  public:
   PolicyUITest();
-  virtual ~PolicyUITest();
+  ~PolicyUITest() override;
 
  protected:
   // InProcessBrowserTest implementation.

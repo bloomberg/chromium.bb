@@ -46,7 +46,7 @@ class AppListPositionerUnitTest : public testing::Test {
         new AppListPositioner(display_, view_size, kMinDistanceFromEdge));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     display_.set_bounds(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
     // Assume there is a menu bar at the top of the screen, as on Mac and Unity.
     // This is for cases where the work area does not fill the entire screen.

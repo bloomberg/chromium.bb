@@ -46,12 +46,12 @@ class TestWebContentsDelegate : public WebDialogWebContentsDelegate {
 
 class WebDialogWebContentsDelegateTest : public BrowserWithTestWindowTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     test_web_contents_delegate_.reset(new TestWebContentsDelegate(profile()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     test_web_contents_delegate_.reset(NULL);
     BrowserWithTestWindowTest::TearDown();
   }

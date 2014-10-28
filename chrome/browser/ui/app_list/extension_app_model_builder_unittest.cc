@@ -72,17 +72,15 @@ const size_t kDefaultAppCount = 3u;
 class ExtensionAppModelBuilderTest : public AppListTestBase {
  public:
   ExtensionAppModelBuilderTest() {}
-  virtual ~ExtensionAppModelBuilderTest() {}
+  ~ExtensionAppModelBuilderTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AppListTestBase::SetUp();
 
     CreateBuilder();
   }
 
-  virtual void TearDown() override {
-    ResetBuilder();
-  }
+  void TearDown() override { ResetBuilder(); }
 
  protected:
   // Creates a new builder, destroying any existing one.

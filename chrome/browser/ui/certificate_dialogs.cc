@@ -69,12 +69,14 @@ class Exporter : public ui::SelectFileDialog::Listener {
            gfx::NativeWindow parent,
            net::X509Certificate::OSCertHandles::iterator certs_begin,
            net::X509Certificate::OSCertHandles::iterator certs_end);
-  virtual ~Exporter();
+  ~Exporter() override;
 
   // SelectFileDialog::Listener implemenation.
-  virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) override;
-  virtual void FileSelectionCanceled(void* params) override;
+  void FileSelected(const base::FilePath& path,
+                    int index,
+                    void* params) override;
+  void FileSelectionCanceled(void* params) override;
+
  private:
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

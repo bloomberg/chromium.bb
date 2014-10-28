@@ -92,7 +92,7 @@ class CloseObserver : public content::WebContentsObserver {
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
   PopupBlockerBrowserTest() {}
-  virtual ~PopupBlockerBrowserTest() {}
+  ~PopupBlockerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();

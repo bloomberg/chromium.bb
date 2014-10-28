@@ -31,9 +31,9 @@ class TestExtensionAppItem : public AppListItem {
 class ModelPrefUpdaterTest : public testing::Test {
  public:
   ModelPrefUpdaterTest() {}
-  virtual ~ModelPrefUpdaterTest() {}
+  ~ModelPrefUpdaterTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AppListPrefs::RegisterProfilePrefs(pref_service_.registry());
     prefs_.reset(AppListPrefs::Create(&pref_service_));
     model_.reset(new AppListTestModel());
