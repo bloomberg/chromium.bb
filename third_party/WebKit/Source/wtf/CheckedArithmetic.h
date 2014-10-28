@@ -27,7 +27,6 @@
 #define CheckedArithmetic_h
 
 #include "wtf/Assertions.h"
-#include "wtf/EnumClass.h"
 #include "wtf/TypeTraits.h"
 
 #include <limits>
@@ -67,11 +66,11 @@
 
 namespace WTF {
 
-ENUM_CLASS(CheckedState)
+enum class CheckedState
 {
     DidOverflow,
     DidNotOverflow
-} ENUM_CLASS_END(CheckedState);
+};
 
 class CrashOnOverflow {
 protected:

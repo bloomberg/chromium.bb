@@ -26,11 +26,9 @@
 #ifndef SQLTransactionState_h
 #define SQLTransactionState_h
 
-#include "wtf/EnumClass.h"
-
 namespace blink {
 
-ENUM_CLASS(SQLTransactionState) {
+enum class SQLTransactionState {
     End = 0,
     Idle,
     AcquireLock,
@@ -45,7 +43,7 @@ ENUM_CLASS(SQLTransactionState) {
     DeliverQuotaIncreaseCallback,
     DeliverSuccessCallback,
     NumberOfStates // Always keep this at the end of the list.
-} ENUM_CLASS_END(SQLTransactionState);
+};
 
 } // namespace blink
 

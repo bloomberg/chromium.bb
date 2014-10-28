@@ -26,8 +26,6 @@
 #ifndef DatabaseBasicTypes_h
 #define DatabaseBasicTypes_h
 
-#include "wtf/EnumClass.h"
-
 namespace blink {
 
 typedef int DatabaseGuid;

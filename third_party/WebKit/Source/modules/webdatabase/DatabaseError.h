@@ -26,15 +26,13 @@
 #ifndef DatabaseError_h
 #define DatabaseError_h
 
-#include "wtf/EnumClass.h"
-
 namespace blink {
 
-ENUM_CLASS(DatabaseError) {
+enum class DatabaseError {
     None = 0,
     GenericSecurityError,
     InvalidDatabaseState
-} ENUM_CLASS_END(DatabaseError);
+};
 
 } // namespace blink
 
