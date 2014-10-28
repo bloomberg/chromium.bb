@@ -75,6 +75,9 @@ public:
     bool isHandlingRecursionLevelError() const { return m_isHandlingRecursionLevelError; }
     void setIsHandlingRecursionLevelError(bool value) { m_isHandlingRecursionLevelError = value; }
 
+    bool isReportingException() const { return m_isReportingException; }
+    void setReportingException(bool value) { m_isReportingException = value; }
+
     bool performingMicrotaskCheckpoint() const { return m_performingMicrotaskCheckpoint; }
     void setPerformingMicrotaskCheckpoint(bool performingMicrotaskCheckpoint) { m_performingMicrotaskCheckpoint = performingMicrotaskCheckpoint; }
 
@@ -127,6 +130,7 @@ private:
 
     int m_recursionLevel;
     bool m_isHandlingRecursionLevelError;
+    bool m_isReportingException;
 
 #if ENABLE(ASSERT)
     int m_internalScriptRecursionLevel;

@@ -73,6 +73,7 @@ V8PerIsolateData::V8PerIsolateData()
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
     , m_isHandlingRecursionLevelError(false)
+    , m_isReportingException(false)
 #if ENABLE(ASSERT)
     , m_internalScriptRecursionLevel(0)
 #endif

@@ -398,14 +398,14 @@ static void reportFatalErrorInWorker(const char* location, const char* message)
 
 static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
-    static bool isReportingException = false;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    V8PerIsolateData* perIsolateData = V8PerIsolateData::from(isolate);
     // Exceptions that occur in error handler should be ignored since in that case
     // WorkerGlobalScope::reportException will send the exception to the worker object.
-    if (isReportingException)
+    if (perIsolateData->isReportingException())
         return;
-    isReportingException = true;
+    perIsolateData->setReportingException(true);
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     ScriptState* scriptState = ScriptState::current(isolate);
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = scriptState->executionContext()) {
@@ -424,7 +424,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         }
     }
 
-    isReportingException = false;
+    perIsolateData->setReportingException(false);
 }
 
 static const int kWorkerMaxStackSize = 500 * 1024;
