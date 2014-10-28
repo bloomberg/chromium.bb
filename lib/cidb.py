@@ -688,6 +688,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'metadata_url': metadata_url,
                                           'final' : True})
 
+
+  @minimum_schema(16)
+  def FinishChildConfig(self, build_id, child_config, status=None):
+    """Marks the given child config as finished with |status|.
+
+    This should be called before FinishBuild, on all child configs that
+    were used in a build.
+
+    Args:
+      build_id: primary key of the build in the buildTable
+      child_config: String child_config name.
+      status: Final child_config status, one of
+              constants.BUILDER_COMPLETED_STATUSES or None
+              for default "inflight".
+    """
+    self._Execute(
+        'UPDATE childConfigPerBuildTable '
+        'SET status="%s", final=1 '
+        'WHERE (build_id, child_config) = (%s, "%s")' %
+        (status, build_id, child_config))
+
+
   @minimum_schema(2)
   def GetBuildStatus(self, build_id):
     """Gets the status of the build.

@@ -420,6 +420,15 @@ class DataSeries1Test(CIDBIntegrationTest):
 
     status = metadata_dict['status']['status']
     status = _TranslateStatus(status)
+
+    for child_config_dict in metadata_dict['child-configs']:
+      # Note, we are not using test data here, because the test data
+      # we have predates the existence of child-config status being
+      # stored in metadata.json. Instead, we just pretend all child
+      # configs had the same status as the main config.
+      db.FinishChildConfig(build_id, child_config_dict['name'],
+                           status)
+
     db.FinishBuild(build_id, status)
 
     return build_id

@@ -514,10 +514,16 @@ class ReportStage(generic_stages.BuilderStage,
     if db:
       # TODO(akeshet): Eliminate this status string translate once
       # these differing status strings are merged, crbug.com/318930
-      if final_status == constants.FINAL_STATUS_PASSED:
-        status_for_db = constants.BUILDER_STATUS_PASSED
-      else:
-        status_for_db = constants.BUILDER_STATUS_FAILED
+      translateStatus = (lambda s: constants.BUILDER_STATUS_PASSED
+                                   if s == constants.FINAL_STATUS_PASSED
+                                   else constants.BUILDER_STATUS_FAILED)
+      status_for_db = translateStatus(final_status)
+
+      child_metadatas = self._run.attrs.metadata.GetDict().get(
+          'child-configs', [])
+      for child_metadata in child_metadatas:
+        db.FinishChildConfig(build_id, child_metadata['name'],
+                             translateStatus(child_metadata['status']))
 
       # TODO(akeshet): Consider uploading the status pickle to the database,
       # (by specifying that argument to FinishBuild), or come up with a
