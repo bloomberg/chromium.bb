@@ -30,7 +30,7 @@ function get(url, type) {
 
 get('resources/reply2.txt', 'text').then(function(xhr) {
     window.status = xhr.status;
-    shouldBeEqualToString('status', '2000');
+    shouldBeEqualToString('status', '200');
     window.responseURL = xhr.responseURL;
     shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt');
 
@@ -40,6 +40,13 @@ get('resources/reply2.txt', 'text').then(function(xhr) {
     shouldBeEqualToString('status', '200');
     window.responseURL = xhr.responseURL;
     shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/reply2.xml');
+
+    return get('resources/navigation-target.html#foobar', 'text');
+}).then(function(xhr) {
+    window.status = xhr.status;
+    shouldBeEqualToString('status', '200');
+    window.responseURL = xhr.responseURL;
+    shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html');
 
     return get('resources/redirect.php?url=not-found.txt', 'text');
 }).then(function(xhr) {

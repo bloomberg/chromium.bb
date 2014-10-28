@@ -8,7 +8,7 @@ PASS responseURL is ""
 xhr.readyState = 2: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt
 xhr.readyState = 3: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt
 xhr.readyState = 4: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt
-FAIL status should be 2000. Was 200.
+PASS status is "200"
 PASS responseURL is "http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt"
 PASS responseURL is ""
 PASS responseURL is ""
@@ -17,6 +17,13 @@ xhr.readyState = 3: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources
 xhr.readyState = 4: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/reply2.xml
 PASS status is "200"
 PASS responseURL is "http://127.0.0.1:8000/xmlhttprequest/resources/reply2.xml"
+PASS responseURL is ""
+PASS responseURL is ""
+xhr.readyState = 2: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html
+xhr.readyState = 3: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html
+xhr.readyState = 4: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html
+PASS status is "200"
+PASS responseURL is "http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html"
 PASS responseURL is ""
 PASS responseURL is ""
 xhr.readyState = 2: responseURL = http://127.0.0.1:8000/xmlhttprequest/resources/not-found.txt
