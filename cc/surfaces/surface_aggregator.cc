@@ -91,8 +91,8 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   SurfaceToResourceChildIdMap::iterator it =
       surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
-    int child_id = provider_->CreateChild(
-        base::Bind(&UnrefHelper, surface->factory()->AsWeakPtr()));
+    int child_id =
+        provider_->CreateChild(base::Bind(&UnrefHelper, surface->factory()));
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
   } else {
@@ -127,7 +127,8 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
 
   int child_id = ChildIdForSurface(surface);
   provider_->ReceiveFromChild(child_id, frame_data->resource_list);
-  surface->factory()->RefResources(frame_data->resource_list);
+  if (surface->factory())
+    surface->factory()->RefResources(frame_data->resource_list);
 
   typedef ResourceProvider::ResourceIdArray IdArray;
   IdArray referenced_resources;
