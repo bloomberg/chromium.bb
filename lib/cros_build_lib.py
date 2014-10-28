@@ -6,12 +6,14 @@
 
 from __future__ import print_function
 
+import __main__
 import collections
 import contextlib
 from datetime import datetime
 import email.utils
 import errno
 import functools
+import getpass
 import hashlib
 import logging
 import operator
@@ -1911,3 +1913,30 @@ def GetRandomString(length=20):
   md5 = hashlib.md5(os.urandom(length))
   md5.update(UserDateTimeFormat())
   return md5.hexdigest()
+
+
+def MachineDetails():
+  """Returns a string to help identify the source of a job.
+
+  This is not meant for machines to parse; instead, we want content that is easy
+  for humans to read when trying to figure out where "something" is coming from.
+  For example, when a service has grabbed a lock in Google Storage, and we want
+  to see what process actually triggered that (in case it is a test gone rogue),
+  the content in here should help triage.
+
+  Note: none of the details included may be secret so they can be freely pasted
+  into bug reports/chats/logs/etc...
+
+  Note: this content should not be large
+
+  Returns:
+    A string with content that helps identify this system/process/etc...
+  """
+  return '\n'.join((
+      'PROG=%s' % __main__.__file__,
+      'USER=%s' % getpass.getuser(),
+      'HOSTNAME=%s' % GetHostName(fully_qualified=True),
+      'PID=%s' % os.getpid(),
+      'TIMESTAMP=%s' % UserDateTimeFormat(),
+      'RANDOM_JUNK=%s' % GetRandomString(),
+  )) + '\n'

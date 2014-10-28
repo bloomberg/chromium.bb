@@ -15,6 +15,7 @@ import socket
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 from chromite.lib.paygen import gslib
@@ -148,8 +149,8 @@ class GSLockTest(mox.MoxTestBase):
     """Test getting a lock."""
     # We aren't using the mox in the usual way, we just want to force a known
     # hostname.
-    self.mox.StubOutWithMock(socket, 'gethostname')
-    socket.gethostname().MultipleTimes().AndReturn('TestHost')
+    self.mox.StubOutWithMock(cros_build_lib, 'MachineDetails')
+    cros_build_lib.MachineDetails().MultipleTimes().AndReturn('TestHost')
     self.mox.ReplayAll()
 
     lock = gslock.Lock(self.lock_uri)
@@ -159,7 +160,7 @@ class GSLockTest(mox.MoxTestBase):
     self.assertTrue(gslib.Exists(self.lock_uri))
 
     contents = gslib.Cat(self.lock_uri)
-    self.assertTrue(contents.startswith("('TestHost', "))
+    self.assertEqual(contents, 'TestHost')
 
     lock.Release()
     self.assertFalse(gslib.Exists(self.lock_uri))
@@ -169,8 +170,8 @@ class GSLockTest(mox.MoxTestBase):
   @cros_test_lib.NetworkTest()
   def testLockRepetition(self):
     """Test aquiring same lock multiple times."""
-    self.mox.StubOutWithMock(socket, 'gethostname')
-    socket.gethostname().MultipleTimes().AndReturn('TestHost')
+    self.mox.StubOutWithMock(cros_build_lib, 'MachineDetails')
+    cros_build_lib.MachineDetails().MultipleTimes().AndReturn('TestHost')
     self.mox.ReplayAll()
 
     lock = gslock.Lock(self.lock_uri)

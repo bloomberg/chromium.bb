@@ -792,6 +792,13 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self.assertEqual(cros_build_lib.ParseDurationToSeconds('1:01:01'),
                      3600 + 60 + 1)
 
+  def testMachineDetails(self):
+    """Verify we don't crash."""
+    contents = cros_build_lib.MachineDetails()
+    self.assertNotEqual(contents, '')
+    self.assertEqual(contents[-1], '\n')
+
+
 class YNInteraction():
   """Class to hold a list of responses and expected reault of YN prompt."""
   def __init__(self, responses, expected_result):

@@ -34,10 +34,8 @@ fixup_path.FixupPath()
 
 import datetime
 import logging
-import os
-import random
-import socket
 
+from chromite.lib import cros_build_lib
 from chromite.lib import gs
 
 
@@ -95,8 +93,7 @@ class Lock(object):
     """
     self._gs_path = gs_path
     self._timeout = datetime.timedelta(minutes=lock_timeout_mins)
-    self._contents = repr((socket.gethostname(), os.getpid(), id(self),
-                           random.random()))
+    self._contents = cros_build_lib.MachineDetails()
     self._generation = 0
     self._ctx = gs.GSContext(dry_run=dry_run)
 

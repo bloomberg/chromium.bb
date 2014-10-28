@@ -22,7 +22,6 @@ import textwrap
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import signing
@@ -173,18 +172,8 @@ def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
   tbs_path = '%s/tobesigned/%02i,%s' % (tbs_base, priority,
                                         insns_path.replace('/', ','))
 
-  with tempfile.NamedTemporaryFile(
-      bufsize=0, prefix='pushimage.tbs.') as temp_tbs_file:
-    lines = [
-        'PROG=%s' % __file__,
-        'USER=%s' % getpass.getuser(),
-        'HOSTNAME=%s' % cros_build_lib.GetHostName(fully_qualified=True),
-        'GIT_REV=%s' % git.RunGit(constants.CHROMITE_DIR,
-                                  ['rev-parse', 'HEAD']).output.rstrip(),
-    ]
-    osutils.WriteFile(temp_tbs_file.name, '\n'.join(lines) + '\n')
-    # The caller will catch gs.GSContextException for us.
-    ctx.Copy(temp_tbs_file.name, tbs_path)
+  # The caller will catch gs.GSContextException for us.
+  ctx.Copy('-', tbs_path, input=cros_build_lib.MachineDetails())
 
   return tbs_path
 

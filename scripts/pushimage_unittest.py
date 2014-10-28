@@ -16,7 +16,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
@@ -122,8 +121,7 @@ class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
   def setUp(self):
     # Minor optimization -- we call this for logging purposes in the main
     # code, but don't really care about it for testing.  It just slows us.
-    self.PatchObject(git, 'RunGit',
-                     return_value=cros_build_lib.CommandResult(output='1234\n'))
+    self.PatchObject(cros_build_lib, 'MachineDetails', return_value='1234\n')
 
   def testBasic(self):
     """Simple smoke test"""
@@ -144,24 +142,6 @@ class MarkImageToBeSignedTest(gs_unittest.AbstractGSContextTest):
     for prio in (-10, -1, 100, 91239):
       self.assertRaises(ValueError, pushimage.MarkImageToBeSigned, self.ctx,
                         '', '', prio)
-
-  def testTbsFile(self):
-    """Make sure the tbs file we write has useful data"""
-    WriteFile = osutils.WriteFile
-    def _write_check(*args, **kwargs):
-      # We can't mock every call, so do the actual write for most.
-      WriteFile(*args, **kwargs)
-
-    m = self.PatchObject(osutils, 'WriteFile')
-    m.side_effect = _write_check
-    pushimage.MarkImageToBeSigned(self.ctx, '', '', 50)
-    # We assume the first call is the one we care about.
-    self.assertTrue(m.called)
-    content = m.call_args_list[0][0][1]
-    self.assertIn('USER=', content)
-    self.assertIn('HOSTNAME=', content)
-    self.assertIn('GIT_REV=1234', content)
-    self.assertIn('\n', content)
 
   def testTbsUpload(self):
     """Make sure we actually try to upload the file"""
