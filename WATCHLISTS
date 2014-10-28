@@ -825,7 +825,7 @@
     'cc': ['cc-bugs@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
-    'chromecast': ['lcwu+watch@chromium.org'],
+    'chromecast': ['gunsch+watch@chromium.org', 'lcwu+watch@chromium.org'],
     'chromedriver': ['samuong+watch@chromium.org', 'stgao@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
