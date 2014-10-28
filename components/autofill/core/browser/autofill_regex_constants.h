@@ -15,6 +15,7 @@ extern const char kAddressLine1LabelRe[];
 extern const char kAddressLine2Re[];
 extern const char kAddressLine2LabelRe[];
 extern const char kAddressLinesExtraRe[];
+extern const char kAddressLookupRe[];
 extern const char kCountryRe[];
 extern const char kZipCodeRe[];
 extern const char kZip4Re[];

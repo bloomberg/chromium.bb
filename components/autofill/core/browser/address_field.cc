@@ -142,6 +142,10 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
   if (address1_ || street_address_)
     return false;
 
+  // Ignore "Address Lookup" field. http://crbug.com/427622
+  if (ParseField(scanner, base::UTF8ToUTF16(autofill::kAddressLookupRe), NULL))
+    return false;
+
   base::string16 pattern = UTF8ToUTF16(autofill::kAddressLine1Re);
   base::string16 label_pattern = UTF8ToUTF16(autofill::kAddressLine1LabelRe);
   if (!ParseFieldSpecifics(scanner, pattern, MATCH_DEFAULT, &address1_) &&

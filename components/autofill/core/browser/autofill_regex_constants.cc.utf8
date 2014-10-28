@@ -69,6 +69,8 @@ const char kAddressLinesExtraRe[] =
     "|municipio"  // es
     "|batiment|residence"  // fr-FR
     "|indirizzo[3-9]";  // it-IT
+const char kAddressLookupRe[] =
+    "lookup";
 const char kCountryRe[] =
     "country|countries|location"
     "|país|pais"  // es
