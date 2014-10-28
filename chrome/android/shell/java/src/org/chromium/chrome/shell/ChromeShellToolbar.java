@@ -48,9 +48,10 @@ public class ChromeShellToolbar extends LinearLayout {
         public void run() {
             mProgressDrawable.setLevel(100 * mProgress);
             if (mLoading) {
-                mStopReloadButton.setImageResource(R.drawable.btn_stop_normal);
+                mStopReloadButton.setImageResource(
+                        R.drawable.btn_toolbar_stop_loading_white_normal);
             } else {
-                mStopReloadButton.setImageResource(R.drawable.btn_reload_normal);
+                mStopReloadButton.setImageResource(R.drawable.btn_toolbar_reload_white_normal);
                 ApiCompatibilityUtils.postOnAnimationDelayed(ChromeShellToolbar.this,
                         mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
             }
@@ -155,9 +156,9 @@ public class ChromeShellToolbar extends LinearLayout {
         mUrlTextView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null ||
-                        event.getKeyCode() != KeyEvent.KEYCODE_ENTER ||
-                        event.getAction() != KeyEvent.ACTION_DOWN)) {
+                if ((actionId != EditorInfo.IME_ACTION_GO) && (event == null
+                        || event.getKeyCode() != KeyEvent.KEYCODE_ENTER
+                        || event.getAction() != KeyEvent.ACTION_DOWN)) {
                     return false;
                 }
 

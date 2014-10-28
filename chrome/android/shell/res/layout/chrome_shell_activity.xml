@@ -16,11 +16,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="@drawable/progress">
-        <ImageButton android:id="@+id/stop_reload_button"
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/stop_reload_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/btn_stop_normal"
-            android:scaleType="center" />
+            android:src="@drawable/btn_toolbar_stop_loading_white_normal"
+            android:background="?android:attr/selectableItemBackground"
+            android:scaleType="center"/>
         <EditText android:id="@+id/url"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -34,19 +36,21 @@
             android:hint="@string/url_hint"
             android:inputType="textUri"
             android:imeOptions="actionGo|flagNoExtractUi" />
-        <ImageButton android:id="@+id/tab_switcher"
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/tab_switcher"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/tab_switcher"
+            android:src="@drawable/btn_tabswitcher_white_normal"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
-            android:contentDescription="@null" />
-        <ImageButton android:id="@+id/menu_button"
+            android:contentDescription="@null"/>
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/menu_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/btn_menu"
+            android:src="@drawable/btn_menu_white_normal"
             android:background="?android:attr/selectableItemBackground"
-            android:scaleType="center" />
+            android:scaleType="center"/>
     </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"

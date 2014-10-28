@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true" android:color="#4285F4" />
+    <item android:state_focused="true" android:color="#4285F4" />
+    <item android:state_pressed="true" android:color="#4285F4" />
+    <item android:state_enabled="false" android:color="#515a5a5a" />
+    <item android:color="#5a5a5a"/>
+</selector>
