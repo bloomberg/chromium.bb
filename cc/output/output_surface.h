@@ -63,7 +63,8 @@ class CC_EXPORT OutputSurface {
           deferred_gl_initialization(false),
           draw_and_swap_full_viewport_every_frame(false),
           adjust_deadline_for_parent(true),
-          uses_default_gl_framebuffer(true) {}
+          uses_default_gl_framebuffer(true),
+          flipped_output_surface(false) {}
     bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
@@ -74,6 +75,8 @@ class CC_EXPORT OutputSurface {
     // Whether this output surface renders to the default OpenGL zero
     // framebuffer or to an offscreen framebuffer.
     bool uses_default_gl_framebuffer;
+    // Whether this OutputSurface is flipped or not.
+    bool flipped_output_surface;
   };
 
   const Capabilities& capabilities() const {

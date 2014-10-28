@@ -51,8 +51,9 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
       break;
     }
     case PIXEL_TEST_GL: {
-      output_surface = make_scoped_ptr(
-          new PixelTestOutputSurface(new TestInProcessContextProvider));
+      bool flipped_output_surface = false;
+      output_surface = make_scoped_ptr(new PixelTestOutputSurface(
+          new TestInProcessContextProvider, flipped_output_surface));
       break;
     }
   }

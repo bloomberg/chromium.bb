@@ -127,7 +127,7 @@ void SoftwareRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {
   output_device_->ReclaimSoftwareFrame(ack.last_software_frame_id);
 }
 
-bool SoftwareRenderer::FlippedFramebuffer() const {
+bool SoftwareRenderer::FlippedFramebuffer(const DrawingFrame* frame) const {
   return false;
 }
 
@@ -568,7 +568,7 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   gfx::Rect copy_rect = frame->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
-  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
+  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(frame, copy_rect);
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setInfo(SkImageInfo::MakeN32Premul(window_copy_rect.width(),

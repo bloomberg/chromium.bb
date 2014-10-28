@@ -89,7 +89,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  void GetFramebufferPixelsAsync(const gfx::Rect& rect,
+  void GetFramebufferPixelsAsync(const DrawingFrame* frame,
+                                 const gfx::Rect& rect,
                                  scoped_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
                              ResourceFormat texture_format,
@@ -114,7 +115,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void DoDrawQuad(DrawingFrame* frame, const class DrawQuad*) override;
   void BeginDrawingFrame(DrawingFrame* frame) override;
   void FinishDrawingFrame(DrawingFrame* frame) override;
-  bool FlippedFramebuffer() const override;
+  bool FlippedFramebuffer(const DrawingFrame* frame) const override;
+  bool FlippedRootFramebuffer() const;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(

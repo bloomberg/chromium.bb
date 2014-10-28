@@ -10,8 +10,11 @@
 namespace cc {
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(context_provider), external_stencil_test_(false) {}
+    scoped_refptr<ContextProvider> context_provider,
+    bool flipped_output_surface)
+    : OutputSurface(context_provider), external_stencil_test_(false) {
+  capabilities_.flipped_output_surface = flipped_output_surface;
+}
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device)

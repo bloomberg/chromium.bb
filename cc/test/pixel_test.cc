@@ -55,12 +55,26 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
     RenderPass* target,
     const base::FilePath& ref_file,
     const PixelComparator& comparator) {
+  return RunPixelTestWithReadbackTargetAndArea(
+      pass_list, target, ref_file, comparator, nullptr);
+}
+
+bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
+    RenderPassList* pass_list,
+    RenderPass* target,
+    const base::FilePath& ref_file,
+    const PixelComparator& comparator,
+    const gfx::Rect* copy_rect) {
   base::RunLoop run_loop;
 
-  target->copy_requests.push_back(CopyOutputRequest::CreateBitmapRequest(
-      base::Bind(&PixelTest::ReadbackResult,
-                 base::Unretained(this),
-                 run_loop.QuitClosure())));
+  scoped_ptr<CopyOutputRequest> request =
+      CopyOutputRequest::CreateBitmapRequest(
+          base::Bind(&PixelTest::ReadbackResult,
+                     base::Unretained(this),
+                     run_loop.QuitClosure()));
+  if (copy_rect)
+    request->set_area(*copy_rect);
+  target->copy_requests.push_back(request.Pass());
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect =
@@ -108,11 +122,12 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
       *result_bitmap_, test_data_dir.Append(ref_file), comparator);
 }
 
-void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
+void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
+                                bool flipped_output_surface) {
   enable_pixel_output_.reset(new gfx::DisableNullDrawGLBindings);
 
-  output_surface_.reset(
-      new PixelTestOutputSurface(new TestInProcessContextProvider));
+  output_surface_.reset(new PixelTestOutputSurface(
+      new TestInProcessContextProvider, flipped_output_surface));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);

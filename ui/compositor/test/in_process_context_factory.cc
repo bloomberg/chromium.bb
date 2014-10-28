@@ -60,8 +60,9 @@ void InProcessContextFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderInProcess> context_provider =
       ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
 
-  compositor->SetOutputSurface(
-      make_scoped_ptr(new cc::PixelTestOutputSurface(context_provider)));
+  bool flipped_output_surface = false;
+  compositor->SetOutputSurface(make_scoped_ptr(new cc::PixelTestOutputSurface(
+      context_provider, flipped_output_surface)));
 }
 
 scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(

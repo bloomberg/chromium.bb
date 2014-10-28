@@ -82,12 +82,11 @@ void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                         const gfx::Rect& draw_rect,
                                         const gfx::Rect& viewport_rect,
                                         const gfx::Size& surface_size) {
-  bool flip_y = FlippedFramebuffer();
-
   DCHECK_GE(viewport_rect.x(), 0);
   DCHECK_GE(viewport_rect.y(), 0);
   DCHECK_LE(viewport_rect.right(), surface_size.width());
   DCHECK_LE(viewport_rect.bottom(), surface_size.height());
+  bool flip_y = FlippedFramebuffer(frame);
   if (flip_y) {
     frame->projection_matrix = OrthoProjectionMatrix(draw_rect.x(),
                                                      draw_rect.right(),
@@ -115,11 +114,12 @@ void DirectRenderer::InitializeViewport(DrawingFrame* frame,
 }
 
 gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
+    const DrawingFrame* frame,
     const gfx::Rect& draw_rect) const {
   gfx::Rect window_rect = draw_rect;
   window_rect -= current_draw_rect_.OffsetFromOrigin();
   window_rect += current_viewport_rect_.OffsetFromOrigin();
-  if (FlippedFramebuffer())
+  if (FlippedFramebuffer(frame))
     window_rect.set_y(current_surface_size_.height() - window_rect.bottom());
   return window_rect;
 }
@@ -279,7 +279,7 @@ bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
 gfx::Rect DirectRenderer::DeviceClipRectInWindowSpace(const DrawingFrame* frame)
     const {
   gfx::Rect device_clip_rect = frame->device_clip_rect;
-  if (FlippedFramebuffer())
+  if (FlippedFramebuffer(frame))
     device_clip_rect.set_y(current_surface_size_.height() -
                            device_clip_rect.bottom());
   return device_clip_rect;
@@ -321,7 +321,8 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
 void DirectRenderer::SetScissorTestRectInDrawSpace(
     const DrawingFrame* frame,
     const gfx::Rect& draw_space_rect) {
-  gfx::Rect window_space_rect = MoveFromDrawToWindowSpace(draw_space_rect);
+  gfx::Rect window_space_rect =
+      MoveFromDrawToWindowSpace(frame, draw_space_rect);
   if (NeedDeviceClip(frame))
     window_space_rect.Intersect(DeviceClipRectInWindowSpace(frame));
   SetScissorTestRect(window_space_rect);

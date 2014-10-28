@@ -31,6 +31,8 @@ GpuSurfacelessBrowserCompositorOutputSurface::
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat),
       use_own_gl_helper_(use_own_gl_helper) {
+  capabilities_.uses_default_gl_framebuffer = false;
+  capabilities_.flipped_output_surface = true;
 }
 
 GpuSurfacelessBrowserCompositorOutputSurface::

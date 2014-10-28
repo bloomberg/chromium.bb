@@ -55,7 +55,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) override;
   void BeginDrawingFrame(DrawingFrame* frame) override;
   void FinishDrawingFrame(DrawingFrame* frame) override;
-  bool FlippedFramebuffer() const override;
+  bool FlippedFramebuffer(const DrawingFrame* frame) const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(

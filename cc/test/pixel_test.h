@@ -39,6 +39,12 @@ class PixelTest : public testing::Test, RendererClient {
       const base::FilePath& ref_file,
       const PixelComparator& comparator);
 
+  bool RunPixelTestWithReadbackTargetAndArea(RenderPassList* pass_list,
+                                             RenderPass* target,
+                                             const base::FilePath& ref_file,
+                                             const PixelComparator& comparator,
+                                             const gfx::Rect* copy_rect);
+
   LayerTreeSettings settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
@@ -55,7 +61,7 @@ class PixelTest : public testing::Test, RendererClient {
   gfx::Vector2d external_device_viewport_offset_;
   gfx::Rect external_device_clip_rect_;
 
-  void SetUpGLRenderer(bool use_skia_gpu_backend);
+  void SetUpGLRenderer(bool use_skia_gpu_backend, bool flipped_output_surface);
   void SetUpSoftwareRenderer();
 
   void ForceExpandedViewport(const gfx::Size& surface_expansion);
@@ -117,9 +123,25 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
       : SoftwareRenderer(client, settings, output_surface, resource_provider) {}
 };
 
+class GLRendererWithFlippedSurface : public GLRenderer {
+ public:
+  GLRendererWithFlippedSurface(RendererClient* client,
+                               const LayerTreeSettings* settings,
+                               OutputSurface* output_surface,
+                               ResourceProvider* resource_provider,
+                               TextureMailboxDeleter* texture_mailbox_deleter,
+                               int highp_threshold_min)
+      : GLRenderer(client,
+                   settings,
+                   output_surface,
+                   resource_provider,
+                   texture_mailbox_deleter,
+                   highp_threshold_min) {}
+};
+
 template<>
 inline void RendererPixelTest<GLRenderer>::SetUp() {
-  SetUpGLRenderer(false);
+  SetUpGLRenderer(false, false);
 }
 
 template<>
@@ -134,7 +156,7 @@ inline bool RendererPixelTest<GLRenderer>::ExpandedViewport() const {
 
 template<>
 inline void RendererPixelTest<GLRendererWithExpandedViewport>::SetUp() {
-  SetUpGLRenderer(false);
+  SetUpGLRenderer(false, false);
   ForceExpandedViewport(gfx::Size(50, 50));
   ForceViewportOffset(gfx::Vector2d(10, 20));
 }
@@ -151,7 +173,24 @@ RendererPixelTest<GLRendererWithExpandedViewport>::ExpandedViewport() const {
   return true;
 }
 
-template<>
+template <>
+inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
+  SetUpGLRenderer(false, true);
+}
+
+template <>
+inline bool RendererPixelTest<GLRendererWithFlippedSurface>::UseSkiaGPUBackend()
+    const {
+  return false;
+}
+
+template <>
+inline bool RendererPixelTest<GLRendererWithFlippedSurface>::ExpandedViewport()
+    const {
+  return true;
+}
+
+template <>
 inline void RendererPixelTest<SoftwareRenderer>::SetUp() {
   SetUpSoftwareRenderer();
 }
