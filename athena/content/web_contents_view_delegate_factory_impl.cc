@@ -5,6 +5,7 @@
 #include "athena/content/public/web_contents_view_delegate_creator.h"
 
 #include "athena/content/render_view_context_menu_impl.h"
+#include "components/renderer_context_menu/context_menu_delegate.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -20,10 +21,11 @@
 namespace athena {
 namespace {
 
-class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
+class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate,
+                                    public ContextMenuDelegate {
  public:
   explicit WebContentsViewDelegateImpl(content::WebContents* web_contents)
-      : web_contents_(web_contents) {}
+      : ContextMenuDelegate(web_contents), web_contents_(web_contents) {}
   ~WebContentsViewDelegateImpl() override {}
 
   content::WebDragDestDelegate* GetDragDestDelegate() override {
@@ -62,10 +64,11 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
 
   void HideDisambiguationPopup() override { NOTIMPLEMENTED(); }
 
-  scoped_ptr<RenderViewContextMenuImpl> BuildMenu(
+  // ContextMenuDelegate:
+  scoped_ptr<RenderViewContextMenuBase> BuildMenu(
       content::WebContents* web_contents,
-      const content::ContextMenuParams& params) {
-    scoped_ptr<RenderViewContextMenuImpl> menu;
+      const content::ContextMenuParams& params) override {
+    scoped_ptr<RenderViewContextMenuBase> menu;
     content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
     // If the frame tree does not have a focused frame at this point, do not
     // bother creating RenderViewContextMenuViews.
@@ -77,8 +80,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
     }
     return menu.Pass();
   }
-
-  void ShowMenu(scoped_ptr<RenderViewContextMenuImpl> menu) {
+  void ShowMenu(scoped_ptr<RenderViewContextMenuBase> menu) override {
     context_menu_.reset(menu.release());
 
     if (!context_menu_)
@@ -111,7 +113,7 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
       web_contents_->Focus();
     }
   }
-  scoped_ptr<RenderViewContextMenuImpl> context_menu_;
+  scoped_ptr<RenderViewContextMenuBase> context_menu_;
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewDelegateImpl);
 };
