@@ -7,6 +7,9 @@
 
 # pylint: disable=E1101,E1103
 
+import __builtin__
+
+import contextlib
 import functools
 import itertools
 import logging
@@ -177,7 +180,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
-      'GetTryMastersExecuter', 'itertools',
+      'GetTryMastersExecuter', 'itertools', 'CleanOrphanedCompiledPython',
+      'IsCompiledPython',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -682,6 +686,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.gclient_utils.FileRead(haspresubmit_path,
                                      'rU').AndReturn(self.presubmit_text)
     presubmit.random.randint(0, 4).AndReturn(1)
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('y\n')
@@ -722,6 +727,8 @@ class PresubmitUnittest(PresubmitTestsBase):
           ).AndReturn(self.presubmit_text)
     presubmit.random.randint(0, 4).AndReturn(1)
     presubmit.random.randint(0, 4).AndReturn(1)
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('n\n')  # say no to the warning
@@ -768,6 +775,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
         self.presubmit_text)
     presubmit.random.randint(0, 4).AndReturn(1)
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
     self.mox.ReplayAll()
 
     change = presubmit.Change(
@@ -809,6 +817,7 @@ def CheckChangeOnCommit(input_api, output_api):
                                   'haspresubmit',
                                   'PRESUBMIT.py')).AndReturn(False)
     presubmit.random.randint(0, 4).AndReturn(0)
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
     self.mox.ReplayAll()
 
     input_buf = StringIO.StringIO('y\n')
@@ -891,6 +900,7 @@ def CheckChangeOnCommit(input_api, output_api):
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.walk(self.fake_root_dir).AndReturn([])
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -1174,6 +1184,88 @@ def CheckChangeOnCommit(input_api, output_api):
       self.fail()
     except SystemExit, e:
       self.assertEquals(2, e.code)
+
+  def testOrphanedCompiledPythonDoesntRemoveFiles(self):
+    self.mox.StubOutWithMock(presubmit, 'IsCompiledPython')
+    py_path = os.path.join(self.fake_root_dir, 'myfile.py')
+    pyc_path = os.path.join(self.fake_root_dir, 'myfile.pyc')
+
+    presubmit.os.walk(self.fake_root_dir).AndReturn([
+        (self.fake_root_dir, [], ['myfile.pyc']),
+    ])
+    presubmit.os.path.isfile(py_path).AndReturn(False)
+    presubmit.IsCompiledPython(pyc_path).AndReturn(True)
+    self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    presubmit.CleanOrphanedCompiledPython(output, self.fake_root_dir, False)
+
+  def testCleanOrphanedCompiledPython(self):
+    self.mox.StubOutWithMock(presubmit, 'IsCompiledPython')
+    py_path = os.path.join(self.fake_root_dir, 'myfile.py')
+    pyc_path = os.path.join(self.fake_root_dir, 'myfile.pyc')
+
+    presubmit.os.walk(self.fake_root_dir).AndReturn([
+        (self.fake_root_dir, [], ['myfile.pyc']),
+    ])
+    presubmit.os.path.isfile(py_path).AndReturn(False)
+    presubmit.IsCompiledPython(pyc_path).AndReturn(True)
+    presubmit.os.remove(pyc_path)
+    self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    presubmit.CleanOrphanedCompiledPython(output, self.fake_root_dir, True)
+
+  def testCleanNonOrphanedCompiledPython(self):
+    self.mox.StubOutWithMock(presubmit, 'IsCompiledPython')
+    py_path = os.path.join(self.fake_root_dir, 'myfile.py')
+
+    presubmit.os.walk(self.fake_root_dir).AndReturn([
+        (self.fake_root_dir, [], ['myfile.pyc', 'myfile.py']),
+    ])
+    presubmit.os.path.isfile(py_path).AndReturn(True)
+    self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    presubmit.CleanOrphanedCompiledPython(output, self.fake_root_dir, True)
+
+  def testCleanOrphanedCompiledPythonAvoidsOtherFiles(self):
+    self.mox.StubOutWithMock(presubmit, 'IsCompiledPython')
+
+    presubmit.os.walk(self.fake_root_dir).AndReturn([
+        (self.fake_root_dir, [], ['otherfile.txt']),
+    ])
+    self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    presubmit.CleanOrphanedCompiledPython(output, self.fake_root_dir, True)
+
+  def testIsCompiledPython(self):
+    self.mox.StubOutWithMock(__builtin__, 'open')
+    pyc_path = os.path.join(self.fake_root_dir, 'testfile.pyc')
+    open(pyc_path, 'rb').AndReturn(contextlib.closing(
+        StringIO.StringIO('\x00\x00\x0d\x0a\x00\x00\x00\x00')))
+    self.mox.ReplayAll()
+
+    self.assertTrue(presubmit.IsCompiledPython(pyc_path))
+
+  def testIsCompiledPythonFailsForInvalidMagic(self):
+    self.mox.StubOutWithMock(__builtin__, 'open')
+    pyc_path = os.path.join(self.fake_root_dir, 'testfile.pyc')
+    open(pyc_path, 'rb').AndReturn(contextlib.closing(
+        StringIO.StringIO('\xca\xfe\xba\xbe\x00\x00\x00\x00')))
+    self.mox.ReplayAll()
+
+    self.assertFalse(presubmit.IsCompiledPython(pyc_path))
+
+  def testIsCompiledPythonFailsForInvalidSize(self):
+    self.mox.StubOutWithMock(__builtin__, 'open')
+    pyc_path = os.path.join(self.fake_root_dir, 'testfile.pyc')
+    open(pyc_path, 'rb').AndReturn(contextlib.closing(
+        StringIO.StringIO('\x00\x00\x0d\x0a\x00\x00\x00')))
+    self.mox.ReplayAll()
+
+    self.assertFalse(presubmit.IsCompiledPython(pyc_path))
 
 
 class InputApiUnittest(PresubmitTestsBase):

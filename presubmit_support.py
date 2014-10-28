@@ -1287,7 +1287,6 @@ class PresubmitExecuter(object):
     Return:
       A list of result objects, empty if no problems.
     """
-
     # Change to the presubmit file's directory to support local imports.
     main_path = os.getcwd()
     os.chdir(os.path.dirname(presubmit_path))
@@ -1336,7 +1335,8 @@ def DoPresubmitChecks(change,
                       input_stream,
                       default_presubmit,
                       may_prompt,
-                      rietveld_obj):
+                      rietveld_obj,
+                      cleanup=False):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1355,6 +1355,8 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
     rietveld_obj: rietveld.Rietveld object.
+    cleanup: If True, filesystem modifications may be made as necessary to
+             clean up repository state to ensure reliable checks.
 
   Warning:
     If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
@@ -1366,6 +1368,10 @@ def DoPresubmitChecks(change,
   """
   old_environ = os.environ
   try:
+    # Clear all orphaned compiled Python files.
+    CleanOrphanedCompiledPython(output_stream, change.RepositoryRoot(),
+                                remove=cleanup)
+
     # Make sure python subprocesses won't generate .pyc files.
     os.environ = os.environ.copy()
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
@@ -1440,6 +1446,46 @@ def DoPresubmitChecks(change,
     return output
   finally:
     os.environ = old_environ
+
+
+def IsCompiledPython(path):
+  """Tests whether a given path looks like a compiled Python file."""
+  # Validate the magic number.
+  with open(path, 'rb') as fd:
+    magic = fd.read(8)
+  return len(magic) == 8 and magic[2:4] == '\x0d\x0a'
+
+
+def CleanOrphanedCompiledPython(output, path, remove):
+  """Clears all compiled Python files in a directory recursively."""
+  pyc_files = []
+  for dirpath, _, filenames in os.walk(path):
+    for filename in filenames:
+      name, ext = os.path.splitext(filename)
+      if ext != '.pyc':
+        continue
+
+      # Is there an accompanying Python script? If so, leave the compiled file.
+      py_path = os.path.join(dirpath, '%s.py' % (name,))
+      if os.path.isfile(py_path):
+        continue
+
+      # Make sure this is compiled Python before we delete it.
+      path = os.path.join(dirpath, filename)
+      if not IsCompiledPython(path):
+        continue
+      pyc_files.append(path)
+  if pyc_files and not remove:
+    output.write(
+        'Warning: Found orphaned compiled Python files. These should be\n'
+        'removed before running PRESUBMIT, as they can have unexpected impact\n'
+        'on checks and tests:\n')
+    for pyc_file in pyc_files:
+      output.write('  %s\n' % (pyc_file,))
+  else:
+    for pyc_file in pyc_files:
+      output.write('Removing orphaned compiled Python file: %s\n' % (pyc_file,))
+      os.remove(pyc_file)
 
 
 def ScanSubDirs(mask, recursive):
