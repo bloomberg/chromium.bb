@@ -77,7 +77,7 @@ template <typename T> struct IsMoveOnlyType {
   template <typename U>
   static NoType Test(...);
 
-  static const bool value = sizeof(Test<T>(0)) == sizeof(YesType) &&
+  static const bool value = sizeof((Test<T>(0))) == sizeof(YesType) &&
                             !is_const<T>::value;
 };
 
