@@ -1,6 +1,0 @@
-include_rules = [
-  "+gpu/command_buffer",
-  "+mojo/services/public/interfaces/gpu",
-  "+ui/gfx",
-  "+ui/gl",
-]

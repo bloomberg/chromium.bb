@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (!is_component_build) {
+
 shared_library("pepper_container_app") {
   output_name = "mojo_pepper_container_app"
 
@@ -100,3 +102,5 @@ shared_library("pepper_container_app") {
     "//ui/events:events_base",
   ]
 }
+
+}  # if (!is_component_build)

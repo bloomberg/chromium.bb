@@ -216,7 +216,6 @@
             'android/javatests/src/org/chromium/mojo/MojoTestCase.java',
             'android/javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java',
             'android/system/src/org/chromium/mojo/system/impl/CoreImpl.java',
-            'services/native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java',
           ],
           'variables': {
             'jni_gen_package': 'mojo',

@@ -57,23 +57,3 @@ source_set("lib") {
     "web_socket_impl.h",
   ]
 }
-
-# GYP version: mojo/mojo_services.gypi:mojo_network_service_unittests
-test("unittests") {
-  deps = [
-    ":network",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/application_manager",
-    "//mojo/edk/system",
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
-    "//mojo/services/public/interfaces/network",
-    "//mojo/shell:test_support",
-    "//testing/gtest",
-  ]
-
-  sources = [
-    "udp_socket_unittest.cc",
-  ]
-}

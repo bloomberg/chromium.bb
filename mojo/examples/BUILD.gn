@@ -5,9 +5,7 @@
 import("//build/config/ui.gni")
 
 group("examples") {
-  testonly = true
-
-  deps = [
-    "//mojo/examples/pepper_container_app",
-  ]
+  if (!is_component_build) {
+    deps = [ "//mojo/examples/pepper_container_app" ]
+  }
 }
