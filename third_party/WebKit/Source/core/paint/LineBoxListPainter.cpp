@@ -33,7 +33,7 @@ void LineBoxListPainter::paint(RenderBoxModelObject* renderer, PaintInfo& paintI
         return;
 
     PaintInfo info(paintInfo);
-    PaintCommandRecorder recorder(paintInfo.context, renderer, paintInfo.phase, pixelSnappedIntRect(paintOffset, renderer->borderBoundingBox().size()));
+    DrawingRecorder recorder(paintInfo.context, renderer, paintInfo.phase, pixelSnappedIntRect(paintOffset, renderer->borderBoundingBox().size()));
     ListHashSet<RenderInline*> outlineObjects;
     info.setOutlineObjects(&outlineObjects);
 

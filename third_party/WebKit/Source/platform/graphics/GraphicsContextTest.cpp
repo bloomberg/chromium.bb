@@ -1213,7 +1213,7 @@ TEST(GraphicsContextTest, RecordingCanvas)
 
     // endRecording finally makes the picture accessible
     RefPtr<DisplayList> dl = context.endRecording();
-    SkPicture* pic = dl->picture();
+    SkPicture* pic = dl->picture().get();
     EXPECT_TRUE(pic);
     EXPECT_EQ(1, pic->getRefCnt());
 

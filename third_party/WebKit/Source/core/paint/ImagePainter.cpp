@@ -64,7 +64,7 @@ void ImagePainter::paintAreaElementFocusRing(PaintInfo& paintInfo)
     // https://crbug.com/251206
     GraphicsContextStateSaver savedContext(*paintInfo.context);
     IntRect focusRect = m_renderImage.absoluteContentBox();
-    PaintCommandRecorder recorder(paintInfo.context, &m_renderImage, paintInfo.phase, focusRect);
+    DrawingRecorder recorder(paintInfo.context, &m_renderImage, paintInfo.phase, focusRect);
     paintInfo.context->clip(focusRect);
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle->outlineOffset(),
@@ -92,7 +92,7 @@ void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintO
 
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + leftBorder + leftPad, paintOffset.y() + topBorder + topPad, cWidth, cHeight));
-            PaintCommandRecorder recorder(context, &m_renderImage, paintInfo.phase, paintRect);
+            DrawingRecorder recorder(context, &m_renderImage, paintInfo.phase, paintRect);
             context->setStrokeStyle(SolidStroke);
             context->setStrokeColor(Color::lightGray);
             context->setFillColor(Color::transparent);
@@ -158,7 +158,7 @@ void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintO
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_renderImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
-        PaintCommandRecorder recorder(context, &m_renderImage, paintInfo.phase, contentRect);
+        DrawingRecorder recorder(context, &m_renderImage, paintInfo.phase, contentRect);
         bool clip = !contentRect.contains(paintRect);
         if (clip) {
             context->save();

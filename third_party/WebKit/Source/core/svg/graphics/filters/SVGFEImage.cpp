@@ -172,7 +172,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     SVGRenderingContext::renderSubtree(context, renderer);
     RefPtr<DisplayList> displayList = context->endRecording();
     context->restore();
-    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(displayList->picture(), dstRect));
+    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(displayList->picture().get(), dstRect));
     return result.release();
 }
 

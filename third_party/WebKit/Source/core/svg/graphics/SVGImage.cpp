@@ -248,7 +248,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     patternTransform.setTranslate(phase.x() + tile.x(), phase.y() + tile.y());
     SkRect tileRect = SkRect::MakeWH(spacedTile.width(), spacedTile.height());
     RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
-        tileDisplayList->picture(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+        tileDisplayList->picture().get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
         &patternTransform, &tileRect));
 
     SkPaint paint;

@@ -10,13 +10,14 @@
 #include "core/rendering/RenderView.h"
 #include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-void AtomicPaintChunk::replay(GraphicsContext* context)
+void DrawingDisplayItem::replay(GraphicsContext* context)
 {
-    context->drawDisplayList(displayList.get());
+    context->drawPicture(m_picture.get(), m_bounds.location());
 }
 
 void ClipDisplayItem::replay(GraphicsContext* context)
@@ -32,7 +33,7 @@ void EndClipDisplayItem::replay(GraphicsContext* context)
     context->restore();
 }
 
-PaintCommandRecorder::PaintCommandRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
     : m_context(context)
     , m_renderer(renderer)
     , m_phase(phase)
@@ -41,14 +42,16 @@ PaintCommandRecorder::PaintCommandRecorder(GraphicsContext* context, RenderObjec
         m_context->beginRecording(clip);
 }
 
-PaintCommandRecorder::~PaintCommandRecorder()
+DrawingRecorder::~DrawingRecorder()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
-    OwnPtr<AtomicPaintChunk> paintChunk = adoptPtr(new AtomicPaintChunk(m_context->endRecording(), m_renderer, m_phase));
+    RefPtr<DisplayList> displayList = m_context->endRecording();
+    OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
+        new DrawingDisplayItem(displayList->picture(), displayList->bounds(), m_phase));
     ASSERT(m_renderer->view());
-    m_renderer->view()->viewDisplayList().add(paintChunk.release());
+    m_renderer->view()->viewDisplayList().add(drawingItem.release());
 }
 
 ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, ClipDisplayItem::ClipType clipType, const ClipRect& clipRect)

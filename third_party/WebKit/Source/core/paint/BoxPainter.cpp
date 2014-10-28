@@ -54,7 +54,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, cons
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), paintInfo.context);
 
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    PaintCommandRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, snappedPaintRect);
+    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, snappedPaintRect);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.

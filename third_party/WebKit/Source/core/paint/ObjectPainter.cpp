@@ -32,7 +32,7 @@ void ObjectPainter::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRe
     if (!styleToUse->hasOutline())
         return;
 
-    PaintCommandRecorder recorder(paintInfo.context, &m_renderObject, paintInfo.phase, paintRect);
+    DrawingRecorder recorder(paintInfo.context, &m_renderObject, paintInfo.phase, paintRect);
 
     if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {

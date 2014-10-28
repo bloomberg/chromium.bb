@@ -18,8 +18,6 @@ class ClipRect;
 class GraphicsContext;
 class RenderObject;
 class RenderLayer;
-struct AtomicPaintChunk;
-
 
 struct DisplayItem {
     virtual void replay(GraphicsContext*) = 0;
@@ -57,25 +55,28 @@ struct EndClipDisplayItem : DisplayItem {
     virtual void replay(GraphicsContext*);
 };
 
-struct AtomicPaintChunk : DisplayItem {
-    AtomicPaintChunk(PassRefPtr<DisplayList> inDisplayList, RenderObject* inRenderer, PaintPhase inPhase)
-        : displayList(inDisplayList), renderer(inRenderer), phase(inPhase) { };
+class DrawingDisplayItem : public DisplayItem {
+public:
+    DrawingDisplayItem(PassRefPtr<SkPicture> picture, const FloatRect& bounds, PaintPhase phase)
+        : m_picture(picture), m_bounds(bounds), m_phase(phase) { };
 
-    RefPtr<DisplayList> displayList;
+    PassRefPtr<SkPicture> picture() const { return m_picture; }
+    const FloatRect& bounds() const { return m_bounds; }
+    PaintPhase phase() const { return m_phase; }
 
-    // This auxillary data can be moved off the chunk if needed.
-    RenderObject* renderer;
-    PaintPhase phase;
+private:
+    RefPtr<SkPicture> m_picture;
+    FloatRect m_bounds;
+    PaintPhase m_phase;
 
     virtual void replay(GraphicsContext*);
 };
 
-typedef Vector<OwnPtr<DisplayItem> > PaintList;
 
-class PaintCommandRecorder {
+class DrawingRecorder {
 public:
-    explicit PaintCommandRecorder(GraphicsContext*, RenderObject*, PaintPhase, const FloatRect&);
-    ~PaintCommandRecorder();
+    explicit DrawingRecorder(GraphicsContext*, RenderObject*, PaintPhase, const FloatRect&);
+    ~DrawingRecorder();
 
 private:
     GraphicsContext* m_context;
@@ -95,6 +96,8 @@ private:
     GraphicsContext* m_graphicsContext;
     RenderLayer* m_renderLayer;
 };
+
+typedef Vector<OwnPtr<DisplayItem> > PaintList;
 
 class ViewDisplayList {
 public:

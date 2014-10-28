@@ -600,9 +600,9 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
     if (location.x() || location.y()) {
         SkMatrix m;
         m.setTranslate(location.x(), location.y());
-        m_canvas->drawPicture(displayList->picture(), &m, 0);
+        m_canvas->drawPicture(displayList->picture().get(), &m, 0);
     } else {
-        m_canvas->drawPicture(displayList->picture());
+        m_canvas->drawPicture(displayList->picture().get());
     }
 
     if (regionTrackingEnabled()) {
@@ -615,6 +615,78 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
 
     if (performClip || performTransform)
         restore();
+}
+
+void GraphicsContext::drawPicture(SkPicture* picture, const FloatPoint& location)
+{
+    ASSERT(picture);
+    ASSERT(m_canvas);
+
+    if (contextDisabled())
+        return;
+
+    if (location.x() || location.y()) {
+        SkMatrix m;
+        m.setTranslate(location.x(), location.y());
+        m_canvas->drawPicture(picture, &m, 0);
+    } else {
+        m_canvas->drawPicture(picture);
+    }
+
+    if (regionTrackingEnabled()) {
+        // Since we don't track regions within pictures, conservatively
+        // mark the bounds as non-opaque.
+        SkPaint paint;
+        paint.setXfermodeMode(SkXfermode::kClear_Mode);
+        FloatRect bound = picture->cullRect();
+        bound.moveBy(location);
+        m_trackedRegion.didDrawBounded(this, bound, paint);
+    }
+}
+
+static inline bool pictureScaleIsApproximatelyOne(float x)
+{
+    return fabsf(x - 1.0f) < cPictureScaleEpsilon;
+}
+
+void GraphicsContext::drawPicture(SkPicture* picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
+{
+    ASSERT(m_canvas);
+    if (contextDisabled() || !picture)
+        return;
+
+    SkMatrix ctm = m_canvas->getTotalMatrix();
+    SkRect deviceDest;
+    ctm.mapRect(&deviceDest, dest);
+    float scaleX = deviceDest.width() / src.width();
+    float scaleY = deviceDest.height() / src.height();
+
+    SkPaint picturePaint;
+    picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
+    SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
+    if (pictureScaleIsApproximatelyOne(scaleX * m_deviceScaleFactor) && pictureScaleIsApproximatelyOne(scaleY * m_deviceScaleFactor)) {
+        // Fast path for canvases that are rasterized at screen resolution
+        SkRect skBounds = WebCoreFloatRectToSKRect(dest);
+        m_canvas->saveLayer(&skBounds, &picturePaint);
+        SkMatrix pictureTransform;
+        pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
+        m_canvas->concat(pictureTransform);
+        m_canvas->drawPicture(picture);
+        m_canvas->restore();
+    } else {
+        RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::Create(picture, sourceBounds));
+        SkMatrix layerScale;
+        layerScale.setScale(scaleX, scaleY);
+        RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
+        picturePaint.setImageFilter(matrixFilter.get());
+        SkRect layerBounds = SkRect::MakeWH(std::max(deviceDest.width(), sourceBounds.width()), std::max(deviceDest.height(), sourceBounds.height()));
+        m_canvas->save();
+        m_canvas->resetMatrix();
+        m_canvas->translate(deviceDest.x(), deviceDest.y());
+        m_canvas->saveLayer(&layerBounds, &picturePaint);
+        m_canvas->restore();
+        m_canvas->restore();
+    }
 }
 
 void GraphicsContext::fillPolygon(size_t numPoints, const FloatPoint* points, const Color& color,
@@ -1161,51 +1233,6 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
         return;
 
     image->draw(this, dest, src, op, blendMode);
-}
-
-static inline bool pictureScaleIsApproximatelyOne(float x)
-{
-    return fabsf(x - 1.0f) < cPictureScaleEpsilon;
-}
-
-void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
-{
-    ASSERT(m_canvas);
-    if (contextDisabled() || !picture)
-        return;
-
-    SkMatrix ctm = m_canvas->getTotalMatrix();
-    SkRect deviceDest;
-    ctm.mapRect(&deviceDest, dest);
-    float scaleX = deviceDest.width() / src.width();
-    float scaleY = deviceDest.height() / src.height();
-
-    SkPaint picturePaint;
-    picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
-    SkRect sourceBounds = WebCoreFloatRectToSKRect(src);
-    if (pictureScaleIsApproximatelyOne(scaleX * m_deviceScaleFactor) && pictureScaleIsApproximatelyOne(scaleY * m_deviceScaleFactor)) {
-        // Fast path for canvases that are rasterized at screen resolution
-        SkRect skBounds = WebCoreFloatRectToSKRect(dest);
-        m_canvas->saveLayer(&skBounds, &picturePaint);
-        SkMatrix pictureTransform;
-        pictureTransform.setRectToRect(sourceBounds, skBounds, SkMatrix::kFill_ScaleToFit);
-        m_canvas->concat(pictureTransform);
-        m_canvas->drawPicture(picture.get());
-        m_canvas->restore();
-    } else {
-        RefPtr<SkPictureImageFilter> pictureFilter = adoptRef(SkPictureImageFilter::Create(picture.get(), sourceBounds));
-        SkMatrix layerScale;
-        layerScale.setScale(scaleX, scaleY);
-        RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
-        picturePaint.setImageFilter(matrixFilter.get());
-        SkRect layerBounds = SkRect::MakeWH(std::max(deviceDest.width(), sourceBounds.width()), std::max(deviceDest.height(), sourceBounds.height()));
-        m_canvas->save();
-        m_canvas->resetMatrix();
-        m_canvas->translate(deviceDest.x(), deviceDest.y());
-        m_canvas->saveLayer(&layerBounds, &picturePaint);
-        m_canvas->restore();
-        m_canvas->restore();
-    }
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)

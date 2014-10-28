@@ -94,7 +94,7 @@ void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layo
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-    PaintCommandRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    DrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 
@@ -105,7 +105,7 @@ void TablePainter::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffse
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-    PaintCommandRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    DrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintMaskImages(paintInfo, rect);
 }
 

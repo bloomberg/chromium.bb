@@ -57,7 +57,7 @@ PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilde
     if (!m_displayList)
         return nullptr;
 
-    return adoptRef(SkPictureImageFilter::Create(m_displayList->picture(), m_displayList->bounds()));
+    return adoptRef(SkPictureImageFilter::Create(m_displayList->picture().get(), m_displayList->bounds()));
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

@@ -31,7 +31,7 @@ PassRefPtr<SkShader> DisplayListPattern::createShader()
     SkRect tileBounds = SkRect::MakeWH(m_tileDisplayList->bounds().width(),
         m_tileDisplayList->bounds().height());
 
-    return adoptRef(SkShader::CreatePictureShader(m_tileDisplayList->picture(),
+    return adoptRef(SkShader::CreatePictureShader(m_tileDisplayList->picture().get(),
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds));
 }
 

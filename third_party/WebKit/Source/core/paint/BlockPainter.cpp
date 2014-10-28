@@ -71,7 +71,7 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     // z-index. We paint after we painted the background/border, so that the scrollbars will
     // sit above the background/border.
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(adjustedPaintOffset, m_renderBlock.visualOverflowRect().size()));
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(adjustedPaintOffset, m_renderBlock.visualOverflowRect().size()));
         m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect, false /* paintingOverlayControls */);
     }
 }
@@ -158,24 +158,24 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {
         if (m_renderBlock.hasBoxDecorationBackground()) {
             // The document element is specified to paint its background infinitely.
-            PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase,
+            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase,
                 m_renderBlock.isDocumentElement() ? m_renderBlock.view()->backgroundRect(&m_renderBlock) : bounds);
             m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
         }
         if (m_renderBlock.hasColumns() && !paintInfo.paintRootBackgroundOnly()) {
-            // FIXME: PaintCommandRecorder needs to learn to handle this.
+            // FIXME: DrawingRecorder needs to learn to handle this.
             paintColumnRules(paintInfo, scrolledOffset);
         }
     }
 
     if (paintPhase == PaintPhaseMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         m_renderBlock.paintMask(paintInfo, paintOffset);
         return;
     }
 
     if (paintPhase == PaintPhaseClippingMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         m_renderBlock.paintClippingMask(paintInfo, paintOffset);
         return;
     }
@@ -201,10 +201,10 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     // 4. paint floats.
     if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
         if (m_renderBlock.hasColumns()) {
-            // FIXME: PaintCommandRecorder needs to learn to handle this.
+            // FIXME: DrawingRecorder needs to learn to handle this.
             paintColumnContents(paintInfo, scrolledOffset, true);
         } else {
-            PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
             m_renderBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
         }
     }
@@ -214,14 +214,14 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!m_renderBlock.style()->outlineStyleIsAuto() || !m_renderBlock.isAnonymousBlockContinuation()) {
-            PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
             m_renderBlock.paintOutline(paintInfo, LayoutRect(paintOffset, m_renderBlock.size()));
         }
     }
 
     // 6. paint continuation outlines.
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         paintContinuationOutlines(paintInfo, paintOffset);
     }
 
@@ -229,7 +229,7 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground) {
-        PaintCommandRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         paintCarets(paintInfo, paintOffset);
     }
 }
