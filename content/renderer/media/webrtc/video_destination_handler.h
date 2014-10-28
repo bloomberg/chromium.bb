@@ -16,45 +16,37 @@
 
 namespace content {
 
+class PeerConnectionDependencyFactory;
 class MediaStreamRegistryInterface;
 class PPB_ImageData_Impl;
 
-// VideoDestinationHandler is a glue class between the content MediaStream and
-// the effects pepper plugin host.
-class CONTENT_EXPORT VideoDestinationHandler {
+// Interface used by the effects pepper plugin to output the processed frame
+// to the video track.
+class CONTENT_EXPORT FrameWriterInterface {
  public:
-  // FrameWriterCallback is used to forward frames from the pepper host.
-  // It must be invoked on the main render thread.
-  typedef base::Callback<
-      void(const scoped_refptr<PPB_ImageData_Impl>& frame,
-           int64 time_stamp_ns)> FrameWriterCallback;
-
-  // Instantiates and adds a new video track to the MediaStream specified by
-  // |url|. Returns a handler for delivering frames to the new video track as
-  // |frame_writer|.
-  // If |registry| is NULL the global blink::WebMediaStreamRegistry will be
-  // used to look up the media stream.
-  // Returns true on success and false on failure.
-  static bool Open(MediaStreamRegistryInterface* registry,
-                   const std::string& url,
-                   FrameWriterCallback* frame_writer);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VideoDestinationHandler);
+  // The ownership of the |image_data| deosn't transfer. So the implementation
+  // of this interface should make a copy of the |image_data| before return.
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
+                        int64 time_stamp_ns) = 0;
+  virtual ~FrameWriterInterface() {}
 };
 
 // PpFrameWriter implements MediaStreamVideoSource and can therefore provide
-// video frames to MediaStreamVideoTracks.
+// video frames to MediaStreamVideoTracks. It also implements
+// FrameWriterInterface, which will be used by the effects pepper plugin to
+// inject the processed frame.
 class CONTENT_EXPORT PpFrameWriter
-    : NON_EXPORTED_BASE(public MediaStreamVideoSource) {
+    : NON_EXPORTED_BASE(public MediaStreamVideoSource),
+      public FrameWriterInterface,
+      NON_EXPORTED_BASE(public base::SupportsWeakPtr<PpFrameWriter>) {
  public:
   PpFrameWriter();
   virtual ~PpFrameWriter();
 
-  // Returns a callback that can be used for delivering frames to this
-  // MediaStreamSource implementation.
-  VideoDestinationHandler::FrameWriterCallback GetFrameWriterCallback();
-
+  // FrameWriterInterface implementation.
+  // This method will be called by the Pepper host from render thread.
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
+                        int64 time_stamp_ns) override;
  protected:
   // MediaStreamVideoSource implementation.
   void GetCurrentSupportedFormats(
@@ -68,12 +60,41 @@ class CONTENT_EXPORT PpFrameWriter
   void StopSourceImpl() override;
 
  private:
+  // Endian in memory order, e.g. AXXX stands for uint8 pixel[4] = {A, x, x, x};
+  enum PixelEndian {
+    UNKNOWN,
+    AXXX,
+    XXXA,
+  };
+
+  media::VideoFramePool frame_pool_;
+
   class FrameWriterDelegate;
   scoped_refptr<FrameWriterDelegate> delegate_;
+  PixelEndian endian_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameWriter);
 };
 
+// VideoDestinationHandler is a glue class between the content MediaStream and
+// the effects pepper plugin host.
+class CONTENT_EXPORT VideoDestinationHandler {
+ public:
+  // Instantiates and adds a new video track to the MediaStream specified by
+  // |url|. Returns a handler for delivering frames to the new video track as
+  // |frame_writer|.
+  // If |registry| is NULL the global blink::WebMediaStreamRegistry will be
+  // used to look up the media stream.
+  // The caller of the function takes the ownership of |frame_writer|.
+  // Returns true on success and false on failure.
+  static bool Open(MediaStreamRegistryInterface* registry,
+                   const std::string& url,
+                   FrameWriterInterface** frame_writer);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VideoDestinationHandler);
+};
+
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_VIDEO_DESTINATION_HANDLER_H_
+#endif  // CONTENT_RENDERER_MEDIA_VIDEO_DESTINATION_HANDLER_H_

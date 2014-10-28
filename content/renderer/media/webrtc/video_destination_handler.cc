@@ -29,197 +29,56 @@ class PpFrameWriter::FrameWriterDelegate
     : public base::RefCountedThreadSafe<FrameWriterDelegate> {
  public:
   FrameWriterDelegate(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
+      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+      const VideoCaptureDeliverFrameCB& new_frame_callback);
 
-  // Starts forwarding frames to |frame_callback| on the  IO-thread that are
-  // delivered to this class by calling DeliverFrame on the main render thread.
-  void StartDeliver(const VideoCaptureDeliverFrameCB& frame_callback);
-  void StopDeliver();
-
-  void DeliverFrame(const scoped_refptr<PPB_ImageData_Impl>& image_data,
-                    int64 time_stamp_ns);
-
+  void DeliverFrame(const scoped_refptr<media::VideoFrame>& frame,
+                    const media::VideoCaptureFormat& format);
  private:
   friend class base::RefCountedThreadSafe<FrameWriterDelegate>;
-  // Endian in memory order, e.g. AXXX stands for uint8 pixel[4] = {A, x, x, x};
-  enum PixelEndian {
-    UNKNOWN,
-    AXXX,
-    XXXA,
-  };
-
   virtual ~FrameWriterDelegate();
 
-  void StartDeliverOnIO(const VideoCaptureDeliverFrameCB& frame_callback);
-  void StopDeliverOnIO();
-
-  void DeliverFrameOnIO(uint8* data, int stride, int width, int height,
-                        int64 time_stamp_ns);
-  void FrameDelivered(const scoped_refptr<PPB_ImageData_Impl>& image_data);
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        const media::VideoCaptureFormat& format);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-
-  // |frame_pool_|, |new_frame_callback_| and |endian_| are only used on the
-  // IO-thread.
-  media::VideoFramePool frame_pool_;
   VideoCaptureDeliverFrameCB new_frame_callback_;
-  PixelEndian endian_;
-
-  // Used to DCHECK that we are called on the main render thread.
-  base::ThreadChecker thread_checker_;
 };
 
 PpFrameWriter::FrameWriterDelegate::FrameWriterDelegate(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
-    : io_message_loop_(io_message_loop_proxy), endian_(UNKNOWN) {
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+    const VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_message_loop_(io_message_loop_proxy),
+      new_frame_callback_(new_frame_callback) {
 }
 
 PpFrameWriter::FrameWriterDelegate::~FrameWriterDelegate() {
 }
 
-void PpFrameWriter::FrameWriterDelegate::StartDeliver(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameWriterDelegate::StartDeliverOnIO, this,
-                 frame_callback));
-}
-
-void PpFrameWriter::FrameWriterDelegate::StopDeliver() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&FrameWriterDelegate::StopDeliverOnIO, this));
-}
-
 void PpFrameWriter::FrameWriterDelegate::DeliverFrame(
-    const scoped_refptr<PPB_ImageData_Impl>& image_data,
-    int64 time_stamp_ns) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("video", "PpFrameWriter::FrameWriterDelegate::DeliverFrame");
-  if (!image_data->Map()) {
-    LOG(ERROR) << "PpFrameWriter::PutFrame - "
-               << "The image could not be mapped and is unusable.";
-    return;
-  }
-
-  const SkBitmap* bitmap = image_data->GetMappedBitmap();
-  if (!bitmap) {
-    LOG(ERROR) << "PpFrameWriter::PutFrame - "
-               << "The image_data's mapped bitmap is NULL.";
-    return;
-  }
-  // We only support PP_IMAGEDATAFORMAT_BGRA_PREMUL at the moment.
-  DCHECK(image_data->format() == PP_IMAGEDATAFORMAT_BGRA_PREMUL);
-  io_message_loop_->PostTaskAndReply(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  io_message_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&FrameWriterDelegate::DeliverFrameOnIO, this,
-                 static_cast<uint8*>(bitmap->getPixels()),
-                 bitmap->rowBytes(),
-                 bitmap->width(),
-                 bitmap->height(),
-                 time_stamp_ns),
-      base::Bind(&FrameWriterDelegate::FrameDelivered, this,
-                 image_data));
-}
-
-void PpFrameWriter::FrameWriterDelegate::FrameDelivered(
-    const scoped_refptr<PPB_ImageData_Impl>& image_data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  image_data->Unmap();
-}
-
-void PpFrameWriter::FrameWriterDelegate::StartDeliverOnIO(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  new_frame_callback_ = frame_callback;
-}
-void PpFrameWriter::FrameWriterDelegate::StopDeliverOnIO() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
-  new_frame_callback_.Reset();
+      base::Bind(&FrameWriterDelegate::DeliverFrameOnIO,
+                 this, frame, format));
 }
 
 void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
-    uint8* data, int stride, int width, int height, int64 time_stamp_ns) {
+     const scoped_refptr<media::VideoFrame>& frame,
+     const media::VideoCaptureFormat& format) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  TRACE_EVENT0("video", "PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO");
-
-  if (new_frame_callback_.is_null())
-    return;
-
-  const gfx::Size frame_size(width, height);
-  const base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      time_stamp_ns / base::Time::kNanosecondsPerMicrosecond);
-
-  scoped_refptr<media::VideoFrame> new_frame =
-      frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
-                              gfx::Rect(frame_size), frame_size, timestamp);
-  media::VideoCaptureFormat format(
-      frame_size,
-      MediaStreamVideoSource::kUnknownFrameRate,
-      media::PIXEL_FORMAT_YV12);
-
-  // TODO(magjed): Remove this and always use libyuv::ARGBToI420 when
-  // crbug/426020 is fixed.
-  // Due to a change in endianness, we try to determine it from the data.
-  // The alpha channel is always 255. It is unlikely for other color channels to
-  // be 255, so we will most likely break on the first few pixels in the first
-  // frame.
-  uint8* row_ptr = data;
-  // Note that we only do this if endian_ is still UNKNOWN.
-  for (int y = 0; y < height && endian_ == UNKNOWN; ++y) {
-    for (int x = 0; x < width; ++x) {
-      if (row_ptr[x * 4 + 0] != 255) {  // First byte is not Alpha => XXXA.
-        endian_ = XXXA;
-        break;
-      }
-      if (row_ptr[x * 4 + 3] != 255) {  // Fourth byte is not Alpha => AXXX.
-        endian_ = AXXX;
-        break;
-      }
-    }
-    row_ptr += stride;
-  }
-  if (endian_ == UNKNOWN) {
-    LOG(WARNING) << "PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO - "
-                 << "Could not determine endianness.";
-  }
-  // libyuv specifies fourcc/channel ordering the same as webrtc. That is why
-  // the naming is reversed compared to PixelEndian and PP_ImageDataFormat which
-  // describes the memory layout from the lowest address to the highest.
-  auto xxxxToI420 =
-      (endian_ == AXXX) ? &libyuv::BGRAToI420 : &libyuv::ARGBToI420;
-  xxxxToI420(data,
-             stride,
-             new_frame->data(media::VideoFrame::kYPlane),
-             new_frame->stride(media::VideoFrame::kYPlane),
-             new_frame->data(media::VideoFrame::kUPlane),
-             new_frame->stride(media::VideoFrame::kUPlane),
-             new_frame->data(media::VideoFrame::kVPlane),
-             new_frame->stride(media::VideoFrame::kVPlane),
-             width,
-             height);
-
   // The local time when this frame is generated is unknown so give a null
   // value to |estimated_capture_time|.
-  new_frame_callback_.Run(new_frame, format, base::TimeTicks());
+  new_frame_callback_.Run(frame, format, base::TimeTicks());
 }
 
-PpFrameWriter::PpFrameWriter() {
+PpFrameWriter::PpFrameWriter() : endian_(UNKNOWN) {
   DVLOG(3) << "PpFrameWriter ctor";
-  delegate_ = new FrameWriterDelegate(io_message_loop());
 }
 
 PpFrameWriter::~PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter dtor";
-}
-
-VideoDestinationHandler::FrameWriterCallback
-PpFrameWriter::GetFrameWriterCallback() {
-  DCHECK(CalledOnValidThread());
-  return base::Bind(&PpFrameWriter::FrameWriterDelegate::DeliverFrame,
-                    delegate_);
 }
 
 void PpFrameWriter::GetCurrentSupportedFormats(
@@ -239,20 +98,136 @@ void PpFrameWriter::StartSourceImpl(
     const media::VideoCaptureFormat& format,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!delegate_.get());
   DVLOG(3) << "PpFrameWriter::StartSourceImpl()";
-  delegate_->StartDeliver(frame_callback);
+  delegate_ = new FrameWriterDelegate(io_message_loop(), frame_callback);
   OnStartDone(MEDIA_DEVICE_OK);
 }
 
 void PpFrameWriter::StopSourceImpl() {
   DCHECK(CalledOnValidThread());
-  delegate_->StopDeliver();
 }
+
+// Note: PutFrame must copy or process image_data directly in this function,
+// because it may be overwritten as soon as we return from this function.
+void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
+                             int64 time_stamp_ns) {
+  DCHECK(CalledOnValidThread());
+  TRACE_EVENT0("video", "PpFrameWriter::PutFrame");
+  DVLOG(3) << "PpFrameWriter::PutFrame()";
+
+  if (!image_data) {
+    LOG(ERROR) << "PpFrameWriter::PutFrame - Called with NULL image_data.";
+    return;
+  }
+  ImageDataAutoMapper mapper(image_data);
+  if (!mapper.is_valid()) {
+    LOG(ERROR) << "PpFrameWriter::PutFrame - "
+               << "The image could not be mapped and is unusable.";
+    return;
+  }
+  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  if (!bitmap) {
+    LOG(ERROR) << "PpFrameWriter::PutFrame - "
+               << "The image_data's mapped bitmap is NULL.";
+    return;
+  }
+
+  const uint8* src_data = static_cast<uint8*>(bitmap->getPixels());
+  const int src_stride = static_cast<int>(bitmap->rowBytes());
+  const int width = bitmap->width();
+  const int height = bitmap->height();
+
+  // We only support PP_IMAGEDATAFORMAT_BGRA_PREMUL at the moment.
+  DCHECK(image_data->format() == PP_IMAGEDATAFORMAT_BGRA_PREMUL);
+
+  const gfx::Size frame_size(width, height);
+
+  if (state() != MediaStreamVideoSource::STARTED)
+    return;
+
+  const base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
+      time_stamp_ns / base::Time::kNanosecondsPerMicrosecond);
+
+  scoped_refptr<media::VideoFrame> new_frame =
+      frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
+                              gfx::Rect(frame_size), frame_size, timestamp);
+  media::VideoCaptureFormat format(
+      frame_size,
+      MediaStreamVideoSource::kUnknownFrameRate,
+      media::PIXEL_FORMAT_YV12);
+
+  // TODO(magjed): Remove this and always use libyuv::ARGBToI420 when
+  // crbug/426020 is fixed.
+  // Due to a change in endianness, we try to determine it from the data.
+  // The alpha channel is always 255. It is unlikely for other color channels to
+  // be 255, so we will most likely break on the first few pixels in the first
+  // frame.
+  const uint8* row_ptr = src_data;
+  // Note that we only do this if endian_ is still UNKNOWN.
+  for (int y = 0; y < height && endian_ == UNKNOWN; ++y) {
+    for (int x = 0; x < width; ++x) {
+      if (row_ptr[x * 4 + 0] != 255) {  // First byte is not Alpha => XXXA.
+        endian_ = XXXA;
+        break;
+      }
+      if (row_ptr[x * 4 + 3] != 255) {  // Fourth byte is not Alpha => AXXX.
+        endian_ = AXXX;
+        break;
+      }
+    }
+    row_ptr += src_stride;
+  }
+  if (endian_ == UNKNOWN) {
+    LOG(WARNING) << "PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO - "
+                 << "Could not determine endianness.";
+  }
+  // libyuv specifies fourcc/channel ordering the same as webrtc. That is why
+  // the naming is reversed compared to PixelEndian and PP_ImageDataFormat which
+  // describes the memory layout from the lowest address to the highest.
+  auto xxxxToI420 =
+      (endian_ == AXXX) ? &libyuv::BGRAToI420 : &libyuv::ARGBToI420;
+  xxxxToI420(src_data,
+             src_stride,
+             new_frame->data(media::VideoFrame::kYPlane),
+             new_frame->stride(media::VideoFrame::kYPlane),
+             new_frame->data(media::VideoFrame::kUPlane),
+             new_frame->stride(media::VideoFrame::kUPlane),
+             new_frame->data(media::VideoFrame::kVPlane),
+             new_frame->stride(media::VideoFrame::kVPlane),
+             width,
+             height);
+
+  delegate_->DeliverFrame(new_frame, format);
+}
+
+// PpFrameWriterProxy is a helper class to make sure the user won't use
+// PpFrameWriter after it is released (IOW its owner - WebMediaStreamSource -
+// is released).
+class PpFrameWriterProxy : public FrameWriterInterface {
+ public:
+  explicit PpFrameWriterProxy(const base::WeakPtr<PpFrameWriter>& writer)
+      : writer_(writer) {
+    DCHECK(writer_ != NULL);
+  }
+
+  virtual ~PpFrameWriterProxy() {}
+
+  virtual void PutFrame(PPB_ImageData_Impl* image_data,
+                        int64 time_stamp_ns) override {
+    writer_->PutFrame(image_data, time_stamp_ns);
+  }
+
+ private:
+  base::WeakPtr<PpFrameWriter> writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PpFrameWriterProxy);
+};
 
 bool VideoDestinationHandler::Open(
     MediaStreamRegistryInterface* registry,
     const std::string& url,
-    FrameWriterCallback* frame_writer) {
+    FrameWriterInterface** frame_writer) {
   DVLOG(3) << "VideoDestinationHandler::Open";
   blink::WebMediaStream stream;
   if (registry) {
@@ -276,7 +251,6 @@ bool VideoDestinationHandler::Open(
   base::Base64Encode(base::RandBytesAsString(64), &track_id);
 
   PpFrameWriter* writer = new PpFrameWriter();
-  *frame_writer = writer->GetFrameWriterCallback();
 
   // Create a new webkit video track.
   blink::WebMediaStreamSource webkit_source;
@@ -294,6 +268,7 @@ bool VideoDestinationHandler::Open(
       writer, constraints, MediaStreamVideoSource::ConstraintsCallback(),
       track_enabled));
 
+  *frame_writer = new PpFrameWriterProxy(writer->AsWeakPtr());
   return true;
 }
 

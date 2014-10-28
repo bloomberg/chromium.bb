@@ -57,20 +57,21 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
 };
 
 TEST_F(VideoDestinationHandlerTest, Open) {
-  VideoDestinationHandler::FrameWriterCallback frame_writer;
-
+  FrameWriterInterface* frame_writer = NULL;
   // Unknow url will return false.
   EXPECT_FALSE(VideoDestinationHandler::Open(registry_.get(),
                                              kUnknownStreamUrl, &frame_writer));
   EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
+  // The |frame_writer| is a proxy and is owned by whoever call Open.
+  delete frame_writer;
 }
 
 TEST_F(VideoDestinationHandlerTest, PutFrame) {
-  VideoDestinationHandler::FrameWriterCallback frame_writer;
+  FrameWriterInterface* frame_writer = NULL;
   EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
-  ASSERT_FALSE(frame_writer.is_null());
+  ASSERT_TRUE(frame_writer);
 
   // Verify the video track has been added.
   const blink::WebMediaStream test_stream = registry_->test_stream();
@@ -85,7 +86,7 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
 
   MockMediaStreamVideoSink sink;
   native_track->AddSink(&sink, sink.GetDeliverFrameCB());
-  scoped_refptr<PPB_ImageData_Impl> image(
+   scoped_refptr<PPB_ImageData_Impl> image(
       new PPB_ImageData_Impl(instance()->pp_instance(),
                              PPB_ImageData_Impl::ForTest()));
   image->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, 640, 360, true);
@@ -95,7 +96,7 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
 
     EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
         RunClosure(quit_closure));
-    frame_writer.Run(image.get(), 10);
+    frame_writer->PutFrame(image.get(), 10);
     run_loop.Run();
     // Run all pending tasks to let the the test clean up before the test ends.
     // This is due to that
@@ -107,6 +108,9 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
   }
   EXPECT_EQ(1, sink.number_of_frames());
   native_track->RemoveSink(&sink);
+
+  // The |frame_writer| is a proxy and is owned by whoever call Open.
+  delete frame_writer;
 }
 
 }  // namespace content

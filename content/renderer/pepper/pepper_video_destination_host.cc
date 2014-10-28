@@ -50,9 +50,11 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
 
+  FrameWriterInterface* frame_writer = NULL;
   if (!VideoDestinationHandler::Open(
-          NULL /* registry */, gurl.spec(), &frame_writer_))
+          NULL /* registry */, gurl.spec(), &frame_writer))
     return PP_ERROR_FAILED;
+  frame_writer_.reset(frame_writer);
 
   ReplyMessageContext reply_context = context->MakeReplyMessageContext();
   reply_context.params.set_result(PP_OK);
@@ -64,7 +66,6 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
     HostMessageContext* context,
     const ppapi::HostResource& image_data_resource,
     PP_TimeTicks timestamp) {
-  TRACE_EVENT0("video", "PepperVideoDestinationHost::OnHostMsgPutFrame");
   ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API> enter(
       image_data_resource.host_resource(), true);
   if (enter.failed())
@@ -76,7 +77,7 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
           image_data_impl->format()))
     return PP_ERROR_BADARGUMENT;
 
-  if (frame_writer_.is_null())
+  if (!frame_writer_.get())
     return PP_ERROR_FAILED;
 
   // Convert PP_TimeTicks (a double, in seconds) to a TimeDelta (int64,
@@ -86,14 +87,14 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
       base::Time::FromDoubleT(timestamp) - base::Time();
   int64_t timestamp_ns =
       time_delta.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond;
-  frame_writer_.Run(image_data_impl, timestamp_ns);
+  frame_writer_->PutFrame(image_data_impl, timestamp_ns);
 
   return PP_OK;
 }
 
 int32_t PepperVideoDestinationHost::OnHostMsgClose(
     HostMessageContext* context) {
-  frame_writer_.Reset();
+  frame_writer_.reset(NULL);
   return PP_OK;
 }
 
