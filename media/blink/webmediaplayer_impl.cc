@@ -495,15 +495,21 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
 blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // Media without duration are considered streaming and should not be seekable.
-  const double seekable_end = duration();
-  if (!base::IsFinite(seekable_end))
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
     return blink::WebTimeRanges();
 
-  // If we have a finite duration then use [0, duration] as the seekable range;
-  // unless it's a streaming source, in which case only allow a seek to zero.
-  blink::WebTimeRange seekable_range(
-      0.0, data_source_ && data_source_->IsStreaming() ? 0.0 : seekable_end);
+  const double seekable_end = duration();
+
+  // Allow a special exception for seeks to zero for streaming sources with a
+  // finite duration; this allows looping to work.
+  const bool allow_seek_to_zero = data_source_ && data_source_->IsStreaming() &&
+                                  base::IsFinite(seekable_end);
+
+  // TODO(dalecurtis): Technically this allows seeking on media which return an
+  // infinite duration so long as DataSource::IsStreaming() is false.  While not
+  // expected, disabling this breaks semi-live players, http://crbug.com/427412.
+  const blink::WebTimeRange seekable_range(
+      0.0, allow_seek_to_zero ? 0.0 : seekable_end);
   return blink::WebTimeRanges(&seekable_range, 1);
 }
 

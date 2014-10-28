@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/float_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -525,13 +524,13 @@ blink::WebTimeRanges WebMediaPlayerAndroid::buffered() const {
 }
 
 blink::WebTimeRanges WebMediaPlayerAndroid::seekable() const {
-  // Media without duration are considered streaming and should not be seekable.
-  const double seekable_end = duration();
-  if (!base::IsFinite(seekable_end))
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
     return blink::WebTimeRanges();
 
-  // If we have a finite duration then use [0, duration] as the seekable range.
-  blink::WebTimeRange seekable_range(0.0, seekable_end);
+  // TODO(dalecurtis): Technically this allows seeking on media which return an
+  // infinite duration.  While not expected, disabling this breaks semi-live
+  // players, http://crbug.com/427412.
+  const blink::WebTimeRange seekable_range(0.0, duration());
   return blink::WebTimeRanges(&seekable_range, 1);
 }
 
