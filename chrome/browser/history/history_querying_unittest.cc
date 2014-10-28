@@ -160,7 +160,7 @@ class HistoryQueryTest : public testing::Test {
   }
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
@@ -180,7 +180,7 @@ class HistoryQueryTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (history_) {
       history_->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
       history_->Cleanup();

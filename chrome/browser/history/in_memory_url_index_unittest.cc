@@ -91,7 +91,7 @@ class InMemoryURLIndexTest : public testing::Test {
 
  protected:
   // Test setup.
-  virtual void SetUp();
+  void SetUp() override;
 
   // Allows the database containing the test data to be customized by
   // subclasses.
@@ -1189,7 +1189,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   InMemoryURLIndexCacheTest() {}
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   void set_history_dir(const base::FilePath& dir_path);

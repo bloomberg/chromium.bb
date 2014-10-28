@@ -16,7 +16,7 @@ namespace history {
 //
 class HistoryUnitTestBase : public testing::Test {
  public:
-  virtual ~HistoryUnitTestBase();
+  ~HistoryUnitTestBase() override;
 
   // Executes the sql from the file |sql_path| in the database at |db_path|.
   // |sql_path| is the SQL script file name with full path.

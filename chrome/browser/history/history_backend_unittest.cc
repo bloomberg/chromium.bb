@@ -143,7 +143,7 @@ class HistoryBackendTestBase : public testing::Test {
         favicon_changed_notifications_(0),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
-  virtual ~HistoryBackendTestBase() {
+  ~HistoryBackendTestBase() override {
     STLDeleteValues(&broadcasted_notifications_);
   }
 
@@ -212,7 +212,7 @@ class HistoryBackendTestBase : public testing::Test {
   friend class HistoryBackendTestDelegate;
 
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     ClearFaviconChangedNotificationCounter();
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
@@ -222,7 +222,7 @@ class HistoryBackendTestBase : public testing::Test {
     backend_->Init(std::string(), false);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (backend_.get())
       backend_->Closing();
     backend_ = NULL;
@@ -278,7 +278,7 @@ void HistoryBackendTestDelegate::DBLoaded() {
 class HistoryBackendTest : public HistoryBackendTestBase {
  public:
   HistoryBackendTest() {}
-  virtual ~HistoryBackendTest() {}
+  ~HistoryBackendTest() override {}
 
  protected:
   void AddRedirectChain(const char* sequence[], int page_id) {
@@ -430,7 +430,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
 class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
  public:
   InMemoryHistoryBackendTest() {}
-  virtual ~InMemoryHistoryBackendTest() {}
+  ~InMemoryHistoryBackendTest() override {}
 
   // Public so that the method can be bound in test fixture using
   // base::Bind(&InMemoryHistoryBackendTest::SimulateNotification, ...).

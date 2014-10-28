@@ -78,8 +78,8 @@ namespace history {
 
 class ShortcutsDatabaseTest : public testing::Test {
  public:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   void ClearDB();
   size_t CountRecords() const;

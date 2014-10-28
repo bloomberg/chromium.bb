@@ -126,9 +126,9 @@ class TypedUrlSyncableServiceTest : public testing::Test {
  protected:
   TypedUrlSyncableServiceTest() {}
 
-  virtual ~TypedUrlSyncableServiceTest() {}
+  ~TypedUrlSyncableServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_history_backend_ = new TestHistoryBackend();
     typed_url_sync_service_.reset(
         new TypedUrlSyncableService(fake_history_backend_.get()));

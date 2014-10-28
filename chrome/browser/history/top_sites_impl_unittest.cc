@@ -175,7 +175,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
         db_thread_(BrowserThread::DB, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile);
     if (CreateHistoryAndTopSites()) {
       ASSERT_TRUE(profile_->CreateHistoryService(false, false));
@@ -184,7 +184,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     top_sites_observer_.reset();
     profile_.reset();
   }

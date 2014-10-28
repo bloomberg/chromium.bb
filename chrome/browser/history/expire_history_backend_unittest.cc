@@ -117,7 +117,7 @@ class ExpireHistoryTest : public testing::Test,
   NotificationList notifications_;
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
     base::FilePath history_name = path().Append(kHistoryFile);
@@ -136,7 +136,7 @@ class ExpireHistoryTest : public testing::Test,
     top_sites_ = profile_.GetTopSites();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     top_sites_ = NULL;
 
     ClearLastNotifications();

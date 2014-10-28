@@ -162,8 +162,7 @@ class ThumbnailDatabaseTest : public testing::Test {
  public:
   ThumbnailDatabaseTest() {
   }
-  virtual ~ThumbnailDatabaseTest() {
-  }
+  ~ThumbnailDatabaseTest() override {}
 
   // Initialize a thumbnail database instance from the SQL file at
   // |golden_path| in the "History/" subdirectory of test data.
@@ -181,7 +180,7 @@ class ThumbnailDatabaseTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

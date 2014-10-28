@@ -116,8 +116,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   HistoryBackendDBTest() : db_(NULL) {
   }
 
-  virtual ~HistoryBackendDBTest() {
-  }
+  ~HistoryBackendDBTest() override {}
 
  protected:
   friend class BackendDelegate;
@@ -155,7 +154,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   }
 
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendDBTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
@@ -168,7 +167,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     DeleteBackend();
 
     // Make sure we don't have any event pending that could disrupt the next
@@ -985,8 +984,7 @@ class HistoryTest : public testing::Test {
         query_url_success_(false) {
   }
 
-  virtual ~HistoryTest() {
-  }
+  ~HistoryTest() override {}
 
   void OnMostVisitedURLsAvailable(const MostVisitedURLList* url_list) {
     most_visited_urls_ = *url_list;
@@ -997,7 +995,7 @@ class HistoryTest : public testing::Test {
   friend class BackendDelegate;
 
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
@@ -1008,7 +1006,7 @@ class HistoryTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (history_service_)
       CleanupHistoryService();
 
