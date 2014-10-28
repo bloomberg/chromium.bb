@@ -110,12 +110,15 @@ public abstract class VideoCaptureCamera extends VideoCapture
             Log.e(TAG, "allocate: no fps range found");
             return false;
         }
-        // Use the first range as the default chosen range.
-        int[] chosenFpsRange = listFpsRange.get(0);
-        int chosenFrameRate = (chosenFpsRange[0] + 999) / 1000;
-        int fpsRangeSize = Integer.MAX_VALUE;
         // API fps ranges are scaled up x1000 to avoid floating point.
         int frameRateScaled = frameRate * 1000;
+        // Use the first range as the default chosen range.
+        int[] chosenFpsRange = listFpsRange.get(0);
+        int frameRateNearest = Math.abs(frameRateScaled - chosenFpsRange[0]) <
+                               Math.abs(frameRateScaled - chosenFpsRange[1]) ?
+                               chosenFpsRange[0] : chosenFpsRange[1];
+        int chosenFrameRate = (frameRateNearest + 999) / 1000;
+        int fpsRangeSize = Integer.MAX_VALUE;
         for (int[] fpsRange : listFpsRange) {
             if (fpsRange[0] <= frameRateScaled && frameRateScaled <= fpsRange[1]
                     && (fpsRange[1] - fpsRange[0]) <= fpsRangeSize) {
