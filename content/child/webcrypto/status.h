@@ -111,6 +111,9 @@ class CONTENT_EXPORT Status {
   // violates the JWA requirement that such octet strings be minimal.
   static Status ErrorJwkBigIntegerHasLeadingZero(const std::string& property);
 
+  // The key_ops lists a usage more than once.
+  static Status ErrorJwkDuplicateKeyOps();
+
   // ------------------------------------
   // Other errors
   // ------------------------------------

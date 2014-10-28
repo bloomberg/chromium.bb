@@ -116,6 +116,12 @@ Status Status::ErrorJwkBigIntegerHasLeadingZero(const std::string& property) {
       "The JWK \"" + property + "\" property contained a leading zero.");
 }
 
+Status Status::ErrorJwkDuplicateKeyOps() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The \"key_ops\" property of the JWK dictionary contains "
+                "duplicate usages.");
+}
+
 Status Status::ErrorImportEmptyKeyData() {
   return Status(blink::WebCryptoErrorTypeData, "No key data was provided");
 }

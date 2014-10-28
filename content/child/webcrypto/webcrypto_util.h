@@ -19,10 +19,10 @@ namespace webcrypto {
 
 class Status;
 
-// Composes a Web Crypto usage mask from an array of JWK key_ops values.
-CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(
-    const base::ListValue* jwk_key_ops_value,
-    blink::WebCryptoKeyUsageMask* jwk_key_ops_mask);
+// Converts a JWK "key_ops" array to the corresponding WebCrypto usages.
+CONTENT_EXPORT Status
+    GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
+                                    blink::WebCryptoKeyUsageMask* usages);
 
 // Composes a JWK key_ops array from a Web Crypto usage mask.
 base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(

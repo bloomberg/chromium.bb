@@ -402,6 +402,48 @@ TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
             key.usages());
 }
 
+// Tests that importing a JWK containing duplicate key_ops values fails.
+TEST(WebCryptoAesCbcTest, ImportKeyJwkDuplicateKeyOps) {
+  blink::WebCryptoKey key;
+  base::DictionaryValue dict;
+  dict.SetString("kty", "oct");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  // key_ops will be owned by |dict|.
+  base::ListValue* key_ops = new base::ListValue;
+  dict.Set("key_ops", key_ops);
+
+  // The "encrypt" operation appears twice.
+  key_ops->AppendString("encrypt");
+  key_ops->AppendString("decrypt");
+  key_ops->AppendString("encrypt");
+
+  EXPECT_EQ(Status::ErrorJwkDuplicateKeyOps(),
+            ImportKeyJwkFromDict(
+                dict, CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc), false,
+                0, &key));
+}
+
+// Tests that importing a JWK containing duplicate key_ops values fails.
+TEST(WebCryptoAesCbcTest, ImportKeyJwkDuplicateUnrecognizedKeyOps) {
+  blink::WebCryptoKey key;
+  base::DictionaryValue dict;
+  dict.SetString("kty", "oct");
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  // key_ops will be owned by |dict|.
+  base::ListValue* key_ops = new base::ListValue;
+  dict.Set("key_ops", key_ops);
+
+  // The (unknown) "foopy" operation appears twice.
+  key_ops->AppendString("foopy");
+  key_ops->AppendString("decrypt");
+  key_ops->AppendString("foopy");
+
+  EXPECT_EQ(Status::ErrorJwkDuplicateKeyOps(),
+            ImportKeyJwkFromDict(
+                dict, CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc), false,
+                0, &key));
+}
+
 // Test failure if input usage is NOT a strict subset of the JWK usage.
 TEST(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
   blink::WebCryptoKey key;

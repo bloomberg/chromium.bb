@@ -4,6 +4,8 @@
 
 #include "content/child/webcrypto/webcrypto_util.h"
 
+#include <set>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/status.h"
@@ -61,12 +63,11 @@ const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
     {"wrapKey", blink::WebCryptoKeyUsageWrapKey},
     {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey}};
 
-// Modifies the input usages by according to the key_op value.
 bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
-                              blink::WebCryptoKeyUsageMask* usages) {
+                              blink::WebCryptoKeyUsage* usage) {
   for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
     if (kJwkWebCryptoUsageMap[i].jwk_key_op == key_op) {
-      *usages |= kJwkWebCryptoUsageMap[i].webcrypto_usage;
+      *usage = kJwkWebCryptoUsageMap[i].webcrypto_usage;
       return true;
     }
   }
@@ -74,17 +75,32 @@ bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
 }
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.
-Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* jwk_key_ops_value,
+Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
                                        blink::WebCryptoKeyUsageMask* usages) {
+  // This set keeps track of all unrecognized key_ops values.
+  std::set<std::string> unrecognized_usages;
+
   *usages = 0;
-  for (size_t i = 0; i < jwk_key_ops_value->GetSize(); ++i) {
+  for (size_t i = 0; i < key_ops->GetSize(); ++i) {
     std::string key_op;
-    if (!jwk_key_ops_value->GetString(i, &key_op)) {
+    if (!key_ops->GetString(i, &key_op)) {
       return Status::ErrorJwkPropertyWrongType(
           base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
     }
-    // Unrecognized key_ops are silently skipped.
-    ignore_result(JwkKeyOpToWebCryptoUsage(key_op, usages));
+
+    blink::WebCryptoKeyUsage usage;
+    if (JwkKeyOpToWebCryptoUsage(key_op, &usage)) {
+      // Ensure there are no duplicate usages.
+      if (*usages & usage)
+        return Status::ErrorJwkDuplicateKeyOps();
+      *usages |= usage;
+    }
+
+    // Reaching here means the usage was unrecognized. Such usages are skipped
+    // over, however they are kept track of in a set to ensure there were no
+    // duplicates.
+    if (!unrecognized_usages.insert(key_op).second)
+      return Status::ErrorJwkDuplicateKeyOps();
   }
   return Status::Success();
 }
