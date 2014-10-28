@@ -175,11 +175,4 @@ unittestBindings.exportTests([
         .then(test.succeed, test.fail);
   },
 
-  function testSourceShutdown() {
-    createReceiver()
-        .then(receiveAndCheckError(FATAL_ERROR))
-        .then(closeReceiver)
-        .then(test.succeed, test.fail);
-  },
-
 ], test.runTests, exports);

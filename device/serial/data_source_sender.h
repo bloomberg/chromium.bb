@@ -5,17 +5,19 @@
 #ifndef DEVICE_SERIAL_DATA_SOURCE_SENDER_H_
 #define DEVICE_SERIAL_DATA_SOURCE_SENDER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "device/serial/buffer.h"
 #include "device/serial/data_stream.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace device {
 
-class AsyncWaiter;
-
-// A DataSourceSender is an interface between a source of data and a data pipe.
+// A DataSourceSender is an interface between a source of data and a
+// DataSourceClient.
 class DataSourceSender : public base::RefCounted<DataSourceSender>,
                          public mojo::InterfaceImpl<serial::DataSource> {
  public:
@@ -41,34 +43,29 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
   ~DataSourceSender() override;
 
   // mojo::InterfaceImpl<serial::DataSourceSender> overrides.
-  void Init(mojo::ScopedDataPipeProducerHandle handle) override;
+  void Init(uint32_t buffer_size) override;
   void Resume() override;
+  void ReportBytesReceived(uint32_t bytes_sent) override;
   // Invoked in the event of a connection error. Calls DispatchFatalError().
   void OnConnectionError() override;
 
-  // Starts waiting for |handle_| to be ready for writes.
-  void StartWaiting();
+  // Gets more data to send to the DataSourceClient.
+  void GetMoreData();
 
-  // Invoked when |handle_| is ready for writes.
-  void OnDoneWaiting(MojoResult result);
+  // Invoked to pass |data| obtained in response to |ready_callback_|.
+  void Done(const std::vector<char>& data);
 
-  // Reports a successful write of |bytes_written|.
-  void Done(uint32_t bytes_written);
+  // Invoked to pass |data| and |error| obtained in response to
+  // |ready_callback_|.
+  void DoneWithError(const std::vector<char>& data, int32_t error);
 
-  // Reports a partially successful or unsuccessful write of |bytes_written|
-  // with an error of |error|.
-  void DoneWithError(uint32_t bytes_written, int32_t error);
-
-  // Finishes the two-phase data pipe write.
-  void DoneInternal(uint32_t bytes_written);
+  // Dispatches |data| to the client.
+  void DoneInternal(const std::vector<char>& data);
 
   // Reports a fatal error to the client and shuts down.
   void DispatchFatalError();
 
-  // The data connection to the data receiver.
-  mojo::ScopedDataPipeProducerHandle handle_;
-
-  // The callback to call when |handle_| is ready for more data.
+  // The callback to call when the client is ready for more data.
   ReadyCallback ready_callback_;
 
   // The callback to call if a fatal error occurs.
@@ -77,14 +74,16 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
   // The current pending send operation if there is one.
   scoped_ptr<PendingSend> pending_send_;
 
-  // A waiter used to wait until |handle_| is writable if we are waiting.
-  scoped_ptr<AsyncWaiter> waiter_;
+  // The number of bytes available for buffering in the client.
+  uint32_t available_buffer_capacity_;
 
-  // The number of bytes sent to the data receiver.
-  uint32_t bytes_sent_;
+  // Whether sending is paused due to an error.
+  bool paused_;
 
   // Whether we have encountered a fatal error and shut down.
   bool shut_down_;
+
+  base::WeakPtrFactory<DataSourceSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSourceSender);
 };

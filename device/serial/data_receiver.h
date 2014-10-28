@@ -5,7 +5,10 @@
 #ifndef DEVICE_SERIAL_DATA_RECEIVER_H_
 #define DEVICE_SERIAL_DATA_RECEIVER_H_
 
+#include <queue>
+
 #include "base/callback.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/serial/buffer.h"
@@ -13,8 +16,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace device {
-
-class AsyncWaiter;
 
 // A DataReceiver receives data from a DataSource.
 class DataReceiver : public base::RefCounted<DataReceiver>,
@@ -24,9 +25,9 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReceiveDataCallback;
   typedef base::Callback<void(int32_t error)> ReceiveErrorCallback;
 
-  // Constructs a DataReceiver to receive data from |source|, using a data
-  // pipe with a buffer size of |buffer_size|, with connection errors reported
-  // as |fatal_error_value|.
+  // Constructs a DataReceiver to receive data from |source|, using a buffer
+  // size of |buffer_size|, with connection errors reported as
+  // |fatal_error_value|.
   DataReceiver(mojo::InterfacePtr<serial::DataSource> source,
                uint32_t buffer_size,
                int32_t fatal_error_value);
@@ -40,14 +41,16 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
 
  private:
   class PendingReceive;
-  struct PendingError;
+  struct DataFrame;
   friend class base::RefCounted<DataReceiver>;
 
   ~DataReceiver() override;
 
-  // serial::DataSourceClient override. Invoked by the DataSource to report
-  // errors.
-  void OnError(uint32_t bytes_since_last_error, int32_t error) override;
+  // serial::DataSourceClient overrides.
+  // Invoked by the DataSource to report errors.
+  void OnError(int32_t error) override;
+  // Invoked by the DataSource transmit data.
+  void OnData(mojo::Array<uint8_t> data) override;
 
   // mojo::ErrorHandler override. Calls ShutDown().
   void OnConnectionError() override;
@@ -56,23 +59,12 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   // receive buffer, having read |bytes_read| bytes from it.
   void Done(uint32_t bytes_read);
 
-  // Invoked when |handle_| is ready to read. Unless an error has occurred, this
-  // calls ReceiveInternal().
-  void OnDoneWaiting(MojoResult result);
-
   // The implementation of Receive(). If a |pending_error_| is ready to
   // dispatch, it does so. Otherwise, this attempts to read from |handle_| and
   // dispatches the contents to |pending_receive_|. If |handle_| is not ready,
   // |waiter_| is used to wait until it is ready. If an error occurs in reading
   // |handle_|, ShutDown() is called.
   void ReceiveInternal();
-
-  // We may have been notified of an error that occurred at some future point in
-  // the stream. We should never be able to read past the point at which the
-  // error occurred until we have dealt with the error and called Resume() on
-  // the DataSource. If this has occurred, something bad has happened on the
-  // service side, so we shut down.
-  bool CheckErrorNotInReadRange(uint32_t num_bytes);
 
   // Called when we encounter a fatal error. If a receive is in progress,
   // |fatal_error_value_| will be reported to the user.
@@ -81,26 +73,18 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   // The control connection to the data source.
   mojo::InterfacePtr<serial::DataSource> source_;
 
-  // The data connection to the data source.
-  mojo::ScopedDataPipeConsumerHandle handle_;
-
   // The error value to report in the event of a fatal error.
   const int32_t fatal_error_value_;
-
-  // The number of bytes received from the data source.
-  uint32_t bytes_received_;
 
   // Whether we have encountered a fatal error and shut down.
   bool shut_down_;
 
-  // A waiter used to wait until |handle_| is readable if we are waiting.
-  scoped_ptr<AsyncWaiter> waiter_;
-
   // The current pending receive operation if there is one.
   scoped_ptr<PendingReceive> pending_receive_;
 
-  // The current pending error if there is one.
-  scoped_ptr<PendingError> pending_error_;
+  // The queue of pending data frames (data or an error) received from the
+  // DataSource.
+  std::queue<linked_ptr<DataFrame>> pending_data_frames_;
 
   base::WeakPtrFactory<DataReceiver> weak_factory_;
 

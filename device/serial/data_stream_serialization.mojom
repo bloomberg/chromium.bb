@@ -11,11 +11,11 @@ struct SerializedDataSender {
   // The control channel to the DataSink to which this DataSender sends data.
   DataSink sink;
 
-  // The data pipe this DataSender uses to send data to the DataSink.
-  handle<data_pipe_producer> data_pipe;
-
   // The error to report for sends in progress when a fatal error occurs.
   int32 fatal_error_value;
+
+  // The size of the send buffer.
+  uint32 buffer_size;
 };
 
 // A pending receive error.
@@ -33,9 +33,6 @@ struct SerializedDataReceiver {
   // data.
   DataSource source;
 
-  // The data pipe this DataReceiver uses to receive data from the DataSource.
-  handle<data_pipe_consumer> data_pipe;
-
   // The error to report for a receive in progress when a fatal error occurs.
   int32 fatal_error_value;
 
@@ -48,6 +45,8 @@ struct SerializedDataReceiver {
 
   // The pending receive error if there is one.
   PendingReceiveError? pending_error;
+
+  array<array<uint8>> pending_data;
 };
 
 }

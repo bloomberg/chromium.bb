@@ -17,8 +17,6 @@
 
 namespace device {
 
-class AsyncWaiter;
-
 class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
                          public mojo::InterfaceImpl<serial::DataSink> {
  public:
@@ -43,21 +41,19 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
 
  private:
   class Buffer;
-  class PendingFlush;
+  class DataFrame;
   friend class base::RefCounted<DataSinkReceiver>;
 
   ~DataSinkReceiver() override;
 
   // mojo::InterfaceImpl<serial::DataSink> overrides.
-  void Init(mojo::ScopedDataPipeConsumerHandle handle) override;
+  void Init(uint32_t buffer_size) override;
   void Cancel(int32_t error) override;
+  void OnData(mojo::Array<uint8_t> data) override;
   void OnConnectionError() override;
 
-  // Starts waiting for |handle_| to be ready for reads.
-  void StartWaiting();
-
-  // Invoked when |handle_| is ready for reads.
-  void OnDoneWaiting(MojoResult result);
+  // Dispatches data to |ready_callback_|.
+  void RunReadyCallback();
 
   // Reports a successful read of |bytes_read|.
   void Done(uint32_t bytes_read);
@@ -66,23 +62,20 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // with an error of |error|.
   void DoneWithError(uint32_t bytes_read, int32_t error);
 
-  // Finishes the two-phase data pipe read.
+  // Marks |bytes_read| bytes as being read.
   bool DoneInternal(uint32_t bytes_read);
 
   // Sends an ReportBytesSentAndError message to the client.
   void ReportBytesSentAndError(uint32_t bytes_read, int32_t error);
 
-  // Invoked in response to an ReportBytesSentAndError call to the client with
-  // the number of bytes to flush.
-  void SetNumBytesToFlush(uint32_t bytes_to_flush);
+  // Invoked in response to an ReportBytesSentAndError call to the client at
+  // the point in the data stream to flush.
+  void DoFlush();
 
   // Reports a fatal error to the client and shuts down.
   void DispatchFatalError();
 
-  // The data connection to the data sender.
-  mojo::ScopedDataPipeConsumerHandle handle_;
-
-  // The callback to call when |handle_| has data ready to read.
+  // The callback to call when there is data ready to read.
   const ReadyCallback ready_callback_;
 
   // The callback to call when the client has requested cancellation.
@@ -91,15 +84,22 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
   // The callback to call if a fatal error occurs.
   const ErrorCallback error_callback_;
 
-  // The queue of pending flushes.
-  std::queue<linked_ptr<PendingFlush> > pending_flushes_;
-
-  // A waiter used to wait until |handle_| is readable if we are waiting.
-  scoped_ptr<AsyncWaiter> waiter_;
+  // Whether we are waiting for a flush.
+  bool flush_pending_;
 
   // The buffer passed to |ready_callback_| if one exists. This is not owned,
   // but the Buffer will call Done or DoneWithError before being deleted.
   Buffer* buffer_in_use_;
+
+  // Whether this has received an Init() call from the client.
+  bool initialized_;
+
+  // The remaining number of bytes of data that we can buffer.
+  uint32_t available_buffer_capacity_;
+
+  // The data we have received from the client that has not been passed to
+  // |ready_callback_|.
+  std::queue<linked_ptr<DataFrame>> pending_data_buffers_;
 
   // Whether we have encountered a fatal error and shut down.
   bool shut_down_;

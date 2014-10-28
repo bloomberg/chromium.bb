@@ -6,30 +6,39 @@ module device.serial {
 
 [Client=DataSourceClient]
 interface DataSource {
-  // Initializes this DataSource with a data pipe handle to use for data
-  // transmission.
-  Init(handle<data_pipe_producer> producer_handle);
+  // Initializes this DataSource with the amount of data its client will
+  // buffer.
+  Init(uint32 buffer_size);
 
   // Resumes sending data after it has been stopped due to an error.
   Resume();
+
+  // Reports that |bytes_sent| bytes have been successfully passed to the
+  // client.
+  ReportBytesReceived(uint32 bytes_sent);
 };
 
 interface DataSourceClient {
-  // Invoked to report |error| from the DataSource, at |error_location| bytes
-  // into the data stream. No further bytes beyond |error_location| will be
+  // Invoked to report |error| from the DataSource. No further bytes will be
   // transmitted from the DataSource until Resume() is called.
-  OnError(uint32 error_location, int32 error);
+  OnError(int32 error);
+
+  // Invoked to transmit data from the DataSource.
+  OnData(array<uint8> data);
 };
 
 [Client=DataSinkClient]
 interface DataSink {
-  // Initializes this DataSink with a data pipe handle to use for data
-  // transmission.
-  Init(handle<data_pipe_consumer> consumer_handle);
+  // Initializes this DataSink with the amount of data it is expected to
+  // buffer.
+  Init(uint32 buffer_size);
 
   // Requests the cancellation of any data that has been written to the pipe,
   // but has not yet been sent to the sink.
   Cancel(int32 error);
+
+  // Invoked to pass |data| to the sink.
+  OnData(array<uint8> data);
 };
 
 interface DataSinkClient {
@@ -37,10 +46,10 @@ interface DataSinkClient {
   ReportBytesSent(uint32 bytes_sent);
 
   // Reports that the sink has received |bytes_sent| bytes of data (possibly 0)
-  // and encountered an error: |error|. The client should respond with
-  // |bytes_to_flush|, the number of bytes enqueued in the data pipe but not yet
-  // acked so the correct number of bytes can be flushed from the pipe.
-  ReportBytesSentAndError(uint32 bytes_sent, int32 error) => (uint32 bytes_to_flush);
+  // and encountered an error: |error|. Any OnData messages received by the
+  // DataSink before the response will be discarded. The client should respond
+  // when it is ready to resume sending data.
+  ReportBytesSentAndError(uint32 bytes_sent, int32 error) => ();
 };
 
 }

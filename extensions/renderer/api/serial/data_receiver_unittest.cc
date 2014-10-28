@@ -63,11 +63,6 @@ class DataReceiverTest : public ApiTestBase {
       error = error_to_send_.front();
       error_to_send_.pop();
     }
-    if (error == 2) {
-      sender_->ShutDown();
-      sender_ = NULL;
-      return;
-    }
     DCHECK(buffer->GetSize() >= static_cast<uint32_t>(data.size()));
     memcpy(buffer->GetData(), data.c_str(), data.size());
     if (error)
@@ -134,11 +129,6 @@ TEST_F(DataReceiverTest, SerializeDuringReceive) {
 TEST_F(DataReceiverTest, SerializeAfterClose) {
   data_to_send_.push("a");
   RunTest("data_receiver_unittest.js", "testSerializeAfterClose");
-}
-
-TEST_F(DataReceiverTest, SourceShutdown) {
-  error_to_send_.push(2);
-  RunTest("data_receiver_unittest.js", "testSourceShutdown");
 }
 
 }  // namespace extensions
