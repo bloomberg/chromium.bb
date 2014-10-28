@@ -17,6 +17,7 @@
 namespace content {
 
 class WebAudioCapturerSource;
+typedef std::set<webrtc::ObserverInterface*> ObserverSet;
 
 class MockVideoRenderer : public cricket::VideoRenderer {
  public:
@@ -99,7 +100,7 @@ class MockAudioSource : public webrtc::AudioSourceInterface {
   ~MockAudioSource() override;
 
  private:
-  webrtc::ObserverInterface* observer_;
+  ObserverSet observers_;
   MediaSourceInterface::SourceState state_;
   webrtc::MediaConstraintsInterface::Constraints optional_constraints_;
   webrtc::MediaConstraintsInterface::Constraints mandatory_constraints_;
@@ -129,7 +130,7 @@ class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
   std::string id_;
   TrackState state_;
   scoped_refptr<webrtc::VideoSourceInterface> source_;
-  webrtc::ObserverInterface* observer_;
+  ObserverSet observers_;
   webrtc::VideoRendererInterface* renderer_;
 };
 
@@ -161,7 +162,6 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
   webrtc::AudioTrackVector audio_track_vector_;
   webrtc::VideoTrackVector video_track_vector_;
 
-  typedef std::set<webrtc::ObserverInterface*> ObserverSet;
   ObserverSet observers_;
 };
 

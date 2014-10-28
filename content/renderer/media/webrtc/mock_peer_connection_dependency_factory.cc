@@ -175,8 +175,7 @@ bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
 
 MockAudioSource::MockAudioSource(
     const webrtc::MediaConstraintsInterface* constraints)
-    : observer_(NULL),
-      state_(MediaSourceInterface::kLive),
+    : state_(MediaSourceInterface::kLive),
       optional_constraints_(constraints->GetOptional()),
       mandatory_constraints_(constraints->GetMandatory()) {
 }
@@ -184,12 +183,13 @@ MockAudioSource::MockAudioSource(
 MockAudioSource::~MockAudioSource() {}
 
 void MockAudioSource::RegisterObserver(webrtc::ObserverInterface* observer) {
-  observer_ = observer;
+  DCHECK(observers_.find(observer) == observers_.end());
+  observers_.insert(observer);
 }
 
 void MockAudioSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
-  DCHECK(observer_ == observer);
-  observer_ = NULL;
+  DCHECK(observers_.find(observer) != observers_.end());
+  observers_.erase(observer);
 }
 
 webrtc::MediaSourceInterface::SourceState MockAudioSource::state() const {
@@ -290,7 +290,6 @@ MockWebRtcVideoTrack::MockWebRtcVideoTrack(
       id_(id),
       state_(MediaStreamTrackInterface::kLive),
       source_(source),
-      observer_(NULL),
       renderer_(NULL) {
 }
 
@@ -326,18 +325,19 @@ bool MockWebRtcVideoTrack::set_enabled(bool enable) {
 
 bool MockWebRtcVideoTrack::set_state(TrackState new_state) {
   state_ = new_state;
-  if (observer_)
-    observer_->OnChanged();
+  for (auto& o : observers_)
+    o->OnChanged();
   return true;
 }
 
 void MockWebRtcVideoTrack::RegisterObserver(ObserverInterface* observer) {
-  observer_ = observer;
+  DCHECK(observers_.find(observer) == observers_.end());
+  observers_.insert(observer);
 }
 
 void MockWebRtcVideoTrack::UnregisterObserver(ObserverInterface* observer) {
-  DCHECK(observer_ == observer);
-  observer_ = NULL;
+  DCHECK(observers_.find(observer) != observers_.end());
+  observers_.erase(observer);
 }
 
 VideoSourceInterface* MockWebRtcVideoTrack::GetSource() const {
@@ -433,7 +433,7 @@ MockPeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
-  return new rtc::RefCountedObject<MockPeerConnectionImpl>(this);
+  return new rtc::RefCountedObject<MockPeerConnectionImpl>(this, observer);
 }
 
 scoped_refptr<webrtc::AudioSourceInterface>

@@ -21,7 +21,8 @@ class MockStreamCollection;
 
 class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
  public:
-  explicit MockPeerConnectionImpl(MockPeerConnectionDependencyFactory* factory);
+  explicit MockPeerConnectionImpl(MockPeerConnectionDependencyFactory* factory,
+                                  webrtc::PeerConnectionObserver* observer);
 
   // PeerConnectionInterface implementation.
   virtual rtc::scoped_refptr<webrtc::StreamCollectionInterface>
@@ -113,6 +114,9 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   webrtc::SessionDescriptionInterface* created_session_description() const {
     return created_sessiondescription_.get();
   }
+  webrtc::PeerConnectionObserver* observer() {
+    return observer_;
+  }
   static const char kDummyOffer[];
   static const char kDummyAnswer[];
 
@@ -136,6 +140,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   std::string sdp_mid_;
   int sdp_mline_index_;
   std::string ice_sdp_;
+  webrtc::PeerConnectionObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

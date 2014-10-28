@@ -176,14 +176,16 @@ const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
 MockPeerConnectionImpl::MockPeerConnectionImpl(
-    MockPeerConnectionDependencyFactory* factory)
+    MockPeerConnectionDependencyFactory* factory,
+    webrtc::PeerConnectionObserver* observer)
     : dependency_factory_(factory),
       local_streams_(new rtc::RefCountedObject<MockStreamCollection>),
       remote_streams_(new rtc::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
       getstats_result_(true),
-      sdp_mline_index_(-1) {
+      sdp_mline_index_(-1),
+      observer_(observer) {
   ON_CALL(*this, SetLocalDescription(_, _)).WillByDefault(testing::Invoke(
       this, &MockPeerConnectionImpl::SetLocalDescriptionWorker));
   ON_CALL(*this, SetRemoteDescription(_, _)).WillByDefault(testing::Invoke(
