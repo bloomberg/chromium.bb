@@ -133,25 +133,11 @@
     }
   };
 
-  /**
-   * Heuristic test whether the current page is a relevant SAML page.
-   * Current implementation checks if it is a http or https page and has
-   * some content in it.
-   * @return {boolean} Whether the current page looks like a SAML page.
-   */
-  function isSAMLPage() {
-    var url = window.location.href;
-    if (!url.match(/^(http|https):\/\//))
-      return false;
-
-    return document.body.scrollWidth > 50 && document.body.scrollHeight > 50;
-  }
-
-  if (isSAMLPage()) {
+  function onGetSAMLFlag(channel, isSAMLPage) {
+    if (!isSAMLPage)
+      return;
     var pageURL = window.location.href;
 
-    var channel = new Channel();
-    channel.connect('injected');
     channel.send({name: 'pageLoaded', url: pageURL});
 
     var apiCallForwarder = new APICallForwarder();
@@ -160,4 +146,10 @@
     var passwordScraper = new PasswordInputScraper();
     passwordScraper.init(channel, pageURL, document.documentElement);
   }
+
+  var channel = new Channel();
+  channel.connect('injected');
+  channel.sendWithCallback({name: 'getSAMLFlag'},
+                           onGetSAMLFlag.bind(undefined, channel));
+
 })();

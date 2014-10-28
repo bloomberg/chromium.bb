@@ -263,9 +263,7 @@ Authenticator.prototype = {
    * @param {!Object} msg Details sent with the message.
    */
   onAuthPageLoaded_: function(msg) {
-    var isSAMLPage = msg.url.indexOf(this.gaiaUrl_) != 0;
-
-    if (isSAMLPage && !this.isSAMLFlow_) {
+    if (msg.isSAMLPage && !this.isSAMLFlow_) {
       // GAIA redirected to a SAML login page. The credentials provided to this
       // page will determine what user gets logged in. The credentials obtained
       // from the GAIA login form are no longer relevant and can be discarded.

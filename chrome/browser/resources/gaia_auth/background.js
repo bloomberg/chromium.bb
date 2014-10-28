@@ -138,6 +138,9 @@ BackgroundBridge.prototype = {
   // injected script should scrape passwords.
   authStarted_: false,
 
+  // Whether SAML flow is going.
+  isSAML_: false,
+
   passwordStore_: {},
 
   channelMain_: null,
@@ -187,6 +190,8 @@ BackgroundBridge.prototype = {
         'updatePassword', this.onUpdatePassword_.bind(this));
     this.channelInjected_.registerMessage(
         'pageLoaded', this.onPageLoaded_.bind(this));
+    this.channelInjected_.registerMessage(
+        'getSAMLFlag', this.onGetSAMLFlag_.bind(this));
   },
 
   /**
@@ -292,6 +297,7 @@ BackgroundBridge.prototype = {
         if (headers[i].name.toLowerCase() == 'google-accounts-saml') {
           var action = headers[i].value.toLowerCase();
           if (action == 'start') {
+            this.isSAML_ = true;
             // GAIA is redirecting to a SAML IdP. Any cookies contained in the
             // current |headers| were set by GAIA. Any cookies set in future
             // requests will be coming from the IdP. Append a cookie to the
@@ -301,6 +307,7 @@ BackgroundBridge.prototype = {
                           value: 'google-accounts-saml-start=now'});
             return {responseHeaders: headers};
           } else if (action == 'end') {
+            this.isSAML_ = false;
             // The SAML IdP has redirected back to GAIA. Add a cookie that marks
             // the point at which the redirect occurred occurred. It is
             // important that this cookie be prepended to the current |headers|
@@ -419,7 +426,13 @@ BackgroundBridge.prototype = {
 
   onPageLoaded_: function(msg) {
     if (this.channelMain_)
-      this.channelMain_.send({name: 'onAuthPageLoaded', url: msg.url});
+      this.channelMain_.send({name: 'onAuthPageLoaded',
+                              url: msg.url,
+                              isSAMLPage: this.isSAML_});
+  },
+
+  onGetSAMLFlag_: function(msg) {
+    return this.isSAML_;
   }
 };
 
