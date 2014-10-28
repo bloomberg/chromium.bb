@@ -274,7 +274,7 @@ void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, 
         return;
 
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Object> value = createV8ObjectForNPObject(object, 0, m_isolate);
+    v8::Handle<v8::Object> value = createV8ObjectForNPObject(m_isolate, object, 0);
 
     // Attach to the global object.
     scriptState->context()->Global()->Set(v8String(m_isolate, key), value);

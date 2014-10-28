@@ -171,7 +171,7 @@ public:
         if (callback.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
             return;
 
-        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForCallback(signature, callback.callbackForWorld(world), callback.length, isolate);
+        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForCallback(isolate, signature, callback.callbackForWorld(world), callback.length);
         setMethod(objectOrTemplate, callback.methodName(isolate), functionTemplate, attribute);
     }
 
@@ -199,7 +199,7 @@ private:
         target->Set(name, functionTemplate, attribute);
     }
 
-    static v8::Handle<v8::FunctionTemplate> functionTemplateForCallback(v8::Handle<v8::Signature>, v8::FunctionCallback, int length, v8::Isolate*);
+    static v8::Handle<v8::FunctionTemplate> functionTemplateForCallback(v8::Isolate*, v8::Handle<v8::Signature>, v8::FunctionCallback, int length);
 };
 
 } // namespace blink

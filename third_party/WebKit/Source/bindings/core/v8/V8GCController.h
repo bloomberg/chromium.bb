@@ -44,7 +44,7 @@ public:
     static void gcEpilogue(v8::GCType, v8::GCCallbackFlags);
     static void minorGCPrologue(v8::Isolate*);
     static void minorGCEpilogue(v8::Isolate*);
-    static void majorGCPrologue(bool constructRetainedObjectInfos, v8::Isolate*);
+    static void majorGCPrologue(v8::Isolate*, bool constructRetainedObjectInfos);
     static void majorGCEpilogue(v8::Isolate*);
 
     static void collectGarbage(v8::Isolate*);

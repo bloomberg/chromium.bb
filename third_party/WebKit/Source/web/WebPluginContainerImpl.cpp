@@ -599,7 +599,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
 
     NPObject* npObject = m_webPlugin->scriptableObject();
     if (npObject)
-        return createV8ObjectForNPObject(npObject, 0, isolate);
+        return createV8ObjectForNPObject(isolate, npObject, 0);
     return v8::Local<v8::Object>();
 }
 

@@ -100,7 +100,7 @@ v8::Handle<v8::Value> convertNPVariantToV8Object(v8::Isolate* isolate, const NPV
         NPObject* object = NPVARIANT_TO_OBJECT(*variant);
         if (V8NPObject* v8Object = npObjectToV8NPObject(object))
             return v8::Local<v8::Object>::New(isolate, v8Object->v8Object);
-        return createV8ObjectForNPObject(object, owner, isolate);
+        return createV8ObjectForNPObject(isolate, object, owner);
     }
     default:
         return v8::Undefined(isolate);

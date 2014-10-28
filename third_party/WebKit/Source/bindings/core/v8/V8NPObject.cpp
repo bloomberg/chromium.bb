@@ -433,7 +433,7 @@ inline void DOMWrapperMap<NPObject>::PersistentValueMapTraits::Dispose(
         _NPN_ReleaseObject(npObject);
 }
 
-v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root, v8::Isolate* isolate)
+v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate* isolate, NPObject* object, NPObject* root)
 {
     static v8::Eternal<v8::FunctionTemplate> npObjectDesc;
 

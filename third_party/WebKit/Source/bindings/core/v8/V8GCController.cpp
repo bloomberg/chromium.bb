@@ -338,7 +338,7 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
     if (type == v8::kGCTypeScavenge)
         minorGCPrologue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
-        majorGCPrologue(flags & v8::kGCCallbackFlagConstructRetainedObjectInfos, isolate);
+        majorGCPrologue(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
 }
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
@@ -359,7 +359,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 }
 
 // Create object groups for DOM tree nodes.
-void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isolate* isolate)
+void V8GCController::majorGCPrologue(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
     v8::HandleScope scope(isolate);
     TRACE_EVENT_BEGIN0("v8", "majorGC");
