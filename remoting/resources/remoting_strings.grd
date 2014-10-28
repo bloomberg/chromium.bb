@@ -6,31 +6,75 @@
       <emit emit_type="prepend"/>
     </output>
 
+    <output filename="remoting/resources/am.pak" lang="am" type="data_package"/>
     <output filename="remoting/resources/ar.pak" lang="ar" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/ast.pak" type="data_package" lang="ast" />
+    </if>
     <output filename="remoting/resources/bg.pak" lang="bg" type="data_package"/>
+    <output filename="remoting/resources/bn.pak" lang="bn" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/bs.pak" lang="bs" type="data_package"/>
+    </if>
     <output filename="remoting/resources/ca.pak" lang="ca" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/ca@valencia.pak" type="data_package" lang="ca@valencia" />
+    </if>
     <output filename="remoting/resources/cs.pak" lang="cs" type="data_package"/>
     <output filename="remoting/resources/da.pak" lang="da" type="data_package"/>
     <output filename="remoting/resources/de.pak" lang="de" type="data_package"/>
     <output filename="remoting/resources/el.pak" lang="el" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/en-AU.pak" lang="en-AU" type="data_package"/>
+    </if>
     <output filename="remoting/resources/en-GB.pak" lang="en-GB" type="data_package"/>
+    <if expr="chromeos">
+      <output filename="remoting/resources/en-US.pak" lang="en" type="data_package"/>
+    </if>
     <output filename="remoting/resources/en.pak" lang="en" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/eo.pak" lang="eo" type="data_package"/>
+    </if>
     <output filename="remoting/resources/es-419.pak" lang="es-419" type="data_package"/>
     <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
     <output filename="remoting/resources/et.pak" lang="et" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/eu.pak" lang="eu" type="data_package"/>
+    </if>
+    <output filename="remoting/resources/fa.pak" lang="fa" type="data_package"/>
+    <output filename="remoting/resources/fake-bidi.pak" lang="fake-bidi" type="data_package"/>
     <output filename="remoting/resources/fi.pak" lang="fi" type="data_package"/>
     <output filename="remoting/resources/fil.pak" lang="fil" type="data_package"/>
     <output filename="remoting/resources/fr.pak" lang="fr" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/gl.pak" lang="gl" type="data_package"/>
+    </if>
+    <output filename="remoting/resources/gu.pak" lang="gu" type="data_package"/>
     <output filename="remoting/resources/he.pak" lang="he" type="data_package"/>
     <output filename="remoting/resources/hi.pak" lang="hi" type="data_package"/>
     <output filename="remoting/resources/hr.pak" lang="hr" type="data_package"/>
     <output filename="remoting/resources/hu.pak" lang="hu" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/hy.pak" lang="hy" type="data_package"/>
+      <output filename="remoting/resources/ia.pak" lang="ia" type="data_package"/>
+    </if>
     <output filename="remoting/resources/id.pak" lang="id" type="data_package"/>
     <output filename="remoting/resources/it.pak" lang="it" type="data_package"/>
     <output filename="remoting/resources/ja.pak" lang="ja" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/ka.pak" lang="ka" type="data_package"/>
+    </if>
+    <output filename="remoting/resources/kn.pak" lang="kn" type="data_package"/>
     <output filename="remoting/resources/ko.pak" lang="ko" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/ku.pak" lang="ku" type="data_package"/>
+      <output filename="remoting/resources/kw.pak" lang="kw" type="data_package"/>
+    </if>
     <output filename="remoting/resources/lt.pak" lang="lt" type="data_package"/>
     <output filename="remoting/resources/lv.pak" lang="lv" type="data_package"/>
+    <output filename="remoting/resources/ml.pak" lang="ml" type="data_package"/>
+    <output filename="remoting/resources/mr.pak" lang="mr" type="data_package"/>
+    <output filename="remoting/resources/ms.pak" lang="ms" type="data_package"/>
     <!-- The translation console uses 'no' for Norwegian (Bokmål), but we use 'nb'. -->
     <output filename="remoting/resources/nb.pak" lang="no" type="data_package"/>
     <output filename="remoting/resources/nl.pak" lang="nl" type="data_package"/>
@@ -43,21 +87,32 @@
     <output filename="remoting/resources/sl.pak" lang="sl" type="data_package"/>
     <output filename="remoting/resources/sr.pak" lang="sr" type="data_package"/>
     <output filename="remoting/resources/sv.pak" lang="sv" type="data_package"/>
+    <output filename="remoting/resources/sw.pak" lang="sw" type="data_package"/>
+    <output filename="remoting/resources/ta.pak" lang="ta" type="data_package"/>
+    <output filename="remoting/resources/te.pak" lang="te" type="data_package"/>
     <output filename="remoting/resources/th.pak" lang="th" type="data_package"/>
     <output filename="remoting/resources/tr.pak" lang="tr" type="data_package"/>
+    <if expr="use_third_party_translations">
+      <output filename="remoting/resources/ug.pak" lang="ug" type="data_package"/>
+    </if>
     <output filename="remoting/resources/uk.pak" lang="uk" type="data_package"/>
     <output filename="remoting/resources/vi.pak" lang="vi" type="data_package"/>
     <output filename="remoting/resources/zh-CN.pak" lang="zh-CN" type="data_package"/>
     <output filename="remoting/resources/zh-TW.pak" lang="zh-TW" type="data_package"/>
 
+    <output filename="remoting/webapp/_locales/am/messages.json" lang="am" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/bn/messages.json" lang="bn" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake_bidi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en-US" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
@@ -65,6 +120,7 @@
     <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/gu/messages.json" lang="gu" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
@@ -72,10 +128,14 @@
     <output filename="remoting/webapp/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/kn/messages.json" lang="kn" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
     <!-- The translation console uses 'no' for Norwegian (Bokmål), but Chrome uses 'nb'. -->
+    <output filename="remoting/webapp/_locales/ml/messages.json" lang="ml" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/mr/messages.json" lang="mr" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ms/messages.json" lang="ms" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
@@ -87,6 +147,9 @@
     <output filename="remoting/webapp/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/sw/messages.json" lang="sw" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/ta/messages.json" lang="ta" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/te/messages.json" lang="te" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
@@ -144,6 +207,7 @@
 
   </outputs>
   <translations>
+    <!-- TODO(kelvinp): Add a file entry for each of the newly added locales once the xtb files are checked-in (See crbug.com/427712). -->
     <file lang="ar" path="remoting_strings_ar.xtb"/>
     <file lang="bg" path="remoting_strings_bg.xtb"/>
     <file lang="ca" path="remoting_strings_ca.xtb"/>

@@ -462,6 +462,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
+            '<(DEPTH)/remoting/remoting.gyp:remoting_resources',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
           ],

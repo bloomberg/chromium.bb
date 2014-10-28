@@ -10,7 +10,7 @@
 # The first entry in the file, SRCDIR, is special: It is a relative path from
 # this file to the base of your checkout.
 #
-# The range of ID values, which is used by pak files, is from 0 to 2^16 - 1. 
+# The range of ID values, which is used by pak files, is from 0 to 2^16 - 1.
 {
   "SRCDIR": "../..",
 
@@ -214,6 +214,9 @@
   },
   "chrome/app/address_input_strings.grd": {
     "messages": [29100],
+  },
+  "remoting/resources/remoting_strings.grd": {
+    "messages": [29550],
   },
   "components/components_strings.grd": {
     "messages": [30000],

@@ -97,6 +97,8 @@ def calc_inputs(locale):
   if CHROMEOS:
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'chromeos', 'strings',
                   'ui_chromeos_strings_%s.pak' % locale))
+    inputs.append(os.path.join(SHARE_INT_DIR, 'remoting', 'resources',
+                  '%s.pak' % locale))
 
   if OS != 'ios':
     #e.g.

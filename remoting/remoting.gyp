@@ -158,7 +158,6 @@
       ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
-        'grit_resource_ids': 'resources/resource_ids',
         'sources': [
           '<(SHARED_INTERMEDIATE_DIR)/main.html',
           'base/resources_unittest.cc',
