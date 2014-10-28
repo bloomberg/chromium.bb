@@ -30,16 +30,18 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
 
   // Check validation cache usage:
   if (IsAPnaclTest()) {
-    // Should have received 3 validation queries:
-    // - One for IRT for actual application
-    // - Two for two translator nexes
-    // The translators don't currently use the IRT, so there is no IRT cache
-    // query for those two loads. The PNaCl main nexe comes from a
-    // delete-on-close temp file, so it doesn't have a stable identity
-    // for validation caching. All three query results should be misses.
-    histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
-                                  nacl::NaClBrowser::CACHE_MISS, 3);
-    // Should have received a cache setting afterwards for IRT and translators.
+    // Should have received 4 validation queries:
+    // - Two for the IRT: the app and one of the translator nexes use the IRT.
+    // - Two for the two PNaCl translator nexes.
+    // The PNaCl app nexe comes from a delete-on-close temp file, so it
+    // doesn't have a stable identity for validation caching. Overall, there
+    // are 3 eligible nexes. The first 3 queries for these eligible nexes
+    // are misses, and one of the IRT queries is a hit.
+    histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_MISS, 3);
+    histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_HIT, 1);
+    // Should have received a cache setting afterwards (IRT set only once).
     histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                   nacl::NaClBrowser::CACHE_HIT, 3);
   } else {
@@ -182,16 +184,18 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 
   content::FetchHistogramsFromChildProcesses();
-  // Should have received 3 validation queries:
-  // - One for IRT for actual application
-  // - Two for two translator nexes
-  // The translators don't currently use the IRT, so there is no IRT cache
-  // query for those two loads. The PNaCl main nexe comes from a
-  // delete-on-close temp file, so it doesn't have a stable identity
-  // for validation caching. All three query results should be misses.
-  histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
-                                nacl::NaClBrowser::CACHE_MISS, 3);
-  // Should have received a cache setting afterwards for IRT and translators.
+  // Should have received 4 validation queries:
+  // - Two for the IRT: the app and one of the translator nexes use the IRT.
+  // - Two for the two PNaCl translator nexes.
+  // The PNaCl app nexe comes from a delete-on-close temp file, so it
+  // doesn't have a stable identity for validation caching. Overall, there
+  // are 3 eligible nexes. The first 3 queries for these eligible nexes
+  // are misses, and one of the IRT queries is a hit.
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_MISS, 3);
+  histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
+                               nacl::NaClBrowser::CACHE_HIT, 1);
+  // Should have received a cache setting afterwards.
   histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                nacl::NaClBrowser::CACHE_HIT, 3);
 
@@ -201,14 +205,14 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   // cache hits!)
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_2"));
 
-  // Should now have 3 more queries on top of the previous ones.
-  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 6);
-  // With the 3 extra queries being cache hits.
+  // Should now have 4 more queries on top of the previous ones.
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 8);
+  // With the extra queries being cache hits.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_HIT, 3);
+                               nacl::NaClBrowser::CACHE_HIT, 5);
   // No extra cache settings.
   histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
-                               nacl::NaClBrowser::CACHE_HIT, 3);
+                                nacl::NaClBrowser::CACHE_HIT, 3);
 }
 
 
