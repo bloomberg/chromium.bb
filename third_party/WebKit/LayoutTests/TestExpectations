@@ -1477,3 +1477,6 @@ crbug.com/426543 fast/js/mozilla/strict/15.4.4.13.html [ Pass Failure ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
+
+# Temporarily disabled for two-sided patches.
+crbug.com/424081 http/tests/serviceworker/registration-end-to-end.html [ Skip ]
