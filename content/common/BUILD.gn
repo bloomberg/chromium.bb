@@ -318,10 +318,12 @@ source_set("common") {
 
 mojom("mojo_bindings") {
   sources = [
+    "geolocation_service.mojom",
     "render_frame_setup.mojom",
   ]
 
   deps = [
+    "//content/public/common:mojo_bindings",
     "//mojo/public/interfaces/application:application",
   ]
 }

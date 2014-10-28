@@ -26,6 +26,7 @@ class Message;
 }
 
 namespace content {
+class GeolocationServiceContext;
 class RenderFrameHost;
 class WebContents;
 struct AXEventNotificationDetails;
@@ -146,6 +147,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Find a guest RenderFrameHost by its browser plugin instance id.
   virtual RenderFrameHost* GetGuestByInstanceID(
       int browser_plugin_instance_id);
+
+  // Gets the GeolocationServiceContext associated with this delegate.
+  virtual GeolocationServiceContext* GetGeolocationServiceContext();
 
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.
