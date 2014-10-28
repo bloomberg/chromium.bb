@@ -266,6 +266,46 @@ public class BookmarksBridge {
     }
 
     /**
+     * Calls {@link #getAllFoldersWithDepths(List, List)} and remove all folders and children
+     * in bookmarksToMove. This method is useful when finding a list of possible parent folers when
+     * moving some folders (a folder cannot be moved to its own children).
+     */
+    public void getMoveDestinations(List<BookmarkId> folderList,
+            List<Integer> depthList, List<BookmarkId> bookmarksToMove) {
+        assert mIsNativeBookmarkModelLoaded;
+        nativeGetAllFoldersWithDepths(mNativeBookmarksBridge, folderList, depthList);
+        if (bookmarksToMove == null || bookmarksToMove.size() == 0) return;
+
+        boolean shouldTrim = false;
+        int trimThreshold = -1;
+        for (int i = 0; i < folderList.size(); i++) {
+            int depth = depthList.get(i);
+            if (shouldTrim) {
+                if (depth <= trimThreshold) {
+                    shouldTrim = false;
+                    trimThreshold = -1;
+                } else {
+                    folderList.remove(i);
+                    depthList.remove(i);
+                    i--;
+                }
+            }
+            // Do not use else here because shouldTrim could be set true after if (shouldTrim)
+            // statement.
+            if (!shouldTrim) {
+                BookmarkId folder = folderList.get(i);
+                if (bookmarksToMove.contains(folder)) {
+                    shouldTrim = true;
+                    trimThreshold = depth;
+                    folderList.remove(i);
+                    depthList.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
+
+    /**
      * @return The BookmarkId for Mobile folder node
      */
     public BookmarkId getMobileFolderId() {
