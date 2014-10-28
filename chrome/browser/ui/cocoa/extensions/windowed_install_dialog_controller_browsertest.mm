@@ -20,7 +20,7 @@ namespace {
 // dialog controller to be captured and manipulated for tests.
 void TestingShowAppListInstallDialogController(
     WindowedInstallDialogController** controller,
-    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   *controller =

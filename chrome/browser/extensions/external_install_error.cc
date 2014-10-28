@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
@@ -319,9 +320,10 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   DCHECK(browser);
   content::WebContents* web_contents = NULL;
   web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  ExtensionInstallPrompt::ShowParams params(web_contents);
+  install_ui_show_params_.reset(
+      new ExtensionInstallPromptShowParams(web_contents));
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
-      params, this, prompt_);
+      install_ui_show_params_.get(), this, prompt_);
 }
 
 const Extension* ExternalInstallError::GetExtension() const {
@@ -377,7 +379,7 @@ void ExternalInstallError::OnFetchComplete() {
 }
 
 void ExternalInstallError::OnDialogReady(
-    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* prompt_delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_EQ(this, prompt_delegate);

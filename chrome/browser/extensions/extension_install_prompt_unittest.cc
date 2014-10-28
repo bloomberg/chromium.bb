@@ -24,7 +24,7 @@ void VerifyPromptPermissionsCallback(
     const base::Closure& quit_closure,
     size_t regular_permissions_count,
     size_t withheld_permissions_count,
-    const ExtensionInstallPrompt::ShowParams& params,
+    ExtensionInstallPromptShowParams* params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> install_prompt) {
   ASSERT_TRUE(install_prompt.get());
