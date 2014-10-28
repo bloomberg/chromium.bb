@@ -248,6 +248,10 @@ static_library("browser") {
       #"browser_app_shim"  TODO(GYP)
     ]
   }
+  if (is_mac || is_ios) {
+    sources += rebase_path(gypi_values.chrome_browser_mac_ios_sources,
+                           ".", "//chrome")
+  }
   if (cld2_data_source == "component") {
     sources += [
       "component_updater/cld_component_installer.cc",

@@ -21901,6 +21901,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="OSX.Handoff.Origin" enum="OSXHandoffOrigin">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    This event is recorded each time a Handoff is received by Chrome on OSX. The
+    enumeration indicates the source of the Handoff.
+  </summary>
+</histogram>
+
 <histogram name="OSX.Settings.ScreensHaveSeparateSpaces"
     enum="OSXScreensHaveSeparateSpaces">
   <owner>erikchen@chromium.org</owner>
@@ -49114,6 +49122,12 @@ To add a new entry, add it with any value and run test to compute valid value.
     The window was located on a secondary screen, and there are multiple screens
     available.
   </int>
+</enum>
+
+<enum name="OSXHandoffOrigin" type="int">
+  <int value="0" label="Unknown Origin"/>
+  <int value="1" label="Chrome on iOS"/>
+  <int value="2" label="Chrome on Mac"/>
 </enum>
 
 <enum name="OSXScreensHaveSeparateSpaces" type="int">

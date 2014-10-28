@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/mac/handoff_utility.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1550,6 +1552,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
           isEqualToString:NSUserActivityTypeBrowsingWeb]) {
     return NO;
   }
+
+  NSString* originString = base::mac::ObjCCast<NSString>(
+      [userActivity.userInfo objectForKey:handoff::kOriginKey]);
+  handoff::Origin origin = handoff::OriginFromString(originString);
+  UMA_HISTOGRAM_ENUMERATION(
+      "OSX.Handoff.Origin", origin, handoff::ORIGIN_COUNT);
 
   NSURL* url = userActivity.webPageURL;
   if (!url)
