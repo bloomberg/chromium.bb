@@ -26,9 +26,6 @@
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
-            'libmojo_system_java',
-            'mojo_system_java',
-            'mojo_test_apk',
             'public/mojo_public.gyp:mojo_bindings_java',
             'public/mojo_public.gyp:mojo_public_java',
           ],
@@ -220,12 +217,27 @@
             'android/javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java',
             'android/system/src/org/chromium/mojo/system/impl/CoreImpl.java',
             'services/native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java',
-            'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
           ],
           'variables': {
             'jni_gen_package': 'mojo',
-         },
+          },
           'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'libmojo_system_java',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            'edk/mojo_edk.gyp:mojo_system_impl',
+            'mojo_common_lib',
+            'mojo_environment_chromium',
+            'mojo_jni_headers',
+          ],
+          'sources': [
+            'android/system/core_impl.cc',
+            'android/system/core_impl.h',
+          ],
         },
         {
           'target_name': 'mojo_java_set_jni_headers',
@@ -249,69 +261,7 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
-        {
-          'target_name': 'libmojo_system_java',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            'edk/mojo_edk.gyp:mojo_system_impl',
-            'mojo_common_lib',
-            'mojo_environment_chromium',
-            'mojo_jni_headers',
-          ],
-          'sources': [
-            'android/system/core_impl.cc',
-            'android/system/core_impl.h',
-          ],
-        },
-        {
-          'target_name': 'libmojo_java_unittest',
-          'type': 'shared_library',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:test_support_base',
-            'libmojo_system_java',
-            'mojo_jni_headers',
-            'public/mojo_public.gyp:mojo_public_bindings_test_utils',
-          ],
-          'defines': [
-            'UNIT_TEST'  # As exported from testing/gtest.gyp:gtest.
-          ],
-          'sources': [
-            'android/javatests/mojo_test_case.cc',
-            'android/javatests/mojo_test_case.h',
-            'android/javatests/init_library.cc',
-            'android/javatests/validation_test_util.cc',
-            'android/javatests/validation_test_util.h',
-          ],
-        },
-        {
-          'target_name': 'mojo_test_apk',
-          'type': 'none',
-          'dependencies': [
-            '../base/base.gyp:base_java_test_support',
-            'public/mojo_public.gyp:mojo_bindings_java',
-            'mojo_system_java',
-            'public/mojo_public.gyp:mojo_public_test_interfaces',
-          ],
-          'variables': {
-            'apk_name': 'MojoTest',
-            'java_in_dir': '<(DEPTH)/mojo/android/javatests',
-            'resource_dir': '<(DEPTH)/mojo/android/javatests/apk',
-            'native_lib_target': 'libmojo_java_unittest',
-            'is_test_apk': 1,
-            # Given that this apk tests itself, it needs to bring emma with it
-            # when instrumented.
-            'conditions': [
-              ['emma_coverage != 0', {
-                'emma_instrument': 1,
-              }],
-            ],
-          },
-          'includes': [ '../build/java_apk.gypi' ],
-        },
       ]
-    }],
+    }]
   ]
 }

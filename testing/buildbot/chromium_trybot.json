@@ -122,10 +122,6 @@
       "test": "mojo_application_manager_unittests",
       "platforms": ["linux"]
     },
-    {
-      "test": "mojo_shell_tests",
-      "platforms": ["linux"]
-    },
     "mojo_system_unittests",
     {
       "test": "nacl_loader_unittests",
