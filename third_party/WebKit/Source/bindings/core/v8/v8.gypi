@@ -90,6 +90,7 @@
             'ScriptStreamer.h',
             'ScriptStreamerThread.cpp',
             'ScriptStreamerThread.h',
+            'ScriptStreamingMode.h',
             'ScriptString.cpp',
             'ScriptString.h',
             'ScriptValue.cpp',
