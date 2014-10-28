@@ -49,8 +49,8 @@
       'sources': [
         'app/shell_main_delegate.cc',
         'app/shell_main_delegate.h',
-        'browser/api/shell_identity/shell_identity_api.cc',
-        'browser/api/shell_identity/shell_identity_api.h',
+        'browser/api/identity/identity_api.cc',
+        'browser/api/identity/identity_api.h',
         'browser/default_shell_browser_main_delegate.cc',
         'browser/default_shell_browser_main_delegate.h',
         'browser/desktop_controller.cc',
@@ -92,6 +92,8 @@
         'browser/shell_network_controller_chromeos.h',
         'browser/shell_network_delegate.cc',
         'browser/shell_network_delegate.h',
+        'browser/shell_oauth2_token_service.cc',
+        'browser/shell_oauth2_token_service.h',
         'browser/shell_omaha_query_params_delegate.cc',
         'browser/shell_omaha_query_params_delegate.h',
         'browser/shell_runtime_api_delegate.cc',
@@ -232,10 +234,11 @@
       ],
       'sources': [
         '../test/extensions_unittests_main.cc',
-        'browser/api/shell_identity/shell_identity_api_unittest.cc',
+        'browser/api/identity/identity_api_unittest.cc',
         'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
+        'browser/shell_oauth2_token_service_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
       'conditions': [

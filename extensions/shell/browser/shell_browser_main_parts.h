@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -35,6 +36,7 @@ class ShellDeviceClient;
 class ShellExtensionsBrowserClient;
 class ShellExtensionsClient;
 class ShellExtensionSystem;
+class ShellOAuth2TokenService;
 class ShellOmahaQueryParamsDelegate;
 
 #if defined(OS_CHROMEOS)
@@ -80,6 +82,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
   scoped_ptr<ShellOmahaQueryParamsDelegate> omaha_query_params_delegate_;
+  scoped_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 
   // Owned by the KeyedService system.
   ShellExtensionSystem* extension_system_;
@@ -92,6 +95,10 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   bool run_message_loop_;
 
   scoped_ptr<ShellBrowserMainDelegate> browser_main_delegate_;
+
+#if !defined(DISABLE_NACL)
+  base::CancelableTaskTracker task_tracker_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

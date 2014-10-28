@@ -20,7 +20,8 @@ include_rules = [
   "+device/hid",
   "+device/usb",
 
-  # Only used in API tests that should be moved to extensions/browser/api/...
+  "+google_apis/gaia",
+
   "+net",
 
   "+ppapi",

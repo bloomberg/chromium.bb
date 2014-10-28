@@ -190,7 +190,7 @@ void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
   core_api::GeneratedFunctionRegistry::RegisterAll(registry);
 
   // app_shell-only APIs.
-  shell_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  shell::api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 scoped_ptr<RuntimeAPIDelegate>

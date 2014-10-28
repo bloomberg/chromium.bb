@@ -11,10 +11,10 @@
     'non_compiled_schema_files': [
     ],
     'schema_files': [
-      'shell_identity.idl',
+      'identity.idl',
     ],
     'cc_dir': 'extensions/shell/common/api',
-    'root_namespace': 'extensions::shell_api::%(namespace)s',
+    'root_namespace': 'extensions::shell::api::%(namespace)s',
     'impl_dir_': 'extensions/shell/browser/api',
   },
 }

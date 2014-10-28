@@ -13,6 +13,8 @@ namespace switches {
 extern const char kAppShellAppPath[];
 extern const char kAppShellHostWindowBounds[];
 extern const char kAppShellPreferredNetwork[];
+extern const char kAppShellRefreshToken[];
+extern const char kAppShellUser[];
 
 }  // namespace switches
 }  // namespace extensions

@@ -147,10 +147,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // |account_id|. The caller owns the returned Request.
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
-  // is not deleted.
-  scoped_ptr<Request> StartRequest(const std::string& account_id,
-                                   const ScopeSet& scopes,
-                                   Consumer* consumer);
+  // is not deleted. Virtual for mocking.
+  virtual scoped_ptr<Request> StartRequest(const std::string& account_id,
+                                           const ScopeSet& scopes,
+                                           Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
