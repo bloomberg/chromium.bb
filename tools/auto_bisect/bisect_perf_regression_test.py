@@ -317,13 +317,15 @@ class BisectPerfRegressionTest(unittest.TestCase):
     global _MockResultsGenerator
     _MockResultsGenerator = (rs for rs in CLEAR_NON_REGRESSION)
     results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
-    self.assertIsNotNone(results.error)
-    self.assertIn('could not reproduce the regression', results.error)
+    confidence_warnings = [x for x in results.warnings if x.startswith(
+        '\nWe could not reproduce the regression')]
+    self.assertGreater(len(confidence_warnings), 0)
 
     _MockResultsGenerator = (rs for rs in ALMOST_REGRESSION)
     results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
-    self.assertIsNotNone(results.error)
-    self.assertIn('could not reproduce the regression', results.error)
+    confidence_warnings = [x for x in results.warnings if x.startswith(
+        '\nWe could not reproduce the regression')]
+    self.assertGreater(len(confidence_warnings), 0)
 
   @mock.patch('bisect_perf_regression.BisectPerformanceMetrics.'
               'RunPerformanceTestAndParseResults', _MockRunTests)

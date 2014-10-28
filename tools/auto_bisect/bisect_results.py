@@ -73,6 +73,8 @@ class BisectResults(object):
     self.first_working_revision = first_working_rev
     self.last_broken_revision = last_broken_rev
 
+    self.warnings = runtime_warnings
+
     if first_working_rev is not None and last_broken_rev is not None:
       statistics = self._ComputeRegressionStatistics(
           rev_states, first_working_rev, last_broken_rev)
@@ -87,8 +89,16 @@ class BisectResults(object):
       self.other_regressions = self._FindOtherRegressions(
           rev_states, statistics['bad_greater_than_good'])
 
-    self.warnings = runtime_warnings + self._GetResultBasedWarnings(
-        self.culprit_revisions, opts, self.confidence)
+      self.warnings += self._GetResultBasedWarnings(
+          self.culprit_revisions, opts, self.confidence)
+    elif first_working_rev is not None:
+      # Setting these attributes so that bisect printer does not break when the
+      # regression cannot be reproduced (no broken revision was found)
+      self.regression_size = 0
+      self.regression_std_err = 0
+      self.confidence = 0
+      self.culprit_revisions = []
+      self.other_regressions = []
 
   @staticmethod
   def _GetResultBasedWarnings(culprit_revisions, opts, confidence):

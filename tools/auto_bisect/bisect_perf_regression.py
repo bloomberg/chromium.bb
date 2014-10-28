@@ -2388,15 +2388,6 @@ class BisectPerformanceMetrics(object):
 
       min_revision = 0
       max_revision = len(revision_states) - 1
-      # Check how likely it is that the good and bad results are different
-      # beyond chance-induced variation.
-      if not self.opts.debug_ignore_regression_confidence:
-        error = _CheckRegressionConfidenceError(good_revision,
-                                                bad_revision,
-                                                known_good_value,
-                                                known_bad_value)
-        if error:
-          return BisectResults(error=error)
 
       # Can just mark the good and bad revisions explicitly here since we
       # already know the results.
@@ -2415,6 +2406,20 @@ class BisectPerformanceMetrics(object):
       good_revision_state.value = known_good_value
 
       bisect_printer = BisectPrinter(self.opts, self.depot_registry)
+
+      # Check how likely it is that the good and bad results are different
+      # beyond chance-induced variation.
+      confidence_error = False
+      if not self.opts.debug_ignore_regression_confidence:
+        confidence_error = _CheckRegressionConfidenceError(good_revision,
+                                                           bad_revision,
+                                                           known_good_value,
+                                                           known_bad_value)
+        if confidence_error:
+          self.warnings.append(confidence_error)
+          bad_revision_state.passed = True # Marking the 'bad' revision as good.
+          return BisectResults(bisect_state, self.depot_registry, self.opts,
+                               self.warnings)
 
       while True:
         if not revision_states:
