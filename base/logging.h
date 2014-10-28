@@ -701,7 +701,7 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 #define DCHECK_GT(val1, val2) DCHECK_OP(GT, > , val1, val2)
 #define DCHECK_IMPLIES(val1, val2) DCHECK(!(val1) || (val2))
 
-#if defined(NDEBUG) && defined(OS_CHROMEOS)
+#if !DCHECK_IS_ON && defined(OS_CHROMEOS)
 #define NOTREACHED() LOG(ERROR) << "NOTREACHED() hit in " << \
     __FUNCTION__ << ". "
 #else
