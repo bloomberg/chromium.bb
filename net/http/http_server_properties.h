@@ -15,6 +15,7 @@
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
