@@ -367,8 +367,10 @@ ThreadState::~ThreadState()
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
     **s_threadSpecific = 0;
-    s_mainThreadStackStart = 0;
-    s_mainThreadUnderestimatedStackSize = 0;
+    if (isMainThread()) {
+        s_mainThreadStackStart = 0;
+        s_mainThreadUnderestimatedStackSize = 0;
+    }
 }
 
 void ThreadState::init()
