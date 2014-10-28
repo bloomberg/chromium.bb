@@ -68,7 +68,7 @@ class ASH_EXPORT WindowSelector
 
   WindowSelector(const WindowList& windows,
                  WindowSelectorDelegate* delegate);
-  virtual ~WindowSelector();
+  ~WindowSelector() override;
 
   // Cancels window selection.
   void CancelSelection();
@@ -77,27 +77,26 @@ class ASH_EXPORT WindowSelector
   void OnGridEmpty(WindowGrid* grid);
 
   // gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& display) override;
+  void OnDisplayRemoved(const gfx::Display& display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* new_window) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowAdded(aura::Window* new_window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
-  virtual void OnAttemptToReactivateWindow(
-      aura::Window* request_active,
-      aura::Window* actual_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
 
   // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
  private:
   friend class WindowSelectorTest;

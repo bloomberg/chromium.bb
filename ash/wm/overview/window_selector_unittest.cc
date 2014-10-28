@@ -56,9 +56,7 @@ namespace {
 class NonActivatableActivationDelegate
     : public aura::client::ActivationDelegate {
  public:
-  virtual bool ShouldActivate() const override {
-    return false;
-  }
+  bool ShouldActivate() const override { return false; }
 };
 
 void CancelDrag(DragDropController* controller, bool* canceled) {
@@ -73,9 +71,9 @@ void CancelDrag(DragDropController* controller, bool* canceled) {
 class WindowSelectorTest : public test::AshTestBase {
  public:
   WindowSelectorTest() {}
-  virtual ~WindowSelectorTest() {}
+  ~WindowSelectorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 

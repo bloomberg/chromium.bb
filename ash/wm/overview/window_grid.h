@@ -49,7 +49,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   WindowGrid(aura::Window* root_window,
              const std::vector<aura::Window*>& window_list,
              WindowSelector* window_selector);
-  virtual ~WindowGrid();
+  ~WindowGrid() override;
 
   // Prepares the windows in this grid for overview. This will restore all
   // minimized windows and ensure they are visible.
@@ -93,11 +93,11 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   }
 
   // aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
   // TODO(flackr): Handle window bounds changed in WindowSelectorItem.
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   friend class WindowSelectorTest;

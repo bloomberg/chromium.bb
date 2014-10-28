@@ -15,7 +15,7 @@ namespace ash {
 class TransparentActivateWindowButton : public views::ButtonListener {
  public:
   explicit TransparentActivateWindowButton(aura::Window* activate_window);
-  virtual ~TransparentActivateWindowButton();
+  ~TransparentActivateWindowButton() override;
 
   // Sets the bounds of the transparent window.
   void SetBounds(const gfx::Rect& bounds);
@@ -25,8 +25,7 @@ class TransparentActivateWindowButton : public views::ButtonListener {
   void SendFocusAlert() const;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   // The transparent window event handler widget itself.

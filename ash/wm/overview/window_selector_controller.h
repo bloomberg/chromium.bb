@@ -30,7 +30,7 @@ class ASH_EXPORT WindowSelectorController
     : public WindowSelectorDelegate {
  public:
   WindowSelectorController();
-  virtual ~WindowSelectorController();
+  ~WindowSelectorController() override;
 
   // Returns true if selecting windows in an overview is enabled. This is false
   // at certain times, such as when the lock screen is visible.
@@ -45,7 +45,7 @@ class ASH_EXPORT WindowSelectorController
   bool IsSelecting();
 
   // WindowSelectorDelegate:
-  virtual void OnSelectionEnded() override;
+  void OnSelectionEnded() override;
 
  private:
   friend class WindowSelectorTest;

@@ -38,10 +38,10 @@ class CleanupWidgetAfterAnimationObserver
  public:
   explicit CleanupWidgetAfterAnimationObserver(
       scoped_ptr<views::Widget> widget);
-  virtual ~CleanupWidgetAfterAnimationObserver();
+  ~CleanupWidgetAfterAnimationObserver() override;
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
  private:
   scoped_ptr<views::Widget> widget_;

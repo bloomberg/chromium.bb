@@ -90,15 +90,12 @@ class CleanupWidgetAfterAnimationObserver : public ui::LayerAnimationObserver {
   void TakeOwnershipOfWidget();
 
   // ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override;
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
 
  private:
-  virtual ~CleanupWidgetAfterAnimationObserver();
+  ~CleanupWidgetAfterAnimationObserver() override;
 
   // If the necessary conditions have been satisfied to destruct this
   // class, deletes itself and cleans up the widget and layer.

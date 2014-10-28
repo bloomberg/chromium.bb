@@ -30,7 +30,7 @@ class WindowSelectorItem : public views::ButtonListener,
                            public aura::WindowObserver {
  public:
   WindowSelectorItem();
-  virtual ~WindowSelectorItem();
+  ~WindowSelectorItem() override;
 
   // The time for the close buttons and labels to fade in when initially shown
   // on entering overview mode.
@@ -88,11 +88,10 @@ class WindowSelectorItem : public views::ButtonListener,
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
-  virtual void OnWindowTitleChanged(aura::Window* window) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
 
  protected:
   // Sets the bounds of this selector's items to |target_bounds| in

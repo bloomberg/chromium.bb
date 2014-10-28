@@ -36,8 +36,7 @@ class WindowSelectorAnimationSettings
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   }
 
-  virtual ~WindowSelectorAnimationSettings() {
-  }
+  ~WindowSelectorAnimationSettings() override {}
 };
 
 void SetTransformOnWindow(aura::Window* window,

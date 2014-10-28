@@ -22,7 +22,7 @@ class TransparentButton : public views::CustomButton {
   explicit TransparentButton(views::ButtonListener* listener)
       : CustomButton(listener) {
   }
-  virtual ~TransparentButton() {}
+  ~TransparentButton() override {}
 
   // views::CustomButton:
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -42,9 +42,7 @@ class TransparentButton : public views::CustomButton {
     event->StopPropagation();
   }
 
-  virtual const char* GetClassName() const override {
-    return kTransparentButtonName;
-  }
+  const char* GetClassName() const override { return kTransparentButtonName; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransparentButton);

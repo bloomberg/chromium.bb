@@ -21,25 +21,25 @@ class ScopedTransformOverviewWindow;
 class WindowSelectorPanels : public WindowSelectorItem {
  public:
   explicit WindowSelectorPanels(aura::Window* panels_root_window);
-  virtual ~WindowSelectorPanels();
+  ~WindowSelectorPanels() override;
 
   // Adds |window| to the selector item. This window should be an attached
   // panel window.
   void AddWindow(aura::Window* window);
 
   // WindowSelectorItem:
-  virtual aura::Window* GetRootWindow() override;
-  virtual bool HasSelectableWindow(const aura::Window* window) override;
-  virtual bool Contains(const aura::Window* target) override;
-  virtual void RestoreWindowOnExit(aura::Window* window) override;
-  virtual aura::Window* SelectionWindow() override;
-  virtual void RemoveWindow(const aura::Window* window) override;
-  virtual bool empty() const override;
-  virtual void PrepareForOverview() override;
-  virtual void SetItemBounds(aura::Window* root_window,
-                             const gfx::Rect& target_bounds,
-                             bool animate) override;
-  virtual void SetOpacity(float opacity) override;
+  aura::Window* GetRootWindow() override;
+  bool HasSelectableWindow(const aura::Window* window) override;
+  bool Contains(const aura::Window* target) override;
+  void RestoreWindowOnExit(aura::Window* window) override;
+  aura::Window* SelectionWindow() override;
+  void RemoveWindow(const aura::Window* window) override;
+  bool empty() const override;
+  void PrepareForOverview() override;
+  void SetItemBounds(aura::Window* root_window,
+                     const gfx::Rect& target_bounds,
+                     bool animate) override;
+  void SetOpacity(float opacity) override;
 
  private:
   typedef ScopedVector<ScopedTransformOverviewWindow> WindowList;
