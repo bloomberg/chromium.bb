@@ -28,8 +28,7 @@
 #ifndef RenderSVGRect_h
 #define RenderSVGRect_h
 
-#include "core/rendering/svg/RenderSVGPath.h"
-#include "core/svg/SVGRectElement.h"
+#include "core/rendering/svg/RenderSVGShape.h"
 
 namespace blink {
 
@@ -38,13 +37,13 @@ public:
     explicit RenderSVGRect(SVGRectElement*);
     virtual ~RenderSVGRect();
 
+    virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : RectGeometryFastPath; }
+
 private:
     virtual const char* renderName() const override { return "RenderSVGRect"; }
 
     virtual void updateShapeFromElement() override;
     virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
-    virtual void fillShape(GraphicsContext*) const override;
-    virtual void strokeShape(GraphicsContext*) const override;
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
 

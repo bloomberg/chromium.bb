@@ -28,7 +28,7 @@
 #include "config.h"
 
 #include "core/rendering/svg/RenderSVGRect.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "core/svg/SVGRectElement.h"
 
 namespace blink {
 
@@ -84,29 +84,6 @@ void RenderSVGRect::updateShapeFromElement()
     }
 
     m_strokeBoundingBox = m_outerStrokeRect;
-}
-
-void RenderSVGRect::fillShape(GraphicsContext* context) const
-{
-    if (m_usePathFallback) {
-        RenderSVGShape::fillShape(context);
-        return;
-    }
-
-    context->fillRect(m_fillBoundingBox);
-}
-
-void RenderSVGRect::strokeShape(GraphicsContext* context) const
-{
-    if (!style()->svgStyle().hasVisibleStroke())
-        return;
-
-    if (m_usePathFallback) {
-        RenderSVGShape::strokeShape(context);
-        return;
-    }
-
-    context->strokeRect(m_fillBoundingBox, strokeWidth());
 }
 
 bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)

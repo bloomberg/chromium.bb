@@ -30,7 +30,6 @@
 
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
@@ -93,26 +92,6 @@ void RenderSVGEllipse::calculateRadiiAndCenter()
     SVGLengthContext lengthContext(&ellipse);
     m_radii = FloatSize(ellipse.rx()->currentValue()->value(lengthContext), ellipse.ry()->currentValue()->value(lengthContext));
     m_center = FloatPoint(ellipse.cx()->currentValue()->value(lengthContext), ellipse.cy()->currentValue()->value(lengthContext));
-}
-
-void RenderSVGEllipse::fillShape(GraphicsContext* context) const
-{
-    if (m_usePathFallback) {
-        RenderSVGShape::fillShape(context);
-        return;
-    }
-    context->fillEllipse(m_fillBoundingBox);
-}
-
-void RenderSVGEllipse::strokeShape(GraphicsContext* context) const
-{
-    if (!style()->svgStyle().hasVisibleStroke())
-        return;
-    if (m_usePathFallback) {
-        RenderSVGShape::strokeShape(context);
-        return;
-    }
-    context->strokeEllipse(m_fillBoundingBox);
 }
 
 bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)

@@ -45,6 +45,8 @@ struct MarkerPosition {
     float angle;
 };
 
+class RenderSVGResourceMarker;
+
 class SVGMarkerData {
 public:
     SVGMarkerData(Vector<MarkerPosition>& positions, bool autoStartReverse)
@@ -75,6 +77,21 @@ public:
     void pathIsDone()
     {
         m_positions.append(MarkerPosition(EndMarker, m_origin, currentAngle(EndMarker)));
+    }
+
+    static inline RenderSVGResourceMarker* markerForType(const SVGMarkerType& type, RenderSVGResourceMarker* markerStart, RenderSVGResourceMarker* markerMid, RenderSVGResourceMarker* markerEnd)
+    {
+        switch (type) {
+        case StartMarker:
+            return markerStart;
+        case MidMarker:
+            return markerMid;
+        case EndMarker:
+            return markerEnd;
+        }
+
+        ASSERT_NOT_REACHED();
+        return 0;
     }
 
 private:

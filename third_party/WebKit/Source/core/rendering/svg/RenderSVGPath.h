@@ -35,20 +35,27 @@ public:
     explicit RenderSVGPath(SVGGraphicsElement*);
     virtual ~RenderSVGPath();
 
+    virtual const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
+
+    virtual const Vector<FloatPoint>* zeroLengthLineCaps() const override { return &m_zeroLengthLinecapLocations; }
+    static FloatRect zeroLengthSubpathRect(const FloatPoint&, float);
+
 private:
     virtual const char* renderName() const override { return "RenderSVGPath"; }
 
     virtual void updateShapeFromElement() override;
     FloatRect calculateUpdatedStrokeBoundingBox() const;
 
-    virtual void strokeShape(GraphicsContext*) const override;
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
 
+    FloatRect markerRect(float strokeWidth) const;
+    bool shouldGenerateMarkerPositions() const;
+    virtual void processMarkerPositions() override;
+
     bool shouldStrokeZeroLengthSubpath() const;
-    Path* zeroLengthLinecapPath(const FloatPoint&) const;
-    FloatRect zeroLengthSubpathRect(const FloatPoint&, float) const;
     void updateZeroLengthSubpaths();
 
+    Vector<MarkerPosition> m_markerPositions;
     Vector<FloatPoint> m_zeroLengthLinecapLocations;
 };
 

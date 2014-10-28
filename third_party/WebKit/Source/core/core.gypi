@@ -1560,6 +1560,8 @@
             'paint/SVGRootInlineBoxPainter.h',
             'paint/SVGRootPainter.cpp',
             'paint/SVGRootPainter.h',
+            'paint/SVGShapePainter.cpp',
+            'paint/SVGShapePainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
             'paint/TablePainter.cpp',

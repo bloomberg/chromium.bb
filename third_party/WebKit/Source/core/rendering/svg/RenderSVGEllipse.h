@@ -36,13 +36,13 @@ public:
     explicit RenderSVGEllipse(SVGGraphicsElement*);
     virtual ~RenderSVGEllipse();
 
+    virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : EllipseGeometryFastPath; }
+
 private:
     virtual const char* renderName() const override { return "RenderSVGEllipse"; }
 
     virtual void updateShapeFromElement() override;
     virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
-    virtual void fillShape(GraphicsContext*) const override;
-    virtual void strokeShape(GraphicsContext*) const override;
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
     void calculateRadiiAndCenter();
