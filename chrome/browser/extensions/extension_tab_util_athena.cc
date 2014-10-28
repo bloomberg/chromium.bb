@@ -7,13 +7,39 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "url/gurl.h"
 
+using content::NavigationEntry;
 using content::WebContents;
 
 namespace extensions {
 
 namespace keys = tabs_constants;
+
+namespace {
+
+WindowController* GetAppWindowController(const WebContents* contents) {
+  AppWindowRegistry* registry =
+      AppWindowRegistry::Get(contents->GetBrowserContext());
+  if (!registry)
+    return NULL;
+  AppWindow* app_window =
+      registry->GetAppWindowForRenderViewHost(contents->GetRenderViewHost());
+  if (!app_window)
+    return NULL;
+  return WindowControllerList::GetInstance()->FindWindowById(
+      app_window->session_id().id());
+}
+
+}  // namespace
 
 ExtensionTabUtil::OpenTabParams::OpenTabParams()
     : create_browser_if_needed(false) {
@@ -60,18 +86,15 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  NOTIMPLEMENTED();
-  return -1;
+  return SessionTabHelper::IdForTab(web_contents);
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
-  NOTIMPLEMENTED();
-  return keys::kStatusValueComplete;
+  return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
-  NOTIMPLEMENTED();
-  return -1;
+  return SessionTabHelper::IdForWindowContainingTab(web_contents);
 }
 
 base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
@@ -93,8 +116,43 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
-  NOTREACHED();
-  return NULL;
+  // There's no TabStrip in Athena.
+  DCHECK(!tab_strip);
+
+  // If we have a matching AppWindow with a controller, get the tab value
+  // from its controller instead.
+  WindowController* controller = GetAppWindowController(contents);
+  if (controller)
+    return controller->CreateTabValue(NULL, tab_index);
+
+  base::DictionaryValue* result = new base::DictionaryValue();
+  bool is_loading = contents->IsLoading();
+  result->SetInteger(keys::kIdKey, GetTabId(contents));
+  result->SetInteger(keys::kIndexKey, tab_index);
+  result->SetInteger(keys::kWindowIdKey, GetWindowIdOfTab(contents));
+  result->SetString(keys::kStatusKey, GetTabStatusText(is_loading));
+  result->SetBoolean(keys::kActiveKey, false);
+  result->SetBoolean(keys::kSelectedKey, false);
+  result->SetBoolean(keys::kHighlightedKey, false);
+  result->SetBoolean(keys::kPinnedKey, false);
+  result->SetBoolean(keys::kIncognitoKey,
+                     contents->GetBrowserContext()->IsOffTheRecord());
+  result->SetInteger(keys::kWidthKey,
+                     contents->GetContainerBounds().size().width());
+  result->SetInteger(keys::kHeightKey,
+                     contents->GetContainerBounds().size().height());
+
+  // Privacy-sensitive fields: these should be stripped off by
+  // ScrubTabValueForExtension if the extension should not see them.
+  result->SetString(keys::kUrlKey, contents->GetURL().spec());
+  result->SetString(keys::kTitleKey, contents->GetTitle());
+  if (!is_loading) {
+    NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+    if (entry && entry->GetFavicon().valid)
+      result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
+  }
+
+  return result;
 }
 
 void ExtensionTabUtil::ScrubTabValueForExtension(
@@ -114,6 +172,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
                                         TabStripModel** tab_strip_model,
                                         int* tab_index) {
   NOTIMPLEMENTED();
+
   return false;
 }
 
@@ -169,7 +228,7 @@ WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
 
 void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
                                        Browser* browser) {
-  // NOTIMPLEMENTED();
+   NOTIMPLEMENTED();
 }
 
 }  // namespace extensions
