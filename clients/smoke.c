@@ -87,10 +87,10 @@ static void advect(struct smoke *smoke, uint32_t time,
 				px = 0.5;
 			if (py < 0.5)
 				py = 0.5;
-			if (px > smoke->width - 0.5)
-				px = smoke->width - 0.5;
-			if (py > smoke->height - 0.5)
-				py = smoke->height - 0.5;
+			if (px > smoke->width - 1.5)
+				px = smoke->width - 1.5;
+			if (py > smoke->height - 1.5)
+				py = smoke->height - 1.5;
 			i = (int) px;
 			j = (int) py;
 			fx = px - i;
