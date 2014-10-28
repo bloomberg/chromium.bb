@@ -21,6 +21,9 @@ enum InputDeviceType {
 struct EVENTS_BASE_EXPORT InputDevice {
   static const unsigned int kInvalidId;
 
+  // Creates an invalid input device.
+  InputDevice();
+
   InputDevice(unsigned int id, InputDeviceType type, const std::string& name);
   virtual ~InputDevice();
 

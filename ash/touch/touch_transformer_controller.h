@@ -9,6 +9,10 @@
 #include "ash/display/display_controller.h"
 #include "ui/gfx/transform.h"
 
+namespace ui {
+struct TouchscreenDevice;
+}  // namespace ui
+
 namespace ash {
 
 // TouchTransformerController listens to display configuration change
@@ -46,7 +50,12 @@ class ASH_EXPORT TouchTransformerController
   gfx::Transform GetExtendedModeTouchTransformer(
       const DisplayInfo& touch_display, const gfx::Size& fb_size) const;
 
-  double GetTouchResolutionScale(const DisplayInfo& touch_display) const;
+  // Returns the scaling factor for the touch radius such that it scales the
+  // radius from |touch_device|'s coordiante system to the |touch_display|'s
+  // coordinate system.
+  double GetTouchResolutionScale(
+      const DisplayInfo& touch_display,
+      const ui::TouchscreenDevice& touch_device) const;
 
   // For unittests only.
   bool force_compute_mirror_mode_touch_transformer_;

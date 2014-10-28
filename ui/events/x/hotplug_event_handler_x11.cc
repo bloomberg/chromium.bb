@@ -191,8 +191,8 @@ void HotplugEventHandlerX11::HandleTouchscreenDevices(
     if (!x11_devices[i].enabled || x11_devices[i].use != XIFloatingSlave)
       continue;  // Assume all touchscreens are floating slaves
 
-    double width = -1.0;
-    double height = -1.0;
+    double max_x = -1.0;
+    double max_y = -1.0;
     bool is_direct_touch = false;
 
     for (int j = 0; j < x11_devices[i].num_classes; j++) {
@@ -206,13 +206,13 @@ void HotplugEventHandlerX11::HandleTouchscreenDevices(
           // Ignore X axis valuator with unexpected properties
           if (valuator_info->number == 0 && valuator_info->mode == Absolute &&
               valuator_info->min == 0.0) {
-            width = valuator_info->max;
+            max_x = valuator_info->max;
           }
         } else if (valuator_y == valuator_info->label) {
           // Ignore Y axis valuator with unexpected properties
           if (valuator_info->number == 1 && valuator_info->mode == Absolute &&
               valuator_info->min == 0.0) {
-            height = valuator_info->max;
+            max_y = valuator_info->max;
           }
         }
       }
@@ -227,14 +227,19 @@ void HotplugEventHandlerX11::HandleTouchscreenDevices(
 
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
-    if (width > 0.0 && height > 0.0 && is_direct_touch) {
+    if (max_x > 0.0 && max_y > 0.0 && is_direct_touch) {
       InputDeviceType type =
           IsTouchscreenInternal(display, x11_devices[i].deviceid)
               ? InputDeviceType::INPUT_DEVICE_INTERNAL
               : InputDeviceType::INPUT_DEVICE_EXTERNAL;
       std::string name(x11_devices[i].name);
+      // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
+      // the size.
       devices.push_back(TouchscreenDevice(
-          x11_devices[i].deviceid, type, name, gfx::Size(width, height)));
+          x11_devices[i].deviceid,
+          type,
+          name,
+          gfx::Size(max_x + 1, max_y + 1)));
     }
   }
 

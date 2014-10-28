@@ -10,7 +10,10 @@
 
 namespace ui {
 
-TouchscreenDevice::TouchscreenDevice(int id,
+TouchscreenDevice::TouchscreenDevice() {
+}
+
+TouchscreenDevice::TouchscreenDevice(unsigned int id,
                                      InputDeviceType type,
                                      const std::string& name,
                                      const gfx::Size& size)

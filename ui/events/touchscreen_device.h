@@ -15,7 +15,10 @@ namespace ui {
 
 // Represents a Touchscreen device state.
 struct EVENTS_BASE_EXPORT TouchscreenDevice : public InputDevice {
-  TouchscreenDevice(int id,
+  // Creates an invalid touchscreen device.
+  TouchscreenDevice();
+
+  TouchscreenDevice(unsigned int id,
                     InputDeviceType type,
                     const std::string& name,
                     const gfx::Size& size);
