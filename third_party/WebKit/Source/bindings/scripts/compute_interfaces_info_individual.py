@@ -128,6 +128,29 @@ def get_put_forward_interfaces_from_definition(definition):
                       if 'PutForwards' in attribute.extended_attributes))
 
 
+def collect_union_types_from_definitions(definitions):
+    """Traverse definitions and collect all union types."""
+
+    def union_types_from(things):
+        return (thing.idl_type for thing in things
+                if thing.idl_type.is_union_type)
+
+    this_union_types = set()
+    for interface in definitions.interfaces.itervalues():
+        this_union_types.update(union_types_from(interface.attributes))
+        for operation in interface.operations:
+            this_union_types.update(union_types_from(operation.arguments))
+            if operation.idl_type.is_union_type:
+                this_union_types.add(operation.idl_type)
+    for callback_function in definitions.callback_functions.itervalues():
+        this_union_types.update(union_types_from(callback_function.arguments))
+        if callback_function.idl_type.is_union_type:
+            this_union_types.add(callback_function.idl_type)
+    for dictionary in definitions.dictionaries.itervalues():
+        this_union_types.update(union_types_from(dictionary.members))
+    return this_union_types
+
+
 class InterfaceInfoCollector(object):
     """A class that collects interface information from idl files."""
     def __init__(self, cache_directory=None):
@@ -137,6 +160,7 @@ class InterfaceInfoCollector(object):
             'full_paths': [],
             'include_paths': [],
         })
+        self.union_types = set()
 
     def add_paths_to_partials_dict(self, partial_interface_name, full_path,
                                    this_include_path=None):
@@ -172,6 +196,9 @@ class InterfaceInfoCollector(object):
             }
         else:
             raise Exception('IDL file must contain one interface or dictionary')
+
+        self.union_types.update(
+            collect_union_types_from_definitions(definitions))
 
         extended_attributes = definition.extended_attributes
         implemented_as = extended_attributes.get('ImplementedAs')
@@ -211,6 +238,7 @@ class InterfaceInfoCollector(object):
             'interfaces_info': self.interfaces_info,
             # Can't pickle defaultdict, convert to dict
             'partial_interface_files': dict(self.partial_interface_files),
+            'union_types': self.union_types,
         }
 
 

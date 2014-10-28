@@ -40,6 +40,7 @@
       'v8_interface.py',
       'v8_methods.py',
       'v8_types.py',
+      'v8_union.py',
       'v8_utilities.py',
     ],
     'idl_cache_files': [

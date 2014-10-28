@@ -11,6 +11,8 @@ IdlTypeBase
   IdlArrayType
   IdlSequenceType
  IdlNullableType
+
+IdlTypes are picklable because we store them in interfaces_info.
 """
 
 from collections import defaultdict
@@ -139,6 +141,14 @@ class IdlType(IdlTypeBase):
     def __str__(self):
         return self.base_type
 
+    def __getstate__(self):
+        return {
+            'base_type': self.base_type,
+        }
+
+    def __setstate__(self, state):
+        self.base_type = state['base_type']
+
     @property
     def is_basic_type(self):
         return self.base_type in BASIC_TYPES
@@ -236,9 +246,28 @@ class IdlType(IdlTypeBase):
 
 class IdlUnionType(IdlTypeBase):
     # http://heycam.github.io/webidl/#idl-union
+    # IdlUnionType has __hash__() and __eq__() methods because they are stored
+    # in sets.
     def __init__(self, member_types):
         super(IdlUnionType, self).__init__()
         self.member_types = member_types
+
+    def __str__(self):
+        return self.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, rhs):
+        return self.name == rhs.name
+
+    def __getstate__(self):
+        return {
+            'member_types': self.member_types,
+        }
+
+    def __setstate__(self, state):
+        self.member_types = state['member_types']
 
     @property
     def is_union_type(self):
@@ -269,6 +298,14 @@ class IdlArrayOrSequenceType(IdlTypeBase):
     def __init__(self, element_type):
         super(IdlArrayOrSequenceType, self).__init__()
         self.element_type = element_type
+
+    def __getstate__(self):
+        return {
+            'element_type': self.element_type,
+        }
+
+    def __setstate__(self, state):
+        self.element_type = state['element_type']
 
     def resolve_typedefs(self, typedefs):
         self.element_type = self.element_type.resolve_typedefs(typedefs)
@@ -318,6 +355,14 @@ class IdlNullableType(IdlTypeBase):
 
     def __getattr__(self, name):
         return getattr(self.inner_type, name)
+
+    def __getstate__(self):
+        return {
+            'inner_type': self.inner_type,
+        }
+
+    def __setstate__(self, state):
+        self.inner_type = state['inner_type']
 
     @property
     def is_nullable(self):

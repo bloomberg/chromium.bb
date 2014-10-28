@@ -40,13 +40,14 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
                                             os.pardir, os.pardir, 'Source'))
 sys.path.append(source_path)  # for Source/bindings imports
 
+from bindings.scripts.code_generator_v8 import CodeGeneratorUnionTypeContainers
 import bindings.scripts.compute_interfaces_info_individual
 from bindings.scripts.compute_interfaces_info_individual import InterfaceInfoCollector
 import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
 from bindings.scripts.idl_reader import IdlReader
-from bindings.scripts.utilities import idl_filename_to_component
+from bindings.scripts.utilities import idl_filename_to_component, write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -79,6 +80,9 @@ COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
 
 test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
+
+# component -> set of union types
+union_types = {}
 
 @contextmanager
 def TemporaryDirectory():
@@ -114,6 +118,23 @@ def generate_interface_dependencies(output_directory):
             idl_paths.extend(idl_paths_recursive(directory))
         return idl_paths
 
+    def collect_interfaces_info(idl_path_list):
+        info_collector = InterfaceInfoCollector()
+        for idl_path in idl_path_list:
+            if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
+                continue
+            info_collector.collect_info(idl_path)
+        info = info_collector.get_info_as_dict()
+        # TestDictionary.{h,cpp} are placed under
+        # Source/bindings/tests/idls/core. However, IdlCompiler generates
+        # TestDictionary.{h,cpp} by using relative_dir.
+        # So the files will be generated under
+        # output_dir/core/bindings/tests/idls/core.
+        # To avoid this issue, we need to clear relative_dir here.
+        for value in info['interfaces_info'].itervalues():
+            value['relative_dir'] = ''
+        return info
+
     # We compute interfaces info for *all* IDL files, not just test IDL
     # files, as code generator output depends on inheritance (both ancestor
     # chain and inherited extended attributes), and some real interfaces
@@ -125,33 +146,33 @@ def generate_interface_dependencies(output_directory):
     # but this inheritance information requires computing dependencies for
     # the real Node.idl file.
     non_test_idl_paths = collect_blink_idl_paths()
-    test_idl_paths = idl_paths_recursive(test_input_directory)
-    # 2-stage computation: individual, then overall
+    # For bindings test IDL files, we collect interfaces info for each
+    # component so that we can generate union type containers separately.
+    test_idl_paths = {}
+    for component in COMPONENT_DIRECTORY:
+        test_idl_paths[component] = idl_paths_recursive(
+            os.path.join(test_input_directory, component))
+    # 2nd-stage computation: individual, then overall
     #
     # Properly should compute separately by component (currently test
     # includes are invalid), but that's brittle (would need to update this file
     # for each new component) and doesn't test the code generator any better
     # than using a single component.
-    #
+    non_test_interfaces_info = collect_interfaces_info(non_test_idl_paths)
+    test_interfaces_info = {}
+    for component, paths in test_idl_paths.iteritems():
+        test_interfaces_info[component] = collect_interfaces_info(paths)
     # In order to allow test IDL files to override the production IDL files if
     # they have the same interface name, process the test IDL files after the
     # non-test IDL files.
-    info_individuals = []
-    info_collector = InterfaceInfoCollector()
-    for idl_path_list in (non_test_idl_paths, test_idl_paths):
-        for idl_path in idl_path_list:
-            if os.path.basename(idl_path) in NON_BLINK_IDL_FILES:
-                continue
-            info_collector.collect_info(idl_path)
-        info_individuals.append(info_collector.get_info_as_dict())
-    # TestDictionary.{h,cpp} are placed under Source/bindings/tests/idls/core.
-    # However, IdlCompiler generates TestDictionary.{h,cpp} by using relative_dir.
-    # So the files will be generated under output_dir/core/bindings/tests/idls/core.
-    # To avoid this issue, we need to clear relative_dir here.
-    for info in info_individuals:
-        for value in info['interfaces_info'].itervalues():
-            value['relative_dir'] = ''
+    info_individuals = [non_test_interfaces_info] + test_interfaces_info.values()
     compute_interfaces_info_overall(info_individuals)
+    # 3rd-stage: union types
+    # We only process union types which are defined under
+    # Source/bindings/tests/idls. Otherwise, the result of union type
+    # container classes will be affected by non-test IDL files.
+    for component, interfaces_info in test_interfaces_info.iteritems():
+        union_types[component] = interfaces_info['union_types']
 
 
 def bindings_tests(output_directory, verbose):
@@ -236,12 +257,22 @@ def bindings_tests(output_directory, verbose):
             return False
         return True
 
+    def generate_union_type_containers(output_directory, component):
+        generator = CodeGeneratorUnionTypeContainers(
+            interfaces_info, cache_dir=None, output_dir=output_directory,
+            target_component=component)
+        outputs = generator.generate_code(union_types[component])
+        for output_path, output_code in outputs:
+            write_file(output_code, output_path, only_if_changed=True)
+
     try:
         generate_interface_dependencies(output_directory)
         for component in COMPONENT_DIRECTORY:
             output_dir = os.path.join(output_directory, component)
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
+
+            generate_union_type_containers(output_dir, component)
 
             idl_compiler = IdlCompilerV8(output_dir,
                                          interfaces_info=interfaces_info,
