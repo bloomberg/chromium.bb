@@ -120,9 +120,11 @@ void AppActivity::Init() {
       // proxy the activation will change to the next (activatable) object and
       // thus we have to move the window in front at the end.
       Activity::Delete(app_proxy);
-      window_list_provider->StackWindowFrontOf(
-          GetWindow(),
-          window_list_provider->GetWindowList().back());
+      if (GetWindow() != window_list_provider->GetWindowList().back()) {
+        window_list_provider->StackWindowFrontOf(
+            GetWindow(),
+            window_list_provider->GetWindowList().back());
+      }
     } else {
       // The app window goes in front of the proxy window (we need to first
       // place the window before we can delete it).
