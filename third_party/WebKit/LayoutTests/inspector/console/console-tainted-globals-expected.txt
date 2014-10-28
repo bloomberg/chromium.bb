@@ -14,4 +14,8 @@ testThrowConstructorName()
 Object {constructor: (...)}
 testOverriddenIsFinite()
 ["arg1", "arg2"]
+testOverriddenError()
+Object {result: "PASS"}
+restoreError()
+Object {result: "PASS"}
 

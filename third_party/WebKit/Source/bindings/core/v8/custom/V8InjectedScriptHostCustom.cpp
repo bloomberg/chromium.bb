@@ -37,6 +37,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
@@ -178,6 +179,10 @@ void V8InjectedScriptHost::subtypeMethodCustom(const v8::FunctionCallbackInfo<v8
         || V8HTMLCollection::hasInstance(value, isolate)
         || V8HTMLAllCollection::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
+        return;
+    }
+    if (value->IsNativeError() || V8DOMException::hasInstance(value, isolate)) {
+        v8SetReturnValue(info, v8AtomicString(isolate, "error"));
         return;
     }
 }

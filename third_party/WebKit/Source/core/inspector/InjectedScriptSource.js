@@ -718,7 +718,7 @@ InjectedScript.prototype = {
      */
     _createThrownValue: function(value, objectGroup, generatePreview, exceptionDetails)
     {
-        var remoteObject = this._wrapObject(value, objectGroup, false, generatePreview && !(value instanceof Error));
+        var remoteObject = this._wrapObject(value, objectGroup, false, generatePreview && InjectedScriptHost.subtype(value) !== "error");
         if (!remoteObject.description){
             try {
                 remoteObject.description = toStringDescription(value);
@@ -1005,7 +1005,8 @@ InjectedScript.prototype = {
             return null;
 
         var subtype = InjectedScriptHost.subtype(obj);
-        if (subtype)
+        // FIXME: Consider exposing "error" subtype via protocol.
+        if (subtype && subtype !== "error")
             return subtype;
 
         if (isArrayLike(obj))
@@ -1066,8 +1067,14 @@ InjectedScript.prototype = {
             }
         }
 
-        if (obj instanceof Error && !!obj.message)
-            return className + ": " + obj.message;
+        if (InjectedScriptHost.subtype(obj) === "error") {
+            try {
+                var message = obj.message;
+                if (message)
+                    return className + ": " + message;
+            } catch(e) {
+            }
+        }
 
         return className;
     }

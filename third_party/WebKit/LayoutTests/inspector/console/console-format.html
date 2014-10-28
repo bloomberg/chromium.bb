@@ -67,10 +67,24 @@ function onload()
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
-        new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode
+        new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException()
     ];
 
     runTest();
+}
+
+function domException()
+{
+    var result = "FAIL";
+    try {
+        var a = document.createElement("div");
+        var b = document.createElement("div");
+        a.removeChild(b);
+    } catch(e) {
+        e.stack = "";
+        result = e;
+    }
+    return result;
 }
 
 function test()

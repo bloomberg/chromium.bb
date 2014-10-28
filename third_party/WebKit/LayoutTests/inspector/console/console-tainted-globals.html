@@ -4,36 +4,38 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-(function() {
-    var _originalFunctionCall = Function.prototype.call;
-    var _originalFunctionApply = Function.prototype.apply;
+var originalError = window.Error;
 
-    var _overriddenFunctionCall = function() {
+(function() {
+    var originalFunctionCall = Function.prototype.call;
+    var originalFunctionApply = Function.prototype.apply;
+
+    var overriddenFunctionCall = function() {
         original();
         console.error("FAIL: Function.prototype.call should not be called!");
-        var result = _originalFunctionCall.apply(this, arguments);
+        var result = originalFunctionCall.apply(this, arguments);
         overridden();
         return result;
     }
 
-    var _overriddenFunctionApply = function(thisArg, argsArray) {
+    var overriddenFunctionApply = function(thisArg, argsArray) {
         original();
         console.error("FAIL: Function.prototype.apply should not be called!");
-        var result = _originalFunctionApply.call(this, thisArg, argsArray);
+        var result = originalFunctionApply.call(this, thisArg, argsArray);
         overridden();
         return result;
     }
 
     function original()
     {
-        Function.prototype.call = _originalFunctionCall;
-        Function.prototype.apply = _originalFunctionApply;
+        Function.prototype.call = originalFunctionCall;
+        Function.prototype.apply = originalFunctionApply;
     }
 
     function overridden()
     {
-        Function.prototype.call = _overriddenFunctionCall;
-        Function.prototype.apply = _overriddenFunctionApply;
+        Function.prototype.call = overriddenFunctionCall;
+        Function.prototype.apply = overriddenFunctionApply;
     }
 
     overridden();
@@ -82,6 +84,18 @@ function testOverriddenIsFinite()
     return out;
 }
 
+function testOverriddenError()
+{
+    window.Error = 42;
+    return { result: "PASS" };
+}
+
+function restoreError()
+{
+    window.Error = originalError;
+    return { result: "PASS" };
+}
+
 function test()
 {
     InspectorTest.runTestSuite([
@@ -91,7 +105,9 @@ function test()
                 "testOverriddenArrayPushAndMathMax()",
                 "testOverriddenConstructorName()",
                 "testThrowConstructorName()",
-                "testOverriddenIsFinite()"
+                "testOverriddenIsFinite()",
+                "testOverriddenError()",
+                "restoreError()",
             ];
 
             function iterate()
