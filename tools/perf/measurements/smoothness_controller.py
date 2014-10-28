@@ -11,6 +11,7 @@ from telemetry.page import page_test
 from telemetry.page.actions import action_runner
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
+from telemetry.value import trace
 from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.web_perf.metrics import smoothness
 
@@ -56,7 +57,7 @@ class SmoothnessController(object):
         RUN_SMOOTH_ACTIONS, is_smooth=True)
 
   def Stop(self, tab):
-    # End the smooth marker for all smooth actions.
+    # End the smooth marker for  all smooth actions.
     self._interaction.End()
     # Stop tracing for smoothness metric.
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
@@ -69,7 +70,8 @@ class SmoothnessController(object):
     # Add results of smoothness metric. This computes the smoothness metric for
     # the time ranges of gestures, if there is at least one, else the the time
     # ranges from the first action to the last action.
-
+    results.AddValue(trace.TraceValue(
+        results.current_page, self._tracing_timeline_data))
     renderer_thread = self._timeline_model.GetRendererThreadFromTabId(
         tab.id)
     run_smooth_actions_record = None
