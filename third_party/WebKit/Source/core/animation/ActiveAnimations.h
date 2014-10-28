@@ -74,6 +74,7 @@ public:
 
     const RenderStyle* baseRenderStyle() const;
     void updateBaseRenderStyle(const RenderStyle*);
+    void clearBaseRenderStyle();
 
 #if !ENABLE(OILPAN)
     void addAnimation(Animation* animation) { m_animations.append(animation); }

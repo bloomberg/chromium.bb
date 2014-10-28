@@ -112,4 +112,9 @@ void ActiveAnimations::updateBaseRenderStyle(const RenderStyle* renderStyle)
     m_baseRenderStyle = RenderStyle::clone(renderStyle);
 }
 
+void ActiveAnimations::clearBaseRenderStyle()
+{
+    m_baseRenderStyle = nullptr;
+}
+
 } // namespace blink

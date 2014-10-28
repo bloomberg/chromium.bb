@@ -1387,6 +1387,7 @@ void Element::detach(const AttachContext& context)
                 activeAnimations->cssAnimations().cancel();
                 activeAnimations->setAnimationStyleChange(false);
             }
+            activeAnimations->clearBaseRenderStyle();
         }
 
         if (ElementShadow* shadow = data->shadow())
