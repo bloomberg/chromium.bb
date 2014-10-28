@@ -286,6 +286,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   int32_t AddRef() override;
   int32_t Release() override;
 
+ private:
   // webrtc::AudioDeviceModule implementation.
   // All implemented methods are called on the main render thread unless
   // anything else is stated.
@@ -325,6 +326,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   int32_t RecordingSampleRate(uint32_t* sample_rate) const override;
   int32_t PlayoutSampleRate(uint32_t* sample_rate) const override;
 
+ public:
   // Sets the |renderer_|, returns false if |renderer_| already exists.
   // Called on the main renderer thread.
   bool SetAudioRenderer(WebRtcAudioRenderer* renderer);
@@ -392,8 +394,11 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   void AddPlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
   void RemovePlayoutSink(WebRtcPlayoutDataSource::Sink* sink) override;
 
-  // Used to DCHECK that we are called on the correct thread.
-  base::ThreadChecker thread_checker_;
+  // Used to check methods that run on the main render thread.
+  base::ThreadChecker main_thread_checker_;
+  // Used to check methods that are called on libjingle's signaling thread.
+  base::ThreadChecker signaling_thread_checker_;
+  base::ThreadChecker worker_thread_checker_;
 
   int ref_count_;
 

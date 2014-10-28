@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
 #include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
@@ -98,6 +99,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
 
   // The amplitude of the signal.
   int signal_level_;
+
+  // Thread checker for libjingle's signaling thread.
+  base::ThreadChecker signaling_thread_;
+  base::ThreadChecker capture_thread_;
 
   // Protects |voe_channels_|, |audio_processor_| and |signal_level_|.
   mutable base::Lock lock_;

@@ -390,6 +390,7 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints, int effects) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!audio_processing_);
 
   MediaAudioConstraints audio_constraints(constraints, effects);

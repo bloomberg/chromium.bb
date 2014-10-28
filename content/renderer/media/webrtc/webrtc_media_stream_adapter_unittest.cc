@@ -48,8 +48,8 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       MediaStreamTrack* native_track =
           new MediaStreamTrack(
               WebRtcLocalAudioTrackAdapter::Create(
-                  audio_track_vector[0].id().utf8(), NULL),
-                  true);
+                  audio_track_vector[0].id().utf8(), nullptr),
+              true);
       audio_track_vector[0].setExtraData(native_track);
     }
 

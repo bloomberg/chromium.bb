@@ -112,7 +112,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   void OnIpcClosing() override;
 
  protected:
-  friend class base::RefCountedThreadSafe<MediaStreamAudioProcessor>;
   ~MediaStreamAudioProcessor() override;
 
  private:

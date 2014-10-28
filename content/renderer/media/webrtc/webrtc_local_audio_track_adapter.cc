@@ -31,6 +31,8 @@ WebRtcLocalAudioTrackAdapter::WebRtcLocalAudioTrackAdapter(
       owner_(NULL),
       track_source_(track_source),
       signal_level_(0) {
+  signaling_thread_.DetachFromThread();
+  capture_thread_.DetachFromThread();
 }
 
 WebRtcLocalAudioTrackAdapter::~WebRtcLocalAudioTrackAdapter() {
@@ -44,6 +46,11 @@ void WebRtcLocalAudioTrackAdapter::Initialize(WebRtcLocalAudioTrack* owner) {
 
 void WebRtcLocalAudioTrackAdapter::SetAudioProcessor(
     const scoped_refptr<MediaStreamAudioProcessor>& processor) {
+  // SetAudioProcessor will be called when a new capture thread has been
+  // initialized, so we need to detach from any current capture thread we're
+  // checking and attach to the current one.
+  capture_thread_.DetachFromThread();
+  DCHECK(capture_thread_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   audio_processor_ = processor;
 }
@@ -54,6 +61,7 @@ std::string WebRtcLocalAudioTrackAdapter::kind() const {
 
 void WebRtcLocalAudioTrackAdapter::AddSink(
     webrtc::AudioTrackSinkInterface* sink) {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   DCHECK(sink);
 #ifndef NDEBUG
   // Verify that |sink| has not been added.
@@ -72,6 +80,7 @@ void WebRtcLocalAudioTrackAdapter::AddSink(
 
 void WebRtcLocalAudioTrackAdapter::RemoveSink(
     webrtc::AudioTrackSinkInterface* sink) {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   DCHECK(sink);
   for (ScopedVector<WebRtcAudioSinkAdapter>::iterator it =
            sink_adapters_.begin();
@@ -85,7 +94,8 @@ void WebRtcLocalAudioTrackAdapter::RemoveSink(
 }
 
 bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
-  base::AutoLock auto_lock(lock_);
+  DCHECK(signaling_thread_.CalledOnValidThread());
+
   // It is required to provide the signal level after audio processing. In
   // case the audio processing is not enabled for the track, we return
   // false here in order not to overwrite the value from WebRTC.
@@ -94,27 +104,32 @@ bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
   if (!MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled())
     return false;
 
+  base::AutoLock auto_lock(lock_);
   *level = signal_level_;
   return true;
 }
 
 rtc::scoped_refptr<webrtc::AudioProcessorInterface>
 WebRtcLocalAudioTrackAdapter::GetAudioProcessor() {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   return audio_processor_.get();
 }
 
 std::vector<int> WebRtcLocalAudioTrackAdapter::VoeChannels() const {
+  DCHECK(capture_thread_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   return voe_channels_;
 }
 
 void WebRtcLocalAudioTrackAdapter::SetSignalLevel(int signal_level) {
+  DCHECK(capture_thread_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   signal_level_ = signal_level;
 }
 
 void WebRtcLocalAudioTrackAdapter::AddChannel(int channel_id) {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::AddChannel(channel_id="
            << channel_id << ")";
   base::AutoLock auto_lock(lock_);
@@ -129,6 +144,7 @@ void WebRtcLocalAudioTrackAdapter::AddChannel(int channel_id) {
 }
 
 void WebRtcLocalAudioTrackAdapter::RemoveChannel(int channel_id) {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::RemoveChannel(channel_id="
            << channel_id << ")";
   base::AutoLock auto_lock(lock_);
@@ -139,6 +155,7 @@ void WebRtcLocalAudioTrackAdapter::RemoveChannel(int channel_id) {
 }
 
 webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   return track_source_;
 }
 
