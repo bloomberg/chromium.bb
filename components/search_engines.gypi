@@ -28,6 +28,9 @@
         'url_fixer',
         'webdata_common',
       ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
+      ],
       'include_dirs': [
         '..',
       ],

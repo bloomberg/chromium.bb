@@ -17,6 +17,9 @@
         'component_metrics_proto',
         'variations',
       ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
+      ],
       'sources': [
         'metrics/clean_exit_beacon.cc',
         'metrics/clean_exit_beacon.h',
@@ -119,6 +122,9 @@
         '../content/content.gyp:content_browser',
         'component_metrics_proto',
         'metrics',
+      ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
       ],
       'sources': [
         'metrics/profiler/profiler_metrics_provider.cc',

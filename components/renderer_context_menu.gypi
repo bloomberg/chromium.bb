@@ -10,7 +10,6 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         '../components/components.gyp:search_engines',
-        '../components/components.gyp:component_metrics_proto',
       ],
       'include_dirs': [
         '..',

@@ -28,6 +28,5 @@ static_library("renderer_context_menu") {
     "//base",
     "//content/public/browser",
     "//components/search_engines",
-    "//components/metrics/proto",
   ]
 }

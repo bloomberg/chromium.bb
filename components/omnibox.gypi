@@ -21,6 +21,9 @@
         'url_fixer',
         'variations_http_provider',
       ],
+      'export_dependent_settings': [
+        'component_metrics_proto',
+      ],
       'include_dirs': [
         '..',
       ],
