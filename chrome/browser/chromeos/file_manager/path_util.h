@@ -24,29 +24,14 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 // The |profile| argument is used for determining the location of the
 // "Downloads" folder.
 //
-// Here's the list of relocations we have made so far.
+// As of now (M40), the conversion is used only during initialization of
+// download_prefs, where profile unaware initialization precedes profile
+// aware stage. Below are the list of relocations we have made in the past.
 //
-// M27: crbug.com/229304, Migration code for this is removed in M34.
-//   The "Google Drive" folder is moved from /special/drive to
-//   /special/drive/root to stored shared files outside of "My Drive" in
-//   /special/drive/other.
-//
-// M34: crbug.com/313539
-//   The "Downloads" folder is changed from /home/chronos/user/Downloads to
-//   /home/chronos/u-<hash>/Downloads when multi-profile is enabled.
-//
-//   The path "/home/chronos/user" is a hard link to the u-<hash> directory of
-//   the primary profile of the current session. The two paths always meant the
-//   same directory before multi-profiles. However, for secondary profiles in
-//   a multi-profile session, the "user" path cannot be used to mean "its own"
-//   Download folder anymore. Thus we are switching to always use "u-<hash>"
-//   that consistently works whether or not it is primary.
-//
-// M35: crbug.com/356322
-//   It turned out even if multi-profile is disabled, u-<hash> style profile
-//   can be used in some situations. To address the cases, we add a migration
-//   from /home/chronos/u-<hash>/Downloads to current Download path.
-//   This just results in no-op when multi-profile is enabled.
+// M27: crbug.com/229304, for supporting {offline, recent, shared} folders
+//   in Drive. Migration code for this is removed in M34.
+// M34-35: crbug.com/313539, 356322, for supporting multi profiles.
+//   Migration code is removed in M40.
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);

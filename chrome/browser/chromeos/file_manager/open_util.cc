@@ -173,24 +173,14 @@ void ContinueOpenItem(Profile* profile,
   }
 }
 
-// Converts the |given_path| passed from external callers to the form that the
-// file manager can correctly handle. It first migrates old Drive/Download
-// folder path to the new formats, and then converts path to filesystem URL.
+// Converts the |path| passed from external callers to the filesystem URL
+// that the file manager can correctly handle.
 //
 // When conversion fails, it shows a warning dialog UI and returns false.
-bool ConvertPath(Profile* profile,
-                 const base::FilePath& given_path,
-                 base::FilePath* path,
-                 GURL* url) {
-  // The path may have been stored in preferences in old versions.
-  // We need migration here.
-  // TODO(kinaba): crbug.com/313539 remove it in the future.
-  if (!util::MigratePathFromOldFormat(profile, given_path, path))
-    *path = given_path;
-
+bool ConvertPath(Profile* profile, const base::FilePath& path, GURL* url) {
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, *path, kFileManagerAppId, url)) {
-    ShowWarningMessageBox(profile, *path,
+          profile, path, kFileManagerAppId, url)) {
+    ShowWarningMessageBox(profile, path,
                           IDS_FILE_BROWSER_ERROR_UNRESOLVABLE_FILE);
     return false;
   }
@@ -202,9 +192,8 @@ bool ConvertPath(Profile* profile,
 void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::FilePath converted_path;
   GURL url;
-  if (!ConvertPath(profile, file_path, &converted_path, &url))
+  if (!ConvertPath(profile, file_path, &url))
     return;
 
   OpenFileManagerWithInternalActionId(profile, url, "auto-open");
@@ -213,23 +202,21 @@ void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
 void OpenItem(Profile* profile, const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::FilePath converted_path;
   GURL url;
-  if (!ConvertPath(profile, file_path, &converted_path, &url))
+  if (!ConvertPath(profile, file_path, &url))
     return;
 
   CheckIfDirectoryExists(
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId),
       url,
-      base::Bind(&ContinueOpenItem, profile, converted_path, url));
+      base::Bind(&ContinueOpenItem, profile, file_path, url));
 }
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::FilePath converted_path;
   GURL url;
-  if (!ConvertPath(profile, file_path, &converted_path, &url))
+  if (!ConvertPath(profile, file_path, &url))
     return;
 
   // This action changes the selection so we do not reuse existing tabs.

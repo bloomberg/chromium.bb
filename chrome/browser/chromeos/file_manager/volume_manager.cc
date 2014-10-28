@@ -253,21 +253,6 @@ void VolumeManager::Initialize() {
   if (chromeos::ProfileHelper::IsSigninProfile(profile_))
     return;
 
-  // Path to mount user folders have changed several times. We need to migrate
-  // the old preferences on paths to the new format when needed. For the detail,
-  // see the comments in file_manager::util::MigratePathFromOldFormat,
-  // Note: Preferences related to downloads are handled in download_prefs.cc.
-  // TODO(kinaba): Remove this after several rounds of releases.
-  const base::FilePath old_path =
-      profile_->GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
-  base::FilePath new_path;
-  if (!old_path.empty() &&
-      file_manager::util::MigratePathFromOldFormat(profile_,
-                                                   old_path, &new_path)) {
-    profile_->GetPrefs()->SetFilePath(prefs::kSelectFileLastDirectory,
-                                      new_path);
-  }
-
   // Register 'Downloads' folder for the profile to the file system.
   const base::FilePath downloads =
       file_manager::util::GetDownloadsFolderForProfile(profile_);
