@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "chrome/browser/net/packed_ct_ev_whitelist.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
@@ -65,16 +66,9 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
   VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << path.value();
 
-  // TODO(eranm): Uncomment once https://codereview.chromium.org/462543002/
-  // is in.
-  /*
   const base::FilePath whitelist_file = GetInstalledPath(path);
-  base::Callback<void(void)> set_cb =
-      base::Bind(&net::ct::SetEVWhitelistFromFile, whitelist_file);
   content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      set_cb);
-      */
+      FROM_HERE, base::Bind(&SetEVWhitelistFromFile, whitelist_file));
 }
 
 bool EVWhitelistComponentInstallerTraits::VerifyInstallation(

@@ -313,6 +313,7 @@
       'cert/cert_verify_proc_win.h',
       'cert/crl_set_storage.cc',
       'cert/crl_set_storage.h',
+      'cert/ct_ev_whitelist.h',
       'cert/ct_known_logs.cc',
       'cert/ct_known_logs.h',
       'cert/ct_known_logs_static.h',

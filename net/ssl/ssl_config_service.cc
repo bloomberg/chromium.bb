@@ -14,27 +14,34 @@ SSLConfigService::SSLConfigService()
     : observer_list_(ObserverList<Observer>::NOTIFY_EXISTING_ONLY) {
 }
 
-// GlobalCRLSet holds a reference to the global CRLSet. It simply wraps a lock
-// around a scoped_refptr so that getting a reference doesn't race with
-// updating the CRLSet.
-class GlobalCRLSet {
+// GlobalSSLObject holds a reference to a global SSL object, such as the
+// CRLSet or the EVCertsWhitelist. It simply wraps a lock  around a
+// scoped_refptr so that getting a reference doesn't race with
+// updating the global object.
+template <class T>
+class GlobalSSLObject {
  public:
-  void Set(const scoped_refptr<CRLSet>& new_crl_set) {
+  void Set(const scoped_refptr<T>& new_ssl_object) {
     base::AutoLock locked(lock_);
-    crl_set_ = new_crl_set;
+    ssl_object_ = new_ssl_object;
   }
 
-  scoped_refptr<CRLSet> Get() const {
+  scoped_refptr<T> Get() const {
     base::AutoLock locked(lock_);
-    return crl_set_;
+    return ssl_object_;
   }
 
  private:
-  scoped_refptr<CRLSet> crl_set_;
+  scoped_refptr<T> ssl_object_;
   mutable base::Lock lock_;
 };
 
+typedef GlobalSSLObject<CRLSet> GlobalCRLSet;
+typedef GlobalSSLObject<ct::EVCertsWhitelist> GlobalEVCertsWhitelist;
+
 base::LazyInstance<GlobalCRLSet>::Leaky g_crl_set = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<GlobalEVCertsWhitelist>::Leaky g_ev_whitelist =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 void SSLConfigService::SetCRLSet(scoped_refptr<CRLSet> crl_set) {
@@ -45,6 +52,17 @@ void SSLConfigService::SetCRLSet(scoped_refptr<CRLSet> crl_set) {
 // static
 scoped_refptr<CRLSet> SSLConfigService::GetCRLSet() {
   return g_crl_set.Get().Get();
+}
+
+// static
+void SSLConfigService::SetEVCertsWhitelist(
+    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist) {
+  g_ev_whitelist.Get().Set(ev_whitelist);
+}
+
+// static
+scoped_refptr<ct::EVCertsWhitelist> SSLConfigService::GetEVCertsWhitelist() {
+  return g_ev_whitelist.Get().Get();
 }
 
 void SSLConfigService::AddObserver(Observer* observer) {

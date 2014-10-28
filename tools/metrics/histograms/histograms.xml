@@ -18400,6 +18400,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_EVCertificateInWhitelist" enum="Boolean">
+  <owner>eranm@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether an EV certificate is present in the Certificate Transparency
+    whitelist. Emitted once for every EV certificate encountered (during SSL
+    connection establishment), but only if the client has a valid whitelist.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLCertBlacklisted">
   <owner>agl@chromium.org</owner>
   <summary>

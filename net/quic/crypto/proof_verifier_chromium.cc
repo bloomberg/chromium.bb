@@ -250,6 +250,19 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
     result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
   }
 
+  scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+      SSLConfigService::GetEVCertsWhitelist();
+  if ((cert_status & CERT_STATUS_IS_EV) && ev_whitelist.get() &&
+      ev_whitelist->IsValid()) {
+    const SHA256HashValue fingerprint(
+        X509Certificate::CalculateFingerprint256(cert_->os_cert_handle()));
+
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.SSL_EVCertificateInWhitelist",
+        ev_whitelist->ContainsCertificateHash(
+            std::string(reinterpret_cast<const char*>(fingerprint.data), 8)));
+  }
+
   if (result != OK) {
     std::string error_string = ErrorToString(result);
     error_details_ = StringPrintf("Failed to verify certificate chain: %s",
