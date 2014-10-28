@@ -50767,6 +50767,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Open User Manager in Menu">
     User opened the user menu, and opened the User Manager.
   </int>
+  <int value="6" label="Go Incognito from Menu">
+    User opened the user menu, and selected Go Incognito.
+  </int>
 </enum>
 
 <enum name="ProfileErrorType" type="int">

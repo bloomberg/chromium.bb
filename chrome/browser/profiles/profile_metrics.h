@@ -118,6 +118,8 @@ class ProfileMetrics {
     PROFILE_DESKTOP_MENU_EDIT_IMAGE,
     // User opened the user menu, and opened the user manager.
     PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER,
+    // User opened the user menu, and selected Go Incognito.
+    PROFILE_DESKTOP_MENU_GO_INCOGNITO,
     NUM_PROFILE_DESKTOP_MENU_METRICS,
   };
 

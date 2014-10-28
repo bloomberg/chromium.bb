@@ -923,6 +923,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)goIncognito:(id)sender {
   DCHECK([self shouldShowGoIncognito]);
   chrome::NewIncognitoWindow(browser_);
+  [self postActionPerformed:
+      ProfileMetrics::PROFILE_DESKTOP_MENU_GO_INCOGNITO];
 }
 
 - (IBAction)showAccountManagement:(id)sender {
