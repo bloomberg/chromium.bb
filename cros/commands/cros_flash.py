@@ -751,6 +751,10 @@ class RemoteDeviceUpdater(object):
     (e.g. cherrypy) that Cros Flash needs for rootfs update may be
     missing on |device|.
 
+    This will also use `ldconfig` to update library paths on the target
+    device if it looks like that's causing problems, which is necessary
+    for base images.
+
     Args:
        device: A ChromiumOSDevice object.
        tempdir: A temporary directory to store files.
@@ -761,10 +765,21 @@ class RemoteDeviceUpdater(object):
     logging.info('Checking if we can run devserver on the device.')
     src_dir = self._CopyDevServerPackage(device, tempdir)
     devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
+    devserver_check_command = ['python', devserver_bin, '--help']
     try:
-      device.RunCommand(['python', devserver_bin, '--help'])
+      device.RunCommand(devserver_check_command)
     except cros_build_lib.RunCommandError as e:
       logging.warning('Cannot start devserver: %s', e)
+      if 'python: error while loading shared libraries' in str(e):
+        logging.info('Attempting to correct device library paths...')
+        try:
+          device.RunCommand(['ldconfig', '-r', '/'])
+          device.RunCommand(devserver_check_command)
+          logging.info('Library path correction successful.')
+          return True
+        except cros_build_lib.RunCommandError as e2:
+          logging.warning('Library path correction failed: %s', e2)
+
       return False
 
     return True
