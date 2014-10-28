@@ -68,6 +68,8 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
 
     // Maximum time the second pointer can be active for a two finger tap.
     base::TimeDelta two_finger_tap_timeout;
+
+    VelocityTracker::Strategy velocity_tracker_strategy;
   };
 
   GestureDetector(const Config& config,

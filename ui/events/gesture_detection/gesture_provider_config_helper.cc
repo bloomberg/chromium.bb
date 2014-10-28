@@ -33,6 +33,8 @@ GestureDetector::Config DefaultGestureDetectorConfig(
       gesture_config->max_distance_for_two_finger_tap_in_pixels();
   config.two_finger_tap_timeout = base::TimeDelta::FromMilliseconds(
       gesture_config->max_touch_down_duration_for_click_in_ms());
+  config.velocity_tracker_strategy =
+      gesture_config->velocity_tracker_strategy();
   return config;
 }
 

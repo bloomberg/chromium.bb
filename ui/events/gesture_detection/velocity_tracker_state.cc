@@ -13,10 +13,6 @@ namespace {
 const int ACTIVE_POINTER_ID = -1;
 }
 
-VelocityTrackerState::VelocityTrackerState()
-    : velocity_tracker_(VelocityTracker::STRATEGY_DEFAULT),
-      active_pointer_id_(ACTIVE_POINTER_ID) {}
-
 VelocityTrackerState::VelocityTrackerState(VelocityTracker::Strategy strategy)
     : velocity_tracker_(strategy), active_pointer_id_(ACTIVE_POINTER_ID) {}
 

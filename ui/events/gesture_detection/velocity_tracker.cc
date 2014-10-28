@@ -113,12 +113,24 @@ class LeastSquaresVelocityTrackerStrategy : public VelocityTrackerStrategy {
     WEIGHTING_RECENT,
   };
 
+  enum Restriction {
+    // There's no restriction on the output of the velocity tracker.
+    RESTRICTION_NONE,
+
+    // If the velocity determined by the tracker is in a sufficiently different
+    // direction from the primary motion of the finger for the events being
+    // considered for velocity calculation, return a velocity of 0.
+    RESTRICTION_ALIGNED_DIRECTIONS
+  };
+
   // Number of samples to keep.
   static const uint8_t kHistorySize = 20;
 
   // Degree must be no greater than Estimator::kMaxDegree.
-  LeastSquaresVelocityTrackerStrategy(uint32_t degree,
-                                      Weighting weighting = WEIGHTING_NONE);
+  LeastSquaresVelocityTrackerStrategy(
+      uint32_t degree,
+      Weighting weighting,
+      Restriction restriction);
   ~LeastSquaresVelocityTrackerStrategy() override;
 
   void Clear() override;
@@ -148,6 +160,7 @@ class LeastSquaresVelocityTrackerStrategy : public VelocityTrackerStrategy {
 
   const uint32_t degree_;
   const Weighting weighting_;
+  const Restriction restriction_;
   uint32_t index_;
   Movement movements_[kHistorySize];
 };
@@ -192,39 +205,46 @@ class IntegratingVelocityTrackerStrategy : public VelocityTrackerStrategy {
 };
 
 VelocityTrackerStrategy* CreateStrategy(VelocityTracker::Strategy strategy) {
+  LeastSquaresVelocityTrackerStrategy::Weighting none =
+      LeastSquaresVelocityTrackerStrategy::WEIGHTING_NONE;
+  LeastSquaresVelocityTrackerStrategy::Restriction no_restriction =
+      LeastSquaresVelocityTrackerStrategy::RESTRICTION_NONE;
   switch (strategy) {
     case VelocityTracker::LSQ1:
-      return new LeastSquaresVelocityTrackerStrategy(1);
+      return new LeastSquaresVelocityTrackerStrategy(1, none, no_restriction);
     case VelocityTracker::LSQ2:
-      return new LeastSquaresVelocityTrackerStrategy(2);
+      return new LeastSquaresVelocityTrackerStrategy(2, none, no_restriction);
+    case VelocityTracker::LSQ2_RESTRICTED:
+      return new LeastSquaresVelocityTrackerStrategy(
+          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_NONE,
+          LeastSquaresVelocityTrackerStrategy::RESTRICTION_ALIGNED_DIRECTIONS);
     case VelocityTracker::LSQ3:
-      return new LeastSquaresVelocityTrackerStrategy(3);
+      return new LeastSquaresVelocityTrackerStrategy(3, none, no_restriction);
     case VelocityTracker::WLSQ2_DELTA:
       return new LeastSquaresVelocityTrackerStrategy(
-          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_DELTA);
+          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_DELTA,
+          no_restriction);
     case VelocityTracker::WLSQ2_CENTRAL:
       return new LeastSquaresVelocityTrackerStrategy(
-          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_CENTRAL);
+          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_CENTRAL,
+          no_restriction);
     case VelocityTracker::WLSQ2_RECENT:
       return new LeastSquaresVelocityTrackerStrategy(
-          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_RECENT);
+          2, LeastSquaresVelocityTrackerStrategy::WEIGHTING_RECENT,
+          no_restriction);
     case VelocityTracker::INT1:
       return new IntegratingVelocityTrackerStrategy(1);
     case VelocityTracker::INT2:
       return new IntegratingVelocityTrackerStrategy(2);
   }
   NOTREACHED() << "Unrecognized velocity tracker strategy: " << strategy;
+  // Quadratic regression is a safe default.
   return CreateStrategy(VelocityTracker::STRATEGY_DEFAULT);
 }
 
 }  // namespace
 
 // --- VelocityTracker ---
-
-VelocityTracker::VelocityTracker()
-    : current_pointer_id_bits_(0),
-      active_pointer_id_(-1),
-      strategy_(CreateStrategy(STRATEGY_DEFAULT)) {}
 
 VelocityTracker::VelocityTracker(Strategy strategy)
     : current_pointer_id_bits_(0),
@@ -391,8 +411,11 @@ bool VelocityTracker::GetEstimator(uint32_t id,
 
 LeastSquaresVelocityTrackerStrategy::LeastSquaresVelocityTrackerStrategy(
     uint32_t degree,
-    Weighting weighting)
-    : degree_(degree), weighting_(weighting) {
+    Weighting weighting,
+    Restriction restriction)
+    : degree_(degree),
+      weighting_(weighting),
+      restriction_(restriction) {
   DCHECK_LT(degree_, static_cast<uint32_t>(Estimator::kMaxDegree));
   Clear();
 }
@@ -578,11 +601,14 @@ bool LeastSquaresVelocityTrackerStrategy::GetEstimator(
   uint32_t index = index_;
   const base::TimeDelta horizon = base::TimeDelta::FromMilliseconds(kHorizonMS);
   const Movement& newest_movement = movements_[index_];
+  const Movement* first_movement = nullptr;
+
   do {
     const Movement& movement = movements_[index];
     if (!movement.id_bits.has_bit(id))
       break;
 
+    first_movement = &movement;
     TimeDelta age = newest_movement.event_time - movement.event_time;
     if (age > horizon)
       break;
@@ -608,6 +634,19 @@ bool LeastSquaresVelocityTrackerStrategy::GetEstimator(
     uint32_t n = degree + 1;
     if (SolveLeastSquares(time, x, w, m, n, out_estimator->xcoeff, &xdet) &&
         SolveLeastSquares(time, y, w, m, n, out_estimator->ycoeff, &ydet)) {
+      if (restriction_ == RESTRICTION_ALIGNED_DIRECTIONS) {
+        DCHECK(first_movement);
+        float dx = newest_movement.GetPosition(id).x -
+                   first_movement->GetPosition(id).x;
+        float dy = newest_movement.GetPosition(id).y -
+                   first_movement->GetPosition(id).y;
+
+        // If the velocity is in a sufficiently different direction from the
+        // primary movement, ignore it.
+        if (out_estimator->xcoeff[1] * dx + out_estimator->ycoeff[1] * dy < 0)
+          return false;
+      }
+
       out_estimator->time = newest_movement.event_time;
       out_estimator->degree = degree;
       out_estimator->confidence = xdet * ydet;

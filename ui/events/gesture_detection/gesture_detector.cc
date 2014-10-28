@@ -53,7 +53,8 @@ GestureDetector::Config::Config()
       maximum_swipe_deviation_angle(20.f),
       two_finger_tap_enabled(false),
       two_finger_tap_max_separation(300),
-      two_finger_tap_timeout(base::TimeDelta::FromMilliseconds(700)) {
+      two_finger_tap_timeout(base::TimeDelta::FromMilliseconds(700)),
+      velocity_tracker_strategy(VelocityTracker::Strategy::STRATEGY_DEFAULT) {
 }
 
 GestureDetector::Config::~Config() {}
@@ -134,7 +135,8 @@ GestureDetector::GestureDetector(
       longpress_enabled_(true),
       showpress_enabled_(true),
       swipe_enabled_(false),
-      two_finger_tap_enabled_(false) {
+      two_finger_tap_enabled_(false),
+      velocity_tracker_(config.velocity_tracker_strategy) {
   DCHECK(listener_);
   Init(config);
 }

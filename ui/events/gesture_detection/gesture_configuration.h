@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
+#include "ui/events/gesture_detection/velocity_tracker.h"
 
 namespace ui {
 
@@ -117,6 +118,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   int semi_long_press_time_in_ms() const {
     return semi_long_press_time_in_ms_;
   }
+  VelocityTracker::Strategy velocity_tracker_strategy() const {
+    return velocity_tracker_strategy_;
+  }
   void set_semi_long_press_time_in_ms(int val) {
     semi_long_press_time_in_ms_ = val;
     double_tap_timeout_in_ms_ = val;
@@ -163,6 +167,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   void set_min_scaling_touch_major(float val) {
     min_scaling_touch_major_ = val;
   }
+  void set_velocity_tracker_strategy(VelocityTracker::Strategy val) {
+    velocity_tracker_strategy_ = val;
+  }
   void set_span_slop(float val) { span_slop_ = val; }
   void set_swipe_enabled(bool val) { swipe_enabled_ = val; }
   void set_two_finger_tap_enabled(bool val) { two_finger_tap_enabled_ = val; }
@@ -204,6 +211,7 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   float min_scaling_span_in_pixels_;
   float min_scaling_touch_major_;
   float min_swipe_velocity_;
+  VelocityTracker::Strategy velocity_tracker_strategy_;
   int scroll_debounce_interval_in_ms_;
   int semi_long_press_time_in_ms_;
   int show_press_delay_in_ms_;

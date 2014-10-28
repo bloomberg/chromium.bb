@@ -20,7 +20,6 @@ class MotionEvent;
 // * Please update the Change-Id as upstream Android changes are pulled.
 class GESTURE_DETECTION_EXPORT VelocityTrackerState {
  public:
-  VelocityTrackerState();
   explicit VelocityTrackerState(VelocityTracker::Strategy strategy);
   ~VelocityTrackerState();
 

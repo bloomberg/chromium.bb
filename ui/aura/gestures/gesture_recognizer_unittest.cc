@@ -3112,7 +3112,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
 
   EXPECT_3_EVENTS(delegate->events(),
                   ui::ET_GESTURE_END,
-                  ui::ET_GESTURE_SCROLL_END,
+                  ui::ET_SCROLL_FLING_START,
                   ui::ET_GESTURE_END);
 }
 

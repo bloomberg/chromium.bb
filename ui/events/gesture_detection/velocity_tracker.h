@@ -42,9 +42,19 @@ class VelocityTracker {
 
     // 2nd order least squares.  Quality: VERY GOOD.
     // Pretty much ideal, but can be confused by certain kinds of touch data,
-    // particularly if the panel has a tendency to generate delayed,
-    // duplicate or jittery touch coordinates when the finger is released.
+    // particularly if the panel has a tendency to generate delayed, duplicate
+    // or jittery touch coordinates when the finger is released.  This is the
+    // default velocity tracker strategy.  Although other strategies are
+    // available for testing and comparison purposes, this is the strategy that
+    // applications will actually use.  Be very careful when adjusting the
+    // default strategy because it can dramatically affect (often in a bad way)
+    // the user experience.
     LSQ2,
+
+    // The same as LSQ2, but reports 0 if the direction of the velocity returned
+    // is sufficiently different from the primary direction of movement of the
+    // touches contributing to the velocity.
+    LSQ2_RESTRICTED,
 
     // 3rd order least squares.  Quality: UNUSABLE.
     // Frequently overfits the touch data yielding wildly divergent estimates
@@ -78,15 +88,8 @@ class VelocityTracker {
     STRATEGY_MAX = INT2,
 
     // The default velocity tracker strategy.
-    // Although other strategies are available for testing and comparison
-    // purposes, this is the strategy that applications will actually use.  Be
-    // very careful when adjusting the default strategy because it can
-    // dramatically affect (often in a bad way) the user experience.
     STRATEGY_DEFAULT = LSQ2,
   };
-
-  // Creates a velocity tracker using the default strategy for the platform.
-  VelocityTracker();
 
   // Creates a velocity tracker using the specified strategy.
   // If strategy is NULL, uses the default strategy for the platform.
@@ -133,8 +136,7 @@ class VelocityTracker {
                    const Position* positions);
 
   // Gets an estimator for the recent movements of the specified pointer id.
-  // Returns false and clears the estimator if there is no information available
-  // about the pointer.
+  // Returns false if the pointer velocity is unknown.
   bool GetEstimator(uint32_t id, Estimator* out_estimator) const;
 
   base::TimeTicks last_event_time_;
