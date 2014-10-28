@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <iterator>
+
 #include "base/macros.h"
 #include "sandbox/sandbox_export.h"
 
@@ -41,6 +43,10 @@ class SANDBOX_EXPORT SyscallSet {
   // system call numbers.
   static SyscallSet All() { return SyscallSet(Set::ALL); }
 
+  // ValidOnly returns a SyscallSet that contains only valid system
+  // call numbers.
+  static SyscallSet ValidOnly() { return SyscallSet(Set::VALID_ONLY); }
+
   // InvalidOnly returns a SyscallSet that contains only invalid
   // system call numbers, but still omits numbers in the middle of a
   // range of invalid system call numbers.
@@ -51,7 +57,7 @@ class SANDBOX_EXPORT SyscallSet {
   static bool IsValid(uint32_t num);
 
  private:
-  enum class Set { ALL, INVALID_ONLY };
+  enum class Set { ALL, VALID_ONLY, INVALID_ONLY };
 
   explicit SyscallSet(Set set) : set_(set) {}
 
@@ -65,7 +71,8 @@ SANDBOX_EXPORT bool operator==(const SyscallSet& lhs, const SyscallSet& rhs);
 
 // Iterator provides C++ input iterator semantics for traversing a
 // SyscallSet.
-class SyscallSet::Iterator {
+class SyscallSet::Iterator
+    : public std::iterator<std::input_iterator_tag, uint32_t> {
  public:
   Iterator(const Iterator& it)
       : set_(it.set_), done_(it.done_), num_(it.num_) {}
@@ -76,6 +83,8 @@ class SyscallSet::Iterator {
 
  private:
   Iterator(Set set, bool done);
+
+  uint32_t NextSyscall() const;
 
   Set set_;
   bool done_;

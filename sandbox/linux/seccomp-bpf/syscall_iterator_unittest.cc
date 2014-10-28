@@ -93,10 +93,30 @@ SANDBOX_TEST(SyscallIterator, InvalidSyscalls) {
   }
 }
 
+SANDBOX_TEST(SyscallIterator, ValidOnlyIsOnlyValid) {
+  for (uint32_t sysnum : SyscallSet::ValidOnly()) {
+    SANDBOX_ASSERT(SyscallSet::IsValid(sysnum));
+  }
+}
+
 SANDBOX_TEST(SyscallIterator, InvalidOnlyIsOnlyInvalid) {
   for (uint32_t sysnum : SyscallSet::InvalidOnly()) {
     SANDBOX_ASSERT(!SyscallSet::IsValid(sysnum));
   }
+}
+
+SANDBOX_TEST(SyscallIterator, AllIsValidOnlyPlusInvalidOnly) {
+  std::vector<uint32_t> merged;
+  const SyscallSet valid_only = SyscallSet::ValidOnly();
+  const SyscallSet invalid_only = SyscallSet::InvalidOnly();
+  std::merge(valid_only.begin(),
+             valid_only.end(),
+             invalid_only.begin(),
+             invalid_only.end(),
+             std::back_inserter(merged));
+
+  const SyscallSet all = SyscallSet::All();
+  SANDBOX_ASSERT(merged == std::vector<uint32_t>(all.begin(), all.end()));
 }
 
 }  // namespace

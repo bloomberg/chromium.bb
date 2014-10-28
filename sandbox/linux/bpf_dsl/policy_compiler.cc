@@ -77,9 +77,8 @@ intptr_t BPFFailure(const struct arch_seccomp_data&, void* aux) {
 }
 
 bool HasUnsafeTraps(const Policy* policy) {
-  for (uint32_t sysnum : SyscallSet::All()) {
-    if (SyscallSet::IsValid(sysnum) &&
-        policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
+  for (uint32_t sysnum : SyscallSet::ValidOnly()) {
+    if (policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
       return true;
     }
   }

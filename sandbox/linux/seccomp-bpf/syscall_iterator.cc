@@ -39,37 +39,6 @@ const SyscallRange kValidSyscallRanges[] = {
 #endif
 };
 
-// NextSyscall returns the next system call in the specified system
-// call set after |cur|, or 0 if no such system call exists.
-uint32_t NextSyscall(uint32_t cur, bool invalid_only) {
-  for (const SyscallRange& range : kValidSyscallRanges) {
-    if (range.first > 0 && cur < range.first - 1) {
-      return range.first - 1;
-    }
-    if (cur <= range.last) {
-      if (invalid_only) {
-        return range.last + 1;
-      }
-      return cur + 1;
-    }
-  }
-
-  // BPF programs only ever operate on unsigned quantities. So, that's how
-  // we iterate; we return values from 0..0xFFFFFFFFu. But there are places,
-  // where the kernel might interpret system call numbers as signed
-  // quantities, so the boundaries between signed and unsigned values are
-  // potential problem cases. We want to explicitly return these values from
-  // our iterator.
-  if (cur < 0x7FFFFFFFu)
-    return 0x7FFFFFFFu;
-  if (cur < 0x80000000u)
-    return 0x80000000u;
-
-  if (cur < 0xFFFFFFFFu)
-    return 0xFFFFFFFFu;
-  return 0;
-}
-
 }  // namespace
 
 SyscallSet::Iterator SyscallSet::begin() const {
@@ -95,7 +64,8 @@ bool operator==(const SyscallSet& lhs, const SyscallSet& rhs) {
 
 SyscallSet::Iterator::Iterator(Set set, bool done)
     : set_(set), done_(done), num_(0) {
-  if (set_ == Set::INVALID_ONLY && !done_ && IsValid(num_)) {
+  // If the set doesn't contain 0, we need to skip to the next element.
+  if (!done && set_ == (IsValid(num_) ? Set::INVALID_ONLY : Set::VALID_ONLY)) {
     ++*this;
   }
 }
@@ -108,12 +78,55 @@ uint32_t SyscallSet::Iterator::operator*() const {
 SyscallSet::Iterator& SyscallSet::Iterator::operator++() {
   DCHECK(!done_);
 
-  num_ = NextSyscall(num_, set_ == Set::INVALID_ONLY);
+  num_ = NextSyscall();
   if (num_ == 0) {
     done_ = true;
   }
 
   return *this;
+}
+
+// NextSyscall returns the next system call in the iterated system
+// call set after |num_|, or 0 if no such system call exists.
+uint32_t SyscallSet::Iterator::NextSyscall() const {
+  const bool want_valid = (set_ != Set::INVALID_ONLY);
+  const bool want_invalid = (set_ != Set::VALID_ONLY);
+
+  for (const SyscallRange& range : kValidSyscallRanges) {
+    if (want_invalid && range.first > 0 && num_ < range.first - 1) {
+      // Even when iterating invalid syscalls, we only include the end points;
+      // so skip directly to just before the next (valid) range.
+      return range.first - 1;
+    }
+    if (want_valid && num_ < range.first) {
+      return range.first;
+    }
+    if (want_valid && num_ < range.last) {
+      return num_ + 1;
+    }
+    if (want_invalid && num_ <= range.last) {
+      return range.last + 1;
+    }
+  }
+
+  if (want_invalid) {
+    // BPF programs only ever operate on unsigned quantities. So,
+    // that's how we iterate; we return values from
+    // 0..0xFFFFFFFFu. But there are places, where the kernel might
+    // interpret system call numbers as signed quantities, so the
+    // boundaries between signed and unsigned values are potential
+    // problem cases. We want to explicitly return these values from
+    // our iterator.
+    if (num_ < 0x7FFFFFFFu)
+      return 0x7FFFFFFFu;
+    if (num_ < 0x80000000u)
+      return 0x80000000u;
+
+    if (num_ < 0xFFFFFFFFu)
+      return 0xFFFFFFFFu;
+  }
+
+  return 0;
 }
 
 bool operator==(const SyscallSet::Iterator& lhs,
