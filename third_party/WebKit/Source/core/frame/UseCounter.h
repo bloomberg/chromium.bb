@@ -546,6 +546,7 @@ public:
 
         WindowPostMessage = 574,
         WindowPostMessageWithLegacyTargetOriginArgument = 575,
+        CanvasRenderingContext2DCompositeOperationDarker = 576,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
