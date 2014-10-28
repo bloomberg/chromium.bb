@@ -39,6 +39,8 @@ class FakeGCMDriver : public GCMDriver {
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
+  base::Time GetLastTokenFetchTime() override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
 
  protected:
   // GCMDriver implementation:

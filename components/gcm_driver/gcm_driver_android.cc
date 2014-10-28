@@ -153,6 +153,15 @@ void GCMDriverAndroid::RemoveAccountMapping(const std::string& account_id) {
   NOTIMPLEMENTED();
 }
 
+base::Time GCMDriverAndroid::GetLastTokenFetchTime() {
+  NOTIMPLEMENTED();
+  return base::Time();
+}
+
+void GCMDriverAndroid::SetLastTokenFetchTime(const base::Time& time) {
+  NOTIMPLEMENTED();
+}
+
 GCMClient::Result GCMDriverAndroid::EnsureStarted() {
   // TODO(johnme): Maybe we should check if GMS is available?
   return GCMClient::SUCCESS;

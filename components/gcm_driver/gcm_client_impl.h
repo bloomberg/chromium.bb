@@ -107,6 +107,7 @@ class GCMClientImpl
       const std::vector<AccountTokenInfo>& account_tokens) override;
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
 
   // GCMStatsRecorder::Delegate implemenation.
   void OnActivityRecorded() override;
@@ -197,7 +198,8 @@ class GCMClientImpl
   void ResetState();
   // Sets state to ready. This will initiate the MCS login and notify the
   // delegates.
-  void OnReady(const std::vector<AccountMapping>& account_mappings);
+  void OnReady(const std::vector<AccountMapping>& account_mappings,
+               const base::Time& last_token_fetch_time);
 
   // Starts a first time device checkin.
   void StartCheckin();

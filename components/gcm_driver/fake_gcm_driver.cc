@@ -90,4 +90,11 @@ void FakeGCMDriver::UpdateAccountMapping(
 void FakeGCMDriver::RemoveAccountMapping(const std::string& account_id) {
 }
 
+base::Time FakeGCMDriver::GetLastTokenFetchTime() {
+  return base::Time();
+}
+
+void FakeGCMDriver::SetLastTokenFetchTime(const base::Time& time) {
+}
+
 }  // namespace gcm

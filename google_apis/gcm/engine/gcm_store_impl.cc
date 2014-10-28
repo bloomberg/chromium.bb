@@ -74,6 +74,8 @@ const char kAccountKeyStart[] = "account1-";
 // Key guaranteed to be higher than all account keys.
 // Used for limiting iteration.
 const char kAccountKeyEnd[] = "account2-";
+// Key used for last token fetch time.
+const char kLastTokenFetchTimeKey[] = "last_token_fetch_time";
 
 std::string MakeRegistrationKey(const std::string& app_id) {
   return kRegistrationKeyStart + app_id;
@@ -166,6 +168,8 @@ class GCMStoreImpl::Backend
                          const UpdateCallback& callback);
   void RemoveAccountMapping(const std::string& account_id,
                             const UpdateCallback& callback);
+  void SetLastTokenFetchTime(const base::Time& time,
+                             const UpdateCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
@@ -180,6 +184,7 @@ class GCMStoreImpl::Backend
   bool LoadGServicesSettings(std::map<std::string, std::string>* settings,
                              std::string* digest);
   bool LoadAccountMappingInfo(AccountMappings* account_mappings);
+  bool LoadLastTokenFetchTime(base::Time* last_token_fetch_time);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -234,7 +239,8 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                            &result->last_checkin_accounts) ||
       !LoadGServicesSettings(&result->gservices_settings,
                              &result->gservices_digest) ||
-      !LoadAccountMappingInfo(&result->account_mappings)) {
+      !LoadAccountMappingInfo(&result->account_mappings) ||
+      !LoadLastTokenFetchTime(&result->last_token_fetch_time)) {
     result->Reset();
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,
@@ -618,6 +624,29 @@ void GCMStoreImpl::Backend::RemoveAccountMapping(
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
 }
 
+void GCMStoreImpl::Backend::SetLastTokenFetchTime(
+    const base::Time& time,
+    const UpdateCallback& callback) {
+  DVLOG(1) << "Setting last token fetching time.";
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  const leveldb::Status s =
+      db_->Put(write_options,
+               MakeSlice(kLastTokenFetchTimeKey),
+               MakeSlice(base::Int64ToString(time.ToInternalValue())));
+
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB setting last token fetching time: " << s.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
+}
+
 bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
                                                   uint64* security_token) {
   leveldb::ReadOptions read_options;
@@ -810,6 +839,24 @@ bool GCMStoreImpl::Backend::LoadAccountMappingInfo(
     DVLOG(1) << "Found account mapping with ID: " << account_mapping.account_id;
     account_mappings->push_back(account_mapping);
   }
+
+  return true;
+}
+
+bool GCMStoreImpl::Backend::LoadLastTokenFetchTime(
+    base::Time* last_token_fetch_time) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+
+  std::string result;
+  leveldb::Status s =
+      db_->Get(read_options, MakeSlice(kLastTokenFetchTimeKey), &result);
+  int64 time_internal = 0LL;
+  if (s.ok() && !base::StringToInt64(result, &time_internal))
+    LOG(ERROR) << "Failed to restore last checkin time. Using default = 0.";
+
+  // In case we cannot read last token fetching time, we default it to 0.
+  *last_token_fetch_time = base::Time::FromInternalValue(time_internal);
 
   return true;
 }
@@ -1030,6 +1077,16 @@ void GCMStoreImpl::RemoveAccountMapping(const std::string& account_id,
       base::Bind(&GCMStoreImpl::Backend::RemoveAccountMapping,
                  backend_,
                  account_id,
+                 callback));
+}
+
+void GCMStoreImpl::SetLastTokenFetchTime(const base::Time& time,
+                                         const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::SetLastTokenFetchTime,
+                 backend_,
+                 time,
                  callback));
 }
 

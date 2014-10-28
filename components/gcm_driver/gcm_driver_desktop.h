@@ -81,6 +81,8 @@ class GCMDriverDesktop : public GCMDriver {
       const std::vector<GCMClient::AccountTokenInfo>& account_tokens) override;
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
+  base::Time GetLastTokenFetchTime() override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
@@ -122,8 +124,8 @@ class GCMDriverDesktop : public GCMDriver {
                         const GCMClient::SendErrorDetails& send_error_details);
   void SendAcknowledged(const std::string& app_id,
                         const std::string& message_id);
-  void GCMClientReady(
-      const std::vector<AccountMapping>& account_mappings);
+  void GCMClientReady(const std::vector<AccountMapping>& account_mappings,
+                      const base::Time& last_token_fetch_time);
   void OnConnected(const net::IPEndPoint& ip_endpoint);
   void OnDisconnected();
 
@@ -153,6 +155,9 @@ class GCMDriverDesktop : public GCMDriver {
 
   // Account mapper. Only works when user is signed in.
   scoped_ptr<GCMAccountMapper> account_mapper_;
+
+  // Time of last token fetching.
+  base::Time last_token_fetch_time_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;

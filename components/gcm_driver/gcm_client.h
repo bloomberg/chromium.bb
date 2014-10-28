@@ -203,8 +203,9 @@ class GCMClient {
     // from the server if it hadn't yet.
     // |account_mappings|: a persisted list of accounts mapped to this GCM
     //                     client.
-    virtual void OnGCMReady(
-        const std::vector<AccountMapping>& account_mappings) = 0;
+    // |last_token_fetch_time|: time of a last successful token fetch.
+    virtual void OnGCMReady(const std::vector<AccountMapping>& account_mappings,
+                            const base::Time& last_token_fetch_time) = 0;
 
     // Called when activities are being recorded and a new activity has just
     // been recorded.
@@ -295,6 +296,9 @@ class GCMClient {
   // Removes the account mapping related to |account_id| from the persistent
   // store.
   virtual void RemoveAccountMapping(const std::string& account_id) = 0;
+
+  // Sets last token fetch time in persistent store.
+  virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
 };
 
 }  // namespace gcm

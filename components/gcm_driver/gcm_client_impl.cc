@@ -328,12 +328,13 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   // load result to InitializeMCSClient.
   std::vector<AccountMapping> account_mappings;
   account_mappings.swap(result->account_mappings);
+  base::Time last_token_fetch_time = result->last_token_fetch_time;
 
   InitializeMCSClient(result.Pass());
 
   if (device_checkin_info_.IsValid()) {
     SchedulePeriodicCheckin();
-    OnReady(account_mappings);
+    OnReady(account_mappings, last_token_fetch_time);
     return;
   }
 
@@ -387,15 +388,15 @@ void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
       base::Bind(&GCMClientImpl::SetDeviceCredentialsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  OnReady(std::vector<AccountMapping>());
+  OnReady(std::vector<AccountMapping>(), base::Time());
 }
 
-void GCMClientImpl::OnReady(
-    const std::vector<AccountMapping>& account_mappings) {
+void GCMClientImpl::OnReady(const std::vector<AccountMapping>& account_mappings,
+                            const base::Time& last_token_fetch_time) {
   state_ = READY;
   StartMCSLogin();
 
-  delegate_->OnGCMReady(account_mappings);
+  delegate_->OnGCMReady(account_mappings, last_token_fetch_time);
 }
 
 void GCMClientImpl::StartMCSLogin() {
@@ -466,6 +467,13 @@ void GCMClientImpl::UpdateAccountMapping(
 void GCMClientImpl::RemoveAccountMapping(const std::string& account_id) {
   gcm_store_->RemoveAccountMapping(
       account_id,
+      base::Bind(&GCMClientImpl::DefaultStoreCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
+  gcm_store_->SetLastTokenFetchTime(
+      time,
       base::Bind(&GCMClientImpl::DefaultStoreCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }

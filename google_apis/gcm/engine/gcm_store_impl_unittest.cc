@@ -643,6 +643,27 @@ TEST_F(GCMStoreImplTest, ReloadAfterClose) {
   PumpLoop();
 }
 
+TEST_F(GCMStoreImplTest, LastTokenFetchTime) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+  EXPECT_EQ(base::Time(), load_result->last_token_fetch_time);
+
+  base::Time last_token_fetch_time = base::Time::Now();
+  gcm_store->SetLastTokenFetchTime(
+      last_token_fetch_time,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+  EXPECT_EQ(last_token_fetch_time, load_result->last_token_fetch_time);
+}
+
 }  // namespace
 
 }  // namespace gcm

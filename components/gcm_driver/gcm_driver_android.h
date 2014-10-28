@@ -64,6 +64,8 @@ class GCMDriverAndroid : public GCMDriver {
   virtual void UpdateAccountMapping(
       const AccountMapping& account_mapping) override;
   virtual void RemoveAccountMapping(const std::string& account_id) override;
+  virtual base::Time GetLastTokenFetchTime() override;
+  virtual void SetLastTokenFetchTime(const base::Time& time) override;
 
  protected:
   // GCMDriver implementation:

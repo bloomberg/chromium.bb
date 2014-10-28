@@ -91,6 +91,10 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   void RemoveAccountMapping(const std::string& account_id,
                             const UpdateCallback& callback) override;
 
+  // Sets last token fetch time.
+  void SetLastTokenFetchTime(const base::Time& time,
+                             const UpdateCallback& callback) override;
+
  private:
   typedef std::map<std::string, int> AppIdToMessageCountMap;
 

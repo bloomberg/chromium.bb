@@ -130,6 +130,9 @@ void FakeGCMClient::UpdateAccountMapping(
 void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
 }
 
+void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
+}
+
 void FakeGCMClient::PerformDelayedLoading() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
@@ -183,7 +186,7 @@ std::string FakeGCMClient::GetRegistrationIdFromSenderIds(
 }
 
 void FakeGCMClient::CheckinFinished() {
-  delegate_->OnGCMReady(std::vector<AccountMapping>());
+  delegate_->OnGCMReady(std::vector<AccountMapping>(), base::Time());
   delegate_->OnConnected(net::IPEndPoint());
 }
 

@@ -133,6 +133,10 @@ class GCMDriver {
   // persistent store.
   virtual void RemoveAccountMapping(const std::string& account_id) = 0;
 
+  // Getter and setter of last token fetch time.
+  virtual base::Time GetLastTokenFetchTime() = 0;
+  virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
+
  protected:
   // Ensures that the GCM service starts (if necessary conditions are met).
   virtual GCMClient::Result EnsureStarted() = 0;

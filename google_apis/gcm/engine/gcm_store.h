@@ -55,6 +55,7 @@ class GCM_EXPORT GCMStore {
     base::Time last_checkin_time;
     std::set<std::string> last_checkin_accounts;
     AccountMappings account_mappings;
+    base::Time last_token_fetch_time;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -127,6 +128,10 @@ class GCM_EXPORT GCMStore {
                                  const UpdateCallback& callback) = 0;
   virtual void RemoveAccountMapping(const std::string& account_id,
                                     const UpdateCallback& callback) = 0;
+
+  // Sets last token fetch time.
+  virtual void SetLastTokenFetchTime(const base::Time& time,
+                                     const UpdateCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMStore);

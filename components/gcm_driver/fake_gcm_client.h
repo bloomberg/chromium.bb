@@ -60,6 +60,7 @@ class FakeGCMClient : public GCMClient {
       const std::vector<AccountTokenInfo>& account_tokens) override;
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
 
   // Initiate the loading that has been delayed.
   // Called on UI thread.

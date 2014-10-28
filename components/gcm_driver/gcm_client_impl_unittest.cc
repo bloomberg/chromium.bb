@@ -240,6 +240,8 @@ class GCMClientImplTest : public testing::Test,
 
   virtual void SetUp() override;
 
+  void SetUpUrlFetcherFactory();
+
   void BuildGCMClient(base::TimeDelta clock_step);
   void InitializeGCMClient();
   void StartGCMClient();
@@ -278,7 +280,8 @@ class GCMClientImplTest : public testing::Test,
       const gcm::GCMClient::SendErrorDetails& send_error_details) override;
   void OnSendAcknowledged(const std::string& app_id,
                           const std::string& message_id) override;
-  void OnGCMReady(const std::vector<AccountMapping>& account_mappings) override;
+  void OnGCMReady(const std::vector<AccountMapping>& account_mappings,
+                  const base::Time& last_token_fetch_time) override;
   void OnActivityRecorded() override {}
   void OnConnected(const net::IPEndPoint& ip_endpoint) override {}
   void OnDisconnected() override {}
@@ -301,6 +304,8 @@ class GCMClientImplTest : public testing::Test,
     last_registration_id_.clear();
     last_message_id_.clear();
     last_result_ = GCMClient::UNKNOWN_ERROR;
+    last_account_mappings_.clear();
+    last_token_fetch_time_ = base::Time();
   }
 
   LastEvent last_event() const { return last_event_; }
@@ -315,6 +320,12 @@ class GCMClientImplTest : public testing::Test,
   }
   const GCMClient::SendErrorDetails& last_error_details() const {
     return last_error_details_;
+  }
+  const base::Time& last_token_fetch_time() const {
+    return last_token_fetch_time_;
+  }
+  const std::vector<AccountMapping>& last_account_mappings() {
+    return last_account_mappings_;
   }
 
   const GServicesSettings& gservices_settings() const {
@@ -342,6 +353,8 @@ class GCMClientImplTest : public testing::Test,
   GCMClient::Result last_result_;
   GCMClient::IncomingMessage last_message_;
   GCMClient::SendErrorDetails last_error_details_;
+  base::Time last_token_fetch_time_;
+  std::vector<AccountMapping> last_account_mappings_;
 
   scoped_ptr<GCMClientImpl> gcm_client_;
 
@@ -370,11 +383,15 @@ void GCMClientImplTest::SetUp() {
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
   StartGCMClient();
-  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
+  SetUpUrlFetcherFactory();
   CompleteCheckin(kDeviceAndroidId,
                   kDeviceSecurityToken,
                   std::string(),
                   std::map<std::string, std::string>());
+}
+
+void GCMClientImplTest::SetUpUrlFetcherFactory() {
+  url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 }
 
 void GCMClientImplTest::PumpLoop() {
@@ -514,11 +531,12 @@ void GCMClientImplTest::ReceiveOnMessageSentToMCS(
 }
 
 void GCMClientImplTest::OnGCMReady(
-    const std::vector<AccountMapping>& account_mappings) {
+    const std::vector<AccountMapping>& account_mappings,
+    const base::Time& last_token_fetch_time) {
   last_event_ = LOADING_COMPLETED;
+  last_account_mappings_ = account_mappings;
+  last_token_fetch_time_ = last_token_fetch_time;
   QuitLoop();
-  // TODO(fgorski): Add scenario verifying contents of account_mappings, when
-  // the list is not empty.
 }
 
 void GCMClientImplTest::OnMessageReceived(
@@ -1000,6 +1018,8 @@ public:
   virtual ~GCMClientImplStartAndStopTest();
 
   virtual void SetUp() override;
+
+  void DefaultCompleteCheckin();
 };
 
 GCMClientImplStartAndStopTest::GCMClientImplStartAndStopTest() {
@@ -1014,6 +1034,15 @@ void GCMClientImplStartAndStopTest::SetUp() {
   InitializeLoop();
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
+}
+
+void GCMClientImplStartAndStopTest::DefaultCompleteCheckin() {
+  SetUpUrlFetcherFactory();
+  CompleteCheckin(kDeviceAndroidId,
+                  kDeviceSecurityToken,
+                  std::string(),
+                  std::map<std::string, std::string>());
+  PumpLoopUntilIdle();
 }
 
 TEST_F(GCMClientImplStartAndStopTest, StartStopAndRestart) {
@@ -1045,6 +1074,43 @@ TEST_F(GCMClientImplStartAndStopTest, StartStopAndRestartImmediately) {
   gcm_client()->Start();
 
   PumpLoopUntilIdle();
+}
+
+// Test for known account mappings and last token fetching time being passed
+// to OnGCMReady.
+TEST_F(GCMClientImplStartAndStopTest, OnGCMReadyAccountsAndTokenFetchingTime) {
+  // Start the GCM and wait until it is ready.
+  gcm_client()->Start();
+  PumpLoopUntilIdle();
+  DefaultCompleteCheckin();
+
+  base::Time expected_time = base::Time::Now();
+  gcm_client()->SetLastTokenFetchTime(expected_time);
+  AccountMapping expected_mapping;
+  expected_mapping.account_id = "accId";
+  expected_mapping.email = "email@gmail.com";
+  expected_mapping.status = AccountMapping::MAPPED;
+  expected_mapping.status_change_timestamp = expected_time;
+  gcm_client()->UpdateAccountMapping(expected_mapping);
+  PumpLoopUntilIdle();
+
+  // Stop the GCM.
+  gcm_client()->Stop();
+  PumpLoopUntilIdle();
+
+  // Restart the GCM.
+  gcm_client()->Start();
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(LOADING_COMPLETED, last_event());
+  EXPECT_EQ(expected_time, last_token_fetch_time());
+  ASSERT_EQ(1UL, last_account_mappings().size());
+  const AccountMapping& actual_mapping = last_account_mappings()[0];
+  EXPECT_EQ(expected_mapping.account_id, actual_mapping.account_id);
+  EXPECT_EQ(expected_mapping.email, actual_mapping.email);
+  EXPECT_EQ(expected_mapping.status, actual_mapping.status);
+  EXPECT_EQ(expected_mapping.status_change_timestamp,
+            actual_mapping.status_change_timestamp);
 }
 
 }  // namespace gcm
