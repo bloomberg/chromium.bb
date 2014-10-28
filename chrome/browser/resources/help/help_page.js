@@ -577,6 +577,15 @@ cr.define('help', function() {
       }
       $('channel-changer').hidden = !visible;
     },
+
+    /**
+     * Sets the product label's alt text.
+     * @param {string} text The text to use for the image.
+     * @private
+     */
+    setProductLabelText_: function(text) {
+      $('product-label').setAttribute('alt', text);
+    },
   };
 
   HelpPage.setUpdateStatus = function(status, message) {
@@ -644,6 +653,10 @@ cr.define('help', function() {
 
   HelpPage.setBuildDate = function(buildDate) {
     HelpPage.getInstance().setBuildDate_(buildDate);
+  };
+
+  HelpPage.setProductLabelText = function(text) {
+    HelpPage.getInstance().setProductLabelText_(text);
   };
 
   // Export

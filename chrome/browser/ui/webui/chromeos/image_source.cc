@@ -21,7 +21,7 @@ namespace chromeos {
 namespace {
 
 const char* kWhitelistedFiles[] = {
-    "fcc.png"
+    "fcc/label.png"
 };
 
 }  // namespace
@@ -38,7 +38,7 @@ ImageSource::~ImageSource() {
 }
 
 std::string ImageSource::GetSource() const {
-  return chrome::kChromeUILocalImageHost;
+  return chrome::kChromeOSAssetHost;
 }
 
 void ImageSource::StartDataRequest(
@@ -71,7 +71,7 @@ void ImageSource::StartOnFileThread(
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  base::FilePath file_path(chrome::kChromeUILocalImagePath + path);
+  base::FilePath file_path(chrome::kChromeOSAssetPath + path);
   if (!base::PathExists(file_path)) {
     callback.Run(NULL);
     return;

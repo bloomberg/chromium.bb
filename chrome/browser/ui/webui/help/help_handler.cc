@@ -10,8 +10,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -63,6 +66,8 @@ using content::BrowserThread;
 namespace {
 
 #if defined(OS_CHROMEOS)
+
+const char kFCCLabelTextPath[] = "fcc/label.txt";
 
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
@@ -384,6 +389,10 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
       base::Bind(&HelpHandler::OnCurrentChannel, weak_factory_.GetWeakPtr()));
   version_updater_->GetChannel(false,
       base::Bind(&HelpHandler::OnTargetChannel, weak_factory_.GetWeakPtr()));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&HelpHandler::LoadFCCLabelText, weak_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -563,6 +572,18 @@ void HelpHandler::OnCurrentChannel(const std::string& channel) {
 void HelpHandler::OnTargetChannel(const std::string& channel) {
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.updateTargetChannel", base::StringValue(channel));
+}
+
+void HelpHandler::LoadFCCLabelText() {
+  base::FilePath path(std::string(chrome::kChromeOSAssetPath) +
+                      kFCCLabelTextPath);
+  std::string contents;
+  if (base::ReadFileToString(path, &contents)) {
+    // Remove unnecessary whitespace.
+    base::StringValue label(base::CollapseWhitespaceASCII(contents, true));
+    web_ui()->CallJavascriptFunction("help.HelpPage.setProductLabelText",
+                                     label);
+  }
 }
 
 #endif // defined(OS_CHROMEOS)

@@ -300,8 +300,8 @@ extern const char kOnlineEulaURLPath[];
 
 extern const char kChromeOSCreditsPath[];
 
-extern const char kChromeUILocalImageHost[];
-extern const char kChromeUILocalImagePath[];
+extern const char kChromeOSAssetHost[];
+extern const char kChromeOSAssetPath[];
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
