@@ -54,43 +54,12 @@ public:
         Async
     };
 
-    PendingScript()
-        : m_watchingForLoad(false)
-        , m_startingPosition(TextPosition::belowRangePosition())
-    {
-    }
-
-    PendingScript(Element* element, ScriptResource* resource)
-        : m_watchingForLoad(false)
-        , m_element(element)
-    {
-        setScriptResource(resource);
-    }
-
-    PendingScript(const PendingScript& other)
-        : ResourceOwner(other)
-        , m_watchingForLoad(other.m_watchingForLoad)
-        , m_element(other.m_element)
-        , m_startingPosition(other.m_startingPosition)
-        , m_streamer(other.m_streamer)
-    {
-        setScriptResource(other.resource());
-    }
-
+    PendingScript();
+    PendingScript(Element*, ScriptResource*);
+    PendingScript(const PendingScript&);
     ~PendingScript();
 
-    PendingScript& operator=(const PendingScript& other)
-    {
-        if (this == &other)
-            return *this;
-
-        m_watchingForLoad = other.m_watchingForLoad;
-        m_element = other.m_element;
-        m_startingPosition = other.m_startingPosition;
-        m_streamer = other.m_streamer;
-        this->ResourceOwner<ScriptResource, ScriptResourceClient>::operator=(other);
-        return *this;
-    }
+    PendingScript& operator=(const PendingScript&);
 
     TextPosition startingPosition() const { return m_startingPosition; }
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
@@ -111,12 +80,7 @@ public:
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
-    void setStreamer(PassRefPtr<ScriptStreamer> streamer)
-    {
-        ASSERT(!m_streamer);
-        ASSERT(!m_watchingForLoad);
-        m_streamer = streamer;
-    }
+    void setStreamer(PassRefPtr<ScriptStreamer>);
 
     bool isReady() const;
 
