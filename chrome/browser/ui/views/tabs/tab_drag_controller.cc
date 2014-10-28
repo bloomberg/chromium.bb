@@ -29,12 +29,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -48,6 +47,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/wm/core/window_modality_controller.h"
 #endif
 
@@ -141,17 +142,13 @@ class WindowPositionManagedUpdater : public views::WidgetObserver {
   }
 };
 
-// EscapeTracker installs itself as a pre-target handler on aura::Env and runs a
-// callback when it receives the escape key.
+// EscapeTracker installs an event monitor and runs a callback when it receives
+// the escape key.
 class EscapeTracker : public ui::EventHandler {
  public:
   explicit EscapeTracker(const base::Closure& callback)
-      : escape_callback_(callback) {
-    aura::Env::GetInstance()->AddPreTargetHandler(this);
-  }
-
-  virtual ~EscapeTracker() {
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+      : escape_callback_(callback),
+        event_monitor_(views::EventMonitor::Create(this)) {
   }
 
  private:
@@ -164,6 +161,7 @@ class EscapeTracker : public ui::EventHandler {
   }
 
   base::Closure escape_callback_;
+  scoped_ptr<views::EventMonitor> event_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(EscapeTracker);
 };

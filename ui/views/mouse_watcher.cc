@@ -9,13 +9,11 @@
 #include "base/event_types.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
+#include "ui/views/event_monitor.h"
 
 namespace views {
 
@@ -27,16 +25,12 @@ class MouseWatcher::Observer : public ui::EventHandler {
  public:
   explicit Observer(MouseWatcher* mouse_watcher)
       : mouse_watcher_(mouse_watcher),
+        event_monitor_(views::EventMonitor::Create(this)),
         notify_listener_factory_(this) {
-    aura::Env::GetInstance()->AddPreTargetHandler(this);
-  }
-
-  ~Observer() override {
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
 
   // ui::EventHandler implementation:
-  void OnMouseEvent(ui::MouseEvent* event) override {
+  virtual void OnMouseEvent(ui::MouseEvent* event) override {
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED:
@@ -57,8 +51,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
   void HandleMouseEvent(MouseWatcherHost::MouseEventType event_type) {
     // It's safe to use last_mouse_location() here as this function is invoked
     // during event dispatching.
-    if (!host()->Contains(aura::Env::GetInstance()->last_mouse_location(),
-                          event_type)) {
+    if (!host()->Contains(EventMonitor::GetLastMouseLocation(), event_type)) {
       // Mouse moved outside the host's zone, start a timer to notify the
       // listener.
       if (!notify_listener_factory_.HasWeakPtrs()) {
@@ -84,6 +77,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
 
  private:
   MouseWatcher* mouse_watcher_;
+  scoped_ptr<views::EventMonitor> event_monitor_;
 
   // A factory that is used to construct a delayed callback to the listener.
   base::WeakPtrFactory<Observer> notify_listener_factory_;
