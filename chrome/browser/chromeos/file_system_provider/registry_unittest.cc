@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -24,6 +23,10 @@ namespace chromeos {
 namespace file_system_provider {
 namespace {
 
+const char kTemporaryOrigin[] =
+    "chrome-extension://abcabcabcabcabcabcabcabcabcabcabcabca/";
+const char kPersistentOrigin[] =
+    "chrome-extension://efgefgefgefgefgefgefgefgefgefgefgefge/";
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
 
@@ -41,6 +44,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
                             bool writable,
                             bool supports_notify_tag,
                             const ObservedEntry& observed_entry) {
+  // Warning. Updating this code means that backward compatibility may be
+  // broken, what is unexpected and should be avoided.
   TestingPrefServiceSyncable* const pref_service =
       profile->GetTestingPrefService();
   ASSERT_TRUE(pref_service);
@@ -71,6 +76,13 @@ void RememberFakeFileSystem(TestingProfile* profile,
       kPrefKeyObservedEntryRecursive, observed_entry.recursive);
   observed_entry_value->SetStringWithoutPathExpansion(
       kPrefKeyObservedEntryLastTag, observed_entry.last_tag);
+  base::ListValue* const persistent_origins_value = new base::ListValue();
+  observed_entry_value->SetWithoutPathExpansion(
+      kPrefKeyObservedEntryPersistentOrigins, persistent_origins_value);
+  for (const auto& subscriber_it : observed_entry.subscribers) {
+    if (subscriber_it.second.persistent)
+      persistent_origins_value->AppendString(subscriber_it.first.spec());
+  }
 
   pref_service->Set(prefs::kFileSystemProviderMounted, extensions);
 }
@@ -92,6 +104,12 @@ class FileSystemProviderRegistryTest : public testing::Test {
     fake_observed_entry_.entry_path =
         base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
     fake_observed_entry_.recursive = true;
+    fake_observed_entry_.subscribers[GURL(kTemporaryOrigin)].origin =
+        GURL(kTemporaryOrigin);
+    fake_observed_entry_.subscribers[GURL(kTemporaryOrigin)].persistent = false;
+    fake_observed_entry_.subscribers[GURL(kPersistentOrigin)].origin =
+        GURL(kPersistentOrigin);
+    fake_observed_entry_.subscribers[GURL(kPersistentOrigin)].persistent = true;
     fake_observed_entry_.last_tag = "hello-world";
   }
 
@@ -215,6 +233,19 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
       kPrefKeyObservedEntryLastTag, &last_tag));
   EXPECT_EQ(fake_observed_entry_.last_tag, last_tag);
+
+  const base::ListValue* persistent_origins = NULL;
+  ASSERT_TRUE(observed_entry->GetListWithoutPathExpansion(
+      kPrefKeyObservedEntryPersistentOrigins, &persistent_origins));
+  ASSERT_GT(fake_observed_entry_.subscribers.size(),
+            persistent_origins->GetSize());
+  ASSERT_EQ(1u, persistent_origins->GetSize());
+  std::string persistent_origin;
+  EXPECT_TRUE(persistent_origins->GetString(0, &persistent_origin));
+  const auto& fake_subscriber_it =
+      fake_observed_entry_.subscribers.find(GURL(persistent_origin));
+  ASSERT_NE(fake_observed_entry_.subscribers.end(), fake_subscriber_it);
+  EXPECT_TRUE(fake_subscriber_it->second.persistent);
 }
 
 TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
@@ -279,26 +310,6 @@ TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
       file_systems->GetWithoutPathExpansion(kFileSystemId, &file_system_value));
   ASSERT_TRUE(file_system_value->GetAsDictionary(&file_system));
 
-  std::string file_system_id;
-  EXPECT_TRUE(file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                                         &file_system_id));
-  EXPECT_EQ(kFileSystemId, file_system_id);
-
-  std::string display_name;
-  EXPECT_TRUE(file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                                         &display_name));
-  EXPECT_EQ(kDisplayName, display_name);
-
-  bool writable = false;
-  EXPECT_TRUE(
-      file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable, &writable));
-  EXPECT_TRUE(writable);
-
-  bool supports_notify_tag = false;
-  EXPECT_TRUE(file_system->GetBooleanWithoutPathExpansion(
-      kPrefKeySupportsNotifyTag, &supports_notify_tag));
-  EXPECT_TRUE(supports_notify_tag);
-
   const base::DictionaryValue* observed_entries_value = NULL;
   ASSERT_TRUE(file_system->GetDictionaryWithoutPathExpansion(
       kPrefKeyObservedEntries, &observed_entries_value));
@@ -306,16 +317,6 @@ TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
   const base::DictionaryValue* observed_entry = NULL;
   ASSERT_TRUE(observed_entries_value->GetDictionaryWithoutPathExpansion(
       fake_observed_entry_.entry_path.value(), &observed_entry));
-
-  std::string entry_path;
-  EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(
-      kPrefKeyObservedEntryEntryPath, &entry_path));
-  EXPECT_EQ(fake_observed_entry_.entry_path.value(), entry_path);
-
-  bool recursive = false;
-  EXPECT_TRUE(observed_entry->GetBooleanWithoutPathExpansion(
-      kPrefKeyObservedEntryRecursive, &recursive));
-  EXPECT_EQ(fake_observed_entry_.recursive, recursive);
 
   std::string last_tag;
   EXPECT_TRUE(observed_entry->GetStringWithoutPathExpansion(

@@ -32,6 +32,10 @@ namespace chromeos {
 namespace file_system_provider {
 namespace {
 
+const char kOrigin[] =
+    "chrome-extension://abcabcabcabcabcabcabcabcabcabcabcabca/";
+const char kAnotherOrigin[] =
+    "chrome-extension://efgefgefgefgefgefgefgefgefgefgefgefge/";
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "camera-pictures";
 const char kDisplayName[] = "Camera Pictures";
@@ -285,8 +289,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_NotFound) {
   event_router_->set_reply_result(base::File::FILE_ERROR_NOT_FOUND);
 
   provided_file_system_->ObserveDirectory(
+      GURL(kOrigin),
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
       false /* recursive */,
+      false /* persistent */,
       base::Bind(&LogStatus, base::Unretained(&log)));
   base::RunLoop().RunUntilIdle();
 
@@ -312,8 +318,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory) {
   provided_file_system_->AddObserver(&observer);
 
   provided_file_system_->ObserveDirectory(
+      GURL(kOrigin),
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
       false /* recursive */,
+      true /* persistent */,
       base::Bind(&LogStatus, base::Unretained(&log)));
   base::RunLoop().RunUntilIdle();
 
@@ -326,11 +334,51 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory) {
       provided_file_system_->GetObservedEntries();
   ASSERT_EQ(1u, observed_entries->size());
   const ObservedEntry& observed_entry = observed_entries->begin()->second;
-  EXPECT_EQ(kDirectoryPath, observed_entry.entry_path.value());
+  EXPECT_EQ(FILE_PATH_LITERAL(kDirectoryPath),
+            observed_entry.entry_path.value());
   EXPECT_FALSE(observed_entry.recursive);
   EXPECT_EQ("", observed_entry.last_tag);
 
   provided_file_system_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderProvidedFileSystemTest,
+       ObserveDirectory_PersistentIllegal) {
+  Log log;
+  Observer observer;
+
+  // Create a provided file system interface, which does not support a notify
+  // tag, though.
+  const base::FilePath mount_path =
+      util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+  MountOptions mount_options;
+  mount_options.file_system_id = kFileSystemId;
+  mount_options.display_name = kDisplayName;
+  mount_options.supports_notify_tag = false;
+  ProvidedFileSystemInfo file_system_info(
+      kExtensionId, mount_options, mount_path);
+  ProvidedFileSystem simple_provided_file_system(profile_.get(),
+                                                 file_system_info);
+  simple_provided_file_system.SetEventRouterForTesting(event_router_.get());
+  simple_provided_file_system.SetNotificationManagerForTesting(
+      make_scoped_ptr(new StubNotificationManager));
+
+  simple_provided_file_system.AddObserver(&observer);
+
+  simple_provided_file_system.ObserveDirectory(
+      GURL(kOrigin),
+      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+      false /* recursive */,
+      true /* persistent */,
+      base::Bind(&LogStatus, base::Unretained(&log)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, log.size());
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, log[0]);
+  EXPECT_EQ(0, observer.list_changed_counter());
+  EXPECT_EQ(0, observer.tag_updated_counter());
+
+  simple_provided_file_system.RemoveObserver(&observer);
 }
 
 TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
@@ -341,8 +389,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
     // First observe a directory not recursively.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -350,14 +400,32 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
     EXPECT_EQ(base::File::FILE_OK, log[0]);
     EXPECT_EQ(1, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
+
+    ObservedEntries* const observed_entries =
+        provided_file_system_->GetObservedEntries();
+    ASSERT_TRUE(observed_entries);
+    ASSERT_EQ(1u, observed_entries->size());
+    const auto& observed_entry_it = observed_entries->find(
+        ObservedEntryKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
+                         false /* recursive */));
+    ASSERT_NE(observed_entries->end(), observed_entry_it);
+
+    EXPECT_EQ(1u, observed_entry_it->second.subscribers.size());
+    const auto& subscriber_it =
+        observed_entry_it->second.subscribers.find(GURL(kOrigin));
+    ASSERT_NE(observed_entry_it->second.subscribers.end(), subscriber_it);
+    EXPECT_EQ(kOrigin, subscriber_it->second.origin.spec());
+    EXPECT_TRUE(subscriber_it->second.persistent);
   }
 
   {
     // Create another non-recursive observer. That should fail.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -368,12 +436,72 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
   }
 
   {
-    // Create another observer on the same path, but a recursive one. That
-    // should succeed.
+    // Lastly, create another recursive observer. That should succeed.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         true /* recursive */,
+        true /* persistent */,
+        base::Bind(&LogStatus, base::Unretained(&log)));
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_EQ(1u, log.size());
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
+    EXPECT_EQ(2, observer.list_changed_counter());
+    EXPECT_EQ(0, observer.tag_updated_counter());
+  }
+
+  provided_file_system_->RemoveObserver(&observer);
+}
+
+TEST_F(FileSystemProviderProvidedFileSystemTest,
+       ObserveDirectory_MultipleOrigins) {
+  Observer observer;
+  provided_file_system_->AddObserver(&observer);
+
+  {
+    // First observe a directory not recursively.
+    Log log;
+    provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
+        base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
+        false /* persistent */,
+        base::Bind(&LogStatus, base::Unretained(&log)));
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_EQ(1u, log.size());
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
+    EXPECT_EQ(1, observer.list_changed_counter());
+    EXPECT_EQ(0, observer.tag_updated_counter());
+
+    ObservedEntries* const observed_entries =
+        provided_file_system_->GetObservedEntries();
+    ASSERT_TRUE(observed_entries);
+    ASSERT_EQ(1u, observed_entries->size());
+    const auto& observed_entry_it = observed_entries->find(
+        ObservedEntryKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
+                         false /* recursive */));
+    ASSERT_NE(observed_entries->end(), observed_entry_it);
+
+    EXPECT_EQ(1u, observed_entry_it->second.subscribers.size());
+    const auto& subscriber_it =
+        observed_entry_it->second.subscribers.find(GURL(kOrigin));
+    ASSERT_NE(observed_entry_it->second.subscribers.end(), subscriber_it);
+    EXPECT_EQ(kOrigin, subscriber_it->first.spec());
+    EXPECT_EQ(kOrigin, subscriber_it->second.origin.spec());
+    EXPECT_FALSE(subscriber_it->second.persistent);
+  }
+
+  {
+    // Create another observer, but recursive and with a different origin.
+    Log log;
+    provided_file_system_->ObserveDirectory(
+        GURL(kAnotherOrigin),
+        base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        true /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -384,29 +512,53 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
 
     ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
+    ASSERT_TRUE(observed_entries);
+    ASSERT_EQ(2u, observed_entries->size());
     const auto& observed_entry_it = observed_entries->find(
         ObservedEntryKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
-                         true /* recursive */));
+                         false /* recursive */));
     ASSERT_NE(observed_entries->end(), observed_entry_it);
 
-    EXPECT_EQ(kDirectoryPath, observed_entry_it->second.entry_path.value());
-    EXPECT_TRUE(observed_entry_it->second.recursive);
-    EXPECT_EQ("", observed_entry_it->second.last_tag);
+    EXPECT_EQ(1u, observed_entry_it->second.subscribers.size());
+    const auto& subscriber_it =
+        observed_entry_it->second.subscribers.find(GURL(kOrigin));
+    ASSERT_NE(observed_entry_it->second.subscribers.end(), subscriber_it);
+    EXPECT_EQ(kOrigin, subscriber_it->first.spec());
+    EXPECT_EQ(kOrigin, subscriber_it->second.origin.spec());
+    EXPECT_FALSE(subscriber_it->second.persistent);
   }
 
   {
-    // Lastly, create another recursive observer. That should fail, too.
+    // Unobserve the second one gracefully.
     Log log;
-    provided_file_system_->ObserveDirectory(
+    provided_file_system_->UnobserveEntry(
+        GURL(kAnotherOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         true /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, log.size());
-    EXPECT_EQ(base::File::FILE_ERROR_EXISTS, log[0]);
-    EXPECT_EQ(2, observer.list_changed_counter());  // No changes on the list.
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
+    EXPECT_EQ(3, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
+
+    ObservedEntries* const observed_entries =
+        provided_file_system_->GetObservedEntries();
+    ASSERT_TRUE(observed_entries);
+    EXPECT_EQ(1u, observed_entries->size());
+    const auto& observed_entry_it = observed_entries->find(
+        ObservedEntryKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
+                         false /* recursive */));
+    ASSERT_NE(observed_entries->end(), observed_entry_it);
+
+    EXPECT_EQ(1u, observed_entry_it->second.subscribers.size());
+    const auto& subscriber_it =
+        observed_entry_it->second.subscribers.find(GURL(kOrigin));
+    ASSERT_NE(observed_entry_it->second.subscribers.end(), subscriber_it);
+    EXPECT_EQ(kOrigin, subscriber_it->first.spec());
+    EXPECT_EQ(kOrigin, subscriber_it->second.origin.spec());
+    EXPECT_FALSE(subscriber_it->second.persistent);
   }
 
   provided_file_system_->RemoveObserver(&observer);
@@ -421,6 +573,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     // in an error.
     Log log;
     provided_file_system_->UnobserveEntry(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
@@ -436,8 +589,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     // Observe a directory not recursively.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -455,6 +610,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     // Unobserve it gracefully.
     Log log;
     provided_file_system_->UnobserveEntry(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
@@ -474,8 +630,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     // Confirm that it's possible to observe it again.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -491,19 +649,20 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
 
   {
     // Finally, unobserve it, but with an error from extension. That should
-    // result
-    // in a removed observer, anyway.
+    // result in a removed observer, anyway. The error code should not be
+    // passed.
     event_router_->set_reply_result(base::File::FILE_ERROR_FAILED);
 
     Log log;
     provided_file_system_->UnobserveEntry(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, log.size());
-    EXPECT_EQ(base::File::FILE_ERROR_FAILED, log[0]);
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
     EXPECT_EQ(4, observer.list_changed_counter());
     EXPECT_EQ(0, observer.tag_updated_counter());
 
@@ -523,8 +682,10 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Observe a directory.
     Log log;
     provided_file_system_->ObserveDirectory(
+        GURL(kOrigin),
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
         false /* recursive */,
+        true /* persistent */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 

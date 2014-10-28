@@ -22,6 +22,12 @@ bool ObservedEntryKey::Comparator::operator()(const ObservedEntryKey& a,
   return a.recursive < b.recursive;
 }
 
+Subscriber::Subscriber() : persistent(false) {
+}
+
+Subscriber::~Subscriber() {
+}
+
 ObservedEntry::ObservedEntry() : recursive(false) {
 }
 

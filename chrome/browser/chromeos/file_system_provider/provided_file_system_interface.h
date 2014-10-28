@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/observed_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "url/gurl.h"
 
 class EventRouter;
 
@@ -177,13 +178,16 @@ class ProvidedFileSystemInterface {
 
   // Requests observing a directory.
   virtual AbortCallback ObserveDirectory(
+      const GURL& origin,
       const base::FilePath& directory_path,
       bool recursive,
+      bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests unobserving an entry, which is immediately removed from the
   // internal list, hence the operation is not abortable.
   virtual void UnobserveEntry(
+      const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;

@@ -28,6 +28,7 @@ extern const char kPrefKeySupportsNotifyTag[];
 extern const char kPrefKeyObservedEntries[];
 extern const char kPrefKeyObservedEntryEntryPath[];
 extern const char kPrefKeyObservedEntryRecursive[];
+extern const char kPrefKeyObservedEntryPersistentOrigins[];
 extern const char kPrefKeyObservedEntryLastTag[];
 
 class ProvidedFileSystemInfo;

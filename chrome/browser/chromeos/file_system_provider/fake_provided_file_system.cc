@@ -323,14 +323,17 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::WriteFile(
 
 ProvidedFileSystemInterface::AbortCallback
 FakeProvidedFileSystem::ObserveDirectory(
+    const GURL& origin,
     const base::FilePath& directory_path,
     bool recursive,
+    bool persistent,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // TODO(mtomasz): Implement it once needed.
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
 
 void FakeProvidedFileSystem::UnobserveEntry(
+    const GURL& origin,
     const base::FilePath& entry_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {

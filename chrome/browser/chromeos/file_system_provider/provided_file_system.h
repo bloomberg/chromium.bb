@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -137,10 +138,13 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual AbortCallback ObserveDirectory(
+      const GURL& origin,
       const base::FilePath& directory_path,
       bool recursive,
+      bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual void UnobserveEntry(
+      const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
@@ -163,10 +167,13 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   void Abort(int operation_request_id,
              const storage::AsyncFileUtil::StatusCallback& callback);
 
-  // Called when a directory becomes watched successfully.
+  // Called when observing a directory process is completed with either success
+  // or en error.
   void OnObserveDirectoryCompleted(
+      const GURL& origin,
       const base::FilePath& directory_path,
       bool recursive,
+      bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result);
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -126,10 +127,13 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual AbortCallback ObserveDirectory(
+      const GURL& origin,
       const base::FilePath& directory_path,
       bool recursive,
+      bool persistent,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual void UnobserveEntry(
+      const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) override;

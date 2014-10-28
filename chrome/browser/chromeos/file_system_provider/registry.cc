@@ -31,6 +31,7 @@ const char kPrefKeyObservedEntries[] = "observed-entries";
 const char kPrefKeyObservedEntryEntryPath[] = "entry-path";
 const char kPrefKeyObservedEntryRecursive[] = "recursive";
 const char kPrefKeyObservedEntryLastTag[] = "last-tag";
+const char kPrefKeyObservedEntryPersistentOrigins[] = "persistent-origins";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
@@ -72,6 +73,15 @@ void Registry::RememberFileSystem(
         kPrefKeyObservedEntryRecursive, it.second.recursive);
     observed_entry->SetStringWithoutPathExpansion(kPrefKeyObservedEntryLastTag,
                                                   it.second.last_tag);
+    base::ListValue* const persistent_origins_value = new base::ListValue();
+    observed_entry->SetWithoutPathExpansion(
+        kPrefKeyObservedEntryPersistentOrigins, persistent_origins_value);
+    for (const auto& subscriber_it : it.second.subscribers) {
+      // Only persistent subscribers should be stored in persistent storage.
+      // Other ones should not be restired after a restart.
+      if (subscriber_it.second.persistent)
+        persistent_origins_value->AppendString(subscriber_it.first.spec());
+    }
   }
 
   PrefService* const pref_service = profile_->GetPrefs();
@@ -182,6 +192,7 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
         std::string entry_path;
         bool recursive = false;
         std::string last_tag;
+        const base::ListValue* persistent_origins = NULL;
 
         if (!observed_entry_value->GetAsDictionary(&observed_entry) ||
             !observed_entry->GetStringWithoutPathExpansion(
@@ -190,8 +201,11 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
                 kPrefKeyObservedEntryRecursive, &recursive) ||
             !observed_entry->GetStringWithoutPathExpansion(
                 kPrefKeyObservedEntryLastTag, &last_tag) ||
+            !observed_entry->GetListWithoutPathExpansion(
+                kPrefKeyObservedEntryPersistentOrigins, &persistent_origins) ||
             it.key() != entry_path || entry_path.empty() ||
-            (!options.supports_notify_tag && !last_tag.empty())) {
+            (!options.supports_notify_tag &&
+             (!last_tag.empty() || persistent_origins->GetSize()))) {
           LOG(ERROR) << "Malformed observed entry information in preferences.";
           continue;
         }
@@ -201,6 +215,17 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
             base::FilePath::FromUTF8Unsafe(entry_path);
         restored_observed_entry.recursive = recursive;
         restored_observed_entry.last_tag = last_tag;
+        for (const auto& persistent_origin : *persistent_origins) {
+          std::string origin;
+          if (persistent_origin->GetAsString(&origin)) {
+            LOG(ERROR) << "Malformed subscriber information in preferences.";
+            continue;
+          }
+          const GURL origin_as_gurl(origin);
+          restored_observed_entry.subscribers[origin_as_gurl].origin =
+              origin_as_gurl;
+          restored_observed_entry.subscribers[origin_as_gurl].persistent = true;
+        }
         restored_file_system.observed_entries[ObservedEntryKey(
             base::FilePath::FromUTF8Unsafe(entry_path), recursive)] =
             restored_observed_entry;
