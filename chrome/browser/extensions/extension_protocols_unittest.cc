@@ -101,7 +101,7 @@ class ExtensionProtocolTest : public testing::Test {
         old_factory_(NULL),
         resource_context_(&test_url_request_context_) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     extension_info_map_ = new InfoMap();
     net::URLRequestContext* request_context =
@@ -109,7 +109,7 @@ class ExtensionProtocolTest : public testing::Test {
     old_factory_ = request_context->job_factory();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     request_context->set_job_factory(old_factory_);

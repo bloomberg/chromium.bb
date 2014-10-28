@@ -25,7 +25,7 @@ class Extension;
 class ExtensionPrefsTest : public testing::Test {
  public:
   ExtensionPrefsTest();
-  virtual ~ExtensionPrefsTest();
+  ~ExtensionPrefsTest() override;
 
   // This function will get called once, and is the right place to do operations
   // on ExtensionPrefs that write data.
@@ -39,9 +39,9 @@ class ExtensionPrefsTest : public testing::Test {
   // This function is called to Register preference default values.
   virtual void RegisterPreferences(user_prefs::PrefRegistrySyncable* registry);
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
-  virtual void TearDown() override;
+  void TearDown() override;
 
  protected:
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
@@ -61,7 +61,7 @@ class PrefsPrepopulatedTestBase : public ExtensionPrefsTest {
   static const size_t kNumInstalledExtensions = 4;
 
   PrefsPrepopulatedTestBase();
-  virtual ~PrefsPrepopulatedTestBase();
+  ~PrefsPrepopulatedTestBase() override;
 
   Extension* extension1() { return extension1_.get(); }
   Extension* extension2() { return extension2_.get(); }

@@ -124,7 +124,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
     DesktopCaptureChooseDesktopMediaFunction::
         SetPickerFactoryForTests(&picker_factory_);
   }
-  virtual ~DesktopCaptureApiTest() {
+  ~DesktopCaptureApiTest() override {
     DesktopCaptureChooseDesktopMediaFunction::
         SetPickerFactoryForTests(NULL);
   }

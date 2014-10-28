@@ -77,7 +77,7 @@ class PushMessagingApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     invalidation::ProfileInvalidationProviderFactory::GetInstance()->
         RegisterTestingFactory(BuildFakeProfileInvalidationProvider);
     ExtensionApiTest::SetUp();

@@ -55,7 +55,7 @@ const char kAppPath[] = "/app.crx";
 class ExternalProviderImplTest : public ExtensionServiceTestBase {
  public:
   ExternalProviderImplTest() {}
-  virtual ~ExternalProviderImplTest() {}
+  ~ExternalProviderImplTest() override {}
 
   void InitServiceWithExternalProviders() {
 #if defined(OS_CHROMEOS)
@@ -95,7 +95,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   }
 
   // ExtensionServiceTestBase overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     test_server_.reset(new EmbeddedTestServer());
 
@@ -117,7 +117,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
                                test_server_->GetURL(kManifestPath).spec());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 

@@ -92,7 +92,7 @@ bool RunAllPendingInRenderer(content::WebContents* web_contents) {
 class RequestContentScriptAPITest : public ExtensionBrowserTest {
  public:
   RequestContentScriptAPITest();
-  virtual ~RequestContentScriptAPITest() {}
+  ~RequestContentScriptAPITest() override {}
 
   // Performs script injection test on a common local URL using the given
   // |manifest_permission| and |script_matcher|. Does not return until

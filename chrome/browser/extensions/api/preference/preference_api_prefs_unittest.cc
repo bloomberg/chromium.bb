@@ -68,7 +68,7 @@ class TestPreferenceAPI : public PreferenceAPIBase {
 class ExtensionControlledPrefsTest : public PrefsPrepopulatedTestBase {
  public:
   ExtensionControlledPrefsTest();
-  virtual ~ExtensionControlledPrefsTest();
+  ~ExtensionControlledPrefsTest() override;
 
   void RegisterPreferences(user_prefs::PrefRegistrySyncable* registry) override;
   void InstallExtensionControlledPref(Extension* extension,
@@ -457,7 +457,7 @@ class ControlledPrefsDisableExtensions : public ExtensionControlledPrefsTest {
  public:
   ControlledPrefsDisableExtensions()
       : iteration_(0) {}
-  virtual ~ControlledPrefsDisableExtensions() {}
+  ~ControlledPrefsDisableExtensions() override {}
   void Initialize() override {
     InstallExtensionControlledPref(
         extension1(), kPref1, new base::StringValue("val1"));

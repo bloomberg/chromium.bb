@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
 class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {
  public:
   WebstoreInlineInstallerListenerTest() {}
-  virtual ~WebstoreInlineInstallerListenerTest() {}
+  ~WebstoreInlineInstallerListenerTest() override {}
 
  protected:
   void RunTest(const std::string& file_name) {

@@ -81,7 +81,7 @@ class LoadedIncognitoObserver : public extensions::ExtensionRegistryObserver {
 class LazyBackgroundPageApiTest : public ExtensionApiTest {
  public:
   LazyBackgroundPageApiTest() {}
-  virtual ~LazyBackgroundPageApiTest() {}
+  ~LazyBackgroundPageApiTest() override {}
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();

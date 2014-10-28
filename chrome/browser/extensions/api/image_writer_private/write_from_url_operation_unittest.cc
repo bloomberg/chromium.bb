@@ -73,7 +73,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
  protected:
   ImageWriterWriteFromUrlOperationTest() : manager_(&test_profile_) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
 
     // Turn on interception and set up our dummy file.
@@ -86,7 +86,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
                                   test_utils_.GetImagePath());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ImageWriterUnitTestBase::TearDown();
 
     // Remember to turn off global interception.

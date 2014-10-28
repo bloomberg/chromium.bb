@@ -55,7 +55,7 @@ class MenuManagerTest : public testing::Test {
         prefs_(message_loop_.message_loop_proxy().get()),
         next_id_(1) {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
   }

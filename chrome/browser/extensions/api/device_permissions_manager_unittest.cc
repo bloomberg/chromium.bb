@@ -58,7 +58,7 @@ class MockUsbDevice : public UsbDevice {
 
 class DevicePermissionsManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     env_.GetExtensionPrefs();  // Force creation before adding extensions.
     extension_ = env_.MakeExtension(*base::test::ParseJson(

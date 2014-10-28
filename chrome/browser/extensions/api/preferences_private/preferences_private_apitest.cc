@@ -109,7 +109,7 @@ class FakeProfileSyncService : public ProfileSyncService {
 class PreferencesPrivateApiTest : public ExtensionApiTest {
  public:
   PreferencesPrivateApiTest() : browser_(NULL), service_(NULL) {}
-  virtual ~PreferencesPrivateApiTest() {}
+  ~PreferencesPrivateApiTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)

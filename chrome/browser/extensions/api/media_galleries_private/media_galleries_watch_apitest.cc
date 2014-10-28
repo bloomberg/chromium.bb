@@ -74,7 +74,7 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
       : extension_(NULL),
         background_host_(NULL) {
   }
-  virtual ~MediaGalleriesPrivateGalleryWatchApiTest() {}
+  ~MediaGalleriesPrivateGalleryWatchApiTest() override {}
 
  protected:
   // ExtensionApiTest overrides.

@@ -14,7 +14,7 @@ namespace extensions {
 class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
  protected:
   FrameNavigationStateTest() {}
-  virtual ~FrameNavigationStateTest() {}
+  ~FrameNavigationStateTest() override {}
 
   FrameNavigationState navigation_state_;
 

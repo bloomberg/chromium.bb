@@ -41,9 +41,9 @@ class RulesRegistryServiceTest : public testing::Test {
       : ui_(content::BrowserThread::UI, &message_loop_),
         io_(content::BrowserThread::IO, &message_loop_) {}
 
-  virtual ~RulesRegistryServiceTest() {}
+  ~RulesRegistryServiceTest() override {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Make sure that deletion traits of all registries are executed.
     message_loop_.RunUntilIdle();
   }

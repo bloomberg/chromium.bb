@@ -28,14 +28,14 @@ const char* kExtensionID = "abjoigjokfeibfhiahiijggogladbmfm";
 
 class ActivityLogEnabledTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

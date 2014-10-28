@@ -26,7 +26,7 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
 class SystemMemoryApiTest: public ExtensionApiTest {
  public:
   SystemMemoryApiTest() {}
-  virtual ~SystemMemoryApiTest() {}
+  ~SystemMemoryApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();

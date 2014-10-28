@@ -59,10 +59,10 @@ class ExtensionServiceTestBase : public testing::Test {
 
  protected:
   ExtensionServiceTestBase();
-  virtual ~ExtensionServiceTestBase();
+  ~ExtensionServiceTestBase() override;
 
   // testing::Test implementation.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Create a set of InitParams to install an ExtensionService into |temp_dir_|.
   ExtensionServiceInitParams CreateDefaultInitParams();

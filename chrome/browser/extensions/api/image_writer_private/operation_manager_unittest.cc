@@ -74,7 +74,7 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
         start_success_(false) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
     extension_system_ = static_cast<FakeExtensionSystem*>(
         ExtensionSystemFactory::GetInstance()->

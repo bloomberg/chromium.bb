@@ -355,7 +355,7 @@ class CastV2PerformanceTest
     return endpoint;
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EnablePixelOutput();
     ExtensionApiTest::SetUp();
   }

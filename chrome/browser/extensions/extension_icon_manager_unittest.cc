@@ -30,7 +30,7 @@ class ExtensionIconManagerTest : public testing::Test {
       file_thread_(BrowserThread::FILE),
       io_thread_(BrowserThread::IO) {}
 
-  virtual ~ExtensionIconManagerTest() {}
+  ~ExtensionIconManagerTest() override {}
 
   void ImageLoadObserved() {
     unwaited_image_loads_++;
@@ -50,7 +50,7 @@ class ExtensionIconManagerTest : public testing::Test {
   }
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     file_thread_.Start();
     io_thread_.Start();
   }

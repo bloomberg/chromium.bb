@@ -39,10 +39,10 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
  public:
   PermissionMessagesUnittest()
       : message_provider_(new ChromePermissionMessageProvider()) {}
-  virtual ~PermissionMessagesUnittest() {}
+  ~PermissionMessagesUnittest() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     InitializeExtensionService(CreateDefaultInitParams());
   }

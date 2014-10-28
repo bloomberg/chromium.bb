@@ -22,13 +22,13 @@ namespace {
 
 class BrowserPermissionsPolicyDelegateTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test");
   }
-  virtual void TearDown() {
+  void TearDown() override {
     // Need to delete profile here before the UI thread is destroyed.
     profile_manager_->DeleteTestingProfile("test");
     profile_manager_.reset();

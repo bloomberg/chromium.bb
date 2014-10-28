@@ -54,7 +54,7 @@ class SharedModuleServiceUnitTest : public ExtensionServiceTestBase {
       // run as stable channel on the official Windows build.
       current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Install an extension and notify the ExtensionService.
   testing::AssertionResult InstallExtension(const Extension* extension,

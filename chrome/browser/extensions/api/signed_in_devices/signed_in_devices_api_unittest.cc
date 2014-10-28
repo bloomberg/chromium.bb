@@ -149,7 +149,7 @@ KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(

@@ -29,7 +29,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
  public:
   ScreenlockPrivateApiTest() {}
 
-  virtual ~ScreenlockPrivateApiTest() {}
+  ~ScreenlockPrivateApiTest() override {}
 
   // ExtensionApiTest
   void SetUpCommandLine(CommandLine* command_line) override {

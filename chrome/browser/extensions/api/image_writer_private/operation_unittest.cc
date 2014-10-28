@@ -67,7 +67,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
  protected:
   ImageWriterOperationTest()
       : profile_(new TestingProfile), manager_(profile_.get()) {}
-  virtual void SetUp() override {
+  void SetUp() override {
     ImageWriterUnitTestBase::SetUp();
 
     // Create the zip file.
@@ -88,7 +88,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
     operation_->SetImagePath(test_utils_.GetImagePath());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Ensure all callbacks have been destroyed and cleanup occurs.
     operation_->Cancel();
 

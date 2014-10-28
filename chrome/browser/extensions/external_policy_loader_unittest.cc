@@ -30,7 +30,7 @@ class ExternalPolicyLoaderTest : public testing::Test {
   ExternalPolicyLoaderTest() : ui_thread_(BrowserThread::UI, &loop_) {
   }
 
-  virtual ~ExternalPolicyLoaderTest() {}
+  ~ExternalPolicyLoaderTest() override {}
 
  private:
   // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)

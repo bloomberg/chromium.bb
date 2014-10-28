@@ -13,7 +13,7 @@ namespace {
 
 class ExtensionCreatorFilterTest : public PlatformTest {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

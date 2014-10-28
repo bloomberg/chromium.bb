@@ -125,7 +125,7 @@ KeyedService* IdleManagerTestFactory(content::BrowserContext* profile) {
 
 class IdleTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   IdleManager* idle_manager_;

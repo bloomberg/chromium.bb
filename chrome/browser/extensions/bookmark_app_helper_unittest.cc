@@ -37,7 +37,7 @@ const int kIconSizeLarge = extension_misc::EXTENSION_ICON_LARGE;
 class BookmarkAppHelperTest : public testing::Test {
  public:
   BookmarkAppHelperTest() {}
-  virtual ~BookmarkAppHelperTest() {}
+  ~BookmarkAppHelperTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
@@ -47,16 +47,16 @@ class BookmarkAppHelperExtensionServiceTest
     : public extensions::ExtensionServiceTestBase {
  public:
   BookmarkAppHelperExtensionServiceTest() {}
-  virtual ~BookmarkAppHelperExtensionServiceTest() {}
+  ~BookmarkAppHelperExtensionServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
     service_->Init();
     EXPECT_EQ(0u, service_->extensions()->size());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ExtensionServiceTestBase::TearDown();
     for (content::RenderProcessHost::iterator i(
              content::RenderProcessHost::AllHostsIterator());

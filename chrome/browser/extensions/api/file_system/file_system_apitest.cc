@@ -74,7 +74,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
 
   void SetUpOnMainThread() override { ClearCommandLineArgs(); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
   };

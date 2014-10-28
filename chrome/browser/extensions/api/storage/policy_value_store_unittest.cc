@@ -87,9 +87,9 @@ class PolicyValueStoreTest : public testing::Test {
  public:
   PolicyValueStoreTest()
       : file_thread_(content::BrowserThread::FILE, &loop_) {}
-  virtual ~PolicyValueStoreTest() {}
+  ~PolicyValueStoreTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     observers_ = new SettingsObserverList();
     observers_->AddObserver(&observer_);
@@ -100,7 +100,7 @@ class PolicyValueStoreTest : public testing::Test {
             new LeveldbValueStore(scoped_temp_dir_.path()))));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     observers_->RemoveObserver(&observer_);
     store_.reset();
   }

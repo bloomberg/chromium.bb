@@ -112,7 +112,7 @@ class TestMediaGalleriesAddScanResultsFunction
 class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
  protected:
   MediaGalleriesPlatformAppBrowserTest() : test_jpg_size_(0) {}
-  virtual ~MediaGalleriesPlatformAppBrowserTest() {}
+  ~MediaGalleriesPlatformAppBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     PlatformAppBrowserTest::SetUpOnMainThread();

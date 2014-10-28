@@ -759,7 +759,7 @@ PrefsPrepopulatedTestBase::~PrefsPrepopulatedTestBase() {
 // Tests that blacklist state can be queried.
 class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
  public:
-  virtual ~ExtensionPrefsBlacklistedExtensions() {}
+  ~ExtensionPrefsBlacklistedExtensions() override {}
 
   void Initialize() override {
     extension_a_ = prefs_.AddExtension("a");
@@ -839,7 +839,7 @@ TEST_F(ExtensionPrefsBlacklistedExtensions,
 // over new "blacklist_state".
 class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
  public:
-  virtual ~ExtensionPrefsBlacklistState() {}
+  ~ExtensionPrefsBlacklistState() override {}
 
   void Initialize() override { extension_a_ = prefs_.AddExtension("a"); }
 

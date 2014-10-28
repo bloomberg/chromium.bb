@@ -4067,7 +4067,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 class DownloadsApiTest : public ExtensionApiTest {
  public:
   DownloadsApiTest() {}
-  virtual ~DownloadsApiTest() {}
+  ~DownloadsApiTest() override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsApiTest);
 };

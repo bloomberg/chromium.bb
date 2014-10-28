@@ -100,11 +100,9 @@ class NativeMessagingTest : public ::testing::Test,
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         channel_closed_(false) {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (native_message_host_.get()) {
       BrowserThread::DeleteSoon(
           BrowserThread::IO, FROM_HERE, native_message_host_.release());

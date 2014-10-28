@@ -61,7 +61,7 @@ class DeclarativeContentApiTest : public ExtensionApiTest {
       // to trunk.
       : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   }
-  virtual ~DeclarativeContentApiTest() {}
+  ~DeclarativeContentApiTest() override {}
 
   extensions::ScopedCurrentChannel current_channel_;
   TestExtensionDir ext_dir_;

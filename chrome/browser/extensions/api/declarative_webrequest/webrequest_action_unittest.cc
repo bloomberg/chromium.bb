@@ -76,7 +76,7 @@ class WebRequestActionWithThreadsTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Creates a URL request for URL |url_string|, and applies the actions from
   // |action_set| as if they were triggered by the extension with

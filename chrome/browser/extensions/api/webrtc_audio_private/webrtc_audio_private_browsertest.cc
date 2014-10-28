@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
 
 class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Make sure the Hangout Services component extension gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
     AudioWaitingExtensionTest::SetUp();

@@ -93,7 +93,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
  public:
   ExtensionWebstorePrivateApiTest() {}
-  virtual ~ExtensionWebstorePrivateApiTest() {}
+  ~ExtensionWebstorePrivateApiTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);

@@ -45,7 +45,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
                                         &cache_delegate_,
                                         RulesRegistry::WebViewKey(0, 0))) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     env_.GetExtensionPrefs();  // Force creation before adding extensions.
     // Note that env_.MakeExtension below also forces the creation of
     // ExtensionService.
@@ -65,7 +65,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
     CHECK_NE(extension2_->id(), extension1_->id());
   }
 
-  virtual ~RulesRegistryWithCacheTest() {}
+  ~RulesRegistryWithCacheTest() override {}
 
   std::string AddRule(const std::string& extension_id,
                       const std::string& rule_id,

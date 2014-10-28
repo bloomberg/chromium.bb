@@ -646,11 +646,11 @@ class ExtensionUpdaterTest : public testing::Test {
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Some tests create URLRequestContextGetters, whose destruction must run
     // on the IO thread. Make sure the IO loop spins before shutdown so that
     // those objects are released.

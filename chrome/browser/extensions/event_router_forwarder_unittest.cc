@@ -100,7 +100,7 @@ class EventRouterForwarderTest : public testing::Test {
     dummy.reset(new base::PowerMonitor(power_monitor_source.Pass()));
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     // Inject a BrowserProcess with a ProfileManager.

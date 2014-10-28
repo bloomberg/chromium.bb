@@ -27,7 +27,7 @@ namespace extensions {
 
 class DebuggerApiTest : public ExtensionApiTest {
  protected:
-  virtual ~DebuggerApiTest() {}
+  ~DebuggerApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;

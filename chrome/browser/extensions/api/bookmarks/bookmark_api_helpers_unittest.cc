@@ -31,7 +31,7 @@ class ExtensionBookmarksTest : public testing::Test {
   ExtensionBookmarksTest()
       : client_(NULL), model_(NULL), node_(NULL), node2_(NULL), folder_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.CreateBookmarkModel(false);
     model_ = BookmarkModelFactory::GetForProfile(&profile_);
     client_ = ChromeBookmarkClientFactory::GetForProfile(&profile_);

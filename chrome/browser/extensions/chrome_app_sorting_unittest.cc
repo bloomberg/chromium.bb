@@ -151,7 +151,7 @@ TEST_F(ChromeAppSortingPageOrdinal, ChromeAppSortingPageOrdinal) {}
 class ChromeAppSortingInitialize : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingInitialize() {}
-  virtual ~ChromeAppSortingInitialize() {}
+  ~ChromeAppSortingInitialize() override {}
 
   void Initialize() override {
     // A preference determining the order of which the apps appear on the NTP.
@@ -219,7 +219,7 @@ TEST_F(ChromeAppSortingInitialize, ChromeAppSortingInitialize) {}
 class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingInitializeWithNoApps() {}
-  virtual ~ChromeAppSortingInitializeWithNoApps() {}
+  ~ChromeAppSortingInitializeWithNoApps() override {}
 
   void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -267,7 +267,7 @@ class ChromeAppSortingMigrateAppIndexInvalid
     : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingMigrateAppIndexInvalid() {}
-  virtual ~ChromeAppSortingMigrateAppIndexInvalid() {}
+  ~ChromeAppSortingMigrateAppIndexInvalid() override {}
 
   void Initialize() override {
     // A preference determining the order of which the apps appear on the NTP.
@@ -303,7 +303,7 @@ class ChromeAppSortingFixNTPCollisionsAllCollide
     : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingFixNTPCollisionsAllCollide() {}
-  virtual ~ChromeAppSortingFixNTPCollisionsAllCollide() {}
+  ~ChromeAppSortingFixNTPCollisionsAllCollide() override {}
 
   void Initialize() override {
     repeated_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -359,7 +359,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtStart
     : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingFixNTPCollisionsSomeCollideAtStart() {}
-  virtual ~ChromeAppSortingFixNTPCollisionsSomeCollideAtStart() {}
+  ~ChromeAppSortingFixNTPCollisionsSomeCollideAtStart() override {}
 
   void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -417,7 +417,7 @@ class ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd
     : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd() {}
-  virtual ~ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd() {}
+  ~ChromeAppSortingFixNTPCollisionsSomeCollideAtEnd() override {}
 
   void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -475,7 +475,7 @@ class ChromeAppSortingFixNTPCollisionsTwoCollisions
     : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingFixNTPCollisionsTwoCollisions() {}
-  virtual ~ChromeAppSortingFixNTPCollisionsTwoCollisions() {}
+  ~ChromeAppSortingFixNTPCollisionsTwoCollisions() override {}
 
   void Initialize() override {
     first_ordinal_ = syncer::StringOrdinal::CreateInitialOrdinal();
@@ -543,7 +543,7 @@ class ChromeAppSortingEnsureValidOrdinals
     : public PrefsPrepopulatedTestBase {
  public :
   ChromeAppSortingEnsureValidOrdinals() {}
-  virtual ~ChromeAppSortingEnsureValidOrdinals() {}
+  ~ChromeAppSortingEnsureValidOrdinals() override {}
 
   void Initialize() override {}
   void Verify() override {
@@ -568,7 +568,7 @@ TEST_F(ChromeAppSortingEnsureValidOrdinals,
 class ChromeAppSortingPageOrdinalMapping : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingPageOrdinalMapping() {}
-  virtual ~ChromeAppSortingPageOrdinalMapping() {}
+  ~ChromeAppSortingPageOrdinalMapping() override {}
 
   void Initialize() override {}
   void Verify() override {
@@ -650,7 +650,7 @@ class ChromeAppSortingPreinstalledAppsBase : public PrefsPrepopulatedTestBase {
     app1_ = app1_scoped_.get();
     app2_ = app2_scoped_.get();
   }
-  virtual ~ChromeAppSortingPreinstalledAppsBase() {}
+  ~ChromeAppSortingPreinstalledAppsBase() override {}
 
  protected:
   // Weak references, for convenience.
@@ -666,7 +666,7 @@ class ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage
     : public ChromeAppSortingPreinstalledAppsBase {
  public:
   ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
-  virtual ~ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage() {}
+  ~ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage() override {}
 
   void Initialize() override {}
   void Verify() override {
@@ -711,7 +711,7 @@ class ChromeAppSortingKeepEmptyStringOrdinalPages
     : public ChromeAppSortingPreinstalledAppsBase {
  public:
   ChromeAppSortingKeepEmptyStringOrdinalPages() {}
-  virtual ~ChromeAppSortingKeepEmptyStringOrdinalPages() {}
+  ~ChromeAppSortingKeepEmptyStringOrdinalPages() override {}
 
   void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -750,7 +750,7 @@ class ChromeAppSortingMakesFillerOrdinals
     : public ChromeAppSortingPreinstalledAppsBase {
  public:
   ChromeAppSortingMakesFillerOrdinals() {}
-  virtual ~ChromeAppSortingMakesFillerOrdinals() {}
+  ~ChromeAppSortingMakesFillerOrdinals() override {}
 
   void Initialize() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -783,7 +783,7 @@ TEST_F(ChromeAppSortingMakesFillerOrdinals,
 class ChromeAppSortingDefaultOrdinalsBase : public ChromeAppSortingTest {
  public:
   ChromeAppSortingDefaultOrdinalsBase() {}
-  virtual ~ChromeAppSortingDefaultOrdinalsBase() {}
+  ~ChromeAppSortingDefaultOrdinalsBase() override {}
 
   void Initialize() override {
     app_ = CreateApp("app");
@@ -844,7 +844,7 @@ class ChromeAppSortingDefaultOrdinals
     : public ChromeAppSortingDefaultOrdinalsBase {
  public:
   ChromeAppSortingDefaultOrdinals() {}
-  virtual ~ChromeAppSortingDefaultOrdinals() {}
+  ~ChromeAppSortingDefaultOrdinals() override {}
 
   void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -862,7 +862,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByInstallPage
     : public ChromeAppSortingDefaultOrdinalsBase {
  public:
   ChromeAppSortingDefaultOrdinalOverriddenByInstallPage() {}
-  virtual ~ChromeAppSortingDefaultOrdinalOverriddenByInstallPage() {}
+  ~ChromeAppSortingDefaultOrdinalOverriddenByInstallPage() override {}
 
   void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -892,7 +892,7 @@ class ChromeAppSortingDefaultOrdinalOverriddenByUserValue
     : public ChromeAppSortingDefaultOrdinalsBase {
  public:
   ChromeAppSortingDefaultOrdinalOverriddenByUserValue() {}
-  virtual ~ChromeAppSortingDefaultOrdinalOverriddenByUserValue() {}
+  ~ChromeAppSortingDefaultOrdinalOverriddenByUserValue() override {}
 
   void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -925,7 +925,7 @@ class ChromeAppSortingDefaultOrdinalNoCollision
     : public ChromeAppSortingDefaultOrdinalsBase {
  public:
   ChromeAppSortingDefaultOrdinalNoCollision() {}
-  virtual ~ChromeAppSortingDefaultOrdinalNoCollision() {}
+  ~ChromeAppSortingDefaultOrdinalNoCollision() override {}
 
   void Verify() override {
     AppSorting* app_sorting = prefs()->app_sorting();
@@ -964,7 +964,7 @@ TEST_F(ChromeAppSortingDefaultOrdinalNoCollision,
 class ChromeAppSortingSetExtensionVisible : public ChromeAppSortingTest {
  public:
   ChromeAppSortingSetExtensionVisible() {}
-  virtual ~ChromeAppSortingSetExtensionVisible() {}
+  ~ChromeAppSortingSetExtensionVisible() override {}
 
   void Initialize() override {
     first_app_ = prefs_.AddApp("first_app");

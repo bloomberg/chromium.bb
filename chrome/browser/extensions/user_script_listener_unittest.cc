@@ -129,14 +129,14 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
             new SimpleTestJobURLRequestInterceptor()));
   }
 
-  virtual ~UserScriptListenerTest() {
+  ~UserScriptListenerTest() override {
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
                                                                 "google.com");
     net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
                                                                 "example.com");
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionServiceTestBase::SetUp();
 
     InitializeEmptyExtensionService();
@@ -146,7 +146,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
     listener_ = new UserScriptListener();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     listener_ = NULL;
     base::MessageLoop::current()->RunUntilIdle();
     ExtensionServiceTestBase::TearDown();

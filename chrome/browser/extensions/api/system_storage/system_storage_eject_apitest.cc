@@ -32,7 +32,7 @@ using storage_monitor::TestStorageMonitor;
 class SystemStorageEjectApiTest : public ExtensionApiTest {
  public:
   SystemStorageEjectApiTest() : monitor_(NULL) {}
-  virtual ~SystemStorageEjectApiTest() {}
+  ~SystemStorageEjectApiTest() override {}
 
  protected:
   void SetUpOnMainThread() override {

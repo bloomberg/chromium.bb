@@ -104,7 +104,7 @@ scoped_refptr<const Extension> BuildExtension() {
 
 class ExtensionErrorControllerUnitTest : public ExtensionServiceTestBase {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Add an extension to chrome, and mark it as blacklisted in the prefs.
   testing::AssertionResult AddBlacklistedExtension(const Extension* extension);

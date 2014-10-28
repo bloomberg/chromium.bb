@@ -90,9 +90,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(PolicyChangeObserver);
   };
 
-  virtual void SetUp() override {
-    policy_ = new ExtensionSpecialStoragePolicy(NULL);
-  }
+  void SetUp() override { policy_ = new ExtensionSpecialStoragePolicy(NULL); }
 
   scoped_refptr<Extension> CreateProtectedApp() {
 #if defined(OS_WIN)

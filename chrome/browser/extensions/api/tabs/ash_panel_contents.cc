@@ -33,21 +33,21 @@ using extensions::NativeAppWindow;
 class AshPanelWindowController : public extensions::WindowController {
  public:
   AshPanelWindowController(AppWindow* window, Profile* profile);
-  virtual ~AshPanelWindowController();
+  ~AshPanelWindowController() override;
 
   void NativeWindowChanged();
 
   // Overridden from extensions::WindowController.
-  virtual int GetWindowId() const override;
-  virtual std::string GetWindowTypeText() const override;
-  virtual base::DictionaryValue* CreateWindowValueWithTabs(
+  int GetWindowId() const override;
+  std::string GetWindowTypeText() const override;
+  base::DictionaryValue* CreateWindowValueWithTabs(
       const extensions::Extension* extension) const override;
-  virtual base::DictionaryValue* CreateTabValue(
-      const extensions::Extension* extension, int tab_index) const override;
-  virtual bool CanClose(Reason* reason) const override;
-  virtual void SetFullscreenMode(bool is_fullscreen,
-                                 const GURL& extension_url) const override;
-  virtual bool IsVisibleToExtension(
+  base::DictionaryValue* CreateTabValue(const extensions::Extension* extension,
+                                        int tab_index) const override;
+  bool CanClose(Reason* reason) const override;
+  void SetFullscreenMode(bool is_fullscreen,
+                         const GURL& extension_url) const override;
+  bool IsVisibleToExtension(
       const extensions::Extension* extension) const override;
 
  private:

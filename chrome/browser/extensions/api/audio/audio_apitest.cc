@@ -14,7 +14,7 @@ namespace extensions {
 class AudioApiTest: public ExtensionApiTest {
  public:
   AudioApiTest() {}
-  virtual ~AudioApiTest() {}
+  ~AudioApiTest() override {}
 };
 
 #if defined(OS_CHROMEOS)

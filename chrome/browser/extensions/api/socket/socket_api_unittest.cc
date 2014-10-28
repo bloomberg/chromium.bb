@@ -25,7 +25,7 @@ KeyedService* ApiResourceManagerTestFactory(content::BrowserContext* context) {
 
 class SocketUnitTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     ApiResourceManager<Socket>::GetFactoryInstance()->SetTestingFactoryAndUse(

@@ -62,12 +62,10 @@ class ExtensionManagementServiceTest : public testing::Test {
   typedef ExtensionManagementPrefUpdater<TestingPrefServiceSimple> PrefUpdater;
 
   ExtensionManagementServiceTest() {}
-  virtual ~ExtensionManagementServiceTest() {}
+  ~ExtensionManagementServiceTest() override {}
 
   // testing::Test:
-  virtual void SetUp() override {
-    InitPrefService();
-  }
+  void SetUp() override { InitPrefService(); }
 
   void InitPrefService() {
     extension_management_.reset();
@@ -126,7 +124,7 @@ class ExtensionManagementServiceTest : public testing::Test {
 class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
  public:
   ExtensionAdminPolicyTest() {}
-  virtual ~ExtensionAdminPolicyTest() {}
+  ~ExtensionAdminPolicyTest() override {}
 
   void CreateExtension(Manifest::Location location) {
     base::DictionaryValue values;

@@ -204,7 +204,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
         sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
             sync_processor_.get())) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new TestingProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
@@ -217,7 +217,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
             profile_.get(), &util::MockExtensionSystemWithEventRouter::Build);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     frontend_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.

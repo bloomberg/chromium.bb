@@ -39,7 +39,7 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
 class SystemCpuApiTest: public ExtensionApiTest {
  public:
   SystemCpuApiTest() {}
-  virtual ~SystemCpuApiTest() {}
+  ~SystemCpuApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();

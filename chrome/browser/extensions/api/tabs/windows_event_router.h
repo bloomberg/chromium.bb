@@ -42,8 +42,8 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void OnWindowControllerRemoved(WindowController* window) override;
 
 #if defined(TOOLKIT_VIEWS)
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) override;
+  void OnNativeFocusChange(gfx::NativeView focused_before,
+                           gfx::NativeView focused_now) override;
 #endif
 
   // content::NotificationObserver.

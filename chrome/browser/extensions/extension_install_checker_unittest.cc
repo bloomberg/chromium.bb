@@ -146,7 +146,7 @@ class CheckObserver {
 class ExtensionInstallCheckerTest : public testing::Test {
  public:
   ExtensionInstallCheckerTest() {}
-  virtual ~ExtensionInstallCheckerTest() {}
+  ~ExtensionInstallCheckerTest() override {}
 
   void RunSecondInvocation(ExtensionInstallCheckerForTest* checker,
                            int checks_failed) {
@@ -324,7 +324,7 @@ class ExtensionInstallCheckerMultipleInvocationTest
     : public ExtensionInstallCheckerTest {
  public:
   ExtensionInstallCheckerMultipleInvocationTest() : callback_count_(0) {}
-  virtual ~ExtensionInstallCheckerMultipleInvocationTest() {}
+  ~ExtensionInstallCheckerMultipleInvocationTest() override {}
 
   void RunSecondInvocation(ExtensionInstallCheckerForTest* checker,
                            int checks_failed) {

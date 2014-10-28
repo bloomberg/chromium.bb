@@ -56,7 +56,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 
 class SandboxedUnpackerTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
    ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     browser_threads_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::IO_MAINLOOP));
@@ -66,7 +66,7 @@ class SandboxedUnpackerTest : public testing::Test {
     client_ = new MockSandboxedUnpackerClient;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Need to destruct SandboxedUnpacker before the message loop since
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;

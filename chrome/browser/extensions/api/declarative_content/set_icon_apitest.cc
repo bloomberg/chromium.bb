@@ -37,7 +37,7 @@ class SetIconAPITest : public ExtensionApiTest {
       // to trunk.
       : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   }
-  virtual ~SetIconAPITest() {}
+  ~SetIconAPITest() override {}
 
   extensions::ScopedCurrentChannel current_channel_;
   TestExtensionDir ext_dir_;

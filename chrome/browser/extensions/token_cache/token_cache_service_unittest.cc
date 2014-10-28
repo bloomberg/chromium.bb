@@ -17,7 +17,7 @@ namespace extensions {
 class TokenCacheTest : public testing::Test {
  public:
   TokenCacheTest() : cache_(&profile_) {}
-  virtual ~TokenCacheTest() { cache_.Shutdown(); }
+  ~TokenCacheTest() override { cache_.Shutdown(); }
 
   size_t CacheSize() {
     return cache_.token_cache_.size();

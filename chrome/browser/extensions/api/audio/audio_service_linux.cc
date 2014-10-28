@@ -21,20 +21,20 @@ using api::audio::InputDeviceInfo;
 class AudioServiceImpl : public AudioService {
  public:
   AudioServiceImpl();
-  virtual ~AudioServiceImpl();
+  ~AudioServiceImpl() override;
 
  private:
   // Called by listeners to this service to add/remove themselves as observers.
-  virtual void AddObserver(AudioService::Observer* observer) override;
-  virtual void RemoveObserver(AudioService::Observer* observer) override;
+  void AddObserver(AudioService::Observer* observer) override;
+  void RemoveObserver(AudioService::Observer* observer) override;
 
   // Start to query audio device information.
-  virtual void StartGetInfo(const GetInfoCallback& callback) override;
-  virtual void SetActiveDevices(const DeviceIdList& device_list) override;
-  virtual bool SetDeviceProperties(const std::string& device_id,
-                                   bool muted,
-                                   int volume,
-                                   int gain) override;
+  void StartGetInfo(const GetInfoCallback& callback) override;
+  void SetActiveDevices(const DeviceIdList& device_list) override;
+  bool SetDeviceProperties(const std::string& device_id,
+                           bool muted,
+                           int volume,
+                           int gain) override;
 
   // List of observers.
   ObserverList<AudioService::Observer> observer_list_;

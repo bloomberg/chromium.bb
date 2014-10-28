@@ -160,7 +160,7 @@ class ExtensionApiCaptureTest : public ExtensionApiTest {
  public:
   ExtensionApiCaptureTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EnablePixelOutput();
     ExtensionApiTest::SetUp();
   }

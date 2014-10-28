@@ -91,9 +91,9 @@ class MockCopresenceManager : public CopresenceManager {
 class CopresenceApiUnittest : public ExtensionApiUnittest {
  public:
   CopresenceApiUnittest() {}
-  virtual ~CopresenceApiUnittest() {}
+  ~CopresenceApiUnittest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     CopresenceService* service =

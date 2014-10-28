@@ -46,7 +46,7 @@ const char kMediaKeyTestCommand[] = "test_mediakeys_update";
 class CommandsApiTest : public ExtensionApiTest {
  public:
   CommandsApiTest() {}
-  virtual ~CommandsApiTest() {}
+  ~CommandsApiTest() override {}
 
  protected:
   BrowserActionTestUtil GetBrowserActionsBar() {

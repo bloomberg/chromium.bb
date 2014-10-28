@@ -37,7 +37,7 @@ class WebstoreReinstallerBrowserTest : public WebstoreInstallerTest {
             kCrxFilename,
             kAppDomain,
             kNonAppDomain) {}
-  virtual ~WebstoreReinstallerBrowserTest() {}
+  ~WebstoreReinstallerBrowserTest() override {}
 
   void OnInstallCompletion(const base::Closure& quit_closure,
                            bool success,

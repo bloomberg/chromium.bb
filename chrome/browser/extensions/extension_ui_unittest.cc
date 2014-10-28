@@ -44,7 +44,7 @@ class ExtensionUITest : public testing::Test {
         file_thread_(content::BrowserThread::FILE, &message_loop_)  {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create an ExtensionService and ManagementPolicy to inject into the
     // ExtensionSettingsHandler.
     profile_.reset(new TestingProfile());
@@ -58,7 +58,7 @@ class ExtensionUITest : public testing::Test {
                                                 management_policy_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     handler_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.

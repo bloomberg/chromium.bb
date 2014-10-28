@@ -52,7 +52,7 @@ class CountingPolicyTest : public testing::Test {
             (&command_line, base::FilePath(), false);
   }
 
-  virtual ~CountingPolicyTest() {
+  ~CountingPolicyTest() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

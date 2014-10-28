@@ -243,7 +243,7 @@ class CommandLineWebstoreInstall
       public extensions::ExtensionRegistryObserver {
  public:
   CommandLineWebstoreInstall() : saw_install_(false), browser_open_count_(0) {}
-  virtual ~CommandLineWebstoreInstall() {}
+  ~CommandLineWebstoreInstall() override {}
 
   void SetUpOnMainThread() override {
     WebstoreStartupInstallerTest::SetUpOnMainThread();

@@ -316,7 +316,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 }  // namespace
 
 class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     EnablePixelOutput();
     CastStreamingApiTest::SetUp();
   }

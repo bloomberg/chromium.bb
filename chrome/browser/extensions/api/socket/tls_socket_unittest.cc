@@ -113,7 +113,7 @@ class TLSSocketTest : public ::testing::Test {
  public:
   TLSSocketTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     net::AddressList address_list;
     // |ssl_socket_| is owned by |socket_|. TLSSocketTest keeps a pointer to
     // it to expect invocations from TLSSocket to |ssl_socket_|.
@@ -123,7 +123,7 @@ class TLSSocketTest : public ::testing::Test {
     EXPECT_CALL(*ssl_socket_, Disconnect()).Times(1);
   };
 
-  virtual void TearDown() {
+  void TearDown() override {
     ssl_socket_ = NULL;
     socket_.reset();
   };

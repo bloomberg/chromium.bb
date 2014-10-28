@@ -84,7 +84,7 @@ class ComponentLoaderTest : public testing::Test {
                           &profile_) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")

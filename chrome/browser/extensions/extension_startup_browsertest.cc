@@ -97,7 +97,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     return true;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_TRUE(base::DeleteFile(preferences_file_, false));
 
     // TODO(phajdan.jr): Check return values of the functions below, carefully.

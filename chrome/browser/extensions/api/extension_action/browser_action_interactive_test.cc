@@ -39,7 +39,7 @@ namespace {
 class BrowserActionInteractiveTest : public ExtensionApiTest {
  public:
   BrowserActionInteractiveTest() {}
-  virtual ~BrowserActionInteractiveTest() {}
+  ~BrowserActionInteractiveTest() override {}
 
  protected:
   // Function to control whether to run popup tests for the current platform.

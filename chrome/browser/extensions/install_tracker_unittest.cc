@@ -51,7 +51,7 @@ class InstallTrackerTest : public testing::Test {
     tracker_.reset(new InstallTracker(profile_.get(), NULL));
   }
 
-  virtual ~InstallTrackerTest() {}
+  ~InstallTrackerTest() override {}
 
  protected:
   Profile* profile() { return profile_.get(); }

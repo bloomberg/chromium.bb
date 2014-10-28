@@ -37,10 +37,9 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
     sync_setup_helper_.reset(new SyncSetupHelper());
   }
 
-  virtual ~PushMessagingCanaryTest() {
-  }
+  ~PushMessagingCanaryTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
 
     ASSERT_TRUE(command_line->HasSwitch(kPasswordFileForTest));

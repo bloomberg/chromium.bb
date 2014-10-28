@@ -35,7 +35,7 @@ namespace {
 
 class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     active_script_override_.reset(new FeatureSwitch::ScopedOverride(
         FeatureSwitch::scripts_require_action(), true));
 
@@ -54,7 +54,7 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
             &command_line, base::FilePath(), false);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

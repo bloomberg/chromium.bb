@@ -69,7 +69,7 @@ double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
 class SystemStorageApiTest : public ExtensionApiTest {
  public:
   SystemStorageApiTest() {}
-  virtual ~SystemStorageApiTest() {}
+  ~SystemStorageApiTest() override {}
 
   void SetUpOnMainThread() override {
     TestStorageMonitor::CreateForBrowserTests();

@@ -167,10 +167,10 @@ class ImageWriterTestUtils {
 class ImageWriterUnitTestBase : public testing::Test {
  protected:
   ImageWriterUnitTestBase();
-  virtual ~ImageWriterUnitTestBase();
+  ~ImageWriterUnitTestBase() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   ImageWriterTestUtils test_utils_;
 

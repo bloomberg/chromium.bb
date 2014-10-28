@@ -31,7 +31,7 @@ namespace extensions {
 
 class FeedbackTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
     InProcessBrowserTest::SetUp();
   }

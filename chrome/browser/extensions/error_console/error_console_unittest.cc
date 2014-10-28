@@ -30,9 +30,9 @@ using error_test_util::CreateNewRuntimeError;
 class ErrorConsoleUnitTest : public testing::Test {
  public:
   ErrorConsoleUnitTest() : error_console_(NULL) { }
-  virtual ~ErrorConsoleUnitTest() { }
+  ~ErrorConsoleUnitTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
 
     // Errors are only kept if we have the FeatureSwitch and have Developer Mode

@@ -132,7 +132,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
  public:
   StreamsPrivateApiTest() {}
 
-  virtual ~StreamsPrivateApiTest() {}
+  ~StreamsPrivateApiTest() override {}
 
   void SetUpOnMainThread() override {
     // Init test server.

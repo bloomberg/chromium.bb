@@ -41,7 +41,7 @@ const char kAllHostsPermission[] = "*://*/*";
 class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
   ActiveScriptControllerUnitTest();
-  virtual ~ActiveScriptControllerUnitTest();
+  ~ActiveScriptControllerUnitTest() override;
 
   // Creates an extension with all hosts permission and adds it to the registry.
   const Extension* AddExtension();
@@ -71,7 +71,7 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Increment the number of executions for the given |extension_id|.
   void IncrementExecutionCount(const std::string& extension_id);
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Since ActiveScriptController's behavior is behind a flag, override the
   // feature switch.

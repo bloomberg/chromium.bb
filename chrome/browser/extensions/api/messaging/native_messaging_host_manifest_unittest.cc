@@ -25,7 +25,7 @@ const char kTestOrigin[] =
 
 class NativeMessagingHostManifestTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     manifest_path_ = temp_dir_.path().AppendASCII("test.json");
   }

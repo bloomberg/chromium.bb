@@ -40,7 +40,7 @@ namespace extensions {
 class ExtensionApiUnittest : public BrowserWithTestWindowTest {
  public:
   ExtensionApiUnittest();
-  virtual ~ExtensionApiUnittest();
+  ~ExtensionApiUnittest() override;
 
   content::WebContents* contents() { return contents_; }
 
@@ -52,7 +52,7 @@ class ExtensionApiUnittest : public BrowserWithTestWindowTest {
 
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Creates a background page for |extension_|, and sets it for the WebContents
   // to be used in API calls.

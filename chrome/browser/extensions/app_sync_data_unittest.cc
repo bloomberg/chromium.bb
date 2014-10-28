@@ -19,7 +19,7 @@ const char kValidUpdateUrl[] = "http://clients2.google.com/service/update2/crx";
 class AppSyncDataTest : public testing::Test {
  public:
   AppSyncDataTest() {}
-  virtual ~AppSyncDataTest() {}
+  ~AppSyncDataTest() override {}
 
   void SetRequiredExtensionValues(
       sync_pb::ExtensionSpecifics* extension_specifics) {

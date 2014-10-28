@@ -71,7 +71,7 @@ testing::AssertionResult ChangeSpecificsMatch(const syncer::SyncChange& change,
 class SyncedNotificationsShimTest : public testing::Test {
  public:
   SyncedNotificationsShimTest();
-  virtual ~SyncedNotificationsShimTest();
+  ~SyncedNotificationsShimTest() override;
 
   // Starts sync for both sync types.
   void StartSync();

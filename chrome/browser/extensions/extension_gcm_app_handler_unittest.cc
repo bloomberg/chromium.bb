@@ -198,11 +198,10 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {
   }
 
-  virtual ~ExtensionGCMAppHandlerTest() {
-  }
+  ~ExtensionGCMAppHandlerTest() override {}
 
   // Overridden from test::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Make BrowserThread work in unittest.
@@ -253,7 +252,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     gcm_app_handler_.reset(new FakeExtensionGCMAppHandler(profile(), &waiter_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined(OS_CHROMEOS)
     test_user_manager_.reset();
 #endif

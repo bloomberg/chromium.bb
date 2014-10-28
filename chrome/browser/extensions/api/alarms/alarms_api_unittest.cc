@@ -50,7 +50,7 @@ class ExtensionAlarmsTest : public ExtensionApiUnittest {
  public:
   using ExtensionApiUnittest::RunFunction;
 
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     test_clock_ = new base::SimpleTestClock();

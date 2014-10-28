@@ -126,8 +126,7 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
  public:
   AppBackgroundPageNaClTest()
       : extension_(NULL) {}
-  virtual ~AppBackgroundPageNaClTest() {
-  }
+  ~AppBackgroundPageNaClTest() override {}
 
   void SetUpOnMainThread() override {
     AppBackgroundPageApiTest::SetUpOnMainThread();

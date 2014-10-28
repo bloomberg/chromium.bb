@@ -6616,7 +6616,7 @@ TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
 // are provided.
 class ExtensionSourcePriorityTest : public ExtensionServiceTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionServiceTest::SetUp();
 
     // All tests use a single extension.  Put the id and path in member vars

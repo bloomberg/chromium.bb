@@ -165,7 +165,7 @@ class SystemDisplayApiTest: public ExtensionApiTest {
   SystemDisplayApiTest() : provider_(new MockDisplayInfoProvider),
                            screen_(new MockScreen) {}
 
-  virtual ~SystemDisplayApiTest() {}
+  ~SystemDisplayApiTest() override {}
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();

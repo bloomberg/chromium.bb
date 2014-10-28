@@ -62,7 +62,7 @@ class ZipFileInstallerTest : public testing::Test {
   ZipFileInstallerTest()
       : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     in_process_utility_thread_helper_.reset(
         new content::InProcessUtilityThreadHelper);
 
@@ -76,7 +76,7 @@ class ZipFileInstallerTest : public testing::Test {
     registry->AddObserver(&observer_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Need to destruct ZipFileInstaller before the message loop since
     // it posts a task to it.
     zipfile_installer_ = NULL;

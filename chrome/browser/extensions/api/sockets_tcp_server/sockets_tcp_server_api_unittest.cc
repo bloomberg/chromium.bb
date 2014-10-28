@@ -36,7 +36,7 @@ static KeyedService* ApiResourceManagerTestServerFactory(
 
 class SocketsTcpServerUnitTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance()

@@ -56,7 +56,7 @@ namespace extensions {
 
 class ActivityLogTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
@@ -72,7 +72,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

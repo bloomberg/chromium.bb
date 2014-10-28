@@ -11,7 +11,7 @@ namespace extensions {
 class FeedbackApiTest: public ExtensionApiTest {
  public:
   FeedbackApiTest() {}
-  virtual ~FeedbackApiTest() {}
+  ~FeedbackApiTest() override {}
 };
 
 // Fails on Linux/Win.  http://crbug.com/408917

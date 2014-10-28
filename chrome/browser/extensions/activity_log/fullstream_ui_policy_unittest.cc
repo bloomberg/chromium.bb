@@ -53,7 +53,7 @@ class FullStreamUIPolicyTest : public testing::Test {
             (&command_line, base::FilePath(), false);
   }
 
-  virtual ~FullStreamUIPolicyTest() {
+  ~FullStreamUIPolicyTest() override {
 #if defined OS_CHROMEOS
     test_user_manager_.reset();
 #endif

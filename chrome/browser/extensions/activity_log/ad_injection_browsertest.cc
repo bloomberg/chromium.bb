@@ -171,7 +171,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
 class AdInjectionBrowserTest : public ExtensionBrowserTest {
  protected:
   AdInjectionBrowserTest();
-  virtual ~AdInjectionBrowserTest();
+  ~AdInjectionBrowserTest() override;
 
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;

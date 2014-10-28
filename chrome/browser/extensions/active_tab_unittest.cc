@@ -77,7 +77,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                                                        true,
                                                        true)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     TabHelper::CreateForWebContents(web_contents());
   }

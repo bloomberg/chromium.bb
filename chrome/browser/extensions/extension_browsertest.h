@@ -57,7 +57,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   };
 
   ExtensionBrowserTest();
-  virtual ~ExtensionBrowserTest();
+  ~ExtensionBrowserTest() override;
 
   // Useful accessors.
   ExtensionService* extension_service() {
@@ -75,7 +75,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       const extensions::ExtensionSet* extensions, const base::FilePath& path);
 
   // InProcessBrowserTest
-  virtual void SetUp() override;
+  void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 

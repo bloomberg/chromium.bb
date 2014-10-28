@@ -61,7 +61,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   };
 
   ExtensionApiTest();
-  virtual ~ExtensionApiTest();
+  ~ExtensionApiTest() override;
 
  protected:
   // InProcessBrowserTest:

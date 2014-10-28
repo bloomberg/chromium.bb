@@ -31,7 +31,8 @@ class MockExternalLoader : public ExternalLoader {
 class DefaultAppsTest : public testing::Test {
  public:
   DefaultAppsTest() : ui_thread_(content::BrowserThread::UI, &loop_) {}
-  virtual ~DefaultAppsTest() {}
+  ~DefaultAppsTest() override {}
+
  private:
   base::MessageLoopForIO loop_;
   content::TestBrowserThread ui_thread_;

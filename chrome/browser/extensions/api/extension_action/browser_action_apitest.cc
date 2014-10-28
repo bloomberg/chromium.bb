@@ -70,7 +70,7 @@ bool ImagesAreEqualAtScale(const gfx::ImageSkia& i1,
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
   BrowserActionApiTest() {}
-  virtual ~BrowserActionApiTest() {}
+  ~BrowserActionApiTest() override {}
 
  protected:
   BrowserActionTestUtil GetBrowserActionsBar() {

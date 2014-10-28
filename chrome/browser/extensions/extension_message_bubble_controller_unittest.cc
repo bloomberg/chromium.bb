@@ -399,12 +399,12 @@ class ExtensionMessageBubbleTest : public testing::Test {
     service_->Init();
   }
 
-  virtual ~ExtensionMessageBubbleTest() {
+  ~ExtensionMessageBubbleTest() override {
     // Make sure the profile is destroyed before the thread bundle.
     profile_.reset(NULL);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 

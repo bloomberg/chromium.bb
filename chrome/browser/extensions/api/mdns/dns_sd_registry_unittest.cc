@@ -65,9 +65,9 @@ class MockDnsSdObserver : public DnsSdRegistry::DnsSdObserver {
 class DnsSdRegistryTest : public testing::Test {
  public:
   DnsSdRegistryTest() {}
-  virtual ~DnsSdRegistryTest() {}
+  ~DnsSdRegistryTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     registry_.reset(new TestDnsSdRegistry());
     registry_->AddObserver(&observer_);
   }

@@ -31,7 +31,7 @@ static KeyedService* ApiResourceManagerTestFactory(
 
 class SocketsUdpUnitTest : public ExtensionApiUnittest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
     ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance()

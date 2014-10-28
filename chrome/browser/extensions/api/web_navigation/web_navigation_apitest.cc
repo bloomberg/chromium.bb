@@ -254,7 +254,7 @@ class TestResourceDispatcherHostDelegate
 class WebNavigationApiTest : public ExtensionApiTest {
  public:
   WebNavigationApiTest() {}
-  virtual ~WebNavigationApiTest() {}
+  ~WebNavigationApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();

@@ -83,7 +83,7 @@ class MockHotwordClient : public HotwordClient {
 class HotwordPrivateApiTest : public ExtensionApiTest {
  public:
   HotwordPrivateApiTest() {}
-  virtual ~HotwordPrivateApiTest() {}
+  ~HotwordPrivateApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);

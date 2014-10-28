@@ -166,7 +166,7 @@ void JobObserver::JobFinished(const std::string& extension_id,
 class ContentVerifierTest : public ExtensionBrowserTest {
  public:
   ContentVerifierTest() {}
-  virtual ~ContentVerifierTest() {}
+  ~ContentVerifierTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
