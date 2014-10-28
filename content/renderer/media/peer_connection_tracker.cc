@@ -5,6 +5,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
@@ -244,27 +245,43 @@ static base::DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
 class InternalStatsObserver : public webrtc::StatsObserver {
  public:
   InternalStatsObserver(int lid)
-      : lid_(lid){}
+      : lid_(lid), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
   void OnComplete(const std::vector<webrtc::StatsReport>& reports) override {
-    base::ListValue list;
+    scoped_ptr<base::ListValue> list(new base::ListValue());
 
     for (size_t i = 0; i < reports.size(); ++i) {
       base::DictionaryValue* report = GetDictValue(reports[i]);
       if (report)
-        list.Append(report);
+        list->Append(report);
     }
 
-    if (!list.empty())
-      RenderThreadImpl::current()->Send(
-          new PeerConnectionTrackerHost_AddStats(lid_, list));
+    if (!list->empty()) {
+      main_thread_->PostTask(FROM_HERE,
+          base::Bind(&InternalStatsObserver::OnCompleteImpl,
+                     base::Passed(&list), lid_));
+    }
   }
 
  protected:
-  ~InternalStatsObserver() override {}
+  ~InternalStatsObserver() override {
+    // Will be destructed on libjingle's signaling thread.
+    // The signaling thread is where libjingle's objects live and from where
+    // libjingle makes callbacks.  This may or may not be the same thread as
+    // the main thread.
+  }
 
  private:
-  int lid_;
+  // Static since |this| will most likely have been deleted by the time we
+  // get here.
+  static void OnCompleteImpl(scoped_ptr<base::ListValue> list, int lid) {
+    DCHECK(!list->empty());
+    RenderThreadImpl::current()->Send(
+        new PeerConnectionTrackerHost_AddStats(lid, *list.get()));
+  }
+
+  const int lid_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 };
 
 PeerConnectionTracker::PeerConnectionTracker() : next_lid_(1) {
@@ -285,9 +302,10 @@ bool PeerConnectionTracker::OnControlMessageReceived(
 }
 
 void PeerConnectionTracker::OnGetAllStats() {
+  DCHECK(main_thread_.CalledOnValidThread());
+
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
-
     rtc::scoped_refptr<InternalStatsObserver> observer(
         new rtc::RefCountedObject<InternalStatsObserver>(it->second));
 
@@ -299,6 +317,7 @@ void PeerConnectionTracker::OnGetAllStats() {
 }
 
 void PeerConnectionTracker::OnSuspend() {
+  DCHECK(main_thread_.CalledOnValidThread());
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
@@ -310,6 +329,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config,
     const RTCMediaConstraints& constraints,
     const blink::WebFrame* frame) {
+  DCHECK(main_thread_.CalledOnValidThread());
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
   PeerConnectionInfo info;
 
@@ -330,6 +350,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
 
 void PeerConnectionTracker::UnregisterPeerConnection(
     RTCPeerConnectionHandler* pc_handler) {
+  DCHECK(main_thread_.CalledOnValidThread());
   DVLOG(1) << "PeerConnectionTracker::UnregisterPeerConnection()";
 
   std::map<RTCPeerConnectionHandler*, int>::iterator it =
@@ -350,6 +371,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
 void PeerConnectionTracker::TrackCreateOffer(
     RTCPeerConnectionHandler* pc_handler,
     const RTCMediaConstraints& constraints) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, "createOffer",
       "constraints: {" + SerializeMediaConstraints(constraints) + "}");
@@ -358,6 +380,7 @@ void PeerConnectionTracker::TrackCreateOffer(
 void PeerConnectionTracker::TrackCreateAnswer(
     RTCPeerConnectionHandler* pc_handler,
     const RTCMediaConstraints& constraints) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, "createAnswer",
       "constraints: {" + SerializeMediaConstraints(constraints) + "}");
@@ -367,6 +390,7 @@ void PeerConnectionTracker::TrackSetSessionDescription(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebRTCSessionDescription& desc,
     Source source) {
+  DCHECK(main_thread_.CalledOnValidThread());
   string sdp = base::UTF16ToUTF8(desc.sdp());
   string type = base::UTF16ToUTF8(desc.type());
 
@@ -381,6 +405,7 @@ void PeerConnectionTracker::TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       const RTCMediaConstraints& options) {
+  DCHECK(main_thread_.CalledOnValidThread());
   string servers_string = "servers: " + SerializeServers(config.servers);
 
   string transport_type =
@@ -400,6 +425,7 @@ void PeerConnectionTracker::TrackAddIceCandidate(
       const blink::WebRTCICECandidate& candidate,
       Source source,
       bool succeeded) {
+  DCHECK(main_thread_.CalledOnValidThread());
   string value =
       "sdpMid: " + base::UTF16ToUTF8(candidate.sdpMid()) + ", " +
       "sdpMLineIndex: " + base::IntToString(candidate.sdpMLineIndex()) + ", " +
@@ -419,7 +445,8 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 void PeerConnectionTracker::TrackAddStream(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebMediaStream& stream,
-    Source source){
+    Source source) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, source == SOURCE_LOCAL ? "addStream" : "onAddStream",
       SerializeMediaDescriptor(stream));
@@ -429,6 +456,7 @@ void PeerConnectionTracker::TrackRemoveStream(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebMediaStream& stream,
     Source source){
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, source == SOURCE_LOCAL ? "removeStream" : "onRemoveStream",
       SerializeMediaDescriptor(stream));
@@ -438,6 +466,7 @@ void PeerConnectionTracker::TrackCreateDataChannel(
     RTCPeerConnectionHandler* pc_handler,
     const webrtc::DataChannelInterface* data_channel,
     Source source) {
+  DCHECK(main_thread_.CalledOnValidThread());
   string value = "label: " + data_channel->label() +
                  ", reliable: " + (data_channel->reliable() ? "true" : "false");
   SendPeerConnectionUpdate(
@@ -447,12 +476,14 @@ void PeerConnectionTracker::TrackCreateDataChannel(
 }
 
 void PeerConnectionTracker::TrackStop(RTCPeerConnectionHandler* pc_handler) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(pc_handler, "stop", std::string());
 }
 
 void PeerConnectionTracker::TrackSignalingStateChange(
       RTCPeerConnectionHandler* pc_handler,
       WebRTCPeerConnectionHandlerClient::SignalingState state) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, "signalingStateChange", GetSignalingStateString(state));
 }
@@ -460,6 +491,7 @@ void PeerConnectionTracker::TrackSignalingStateChange(
 void PeerConnectionTracker::TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
       WebRTCPeerConnectionHandlerClient::ICEConnectionState state) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, "iceConnectionStateChange",
       GetIceConnectionStateString(state));
@@ -468,6 +500,7 @@ void PeerConnectionTracker::TrackIceConnectionStateChange(
 void PeerConnectionTracker::TrackIceGatheringStateChange(
       RTCPeerConnectionHandler* pc_handler,
       WebRTCPeerConnectionHandlerClient::ICEGatheringState state) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(
       pc_handler, "iceGatheringStateChange",
       GetIceGatheringStateString(state));
@@ -476,6 +509,7 @@ void PeerConnectionTracker::TrackIceGatheringStateChange(
 void PeerConnectionTracker::TrackSessionDescriptionCallback(
     RTCPeerConnectionHandler* pc_handler, Action action,
     const string& callback_type, const string& value) {
+  DCHECK(main_thread_.CalledOnValidThread());
   string update_type;
   switch (action) {
     case ACTION_SET_LOCAL_DESCRIPTION:
@@ -501,18 +535,21 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
 
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
     RTCPeerConnectionHandler* pc_handler) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(pc_handler, "onRenegotiationNeeded", std::string());
 }
 
 void PeerConnectionTracker::TrackCreateDTMFSender(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebMediaStreamTrack& track) {
+  DCHECK(main_thread_.CalledOnValidThread());
   SendPeerConnectionUpdate(pc_handler, "createDTMFSender",
                            base::UTF16ToUTF8(track.id()));
 }
 
 void PeerConnectionTracker::TrackGetUserMedia(
     const blink::WebUserMediaRequest& user_media_request) {
+  DCHECK(main_thread_.CalledOnValidThread());
   RTCMediaConstraints audio_constraints(
       GetNativeMediaConstraints(user_media_request.audioConstraints()));
   RTCMediaConstraints video_constraints(
@@ -527,6 +564,7 @@ void PeerConnectionTracker::TrackGetUserMedia(
 }
 
 int PeerConnectionTracker::GetNextLocalID() {
+  DCHECK(main_thread_.CalledOnValidThread());
   return next_lid_++;
 }
 
@@ -534,6 +572,7 @@ void PeerConnectionTracker::SendPeerConnectionUpdate(
     RTCPeerConnectionHandler* pc_handler,
     const std::string& type,
     const std::string& value) {
+  DCHECK(main_thread_.CalledOnValidThread());
   if (peer_connection_id_map_.find(pc_handler) == peer_connection_id_map_.end())
     return;
 
