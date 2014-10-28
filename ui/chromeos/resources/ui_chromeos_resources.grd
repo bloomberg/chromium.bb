@@ -44,20 +44,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="network/statusbar_network_vpn_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="network/statusbar_wired.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="status/status_power_small_all.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE" file="status/status_power_small_all_fluctuating.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK" file="status/status_power_small_all_dark_fluctuating.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="status/status_power_small_all_dark.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="status/status_update.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_GREEN" file="status/status_update_green.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_ORANGE" file="status/status_update_orange.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_RED" file="status/status_update_red.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="status/status_update_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN" file="status/status_update_dark_green.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE" file="status/status_update_dark_orange.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_RED" file="status/status_update_dark_red.png" />
-
       <!-- Default user profile images. -->
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_beaker.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_1" file="default_user_images/avatar_bee.png" />

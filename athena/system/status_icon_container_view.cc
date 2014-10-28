@@ -4,6 +4,7 @@
 
 #include "athena/system/status_icon_container_view.h"
 
+#include "athena/resources/athena_resources.h"
 #include "athena/system/network_selector.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -20,7 +21,6 @@
 #include "extensions/shell/common/version.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
