@@ -26,6 +26,9 @@ namespace content {
 
 namespace {
 
+// Do not limit number of resources, so use an unrealistically high value.
+const size_t kNumResourcesLimit = 10 * 1000 * 1000;
+
 void DidActivatePendingTree(int routing_id) {
   SynchronousCompositorOutputSurfaceDelegate* delegate =
       SynchronousCompositorImpl::FromRoutingID(routing_id);
@@ -268,11 +271,10 @@ void SynchronousCompositorOutputSurface::ReturnResources(
   ReclaimResources(&frame_ack);
 }
 
-void SynchronousCompositorOutputSurface::SetMemoryPolicy(
-    const SynchronousCompositorMemoryPolicy& policy) {
+void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
-  memory_policy_.bytes_limit_when_visible = policy.bytes_limit;
-  memory_policy_.num_resources_limit = policy.num_resources_limit;
+  memory_policy_.bytes_limit_when_visible = bytes_limit;
+  memory_policy_.num_resources_limit = kNumResourcesLimit;
 
   if (output_surface_client_)
     output_surface_client_->SetMemoryPolicy(memory_policy_);

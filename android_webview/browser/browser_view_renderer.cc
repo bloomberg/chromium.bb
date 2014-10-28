@@ -23,8 +23,6 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
-using content::SynchronousCompositorMemoryPolicy;
-
 namespace android_webview {
 
 namespace {
@@ -36,13 +34,6 @@ const size_t kMemoryMultiplier = 20;
 const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
 uint64 g_memory_override_in_bytes = 0u;
-
-// Used to calculate tile allocation. Determined experimentally.
-const size_t kTileMultiplier = 12;
-const size_t kTileAllocationStep = 20;
-// Use chrome's default tile size, which varies from 256 to 512.
-// Be conservative here and use the smallest tile size possible.
-const size_t kTileArea = 256 * 256;
 
 }  // namespace
 
@@ -60,10 +51,6 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy() {
         &g_memory_override_in_bytes);
     g_memory_override_in_bytes *= 1024 * 1024;
   }
-
-  // There is no need to limit number of tiles, so use an effectively unlimited
-  // value as the limit.
-  GlobalTileManager::GetInstance()->SetTileLimit(10 * 1000 * 1000);
 }
 
 BrowserViewRenderer::BrowserViewRenderer(
@@ -131,68 +118,29 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
   if (level < TRIM_MEMORY_BACKGROUND && visible)
     return;
 
-  // Just set the memory limit to 0 and drop all tiles. This will be reset to
-  // normal levels in the next DrawGL call.
-  SynchronousCompositorMemoryPolicy zero_policy;
-  if (memory_policy_ == zero_policy)
+  // Nothing to drop.
+  if (!compositor_ || !hardware_enabled_)
     return;
 
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
-  DCHECK(hardware_enabled_);
-  DCHECK(compositor_);
 
-  RequestMemoryPolicy(zero_policy);
-  EnforceMemoryPolicyImmediately(zero_policy);
-}
-
-SynchronousCompositorMemoryPolicy
-BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
-  SynchronousCompositorMemoryPolicy policy;
-  size_t width = last_on_draw_global_visible_rect_.width();
-  size_t height = last_on_draw_global_visible_rect_.height();
-  policy.bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
-  // Round up to a multiple of kMemoryAllocationStep.
-  policy.bytes_limit =
-      (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
-
-  if (g_memory_override_in_bytes)
-    policy.bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
-
-  size_t tiles = width * height * kTileMultiplier / kTileArea;
-  // Round up to a multiple of kTileAllocationStep. The minimum number of tiles
-  // is also kTileAllocationStep.
-  tiles = (tiles / kTileAllocationStep + 1) * kTileAllocationStep;
-  policy.num_resources_limit = tiles;
-  return policy;
-}
-
-// This function updates the cached memory policy in shared renderer state, as
-// well as the tile resource allocation in GlobalTileManager.
-void BrowserViewRenderer::RequestMemoryPolicy(
-    SynchronousCompositorMemoryPolicy& new_policy) {
-  DCHECK(compositor_);
-  GlobalTileManager* manager = GlobalTileManager::GetInstance();
-
-  // The following line will call BrowserViewRenderer::SetMemoryPolicy().
-  manager->RequestTiles(new_policy, tile_manager_key_);
-}
-
-void BrowserViewRenderer::SetMemoryPolicy(
-    SynchronousCompositorMemoryPolicy new_policy,
-    bool effective_immediately) {
-  memory_policy_ = new_policy;
-  if (effective_immediately)
-    EnforceMemoryPolicyImmediately(memory_policy_);
-}
-
-void BrowserViewRenderer::EnforceMemoryPolicyImmediately(
-    SynchronousCompositorMemoryPolicy new_policy) {
-  compositor_->SetMemoryPolicy(new_policy);
+  // Just set the memory limit to 0 and drop all tiles. This will be reset to
+  // normal levels in the next DrawGL call.
+  compositor_->SetMemoryPolicy(0u);
   ForceFakeCompositeSW();
 }
 
-SynchronousCompositorMemoryPolicy BrowserViewRenderer::GetMemoryPolicy() const {
-  return memory_policy_;
+size_t BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
+  if (g_memory_override_in_bytes)
+    return static_cast<size_t>(g_memory_override_in_bytes);
+
+  size_t width = last_on_draw_global_visible_rect_.width();
+  size_t height = last_on_draw_global_visible_rect_.height();
+  size_t bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
+  // Round up to a multiple of kMemoryAllocationStep.
+  bytes_limit =
+      (bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
+  return bytes_limit;
 }
 
 bool BrowserViewRenderer::OnDraw(jobject java_canvas,
@@ -223,9 +171,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
 
   if (!hardware_enabled_) {
     hardware_enabled_ = compositor_->InitializeHwDraw();
-    if (hardware_enabled_) {
-      tile_manager_key_ = GlobalTileManager::GetInstance()->PushBack(this);
-    }
   }
   if (!hardware_enabled_)
     return false;
@@ -253,14 +198,11 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return false;
 
   shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), false);
-  GlobalTileManager::GetInstance()->DidUse(tile_manager_key_);
   return true;
 }
 
 scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
-  SynchronousCompositorMemoryPolicy new_policy = CalculateDesiredMemoryPolicy();
-  RequestMemoryPolicy(new_policy);
-  compositor_->SetMemoryPolicy(memory_policy_);
+  compositor_->SetMemoryPolicy(CalculateDesiredMemoryPolicy());
 
   parent_draw_constraints_ =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
@@ -461,12 +403,9 @@ void BrowserViewRenderer::ReleaseHardware() {
 
   if (compositor_) {
     compositor_->ReleaseHwDraw();
-    SynchronousCompositorMemoryPolicy zero_policy;
-    RequestMemoryPolicy(zero_policy);
   }
 
   hardware_enabled_ = false;
-  GlobalTileManager::GetInstance()->Remove(tile_manager_key_);
 }
 
 bool BrowserViewRenderer::IsVisible() const {
@@ -491,11 +430,6 @@ void BrowserViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
   DCHECK(compositor_);
-  SynchronousCompositorMemoryPolicy zero_policy;
-  if (hardware_enabled_) {
-    RequestMemoryPolicy(zero_policy);
-  }
-  DCHECK(memory_policy_ == zero_policy);
   compositor_ = NULL;
 }
 

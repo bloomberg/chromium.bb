@@ -83,7 +83,7 @@ class SynchronousCompositorOutputSurface
       const gfx::Transform& transform_for_tile_priority);
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
-  void SetMemoryPolicy(const SynchronousCompositorMemoryPolicy& policy);
+  void SetMemoryPolicy(size_t bytes_limit);
   void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
 
  private:

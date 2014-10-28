@@ -63,8 +63,7 @@ class SynchronousCompositorImpl
   virtual bool DemandDrawSw(SkCanvas* canvas) override;
   virtual void ReturnResources(
       const cc::CompositorFrameAck& frame_ack) override;
-  virtual void SetMemoryPolicy(
-      const SynchronousCompositorMemoryPolicy& policy) override;
+  virtual void SetMemoryPolicy(size_t bytes_limit) override;
   virtual void DidChangeRootLayerScrollOffset() override;
 
   // SynchronousCompositorOutputSurfaceDelegate

@@ -163,12 +163,11 @@ void SynchronousCompositorImpl::UpdateFrameMetaData(
   DeliverMessages();
 }
 
-void SynchronousCompositorImpl::SetMemoryPolicy(
-    const SynchronousCompositorMemoryPolicy& policy) {
+void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  output_surface_->SetMemoryPolicy(policy);
+  output_surface_->SetMemoryPolicy(bytes_limit);
 }
 
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {

@@ -51,7 +51,6 @@
       'public/browser/android/external_video_surface_container.h',
       'public/browser/android/layer_tree_build_helper.h',
       'public/browser/android/synchronous_compositor_client.h',
-      'public/browser/android/synchronous_compositor.cc',
       'public/browser/android/synchronous_compositor.h',
       'public/browser/android/ui_resource_client_android.h',
       'public/browser/android/ui_resource_provider.h',

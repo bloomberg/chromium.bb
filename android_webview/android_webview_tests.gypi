@@ -110,7 +110,6 @@
       'sources': [
         'browser/aw_static_cookie_policy_unittest.cc',
         'browser/aw_form_database_service_unittest.cc',
-        'browser/global_tile_manager_unittest.cc',
         'browser/net/android_stream_reader_url_request_job_unittest.cc',
         'browser/net/input_stream_reader_unittest.cc',
         'lib/main/webview_tests.cc',

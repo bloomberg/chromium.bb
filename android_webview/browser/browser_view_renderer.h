@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
-#include "android_webview/browser/global_tile_manager.h"
-#include "android_webview/browser/global_tile_manager_client.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/android/scoped_java_ref.h"
@@ -23,7 +21,6 @@ class SkCanvas;
 class SkPicture;
 
 namespace content {
-struct SynchronousCompositorMemoryPolicy;
 class WebContents;
 }
 
@@ -54,8 +51,7 @@ class BrowserViewRendererJavaHelper {
 
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
-class BrowserViewRenderer : public content::SynchronousCompositorClient,
-                            public GlobalTileManagerClient {
+class BrowserViewRenderer : public content::SynchronousCompositorClient {
  public:
   static void CalculateTileMemoryPolicy();
 
@@ -108,11 +104,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool hardware_enabled() const { return hardware_enabled_; }
   void ReleaseHardware();
 
-  // Set the memory policy in shared renderer state and request the tiles from
-  // GlobalTileManager. The actually amount of memory allowed by
-  // GlobalTileManager may not be equal to what's requested in |policy|.
-  void RequestMemoryPolicy(content::SynchronousCompositorMemoryPolicy& policy);
-
   void TrimMemory(const int level, const bool visible);
 
   // SynchronousCompositorClient overrides.
@@ -134,13 +125,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) override;
-
-  // GlobalTileManagerClient overrides.
-  virtual content::SynchronousCompositorMemoryPolicy GetMemoryPolicy()
-      const override;
-  virtual void SetMemoryPolicy(
-      content::SynchronousCompositorMemoryPolicy new_policy,
-      bool effective_immediately) override;
 
   void UpdateParentDrawConstraints();
   void DidSkipCommitFrame();
@@ -179,12 +163,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // compositor that are not directly exposed here.
   void ForceFakeCompositeSW();
 
-  void EnforceMemoryPolicyImmediately(
-      content::SynchronousCompositorMemoryPolicy policy);
-
   gfx::Vector2d max_scroll_offset() const;
 
-  content::SynchronousCompositorMemoryPolicy CalculateDesiredMemoryPolicy();
+  size_t CalculateDesiredMemoryPolicy();
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.
   std::string ToString() const;
@@ -241,9 +222,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // visible skew (especially noticeable when scrolling up and down in the same
   // spot over a period of time).
   gfx::Vector2dF overscroll_rounding_error_;
-
-  GlobalTileManager::Key tile_manager_key_;
-  content::SynchronousCompositorMemoryPolicy memory_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };
