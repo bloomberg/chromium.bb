@@ -180,26 +180,44 @@ willPositionSheet:(NSWindow*)sheet
   //    the sheet below the bookmark bar.
   //  - If the bookmark bar is currently animating, position the sheet according
   //    to where the bar will be when the animation ends.
+  CGFloat defaultSheetY = defaultSheetRect.origin.y;
   switch ([bookmarkBarController_ currentState]) {
     case BookmarkBar::SHOW: {
       NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
-      defaultSheetRect.origin.y = bookmarkBarFrame.origin.y;
+      defaultSheetY = bookmarkBarFrame.origin.y;
       break;
     }
     case BookmarkBar::HIDDEN:
     case BookmarkBar::DETACHED: {
       if ([self hasToolbar]) {
         NSRect toolbarFrame = [[toolbarController_ view] frame];
-        defaultSheetRect.origin.y = toolbarFrame.origin.y;
+        defaultSheetY = toolbarFrame.origin.y;
       } else {
         // The toolbar is not shown in application mode. The sheet should be
         // located at the top of the window, under the title of the window.
-        defaultSheetRect.origin.y = NSHeight([[window contentView] frame]) -
-                                    defaultSheetRect.size.height;
+        defaultSheetY = NSHeight([[window contentView] frame]) -
+                        defaultSheetRect.size.height;
       }
       break;
     }
   }
+
+  // AppKit may shift the window up to fit the sheet on screen, but it will
+  // never adjust the height of the sheet, or the origin of the sheet relative
+  // to the window. Adjust the origin to prevent sheets from extending past the
+  // bottom of the screen.
+
+  // Don't allow the sheet to extend past the bottom of the window. This logic
+  // intentionally ignores the size of the screens, since the window might span
+  // multiple screens, and AppKit may reposition the window.
+  CGFloat sheetHeight = NSHeight([sheet frame]);
+  defaultSheetY = std::max(defaultSheetY, sheetHeight);
+
+  // It doesn't make sense to provide a Y higher than the height of the window.
+  CGFloat windowHeight = NSHeight([window frame]);
+  defaultSheetY = std::min(defaultSheetY, windowHeight);
+
+  defaultSheetRect.origin.y = defaultSheetY;
   return defaultSheetRect;
 }
 
