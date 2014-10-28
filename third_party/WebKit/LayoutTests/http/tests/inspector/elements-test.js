@@ -738,7 +738,7 @@ InspectorTest.dumpBreadcrumb = function(message)
     if (message)
         InspectorTest.addResult(message + ":");
     var result = [];
-    var crumbs = WebInspector.panels.elements.crumbsElement;
+    var crumbs = WebInspector.panels.elements._breadcrumbs.crumbsElement;
     var crumb = crumbs.lastChild;
     while (crumb) {
         result.unshift(crumb.textContent);
