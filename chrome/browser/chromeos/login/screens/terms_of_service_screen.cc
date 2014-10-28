@@ -11,7 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,9 +25,10 @@
 
 namespace chromeos {
 
-TermsOfServiceScreen::TermsOfServiceScreen(ScreenObserver* screen_observer,
-                                           TermsOfServiceScreenActor* actor)
-    : BaseScreen(screen_observer), actor_(actor) {
+TermsOfServiceScreen::TermsOfServiceScreen(
+    BaseScreenDelegate* base_screen_delegate,
+    TermsOfServiceScreenActor* actor)
+    : BaseScreen(base_screen_delegate), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -67,11 +68,13 @@ std::string TermsOfServiceScreen::GetName() const {
 }
 
 void TermsOfServiceScreen::OnDecline() {
-  get_screen_observer()->OnExit(ScreenObserver::TERMS_OF_SERVICE_DECLINED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::TERMS_OF_SERVICE_DECLINED);
 }
 
 void TermsOfServiceScreen::OnAccept() {
-  get_screen_observer()->OnExit(ScreenObserver::TERMS_OF_SERVICE_ACCEPTED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::TERMS_OF_SERVICE_ACCEPTED);
 }
 
 void TermsOfServiceScreen::OnActorDestroyed(TermsOfServiceScreenActor* actor) {

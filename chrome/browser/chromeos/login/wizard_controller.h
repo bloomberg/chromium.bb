@@ -20,10 +20,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -57,7 +57,7 @@ class UserImageScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public ScreenObserver,
+class WizardController : public BaseScreenDelegate,
                          public ScreenManager,
                          public EulaScreen::Delegate,
                          public ControllerPairingScreen::Delegate,
@@ -241,7 +241,7 @@ class WizardController : public ScreenObserver,
   // Actions that should be done right after update stage is finished.
   void PerformOOBECompletedActions();
 
-  // Overridden from ScreenObserver:
+  // Overridden from BaseScreenDelegate:
   virtual void OnExit(ExitCodes exit_code) override;
   virtual void ShowCurrentScreen() override;
   virtual ErrorScreen* GetErrorScreen() override;

@@ -36,9 +36,8 @@ class SupervisedUserCreationScreen
       public NetworkPortalDetector::Observer,
       public CameraPresenceNotifier::Observer {
  public:
-  SupervisedUserCreationScreen(
-      ScreenObserver* observer,
-      SupervisedUserCreationScreenHandler* actor);
+  SupervisedUserCreationScreen(BaseScreenDelegate* base_screen_delegate,
+                               SupervisedUserCreationScreenHandler* actor);
   virtual ~SupervisedUserCreationScreen();
 
   static SupervisedUserCreationScreen* Get(ScreenManager* manager);

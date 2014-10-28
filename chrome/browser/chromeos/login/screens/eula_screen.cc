@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -15,8 +15,9 @@
 
 namespace chromeos {
 
-EulaScreen::EulaScreen(ScreenObserver* observer, EulaScreenActor* actor)
-    : BaseScreen(observer),
+EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
+                       EulaScreenActor* actor)
+    : BaseScreen(base_screen_delegate),
       actor_(actor),
       delegate_(nullptr),
       password_fetcher_(this) {
@@ -78,9 +79,9 @@ GURL EulaScreen::GetOemEulaUrl() const {
 void EulaScreen::OnExit(bool accepted, bool usage_stats_enabled) {
   if (delegate_)
     delegate_->SetUsageStatisticsReporting(usage_stats_enabled);
-  get_screen_observer()->OnExit(accepted
-                   ? ScreenObserver::EULA_ACCEPTED
-                   : ScreenObserver::EULA_BACK);
+  get_base_screen_delegate()->OnExit(accepted
+                                         ? BaseScreenDelegate::EULA_ACCEPTED
+                                         : BaseScreenDelegate::EULA_BACK);
 }
 
 void EulaScreen::InitiatePasswordFetch() {

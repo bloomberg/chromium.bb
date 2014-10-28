@@ -5,13 +5,14 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
-ResetScreen::ResetScreen(ScreenObserver* observer, ResetScreenActor* actor)
-    : BaseScreen(observer), actor_(actor) {
+ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
+                         ResetScreenActor* actor)
+    : BaseScreen(base_screen_delegate), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -42,7 +43,7 @@ std::string ResetScreen::GetName() const {
 }
 
 void ResetScreen::OnExit() {
-  get_screen_observer()->OnExit(ScreenObserver::RESET_CANCELED);
+  get_base_screen_delegate()->OnExit(BaseScreenDelegate::RESET_CANCELED);
 }
 
 void ResetScreen::OnActorDestroyed(ResetScreenActor* actor) {

@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -24,9 +24,10 @@
 
 namespace chromeos {
 
-DeviceDisabledScreen::DeviceDisabledScreen(ScreenObserver* observer,
-                                           DeviceDisabledScreenActor* actor)
-    : BaseScreen(observer),
+DeviceDisabledScreen::DeviceDisabledScreen(
+    BaseScreenDelegate* base_screen_delegate,
+    DeviceDisabledScreenActor* actor)
+    : BaseScreen(base_screen_delegate),
       showing_(false),
       actor_(actor),
       weak_factory_(this) {
@@ -106,7 +107,7 @@ void DeviceDisabledScreen::OnActorDestroyed(DeviceDisabledScreenActor* actor) {
 }
 
 void DeviceDisabledScreen::IndicateDeviceNotDisabled() {
-  get_screen_observer()->OnExit(ScreenObserver::DEVICE_NOT_DISABLED);
+  get_base_screen_delegate()->OnExit(BaseScreenDelegate::DEVICE_NOT_DISABLED);
 }
 
 }  // namespace chromeos

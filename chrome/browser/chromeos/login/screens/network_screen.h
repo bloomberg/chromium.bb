@@ -26,7 +26,8 @@ class NetworkScreen : public BaseScreen,
                       public NetworkStateHandlerObserver,
                       public NetworkScreenActor::Delegate {
  public:
-  NetworkScreen(ScreenObserver* screen_observer, NetworkScreenActor* actor);
+  NetworkScreen(BaseScreenDelegate* base_screen_delegate,
+                NetworkScreenActor* actor);
   virtual ~NetworkScreen();
 
   static NetworkScreen* Get(ScreenManager* manager);

@@ -19,7 +19,8 @@ namespace chromeos {
 class WrongHWIDScreen : public BaseScreen,
                         public WrongHWIDScreenActor::Delegate {
  public:
-  WrongHWIDScreen(ScreenObserver* observer, WrongHWIDScreenActor* actor);
+  WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
+                  WrongHWIDScreenActor* actor);
   virtual ~WrongHWIDScreen();
 
   // BaseScreen implementation:

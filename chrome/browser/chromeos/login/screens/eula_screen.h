@@ -30,7 +30,7 @@ class EulaScreen : public BaseScreen,
     virtual bool GetUsageStatisticsReporting() const = 0;
   };
 
-  EulaScreen(ScreenObserver* observer, EulaScreenActor* actor);
+  EulaScreen(BaseScreenDelegate* base_screen_delegate, EulaScreenActor* actor);
   virtual ~EulaScreen();
 
   void SetDelegate(Delegate* delegate);

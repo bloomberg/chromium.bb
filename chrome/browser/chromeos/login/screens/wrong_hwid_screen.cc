@@ -4,14 +4,14 @@
 
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
-WrongHWIDScreen::WrongHWIDScreen(ScreenObserver* observer,
+WrongHWIDScreen::WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
                                  WrongHWIDScreenActor* actor)
-    : BaseScreen(observer), actor_(actor) {
+    : BaseScreen(base_screen_delegate), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -42,7 +42,8 @@ std::string WrongHWIDScreen::GetName() const {
 }
 
 void WrongHWIDScreen::OnExit() {
-  get_screen_observer()->OnExit(ScreenObserver::WRONG_HWID_WARNING_SKIPPED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
 }
 
 void WrongHWIDScreen::OnActorDestroyed(WrongHWIDScreenActor* actor) {

@@ -19,7 +19,7 @@ class URLFetcher;
 
 namespace chromeos {
 
-class ScreenObserver;
+class BaseScreenDelegate;
 
 // A screen that shows Terms of Service which have been configured through
 // policy. The screen is shown during login and requires the user to accept the
@@ -29,7 +29,7 @@ class TermsOfServiceScreen : public BaseScreen,
                              public TermsOfServiceScreenActor::Delegate,
                              public net::URLFetcherDelegate {
  public:
-  TermsOfServiceScreen(ScreenObserver* screen_observer,
+  TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
                        TermsOfServiceScreenActor* actor);
   virtual ~TermsOfServiceScreen();
 

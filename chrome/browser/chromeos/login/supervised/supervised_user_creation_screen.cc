@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
@@ -96,9 +96,9 @@ SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
 }
 
 SupervisedUserCreationScreen::SupervisedUserCreationScreen(
-    ScreenObserver* observer,
+    BaseScreenDelegate* base_screen_delegate,
     SupervisedUserCreationScreenHandler* actor)
-    : BaseScreen(observer),
+    : BaseScreen(base_screen_delegate),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),
@@ -156,14 +156,14 @@ void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state)  {
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
-    get_screen_observer()->HideErrorScreen(this);
+    get_base_screen_delegate()->HideErrorScreen(this);
     histogram_helper_->OnErrorHide();
   } else {
     on_error_screen_ = true;
-    ErrorScreen* screen = get_screen_observer()->GetErrorScreen();
+    ErrorScreen* screen = get_base_screen_delegate()->GetErrorScreen();
     ConfigureErrorScreen(screen, network, state.status);
     screen->SetUIState(ErrorScreen::UI_STATE_SUPERVISED);
-    get_screen_observer()->ShowErrorScreen();
+    get_base_screen_delegate()->ShowErrorScreen();
     histogram_helper_->OnErrorShow(screen->GetErrorState());
   }
 }

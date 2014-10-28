@@ -17,7 +17,8 @@ namespace chromeos {
 // Representation independent class that controls screen showing reset to users.
 class ResetScreen : public BaseScreen, public ResetScreenActor::Delegate {
  public:
-  ResetScreen(ScreenObserver* observer, ResetScreenActor* actor);
+  ResetScreen(BaseScreenDelegate* base_screen_delegate,
+              ResetScreenActor* actor);
   virtual ~ResetScreen();
 
   // BaseScreen implementation:

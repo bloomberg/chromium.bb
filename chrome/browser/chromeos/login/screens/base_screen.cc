@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 
 namespace chromeos {
 
-BaseScreen::BaseScreen(ScreenObserver* screen_observer)
-    : screen_observer_(screen_observer) {
+BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate)
+    : base_screen_delegate_(base_screen_delegate) {
 }
 
 BaseScreen::~BaseScreen() {

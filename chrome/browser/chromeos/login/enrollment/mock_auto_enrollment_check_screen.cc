@@ -10,10 +10,9 @@ using ::testing::NotNull;
 namespace chromeos {
 
 MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
-    ScreenObserver* screen_observer,
+    BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenActor* actor)
-    : AutoEnrollmentCheckScreen(screen_observer,
-                                actor) {
+    : AutoEnrollmentCheckScreen(base_screen_delegate, actor) {
 }
 
 MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() { }

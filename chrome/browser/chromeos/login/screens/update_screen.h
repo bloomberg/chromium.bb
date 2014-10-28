@@ -21,11 +21,11 @@
 
 namespace chromeos {
 
+class BaseScreenDelegate;
 class ErrorScreen;
 class ErrorScreensHistogramHelper;
 class NetworkState;
 class ScreenManager;
-class ScreenObserver;
 
 // Controller for the update screen. It does not depend on the specific
 // implementation of the screen showing (Views of WebUI based), the dependency
@@ -35,7 +35,7 @@ class UpdateScreen : public UpdateEngineClient::Observer,
                      public BaseScreen,
                      public NetworkPortalDetector::Observer {
  public:
-  UpdateScreen(ScreenObserver* screen_observer,
+  UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                UpdateScreenActor* actor,
                pairing_chromeos::HostPairingController* remora_controller);
   virtual ~UpdateScreen();
@@ -71,7 +71,7 @@ class UpdateScreen : public UpdateEngineClient::Observer,
      REASON_UPDATE_NON_CRITICAL,
      REASON_UPDATE_ENDED
   };
-  // Reports update results to the ScreenObserver.
+  // Reports update results to the BaseScreenDelegate.
   virtual void ExitUpdate(ExitReason reason);
 
   // UpdateEngineClient::Observer implementation:

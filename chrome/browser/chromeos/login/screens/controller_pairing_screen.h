@@ -28,7 +28,7 @@ class ControllerPairingScreen
   };
 
   ControllerPairingScreen(
-      ScreenObserver* observer,
+      BaseScreenDelegate* base_screen_delegate,
       ControllerPairingScreenActor* actor,
       pairing_chromeos::ControllerPairingController* shark_controller);
   virtual ~ControllerPairingScreen();

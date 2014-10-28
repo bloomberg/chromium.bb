@@ -13,8 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -93,10 +93,10 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kUpdateScreenName));
 }
 
-UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
+UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateScreenActor* actor,
                            HostPairingController* remora_controller)
-    : BaseScreen(screen_observer),
+    : BaseScreen(base_screen_delegate),
       state_(STATE_IDLE),
       reboot_check_delay_(0),
       is_checking_for_update_(true),
@@ -335,11 +335,11 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:
-      get_screen_observer()->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+      get_base_screen_delegate()->OnExit(BaseScreenDelegate::UPDATE_NOUPDATE);
       break;
     case REASON_UPDATE_INIT_FAILED:
-      get_screen_observer()->OnExit(
-          ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+      get_base_screen_delegate()->OnExit(
+          BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE);
       break;
     case REASON_UPDATE_NON_CRITICAL:
     case REASON_UPDATE_ENDED:
@@ -358,13 +358,15 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
             // Noncritical update, just exit screen as if there is no update.
             // no break
           case UpdateEngineClient::UPDATE_STATUS_IDLE:
-            get_screen_observer()->OnExit(ScreenObserver::UPDATE_NOUPDATE);
+            get_base_screen_delegate()->OnExit(
+                BaseScreenDelegate::UPDATE_NOUPDATE);
             break;
           case UpdateEngineClient::UPDATE_STATUS_ERROR:
           case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-            get_screen_observer()->OnExit(is_checking_for_update_ ?
-                ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE :
-                ScreenObserver::UPDATE_ERROR_UPDATING);
+            get_base_screen_delegate()->OnExit(
+                is_checking_for_update_
+                    ? BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE
+                    : BaseScreenDelegate::UPDATE_ERROR_UPDATING);
             break;
           default:
             NOTREACHED();
@@ -385,7 +387,7 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 
 void UpdateScreen::MakeSureScreenIsShown() {
   if (!is_shown_)
-    get_screen_observer()->ShowCurrentScreen();
+    get_base_screen_delegate()->ShowCurrentScreen();
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {
@@ -480,7 +482,7 @@ void UpdateScreen::OnConnectToNetworkRequested() {
 }
 
 ErrorScreen* UpdateScreen::GetErrorScreen() {
-  return get_screen_observer()->GetErrorScreen();
+  return get_base_screen_delegate()->GetErrorScreen();
 }
 
 void UpdateScreen::StartUpdateCheck() {
@@ -498,13 +500,13 @@ void UpdateScreen::ShowErrorMessage() {
   LOG(WARNING) << "UpdateScreen::ShowErrorMessage()";
   state_ = STATE_ERROR;
   GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_UPDATE);
-  get_screen_observer()->ShowErrorScreen();
+  get_base_screen_delegate()->ShowErrorScreen();
   histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
 }
 
 void UpdateScreen::HideErrorMessage() {
   LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
-  get_screen_observer()->HideErrorScreen(this);
+  get_base_screen_delegate()->HideErrorScreen(this);
   histogram_helper_->OnErrorHide();
 }
 

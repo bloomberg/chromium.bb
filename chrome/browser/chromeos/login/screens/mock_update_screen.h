@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_UPDATE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_UPDATE_SCREEN_H_
 
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen_actor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -14,7 +14,8 @@ namespace chromeos {
 
 class MockUpdateScreen : public UpdateScreen {
  public:
-  MockUpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
+  MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
+                   UpdateScreenActor* actor);
   virtual ~MockUpdateScreen();
 
   MOCK_METHOD0(StartNetworkCheck, void());

@@ -15,7 +15,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
@@ -52,9 +52,9 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kEnrollmentScreenName));
 }
 
-EnrollmentScreen::EnrollmentScreen(ScreenObserver* observer,
+EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                                    EnrollmentScreenActor* actor)
-    : BaseScreen(observer),
+    : BaseScreen(base_screen_delegate),
       shark_controller_(NULL),
       remora_controller_(NULL),
       actor_(actor),
@@ -226,18 +226,18 @@ void EnrollmentScreen::OnCancel() {
   if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
       enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
     actor_->ResetAuth(
-        base::Bind(&ScreenObserver::OnExit,
-                   base::Unretained(get_screen_observer()),
-                   ScreenObserver::ENTERPRISE_ENROLLMENT_BACK));
+        base::Bind(&BaseScreenDelegate::OnExit,
+                   base::Unretained(get_base_screen_delegate()),
+                   BaseScreenDelegate::ENTERPRISE_ENROLLMENT_BACK));
     return;
   }
 
   if (is_auto_enrollment())
     policy::AutoEnrollmentClient::CancelAutoEnrollment();
   actor_->ResetAuth(
-      base::Bind(&ScreenObserver::OnExit,
-                 base::Unretained(get_screen_observer()),
-                 ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED));
+      base::Bind(&BaseScreenDelegate::OnExit,
+                 base::Unretained(get_base_screen_delegate()),
+                 BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
@@ -255,13 +255,13 @@ void EnrollmentScreen::OnConfirmationClosed() {
       !user_.empty() &&
       LoginUtils::IsWhitelisted(user_, NULL)) {
     actor_->ShowLoginSpinnerScreen();
-    get_screen_observer()->OnExit(
-        ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
+    get_base_screen_delegate()->OnExit(
+        BaseScreenDelegate::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
   } else {
     actor_->ResetAuth(
-        base::Bind(&ScreenObserver::OnExit,
-                   base::Unretained(get_screen_observer()),
-                   ScreenObserver::ENTERPRISE_ENROLLMENT_COMPLETED));
+        base::Bind(&BaseScreenDelegate::OnExit,
+                   base::Unretained(get_base_screen_delegate()),
+                   BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
   }
 }
 

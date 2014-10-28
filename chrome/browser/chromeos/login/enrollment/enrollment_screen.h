@@ -28,8 +28,8 @@ class ControllerPairingController;
 
 namespace chromeos {
 
+class BaseScreenDelegate;
 class ScreenManager;
-class ScreenObserver;
 
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
@@ -40,7 +40,7 @@ class EnrollmentScreen
  public:
   typedef pairing_chromeos::HostPairingController::Stage Stage;
 
-  EnrollmentScreen(ScreenObserver* observer,
+  EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                    EnrollmentScreenActor* actor);
   virtual ~EnrollmentScreen();
 

@@ -939,7 +939,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardController, chromeos::ScreenObserver overrides:
+// WizardController, chromeos::BaseScreenDelegate overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
   VLOG(1) << "Wizard screen exit code: " << exit_code;
   std::string previous_screen_id = current_screen_->GetName();

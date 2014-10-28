@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
@@ -26,9 +26,9 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 }
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
-    ScreenObserver* observer,
+    BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenActor* actor)
-    : BaseScreen(observer),
+    : BaseScreen(base_screen_delegate),
       actor_(actor),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
@@ -99,8 +99,8 @@ std::string AutoEnrollmentCheckScreen::GetName() const {
 }
 
 void AutoEnrollmentCheckScreen::OnExit() {
-  get_screen_observer()->OnExit(
-      ScreenObserver::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 }
 
 void AutoEnrollmentCheckScreen::OnActorDestroyed(
@@ -128,7 +128,7 @@ void AutoEnrollmentCheckScreen::UpdateState(
     UpdateAutoEnrollmentState(new_auto_enrollment_state);
 
   // Update the connecting indicator.
-  ErrorScreen* error_screen = get_screen_observer()->GetErrorScreen();
+  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
   error_screen->ShowConnectingIndicator(
       new_auto_enrollment_state == policy::AUTO_ENROLLMENT_STATE_PENDING);
 
@@ -177,7 +177,7 @@ bool AutoEnrollmentCheckScreen::UpdateCaptivePortalStatus(
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       ShowErrorScreen(ErrorScreen::ERROR_STATE_PORTAL);
       if (captive_portal_status_ != new_captive_portal_status)
-        get_screen_observer()->GetErrorScreen()->FixCaptivePortal();
+        get_base_screen_delegate()->GetErrorScreen()->FixCaptivePortal();
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
       ShowErrorScreen(ErrorScreen::ERROR_STATE_PROXY);
@@ -218,20 +218,20 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
     ErrorScreen::ErrorState error_state) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  ErrorScreen* error_screen = get_screen_observer()->GetErrorScreen();
+  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
   error_screen->SetUIState(ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR);
   error_screen->AllowGuestSignin(true);
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());
-  get_screen_observer()->ShowErrorScreen();
+  get_base_screen_delegate()->ShowErrorScreen();
   histogram_helper_->OnErrorShow(error_state);
 }
 
 void AutoEnrollmentCheckScreen::SignalCompletion() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
   auto_enrollment_progress_subscription_.reset();
-  get_screen_observer()->OnExit(
-      ScreenObserver::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 }
 
 }  // namespace chromeos

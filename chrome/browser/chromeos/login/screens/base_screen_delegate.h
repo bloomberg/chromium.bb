@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_BASE_SCREEN_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_BASE_SCREEN_DELEGATE_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@ class BaseScreen;
 
 // Interface that handles notifications received from any of login wizard
 // screens.
-class ScreenObserver {
+class BaseScreenDelegate {
  public:
   // Each login screen or a view shown within login wizard view is itself a
   // state. Upon exit each view returns one of the results by calling OnExit()
@@ -64,9 +64,9 @@ class ScreenObserver {
   virtual void HideErrorScreen(BaseScreen* parent_screen) = 0;
 
  protected:
-  virtual ~ScreenObserver() {}
+  virtual ~BaseScreenDelegate() {}
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_SCREEN_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_BASE_SCREEN_DELEGATE_H_

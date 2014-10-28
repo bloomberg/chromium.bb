@@ -6,9 +6,9 @@
 
 namespace chromeos {
 
-MockErrorScreen::MockErrorScreen(ScreenObserver* screen_observer,
+MockErrorScreen::MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
                                  ErrorScreenActor* actor)
-    : ErrorScreen(screen_observer, actor) {
+    : ErrorScreen(base_screen_delegate, actor) {
 }
 
 MockErrorScreen::~MockErrorScreen() {
@@ -20,4 +20,4 @@ MockErrorScreenActor::MockErrorScreenActor() {
 MockErrorScreenActor::~MockErrorScreenActor() {
 }
 
-}  // namespace chromeosx
+}  // namespace chromeos

@@ -17,7 +17,7 @@
 
 namespace chromeos {
 
-class ScreenObserver;
+class BaseScreenDelegate;
 
 // Controller for the error screen.
 class ErrorScreen : public BaseScreen,
@@ -47,7 +47,8 @@ class ErrorScreen : public BaseScreen,
     ERROR_STATE_KIOSK_ONLINE,
   };
 
-  ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
+  ErrorScreen(BaseScreenDelegate* base_screen_delegate,
+              ErrorScreenActor* actor);
   virtual ~ErrorScreen();
 
   // BaseScreen implementation.

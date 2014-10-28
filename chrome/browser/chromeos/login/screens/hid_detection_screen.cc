@@ -4,14 +4,14 @@
 
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
-HIDDetectionScreen::HIDDetectionScreen(ScreenObserver* observer,
+HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                                        HIDDetectionScreenActor* actor)
-    : BaseScreen(observer), actor_(actor) {
+    : BaseScreen(base_screen_delegate), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -40,7 +40,8 @@ std::string HIDDetectionScreen::GetName() const {
 }
 
 void HIDDetectionScreen::OnExit() {
-  get_screen_observer()->OnExit(ScreenObserver::HID_DETECTION_COMPLETED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::HID_DETECTION_COMPLETED);
 }
 
 void HIDDetectionScreen::OnActorDestroyed(HIDDetectionScreenActor* actor) {

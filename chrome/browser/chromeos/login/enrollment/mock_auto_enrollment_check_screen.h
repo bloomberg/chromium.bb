@@ -13,9 +13,8 @@ namespace chromeos {
 
 class MockAutoEnrollmentCheckScreen : public AutoEnrollmentCheckScreen {
  public:
-  MockAutoEnrollmentCheckScreen(
-      ScreenObserver* screen_observer,
-      AutoEnrollmentCheckScreenActor* actor);
+  MockAutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
+                                AutoEnrollmentCheckScreenActor* actor);
   virtual ~MockAutoEnrollmentCheckScreen();
 };
 

@@ -19,7 +19,8 @@ namespace chromeos {
 class KioskEnableScreen : public BaseScreen,
                           public KioskEnableScreenActor::Delegate {
  public:
-  KioskEnableScreen(ScreenObserver* observer, KioskEnableScreenActor* actor);
+  KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
+                    KioskEnableScreenActor* actor);
   virtual ~KioskEnableScreen();
 
   // BaseScreen implementation:

@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -60,14 +60,14 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   virtual void SetUpOnMainThread() override {
     WizardInProcessBrowserTest::SetUpOnMainThread();
-    mock_screen_observer_.reset(new MockScreenObserver());
+    mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     ASSERT_TRUE(WizardController::default_controller() != NULL);
     network_screen_ =
         NetworkScreen::Get(WizardController::default_controller());
     ASSERT_TRUE(network_screen_ != NULL);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
-    network_screen_->screen_observer_ = mock_screen_observer_.get();
+    network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
     ASSERT_TRUE(network_screen_->actor() != NULL);
 
     mock_network_state_helper_ = new login::MockNetworkStateHelper;
@@ -80,9 +80,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
-    EXPECT_CALL(*mock_screen_observer_,
-                OnExit(ScreenObserver::NETWORK_CONNECTED))
-        .Times(1);
+    EXPECT_CALL(*mock_base_screen_delegate_,
+                OnExit(BaseScreenDelegate::NETWORK_CONNECTED)).Times(1);
     EXPECT_CALL(*mock_network_state_helper_, IsConnected())
         .WillOnce(Return(true));
     network_screen->OnContinuePressed();
@@ -101,7 +100,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .WillRepeatedly((Return(false)));
   }
 
-  scoped_ptr<MockScreenObserver> mock_screen_observer_;
+  scoped_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
   FakeSessionManagerClient* fake_session_manager_client_;

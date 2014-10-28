@@ -19,7 +19,8 @@ namespace chromeos {
 class HIDDetectionScreen : public BaseScreen,
                            public HIDDetectionScreenActor::Delegate {
  public:
-  HIDDetectionScreen(ScreenObserver* observer, HIDDetectionScreenActor* actor);
+  HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
+                     HIDDetectionScreenActor* actor);
   virtual ~HIDDetectionScreen();
 
   // BaseScreen implementation:

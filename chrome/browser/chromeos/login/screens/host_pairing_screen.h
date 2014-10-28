@@ -28,7 +28,8 @@ class HostPairingScreen
                                const std::string& keyboard_layout) = 0;
   };
 
-  HostPairingScreen(ScreenObserver* observer, HostPairingScreenActor* actor,
+  HostPairingScreen(BaseScreenDelegate* base_screen_delegate,
+                    HostPairingScreenActor* actor,
                     pairing_chromeos::HostPairingController* remora_controller);
   virtual ~HostPairingScreen();
 

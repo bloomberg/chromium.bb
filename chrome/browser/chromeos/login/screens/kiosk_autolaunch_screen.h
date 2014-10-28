@@ -19,7 +19,7 @@ namespace chromeos {
 class KioskAutolaunchScreen : public BaseScreen,
                               public KioskAutolaunchScreenActor::Delegate {
  public:
-  KioskAutolaunchScreen(ScreenObserver* observer,
+  KioskAutolaunchScreen(BaseScreenDelegate* base_screen_delegate,
                         KioskAutolaunchScreenActor* actor);
   virtual ~KioskAutolaunchScreen();
 

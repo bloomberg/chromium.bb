@@ -13,7 +13,8 @@ namespace chromeos {
 
 class MockErrorScreen : public ErrorScreen {
  public:
-  MockErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
+  MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
+                  ErrorScreenActor* actor);
   virtual ~MockErrorScreen();
 };
 

@@ -6,14 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
-KioskEnableScreen::KioskEnableScreen(ScreenObserver* observer,
+KioskEnableScreen::KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
                                      KioskEnableScreenActor* actor)
-    : BaseScreen(observer), actor_(actor) {
+    : BaseScreen(base_screen_delegate), actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -34,7 +34,8 @@ std::string KioskEnableScreen::GetName() const {
 }
 
 void KioskEnableScreen::OnExit() {
-  get_screen_observer()->OnExit(ScreenObserver::KIOSK_ENABLE_COMPLETED);
+  get_base_screen_delegate()->OnExit(
+      BaseScreenDelegate::KIOSK_ENABLE_COMPLETED);
 }
 
 void KioskEnableScreen::OnActorDestroyed(KioskEnableScreenActor* actor) {

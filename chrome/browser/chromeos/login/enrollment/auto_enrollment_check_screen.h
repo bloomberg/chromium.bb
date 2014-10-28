@@ -15,9 +15,9 @@
 
 namespace chromeos {
 
+class BaseScreenDelegate;
 class ErrorScreensHistogramHelper;
 class ScreenManager;
-class ScreenObserver;
 
 // Handles the control flow after OOBE auto-update completes to wait for the
 // enterprise auto-enrollment check that happens as part of OOBE. This includes
@@ -29,15 +29,14 @@ class AutoEnrollmentCheckScreen
       public BaseScreen,
       public NetworkPortalDetector::Observer {
  public:
-  AutoEnrollmentCheckScreen(
-      ScreenObserver* observer,
-      AutoEnrollmentCheckScreenActor* actor);
+  AutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
+                            AutoEnrollmentCheckScreenActor* actor);
   virtual ~AutoEnrollmentCheckScreen();
 
   static AutoEnrollmentCheckScreen* Get(ScreenManager* manager);
 
   // Hands over OOBE control to this AutoEnrollmentCheckStep. It'll return the
-  // flow back to the caller via the |screen_observer_|'s OnExit function.
+  // flow back to the caller via the |base_screen_delegate_|'s OnExit function.
   void Start();
 
   void set_auto_enrollment_controller(

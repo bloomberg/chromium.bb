@@ -12,13 +12,13 @@
 
 namespace chromeos {
 
-class ScreenObserver;
+class BaseScreenDelegate;
 
 // Screen informing the user that the device has been disabled by its owner.
 class DeviceDisabledScreen : public BaseScreen,
                              public DeviceDisabledScreenActor::Delegate {
  public:
-  DeviceDisabledScreen(ScreenObserver* observer,
+  DeviceDisabledScreen(BaseScreenDelegate* base_screen_delegate,
                        DeviceDisabledScreenActor* actor);
   ~DeviceDisabledScreen() override;
 

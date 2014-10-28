@@ -9,9 +9,9 @@ namespace chromeos {
 using ::testing::AtLeast;
 using ::testing::NotNull;
 
-MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer,
+MockUpdateScreen::MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
                                    UpdateScreenActor* actor)
-    : UpdateScreen(screen_observer, actor, NULL) {
+    : UpdateScreen(base_screen_delegate, actor, NULL) {
 }
 
 MockUpdateScreen::~MockUpdateScreen() {

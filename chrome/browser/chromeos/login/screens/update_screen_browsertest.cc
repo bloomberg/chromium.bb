@@ -6,8 +6,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
@@ -68,14 +68,13 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpOnMainThread() override {
     WizardInProcessBrowserTest::SetUpOnMainThread();
 
-    mock_screen_observer_.reset(new MockScreenObserver());
+    mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     mock_error_screen_actor_.reset(new MockErrorScreenActor());
-    mock_error_screen_.reset(
-        new MockErrorScreen(mock_screen_observer_.get(),
-                            mock_error_screen_actor_.get()));
-    EXPECT_CALL(*mock_screen_observer_, ShowCurrentScreen())
+    mock_error_screen_.reset(new MockErrorScreen(
+        mock_base_screen_delegate_.get(), mock_error_screen_actor_.get()));
+    EXPECT_CALL(*mock_base_screen_delegate_, ShowCurrentScreen())
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_screen_observer_, GetErrorScreen())
+    EXPECT_CALL(*mock_base_screen_delegate_, GetErrorScreen())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_error_screen_.get()));
 
@@ -84,7 +83,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     ASSERT_TRUE(update_screen_ != NULL);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               update_screen_);
-    update_screen_->screen_observer_ = mock_screen_observer_.get();
+    update_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
   }
 
   virtual void TearDownOnMainThread() override {
@@ -116,7 +115,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   FakeUpdateEngineClient* fake_update_engine_client_;
-  scoped_ptr<MockScreenObserver> mock_screen_observer_;
+  scoped_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   scoped_ptr<MockErrorScreenActor> mock_error_screen_actor_;
   scoped_ptr<MockErrorScreen> mock_error_screen_;
   UpdateScreen* update_screen_;
@@ -142,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestNoUpdate) {
   // UpdateStatusChanged().
   fake_update_engine_client_->set_default_status(status);
 
-  EXPECT_CALL(*mock_screen_observer_, OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->UpdateStatusChanged(status);
 }
 
@@ -184,15 +183,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
   // First, cancel the update that is already in progress.
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->CancelUpdate();
 
   fake_update_engine_client_->set_update_check_result(
       chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
   update_screen_->StartNetworkCheck();
 }
@@ -204,8 +202,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
   // UpdateStatusChanged().
   fake_update_engine_client_->set_default_status(status);
 
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
   update_screen_->UpdateStatusChanged(status);
 }
@@ -225,16 +223,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
   // UpdateStatusChanged().
   fake_update_engine_client_->set_default_status(status);
 
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_ERROR_UPDATING))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_ERROR_UPDATING)).Times(1);
   update_screen_->UpdateStatusChanged(status);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->CancelUpdate();
 
   // Change ethernet state to portal.
@@ -253,8 +249,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
       .Times(1);
   EXPECT_CALL(*mock_error_screen_actor_, FixCaptivePortal())
       .Times(1);
-  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
 
@@ -265,22 +260,21 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemproraryOfflineNetwork) {
 
   // Second notification from portal detector will be about online state,
   // so update screen will hide error message and proceed to update.
-  EXPECT_CALL(*mock_screen_observer_, HideErrorScreen(update_screen_))
+  EXPECT_CALL(*mock_base_screen_delegate_, HideErrorScreen(update_screen_))
       .Times(1);
   fake_update_engine_client_->set_update_check_result(
       chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
 
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
 
   NotifyPortalDetectionCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->CancelUpdate();
 
   // Change ethernet state to portal.
@@ -299,8 +293,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
       .Times(1);
   EXPECT_CALL(*mock_error_screen_actor_, FixCaptivePortal())
       .Times(1);
-  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
 
@@ -325,9 +318,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   SetDefaultNetwork(std::string());
 
   // Cancels pending update request.
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->CancelUpdate();
 
   // First portal detection attempt returns NULL network and undefined
@@ -338,8 +330,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   EXPECT_CALL(*mock_error_screen_actor_,
               SetErrorState(_, _))
       .Times(Exactly(0));
-  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
-      .Times(Exactly(0));
+  EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(Exactly(0));
   update_screen_->StartNetworkCheck();
 
   // Second portal detection also returns NULL network and undefined
@@ -350,16 +341,14 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   EXPECT_CALL(*mock_error_screen_actor_,
               SetErrorState(ErrorScreen::ERROR_STATE_OFFLINE, std::string()))
       .Times(1);
-  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
   base::MessageLoop::current()->RunUntilIdle();
   NotifyPortalDetectionCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_NOUPDATE))
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_NOUPDATE)).Times(1);
   update_screen_->CancelUpdate();
 
   // Change ethernet state to portal.
@@ -378,20 +367,19 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
       .Times(1);
   EXPECT_CALL(*mock_error_screen_actor_, FixCaptivePortal())
       .Times(1);
-  EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
-      .Times(1);
+  EXPECT_CALL(*mock_base_screen_delegate_, ShowErrorScreen()).Times(1);
 
   update_screen_->StartNetworkCheck();
 
   // User re-selects the same network manually. In this case, hide
   // offline message and skip network check. Since ethernet is still
   // behind portal, update engine fails to update.
-  EXPECT_CALL(*mock_screen_observer_, HideErrorScreen(update_screen_))
+  EXPECT_CALL(*mock_base_screen_delegate_, HideErrorScreen(update_screen_))
       .Times(1);
   fake_update_engine_client_->set_update_check_result(
       chromeos::UpdateEngineClient::UPDATE_RESULT_FAILED);
-  EXPECT_CALL(*mock_screen_observer_,
-              OnExit(ScreenObserver::UPDATE_ERROR_CHECKING_FOR_UPDATE))
+  EXPECT_CALL(*mock_base_screen_delegate_,
+              OnExit(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE))
       .Times(1);
 
   update_screen_->OnConnectToNetworkRequested();

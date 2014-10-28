@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/screens/mock_screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 
 namespace chromeos {
 
-MockScreenObserver::MockScreenObserver() {}
+MockBaseScreenDelegate::MockBaseScreenDelegate() {
+}
 
-MockScreenObserver::~MockScreenObserver() {}
+MockBaseScreenDelegate::~MockBaseScreenDelegate() {
+}
 
 }  // namespace chromeos

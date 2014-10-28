@@ -37,7 +37,7 @@ class UserImageScreen : public BaseScreen,
                         public UserImageSyncObserver::Observer,
                         public CameraPresenceNotifier::Observer {
  public:
-  UserImageScreen(ScreenObserver* screen_observer,
+  UserImageScreen(BaseScreenDelegate* base_screen_delegate,
                   UserImageScreenActor* actor);
   virtual ~UserImageScreen();
 

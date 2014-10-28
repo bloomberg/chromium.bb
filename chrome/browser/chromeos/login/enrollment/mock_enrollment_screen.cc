@@ -7,8 +7,9 @@
 namespace chromeos {
 
 MockEnrollmentScreen::MockEnrollmentScreen(
-    ScreenObserver* screen_observer, EnrollmentScreenActor* actor)
-    : EnrollmentScreen(screen_observer, actor) {
+    BaseScreenDelegate* base_screen_delegate,
+    EnrollmentScreenActor* actor)
+    : EnrollmentScreen(base_screen_delegate, actor) {
 }
 
 MockEnrollmentScreen::~MockEnrollmentScreen() {

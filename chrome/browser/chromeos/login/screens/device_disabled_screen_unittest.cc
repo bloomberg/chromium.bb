@@ -10,8 +10,8 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_actor.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
@@ -33,7 +33,8 @@ const char kDisabledMessage[] = "Device disabled.";
 
 }
 
-class DeviceDisabledScreenTest : public testing::Test, public ScreenObserver {
+class DeviceDisabledScreenTest : public testing::Test,
+                                 public BaseScreenDelegate {
  public:
   DeviceDisabledScreenTest();
   ~DeviceDisabledScreenTest() override;
@@ -42,7 +43,7 @@ class DeviceDisabledScreenTest : public testing::Test, public ScreenObserver {
   void SetUp() override;
   void TearDown() override;
 
-  // ScreenObserver:
+  // BaseScreenDelegate:
   MOCK_METHOD1(OnExit, void(ExitCodes));
   void ShowCurrentScreen() override;
   ErrorScreen* GetErrorScreen() override;
@@ -115,12 +116,12 @@ void DeviceDisabledScreenTest::SetDeviceMode(policy::DeviceMode device_mode) {
 
 void DeviceDisabledScreenTest::ExpectScreenToNotShow() {
   EXPECT_CALL(*actor_, Show(_)).Times(0);
-  EXPECT_CALL(*this, OnExit(ScreenObserver::DEVICE_NOT_DISABLED)).Times(1);
+  EXPECT_CALL(*this, OnExit(BaseScreenDelegate::DEVICE_NOT_DISABLED)).Times(1);
 }
 
 void DeviceDisabledScreenTest::ExpectScreenToShow() {
   EXPECT_CALL(*actor_, Show(kDisabledMessage)).Times(1);
-  EXPECT_CALL(*this, OnExit(ScreenObserver::DEVICE_NOT_DISABLED)).Times(0);
+  EXPECT_CALL(*this, OnExit(BaseScreenDelegate::DEVICE_NOT_DISABLED)).Times(0);
 }
 
 void DeviceDisabledScreenTest::TryToShowScreen() {

@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -38,9 +38,9 @@ NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
       manager->GetScreen(WizardController::kNetworkScreenName));
 }
 
-NetworkScreen::NetworkScreen(ScreenObserver* screen_observer,
+NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,
                              NetworkScreenActor* actor)
-    : BaseScreen(screen_observer),
+    : BaseScreen(base_screen_delegate),
       is_network_subscribed_(false),
       continue_pressed_(false),
       actor_(actor),
@@ -144,7 +144,7 @@ void NetworkScreen::NotifyOnConnection() {
   // TODO(nkostylev): Check network connectivity.
   UnsubscribeNetworkNotification();
   connection_timer_.Stop();
-  get_screen_observer()->OnExit(ScreenObserver::NETWORK_CONNECTED);
+  get_base_screen_delegate()->OnExit(BaseScreenDelegate::NETWORK_CONNECTED);
 }
 
 void NetworkScreen::OnConnectionTimeout() {

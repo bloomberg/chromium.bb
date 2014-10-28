@@ -20,7 +20,7 @@ class ScreenContext;
 
 namespace chromeos {
 
-class ScreenObserver;
+class BaseScreenDelegate;
 
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
@@ -31,7 +31,7 @@ class ScreenObserver;
 // Initialize() method calls.
 class BaseScreen {
  public:
-  explicit BaseScreen(ScreenObserver* screen_observer);
+  explicit BaseScreen(BaseScreenDelegate* base_screen_delegate);
   virtual ~BaseScreen();
 
   // ---- Old implementation ----
@@ -91,7 +91,9 @@ class BaseScreen {
   // counterpart.
   virtual void OnContextChanged(const base::DictionaryValue* diff);
 
-  ScreenObserver* get_screen_observer() const { return screen_observer_; }
+  BaseScreenDelegate* get_base_screen_delegate() const {
+    return base_screen_delegate_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
@@ -104,7 +106,7 @@ class BaseScreen {
 
   void SetContext(::login::ScreenContext* context);
 
-  ScreenObserver* screen_observer_;
+  BaseScreenDelegate* base_screen_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };
