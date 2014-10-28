@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/base/switches.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -83,6 +84,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
+
+  // Virtual viewport doesn't behave well with web view. crbug.com/426891
+  cl->AppendSwitch(cc::switches::kDisablePinchVirtualViewport);
+
   return false;
 }
 
