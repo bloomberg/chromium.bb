@@ -39,14 +39,14 @@ class TabScrubberTest : public InProcessBrowserTest,
       : target_index_(-1) {
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(chromeos::switches::kNaturalScrollDefault);
 #endif
     command_line->AppendSwitch(switches::kOpenAsh);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     TabScrubber::GetInstance()->set_activation_delay(0);
 
     // Disable external monitor scaling of coordinates.
@@ -55,7 +55,7 @@ class TabScrubberTest : public InProcessBrowserTest,
         ash::EventTransformationHandler::TRANSFORM_NONE);
   }
 
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     browser()->tab_strip_model()->RemoveObserver(this);
   }
 
@@ -178,46 +178,43 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   // TabStripModelObserver overrides.
-  virtual void TabInsertedAt(content::WebContents* contents,
-                             int index,
-                             bool foreground) override {}
-  virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            content::WebContents* contents,
-                            int index) override {}
-  virtual void TabDetachedAt(content::WebContents* contents,
-                             int index) override {}
-  virtual void TabDeactivated(content::WebContents* contents) override {}
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) override {
+  void TabInsertedAt(content::WebContents* contents,
+                     int index,
+                     bool foreground) override {}
+  void TabClosingAt(TabStripModel* tab_strip_model,
+                    content::WebContents* contents,
+                    int index) override {}
+  void TabDetachedAt(content::WebContents* contents, int index) override {}
+  void TabDeactivated(content::WebContents* contents) override {}
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override {
     activation_order_.push_back(index);
     if (index == target_index_)
       quit_closure_.Run();
   }
 
-  virtual void TabSelectionChanged(
-      TabStripModel* tab_strip_model,
-      const ui::ListSelectionModel& old_model) override {}
-  virtual void TabMoved(content::WebContents* contents,
-                        int from_index,
-                        int to_index) override {}
-  virtual void TabChangedAt(content::WebContents* contents,
-                            int index,
-                            TabChangeType change_type) override {}
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
+  void TabSelectionChanged(TabStripModel* tab_strip_model,
+                           const ui::ListSelectionModel& old_model) override {}
+  void TabMoved(content::WebContents* contents,
+                int from_index,
+                int to_index) override {}
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override {}
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override {}
+  void TabPinnedStateChanged(content::WebContents* contents,
                              int index) override {}
-  virtual void TabPinnedStateChanged(content::WebContents* contents,
-                                     int index) override {}
-  virtual void TabMiniStateChanged(content::WebContents* contents,
-                                   int index) override {
+  void TabMiniStateChanged(content::WebContents* contents, int index) override {
   }
-  virtual void TabBlockedStateChanged(content::WebContents* contents,
-                                      int index) override {}
-  virtual void TabStripEmpty() override {}
-  virtual void TabStripModelDeleted() override {}
+  void TabBlockedStateChanged(content::WebContents* contents,
+                              int index) override {}
+  void TabStripEmpty() override {}
+  void TabStripModelDeleted() override {}
 
   // History of tab activation. Scrub() resets it.
   std::vector<int> activation_order_;

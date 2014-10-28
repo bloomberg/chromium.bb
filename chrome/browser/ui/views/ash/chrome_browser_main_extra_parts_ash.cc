@@ -38,8 +38,7 @@
 class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateWin() {}
-  virtual gfx::ScreenType GetScreenTypeForNativeView(
-      gfx::NativeView view) override {
+  gfx::ScreenType GetScreenTypeForNativeView(gfx::NativeView view) override {
     return chrome::IsNativeViewInAsh(view) ?
         gfx::SCREEN_TYPE_ALTERNATE :
         gfx::SCREEN_TYPE_NATIVE;
@@ -51,7 +50,7 @@ class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
 class ShellDialogsDelegateWin : public ui::ShellDialogsDelegate {
  public:
   ShellDialogsDelegateWin() {}
-  virtual bool IsWindowInMetro(gfx::NativeWindow window) override {
+  bool IsWindowInMetro(gfx::NativeWindow window) override {
 #if defined(OS_WIN)
     if (base::win::GetVersion() < base::win::VERSION_WIN8)
       return false;
