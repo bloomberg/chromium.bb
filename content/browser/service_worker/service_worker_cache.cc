@@ -229,6 +229,9 @@ void MatchDidReadMetadata(
       "",
       0));
 
+  if (metadata->response().has_url())
+    response->url = GURL(metadata->response().url());
+
   for (int i = 0; i < metadata->response().headers_size(); ++i) {
     const ServiceWorkerCacheHeaderMap header = metadata->response().headers(i);
     response->headers.insert(std::make_pair(header.name(), header.value()));
@@ -927,6 +930,7 @@ void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
   response_metadata->set_status_text(put_context->response->status_text);
   response_metadata->set_response_type(
       WebResponseTypeToProtoResponseType(put_context->response->response_type));
+  response_metadata->set_url(put_context->response->url.spec());
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->response->headers.begin();
        it != put_context->response->headers.end();

@@ -39,6 +39,7 @@ message ServiceWorkerCacheResponse {
   required string status_text = 2;
   required ResponseType response_type = 3;
   repeated ServiceWorkerCacheHeaderMap headers = 4;
+  optional string url = 5;
 }
 
 message ServiceWorkerCacheMetadata {

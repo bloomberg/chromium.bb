@@ -330,6 +330,24 @@ TEST_P(ServiceWorkerCacheTestP, PutBody) {
   EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
+TEST_P(ServiceWorkerCacheTestP, ResponseURLDiffersFromRequestURL) {
+  no_body_response_.url = GURL("http://example.com/foobar");
+  EXPECT_STRNE("http://example.com/foobar",
+               no_body_request_.url.spec().c_str());
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
+  EXPECT_STREQ("http://example.com/foobar",
+               callback_response_->url.spec().c_str());
+}
+
+TEST_P(ServiceWorkerCacheTestP, ResponseURLEmpty) {
+  no_body_response_.url = GURL();
+  EXPECT_STRNE("", no_body_request_.url.spec().c_str());
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_TRUE(Match(no_body_request_));
+  EXPECT_STREQ("", callback_response_->url.spec().c_str());
+}
+
 TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_),
