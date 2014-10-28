@@ -1887,21 +1887,8 @@ LayoutUnit RenderBlockFlow::getClearDelta(RenderBox* child, LayoutUnit logicalTo
             LayoutRect borderBox = child->borderBoxRect();
             LayoutUnit childLogicalWidthAtOldLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
 
-            // FIXME: None of this is right for perpendicular writing-mode children.
-            LayoutUnit childOldLogicalWidth = child->logicalWidth();
-            LayoutUnit childOldMarginLeft = child->marginLeft();
-            LayoutUnit childOldMarginRight = child->marginRight();
-            LayoutUnit childOldLogicalTop = child->logicalTop();
-
-            child->setLogicalTop(newLogicalTop);
-            child->updateLogicalWidth();
-            borderBox = child->borderBoxRect();
+            borderBox = child->borderBoxAfterUpdatingLogicalWidth(newLogicalTop);
             LayoutUnit childLogicalWidthAtNewLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
-
-            child->setLogicalTop(childOldLogicalTop);
-            child->setLogicalWidth(childOldLogicalWidth);
-            child->setMarginLeft(childOldMarginLeft);
-            child->setMarginRight(childOldMarginRight);
 
             if (childLogicalWidthAtNewLogicalTopOffset <= availableLogicalWidthAtNewLogicalTopOffset) {
                 // Even though we may not be moving, if the logical width did shrink because of the presence of new floats, then

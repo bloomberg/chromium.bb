@@ -4413,4 +4413,24 @@ LayoutSize RenderBox::computePreviousBorderBoxSize(const LayoutSize& previousBou
     return previousBoundsSize;
 }
 
+LayoutRect RenderBox::borderBoxAfterUpdatingLogicalWidth(const LayoutUnit& newLogicalTop)
+{
+    // FIXME: None of this is right for perpendicular writing-mode children.
+    LayoutUnit oldLogicalWidth = logicalWidth();
+    LayoutUnit oldMarginLeft = marginLeft();
+    LayoutUnit oldMarginRight = marginRight();
+    LayoutUnit oldLogicalTop = logicalTop();
+
+    setLogicalTop(newLogicalTop);
+    updateLogicalWidth();
+    LayoutRect borderBox = borderBoxRect();
+
+    setLogicalTop(oldLogicalTop);
+    setLogicalWidth(oldLogicalWidth);
+    setMarginLeft(oldMarginLeft);
+    setMarginRight(oldMarginRight);
+
+    return borderBox;
+}
+
 } // namespace blink
