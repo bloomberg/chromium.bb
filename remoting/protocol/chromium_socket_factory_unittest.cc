@@ -17,7 +17,7 @@ namespace protocol {
 class ChromiumSocketFactoryTest : public testing::Test,
                                   public sigslot::has_slots<> {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     socket_factory_.reset(new ChromiumPacketSocketFactory());
 
     socket_.reset(socket_factory_->CreateUdpSocket(

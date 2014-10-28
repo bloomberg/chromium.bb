@@ -121,9 +121,9 @@ bool MockDaemonListener::OnMessageReceived(const IPC::Message& message) {
 class IpcDesktopEnvironmentTest : public testing::Test {
  public:
   IpcDesktopEnvironmentTest();
-  virtual ~IpcDesktopEnvironmentTest();
+  ~IpcDesktopEnvironmentTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void ConnectTerminal(int terminal_id,
                        const ScreenResolution& resolution,

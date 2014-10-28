@@ -15,13 +15,9 @@ class ResourcesTest : public testing::Test {
   ResourcesTest(): resources_available_(false) {
   }
 
-  virtual void SetUp() override {
-    resources_available_ = LoadResources("en-US");
-  }
+  void SetUp() override { resources_available_ = LoadResources("en-US"); }
 
-  virtual void TearDown() override {
-    UnloadResources();
-  }
+  void TearDown() override { UnloadResources(); }
 
   bool resources_available_;
 };

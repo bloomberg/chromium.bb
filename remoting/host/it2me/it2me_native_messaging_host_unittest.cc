@@ -166,10 +166,10 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
 class It2MeNativeMessagingHostTest : public testing::Test {
  public:
   It2MeNativeMessagingHostTest() {}
-  virtual ~It2MeNativeMessagingHostTest() {}
+  ~It2MeNativeMessagingHostTest() override {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();

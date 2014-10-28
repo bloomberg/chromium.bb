@@ -36,13 +36,12 @@ class FakeAudioPlayer : public AudioPlayer {
 
 class AudioPlayerTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     audio_.reset(new FakeAudioPlayer());
     buffer_.reset(new char[kAudioFrameBytes + kPaddingBytes]);
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   void ConsumeAudioFrame() {
     uint8* buffer = reinterpret_cast<uint8*>(buffer_.get());

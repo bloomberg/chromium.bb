@@ -20,18 +20,16 @@ class ClipboardX11 : public Clipboard,
                      public base::MessageLoopForIO::Watcher {
  public:
   ClipboardX11();
-  virtual ~ClipboardX11();
+  ~ClipboardX11() override;
 
   // Clipboard interface.
-  virtual void Start(
-      scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) override;
-  virtual void Stop() override;
+  void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
+  void Stop() override;
 
   // MessageLoopForIO::Watcher interface.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
   void OnClipboardChanged(const std::string& mime_type,

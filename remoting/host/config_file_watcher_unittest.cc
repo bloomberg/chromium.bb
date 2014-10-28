@@ -39,11 +39,11 @@ class ConfigFileWatcherDelegate : public ConfigFileWatcher::Delegate {
 class ConfigFileWatcherTest : public testing::Test {
  public:
   ConfigFileWatcherTest();
-  virtual ~ConfigFileWatcherTest();
+  ~ConfigFileWatcherTest() override;
 
   // testing::Test overrides
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Stops the config file watcher.
   void StopWatcher();

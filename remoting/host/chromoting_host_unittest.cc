@@ -70,7 +70,7 @@ class ChromotingHostTest : public testing::Test {
   ChromotingHostTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     task_runner_ = new AutoThreadTaskRunner(
         message_loop_.message_loop_proxy(),
         base::Bind(&ChromotingHostTest::QuitMainMessageLoop,
@@ -225,7 +225,7 @@ class ChromotingHostTest : public testing::Test {
     host_->clients_.push_back(client.release());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Make sure that the host has been properly deleted.
     DCHECK(host_.get() == NULL);
   }

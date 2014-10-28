@@ -222,10 +222,10 @@ MockDaemonControllerDelegate::GetUsageStatsConsent() {
 class Me2MeNativeMessagingHostTest : public testing::Test {
  public:
   Me2MeNativeMessagingHostTest();
-  virtual ~Me2MeNativeMessagingHostTest();
+  ~Me2MeNativeMessagingHostTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   scoped_ptr<base::DictionaryValue> ReadMessageFromOutputPipe();
 

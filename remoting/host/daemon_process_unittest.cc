@@ -121,10 +121,10 @@ void MockDaemonProcess::SendToNetwork(IPC::Message* message) {
 class DaemonProcessTest : public testing::Test {
  public:
   DaemonProcessTest();
-  virtual ~DaemonProcessTest();
+  ~DaemonProcessTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // DaemonProcess mocks
   DesktopSession* DoCreateDesktopSession(int terminal_id);

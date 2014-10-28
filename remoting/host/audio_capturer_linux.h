@@ -30,15 +30,15 @@ class AudioCapturerLinux : public AudioCapturer,
 
   explicit AudioCapturerLinux(
       scoped_refptr<AudioPipeReader> pipe_reader);
-  virtual ~AudioCapturerLinux();
+  ~AudioCapturerLinux() override;
 
   // AudioCapturer interface.
-  virtual bool Start(const PacketCapturedCallback& callback) override;
-  virtual void Stop() override;
-  virtual bool IsStarted() override;
+  bool Start(const PacketCapturedCallback& callback) override;
+  void Stop() override;
+  bool IsStarted() override;
 
   // AudioPipeReader::StreamObserver interface.
-  virtual void OnDataRead(scoped_refptr<base::RefCountedString> data) override;
+  void OnDataRead(scoped_refptr<base::RefCountedString> data) override;
 
  private:
   scoped_refptr<AudioPipeReader> pipe_reader_;

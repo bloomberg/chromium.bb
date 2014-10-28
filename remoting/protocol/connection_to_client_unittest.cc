@@ -26,7 +26,7 @@ class ConnectionToClientTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     session_ = new FakeSession();
 
     // Allocate a ClientConnection object with the mock objects.
@@ -42,7 +42,7 @@ class ConnectionToClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     viewer_.reset();
     base::RunLoop().RunUntilIdle();
   }

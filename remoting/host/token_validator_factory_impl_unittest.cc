@@ -88,7 +88,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     scoped_ptr<net::TestURLRequestContext> context(
         new SetResponseURLRequestContext());

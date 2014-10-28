@@ -25,7 +25,7 @@ class AudioPipeReaderTest : public testing::Test,
     : stop_at_position_(-1) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
     pipe_path_ = test_dir_.path().AppendASCII("test_pipe");
     audio_thread_.reset(new base::Thread("TestAudioThread"));
@@ -37,7 +37,7 @@ class AudioPipeReaderTest : public testing::Test,
   }
 
   // AudioPipeReader::StreamObserver interface.
-  virtual void OnDataRead(scoped_refptr<base::RefCountedString> data) override {
+  void OnDataRead(scoped_refptr<base::RefCountedString> data) override {
     read_data_ += data->data();
     if (stop_at_position_ > 0 &&
         static_cast<int>(read_data_.size()) >= stop_at_position_) {

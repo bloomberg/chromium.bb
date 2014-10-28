@@ -35,8 +35,7 @@ class V2AuthenticatorTest : public AuthenticatorTestBase {
  public:
   V2AuthenticatorTest() {
   }
-  virtual ~V2AuthenticatorTest() {
-  }
+  ~V2AuthenticatorTest() override {}
 
  protected:
   void InitAuthenticators(const std::string& client_secret,

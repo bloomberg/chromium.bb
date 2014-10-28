@@ -22,11 +22,10 @@ namespace {
 class DisconnectWindowGtk : public HostWindow {
  public:
   DisconnectWindowGtk();
-  virtual ~DisconnectWindowGtk();
+  ~DisconnectWindowGtk() override;
 
   // HostWindow overrides.
-  virtual void Start(
-      const base::WeakPtr<ClientSessionControl>& client_session_control)
+  void Start(const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 
  private:

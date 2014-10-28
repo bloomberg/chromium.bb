@@ -95,11 +95,11 @@ bool MockNetworkListener::OnMessageReceived(const IPC::Message& message) {
 class DesktopProcessTest : public testing::Test {
  public:
   DesktopProcessTest();
-  virtual ~DesktopProcessTest();
+  ~DesktopProcessTest() override;
 
   // testing::Test overrides
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // MockDaemonListener mocks
   void ConnectNetworkChannel(IPC::PlatformFileForTransit desktop_process);

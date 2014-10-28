@@ -54,7 +54,7 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
  public:
   GnubbyAuthHandlerPosixTest() {}
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   // Object under test.

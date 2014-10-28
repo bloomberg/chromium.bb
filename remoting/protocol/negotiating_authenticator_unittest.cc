@@ -46,8 +46,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
  public:
   NegotiatingAuthenticatorTest() {
   }
-  virtual ~NegotiatingAuthenticatorTest() {
-  }
+  ~NegotiatingAuthenticatorTest() override {}
 
  protected:
   void InitAuthenticators(

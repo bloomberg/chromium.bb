@@ -123,10 +123,9 @@ class JingleSessionTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
+  void TearDown() override {
     CloseSessions();
     CloseSessionManager();
     base::RunLoop().RunUntilIdle();

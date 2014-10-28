@@ -54,10 +54,10 @@ class PolicyWatcherLinux : public PolicyWatcher {
         weak_factory_(this) {
   }
 
-  virtual ~PolicyWatcherLinux() {}
+  ~PolicyWatcherLinux() override {}
 
  protected:
-  virtual void StartWatchingInternal() override {
+  void StartWatchingInternal() override {
     DCHECK(OnPolicyWatcherThread());
     watcher_.reset(new base::FilePathWatcher());
 
@@ -77,7 +77,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     ScheduleFallbackReloadTask();
   }
 
-  virtual void StopWatchingInternal() override {
+  void StopWatchingInternal() override {
     DCHECK(OnPolicyWatcherThread());
 
     // Stop watching for changes to files in the policies directory.
@@ -162,7 +162,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     return policy.Pass();
   }
 
-  virtual void Reload() override {
+  void Reload() override {
     DCHECK(OnPolicyWatcherThread());
     // Check the directory time in order to see whether a reload is required.
     base::TimeDelta delay;

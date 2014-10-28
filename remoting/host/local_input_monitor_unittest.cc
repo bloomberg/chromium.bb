@@ -36,7 +36,7 @@ class LocalInputMonitorTest : public testing::Test {
  public:
   LocalInputMonitorTest();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;

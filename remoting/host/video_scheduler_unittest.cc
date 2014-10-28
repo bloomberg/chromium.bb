@@ -127,8 +127,8 @@ class VideoSchedulerTest : public testing::Test {
  public:
   VideoSchedulerTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void StartVideoScheduler(
       scoped_ptr<webrtc::DesktopCapturer> capturer,

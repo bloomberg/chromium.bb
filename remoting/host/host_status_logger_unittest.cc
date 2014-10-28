@@ -125,7 +125,7 @@ MATCHER(IsClientDisconnected, "") {
 class HostStatusLoggerTest : public testing::Test {
  public:
   HostStatusLoggerTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     EXPECT_CALL(signal_strategy_, AddListener(_));
     host_status_logger_.reset(

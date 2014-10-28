@@ -73,7 +73,7 @@ class CompoundBufferTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     data_ = new IOBuffer(kDataSize);
     for (int i = 0; i < kDataSize; ++i) {
       data_->data()[i] = i;

@@ -18,9 +18,9 @@ namespace remoting {
 class NativeMessagingReaderTest : public testing::Test {
  public:
   NativeMessagingReaderTest();
-  virtual ~NativeMessagingReaderTest();
+  ~NativeMessagingReaderTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Starts the reader and runs the MessageLoop to completion.
   void Run();

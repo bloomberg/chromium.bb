@@ -72,14 +72,14 @@ class AutoThreadTest : public testing::Test {
     message_loop_.Run();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     main_task_runner_ = new AutoThreadTaskRunner(
         message_loop_.message_loop_proxy(),
         base::Bind(&AutoThreadTest::QuitMainMessageLoop,
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Verify that |message_loop_| was quit by the AutoThreadTaskRunner.
     EXPECT_TRUE(message_loop_quit_correctly_);
   }

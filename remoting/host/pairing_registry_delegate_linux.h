@@ -19,15 +19,15 @@ class PairingRegistryDelegateLinux
     : public protocol::PairingRegistry::Delegate {
  public:
   PairingRegistryDelegateLinux();
-  virtual ~PairingRegistryDelegateLinux();
+  ~PairingRegistryDelegateLinux() override;
 
   // PairingRegistry::Delegate interface
-  virtual scoped_ptr<base::ListValue> LoadAll() override;
-  virtual bool DeleteAll() override;
-  virtual protocol::PairingRegistry::Pairing Load(
+  scoped_ptr<base::ListValue> LoadAll() override;
+  bool DeleteAll() override;
+  protocol::PairingRegistry::Pairing Load(
       const std::string& client_id) override;
-  virtual bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
-  virtual bool Delete(const std::string& client_id) override;
+  bool Save(const protocol::PairingRegistry::Pairing& pairing) override;
+  bool Delete(const std::string& client_id) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PairingRegistryDelegateLinuxTest, SaveAndLoad);

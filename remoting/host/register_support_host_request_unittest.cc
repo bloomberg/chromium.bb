@@ -57,7 +57,7 @@ class MockCallback {
 class RegisterSupportHostRequestTest : public testing::Test {
  public:
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
 

@@ -39,7 +39,7 @@ class LocalInputMonitorLinux : public base::NonThreadSafe,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  virtual ~LocalInputMonitorLinux();
+  ~LocalInputMonitorLinux() override;
 
  private:
   // The actual implementation resides in LocalInputMonitorLinux::Core class.
@@ -56,14 +56,14 @@ class LocalInputMonitorLinux : public base::NonThreadSafe,
 
    private:
     friend class base::RefCountedThreadSafe<Core>;
-    virtual ~Core();
+    ~Core() override;
 
     void StartOnInputThread();
     void StopOnInputThread();
 
     // base::MessagePumpLibevent::Watcher interface.
-    virtual void OnFileCanReadWithoutBlocking(int fd) override;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+    void OnFileCanReadWithoutBlocking(int fd) override;
+    void OnFileCanWriteWithoutBlocking(int fd) override;
 
     // Processes key and mouse events.
     void ProcessXEvent(xEvent* event);

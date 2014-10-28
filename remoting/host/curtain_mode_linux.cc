@@ -18,7 +18,7 @@ class CurtainModeLinux : public CurtainMode {
   CurtainModeLinux();
 
   // Overriden from CurtainMode.
-  virtual bool Activate() override;
+  bool Activate() override;
 
  private:
   // Returns true if the host is running under an Xvfb session.

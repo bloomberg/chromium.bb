@@ -52,8 +52,8 @@ class AudioPipeReader
   void RemoveObserver(StreamObserver* observer);
 
   // MessageLoopForIO::Watcher interface.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
  private:
   friend class base::DeleteHelper<AudioPipeReader>;
@@ -62,7 +62,7 @@ class AudioPipeReader
 
   AudioPipeReader(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   const base::FilePath& pipe_path);
-  virtual ~AudioPipeReader();
+  ~AudioPipeReader() override;
 
   void StartOnAudioThread();
   void OnDirectoryChanged(const base::FilePath& path, bool error);

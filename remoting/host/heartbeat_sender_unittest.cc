@@ -65,7 +65,7 @@ ACTION_P(RemoveListener, list) {
 class HeartbeatSenderTest
     : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
 
@@ -82,7 +82,7 @@ class HeartbeatSenderTest
         &mock_listener_, kHostId, &signal_strategy_, key_pair_, kTestBotJid));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     heartbeat_sender_.reset();
     EXPECT_TRUE(signal_strategy_listeners_.empty());
   }

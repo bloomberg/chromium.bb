@@ -22,7 +22,7 @@ class PolicyWatcherTest : public testing::Test {
   PolicyWatcherTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_proxy_ = base::MessageLoopProxy::current();
     policy_callback_ = base::Bind(&MockPolicyCallback::OnPolicyUpdate,
                                   base::Unretained(&mock_policy_callback_));

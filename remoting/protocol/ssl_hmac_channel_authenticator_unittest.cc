@@ -51,10 +51,10 @@ ACTION_P(QuitThreadOnCounter, counter) {
 class SslHmacChannelAuthenticatorTest : public testing::Test {
  public:
   SslHmacChannelAuthenticatorTest() {}
-  virtual ~SslHmacChannelAuthenticatorTest() {}
+  ~SslHmacChannelAuthenticatorTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 
     base::FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");

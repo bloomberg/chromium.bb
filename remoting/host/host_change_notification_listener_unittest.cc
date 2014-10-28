@@ -48,7 +48,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
     MOCK_METHOD0(OnHostDeleted, void());
   };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
     EXPECT_CALL(signal_strategy_, RemoveListener(NotNull()))
@@ -60,7 +60,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
         &mock_listener_, kHostId, &signal_strategy_, kTestBotJid));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     host_change_notification_listener_.reset();
     EXPECT_TRUE(signal_strategy_listeners_.empty());
   }

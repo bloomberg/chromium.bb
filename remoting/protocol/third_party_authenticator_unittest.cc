@@ -96,7 +96,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
  public:
   ThirdPartyAuthenticatorTest() {}
-  virtual ~ThirdPartyAuthenticatorTest() {}
+  ~ThirdPartyAuthenticatorTest() override {}
 
  protected:
   void InitAuthenticators() {

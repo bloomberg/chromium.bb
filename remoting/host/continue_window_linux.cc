@@ -17,12 +17,12 @@ namespace remoting {
 class ContinueWindowGtk : public ContinueWindow {
  public:
   ContinueWindowGtk();
-  virtual ~ContinueWindowGtk();
+  ~ContinueWindowGtk() override;
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() override;
-  virtual void HideUi() override;
+  void ShowUi() override;
+  void HideUi() override;
 
  private:
   void CreateWindow();

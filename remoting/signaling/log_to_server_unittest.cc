@@ -39,7 +39,7 @@ MATCHER_P2(IsLogEntry, key, value, "") {
 class LogToServerTest : public testing::Test {
  public:
   LogToServerTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
     log_to_server_.reset(

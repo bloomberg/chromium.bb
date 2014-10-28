@@ -65,7 +65,7 @@ MATCHER(IsStatisticsLog, "") {
 class ClientStatusLoggerTest : public testing::Test {
  public:
   ClientStatusLoggerTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
     message_loop_proxy_ = base::MessageLoopProxy::current();

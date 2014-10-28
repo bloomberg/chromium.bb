@@ -17,9 +17,9 @@ namespace remoting {
 class NativeMessagingWriterTest : public testing::Test {
  public:
   NativeMessagingWriterTest();
-  virtual ~NativeMessagingWriterTest();
+  ~NativeMessagingWriterTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   scoped_ptr<NativeMessagingWriter> writer_;

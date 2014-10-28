@@ -67,13 +67,9 @@ class MessageReaderTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
-    reader_.reset(new MessageReader());
-  }
+  void SetUp() override { reader_.reset(new MessageReader()); }
 
-  virtual void TearDown() override {
-    STLDeleteElements(&messages_);
-  }
+  void TearDown() override { STLDeleteElements(&messages_); }
 
   void InitReader() {
     reader_->Init(&socket_, base::Bind(

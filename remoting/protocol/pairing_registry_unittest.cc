@@ -62,9 +62,7 @@ namespace protocol {
 
 class PairingRegistryTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    callback_count_ = 0;
-  }
+  void SetUp() override { callback_count_ = 0; }
 
   void set_pairings(scoped_ptr<base::ListValue> pairings) {
     pairings_ = pairings.Pass();

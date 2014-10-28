@@ -52,8 +52,8 @@ class VideoFrameRecorderTest : public testing::Test {
  public:
   VideoFrameRecorderTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Creates a new VideoEncoder, wraps it using |recorder_|, and stores the
   // newly wrapped encoder in |encoder_|.

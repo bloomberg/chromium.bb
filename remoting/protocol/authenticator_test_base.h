@@ -29,7 +29,7 @@ class FakeStreamSocket;
 class AuthenticatorTestBase : public testing::Test {
  public:
   AuthenticatorTestBase();
-  virtual ~AuthenticatorTestBase();
+  ~AuthenticatorTestBase() override;
 
  protected:
   class MockChannelDoneCallback {
@@ -43,7 +43,7 @@ class AuthenticatorTestBase : public testing::Test {
                                        Authenticator* receiver,
                                        bool sender_started,
                                        bool receiver_srated);
-  virtual void SetUp() override;
+  void SetUp() override;
   void RunAuthExchange();
   void RunHostInitiatedAuthExchange();
   void RunChannelAuth(bool expected_fail);
