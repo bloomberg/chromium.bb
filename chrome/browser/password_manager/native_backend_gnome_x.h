@@ -61,7 +61,7 @@ class GnomeKeyringLoader {
 
 // Declare the actual function pointers that we'll use in client code.
 #define GNOME_KEYRING_DECLARE_POINTER(name) \
-    static typeof(&::gnome_keyring_##name) gnome_keyring_##name;
+    static decltype(&::gnome_keyring_##name) gnome_keyring_##name;
   GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DECLARE_POINTER)
 #undef GNOME_KEYRING_DECLARE_POINTER
 
