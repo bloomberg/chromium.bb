@@ -94,6 +94,11 @@ def MnemonicOp(name):
   assert isinstance(name, str)
   return set([Operands(disasms=(name,))])
 
+def ImmOp():
+  """Returns an immediate as an operand set."""
+  # When walking the DFA, immediates are currently returned as 0x0.
+  return set([Operands(disasms=('$0x0',))])
+
 
 def MemoryOperandsTemplate(disp, base, index, scale, bitness):
   """Returns all the possible different memory operands using given parameters.

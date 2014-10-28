@@ -756,25 +756,11 @@ sets Eb, 0x0f 0x98, CPUFeature_CMOV
 ######## SFENCE ################################################################
 sfence, 0x0f 0xae 0xf8, CPUFeature_EMMXSSE
 ######## SHLD ##################################################################
-# Textbook definition of "shrd" as per AMD/Intel manuals looks like this:
-#  shld Ib Gv Ev, 0x0f 0xa4
-#  shld cb Gv Ev, 0x0f 0xa5
-# For consistency with the production validators, drop support for the 16-bit
-#  version of "shld" in ia32 mode.
-# Note that the former 32- and 64-bit validators treat "shld" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2978
-#
 # "shld" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
-shld Ib Gw Ew, data16 0x0f 0xa4, norexw nacl-ia32-forbidden
-shld cb Gw Ew, data16 0x0f 0xa5, norexw nacl-ia32-forbidden
-shld Ib Gd Ed, 0x0f 0xa4, norexw
-shld cb Gd Ed, 0x0f 0xa5, norexw
-shld Ib Gq Eq, rexw 0x0f 0xa4, amd64
-shld cb Gq Eq, rexw 0x0f 0xa5, amd64
-shld Ib Gq Eq, data16 rexw 0x0f 0xa4, amd64 nacl-forbidden
-shld cb Gq Eq, data16 rexw 0x0f 0xa5, amd64 nacl-forbidden
+shld Ib Gv Ev, 0x0f 0xa4
+shld cb Gv Ev, 0x0f 0xa5
 ######## SHR ###################################################################
 # "shr" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
@@ -783,25 +769,11 @@ shr E, 0xd0 /5
 shr cb E, 0xd2 /5
 shr Ib E, 0xc0 /5
 ######## SHRD ##################################################################
-# Textbook definition of "shrd" as per AMD/Intel manuals looks like this:
-#  shld Ib Gv Ev, 0x0f 0xa4
-#  shld cb Gv Ev, 0x0f 0xa5
-# For consistency with the production validators, drop support for the 16-bit
-#  version of "shrd" in ia32 mode.
-# Note that the former 32- and 64-bit validators treat "shrd" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2980
-#
 # "shrd" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
-shrd Ib Gw Ew, data16 0x0f 0xac, norexw nacl-ia32-forbidden
-shrd cb Gw Ew, data16 0x0f 0xad, norexw nacl-ia32-forbidden
-shrd Ib Gd Ed, 0x0f 0xac, norexw
-shrd cb Gd Ed, 0x0f 0xad, norexw
-shrd Ib Gq Eq, rexw 0x0f 0xac, amd64
-shrd cb Gq Eq, rexw 0x0f 0xad, amd64
-shrd Ib Gq Eq, data16 rexw 0x0f 0xac, amd64 nacl-forbidden
-shrd cb Gq Eq, data16 rexw 0x0f 0xad, amd64 nacl-forbidden
+shrd Ib Gv Ev, 0x0f 0xac
+shrd cb Gv Ev, 0x0f 0xad
 ######## SLWPCB ################################################################
 slwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /1, CPUFeature_LWP
 ######## STC ###################################################################
