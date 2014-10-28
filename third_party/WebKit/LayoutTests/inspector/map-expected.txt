@@ -253,104 +253,104 @@ Dumping map:
     foo => 1
     size: 1
 Dumping map:
-    foo => 1
     bar => 2
+    foo => 1
     size: 2
 Dumping map:
-    foo => 1
     bar => 2
+    foo => 1
     hasOwnProperty => 3
     size: 3
 Dumping map:
-    foo => 1
-    bar => 2
-    hasOwnProperty => 3
     __proto__ => 4
+    bar => 2
+    foo => 1
+    hasOwnProperty => 3
     size: 4
 Dumping map:
-    foo => 1
-    bar => 2
-    hasOwnProperty => 3
-    constructor => 5
     __proto__ => 4
+    bar => 2
+    constructor => 5
+    foo => 1
+    hasOwnProperty => 3
     size: 5
 Dumping map:
     0 => 6
+    __proto__ => 4
+    bar => 2
+    constructor => 5
     foo => 1
+    hasOwnProperty => 3
+    size: 6
+Dumping map:
+    0 => 6
+    __proto__ => 4
     bar => 2
-    hasOwnProperty => 3
     constructor => 5
-    __proto__ => 4
+    foo => 42
+    hasOwnProperty => 3
     size: 6
 Dumping map:
     0 => 6
-    foo => 42
-    bar => 2
-    hasOwnProperty => 3
-    constructor => 5
     __proto__ => 4
-    size: 6
-Dumping map:
-    0 => 6
-    foo => 42
     bar => 42
-    hasOwnProperty => 3
     constructor => 5
-    __proto__ => 4
+    foo => 42
+    hasOwnProperty => 3
     size: 6
 Dumping map:
     0 => 6
-    foo => 42
+    __proto__ => 4
     bar => 42
+    constructor => 5
+    foo => 42
     hasOwnProperty => 42
-    constructor => 5
-    __proto__ => 4
     size: 6
 Dumping map:
     0 => 6
-    foo => 42
-    bar => 42
-    hasOwnProperty => 42
-    constructor => 5
     __proto__ => 42
+    bar => 42
+    constructor => 5
+    foo => 42
+    hasOwnProperty => 42
     size: 6
 Dumping map:
     0 => 6
-    foo => 42
+    __proto__ => 42
     bar => 42
-    hasOwnProperty => 42
     constructor => 42
-    __proto__ => 42
+    foo => 42
+    hasOwnProperty => 42
     size: 6
 Dumping map:
     0 => 42
-    foo => 42
-    bar => 42
-    hasOwnProperty => 42
-    constructor => 42
     __proto__ => 42
+    bar => 42
+    constructor => 42
+    foo => 42
+    hasOwnProperty => 42
     size: 6
 Dumping map:
-    foo => 42
-    bar => 42
-    hasOwnProperty => 42
-    constructor => 42
     __proto__ => 42
+    bar => 42
+    constructor => 42
+    foo => 42
+    hasOwnProperty => 42
     size: 5
 Dumping map:
-    foo => 42
-    bar => 42
-    hasOwnProperty => 42
     __proto__ => 42
+    bar => 42
+    foo => 42
+    hasOwnProperty => 42
     size: 4
 Dumping map:
-    foo => 42
     bar => 42
+    foo => 42
     hasOwnProperty => 42
     size: 3
 Dumping map:
-    foo => 42
     bar => 42
+    foo => 42
     size: 2
 Dumping map:
     foo => 42

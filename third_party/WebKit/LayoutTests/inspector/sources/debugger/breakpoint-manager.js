@@ -334,6 +334,9 @@ InspectorTest.dumpBreakpointLocations = function(breakpointManager)
 
     function dumpLocations(uiSourceCode, locations)
     {
+        locations.sort(function(a, b) {
+            return a.lineNumber - b.lineNumber;
+        });
         InspectorTest.addResult("    UISourceCode (url='" + uiSourceCode.url + "', uri='" + uiSourceCode.uri() + "')");
         for (var i = 0; i < locations.length; ++i)
             InspectorTest.addResult("      Location: (" + locations[i].lineNumber + ", " + locations[i].columnNumber + ")");

@@ -112,10 +112,10 @@ Running: testRestoreBreakpoints
     a.js:20 enabled:false condition:
     b.js:3 enabled:true condition:
   Resetting breakpoint manager
+    breakpointRemoved(a.js, 20, 0)
     breakpointRemoved(a.js, 10, 0)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    breakpointRemoved(a.js, 20, 0)
   Dumping Breakpoint Locations
 
 Running: testRestoreBreakpointsTwice
@@ -143,10 +143,10 @@ Running: testRestoreBreakpointsTwice
     a.js:20 enabled:false condition:
     b.js:3 enabled:true condition:
   Resetting breakpoint manager
+    breakpointRemoved(a.js, 20, 0)
     breakpointRemoved(a.js, 10, 0)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    breakpointRemoved(a.js, 20, 0)
   Dumping Breakpoint Locations
 
 Running: testRemoveBreakpoints
@@ -320,10 +320,10 @@ Running: testNavigation
     a.js:20 enabled:false condition:
     b.js:3 enabled:true condition:
   Resetting breakpoint manager
+    breakpointRemoved(a.js, 20, 0)
     breakpointRemoved(a.js, 10, 0)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    breakpointRemoved(a.js, 20, 0)
     debuggerModel.removeBreakpoint(b.js:3)
   Dumping Breakpoint Locations
 

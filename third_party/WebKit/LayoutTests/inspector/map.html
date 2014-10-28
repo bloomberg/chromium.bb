@@ -136,6 +136,7 @@ var test = function()
             {
                 InspectorTest.addResult("Dumping map:");
                 var keys = map.keysArray();
+                keys.sort();
                 var values = map.valuesArray();
                 for (var i = 0; i < keys.length; ++i) {
                     var key = keys[i];
@@ -152,7 +153,7 @@ var test = function()
             var keys = ["foo", "bar", "hasOwnProperty", "__proto__", "constructor", "0"]
             var value1 = 1;
             var value2 = 2;
-            var map = new StringMap();
+            var map = new Map();
 
             dumpStringMap(map);
 
