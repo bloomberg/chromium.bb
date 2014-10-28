@@ -68,7 +68,7 @@ void ParsedProperties::setDefaultLastModified()
     setLastModified(currentTime());
 }
 
-bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState, v8::Isolate* isolate)
+bool ParsedProperties::parseBlobPropertyBag(v8::Isolate* isolate, v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState& exceptionState)
 {
     TONATIVE_DEFAULT(Dictionary, dictionary, Dictionary(propertyBag, isolate), false);
 
@@ -107,7 +107,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, co
     return true;
 }
 
-bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData& blobData, v8::Isolate* isolate)
+bool processBlobParts(v8::Isolate* isolate, v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData& blobData)
 {
     // FIXME: handle sequences based on ES6 @@iterator, see http://crbug.com/393866
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(blobParts);

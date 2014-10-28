@@ -63,7 +63,7 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
 
-        if (!properties.parseBlobPropertyBag(info[2], "File", exceptionState, info.GetIsolate())) {
+        if (!properties.parseBlobPropertyBag(info.GetIsolate(), info[2], "File", exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -74,7 +74,7 @@ void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(properties.contentType());
     v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
-    if (!V8BlobCustomHelpers::processBlobParts(blobParts, properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(info.GetIsolate(), blobParts, properties.normalizeLineEndingsToNative(), *blobData))
         return;
 
     long long fileSize = blobData->length();

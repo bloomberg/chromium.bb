@@ -60,7 +60,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
 
-        if (!properties.parseBlobPropertyBag(info[1], "Blob", exceptionState, info.GetIsolate())) {
+        if (!properties.parseBlobPropertyBag(info.GetIsolate(), info[1], "Blob", exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -68,7 +68,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(properties.contentType());
-    if (!V8BlobCustomHelpers::processBlobParts(v8::Local<v8::Object>::Cast(info[0]), properties.normalizeLineEndingsToNative(), *blobData, info.GetIsolate()))
+    if (!V8BlobCustomHelpers::processBlobParts(info.GetIsolate(), v8::Local<v8::Object>::Cast(info[0]), properties.normalizeLineEndingsToNative(), *blobData))
         return;
 
     long long blobSize = blobData->length();

@@ -66,7 +66,7 @@ public:
     // Extracts the "type" and "endings" properties out of the BlobPropertyBag passed to a Blob constructor.
     // http://www.w3.org/TR/FileAPI/#constructorParams
     // Returns true if everything went well, false if a JS exception was thrown.
-    bool parseBlobPropertyBag(v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState&, v8::Isolate*);
+    bool parseBlobPropertyBag(v8::Isolate*, v8::Local<v8::Value> propertyBag, const char* blobClassName, ExceptionState&);
 
 private:
     String m_contentType;
@@ -84,7 +84,7 @@ private:
 // Appends the blobParts passed to a Blob or File constructor into a BlobData.
 // http://www.w3.org/TR/FileAPI/#constructorParams
 // Returns true if everything went well, false if a JS exception was thrown.
-bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData&, v8::Isolate*);
+bool processBlobParts(v8::Isolate*, v8::Local<v8::Object> blobParts, bool normalizeLineEndingsToNative, BlobData&);
 
 } // namespace V8BlobCustomHelpers
 
