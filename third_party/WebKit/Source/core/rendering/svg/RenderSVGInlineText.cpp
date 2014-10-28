@@ -239,4 +239,12 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
     scaledFont.update(document.styleEngine()->fontSelector());
 }
 
+LayoutRect RenderSVGInlineText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+{
+    // FIXME: The following works because RenderSVGBlock has forced slow rect mapping of the paintInvalidationState.
+    // Should let this really work with paintInvalidationState's fast mapping and remove the assert.
+    ASSERT(!paintInvalidationState || !paintInvalidationState->canMapToContainer(paintInvalidationContainer));
+    return parent()->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+}
+
 }

@@ -178,10 +178,6 @@ void RenderObjectChildList::invalidatePaintOnRemoval(const RenderObject& oldChil
         oldChild.view()->setShouldDoFullPaintInvalidation();
         return;
     }
-    if (oldChild.isText()) {
-        oldChild.parent()->setShouldDoFullPaintInvalidation();
-        return;
-    }
     DisableCompositingQueryAsserts disabler;
     oldChild.invalidatePaintUsingContainer(oldChild.containerForPaintInvalidation(), oldChild.previousPaintInvalidationRect(), PaintInvalidationRendererRemoval);
 }

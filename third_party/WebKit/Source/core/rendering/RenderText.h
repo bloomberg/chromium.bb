@@ -176,13 +176,7 @@ private:
 
     bool isText() const WTF_DELETED_FUNCTION; // This will catch anyone doing an unnecessary check.
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
-    // The parent invalidates for RenderText, so RenderText does nothing.
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer) override final
-    {
-        invalidateSelectionIfNeeded(paintInvalidationContainer);
-        return PaintInvalidationNone;
-    }
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
     void checkConsistency() const;
 

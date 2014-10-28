@@ -1393,6 +1393,13 @@ void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
     if (paintInvalidationContainer == this)
         return;
 
+    if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
+        rect.move(paintInvalidationState->paintOffset());
+        if (paintInvalidationState->isClipped())
+            rect.intersect(paintInvalidationState->clipRect());
+        return;
+    }
+
     if (RenderObject* o = parent()) {
         if (o->isRenderBlockFlow()) {
             RenderBlock* cb = toRenderBlock(o);
@@ -1570,9 +1577,11 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsPaintInvalidationLayer();
     }
 
-    if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()
-        && hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor())
-        diff.setNeedsPaintInvalidationObject();
+    if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
+        if (style()->hasBorder() || style()->hasOutline()
+            || (isText() && !toRenderText(this)->isAllCollapsibleWhitespace()))
+            diff.setNeedsPaintInvalidationObject();
+    }
 
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
@@ -1613,19 +1622,6 @@ void RenderObject::setPseudoStyle(PassRefPtr<RenderStyle> pseudoStyle)
     }
 
     setStyle(pseudoStyle);
-}
-
-inline bool RenderObject::hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const
-{
-    if (style()->hasBorder() || style()->hasOutline())
-        return true;
-    for (const RenderObject* r = slowFirstChild(); r; r = r->nextSibling()) {
-        if (r->isText() && !toRenderText(r)->isAllCollapsibleWhitespace())
-            return true;
-        if (r->style()->hasOutline() || r->style()->hasBorder())
-            return true;
-    }
-    return false;
 }
 
 void RenderObject::markContainingBlocksForOverflowRecalc()
@@ -1672,15 +1668,15 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 
     updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style->shapeOutside());
 
-    bool doesNotNeedLayout = !m_parent || isText();
+    bool doesNotNeedLayoutOrPaintInvalidation = !m_parent;
 
     styleDidChange(diff, oldStyle.get());
 
     // FIXME: |this| might be destroyed here. This can currently happen for a RenderTextFragment when
     // its first-letter block gets an update in RenderTextFragment::styleDidChange. For RenderTextFragment(s),
-    // we will safely bail out with the doesNotNeedLayout flag. We might want to broaden this condition
-    // in the future as we move renderer changes out of layout and into style changes.
-    if (doesNotNeedLayout)
+    // we will safely bail out with the doesNotNeedLayoutOrPaintInvalidation flag. We might want to broaden
+    // this condition in the future as we move renderer changes out of layout and into style changes.
+    if (doesNotNeedLayoutOrPaintInvalidation)
         return;
 
     // Now that the layer (if any) has been updated, we need to adjust the diff again,
@@ -3058,13 +3054,6 @@ void RenderObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
 {
     // Only full invalidation reasons are allowed.
     ASSERT(isFullPaintInvalidationReason(reason));
-
-    // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds.
-    // Instead the parent fully invalidate when any text needs full paint invalidation.
-    if (isText()) {
-        parent()->setShouldDoFullPaintInvalidation(reason);
-        return;
-    }
 
     if (m_bitfields.fullPaintInvalidationReason() == PaintInvalidationNone)
         m_bitfields.setFullPaintInvalidationReason(reason);

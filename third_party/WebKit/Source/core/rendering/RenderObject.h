@@ -1200,8 +1200,6 @@ private:
     void removeFromRenderFlowThread();
     void removeFromRenderFlowThreadRecursive(RenderFlowThread*);
 
-    bool hasImmediateNonWhitespaceTextChildOrPropertiesDependentOnColor() const;
-
     RenderStyle* cachedFirstLineStyle() const;
     StyleDifference adjustStyleDifference(StyleDifference) const;
 

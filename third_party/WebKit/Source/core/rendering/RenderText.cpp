@@ -1583,9 +1583,12 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    // This method doesn't support paintInvalidationState, but invalidateTreeIfNeeded() never reaches RenderText.
-    ASSERT(!paintInvalidationState);
-    return parent()->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer);
+    if (style()->visibility() != VISIBLE)
+        return LayoutRect();
+
+    LayoutRect paintInvalidationRect(linesVisualOverflowBoundingBox());
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
+    return paintInvalidationRect;
 }
 
 LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const

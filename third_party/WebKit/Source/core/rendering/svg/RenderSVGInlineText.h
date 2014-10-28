@@ -58,6 +58,8 @@ private:
     virtual IntRect linesBoundingBox() const override;
     virtual InlineTextBox* createTextBox(int start, unsigned short length) override;
 
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*) const override final;
+
     float m_scalingFactor;
     Font m_scaledFont;
     SVGTextLayoutAttributes m_layoutAttributes;
