@@ -33,10 +33,11 @@ class PicturePileImplPerfTest : public testing::Test {
     // Content rect that will align with top-left tile at scale 1.0.
     gfx::Rect content_rect(0, 0, kTileSize, kTileSize);
 
-    PicturePileImpl::Analysis analysis;
+    RasterSource::SolidColorAnalysis analysis;
     timer_.Reset();
     do {
-      pile->AnalyzeInRect(content_rect, contents_scale, &analysis);
+      pile->PerformSolidColorAnalysis(
+          content_rect, contents_scale, &analysis, nullptr);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -57,10 +58,10 @@ class PicturePileImplPerfTest : public testing::Test {
     FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
     timer_.Reset();
     do {
-      pile->RasterToBitmap(&canvas,
-                           content_rect,
-                           contents_scale,
-                           &rendering_stats_instrumentation);
+      pile->PlaybackToCanvas(&canvas,
+                             content_rect,
+                             contents_scale,
+                             &rendering_stats_instrumentation);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -17,7 +17,7 @@ namespace cc {
 Tile::Id Tile::s_next_id_ = 0;
 
 Tile::Tile(TileManager* tile_manager,
-           PicturePileImpl* picture_pile,
+           RasterSource* raster_source,
            const gfx::Size& tile_size,
            const gfx::Rect& content_rect,
            float contents_scale,
@@ -37,7 +37,7 @@ Tile::Tile(TileManager* tile_manager,
       tiling_j_index_(-1),
       required_for_activation_(false),
       id_(s_next_id_++) {
-  set_picture_pile(picture_pile);
+  set_raster_source(raster_source);
   for (int i = 0; i < NUM_TREES; i++)
     is_occluded_[i] = false;
 }
@@ -51,7 +51,7 @@ Tile::~Tile() {
 void Tile::AsValueInto(base::debug::TracedValue* res) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), res, "cc::Tile", this);
-  TracedValue::SetIDRef(picture_pile_.get(), res, "picture_pile");
+  TracedValue::SetIDRef(raster_source_.get(), res, "picture_pile");
   res->SetDouble("contents_scale", contents_scale_);
 
   res->BeginArray("content_rect");

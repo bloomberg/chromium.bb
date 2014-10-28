@@ -11,7 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
 #include "cc/base/scoped_ptr_deque.h"
-#include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/raster_source.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
 namespace {
@@ -198,7 +199,7 @@ void RasterWorkerPool::PlaybackToMemory(void* memory,
                                         ResourceFormat format,
                                         const gfx::Size& size,
                                         int stride,
-                                        const PicturePileImpl* picture_pile,
+                                        const RasterSource* raster_source,
                                         const gfx::Rect& rect,
                                         float scale,
                                         RenderingStatsInstrumentation* stats) {
@@ -225,7 +226,7 @@ void RasterWorkerPool::PlaybackToMemory(void* memory,
   }
 
   SkCanvas canvas(bitmap);
-  picture_pile->RasterToBitmap(&canvas, rect, scale, stats);
+  raster_source->PlaybackToCanvas(&canvas, rect, scale, stats);
 
   SkColorType buffer_color_type = ResourceFormatToSkColorType(format);
   if (buffer_color_type != bitmap.colorType()) {

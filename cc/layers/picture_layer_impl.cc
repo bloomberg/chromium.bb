@@ -646,7 +646,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       flags);
 }
 
-PicturePileImpl* PictureLayerImpl::GetPile() {
+RasterSource* PictureLayerImpl::GetRasterSource() {
   return pile_.get();
 }
 

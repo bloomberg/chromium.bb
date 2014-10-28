@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
@@ -26,8 +25,7 @@ class Value;
 
 namespace cc {
 
-class CC_EXPORT PicturePileBase
-    : public base::RefCountedThreadSafe<PicturePileBase> {
+class CC_EXPORT PicturePileBase {
  public:
   PicturePileBase();
   explicit PicturePileBase(const PicturePileBase* other);
@@ -44,7 +42,7 @@ class CC_EXPORT PicturePileBase
   int num_tiles_y() const { return tiling_.num_tiles_y(); }
   gfx::Rect tile_bounds(int x, int y) const { return tiling_.TileBounds(x, y); }
   bool HasRecordingAt(int x, int y);
-  bool CanRaster(float contents_scale, const gfx::Rect& content_rect);
+  bool CanRaster(float contents_scale, const gfx::Rect& content_rect) const;
 
   // If this pile contains any valid recordings. May have false positives.
   bool HasRecordings() const { return has_any_recordings_; }
@@ -137,7 +135,6 @@ class CC_EXPORT PicturePileBase
  private:
   void SetBufferPixels(int buffer_pixels);
 
-  friend class base::RefCountedThreadSafe<PicturePileBase>;
   DISALLOW_COPY_AND_ASSIGN(PicturePileBase);
 };
 

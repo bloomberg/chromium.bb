@@ -14,75 +14,58 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile_base.h"
+#include "cc/resources/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
 
-class CC_EXPORT PicturePileImpl : public PicturePileBase {
+// TODO(vmpstr): Clean up PicturePileBase and make it a member.
+class CC_EXPORT PicturePileImpl : public PicturePileBase, public RasterSource {
  public:
   static scoped_refptr<PicturePileImpl> Create();
   static scoped_refptr<PicturePileImpl> CreateFromOther(
       const PicturePileBase* other);
 
-  // Raster a subrect of this PicturePileImpl into the given canvas. It is
-  // assumed that contents_scale has already been applied to this canvas.
-  // Writes the total number of pixels rasterized and the time spent
-  // rasterizing to the stats if the respective pointer is not NULL. When
-  // slow-down-raster-scale-factor is set to a value greater than 1, the
-  // reported rasterize time is the minimum measured value over all runs.
+  // RasterSource overrides. See RasterSource header for full description.
+  // When slow-down-raster-scale-factor is set to a value greater than 1, the
+  // reported rasterize time (in stats_instrumentation) is the minimum measured
+  // value over all runs.
+  void PlaybackToCanvas(
+      SkCanvas* canvas,
+      const gfx::Rect& canvas_rect,
+      float contents_scale,
+      RenderingStatsInstrumentation* stats_instrumentation) const override;
+  void PerformSolidColorAnalysis(
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      RasterSource::SolidColorAnalysis* analysis,
+      RenderingStatsInstrumentation* stats_instrumentation) const override;
+  void GatherPixelRefs(const gfx::Rect& content_rect,
+                       float contents_scale,
+                       std::vector<SkPixelRef*>* pixel_refs) const override;
+  bool CoversRect(const gfx::Rect& content_rect,
+                  float contents_scale) const override;
+  bool SuitableForDistanceFieldText() const override;
+
+  // Raster into the canvas without applying clips.
   void RasterDirect(
       SkCanvas* canvas,
       const gfx::Rect& canvas_rect,
       float contents_scale,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation) const;
 
-  // Similar to the above RasterDirect method, but this is a convenience method
-  // for when it is known that the raster is going to an intermediate bitmap
-  // that itself will then be blended and thus that a canvas clear is required.
-  // Note that this function may write outside the canvas_rect.
-  void RasterToBitmap(
-      SkCanvas* canvas,
-      const gfx::Rect& canvas_rect,
-      float contents_scale,
-      RenderingStatsInstrumentation* stats_instrumentation) const;
-
-  // Called when analyzing a tile. We can use AnalysisCanvas as
-  // SkDrawPictureCallback, which allows us to early out from analysis.
-  void RasterForAnalysis(
-      skia::AnalysisCanvas* canvas,
-      const gfx::Rect& canvas_rect,
-      float contents_scale,
-      RenderingStatsInstrumentation* stats_instrumentation) const;
-
+  // Tracing functionality.
+  void DidBeginTracing();
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
-  bool likely_to_be_used_for_transform_animation() const {
-    return likely_to_be_used_for_transform_animation_;
-  }
   void set_likely_to_be_used_for_transform_animation() {
     likely_to_be_used_for_transform_animation_ = true;
   }
 
-  struct CC_EXPORT Analysis {
-    Analysis();
-    ~Analysis();
-
-    bool is_solid_color;
-    SkColor solid_color;
-  };
-
-  void AnalyzeInRect(const gfx::Rect& content_rect,
-                     float contents_scale,
-                     Analysis* analysis) const;
-
-  void AnalyzeInRect(
-      const gfx::Rect& content_rect,
-      float contents_scale,
-      Analysis* analysis,
-      RenderingStatsInstrumentation* stats_instrumentation) const;
-
+  // Iterator used to return SkPixelRefs from this picture pile.
+  // Public for testing.
   class CC_EXPORT PixelRefIterator {
    public:
     PixelRefIterator(const gfx::Rect& content_rect,
@@ -105,8 +88,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     std::set<const void*> processed_pictures_;
   };
 
-  void DidBeginTracing();
-
  protected:
   friend class PicturePile;
   friend class PixelRefIterator;
@@ -117,6 +98,14 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
  private:
   typedef std::map<const Picture*, Region> PictureRegionMap;
+
+  // Called when analyzing a tile. We can use AnalysisCanvas as
+  // SkDrawPictureCallback, which allows us to early out from analysis.
+  void RasterForAnalysis(
+      skia::AnalysisCanvas* canvas,
+      const gfx::Rect& canvas_rect,
+      float contents_scale,
+      RenderingStatsInstrumentation* stats_instrumentation) const;
 
   void CoalesceRasters(const gfx::Rect& canvas_rect,
                        const gfx::Rect& content_rect,

@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_PICTURE_PILE_H_
 #define CC_RESOURCES_PICTURE_PILE_H_
 
+#include "base/memory/ref_counted.h"
 #include "cc/resources/picture_pile_base.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -16,6 +17,7 @@ class RenderingStatsInstrumentation;
 class CC_EXPORT PicturePile : public PicturePileBase {
  public:
   PicturePile();
+  ~PicturePile() override;
 
   // Re-record parts of the picture that are invalid.
   // Invalidations are in layer space, and will be expanded to cover everything
@@ -52,9 +54,6 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   }
 
   void SetPixelRecordDistanceForTesting(int d) { pixel_record_distance_ = d; }
-
- protected:
-  ~PicturePile() override;
 
  private:
   friend class PicturePileImpl;

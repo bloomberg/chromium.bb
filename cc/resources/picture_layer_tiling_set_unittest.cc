@@ -354,11 +354,11 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     }
 
     for (size_t i = 0; i < target_->num_tilings(); ++i)
-      ValidateTiling(target_->tiling_at(i), target_client_.GetPile());
+      ValidateTiling(target_->tiling_at(i), target_client_.GetRasterSource());
   }
 
   void ValidateTiling(const PictureLayerTiling* tiling,
-                      const PicturePileImpl* pile) {
+                      const RasterSource* raster_source) {
     if (tiling->tiling_size().IsEmpty()) {
       EXPECT_TRUE(tiling->live_tiles_rect().IsEmpty());
     } else if (!tiling->live_tiles_rect().IsEmpty()) {
@@ -370,7 +370,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     for (size_t i = 0; i < tiles.size(); ++i) {
       const Tile* tile = tiles[i];
       ASSERT_TRUE(!!tile);
-      EXPECT_EQ(tile->picture_pile(), pile);
+      EXPECT_EQ(tile->raster_source(), raster_source);
       EXPECT_TRUE(tile->content_rect().Intersects(tiling->live_tiles_rect()))
           << "All tiles must be inside the live tiles rect."
           << " Tile rect: " << tile->content_rect().ToString()

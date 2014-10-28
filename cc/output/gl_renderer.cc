@@ -2031,7 +2031,7 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
   }
 
   SkCanvas canvas(on_demand_tile_raster_bitmap_);
-  quad->picture_pile->RasterToBitmap(
+  quad->picture_pile->PlaybackToCanvas(
       &canvas, quad->content_rect, quad->contents_scale, NULL);
 
   uint8_t* bitmap_pixels = NULL;

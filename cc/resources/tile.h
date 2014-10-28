@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/ref_counted_managed.h"
 #include "cc/resources/managed_tile_state.h"
-#include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/raster_source.h"
 #include "cc/resources/tile_priority.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,13 +25,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return id_;
   }
 
-  PicturePileImpl* picture_pile() {
-    return picture_pile_.get();
-  }
+  RasterSource* raster_source() { return raster_source_.get(); }
 
-  const PicturePileImpl* picture_pile() const {
-    return picture_pile_.get();
-  }
+  const RasterSource* raster_source() const { return raster_source_.get(); }
 
   const TilePriority& priority(WhichTree tree) const {
     return priority_[tree];
@@ -120,12 +116,12 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   int source_frame_number() const { return source_frame_number_; }
 
-  void set_picture_pile(scoped_refptr<PicturePileImpl> pile) {
-    DCHECK(pile->CanRaster(contents_scale_, content_rect_))
+  void set_raster_source(scoped_refptr<RasterSource> raster_source) {
+    DCHECK(raster_source->CoversRect(content_rect_, contents_scale_))
         << "Recording rect: "
         << gfx::ScaleToEnclosingRect(content_rect_, 1.f / contents_scale_)
                .ToString();
-    picture_pile_ = pile;
+    raster_source_ = raster_source;
   }
 
   size_t GPUMemoryUsageInBytes() const;
@@ -148,7 +144,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,
-       PicturePileImpl* picture_pile,
+       RasterSource* raster_source,
        const gfx::Size& tile_size,
        const gfx::Rect& content_rect,
        float contents_scale,
@@ -163,7 +159,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   bool HasRasterTask() const;
 
   TileManager* tile_manager_;
-  scoped_refptr<PicturePileImpl> picture_pile_;
+  scoped_refptr<RasterSource> raster_source_;
   gfx::Size size_;
   gfx::Rect content_rect_;
   float contents_scale_;

@@ -41,7 +41,7 @@ void PicturePileImpl::RasterDirect(
     SkCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) const {
   RasterCommon(canvas,
                NULL,
                canvas_rect,
@@ -59,7 +59,7 @@ void PicturePileImpl::RasterForAnalysis(
       canvas, canvas, canvas_rect, contents_scale, stats_instrumentation, true);
 }
 
-void PicturePileImpl::RasterToBitmap(
+void PicturePileImpl::PlaybackToCanvas(
     SkCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale,
@@ -316,25 +316,19 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   SkCanvas* canvas =
       recorder.beginRecording(tiling_rect.width(), tiling_rect.height());
   if (!tiling_rect.IsEmpty())
-    RasterToBitmap(canvas, tiling_rect, 1.0, NULL);
+    PlaybackToCanvas(canvas, tiling_rect, 1.0, NULL);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
 
   return picture;
 }
 
-void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
-                                    float contents_scale,
-                                    PicturePileImpl::Analysis* analysis) const {
-  AnalyzeInRect(content_rect, contents_scale, analysis, NULL);
-}
-
-void PicturePileImpl::AnalyzeInRect(
+void PicturePileImpl::PerformSolidColorAnalysis(
     const gfx::Rect& content_rect,
     float contents_scale,
-    PicturePileImpl::Analysis* analysis,
+    RasterSource::SolidColorAnalysis* analysis,
     RenderingStatsInstrumentation* stats_instrumentation) const {
   DCHECK(analysis);
-  TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
+  TRACE_EVENT0("cc", "PicturePileImpl::PerformSolidColorAnalysis");
 
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
       content_rect, 1.0f / contents_scale);
@@ -348,14 +342,24 @@ void PicturePileImpl::AnalyzeInRect(
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
 }
 
-// Since there are situations when we can skip analysis, the variables have to
-// be set to their safest values. That is, we have to assume that the tile is
-// not solid color. As well, we have to assume that the tile has text so we
-// don't early out incorrectly.
-PicturePileImpl::Analysis::Analysis() : is_solid_color(false) {
+void PicturePileImpl::GatherPixelRefs(
+    const gfx::Rect& content_rect,
+    float contents_scale,
+    std::vector<SkPixelRef*>* pixel_refs) const {
+  DCHECK_EQ(0u, pixel_refs->size());
+  for (PixelRefIterator iter(content_rect, contents_scale, this); iter;
+       ++iter) {
+    pixel_refs->push_back(*iter);
+  }
 }
 
-PicturePileImpl::Analysis::~Analysis() {
+bool PicturePileImpl::CoversRect(const gfx::Rect& content_rect,
+                                 float contents_scale) const {
+  return CanRaster(contents_scale, content_rect);
+}
+
+bool PicturePileImpl::SuitableForDistanceFieldText() const {
+  return likely_to_be_used_for_transform_animation_;
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(

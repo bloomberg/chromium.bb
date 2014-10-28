@@ -10,8 +10,8 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/debug/traced_value.h"
-#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_buffer.h"
+#include "cc/resources/raster_source.h"
 #include "cc/resources/resource.h"
 
 namespace cc {
@@ -24,11 +24,11 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()) {}
 
   // Overridden from RasterBuffer:
-  void Playback(const PicturePileImpl* picture_pile,
+  void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
-    picture_pile->RasterToBitmap(lock_.sk_canvas(), rect, scale, stats);
+    raster_source->PlaybackToCanvas(lock_.sk_canvas(), rect, scale, stats);
   }
 
  private:

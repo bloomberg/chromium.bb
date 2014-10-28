@@ -14,7 +14,7 @@ class SequencedTaskRunner;
 }
 
 namespace cc {
-class PicturePileImpl;
+class RasterSource;
 class RenderingStatsInstrumentation;
 
 class CC_EXPORT RasterWorkerPool {
@@ -70,7 +70,7 @@ class CC_EXPORT RasterWorkerPool {
                                ResourceFormat format,
                                const gfx::Size& size,
                                int stride,
-                               const PicturePileImpl* picture_pile,
+                               const RasterSource* raster_source,
                                const gfx::Rect& rect,
                                float scale,
                                RenderingStatsInstrumentation* stats);

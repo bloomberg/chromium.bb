@@ -35,7 +35,7 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
   // Overridden from RasterBuffer:
-  void Playback(const PicturePileImpl* picture_pile,
+  void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
@@ -46,7 +46,7 @@ class RasterBufferImpl : public RasterBuffer {
                                        resource_->format(),
                                        resource_->size(),
                                        stride_,
-                                       picture_pile,
+                                       raster_source,
                                        rect,
                                        scale,
                                        stats);

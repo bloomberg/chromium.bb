@@ -250,9 +250,9 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
     Invalidate(layer_invalidation);
   }
 
-  PicturePileImpl* pile = client_->GetPile();
+  RasterSource* raster_source = client_->GetRasterSource();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    it->second->set_picture_pile(pile);
+    it->second->set_raster_source(raster_source);
   VerifyLiveTilesRect();
 }
 

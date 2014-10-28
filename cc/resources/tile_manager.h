@@ -20,7 +20,7 @@
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
-#include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/raster_source.h"
 #include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
@@ -107,7 +107,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   // Returns true when visible tiles have been initialized.
   bool UpdateVisibleTiles();
 
-  scoped_refptr<Tile> CreateTile(PicturePileImpl* picture_pile,
+  scoped_refptr<Tile> CreateTile(RasterSource* raster_source,
                                  const gfx::Size& tile_size,
                                  const gfx::Rect& content_rect,
                                  float contents_scale,
@@ -213,7 +213,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
                                   bool was_canceled);
   void OnRasterTaskCompleted(Tile::Id tile,
                              scoped_ptr<ScopedResource> resource,
-                             const PicturePileImpl::Analysis& analysis,
+                             const RasterSource::SolidColorAnalysis& analysis,
                              bool was_canceled);
 
   void FreeResourcesForTile(Tile* tile);

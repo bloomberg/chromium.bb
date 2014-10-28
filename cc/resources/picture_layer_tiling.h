@@ -38,7 +38,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual scoped_refptr<Tile> CreateTile(
     PictureLayerTiling* tiling,
     const gfx::Rect& content_rect) = 0;
-  virtual PicturePileImpl* GetPile() = 0;
+  virtual RasterSource* GetRasterSource() = 0;
   virtual gfx::Size CalculateTileSize(
     const gfx::Size& content_bounds) const = 0;
   // This invalidation region defines the area (if any, it can by null) that

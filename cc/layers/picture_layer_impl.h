@@ -119,7 +119,7 @@ class CC_EXPORT PictureLayerImpl
   // PictureLayerTilingClient overrides.
   scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
                                  const gfx::Rect& content_rect) override;
-  PicturePileImpl* GetPile() override;
+  RasterSource* GetRasterSource() override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(

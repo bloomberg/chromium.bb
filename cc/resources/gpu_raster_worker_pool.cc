@@ -8,8 +8,8 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/output/context_provider.h"
-#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_buffer.h"
+#include "cc/resources/raster_source.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_gpu_raster.h"
@@ -34,14 +34,14 @@ class RasterBufferImpl : public RasterBuffer {
         use_distance_field_text_(use_distance_field_text) {}
 
   // Overridden from RasterBuffer:
-  void Playback(const PicturePileImpl* picture_pile,
+  void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
     // Turn on distance fields for layers that have ever animated.
     bool use_distance_field_text =
         use_distance_field_text_ ||
-        picture_pile->likely_to_be_used_for_transform_animation();
+        raster_source->SuitableForDistanceFieldText();
     SkSurface* sk_surface = lock_.GetSkSurface(use_distance_field_text);
 
     if (!sk_surface)
@@ -53,7 +53,7 @@ class RasterBufferImpl : public RasterBuffer {
         skia::SharePtr(recorder.beginRecording(size.width(), size.height()));
 
     canvas->save();
-    picture_pile->RasterToBitmap(canvas.get(), rect, scale, stats);
+    raster_source->PlaybackToCanvas(canvas.get(), rect, scale, stats);
     canvas->restore();
 
     // Add the canvas and recorded picture to |multi_picture_draw_|.

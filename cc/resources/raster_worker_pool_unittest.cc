@@ -46,8 +46,8 @@ enum RasterWorkerPoolType {
 
 class TestRasterTaskImpl : public RasterTask {
  public:
-  typedef base::Callback<
-      void(const PicturePileImpl::Analysis& analysis, bool was_canceled)> Reply;
+  typedef base::Callback<void(const RasterSource::SolidColorAnalysis& analysis,
+                              bool was_canceled)> Reply;
 
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
@@ -71,7 +71,7 @@ class TestRasterTaskImpl : public RasterTask {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
   void RunReplyOnOriginThread() override {
-    reply_.Run(PicturePileImpl::Analysis(), !HasFinishedRunning());
+    reply_.Run(RasterSource::SolidColorAnalysis(), !HasFinishedRunning());
   }
 
  protected:
@@ -298,7 +298,7 @@ class RasterWorkerPoolTest
 
   void OnTaskCompleted(scoped_ptr<ScopedResource> resource,
                        unsigned id,
-                       const PicturePileImpl::Analysis& analysis,
+                       const RasterSource::SolidColorAnalysis& analysis,
                        bool was_canceled) {
     RasterTaskResult result;
     result.id = id;

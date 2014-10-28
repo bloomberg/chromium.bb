@@ -39,7 +39,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   ContentLayerClient* client() { return client_; }
 
-  PicturePile* GetPicturePileForTesting() const { return pile_.get(); }
+  PicturePile* GetPicturePileForTesting() { return &pile_; }
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
@@ -50,7 +50,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
  private:
   ContentLayerClient* client_;
-  scoped_refptr<PicturePile> pile_;
+  PicturePile pile_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
   // Invalidation to use the next time update is called.

@@ -9,7 +9,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class PicturePileImpl;
+class RasterSource;
 class RenderingStatsInstrumentation;
 
 class CC_EXPORT RasterBuffer {
@@ -17,7 +17,7 @@ class CC_EXPORT RasterBuffer {
   RasterBuffer();
   virtual ~RasterBuffer();
 
-  virtual void Playback(const PicturePileImpl* picture_pile,
+  virtual void Playback(const RasterSource* raster_source,
                         const gfx::Rect& rect,
                         float scale,
                         RenderingStatsInstrumentation* stats) = 0;

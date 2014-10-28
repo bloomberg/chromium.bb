@@ -25,11 +25,11 @@ const int kDefaultRasterizeRepeatCount = 100;
 
 class BenchmarkRasterTask : public Task {
  public:
-  BenchmarkRasterTask(PicturePileImpl* picture_pile,
+  BenchmarkRasterTask(RasterSource* raster_source,
                       const gfx::Rect& content_rect,
                       float contents_scale,
                       size_t repeat_count)
-      : picture_pile_(picture_pile),
+      : raster_source_(raster_source),
         content_rect_(content_rect),
         contents_scale_(contents_scale),
         repeat_count_(repeat_count),
@@ -54,11 +54,11 @@ class BenchmarkRasterTask : public Task {
         bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect_.width(),
                                                       content_rect_.height()));
         SkCanvas canvas(bitmap);
-        PicturePileImpl::Analysis analysis;
+        RasterSource::SolidColorAnalysis analysis;
 
-        picture_pile_->AnalyzeInRect(
+        raster_source_->PerformSolidColorAnalysis(
             content_rect_, contents_scale_, &analysis, nullptr);
-        picture_pile_->RasterToBitmap(
+        raster_source_->PlaybackToCanvas(
             &canvas, content_rect_, contents_scale_, nullptr);
 
         is_solid_color_ = analysis.is_solid_color;
@@ -78,7 +78,7 @@ class BenchmarkRasterTask : public Task {
  private:
   ~BenchmarkRasterTask() override {}
 
-  PicturePileImpl* picture_pile_;
+  RasterSource* raster_source_;
   gfx::Rect content_rect_;
   float contents_scale_;
   size_t repeat_count_;
@@ -99,7 +99,9 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->CreateTile(tiling, content_rect);
   }
 
-  PicturePileImpl* GetPile() override { return base_client_->GetPile(); }
+  RasterSource* GetRasterSource() override {
+    return base_client_->GetRasterSource();
+  }
 
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override {
     return base_client_->CalculateTileSize(content_bounds);
@@ -222,12 +224,12 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
        ++it) {
     DCHECK(*it);
 
-    PicturePileImpl* picture_pile = (*it)->picture_pile();
+    RasterSource* raster_source = (*it)->raster_source();
     gfx::Rect content_rect = (*it)->content_rect();
     float contents_scale = (*it)->contents_scale();
 
     scoped_refptr<BenchmarkRasterTask> benchmark_raster_task(
-        new BenchmarkRasterTask(picture_pile,
+        new BenchmarkRasterTask(raster_source,
                                 content_rect,
                                 contents_scale,
                                 rasterize_repeat_count_));

@@ -47,7 +47,7 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
   return tile_manager_->CreateTile(pile_.get(), tile_size_, rect, 1, 0, 0, 0);
 }
 
-PicturePileImpl* FakePictureLayerTilingClient::GetPile() {
+RasterSource* FakePictureLayerTilingClient::GetRasterSource() {
   return pile_.get();
 }
 

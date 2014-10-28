@@ -142,7 +142,7 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
 }
 
 bool PicturePileBase::CanRaster(float contents_scale,
-                                const gfx::Rect& content_rect) {
+                                const gfx::Rect& content_rect) const {
   if (tiling_.tiling_size().IsEmpty())
     return false;
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
