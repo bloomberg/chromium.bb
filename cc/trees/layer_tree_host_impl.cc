@@ -2985,6 +2985,14 @@ void LayerTreeHostImpl::PinchGestureEnd() {
   if (top_controls_manager_)
     top_controls_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
+  // When a pinch ends, we may be displaying content cached at incorrect scales,
+  // so updating draw properties and drawing will ensure we are using the right
+  // scales that we want when we're not inside a pinch.
+  active_tree_->set_needs_update_draw_properties();
+  SetNeedsRedraw();
+  // TODO(danakj): Don't set root damage. Just updating draw properties and
+  // getting new tiles rastered should be enough! crbug.com/427423
+  SetFullRootLayerDamage();
 }
 
 static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
