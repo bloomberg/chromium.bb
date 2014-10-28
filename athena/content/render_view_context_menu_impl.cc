@@ -8,9 +8,13 @@
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/widget/widget.h"
 
 namespace athena {
 using blink::WebContextMenuData;
@@ -108,6 +112,34 @@ void RenderViewContextMenuImpl::RunMenuAt(views::Widget* parent,
                                           ui::MenuSourceType type) {
   static_cast<ToolkitDelegateViews*>(toolkit_delegate())
       ->RunMenuAt(parent, point, type);
+}
+
+void RenderViewContextMenuImpl::Show() {
+  // Menus need a Widget to work. If we're not the active tab we won't
+  // necessarily be in a widget.
+  views::Widget* top_level_widget = GetTopLevelWidget();
+  if (!top_level_widget)
+    return;
+
+  // Don't show empty menus.
+  if (menu_model().GetItemCount() == 0)
+    return;
+
+  gfx::Point screen_point(params().x, params().y);
+
+  // Convert from target window coordinates to root window coordinates.
+  aura::Window* target_window = GetActiveNativeView();
+  aura::Window* root_window = target_window->GetRootWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root_window);
+  if (screen_position_client)
+    screen_position_client->ConvertPointToScreen(target_window, &screen_point);
+
+  // Enable recursive tasks on the message loop so we can get updates while
+  // the context menu is being displayed.
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  RunMenuAt(top_level_widget, screen_point, params().source_type);
 }
 
 void RenderViewContextMenuImpl::InitMenu() {
@@ -277,6 +309,24 @@ void RenderViewContextMenuImpl::ExecuteCommand(int command_id,
       source_web_contents_->SelectAll();
       break;
   }
+}
+
+views::Widget* RenderViewContextMenuImpl::GetTopLevelWidget() {
+  return views::Widget::GetTopLevelWidgetForNativeView(GetActiveNativeView());
+}
+
+aura::Window* RenderViewContextMenuImpl::GetActiveNativeView() {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(GetRenderFrameHost());
+  if (!web_contents) {
+    LOG(ERROR) << "RenderViewContextMenuImpl::Show, couldn't find WebContents";
+    return NULL;
+  }
+
+  return web_contents->GetFullscreenRenderWidgetHostView()
+             ? web_contents->GetFullscreenRenderWidgetHostView()
+                   ->GetNativeView()
+             : web_contents->GetNativeView();
 }
 
 }  // namespace athena

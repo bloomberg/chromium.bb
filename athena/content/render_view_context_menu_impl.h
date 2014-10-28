@@ -7,12 +7,16 @@
 
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 
-namespace views {
-class Widget;
+namespace aura {
+class Window;
 }
 
 namespace gfx {
 class Point;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace athena {
@@ -26,6 +30,9 @@ class RenderViewContextMenuImpl : public RenderViewContextMenuBase {
   void RunMenuAt(views::Widget* parent,
                  const gfx::Point& point,
                  ui::MenuSourceType type);
+
+  // RenderViewContextMenuBase:
+  void Show() override;
 
  private:
   // RenderViewContextMenuBase:
@@ -45,6 +52,9 @@ class RenderViewContextMenuImpl : public RenderViewContextMenuBase {
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+
+  aura::Window* GetActiveNativeView();
+  views::Widget* GetTopLevelWidget();
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuImpl);
 };

@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif
 
-class RenderViewContextMenu;
+class RenderViewContextMenuBase;
 
 namespace ui {
 class SimpleMenuModel;
@@ -75,9 +75,9 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
   // Stores the current zoom factor.
   double current_zoom_factor_;
 
-  // Holds the RenderViewContextMenu that has been built but yet to be
-  // shown. This is .Reset() after ShowContextMenu().
-  scoped_ptr<RenderViewContextMenu> pending_menu_;
+  // Holds the RenderViewContextMenuBase that has been built but yet to be
+  // shown. This is .reset() after ShowContextMenu().
+  scoped_ptr<RenderViewContextMenuBase> pending_menu_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.

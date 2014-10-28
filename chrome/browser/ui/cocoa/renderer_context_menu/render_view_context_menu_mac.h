@@ -27,7 +27,8 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
 
-  void Show();
+  // RenderViewContextMenuBase implementation.
+  void Show() override;
 
  protected:
   // RenderViewContextMenu implementation.

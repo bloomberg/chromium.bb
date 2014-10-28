@@ -21,7 +21,7 @@ bool ChromeAppViewGuestDelegate::HandleContextMenu(
       ContextMenuDelegate::FromWebContents(web_contents);
   DCHECK(menu_delegate);
 
-  scoped_ptr<RenderViewContextMenu> menu =
+  scoped_ptr<RenderViewContextMenuBase> menu =
       menu_delegate->BuildMenu(web_contents, params);
   menu_delegate->ShowMenu(menu.Pass());
   return true;

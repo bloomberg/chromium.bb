@@ -8,6 +8,10 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "ui/base/ui_base_types.h"
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Point;
 }
@@ -31,6 +35,9 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  // RenderViewContextMenuBase implementation.
+  void Show() override;
+
  protected:
   RenderViewContextMenuViews(content::RenderFrameHost* render_frame_host,
                              const content::ContextMenuParams& params);
@@ -43,6 +50,9 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   void AppendPlatformEditableItems() override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
+
+  aura::Window* GetActiveNativeView();
+  views::Widget* GetTopLevelWidget();
 
   // Model for the BiDi input submenu.
   ui::SimpleMenuModel bidi_submenu_model_;

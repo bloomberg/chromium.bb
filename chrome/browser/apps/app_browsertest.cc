@@ -75,6 +75,8 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
     return menu_model_.GetIndexOfCommandId(command_id) != -1;
   }
 
+  void Show() override {}
+
  protected:
   // RenderViewContextMenu implementation.
   bool GetAcceleratorForCommandId(int command_id,

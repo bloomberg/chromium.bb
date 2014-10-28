@@ -42,8 +42,8 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
 }
 
 void ChromeWebContentsViewDelegateMac::ShowMenu(
-    scoped_ptr<RenderViewContextMenu> menu) {
-  context_menu_.reset(static_cast<RenderViewContextMenuMac*>(menu.release()));
+    scoped_ptr<RenderViewContextMenuBase> menu) {
+  context_menu_ = menu.Pass();
   if (!context_menu_.get())
     return;
 
@@ -61,10 +61,11 @@ void ChromeWebContentsViewDelegateMac::ShowMenu(
   context_menu_->Show();
 }
 
-scoped_ptr<RenderViewContextMenu> ChromeWebContentsViewDelegateMac::BuildMenu(
+scoped_ptr<RenderViewContextMenuBase>
+ChromeWebContentsViewDelegateMac::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  scoped_ptr<RenderViewContextMenuMac> menu;
+  scoped_ptr<RenderViewContextMenuBase> menu;
   content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   // If the frame tree does not have a focused frame at this point, do not
   // bother creating RenderViewContextMenuMac.

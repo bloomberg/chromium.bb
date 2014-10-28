@@ -65,3 +65,6 @@ bool TestRenderViewContextMenu::GetMenuModelAndItemIndex(
 
   return false;
 }
+
+void TestRenderViewContextMenu::Show() {
+}

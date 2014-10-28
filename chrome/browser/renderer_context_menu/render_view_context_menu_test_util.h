@@ -57,6 +57,8 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }
 #endif
 
+  void Show() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
 };

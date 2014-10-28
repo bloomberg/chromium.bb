@@ -69,6 +69,10 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   ~RenderViewContextMenuBase() override;
 
+  // Displays the menu.
+  // Different platform will have their own implementation.
+  virtual void Show() = 0;
+
   // Initializes the context menu.
   void Init();
 

@@ -32,7 +32,7 @@ bool ChromeExtensionOptionsGuestDelegate::HandleContextMenu(
       extension_options_guest()->web_contents());
   DCHECK(menu_delegate);
 
-  scoped_ptr<RenderViewContextMenu> menu = menu_delegate->BuildMenu(
+  scoped_ptr<RenderViewContextMenuBase> menu = menu_delegate->BuildMenu(
       extension_options_guest()->web_contents(), params);
   menu_delegate->ShowMenu(menu.Pass());
   return true;
