@@ -32,10 +32,17 @@ class TestHeartbeatManager : public HeartbeatManager {
 
   // Bypass the heartbeat timer, and send the heartbeat now.
   void TriggerHearbeat();
+
+  // Check for a missed heartbeat now.
+  void TriggerMissedHeartbeatCheck();
 };
 
 void TestHeartbeatManager::TriggerHearbeat() {
   OnHeartbeatTriggered();
+}
+
+void TestHeartbeatManager::TriggerMissedHeartbeatCheck() {
+  CheckForMissedHeartbeat();
 }
 
 class HeartbeatManagerTest : public testing::Test {
@@ -175,6 +182,20 @@ TEST_F(HeartbeatManagerTest, Stop) {
 
   manager()->Stop();
   EXPECT_TRUE(manager()->GetNextHeartbeatTime().is_null());
+}
+
+// Simulate missing a heartbeat by manually invoking the check method. The
+// heartbeat should only be triggered once, and only if the heartbeat timer
+// is running. Because the period is several minutes, none should fire.
+TEST_F(HeartbeatManagerTest, MissedHeartbeat) {
+  // Do nothing while stopped.
+  manager()->TriggerMissedHeartbeatCheck();
+  StartManager();
+  EXPECT_EQ(0, heartbeats_sent());
+
+  // Do nothing before the period is reached.
+  manager()->TriggerMissedHeartbeatCheck();
+  EXPECT_EQ(0, heartbeats_sent());
 }
 
 }  // namespace

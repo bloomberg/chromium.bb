@@ -56,9 +56,18 @@ class GCM_EXPORT HeartbeatManager {
   // Helper method to send heartbeat on timer trigger.
   void OnHeartbeatTriggered();
 
+  // Periodic check to see if the heartbeat has been missed due to some system
+  // issue (e.g. the machine was suspended and the timer did not account for
+  // that).
+  void CheckForMissedHeartbeat();
+
  private:
   // Restarts the heartbeat timer.
   void RestartTimer();
+
+  // The base::Time at which the heartbeat timer is expected to fire. Used to
+  // check if a heartbeat was somehow lost/delayed.
+  base::Time heartbeat_expected_time_;
 
   // Whether the last heartbeat ping sent has been acknowledged or not.
   bool waiting_for_ack_;
