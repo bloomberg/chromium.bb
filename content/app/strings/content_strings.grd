@@ -335,6 +335,9 @@ below:
         <ph name="WEEK">$1<ex>Week 38, 2014</ex></ph>, starting on <ph name="WEEK_START_DATE">$2<ex>September 15, 2014</ex></ph>
       </message>
 
+      <message name="IDS_AX_ROLE_ARTICLE" desc="accessibility role description for article">
+        article
+      </message>
       <message name="IDS_AX_ROLE_BANNER" desc="accessibility role description for banner">
         banner
       </message>
