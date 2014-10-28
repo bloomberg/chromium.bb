@@ -55527,10 +55527,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="NewRenderer_BeforeUnloadDiscounted"
       label="Navigation spawned a new renderer process. Time spent in
              beforeunload subtracted."/>
-  <suffix name="SessionRestored"
+  <suffix name="SessionRestored_BeforeUnloadDiscounted"
       label="Navigation caused by restoring a tab from a previous session
              (whether from a crash or a continued session) either spawning or
              reusing a renderer. Time spent in beforeunload subtracted."/>
+  <suffix name="SessionRestored"
+      label="Navigation caused by restoring a tab from a previous session
+             (whether from a crash or a continued session) either spawning or
+             reusing a renderer. Time spent in beforeunload subtracted.">
+    <obsolete>
+      Replaced by the likely named entry. It had a misleading name as it also
+      has the before-unload time discounted.
+    </obsolete>
+  </suffix>
   <affected-histogram name="Navigation.TimeToCommit"/>
   <affected-histogram name="Navigation.TimeToURLJobStart"/>
 </histogram_suffixes>

@@ -888,10 +888,10 @@ void NavigatorImpl::RecordNavigationMetrics(
                                     navigation_data_->before_unload_delay_;
   if (navigation_data_->is_restoring_from_last_session_) {
     UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToCommit_SessionRestored",
+        "Navigation.TimeToCommit_SessionRestored_BeforeUnloadDiscounted",
         time_to_commit);
     UMA_HISTOGRAM_TIMES(
-        "Navigation.TimeToURLJobStart_SessionRestored",
+        "Navigation.TimeToURLJobStart_SessionRestored_BeforeUnloadDiscounted",
         time_to_network);
     navigation_data_.reset();
     return;
