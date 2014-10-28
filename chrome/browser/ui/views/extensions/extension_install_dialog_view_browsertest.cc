@@ -161,16 +161,16 @@ ScrollbarTest::ScrollbarTest()
 }
 
 bool ScrollbarTest::IsScrollbarVisible() {
+  ExtensionInstallPrompt::ShowParams show_params(web_contents());
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      profile(),
-      web_contents(),
+      show_params.profile,
+      show_params.parent_web_contents,
       delegate(),
       prompt());
 
   // Create the modal view around the install dialog view.
   views::Widget* modal =
-      CreateBrowserModalDialogViews(dialog,
-                                    web_contents()->GetTopLevelNativeWindow());
+      CreateBrowserModalDialogViews(dialog, show_params.parent_window);
   modal->Show();
   content::RunAllBlockingPoolTasksUntilIdle();
 

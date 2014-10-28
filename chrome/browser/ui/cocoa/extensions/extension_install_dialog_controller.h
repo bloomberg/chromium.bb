@@ -20,7 +20,6 @@ namespace extensions {
 class ExperienceSamplingEvent;
 }
 
-class ExtensionInstallPromptShowParams;
 @class ExtensionInstallViewController;
 
 // Displays an extension install prompt as a tab modal dialog.
@@ -29,7 +28,7 @@ class ExtensionInstallDialogController :
     public ConstrainedWindowMacDelegate {
  public:
   ExtensionInstallDialogController(
-      ExtensionInstallPromptShowParams* show_params,
+      const ExtensionInstallPrompt::ShowParams& show_params,
       ExtensionInstallPrompt::Delegate* delegate,
       scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
   ~ExtensionInstallDialogController() override;

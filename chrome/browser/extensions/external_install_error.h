@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 
 class Browser;
-class ExtensionInstallPromptShowParams;
 class ExtensionInstallUI;
 class GlobalError;
 class GlobalErrorService;
@@ -77,7 +76,7 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
 
   // Called when the dialog has been successfully populated, and is ready to be
   // shown.
-  void OnDialogReady(ExtensionInstallPromptShowParams* show_params,
+  void OnDialogReady(const ExtensionInstallPrompt::ShowParams& show_params,
                      ExtensionInstallPrompt::Delegate* prompt_delegate,
                      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
 
@@ -98,7 +97,6 @@ class ExternalInstallError : public ExtensionInstallPrompt::Delegate,
 
   // The UI for showing the error.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_ptr<ExtensionInstallPromptShowParams> install_ui_show_params_;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   // The UI for the given error, which will take the form of either a menu

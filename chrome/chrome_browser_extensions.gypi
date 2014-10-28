@@ -607,8 +607,6 @@
       'browser/extensions/extension_install_prompt.h',
       'browser/extensions/extension_install_prompt_experiment.cc',
       'browser/extensions/extension_install_prompt_experiment.h',
-      'browser/extensions/extension_install_prompt_show_params.cc',
-      'browser/extensions/extension_install_prompt_show_params.h',
       'browser/extensions/extension_install_ui_util.cc',
       'browser/extensions/extension_install_ui_util.h',
       'browser/extensions/extension_keybinding_registry.cc',

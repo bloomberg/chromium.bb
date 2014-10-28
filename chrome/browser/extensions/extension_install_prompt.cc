@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,6 +173,13 @@ Profile* ProfileForWebContents(content::WebContents* web_contents) {
   if (!web_contents)
     return NULL;
   return Profile::FromBrowserContext(web_contents->GetBrowserContext());
+}
+
+gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
+  if (!contents)
+    return NULL;
+
+  return contents->GetTopLevelNativeWindow();
 }
 
 }  // namespace
@@ -606,6 +612,19 @@ bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {
   return !retained_files_.empty();
 }
 
+ExtensionInstallPrompt::ShowParams::ShowParams(content::WebContents* contents)
+    : profile(ProfileForWebContents(contents)),
+      parent_web_contents(contents),
+      parent_window(NativeWindowForWebContents(contents)) {
+}
+
+ExtensionInstallPrompt::ShowParams::ShowParams(Profile* profile,
+                                               gfx::NativeWindow window)
+    : profile(profile),
+      parent_web_contents(NULL),
+      parent_window(window) {
+}
+
 // static
 scoped_refptr<Extension>
     ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
@@ -644,7 +663,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       bundle_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(
           ProfileForWebContents(contents))),
-      show_params_(new ExtensionInstallPromptShowParams(contents)),
+      show_params_(contents),
       delegate_(NULL) {
 }
 
@@ -655,8 +674,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
       extension_(NULL),
       bundle_(NULL),
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
-      show_params_(
-          new ExtensionInstallPromptShowParams(profile, native_window)),
+      show_params_(profile, native_window),
       delegate_(NULL) {
 }
 
@@ -926,13 +944,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   if (AutoConfirmPrompt(delegate_))
     return;
 
-  if (show_params_->WasParentDestroyed()) {
-    delegate_->InstallUIAbort(false);
-    return;
-  }
-
   if (show_dialog_callback_.is_null())
-    GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_, prompt_);
+    GetDefaultShowDialogCallback().Run(show_params_, delegate_, prompt_);
   else
-    show_dialog_callback_.Run(show_params_.get(), delegate_, prompt_);
+    show_dialog_callback_.Run(show_params_, delegate_, prompt_);
 }

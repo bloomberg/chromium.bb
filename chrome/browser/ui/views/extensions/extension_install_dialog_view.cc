@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt_experiment.h"
-#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -169,16 +168,16 @@ CheckboxedView::CheckboxedView(views::View* view,
 }
 
 void ShowExtensionInstallDialogImpl(
-    ExtensionInstallPromptShowParams* show_params,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ExtensionInstallDialogView* dialog =
-      new ExtensionInstallDialogView(show_params->profile(),
-                                     show_params->GetParentWebContents(),
+      new ExtensionInstallDialogView(show_params.profile,
+                                     show_params.parent_web_contents,
                                      delegate,
                                      prompt);
-  CreateBrowserModalDialogViews(dialog, show_params->GetParentWindow())->Show();
+  CreateBrowserModalDialogViews(dialog, show_params.parent_window)->Show();
 }
 
 CustomScrollableView::CustomScrollableView() {}

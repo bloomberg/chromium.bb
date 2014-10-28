@@ -22,7 +22,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-class ExtensionInstallPromptShowParams;
 class Profile;
 
 namespace base {
@@ -280,7 +279,23 @@ class ExtensionInstallPrompt
     virtual ~Delegate() {}
   };
 
-  typedef base::Callback<void(ExtensionInstallPromptShowParams*,
+  // Parameters to show a prompt dialog. Two sets of the
+  // parameters are supported: either use a parent WebContents or use a
+  // parent NativeWindow + a Profile.
+  struct ShowParams {
+    explicit ShowParams(content::WebContents* contents);
+    ShowParams(Profile* profile, gfx::NativeWindow window);
+
+    Profile* profile;
+
+    // Parent web contents of the install UI dialog. This can be NULL.
+    content::WebContents* parent_web_contents;
+
+    // NativeWindow parent.
+    gfx::NativeWindow parent_window;
+  };
+
+  typedef base::Callback<void(const ExtensionInstallPrompt::ShowParams&,
                               ExtensionInstallPrompt::Delegate*,
                               scoped_refptr<ExtensionInstallPrompt::Prompt>)>
       ShowDialogCallback;
@@ -311,6 +326,10 @@ class ExtensionInstallPrompt
 
   extensions::ExtensionInstallUI* install_ui() const {
     return install_ui_.get();
+  }
+
+  content::WebContents* parent_web_contents() const {
+    return show_params_.parent_web_contents;
   }
 
   // This is called by the bundle installer to verify whether the bundle
@@ -443,7 +462,7 @@ class ExtensionInstallPrompt
   scoped_ptr<extensions::ExtensionInstallUI> install_ui_;
 
   // Parameters to show the confirmation UI.
-  scoped_ptr<ExtensionInstallPromptShowParams> show_params_;
+  ShowParams show_params_;
 
   // The delegate we will call Proceed/Abort on after confirmation UI.
   Delegate* delegate_;

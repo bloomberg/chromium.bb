@@ -15,7 +15,6 @@
 
 typedef std::vector<base::string16> PermissionDetails;
 class ExpandableContainerView;
-class ExtensionInstallPromptShowParams;
 class Profile;
 
 namespace content {
@@ -275,7 +274,7 @@ class ExpandableContainerView : public views::View,
 };
 
 void ShowExtensionInstallDialogImpl(
-    ExtensionInstallPromptShowParams* show_params,
+    const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
 
