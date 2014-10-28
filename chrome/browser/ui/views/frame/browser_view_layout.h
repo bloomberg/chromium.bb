@@ -42,7 +42,7 @@ class BrowserViewLayout : public views::LayoutManager {
   static const int kToolbarTabStripVerticalOverlap;
 
   BrowserViewLayout();
-  virtual ~BrowserViewLayout();
+  ~BrowserViewLayout() override;
 
   // Sets all the views to be managed. Takes ownership of |delegate|.
   // |browser_view| may be NULL in tests.
@@ -83,8 +83,8 @@ class BrowserViewLayout : public views::LayoutManager {
   int NonClientHitTest(const gfx::Point& point);
 
   // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) override;
-  virtual gfx::Size GetPreferredSize(const views::View* host) const override;
+  void Layout(views::View* host) override;
+  gfx::Size GetPreferredSize(const views::View* host) const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, BrowserViewLayout);

@@ -17,11 +17,11 @@ class BrowserView;
 class TopContainerView : public views::View {
  public:
   explicit TopContainerView(BrowserView* browser_view);
-  virtual ~TopContainerView();
+  ~TopContainerView() override;
 
   // views::View overrides:
-  virtual const char* GetClassName() const override;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
  private:
   // The parent of this view. Not owned.

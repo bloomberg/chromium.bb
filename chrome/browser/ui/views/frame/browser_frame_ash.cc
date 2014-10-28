@@ -29,10 +29,10 @@ class BrowserWindowStateDelegate : public ash::wm::WindowStateDelegate {
       : browser_(browser) {
     DCHECK(browser_);
   }
-  virtual ~BrowserWindowStateDelegate(){}
+  ~BrowserWindowStateDelegate() override {}
 
   // Overridden from ash::wm::WindowStateDelegate.
-  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     DCHECK(window_state->IsFullscreen() || window_state->CanMaximize());
     // Windows which cannot be maximized should not be fullscreened.
     if (!window_state->IsFullscreen() && !window_state->CanMaximize())

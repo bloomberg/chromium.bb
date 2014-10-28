@@ -65,9 +65,9 @@ class TestWebContentsObserver : public content::WebContentsObserver {
                           content::WebContents* other)
       : content::WebContentsObserver(source),
         other_(other) {}
-  virtual ~TestWebContentsObserver() {}
+  ~TestWebContentsObserver() override {}
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     other_->NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         content::INVALIDATE_TYPE_URL | content::INVALIDATE_TYPE_LOAD));
   }
@@ -182,9 +182,7 @@ class BookmarkBarViewObserverImpl : public BookmarkBarViewObserver {
   void clear_change_count() { change_count_ = 0; }
 
   // BookmarkBarViewObserver:
-  virtual void OnBookmarkBarVisibilityChanged() override {
-    change_count_++;
-  }
+  void OnBookmarkBarVisibilityChanged() override { change_count_++; }
 
  private:
   int change_count_;

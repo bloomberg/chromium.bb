@@ -28,13 +28,13 @@ class TestWithBrowserView : public BrowserWithTestWindowTest {
   TestWithBrowserView(Browser::Type browser_type,
                       chrome::HostDesktopType host_desktop_type,
                       bool hosted_app);
-  virtual ~TestWithBrowserView();
+  ~TestWithBrowserView() override;
 
   // BrowserWithTestWindowTest overrides:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
-  virtual TestingProfile* CreateProfile() override;
-  virtual BrowserWindow* CreateBrowserWindow() override;
+  void SetUp() override;
+  void TearDown() override;
+  TestingProfile* CreateProfile() override;
+  BrowserWindow* CreateBrowserWindow() override;
 
   BrowserView* browser_view() { return browser_view_; }
 

@@ -32,7 +32,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
                                 public gfx::AnimationDelegate {
  public:
   BrowserHeaderPainterAsh();
-  virtual ~BrowserHeaderPainterAsh();
+  ~BrowserHeaderPainterAsh() override;
 
   // BrowserHeaderPainterAsh does not take ownership of any of the parameters.
   void Init(
@@ -43,17 +43,17 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
     ash::FrameCaptionButtonContainerView* caption_button_container);
 
   // ash::HeaderPainter overrides:
-  virtual int GetMinimumHeaderWidth() const override;
-  virtual void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
-  virtual void LayoutHeader() override;
-  virtual int GetHeaderHeightForPainting() const override;
-  virtual void SetHeaderHeightForPainting(int height) override;
-  virtual void SchedulePaintForTitle() override;
-  virtual void UpdateLeftViewXInset(int left_view_x_inset) override;
+  int GetMinimumHeaderWidth() const override;
+  void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
+  void LayoutHeader() override;
+  int GetHeaderHeightForPainting() const override;
+  void SetHeaderHeightForPainting(int height) override;
+  void SchedulePaintForTitle() override;
+  void UpdateLeftViewXInset(int left_view_x_inset) override;
 
  private:
   // gfx::AnimationDelegate override:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Paints highlight around the edge of the header for restored windows.
   void PaintHighlightForRestoredWindow(gfx::Canvas* canvas);

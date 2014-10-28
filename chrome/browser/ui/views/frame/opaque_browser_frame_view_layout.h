@@ -30,7 +30,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
  public:
   explicit OpaqueBrowserFrameViewLayout(
       OpaqueBrowserFrameViewLayoutDelegate* delegate);
-  virtual ~OpaqueBrowserFrameViewLayout();
+  ~OpaqueBrowserFrameViewLayout() override;
 
   // Whether we should add the (minimize,maximize,close) buttons. This should be
   // true if the buttons could be shown at any time in this session (see
@@ -142,10 +142,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void SetView(int id, views::View* view);
 
   // Overriden from views::LayoutManager:
-  virtual void Layout(views::View* host) override;
-  virtual gfx::Size GetPreferredSize(const views::View* host) const override;
-  virtual void ViewAdded(views::View* host, views::View* view) override;
-  virtual void ViewRemoved(views::View* host, views::View* view) override;
+  void Layout(views::View* host) override;
+  gfx::Size GetPreferredSize(const views::View* host) const override;
+  void ViewAdded(views::View* host, views::View* view) override;
+  void ViewRemoved(views::View* host, views::View* view) override;
 
   OpaqueBrowserFrameViewLayoutDelegate* delegate_;
 

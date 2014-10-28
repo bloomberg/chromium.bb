@@ -25,26 +25,25 @@ class ContentsWebView
       public WebContentsCloseHandlerDelegate {
  public:
   explicit ContentsWebView(content::BrowserContext* browser_context);
-  virtual ~ContentsWebView();
+  ~ContentsWebView() override;
 
   // Sets the status bubble, which should be repositioned every time
   // this view changes visible bounds.
   void SetStatusBubble(StatusBubbleViews* status_bubble);
 
   // WebView overrides:
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
-  virtual void OnVisibleBoundsChanged() override;
-  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      override;
-  virtual void OnThemeChanged() override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnThemeChanged() override;
 
   // ui::LayerOwnerDelegate overrides:
-  virtual void OnLayerRecreated(ui::Layer* old_layer,
-                                ui::Layer* new_layer) override;
+  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
 
   // WebContentsCloseHandlerDelegate overrides:
-  virtual void CloneWebContentsLayer() override;
-  virtual void DestroyClonedLayer() override;
+  void CloneWebContentsLayer() override;
+  void DestroyClonedLayer() override;
 
  private:
   StatusBubbleViews* status_bubble_;

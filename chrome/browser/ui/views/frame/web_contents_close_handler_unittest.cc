@@ -15,7 +15,7 @@ class MockWebContentsCloseHandlerDelegate
       : got_clone_(false),
         got_destroy_(false) {
   }
-  virtual ~MockWebContentsCloseHandlerDelegate() {}
+  ~MockWebContentsCloseHandlerDelegate() override {}
 
   void Clear() {
     got_clone_ = got_destroy_ = false;
@@ -28,12 +28,8 @@ class MockWebContentsCloseHandlerDelegate
   void clear_got_destroy() { got_destroy_ = false; }
 
   // WebContentsCloseHandlerDelegate:
-  virtual void CloneWebContentsLayer() override {
-    got_clone_ = true;
-  }
-  virtual void DestroyClonedLayer() override {
-    got_destroy_ = true;
-  }
+  void CloneWebContentsLayer() override { got_clone_ = true; }
+  void DestroyClonedLayer() override { got_destroy_ = true; }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -48,7 +44,7 @@ class MockWebContentsCloseHandlerDelegate
 class WebContentsCloseHandlerTest : public testing::Test {
  public:
   WebContentsCloseHandlerTest() : close_handler_(&close_handler_delegate_) {}
-  virtual ~WebContentsCloseHandlerTest() {}
+  ~WebContentsCloseHandlerTest() override {}
 
  protected:
   bool IsTimerRunning() const {

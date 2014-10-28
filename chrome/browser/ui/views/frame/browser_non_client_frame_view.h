@@ -22,7 +22,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileInfoCacheObserver {
  public:
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
-  virtual ~BrowserNonClientFrameView();
+  ~BrowserNonClientFrameView() override;
 
   AvatarMenuButton* avatar_button() const { return avatar_button_; }
 
@@ -33,7 +33,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
     return supervised_user_avatar_label_;
   }
 
-  virtual void OnThemeChanged() override;
+  void OnThemeChanged() override;
 #endif
 
   // Retrieves the bounds, in non-client view coordinates within which the
@@ -53,8 +53,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   virtual void UpdateThrobber(bool running) = 0;
 
   // Overriden from views::View.
-  virtual void VisibilityChanged(views::View* starting_from,
-                                 bool is_visible) override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }

@@ -58,7 +58,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
  public:
   GlobalMenuBarX11(BrowserView* browser_view,
                    BrowserDesktopWindowTreeHostX11* host);
-  virtual ~GlobalMenuBarX11();
+  ~GlobalMenuBarX11() override;
 
   // Creates the object path for DbusemenuServer which is attached to |xid|.
   static std::string GetPathForWindow(unsigned long xid);
@@ -122,26 +122,26 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   static void DeleteHistoryItem(void* void_item);
 
   // Overridden from AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
+  void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // Overridden from chrome::BrowserListObserver:
-  virtual void OnBrowserSetLastActive(Browser* browser) override;
+  void OnBrowserSetLastActive(Browser* browser) override;
 
   // Overridden from CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) override;
+  void EnabledStateChangedForCommand(int id, bool enabled) override;
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override;
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override;
+  void TabRestoreServiceChanged(TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override;
 
   // Overridden from views::DesktopWindowTreeHostObserverX11:
-  virtual void OnWindowMapped(unsigned long xid) override;
-  virtual void OnWindowUnmapped(unsigned long xid) override;
+  void OnWindowMapped(unsigned long xid) override;
+  void OnWindowUnmapped(unsigned long xid) override;
 
   CHROMEG_CALLBACK_1(GlobalMenuBarX11, void, OnItemActivated, DbusmenuMenuitem*,
                      unsigned int);

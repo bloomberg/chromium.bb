@@ -64,7 +64,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
           : browser_view_layout_(browser_view_layout) {
   }
 
-  virtual ~WebContentsModalDialogHostViews() {
+  ~WebContentsModalDialogHostViews() override {
     FOR_EACH_OBSERVER(ModalDialogHostObserver,
                       observer_list_,
                       OnHostDestroying());
@@ -76,7 +76,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
                       OnPositionRequiresUpdate());
   }
 
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) override {
+  gfx::Point GetDialogPosition(const gfx::Size& size) override {
     views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
     const int middle_x = content_area.x() + content_area.width() / 2;
@@ -84,7 +84,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     return gfx::Point(middle_x - size.width() / 2, top);
   }
 
-  virtual gfx::Size GetMaximumDialogSize() override {
+  gfx::Size GetMaximumDialogSize() override {
     views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
     const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
@@ -92,17 +92,17 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
  private:
-  virtual gfx::NativeView GetHostView() const override {
+  gfx::NativeView GetHostView() const override {
     gfx::NativeWindow window =
         browser_view_layout_->browser()->window()->GetNativeWindow();
     return views::Widget::GetWidgetForNativeWindow(window)->GetNativeView();
   }
 
   // Add/remove observer.
-  virtual void AddObserver(ModalDialogHostObserver* observer) override {
+  void AddObserver(ModalDialogHostObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
-  virtual void RemoveObserver(ModalDialogHostObserver* observer) override {
+  void RemoveObserver(ModalDialogHostObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
 

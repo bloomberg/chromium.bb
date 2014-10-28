@@ -168,8 +168,7 @@ class BrowserViewHostedAppTest : public TestWithBrowserView {
                             chrome::HOST_DESKTOP_TYPE_NATIVE,
                             true) {
   }
-  virtual ~BrowserViewHostedAppTest() {
-  }
+  ~BrowserViewHostedAppTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserViewHostedAppTest);

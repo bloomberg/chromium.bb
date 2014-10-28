@@ -22,13 +22,13 @@ class OpaqueBrowserFrameViewLinux
       OpaqueBrowserFrameView* view,
       OpaqueBrowserFrameViewLayout* layout,
       Profile* profile);
-  virtual ~OpaqueBrowserFrameViewLinux();
+  ~OpaqueBrowserFrameViewLinux() override;
 
   // Overridden from OpaqueBrowserFrameViewPlatformSpecific:
-  virtual bool IsUsingSystemTheme() override;
+  bool IsUsingSystemTheme() override;
 
   // Overridden from views::WindowButtonOrderObserver:
-  virtual void OnWindowButtonOrderingChange(
+  void OnWindowButtonOrderingChange(
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons) override;
 

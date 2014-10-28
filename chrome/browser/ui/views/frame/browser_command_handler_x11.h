@@ -12,11 +12,11 @@ class Browser;
 class BrowserCommandHandlerX11 : public ui::EventHandler {
  public:
   explicit BrowserCommandHandlerX11(Browser* browser);
-  virtual ~BrowserCommandHandlerX11();
+  ~BrowserCommandHandlerX11() override;
 
  private:
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   Browser* browser_;
 

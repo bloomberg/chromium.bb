@@ -22,7 +22,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
         bookmark_bar_visible_(true),
         download_shelf_needs_layout_(false) {
   }
-  virtual ~MockBrowserViewLayoutDelegate() {}
+  ~MockBrowserViewLayoutDelegate() override {}
 
   void set_download_shelf_needs_layout(bool layout) {
     download_shelf_needs_layout_ = layout;
@@ -38,32 +38,22 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
   // BrowserViewLayout::Delegate overrides:
-  virtual views::View* GetContentsWebView() const override {
+  views::View* GetContentsWebView() const override {
     return contents_web_view_;
   }
-  virtual bool IsTabStripVisible() const override {
-    return tab_strip_visible_;
-  }
-  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const override {
+  bool IsTabStripVisible() const override { return tab_strip_visible_; }
+  gfx::Rect GetBoundsForTabStripInBrowserView() const override {
     return gfx::Rect();
   }
-  virtual int GetTopInsetInBrowserView() const override {
-    return 0;
-  }
-  virtual int GetThemeBackgroundXInset() const override {
-    return 0;
-  }
-  virtual bool IsToolbarVisible() const override {
-    return toolbar_visible_;
-  }
-  virtual bool IsBookmarkBarVisible() const override {
-    return bookmark_bar_visible_;
-  }
-  virtual bool DownloadShelfNeedsLayout() const override {
+  int GetTopInsetInBrowserView() const override { return 0; }
+  int GetThemeBackgroundXInset() const override { return 0; }
+  bool IsToolbarVisible() const override { return toolbar_visible_; }
+  bool IsBookmarkBarVisible() const override { return bookmark_bar_visible_; }
+  bool DownloadShelfNeedsLayout() const override {
     return download_shelf_needs_layout_;
   }
 
-  virtual FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
+  FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
     return NULL;
   }
 
@@ -86,12 +76,10 @@ class MockView : public views::View {
       : size_(initial_size) {
     SetBoundsRect(gfx::Rect(gfx::Point(), size_));
   }
-  virtual ~MockView() {}
+  ~MockView() override {}
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override {
-    return size_;
-  }
+  gfx::Size GetPreferredSize() const override { return size_; }
 
  private:
   gfx::Size size_;
@@ -104,22 +92,26 @@ class MockView : public views::View {
 class MockImmersiveModeController : public ImmersiveModeController {
  public:
   MockImmersiveModeController() {}
-  virtual ~MockImmersiveModeController() {}
+  ~MockImmersiveModeController() override {}
 
   // ImmersiveModeController overrides:
-  virtual void Init(BrowserView* browser_view) override {}
-  virtual void SetEnabled(bool enabled) override {}
-  virtual bool IsEnabled() const override { return false; }
-  virtual bool ShouldHideTabIndicators() const override { return false; }
-  virtual bool ShouldHideTopViews() const override { return false; }
-  virtual bool IsRevealed() const override { return false; }
-  virtual int GetTopContainerVerticalOffset(
-      const gfx::Size& top_container_size) const override { return 0; }
-  virtual ImmersiveRevealedLock* GetRevealedLock(
-      AnimateReveal animate_reveal) override WARN_UNUSED_RESULT { return NULL; }
-  virtual void OnFindBarVisibleBoundsChanged(
+  void Init(BrowserView* browser_view) override {}
+  void SetEnabled(bool enabled) override {}
+  bool IsEnabled() const override { return false; }
+  bool ShouldHideTabIndicators() const override { return false; }
+  bool ShouldHideTopViews() const override { return false; }
+  bool IsRevealed() const override { return false; }
+  int GetTopContainerVerticalOffset(
+      const gfx::Size& top_container_size) const override {
+    return 0;
+  }
+  ImmersiveRevealedLock* GetRevealedLock(AnimateReveal animate_reveal) override
+      WARN_UNUSED_RESULT {
+    return NULL;
+  }
+  void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) override {}
-  virtual void SetupForTest() override {}
+  void SetupForTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveModeController);
@@ -138,7 +130,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
         contents_container_(NULL),
         contents_web_view_(NULL),
         devtools_web_view_(NULL) {}
-  virtual ~BrowserViewLayoutTest() {}
+  ~BrowserViewLayoutTest() override {}
 
   BrowserViewLayout* layout() { return layout_.get(); }
   MockBrowserViewLayoutDelegate* delegate() { return delegate_; }
@@ -150,7 +142,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   MockView* contents_container() { return contents_container_; }
 
   // BrowserWithTestWindowTest overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     root_view_.reset(new MockView(gfx::Size(800, 600)));
