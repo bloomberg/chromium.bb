@@ -1771,6 +1771,9 @@ cr.define('login', function() {
       this.actionBoxRemoveSupervisedUserWarningTextElement.hidden =
           !isSupervisedUser;
 
+      this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
+        'passwordFieldAccessibleName', this.user_.emailAddress));
+
       UserPod.prototype.updateActionBoxArea.call(this);
     },
 
