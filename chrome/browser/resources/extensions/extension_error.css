@@ -7,14 +7,21 @@
 }
 
 .extension-error-list-contents {
-  -webkit-transition: max-height 500ms ease-in-out;
+  -webkit-transition: max-height 150ms;
   list-style-type: none;
-  max-height: 50px;
   overflow-y: hidden;
 }
 
 .extension-error-list-contents.active {
   max-height: 200px;
+}
+
+.extension-error-list-contents,
+.extension-error-list-contents.deactivating {
+  /* Simply toggling .active on and off doesn't transition both ways as it
+   * changes the display type of some li elements. To fix this, .deactivating
+   * is added while the list is closing to change only the max-height. */
+  max-height: 50px;
 }
 
 .extension-error-list-contents.scrollable {
