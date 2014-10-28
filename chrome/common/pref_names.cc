@@ -1051,26 +1051,6 @@ const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
 const char kPinnedTabs[] = "pinned_tabs";
 #endif
 
-#if defined(OS_ANDROID)
-// Boolean that controls the enabled-state of Geolocation in content.
-const char kGeolocationEnabled[] = "geolocation.enabled";
-#endif
-
-#if defined(ENABLE_GOOGLE_NOW)
-// Boolean that is true when Google services can use the user's location.
-const char kGoogleGeolocationAccessEnabled[] =
-    "googlegeolocationaccess.enabled";
-#endif
-
-// The default audio capture device used by the Media content setting.
-const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
-
-// The default video capture device used by the Media content setting.
-const char kDefaultVideoCaptureDevice[] = "media.default_video_capture_Device";
-
-// The salt used for creating random MediaSource IDs.
-const char kMediaDeviceIdSalt[] = "media.device_id_salt";
-
 // Preference to disable 3D APIs (WebGL, Pepper 3D).
 const char kDisable3DAPIs[] = "disable_3d_apis";
 
@@ -1632,7 +1612,6 @@ const char kInvalidationServiceUseGCMChannel[] =
 // when on-line authentication is not available.
 const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
 
-#if !defined(OS_ANDROID)
 // Tracks the number of times that we have shown the sign in promo at startup.
 const char kSignInPromoStartupCount[] = "sync_promo.startup_count";
 
@@ -1648,7 +1627,6 @@ const char kSignInPromoShowOnFirstRunAllowed[] =
 // Boolean that specifies if we should show a bubble in the new tab page.
 // The bubble is used to confirm that the user is signed into sync.
 const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
-#endif
 
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
@@ -1659,6 +1637,26 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // Dictionary that maps Geolocation network provider server URLs to
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
+
+#if defined(OS_ANDROID)
+// Boolean that controls the enabled-state of Geolocation in content.
+const char kGeolocationEnabled[] = "geolocation.enabled";
+#endif
+
+#if defined(ENABLE_GOOGLE_NOW)
+// Boolean that is true when Google services can use the user's location.
+const char kGoogleGeolocationAccessEnabled[] =
+    "googlegeolocationaccess.enabled";
+#endif
+
+// The default audio capture device used by the Media content setting.
+const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
+
+// The default video capture device used by the Media content setting.
+const char kDefaultVideoCaptureDevice[] = "media.default_video_capture_Device";
+
+// The salt used for creating random MediaSource IDs.
+const char kMediaDeviceIdSalt[] = "media.device_id_salt";
 
 // Boolean that indicates whether to allow firewall traversal while trying to
 // establish the initial connection from the client or host.
@@ -1930,7 +1928,7 @@ const char kLogoutStartedLast[] = "chromeos.logout-started";
 //   chrome/browser/chromeos/policy/consumer_management_service.h
 const char kConsumerManagementEnrollmentStage[] =
     "consumer_management.enrollment_stage";
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
 const char kClearPluginLSODataEnabled[] = "browser.clear_lso_data_enabled";

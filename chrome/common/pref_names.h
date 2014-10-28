@@ -310,7 +310,9 @@ extern const char kPluginsDisabledPluginsExceptions[];
 extern const char kPluginsEnabledPlugins[];
 extern const char kPluginsMigratedToPepperFlash[];
 extern const char kPluginsRemovedOldComponentPepperFlashSettings[];
+#if !defined(OS_ANDROID)
 extern const char kPluginsShowDetails[];
+#endif
 extern const char kPluginsAllowOutdated[];
 extern const char kPluginsAlwaysAuthorize[];
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -323,7 +325,9 @@ extern const char kDefaultBrowserSettingEnabled[];
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
 extern const char kUseCustomChromeFrame[];
+#if !defined(OS_ANDROID)
 extern const char kContentSettingsPluginWhitelist[];
+#endif
 extern const char kBlockThirdPartyCookies[];
 extern const char kClearSiteDataOnExit[];
 extern const char kPartitionDefaultZoomLevel[];
@@ -338,7 +342,9 @@ extern const char kAutofillDialogWalletShippingSameAsBilling[];
 extern const char kAutofillGeneratedCardBubbleTimesShown[];
 extern const char kAutofillDialogDefaults[];
 
+#if !defined(OS_ANDROID)
 extern const char kPinnedTabs[];
+#endif
 
 extern const char kDisable3DAPIs[];
 extern const char kEnableDeprecatedWebPlatformFeatures[];
@@ -556,6 +562,8 @@ extern const char kGoogleServicesPasswordHash[];
 
 extern const char kInvalidationServiceUseGCMChannel[];
 
+// TODO(thestig): These 4 prefs should not be defined on mobile.
+// Fix for http://crbug.com/159847
 extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];
 extern const char kSignInPromoShowOnFirstRunAllowed[];
@@ -660,7 +668,7 @@ extern const char kServerBackedDeviceState[];
 extern const char kCustomizationDefaultWallpaperURL[];
 extern const char kLogoutStartedLast[];
 extern const char kConsumerManagementEnrollmentStage[];
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];
 extern const char kPepperFlashSettingsEnabled[];
@@ -676,7 +684,9 @@ extern const char kTabStripStackedLayout[];
 
 extern const char kRegisteredBackgroundContents[];
 
+#if !defined(OS_ANDROID)
 extern const char kShownAutoLaunchInfobar[];
+#endif
 
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
