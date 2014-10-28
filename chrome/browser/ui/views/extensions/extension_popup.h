@@ -40,7 +40,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
     SHOW_AND_INSPECT,
   };
 
-  virtual ~ExtensionPopup();
+  ~ExtensionPopup() override;
 
   // Create and show a popup with |url| positioned adjacent to |anchor_view|.
   // |browser| is the browser to which the pop-up will be attached.  NULL is a
@@ -60,32 +60,31 @@ class ExtensionPopup : public views::BubbleDelegateView,
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
   // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ExtensionViewViews::Container overrides.
-  virtual void OnExtensionSizeChanged(ExtensionViewViews* view) override;
+  void OnExtensionSizeChanged(ExtensionViewViews* view) override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetPreferredSize() const override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // views::WidgetObserver overrides.
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // aura::client::ActivationChangeObserver overrides.
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // TabStripModelObserver overrides.
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
 
   // The min/max height of popups.
   static const int kMinWidth;

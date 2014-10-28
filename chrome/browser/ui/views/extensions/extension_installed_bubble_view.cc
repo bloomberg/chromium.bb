@@ -233,14 +233,13 @@ class InstalledBubbleContent : public views::View,
     AddChildView(close_button_);
   }
 
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, close_button_);
     GetWidget()->Close();
   }
 
   // Implements the views::LinkListener interface.
-  virtual void LinkClicked(views::Link* source, int event_flags) override {
+  void LinkClicked(views::Link* source, int event_flags) override {
     GetWidget()->Close();
     std::string configure_url;
     if (source == manage_shortcut_) {
@@ -373,7 +372,7 @@ class InstalledBubbleContent : public views::View,
     return height;
   }
 
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     int width = kHorizOuterMargin;
     width += kIconSize;
     width += views::kPanelHorizMargin;
@@ -408,7 +407,7 @@ class InstalledBubbleContent : public views::View,
     return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
   }
 
-  virtual void Layout() override {
+  void Layout() override {
     int x = kHorizOuterMargin;
     int y = kVertOuterMargin;
 
@@ -465,7 +464,7 @@ class InstalledBubbleContent : public views::View,
     close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
   }
 
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     for (ScopedVector<gfx::RenderText>::const_iterator it =
              sign_in_promo_lines_.begin();
          it != sign_in_promo_lines_.end(); ++it)

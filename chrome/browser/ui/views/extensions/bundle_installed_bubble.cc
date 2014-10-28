@@ -60,7 +60,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
     AddContent(layout, bundle);
   }
 
-  virtual ~BundleInstalledBubble() {}
+  ~BundleInstalledBubble() override {}
 
  private:
   void AddContent(GridLayout* layout, const BundleInstaller* bundle) {
@@ -140,8 +140,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   }
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     GetWidget()->Close();
   }
 

@@ -31,33 +31,31 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
  public:
   explicit MediaGalleriesDialogViews(
       MediaGalleriesDialogController* controller);
-  virtual ~MediaGalleriesDialogViews();
+  ~MediaGalleriesDialogViews() override;
 
   // MediaGalleriesDialog implementation:
-  virtual void UpdateGalleries() override;
+  void UpdateGalleries() override;
 
   // views::DialogDelegate implementation:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
-  virtual views::View* GetContentsView() override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual views::View* CreateExtraView() override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  ui::ModalType GetModalType() const override;
+  views::View* CreateExtraView() override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController implementation:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
@@ -68,7 +66,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*> CheckboxMap;
 
   // MediaGalleriesDialog implementation:
-  virtual void AcceptDialogForTesting() override;
+  void AcceptDialogForTesting() override;
 
   void InitChildViews();
 

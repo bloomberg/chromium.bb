@@ -37,7 +37,7 @@ class ExtensionUninstallDialogViews
       Profile* profile,
       gfx::NativeWindow parent,
       extensions::ExtensionUninstallDialog::Delegate* delegate);
-  virtual ~ExtensionUninstallDialogViews();
+  ~ExtensionUninstallDialogViews() override;
 
   // Called when the ExtensionUninstallDialogDelegate has been destroyed to make
   // sure we invalidate pointers.
@@ -48,7 +48,7 @@ class ExtensionUninstallDialogViews
   void ExtensionUninstallCanceled();
 
  private:
-  virtual void Show() override;
+  void Show() override;
 
   ExtensionUninstallDialogDelegateView* view_;
 
@@ -63,7 +63,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
       const extensions::Extension* extension,
       const extensions::Extension* triggering_extension,
       gfx::ImageSkia* image);
-  virtual ~ExtensionUninstallDialogDelegateView();
+  ~ExtensionUninstallDialogDelegateView() override;
 
   // Called when the ExtensionUninstallDialog has been destroyed to make sure
   // we invalidate pointers.
@@ -71,26 +71,23 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
 
  private:
   // views::DialogDelegate:
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual int GetDefaultDialogButton() const override {
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  int GetDefaultDialogButton() const override {
     // Default to accept when triggered via chrome://extensions page.
     return triggered_by_extension_ ?
         ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
   }
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
+  bool Accept() override;
+  bool Cancel() override;
 
   // views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_WINDOW;
-  }
-  virtual base::string16 GetWindowTitle() const override;
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
+  base::string16 GetWindowTitle() const override;
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
-  virtual void Layout() override;
+  void Layout() override;
 
   ExtensionUninstallDialogViews* dialog_;
 

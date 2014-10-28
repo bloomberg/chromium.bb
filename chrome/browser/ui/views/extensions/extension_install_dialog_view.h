@@ -40,10 +40,10 @@ class Link;
 class CustomScrollableView : public views::View {
  public:
   CustomScrollableView();
-  virtual ~CustomScrollableView();
+  ~CustomScrollableView() override;
 
  private:
-  virtual void Layout() override;
+  void Layout() override;
 
   DISALLOW_COPY_AND_ASSIGN(CustomScrollableView);
 };
@@ -58,7 +58,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
       content::PageNavigator* navigator,
       ExtensionInstallPrompt::Delegate* delegate,
       scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
-  virtual ~ExtensionInstallDialogView();
+  ~ExtensionInstallDialogView() override;
 
   // Returns the interior ScrollView of the dialog. This allows us to inspect
   // the contents of the DialogView.
@@ -69,25 +69,23 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 
  private:
   // views::DialogDelegateView:
-  virtual int GetDialogButtons() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual int GetDefaultDialogButton() const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void ViewHierarchyChanged(
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  int GetDefaultDialogButton() const override;
+  bool Cancel() override;
+  bool Accept() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Experimental: Toggles inline permission explanations with an animation.
   void ToggleInlineExplanations();
@@ -205,21 +203,20 @@ class ExpandableContainerView : public views::View,
                           bool parent_bulleted,
                           bool show_expand_link,
                           bool lighter_color_details);
-  virtual ~ExpandableContainerView();
+  ~ExpandableContainerView() override;
 
   // views::View:
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Expand/Collapse the detail section for this ExpandableContainerView.
   void ToggleDetailLevel();
@@ -234,10 +231,10 @@ class ExpandableContainerView : public views::View,
    public:
     explicit DetailsView(int horizontal_space, bool parent_bulleted,
                          bool lighter_color);
-    virtual ~DetailsView() {}
+    ~DetailsView() override {}
 
     // views::View:
-    virtual gfx::Size GetPreferredSize() const override;
+    gfx::Size GetPreferredSize() const override;
 
     void AddDetail(const base::string16& detail);
 

@@ -36,9 +36,9 @@ const int kScrollAreaHeight = 192;
 class ScrollableView : public views::View {
  public:
   ScrollableView() {}
-  virtual ~ScrollableView() {}
+  ~ScrollableView() override {}
 
-  virtual void Layout() override;
+  void Layout() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);

@@ -32,16 +32,16 @@ class DevicePermissionsTableModel
     prompt_->SetObserver(this);
   }
 
-  virtual ~DevicePermissionsTableModel() { prompt_->SetObserver(nullptr); }
+  ~DevicePermissionsTableModel() override { prompt_->SetObserver(nullptr); }
 
   // ui::TableModel
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int row, int column) override;
-  virtual base::string16 GetTooltip(int row) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
+  int RowCount() override;
+  base::string16 GetText(int row, int column) override;
+  base::string16 GetTooltip(int row) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
 
   // extensions::DevicePermissionsPrompt::Prompt::Observer
-  virtual void OnDevicesChanged() override;
+  void OnDevicesChanged() override;
 
  private:
   scoped_refptr<DevicePermissionsPrompt::Prompt> prompt_;

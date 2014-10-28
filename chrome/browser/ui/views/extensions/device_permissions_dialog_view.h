@@ -21,22 +21,21 @@ class DevicePermissionsDialogView : public views::DialogDelegateView {
   DevicePermissionsDialogView(
       extensions::DevicePermissionsPrompt::Delegate* delegate,
       scoped_refptr<extensions::DevicePermissionsPrompt::Prompt> prompt);
-  virtual ~DevicePermissionsDialogView();
+  ~DevicePermissionsDialogView() override;
 
   // Overriding views::DialogDelegate.
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // Overriding views::DialogModel.
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // Overriding views::WidgetDelegate.
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
 
   // Overriding views::View
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   extensions::DevicePermissionsPrompt::Delegate* delegate_;

@@ -59,31 +59,30 @@ class ExtensionActionViewController
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
                                 ExtensionAction* extension_action);
-  virtual ~ExtensionActionViewController();
+  ~ExtensionActionViewController() override;
 
   // ToolbarActionViewController:
-  virtual const std::string& GetId() const override;
-  virtual void SetDelegate(ToolbarActionViewDelegate* delegate) override;
-  virtual gfx::Image GetIcon(content::WebContents* web_contents) override;
-  virtual gfx::ImageSkia GetIconWithBadge() override;
-  virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
-      const override;
-  virtual base::string16 GetTooltip(content::WebContents* web_contents)
-      const override;
-  virtual bool IsEnabled(content::WebContents* web_contents) const override;
-  virtual bool HasPopup(content::WebContents* web_contents) const override;
-  virtual void HidePopup() override;
-  virtual gfx::NativeView GetPopupNativeView() override;
-  virtual bool IsMenuRunning() const override;
-  virtual bool CanDrag() const override;
-  virtual bool ExecuteAction(bool by_user) override;
-  virtual void PaintExtra(gfx::Canvas* canvas,
-                          const gfx::Rect& bounds,
-                          content::WebContents* web_contents) const override;
-  virtual void RegisterCommand() override;
+  const std::string& GetId() const override;
+  void SetDelegate(ToolbarActionViewDelegate* delegate) override;
+  gfx::Image GetIcon(content::WebContents* web_contents) override;
+  gfx::ImageSkia GetIconWithBadge() override;
+  base::string16 GetAccessibleName(
+      content::WebContents* web_contents) const override;
+  base::string16 GetTooltip(content::WebContents* web_contents) const override;
+  bool IsEnabled(content::WebContents* web_contents) const override;
+  bool HasPopup(content::WebContents* web_contents) const override;
+  void HidePopup() override;
+  gfx::NativeView GetPopupNativeView() override;
+  bool IsMenuRunning() const override;
+  bool CanDrag() const override;
+  bool ExecuteAction(bool by_user) override;
+  void PaintExtra(gfx::Canvas* canvas,
+                  const gfx::Rect& bounds,
+                  content::WebContents* web_contents) const override;
+  void RegisterCommand() override;
 
   // ExtensionContextMenuModel::PopupDelegate:
-  virtual void InspectPopup() override;
+  void InspectPopup() override;
 
   // Executes the extension action with |show_action|. If
   // |grant_tab_permissions| is true, this will grant the extension active tab
@@ -104,24 +103,24 @@ class ExtensionActionViewController
 
  private:
   // ExtensionActionIconFactory::Observer:
-  virtual void OnIconUpdated() override;
+  void OnIconUpdated() override;
 
   // ui::AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual bool CanHandleAccelerators() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool CanHandleAccelerators() const override;
 
   // views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Shows the context menu for extension action.
   void DoShowContextMenu(ui::MenuSourceType source_type);

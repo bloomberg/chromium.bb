@@ -34,13 +34,13 @@ class ExtensionViewViews : public views::NativeViewHost,
   };
 
   ExtensionViewViews(extensions::ExtensionHost* host, Browser* browser);
-  virtual ~ExtensionViewViews();
+  ~ExtensionViewViews() override;
 
   // views::NativeViewHost:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void SetVisible(bool is_visible) override;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetMinimumSize() const override;
+  void SetVisible(bool is_visible) override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   extensions::ExtensionHost* host() const { return host_; }
@@ -56,24 +56,24 @@ class ExtensionViewViews : public views::NativeViewHost,
   void SetIsClipped(bool is_clipped);
 
   // extensions::ExtensionView:
-  virtual void Init() override;
-  virtual Browser* GetBrowser() override;
-  virtual gfx::NativeView GetNativeView() override;
-  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) override;
-  virtual void RenderViewCreated() override;
-  virtual void HandleKeyboardEvent(
+  void Init() override;
+  Browser* GetBrowser() override;
+  gfx::NativeView GetNativeView() override;
+  void ResizeDueToAutoResize(const gfx::Size& new_size) override;
+  void RenderViewCreated() override;
+  void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  virtual void DidStopLoading() override;
+  void DidStopLoading() override;
 
  private:
   friend class extensions::ExtensionHost;
 
   // views::NativeViewHost:
-  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void PreferredSizeChanged() override;
-  virtual void OnFocus() override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void PreferredSizeChanged() override;
+  void OnFocus() override;
 
   // Initializes the RenderWidgetHostView for this object.
   void CreateWidgetHostView();
