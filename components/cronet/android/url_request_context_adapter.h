@@ -16,7 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "net/base/net_log.h"
-#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -92,7 +91,6 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   scoped_ptr<net::URLRequestContext> context_;
   std::string user_agent_;
   base::Thread* network_thread_;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<NetLogObserver> net_log_observer_;
   scoped_ptr<net::NetLogLogger> net_log_logger_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;

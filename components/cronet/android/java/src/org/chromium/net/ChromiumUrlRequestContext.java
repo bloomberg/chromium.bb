@@ -31,7 +31,7 @@ public class ChromiumUrlRequestContext {
     /**
      * Constructor.
      */
-    protected ChromiumUrlRequestContext(Context context, String userAgent,
+    protected ChromiumUrlRequestContext(final Context context, String userAgent,
             String config) {
         mChromiumUrlRequestContextAdapter = nativeCreateRequestContextAdapter(
                 context, userAgent, getLoggingLevel(), config);
@@ -44,6 +44,12 @@ public class ChromiumUrlRequestContext {
         // API to handle the case where we are already on main thread.
         Runnable task = new Runnable() {
             public void run() {
+                NetworkChangeNotifier.init(context);
+                // Registers to always receive network notifications. Note that
+                // this call is fine for Cronet because Cronet embedders do not
+                // have API access to create network change observers. Existing
+                // observers in the net stack do not perform expensive work.
+                NetworkChangeNotifier.registerToReceiveNotificationsAlways();
                 nativeInitRequestContextOnMainThread(
                         mChromiumUrlRequestContextAdapter);
             }

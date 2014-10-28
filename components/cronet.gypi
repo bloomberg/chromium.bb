@@ -394,6 +394,7 @@
             'cronet/android/test/src/org/chromium/cronet_test_apk/CronetTestUtil.java',
             'cronet/android/test/src/org/chromium/cronet_test_apk/MockUrlRequestJobUtil.java',
             'cronet/android/test/src/org/chromium/cronet_test_apk/UploadTestServer.java',
+            'cronet/android/test/src/org/chromium/cronet_test_apk/NetworkChangeNotifierUtil.java',
           ],
           'variables': {
             'jni_gen_package': 'cronet_tests',
@@ -409,6 +410,8 @@
             'cronet/android/test/mock_url_request_job_util.h',
             'cronet/android/test/upload_test_server.cc',
             'cronet/android/test/upload_test_server.h',
+            'cronet/android/test/network_change_notifier_util.cc',
+            'cronet/android/test/network_change_notifier_util.h',
             '../net/base/directory_lister.cc',
             '../net/base/directory_lister.h',
             '../net/url_request/url_request_file_job.cc',

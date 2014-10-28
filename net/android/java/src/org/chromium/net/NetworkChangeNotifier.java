@@ -114,7 +114,7 @@ public class NetworkChangeNotifier {
      *    network connectivity.
      */
     public static void setAutoDetectConnectivityState(boolean shouldAutoDetect) {
-        getInstance().setAutoDetectConnectivityStateInternal(shouldAutoDetect);
+        getInstance().setAutoDetectConnectivityStateInternal(shouldAutoDetect, false);
     }
 
     private void destroyAutoDetector() {
@@ -124,7 +124,20 @@ public class NetworkChangeNotifier {
         }
     }
 
-    private void setAutoDetectConnectivityStateInternal(boolean shouldAutoDetect) {
+    /**
+     * Registers to always receive network change notifications no matter if
+     * the app is in the background or foreground.
+     * Note that in normal circumstances, chrome embedders should use
+     * {@code setAutoDetectConnectivityState} to listen to network changes only
+     * when the app is in the foreground, because network change observers
+     * might perform expensive work depending on the network connectivity.
+     */
+    public static void registerToReceiveNotificationsAlways() {
+        getInstance().setAutoDetectConnectivityStateInternal(true, true);
+    }
+
+    private void setAutoDetectConnectivityStateInternal(
+            boolean shouldAutoDetect, boolean alwaysWatchForChanges) {
         if (shouldAutoDetect) {
             if (mAutoDetector == null) {
                 mAutoDetector = new NetworkChangeNotifierAutoDetect(
@@ -134,7 +147,8 @@ public class NetworkChangeNotifier {
                             updateCurrentConnectionType(newConnectionType);
                         }
                     },
-                    mContext);
+                    mContext,
+                    alwaysWatchForChanges);
                 updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType());
             }
         } else {

@@ -9,6 +9,7 @@
 #include "base/android/jni_registrar.h"
 #include "components/cronet/android/cronet_loader.h"
 #include "mock_url_request_job_util.h"
+#include "network_change_notifier_util.h"
 #include "upload_test_server.h"
 
 namespace {
@@ -16,6 +17,7 @@ namespace {
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
   {"MockURLRequestJobUtil", cronet::RegisterMockUrlRequestJobUtil},
   {"RegisterUploadTestServer", cronet::RegisterUploadTestServer},
+  {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},
 };
 
 }  // namespace

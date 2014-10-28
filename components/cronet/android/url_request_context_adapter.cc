@@ -11,9 +11,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/url_request_context_config.h"
+#include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_logger.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -30,6 +32,8 @@ namespace {
 // MessageLoop on the main thread, which is where objects that receive Java
 // notifications generally live.
 base::MessageLoop* g_main_message_loop = nullptr;
+
+net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
 class BasicNetworkDelegate : public net::NetworkDelegate {
  public:
@@ -142,7 +146,11 @@ void URLRequestContextAdapter::InitRequestContextOnMainThread() {
     base::MessageLoopForUI::current()->Start();
   }
   DCHECK_EQ(g_main_message_loop, base::MessageLoop::current());
-
+  if (!g_network_change_notifier) {
+    net::NetworkChangeNotifier::SetFactory(
+        new net::NetworkChangeNotifierFactoryAndroid());
+    g_network_change_notifier = net::NetworkChangeNotifier::Create();
+  }
   proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
       GetNetworkTaskRunner(), NULL));
   GetNetworkTaskRunner()->PostTask(

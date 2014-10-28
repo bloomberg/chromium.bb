@@ -101,14 +101,24 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         public void onConnectionTypeChanged(int newConnectionType);
     }
 
-    public NetworkChangeNotifierAutoDetect(Observer observer, Context context) {
+    /**
+     * Constructs a NetworkChangeNotifierAutoDetect.
+     * @param alwaysWatchForChanges If true, always watch for network changes.
+     *    Otherwise, only watch if app is in foreground.
+     */
+    public NetworkChangeNotifierAutoDetect(Observer observer, Context context,
+            boolean alwaysWatchForChanges) {
         mObserver = observer;
         mContext = context.getApplicationContext();
         mConnectivityManagerDelegate = new ConnectivityManagerDelegate(context);
         mWifiManagerDelegate = new WifiManagerDelegate(context);
         mConnectionType = getCurrentConnectionType();
         mWifiSSID = getCurrentWifiSSID();
-        ApplicationStatus.registerApplicationStateListener(this);
+        if (alwaysWatchForChanges) {
+            registerReceiver();
+        } else {
+            ApplicationStatus.registerApplicationStateListener(this);
+        }
     }
 
     /**
