@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/wm/overview/window_selector_controller.h"
 
 namespace views {
 class ImageView;
@@ -36,6 +37,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // ShellObserver:
   virtual void OnMaximizeModeStarted() override;
   virtual void OnMaximizeModeEnded() override;
+  virtual void OnOverviewModeEnding() override;
 
   // TrayBackgroundView:
   virtual bool ClickedOutsideBubble() override;

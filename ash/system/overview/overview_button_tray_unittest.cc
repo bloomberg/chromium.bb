@@ -133,4 +133,27 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
       EnableMaximizeModeWindowManager(false);
 }
 
+// Tests that the tray only renders as active while selection is ongoing. Any
+// dismissal of overview mode clears the active state.
+TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
+  ASSERT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  ASSERT_FALSE(GetTray()->draw_background_as_active());
+
+  // Overview Mode only works when there is a window
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  ui::GestureEvent tap(
+      0, 0, 0, base::TimeDelta(), ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  EXPECT_TRUE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(GetTray()->draw_background_as_active());
+
+  Shell::GetInstance()->window_selector_controller()->OnSelectionEnded();
+  EXPECT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(GetTray()->draw_background_as_active());
+}
+
 }  // namespace ash

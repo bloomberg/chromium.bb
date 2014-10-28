@@ -69,6 +69,10 @@ void OverviewButtonTray::OnMaximizeModeEnded() {
   UpdateIconVisibility();
 }
 
+void OverviewButtonTray::OnOverviewModeEnding() {
+  SetDrawBackgroundAsActive(false);
+}
+
 bool OverviewButtonTray::ClickedOutsideBubble() {
   // This class has no bubbles dismiss, but acknowledge that the message was
   // handled.
