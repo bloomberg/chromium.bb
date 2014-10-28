@@ -177,6 +177,8 @@ void DistillerImpl::OnPageDistillationFinished(
           // The pages should be in same origin.
           DCHECK_EQ(next_page_url.GetOrigin(), page_url.GetOrigin());
           AddToDistillationQueue(page_num + 1, next_page_url);
+          page_data->distilled_page_proto->data.mutable_pagination_info()->
+              set_next_page(next_page_url.spec());
         }
       }
 
@@ -185,6 +187,16 @@ void DistillerImpl::OnPageDistillationFinished(
         if (prev_page_url.is_valid()) {
           DCHECK_EQ(prev_page_url.GetOrigin(), page_url.GetOrigin());
           AddToDistillationQueue(page_num - 1, prev_page_url);
+          page_data->distilled_page_proto->data.mutable_pagination_info()->
+              set_prev_page(prev_page_url.spec());
+        }
+      }
+
+      if (pagination_info.has_canonical_page()) {
+        GURL canonical_page_url(pagination_info.canonical_page());
+        if (canonical_page_url.is_valid()) {
+          page_data->distilled_page_proto->data.mutable_pagination_info()->
+              set_canonical_page(canonical_page_url.spec());
         }
       }
     }

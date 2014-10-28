@@ -138,12 +138,23 @@ std::string GetReadableArticleString(
   output << "Article Title: " << article_proto.title() << std::endl;
   output << "# of pages: " << article_proto.pages_size() << std::endl;
   for (int i = 0; i < article_proto.pages_size(); ++i) {
+    if (i > 0) output << std::endl;
     const DistilledPageProto& page = article_proto.pages(i);
     output << "Page " << i << std::endl;
     output << "URL: " << page.url() << std::endl;
     output << "Content: " << page.html() << std::endl;
     if (page.has_debug_info() && page.debug_info().has_log())
       output << "Log: " << page.debug_info().log() << std::endl;
+    if (page.has_pagination_info()) {
+      if (page.pagination_info().has_next_page()) {
+        output << "Next Page: " << page.pagination_info().next_page()
+               << std::endl;
+      }
+      if (page.pagination_info().has_prev_page()) {
+        output << "Prev Page: " << page.pagination_info().prev_page()
+               << std::endl;
+      }
+    }
   }
   return output.str();
 }

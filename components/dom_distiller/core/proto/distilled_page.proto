@@ -42,4 +42,13 @@ message DistilledPageProto {
 
   // text directionality
   optional string text_direction = 7;
+
+  message PaginationInfo {
+    optional string next_page = 1;
+    optional string prev_page = 2;
+    optional string canonical_page = 3;
+  }
+
+  // Pagination info for this page.
+  optional PaginationInfo pagination_info = 8;
 }
