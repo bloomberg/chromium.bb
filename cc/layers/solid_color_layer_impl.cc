@@ -36,16 +36,16 @@ void SolidColorLayerImpl::AppendSolidQuads(
     AppendQuadsData* append_quads_data) {
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
-  int width = visible_content_rect.width();
-  int height = visible_content_rect.height();
+  int right = visible_content_rect.right();
+  int bottom = visible_content_rect.bottom();
   for (int x = visible_content_rect.x(); x < visible_content_rect.right();
        x += kSolidQuadTileSize) {
     for (int y = visible_content_rect.y(); y < visible_content_rect.bottom();
          y += kSolidQuadTileSize) {
       gfx::Rect quad_rect(x,
                           y,
-                          std::min(width - x, kSolidQuadTileSize),
-                          std::min(height - y, kSolidQuadTileSize));
+                          std::min(right - x, kSolidQuadTileSize),
+                          std::min(bottom - y, kSolidQuadTileSize));
       gfx::Rect visible_quad_rect =
           occlusion_in_content_space.GetUnoccludedContentRect(quad_rect);
       if (visible_quad_rect.IsEmpty())

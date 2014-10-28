@@ -1447,7 +1447,7 @@ TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
 
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(1500, 1500);
-  gfx::Rect visible_rect(1000, 1000);
+  gfx::Rect visible_rect(250, 250, 1000, 1000);
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
