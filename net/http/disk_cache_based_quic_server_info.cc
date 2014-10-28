@@ -101,6 +101,13 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
   return ERR_IO_PENDING;
 }
 
+void DiskCacheBasedQuicServerInfo::CancelWaitForDataReadyCallback() {
+  DCHECK(CalledOnValidThread());
+
+  if (!user_callback_.is_null())
+    user_callback_.Reset();
+}
+
 bool DiskCacheBasedQuicServerInfo::IsDataReady() {
   return ready_;
 }

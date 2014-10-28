@@ -134,6 +134,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(net::QuicTagVector(), params.quic_connection_options);
   EXPECT_FALSE(params.quic_always_require_handshake_confirmation);
   EXPECT_FALSE(params.quic_disable_connection_pooling);
+  EXPECT_EQ(0, params.quic_load_server_info_timeout_ms);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -305,6 +306,15 @@ TEST_F(IOThreadTest,
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_disable_connection_pooling);
+}
+
+TEST_F(IOThreadTest, QuicLoadServerInfoTimeoutFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["load_server_info_timeout"] = "50";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_EQ(50, params.quic_load_server_info_timeout_ms);
 }
 
 TEST_F(IOThreadTest,

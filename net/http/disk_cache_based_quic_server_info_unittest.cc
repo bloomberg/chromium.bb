@@ -359,4 +359,40 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   RemoveMockTransaction(&kHostInfoTransaction1);
 }
 
+TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReady) {
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
+  MockHttpCache cache(factory);
+  TestCompletionCallback callback;
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
+  EXPECT_FALSE(quic_server_info->IsDataReady());
+  quic_server_info->Start();
+  int rv = quic_server_info->WaitForDataReady(callback.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // Now cancel the callback.
+  quic_server_info->CancelWaitForDataReadyCallback();
+  EXPECT_FALSE(quic_server_info->IsDataReady());
+  // Now complete the backend creation and let the callback run.
+  factory->FinishCreation();
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+}
+
+TEST(DiskCacheBasedQuicServerInfo, CancelWaitForDataReadyButDataIsReady) {
+  MockHttpCache cache;
+  AddMockTransaction(&kHostInfoTransaction1);
+  TestCompletionCallback callback;
+
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  scoped_ptr<QuicServerInfo> quic_server_info(
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
+  EXPECT_FALSE(quic_server_info->IsDataReady());
+  quic_server_info->Start();
+  int rv = quic_server_info->WaitForDataReady(callback.callback());
+  quic_server_info->CancelWaitForDataReadyCallback();
+  EXPECT_EQ(OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+  RemoveMockTransaction(&kHostInfoTransaction1);
+}
+
 }  // namespace net

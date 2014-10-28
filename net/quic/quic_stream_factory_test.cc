@@ -17,6 +17,7 @@
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -24,6 +25,7 @@
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/test_task_runner.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/ssl/channel_id_service.h"
@@ -88,13 +90,56 @@ class QuicStreamFactoryPeer {
   static void DisableConnectionPooling(QuicStreamFactory* factory) {
     factory->disable_connection_pooling_ = true;
   }
+
+  static void SetTaskRunner(QuicStreamFactory* factory,
+                            base::TaskRunner* task_runner) {
+    factory->task_runner_ = task_runner;
+  }
+
+  static void SetLoadServerInfoTimeout(QuicStreamFactory* factory,
+                                       size_t load_server_info_timeout) {
+    factory->load_server_info_timeout_ms_ = load_server_info_timeout;
+  }
 };
+
+class MockQuicServerInfo : public QuicServerInfo {
+ public:
+  MockQuicServerInfo(const QuicServerId& server_id)
+      : QuicServerInfo(server_id) {}
+  virtual ~MockQuicServerInfo() {}
+
+  virtual void Start() override {};
+
+  virtual int WaitForDataReady(const CompletionCallback& callback) override {
+    return ERR_IO_PENDING;
+  }
+
+  virtual void CancelWaitForDataReadyCallback() override {}
+
+  virtual bool IsDataReady() override { return false; }
+
+  virtual bool IsReadyToPersist() override { return false; }
+
+  virtual void Persist() override {};
+};
+
+class MockQuicServerInfoFactory : public QuicServerInfoFactory {
+ public:
+  MockQuicServerInfoFactory() {}
+  virtual ~MockQuicServerInfoFactory() {}
+
+  virtual QuicServerInfo* GetForServer(const QuicServerId& server_id) override {
+    return new MockQuicServerInfo(server_id);
+  }
+};
+
 
 class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicStreamFactoryTest()
       : random_generator_(0),
         clock_(new MockClock()),
+        runner_(new TestTaskRunner(clock_)),
         maker_(GetParam(), 0, clock_),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(
@@ -115,6 +160,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  /*enable_port_selection=*/true,
                  /*always_require_handshake_confirmation=*/false,
                  /*disable_connection_pooling=*/false,
+                 /*load_server_info_timeout=*/0u,
                  QuicTagVector()),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
@@ -197,11 +243,13 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
   }
 
+  MockQuicServerInfoFactory quic_server_info_factory_;
   MockHostResolver host_resolver_;
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
   MockClock* clock_;  // Owned by factory_.
+  scoped_refptr<TestTaskRunner> runner_;
   QuicTestPacketMaker maker_;
   scoped_ptr<CertVerifier> cert_verifier_;
   scoped_ptr<ChannelIDService> channel_id_service_;
@@ -1507,6 +1555,49 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     EXPECT_TRUE(cached2->source_address_token().empty());
     EXPECT_FALSE(cached2->proof_valid());
   }
+}
+
+TEST_P(QuicStreamFactoryTest, CancelWaitForDataReady) {
+  factory_.set_quic_server_info_factory(&quic_server_info_factory_);
+  QuicStreamFactoryPeer::SetTaskRunner(&factory_, runner_.get());
+  const size_t kLoadServerInfoTimeoutMs = 50;
+  QuicStreamFactoryPeer::SetLoadServerInfoTimeout(
+      &factory_, kLoadServerInfoTimeoutMs);
+
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_,
+                            is_https_,
+                            privacy_mode_,
+                            "GET",
+                            net_log_,
+                            callback_.callback()));
+
+  // Verify that the CancelWaitForDataReady task has been posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(kLoadServerInfoTimeoutMs),
+            runner_->GetPostedTasks()[0].delay);
+
+  runner_->RunNextTask();
+  ASSERT_EQ(0u, runner_->GetPostedTasks().size());
+
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
 }
 
 }  // namespace test

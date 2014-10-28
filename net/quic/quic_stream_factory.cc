@@ -180,6 +180,8 @@ class QuicStreamFactory::Job {
 
   void OnIOComplete(int rv);
 
+  void CancelWaitForDataReadyCallback();
+
   CompletionCallback callback() {
     return callback_;
   }
@@ -309,6 +311,14 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
   }
 }
 
+void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
+  // If we are waiting for WaitForDataReadyCallback, then cancel the callback.
+  if (io_state_ != STATE_LOAD_SERVER_INFO_COMPLETE)
+    return;
+  server_info_->CancelWaitForDataReadyCallback();
+  OnIOComplete(OK);
+}
+
 int QuicStreamFactory::Job::DoResolveHost() {
   // Start loading the data now, and wait for it after we resolve the host.
   if (server_info_) {
@@ -349,6 +359,17 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 
   if (!server_info_)
     return OK;
+
+  // To mitigate the effects of disk cache taking too long to load QUIC server
+  // information, set up a timer to cancel WaitForDataReady's callback.
+  if (factory_->load_server_info_timeout_ms_ > 0) {
+    factory_->task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicStreamFactory::Job::CancelWaitForDataReadyCallback,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(
+            factory_->load_server_info_timeout_ms_));
+  }
 
   disk_cache_load_start_time_ = base::TimeTicks::Now();
   return server_info_->WaitForDataReady(
@@ -491,6 +512,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_port_selection,
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
+    int load_server_info_timeout,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -508,8 +530,10 @@ QuicStreamFactory::QuicStreamFactory(
       always_require_handshake_confirmation_(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
+      load_server_info_timeout_ms_(load_server_info_timeout),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
+      task_runner_(nullptr),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
   crypto_config_.set_user_agent_id(user_agent_id);
@@ -574,6 +598,11 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
       quic_server_info = quic_server_info_factory_->GetForServer(server_id);
     }
   }
+  // TODO(rtenneti): Initialize task_runner_ in the constructor after
+  // WebRequestActionWithThreadsTest.* tests are fixed.
+  if (!task_runner_)
+    task_runner_ = base::MessageLoop::current()->message_loop_proxy().get();
+
   bool was_alternate_protocol_recently_broken =
       http_server_properties_ &&
       http_server_properties_->WasAlternateProtocolRecentlyBroken(

@@ -282,7 +282,7 @@ void HttpCache::MetadataWriter::OnIOComplete(int result) {
 
 class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
  public:
-  QuicServerInfoFactoryAdaptor(HttpCache* http_cache)
+  explicit QuicServerInfoFactoryAdaptor(HttpCache* http_cache)
       : http_cache_(http_cache) {
   }
 

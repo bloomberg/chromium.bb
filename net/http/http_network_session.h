@@ -115,6 +115,7 @@ class NET_EXPORT HttpNetworkSession
     bool enable_quic_port_selection;
     bool quic_always_require_handshake_confirmation;
     bool quic_disable_connection_pooling;
+    int quic_load_server_info_timeout_ms;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;
