@@ -582,7 +582,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   case ui::AX_ROLE_BANNER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_BANNER));
-    break;
+  case ui::AX_ROLE_CONTENT_INFO:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_ADDRESS));
   case ui::AX_ROLE_FOOTER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));

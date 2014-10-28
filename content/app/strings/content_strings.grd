@@ -370,6 +370,9 @@ below:
           toggle button
         </message>
       </if>
+      <message name="IDS_AX_ROLE_ADDRESS" desc="accessibility role description for an address (as in a person's contact information)">
+        address
+      </message>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
         press
