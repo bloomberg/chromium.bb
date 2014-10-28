@@ -33,11 +33,11 @@ crbug.com/370586 [ Mac ] media/encrypted-media/encrypted-media-lifetime-mediakey
 # This test is flaky in debug without oilpan, but fails much more with oilpan.
 crbug.com/354785 svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
 
-Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
-Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
-Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
-Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-Bug(alph) [ Win ] virtual/windows-directwrite/fast/text/orientation-sideways.html [ NeedsRebaseline ]
+Bug(alph) [ Win ] virtual/antialiasedtext/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+Bug(alph) [ Win ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+Bug(alph) [ Win ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
+Bug(alph) [ Win ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
+Bug(alph) [ Win ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
 
 crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
