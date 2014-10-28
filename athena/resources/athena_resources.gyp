@@ -28,7 +28,6 @@
       'target_name': 'athena_pak',
       'type': 'none',
       'dependencies': [
-        '../../ash/ash_resources.gyp:ash_resources',
         '../../components/components_resources.gyp:components_resources',
         '../../components/components_strings.gyp:components_strings',
         '../../content/app/resources/content_resources.gyp:content_resources',
@@ -43,7 +42,6 @@
         'variables': {
           'pak_inputs': [
             '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
-            '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/athena/resources/athena_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/athena/strings/athena_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/components/components_resources_100_percent.pak',

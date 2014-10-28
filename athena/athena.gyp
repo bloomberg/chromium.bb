@@ -13,7 +13,6 @@
       'dependencies': [
         # status_icon_container_view.cc depends on this. Remove this once there
         # are athena specific assets.
-        '../ash/ash_resources.gyp:ash_resources',
         '../base/base.gyp:test_support_base',
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../extensions/shell/app_shell.gyp:app_shell_version_header',
