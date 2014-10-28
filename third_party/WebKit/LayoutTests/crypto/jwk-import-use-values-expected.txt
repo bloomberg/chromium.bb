@@ -5,8 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 {"key_ops":["encrypt","encrypt"]}:
-PASS key.usages is ["encrypt"]
-
+Failed importing with encrypt: DataError: The "key_ops" property of the JWK dictionary contains duplicate usages.
 {"key_ops":["encrypt"]}:
 PASS key.usages is ["encrypt"]
 

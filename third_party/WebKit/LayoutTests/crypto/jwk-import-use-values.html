@@ -75,8 +75,8 @@ debug("");
 
 
 Promise.all([
-    // Duplicates are allowed. See http://crbug.com/378074.
-    testWithAESCBC(["encrypt"], {key_ops: ["encrypt", "encrypt"]}, ["encrypt"]),
+    // Duplicates are not allowed.
+    testWithAESCBC(null, {key_ops: ["encrypt", "encrypt"]}, ["encrypt"]),
 
     testWithAESCBC(["encrypt"], {key_ops: ["encrypt"]}, ["encrypt"]),
     testWithAESCBC(null, {key_ops: ["encrypt"]}, ["decrypt"]),
