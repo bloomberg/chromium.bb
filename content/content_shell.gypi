@@ -1050,6 +1050,7 @@
           'dependencies': [
             'content.gyp:content_icudata',
             'content.gyp:content_java',
+            'content.gyp:content_v8_external_data',
             'content_java_test_support',
             'content_shell_java',
             'libcontent_shell_content_view',
@@ -1073,6 +1074,12 @@
               ['icu_use_data_file_flag==1', {
                 'additional_input_paths': [
                   '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+              ['v8_use_external_startup_data==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
                 ],
               }],
             ],

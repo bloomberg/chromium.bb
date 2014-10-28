@@ -122,6 +122,7 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
       '--config-variable', 'fastbuild', '0',
       '--config-variable', 'icu_use_data_file_flag', '1',
       '--config-variable', 'libpeer_target_type', 'static_library',
+      '--config-variable', 'v8_use_external_startup_data', '0',
       '--config-variable', 'lsan', '0',
       # TODO(maruel): This may not be always true.
       '--config-variable', 'target_arch', 'arm',

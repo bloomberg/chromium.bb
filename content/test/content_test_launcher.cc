@@ -21,6 +21,10 @@
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_loop.h"
 #include "content/app/mojo/mojo_init.h"
@@ -52,6 +56,10 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 #if defined(OS_ANDROID)
     base::i18n::AllowMultipleInitializeCallsForTesting();
     base::i18n::InitializeICU();
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+    gin::IsolateHolder::LoadV8Snapshot();
+#endif
 
     // This needs to be done before base::TestSuite::Initialize() is called,
     // as it also tries to set MessagePumpForUIFactory.

@@ -37,6 +37,10 @@
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 #endif
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 namespace content {
 
 class ContentTestSuiteBaseListener : public testing::EmptyTestEventListener {
@@ -61,6 +65,10 @@ void ContentTestSuiteBase::Initialize() {
   // are correctly registered with the statistics recorder and can be queried
   // by tests.
   base::StatisticsRecorder::Initialize();
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::IsolateHolder::LoadV8Snapshot();
+#endif
 
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.

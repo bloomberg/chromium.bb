@@ -789,6 +789,11 @@
             ],
           },
         ],
+        ['v8_use_external_startup_data==1', {
+          'dependencies': [
+            '../gin/gin.gyp:gin',
+          ]
+        }],
       ],
       'target_conditions': [
         # These source files are excluded by default platform rules, but they
@@ -1651,6 +1656,23 @@
           ],
           'variables': {
             'test_suite_name': 'net_unittests',
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+                'copies': [
+                  {
+                  'destination': '<(PRODUCT_DIR)/net_unittests_apk/assets',
+                    'files': [
+                      '<(PRODUCT_DIR)/natives_blob.bin',
+                      '<(PRODUCT_DIR)/snapshot_blob.bin',
+                    ],
+                  },
+                ],
+              }],
+            ],
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

@@ -9,6 +9,7 @@ specific_include_rules = {
   ".*\.cc": [
     # Testing utilities can access anything in content/
     "+content",
+    "+gin/public/isolate_holder.h",
     "+media/base",
     "+third_party/iaccessible2",
     "+ui/base/resource/resource_bundle.h",

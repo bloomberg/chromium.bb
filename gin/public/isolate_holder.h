@@ -31,7 +31,9 @@ class GIN_EXPORT IsolateHolder {
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
-  // initialize V8 and Gin.
+  // initialize V8 and Gin. In case V8_USE_EXTERNAL_STARTUP_DATA is defined,
+  // V8's initial snapshot should be loaded (by calling LoadV8Snapshot or
+  // LoadV8SnapshotFD) before calling Initialize.
   static void Initialize(ScriptMode mode,
                          v8::ArrayBuffer::Allocator* allocator);
 
@@ -48,6 +50,13 @@ class GIN_EXPORT IsolateHolder {
   // This method should also only be called once, and on the MessageLoop's
   // thread.
   void RemoveRunMicrotasksObserver();
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#ifdef OS_ANDROID
+  static bool LoadV8SnapshotFD(int natives_fd, int snapshot_fd);
+#endif
+  static bool LoadV8Snapshot();
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
  private:
   v8::Isolate* isolate_;

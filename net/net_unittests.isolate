@@ -42,5 +42,6 @@
   ],
   'includes': [
     '../base/base.isolate',
+    '../gin/v8.isolate',
   ],
 }

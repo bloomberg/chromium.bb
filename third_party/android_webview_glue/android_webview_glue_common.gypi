@@ -31,6 +31,12 @@
           '<(PRODUCT_DIR)/icudtl.dat',
         ],
       }],
+      ['v8_use_external_startup_data==1', {
+        'additional_input_paths': [
+          '<(PRODUCT_DIR)/natives_blob.bin',
+          '<(PRODUCT_DIR)/snapshot_blob.bin',
+        ],
+      }],
     ],
   },
   'includes': [ '../../build/java_apk.gypi' ],

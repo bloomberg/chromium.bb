@@ -1880,6 +1880,15 @@
           'rule_name': 'js2webui',
           'extension': 'js',
           'msvs_external_rule': 1,
+          'variables': {
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'external_v8': 'y',
+              }, {
+                'external_v8': 'n',
+              }],
+            ],
+          },
           'inputs': [
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
@@ -1895,6 +1904,7 @@
           'action': [
             'python',
             '<@(_inputs)',
+            '--external', '<(external_v8)',
             'webui',
             '<(RULE_INPUT_PATH)',
             'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
@@ -2450,6 +2460,15 @@
           'rule_name': 'js2webui',
           'extension': 'js',
           'msvs_external_rule': 1,
+          'variables': {
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'external_v8': 'y',
+              }, {
+                'external_v8': 'n',
+              }],
+            ],
+          },
           'inputs': [
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
@@ -2466,6 +2485,7 @@
             'python',
             '<@(_inputs)',
             'webui',
+            '--external', '<(external_v8)',
             '<(RULE_INPUT_PATH)',
             'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
             '<@(_outputs)',

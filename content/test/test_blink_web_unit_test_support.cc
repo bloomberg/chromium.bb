@@ -38,6 +38,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
@@ -53,6 +57,10 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   stats_table_.reset(
       new base::StatsTable(base::StatsTable::TableIdentifier(), 20, 200));
   base::StatsTable::set_current(stats_table_.get());
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::IsolateHolder::LoadV8Snapshot();
+#endif
 
   blink::initialize(this);
   blink::mainThreadIsolate()->SetCounterFunction(

@@ -36,7 +36,7 @@ public class ChromeNativeTestActivity extends Activity {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
 
         ResourceExtractor resourceExtractor = ResourceExtractor.get(getApplicationContext());
-        resourceExtractor.setExtractAllPaksForTesting();
+        resourceExtractor.setExtractAllPaksAndV8SnapshotForTesting();
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
 

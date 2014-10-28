@@ -45,6 +45,15 @@
           'rule_name': 'js2webui',
           'extension': 'unitjs',
           'msvs_external_rule': 1,
+          'variables': {
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'external_v8': 'y',
+              }, {
+                'external_v8': 'n',
+              }],
+            ],
+          },
           'inputs': [
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
@@ -65,6 +74,7 @@
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
             '--deps_js', '<(chromevox_test_deps_js_file)',
+            '--external', '<(external_v8)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
@@ -80,6 +90,15 @@
           'rule_name': 'js2extension',
           'extension': 'extjs',
           'msvs_external_rule': 1,
+          'variables': {
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'external_v8': 'y',
+              }, {
+                'external_v8': 'n',
+              }],
+            ],
+          },
           'inputs': [
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
@@ -98,6 +117,7 @@
             'python',
             '<(gypv8sh)',
             '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '--external', '<(external_v8)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',

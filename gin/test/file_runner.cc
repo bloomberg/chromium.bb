@@ -19,6 +19,10 @@
 #include "gin/try_catch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 namespace gin {
 
 namespace {
@@ -57,6 +61,10 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
   ASSERT_TRUE(ReadFileToString(path, &source));
 
   base::MessageLoop message_loop;
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::IsolateHolder::LoadV8Snapshot();
+#endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());

@@ -36,6 +36,8 @@ public class ResourceExtractor {
     private static final String LAST_LANGUAGE = "Last language";
     private static final String PAK_FILENAMES = "Pak filenames";
     private static final String ICU_DATA_FILENAME = "icudtl.dat";
+    private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
+    private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
 
     private static String[] sMandatoryPaks = null;
 
@@ -111,8 +113,11 @@ public class ResourceExtractor {
                     if (!paksToInstall.matcher(file).matches()) {
                         continue;
                     }
-                    boolean isICUData = file.equals(ICU_DATA_FILENAME);
-                    File output = new File(isICUData ? getAppDataDir() : outputDir, file);
+                    boolean isAppDataFile = file.equals(ICU_DATA_FILENAME)
+                                      || file.equals(V8_NATIVES_DATA_FILENAME)
+                                      || file.equals(V8_SNAPSHOT_DATA_FILENAME);
+                    File output = new File(isAppDataFile
+                                           ? getAppDataDir() : outputDir, file);
                     if (output.exists()) {
                         continue;
                     }
@@ -138,10 +143,11 @@ public class ResourceExtractor {
                             throw new IOException(file + " extracted with 0 length!");
                         }
 
-                        if (!isICUData) {
+                        if (!isAppDataFile) {
                             filenames.add(file);
                         } else {
-                            // icudata needs to be accessed by a renderer process.
+                            // icu and V8 data need to be accessed by a renderer
+                            // process.
                             output.setReadable(true, false);
                         }
                     } finally {
@@ -274,18 +280,21 @@ public class ResourceExtractor {
      * running the tests.
      */
     @VisibleForTesting
-    public void setExtractAllPaksForTesting() {
-        List<String> pakFileAssets = new ArrayList<String>();
+    public void setExtractAllPaksAndV8SnapshotForTesting() {
+        List<String> pakAndSnapshotFileAssets = new ArrayList<String>();
         AssetManager manager = mContext.getResources().getAssets();
         try {
             String[] files = manager.list("");
             for (String file : files) {
-                if (file.endsWith(".pak")) pakFileAssets.add(file);
+                if (file.endsWith(".pak")) pakAndSnapshotFileAssets.add(file);
             }
         } catch (IOException e) {
             Log.w(LOGTAG, "Exception while accessing assets: " + e.getMessage(), e);
         }
-        setMandatoryPaksToExtract(pakFileAssets.toArray(new String[pakFileAssets.size()]));
+        pakAndSnapshotFileAssets.add("natives_blob.bin");
+        pakAndSnapshotFileAssets.add("snapshot_blob.bin");
+        setMandatoryPaksToExtract(pakAndSnapshotFileAssets.toArray(
+                new String[pakAndSnapshotFileAssets.size()]));
     }
 
     private ResourceExtractor(Context context) {
@@ -340,14 +349,26 @@ public class ResourceExtractor {
     /**
      * Pak files (UI strings and other resources) should be updated along with
      * Chrome. A version mismatch can lead to a rather broken user experience.
-     * The ICU data (icudtl.dat) is less version-sensitive, but still can
-     * lead to malfunction/UX misbehavior. So, we regard failing to update them
-     * as an error.
+     * Failing to update the V8 snapshot files will lead to a version mismatch
+     * between V8 and the loaded snapshot which will cause V8 to crash, so this
+     * is treated as an error. The ICU data (icudtl.dat) is less
+     * version-sensitive, but still can lead to malfunction/UX misbehavior. So,
+     * we regard failing to update them as an error.
      */
     private void deleteFiles() {
         File icudata = new File(getAppDataDir(), ICU_DATA_FILENAME);
         if (icudata.exists() && !icudata.delete()) {
             Log.e(LOGTAG, "Unable to remove the icudata " + icudata.getName());
+        }
+        File v8_natives = new File(getAppDataDir(), V8_NATIVES_DATA_FILENAME);
+        if (v8_natives.exists() && !v8_natives.delete()) {
+            Log.e(LOGTAG,
+                    "Unable to remove the v8 data " + v8_natives.getName());
+        }
+        File v8_snapshot = new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME);
+        if (v8_snapshot.exists() && !v8_snapshot.delete()) {
+            Log.e(LOGTAG,
+                    "Unable to remove the v8 data " + v8_snapshot.getName());
         }
         File dir = getOutputDir();
         if (dir.exists()) {

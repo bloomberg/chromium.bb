@@ -1004,6 +1004,14 @@
         }, {
           'optimize_jni_generation%': 0,
         }],
+
+        # TODO(baixo): Enable v8_use_external_startup_data
+        # http://crbug.com/421063
+        ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0', {
+          'v8_use_external_startup_data': 0,
+        }, {
+          'v8_use_external_startup_data': 0,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -1205,6 +1213,7 @@
     'video_hole%': '<(video_hole)',
     'enable_load_completion_hacks%': '<(enable_load_completion_hacks)',
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
+    'v8_use_external_startup_data': '<(v8_use_external_startup_data)',
 
     # Whether or not we are building the Athena shell.
     'use_athena%': '0',
@@ -2924,6 +2933,9 @@
       }],
       ['enable_load_completion_hacks==1', {
         'defines': ['ENABLE_LOAD_COMPLETION_HACKS=1'],
+      }],
+      ['v8_use_external_startup_data==1', {
+       'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [

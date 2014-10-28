@@ -3,6 +3,8 @@ include_rules = [
   "+chromeos/audio", # For WebRTC tests.
   # Testing utilities can access anything in content/
   "+content",
+  # For loading V8's initial snapshot from external files.
+  "+gin/public/isolate_holder.h",
   "+media/audio", # For AudioParameters in WebRTC tests.
   "+media/base",  # For ChannelLayout in WebRTC tests.
   "+ui/base/resource/data_pack.h",

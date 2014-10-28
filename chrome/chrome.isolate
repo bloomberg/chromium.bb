@@ -94,5 +94,6 @@
   ],
   'includes': [
     'angle.isolate',
+    '../gin/v8.isolate',
   ],
 }

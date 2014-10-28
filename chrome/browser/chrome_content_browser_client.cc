@@ -2503,6 +2503,26 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   mappings->Transfer(kAndroidICUDataDescriptor,
                      base::ScopedFD(icudata_file.TakePlatformFile()));
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  base::FilePath v8_data_path;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &v8_data_path);
+  DCHECK(!v8_data_path.empty());
+
+  int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::FilePath v8_natives_data_path =
+      v8_data_path.AppendASCII("natives_blob.bin");
+  base::FilePath v8_snapshot_data_path =
+      v8_data_path.AppendASCII("snapshot_blob.bin");
+  base::File v8_natives_data_file(v8_natives_data_path, file_flags);
+  base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
+  DCHECK(v8_natives_data_file.IsValid());
+  DCHECK(v8_snapshot_data_file.IsValid());
+  mappings->Transfer(kV8NativesDataDescriptor,
+                     base::ScopedFD(v8_natives_data_file.TakePlatformFile()));
+  mappings->Transfer(kV8SnapshotDataDescriptor,
+                     base::ScopedFD(v8_snapshot_data_file.TakePlatformFile()));
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {

@@ -17,5 +17,6 @@
   ],
   'includes': [
     '../third_party/icu/icu.isolate',
+    '../gin/v8.isolate',
   ],
 }

@@ -16,7 +16,9 @@ public class ContentBrowserTestsApplication extends Application {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "content_shell.pak",
-        "icudtl.dat"
+        "icudtl.dat",
+        "natives_blob.bin",
+        "snapshot_blob.bin"
     };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 

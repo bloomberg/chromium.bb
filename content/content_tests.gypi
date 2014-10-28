@@ -337,7 +337,9 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../gin/gin.gyp:gin',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
+            'content.gyp:content_v8_external_data',
           ],
         }],
       ],
@@ -1633,6 +1635,23 @@
           ],
           'variables': {
             'test_suite_name': 'content_unittests',
+            'conditions': [
+              ['v8_use_external_startup_data==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+                'copies': [
+                  {
+                    'destination': '<(PRODUCT_DIR)/content_unittests_apk/assets',
+                    'files': [
+                      '<(PRODUCT_DIR)/natives_blob.bin',
+                      '<(PRODUCT_DIR)/snapshot_blob.bin',
+                    ],
+                  },
+                ],
+              }],
+            ],
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
@@ -1643,6 +1662,7 @@
           'dependencies': [
             'content.gyp:content_icudata',
             'content.gyp:content_java',
+            'content.gyp:content_v8_external_data',
             'content_browsertests',
             'content_java_test_support',
             'content_shell_java',
@@ -1658,6 +1678,12 @@
               ['icu_use_data_file_flag==1', {
                 'additional_input_paths': [
                   '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+              ['v8_use_external_startup_data==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
                 ],
               }],
             ],
@@ -1687,6 +1713,7 @@
                 'chromium_android_linker_test',
                 'content.gyp:content_icudata',
                 'content.gyp:content_java',
+                'content.gyp:content_v8_external_data',
                 'content_shell_java',
               ],
               'variables': {
@@ -1702,6 +1729,12 @@
                   ['icu_use_data_file_flag==1', {
                     'additional_input_paths': [
                       '<(PRODUCT_DIR)/icudtl.dat',
+                    ],
+                  }],
+                  ['v8_use_external_startup_data==1', {
+                    'additional_input_paths': [
+                      '<(PRODUCT_DIR)/natives_blob.bin',
+                      '<(PRODUCT_DIR)/snapshot_blob.bin',
                     ],
                   }],
                 ],

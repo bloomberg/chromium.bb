@@ -16,6 +16,12 @@ enum {
 #if defined(OS_ANDROID)
   kAndroidPropertyDescriptor,
   kAndroidICUDataDescriptor,
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  kV8NativesDataDescriptor,
+  kV8SnapshotDataDescriptor,
+#endif
+
 #endif
 
   // The first key that embedders can use to register descriptors (see

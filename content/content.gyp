@@ -575,6 +575,23 @@
             }],
           ],
         },
+        {
+          'target_name': 'content_v8_external_data',
+          'type': 'none',
+          'conditions': [
+            ['v8_use_external_startup_data==1', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/content_shell/assets',
+                  'files': [
+                    '<(PRODUCT_DIR)/natives_blob.bin',
+                    '<(PRODUCT_DIR)/snapshot_blob.bin',
+                  ],
+                },
+              ],
+            }],
+          ],
+        },
       ],
     }],  # OS == "android"
   ],

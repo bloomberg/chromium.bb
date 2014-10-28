@@ -7,6 +7,10 @@
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 using v8::Context;
 using v8::Local;
 using v8::HandleScope;
@@ -20,6 +24,9 @@ V8Test::~V8Test() {
 }
 
 void V8Test::SetUp() {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::IsolateHolder::LoadV8Snapshot();
+#endif
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());
   instance_.reset(new gin::IsolateHolder);

@@ -50,6 +50,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "content/public/common/content_descriptors.h"
 #endif
@@ -716,9 +720,26 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd));
     else
       CHECK(base::i18n::InitializeICU());
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+    int v8_natives_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
+        kV8NativesDataDescriptor);
+    int v8_snapshot_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
+        kV8SnapshotDataDescriptor);
+    if (v8_natives_fd != -1 && v8_snapshot_fd != -1) {
+      CHECK(gin::IsolateHolder::LoadV8SnapshotFD(v8_natives_fd,
+                                                 v8_snapshot_fd));
+    } else {
+      CHECK(gin::IsolateHolder::LoadV8Snapshot());
+    }
+#endif // V8_USE_EXTERNAL_STARTUP_DATA
+
 #else
     CHECK(base::i18n::InitializeICU());
-#endif
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+    CHECK(gin::IsolateHolder::LoadV8Snapshot());
+#endif // V8_USE_EXTERNAL_STARTUP_DATA
+#endif // OS_ANDROID
 
     InitializeStatsTable(command_line);
 

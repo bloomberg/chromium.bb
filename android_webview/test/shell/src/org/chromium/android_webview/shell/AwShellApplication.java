@@ -21,7 +21,9 @@ public class AwShellApplication extends Application {
 
     private static final String TAG = "AwShellApplication";
     /** The minimum set of .pak files the test runner needs. */
-    private static final String[] MANDATORY_PAKS = { "icudtl.dat" };
+    private static final String[] MANDATORY_PAKS = { "icudtl.dat",
+                                                     "natives_blob.bin",
+                                                     "snapshot_blob.bin" };
 
     @Override
     public void onCreate() {

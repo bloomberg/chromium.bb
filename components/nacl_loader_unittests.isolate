@@ -17,5 +17,6 @@
   ],
   'includes': [
     '../sandbox/sandbox_linux_unittests.isolate',
+    '../gin/v8.isolate',
   ],
 }
