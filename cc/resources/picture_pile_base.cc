@@ -47,7 +47,6 @@ PicturePileBase::PicturePileBase()
       show_debug_picture_borders_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       has_any_recordings_(false),
-      has_text_(false),
       is_mask_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT) {
@@ -71,7 +70,6 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       has_any_recordings_(other->has_any_recordings_),
-      has_text_(other->has_text_),
       is_mask_(other->is_mask_),
       is_solid_color_(other->is_solid_color_),
       solid_color_(other->solid_color_) {

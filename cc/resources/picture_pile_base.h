@@ -47,9 +47,6 @@ class CC_EXPORT PicturePileBase {
   // If this pile contains any valid recordings. May have false positives.
   bool HasRecordings() const { return has_any_recordings_; }
 
-  // If this pile has ever contained any recordings with text.
-  bool has_text() const { return has_text_; }
-
   bool is_solid_color() const { return is_solid_color_; }
   SkColor solid_color() const { return solid_color_; }
 
@@ -127,7 +124,6 @@ class CC_EXPORT PicturePileBase {
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;
-  bool has_text_;
   bool is_mask_;
   bool is_solid_color_;
   SkColor solid_color_;

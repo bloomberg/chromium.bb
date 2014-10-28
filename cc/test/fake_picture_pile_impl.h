@@ -68,8 +68,6 @@ class FakePicturePileImpl : public PicturePileImpl {
     clear_canvas_with_debug_color_ = clear;
   }
 
-  void set_has_text(bool has_text) { has_text_ = has_text; }
-
   void set_is_solid_color(bool is_solid_color) {
     is_solid_color_ = is_solid_color;
   }
