@@ -169,4 +169,32 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload_network_observer.Wait();
 }
 
+// Verify that a site with password fields will query even in the presence
+// of user defined autocomplete types.
+IN_PROC_BROWSER_TEST_F(AutofillServerTest,
+                       AlwaysQueryForPasswordFields) {
+  // Load the test page. Expect a query request upon loading the page.
+  const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
+  const char kFormHtml[] =
+      "<form id='test_form'>"
+      "  <input type='text' id='one' autocomplete='username'>"
+      "  <input type='text' id='two' autocomplete='off'>"
+      "  <input type='password' id='three'>"
+      "  <input type='submit'>"
+      "</form>";
+  const char kQueryRequest[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
+      "<form signature=\"8900697631820480876\">"
+      "<field signature=\"2594484045\"/>"
+      "<field signature=\"2750915947\"/>"
+      "<field signature=\"116843943\"/>"
+      "</form>"
+      "</autofillquery>";
+  WindowedNetworkObserver query_network_observer(kQueryRequest);
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
+  query_network_observer.Wait();
+}
+
 }  // namespace autofill

@@ -352,7 +352,8 @@ FormStructure::FormStructure(const FormData& form)
       autofill_count_(0),
       active_field_count_(0),
       upload_required_(USE_UPLOAD_RATES),
-      has_author_specified_types_(false) {
+      has_author_specified_types_(false),
+      has_password_field_(false) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
@@ -366,6 +367,9 @@ FormStructure::FormStructure(const FormData& form)
 
       ++active_field_count_;
     }
+
+    if (field->form_control_type == "password")
+      has_password_field_ = true;
 
     // Generate a unique name for this field by appending a counter to the name.
     // Make sure to prepend the counter with a non-numeric digit so that we are
@@ -579,20 +583,25 @@ void FormStructure::ParseQueryResponse(
       if (current_info == field_infos.end())
         break;
 
-      // UNKNOWN_TYPE is reserved for use by the client.
-      DCHECK_NE(current_info->field_type, UNKNOWN_TYPE);
+      // If |form->has_author_specified_types| only password fields should be
+      // updated.
+      if (!form->has_author_specified_types_ ||
+          (*field)->form_control_type == "password") {
+        // UNKNOWN_TYPE is reserved for use by the client.
+        DCHECK_NE(current_info->field_type, UNKNOWN_TYPE);
 
-      ServerFieldType heuristic_type = (*field)->heuristic_type();
-      if (heuristic_type != UNKNOWN_TYPE)
-        heuristics_detected_fillable_field = true;
+        ServerFieldType heuristic_type = (*field)->heuristic_type();
+        if (heuristic_type != UNKNOWN_TYPE)
+          heuristics_detected_fillable_field = true;
 
-      (*field)->set_server_type(current_info->field_type);
-      if (heuristic_type != (*field)->Type().GetStorableType())
-        query_response_overrode_heuristics = true;
+        (*field)->set_server_type(current_info->field_type);
+        if (heuristic_type != (*field)->Type().GetStorableType())
+          query_response_overrode_heuristics = true;
 
-      // Copy default value into the field if available.
-      if (!current_info->default_value.empty())
-        (*field)->set_default_value(current_info->default_value);
+        // Copy default value into the field if available.
+        if (!current_info->default_value.empty())
+          (*field)->set_default_value(current_info->default_value);
+      }
 
       ++current_info;
     }
@@ -706,7 +715,8 @@ bool FormStructure::ShouldBeParsed() const {
 }
 
 bool FormStructure::ShouldBeCrowdsourced() const {
-  return !has_author_specified_types_ && ShouldBeParsed();
+  return (has_password_field_ || !has_author_specified_types_) &&
+      ShouldBeParsed();
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {

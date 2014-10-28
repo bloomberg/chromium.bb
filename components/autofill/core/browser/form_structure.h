@@ -105,7 +105,11 @@ class FormStructure {
 
   // Returns true if we should query the crowdsourcing server to determine this
   // form's field types.  If the form includes author-specified types, this will
-  // return false.
+  // return false unless there are password fields in the form. If there are no
+  // password fields the assumption is that the author has expressed their
+  // intent and crowdsourced data should not be used to override this. Password
+  // fields are different because there is no way to specify password generation
+  // directly.
   bool ShouldBeCrowdsourced() const;
 
   // Sets the field types to be those set for |cached_form|.
@@ -251,6 +255,9 @@ class FormStructure {
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_;
+
+  // True if the form contains at least one password field.
+  bool has_password_field_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

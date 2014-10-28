@@ -493,6 +493,40 @@ TEST(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
 }
 
+// Even with an 'autocomplete' attribute set, ShouldBeCrowdsourced() should
+// return true if the structure contains a password field, since there are
+// no local heuristics to depend upon in this case. Fields will still not be
+// considered autofillable though.
+TEST(FormStructureTest, PasswordFormShouldBeCrowdsourced) {
+  FormData form;
+
+  // Start with a regular contact form.
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.autocomplete_attribute = "username";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Password");
+  field.name = ASCIIToUTF16("Password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_TRUE(form_structure.ShouldBeCrowdsourced());
+}
+
 // Verify that we can correctly process sections listed in the |autocomplete|
 // attribute.
 TEST(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
@@ -2354,6 +2388,93 @@ TEST(FormStructureTest, PossibleValues) {
   FormStructure form_structure2(form_data);
   form_structure2.ParseFieldTypesFromAutocompleteAttributes(&unused, &unused);
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
+}
+
+TEST(FormStructureTest, ParseQueryResponse) {
+  FormData form;
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("fullname");
+  field.name = ASCIIToUTF16("fullname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  // Checkable fields should be ignored in parsing
+  FormFieldData checkable_field;
+  checkable_field.label = ASCIIToUTF16("radio_button");
+  checkable_field.form_control_type = "radio";
+  checkable_field.is_checkable = true;
+  form.fields.push_back(checkable_field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  forms.push_back(new FormStructure(form));
+
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"7\" />"
+      "<field autofilltype=\"30\" />"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"0\" />"
+      "</autofillqueryresponse>";
+
+  FormStructure::ParseQueryResponse(response,
+                                    forms.get(),
+                                    TestAutofillMetrics());
+
+  EXPECT_EQ(7, forms[0]->field(0)->server_type());
+  EXPECT_EQ(30, forms[0]->field(1)->server_type());
+  EXPECT_EQ(9, forms[1]->field(0)->server_type());
+  EXPECT_EQ(0, forms[1]->field(1)->server_type());
+}
+
+// If user defined types are present, only parse password fields.
+TEST(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
+  FormData form;
+  FormFieldData field;
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  field.autocomplete_attribute = "email";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  field.autocomplete_attribute = "new-password";
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+  forms.front()->DetermineHeuristicTypes(TestAutofillMetrics());
+
+  std::string response =
+      "<autofillqueryresponse>"
+      "<field autofilltype=\"9\" />"
+      "<field autofilltype=\"76\" />"
+      "</autofillqueryresponse>";
+
+  FormStructure::ParseQueryResponse(response,
+                                    forms.get(),
+                                    TestAutofillMetrics());
+
+  EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
+  EXPECT_EQ(76, forms[0]->field(1)->server_type());
 }
 
 }  // namespace autofill
