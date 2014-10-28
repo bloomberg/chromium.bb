@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Google Inc.
+// Copyright (c) 2014, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,58 +27,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <stdio.h>
+#ifndef CLIENT_LINUX_MINIDUMP_WRITER_MICRODUMP_WRITER_H_
+#define CLIENT_LINUX_MINIDUMP_WRITER_MICRODUMP_WRITER_H_
 
-#include "client/linux/handler/minidump_descriptor.h"
+#include <stdint.h>
+#include <sys/types.h>
 
-#include "common/linux/guid_creator.h"
+#include "client/linux/dump_writer_common/mapping_info.h"
 
 namespace google_breakpad {
 
-//static
-const MinidumpDescriptor::MicrodumpOnConsole kMicrodumpOnConsole = {};
-
-MinidumpDescriptor::MinidumpDescriptor(const MinidumpDescriptor& descriptor)
-    : mode_(descriptor.mode_),
-      fd_(descriptor.fd_),
-      directory_(descriptor.directory_),
-      c_path_(NULL),
-      size_limit_(descriptor.size_limit_) {
-  // The copy constructor is not allowed to be called on a MinidumpDescriptor
-  // with a valid path_, as getting its c_path_ would require the heap which
-  // can cause problems in compromised environments.
-  assert(descriptor.path_.empty());
-}
-
-MinidumpDescriptor& MinidumpDescriptor::operator=(
-    const MinidumpDescriptor& descriptor) {
-  assert(descriptor.path_.empty());
-
-  mode_ = descriptor.mode_;
-  fd_ = descriptor.fd_;
-  directory_ = descriptor.directory_;
-  path_.clear();
-  if (c_path_) {
-    // This descriptor already had a path set, so generate a new one.
-    c_path_ = NULL;
-    UpdatePath();
-  }
-  size_limit_ = descriptor.size_limit_;
-  return *this;
-}
-
-void MinidumpDescriptor::UpdatePath() {
-  assert(mode_ == kWriteMinidumpToFile && !directory_.empty());
-
-  GUID guid;
-  char guid_str[kGUIDStringLength + 1];
-  if (!CreateGUID(&guid) || !GUIDToString(&guid, guid_str, sizeof(guid_str))) {
-    assert(false);
-  }
-
-  path_.clear();
-  path_ = directory_ + "/" + guid_str + ".dmp";
-  c_path_ = path_.c_str();
-}
+// Writes a microdump (a reduced dump containing only the state of the crashing
+// thread) on the console (logcat on Android). These functions do not malloc nor
+// use libc functions which may. Thus, it can be used in contexts where the
+// state of the heap may be corrupt.
+// Args:
+//   crashing_process: the pid of the crashing process. This must be trusted.
+//   blob: a blob of data from the crashing process. See exception_handler.h
+//   blob_size: the length of |blob| in bytes.
+//   mappings: a list of additional mappings provided by the application.
+//
+// Returns true iff successful.
+bool WriteMicrodump(pid_t crashing_process,
+                    const void* blob,
+                    size_t blob_size,
+                    const MappingList& mappings);
 
 }  // namespace google_breakpad
+
+#endif  // CLIENT_LINUX_MINIDUMP_WRITER_MICRODUMP_WRITER_H_

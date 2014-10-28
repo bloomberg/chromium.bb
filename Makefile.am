@@ -134,6 +134,7 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
+	src/client/linux/microdump_writer/microdump_writer.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
@@ -450,6 +451,7 @@ src_client_linux_linux_client_unittest_shlib_LDADD = \
 	src/client/linux/handler/exception_handler.o \
 	src/client/linux/handler/minidump_descriptor.o \
 	src/client/linux/log/log.o \
+	src/client/linux/microdump_writer/microdump_writer.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.o \
 	src/client/linux/minidump_writer/minidump_writer.o \

@@ -288,6 +288,7 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
+	src/client/linux/microdump_writer/microdump_writer.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
@@ -309,6 +310,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.$(OBJEXT) \
@@ -1859,6 +1861,7 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.cc \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.cc \
+@LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.cc \
@@ -2079,6 +2082,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.o \
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.o \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.o \
+@LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.o \
@@ -3074,6 +3078,15 @@ src/client/linux/log/$(DEPDIR)/$(am__dirstamp):
 src/client/linux/log/log.$(OBJEXT):  \
 	src/client/linux/log/$(am__dirstamp) \
 	src/client/linux/log/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/microdump_writer/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/microdump_writer
+	@: > src/client/linux/microdump_writer/$(am__dirstamp)
+src/client/linux/microdump_writer/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/client/linux/microdump_writer/$(DEPDIR)
+	@: > src/client/linux/microdump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/microdump_writer/microdump_writer.$(OBJEXT):  \
+	src/client/linux/microdump_writer/$(am__dirstamp) \
+	src/client/linux/microdump_writer/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/minidump_writer/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/minidump_writer
 	@: > src/client/linux/minidump_writer/$(am__dirstamp)
@@ -4155,6 +4168,7 @@ mostlyclean-compile:
 	-rm -f src/client/linux/dump_writer_common/*.$(OBJEXT)
 	-rm -f src/client/linux/handler/*.$(OBJEXT)
 	-rm -f src/client/linux/log/*.$(OBJEXT)
+	-rm -f src/client/linux/microdump_writer/*.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/*.$(OBJEXT)
 	-rm -f src/common/*.$(OBJEXT)
 	-rm -f src/common/android/*.$(OBJEXT)
@@ -4184,6 +4198,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/minidump_descriptor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-exception_handler_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/log/$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/microdump_writer/$(DEPDIR)/microdump_writer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_core_dumper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_dumper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_ptrace_dumper.Po@am__quote@
@@ -7690,6 +7705,8 @@ distclean-generic:
 	-rm -f src/client/linux/handler/$(am__dirstamp)
 	-rm -f src/client/linux/log/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/client/linux/log/$(am__dirstamp)
+	-rm -f src/client/linux/microdump_writer/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/client/linux/microdump_writer/$(am__dirstamp)
 	-rm -f src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/client/linux/minidump_writer/$(am__dirstamp)
 	-rm -f src/common/$(DEPDIR)/$(am__dirstamp)
@@ -7732,7 +7749,7 @@ clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -7784,7 +7801,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/dump_writer_common/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/microdump_writer/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

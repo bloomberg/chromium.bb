@@ -91,6 +91,7 @@
 #include "common/linux/linux_libc_support.h"
 #include "common/memory.h"
 #include "client/linux/log/log.h"
+#include "client/linux/microdump_writer/microdump_writer.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "common/linux/eintr_wrapper.h"
@@ -210,7 +211,8 @@ ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
   if (server_fd >= 0)
     crash_generation_client_.reset(CrashGenerationClient::TryCreate(server_fd));
 
-  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD())
+  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD() &&
+      !minidump_descriptor_.IsMicrodumpOnConsole())
     minidump_descriptor_.UpdatePath();
 
   pthread_mutex_lock(&g_handler_stack_mutex_);
@@ -548,6 +550,12 @@ void ExceptionHandler::WaitForContinueSignal() {
 // Runs on the cloned process.
 bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                               size_t context_size) {
+  if (minidump_descriptor_.IsMicrodumpOnConsole()) {
+    return google_breakpad::WriteMicrodump(crashing_process,
+                                           context,
+                                           context_size,
+                                           mapping_list_);
+  }
   if (minidump_descriptor_.IsFD()) {
     return google_breakpad::WriteMinidump(minidump_descriptor_.fd(),
                                           minidump_descriptor_.size_limit(),
@@ -583,7 +591,8 @@ bool ExceptionHandler::WriteMinidump(const string& dump_path,
 __attribute__((optimize("no-omit-frame-pointer")))
 #endif
 bool ExceptionHandler::WriteMinidump() {
-  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD()) {
+  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD() &&
+      !minidump_descriptor_.IsMicrodumpOnConsole()) {
     // Update the path of the minidump so that this can be called multiple times
     // and new files are created for each minidump.  This is done before the
     // generation happens, as clients may want to access the MinidumpDescriptor
