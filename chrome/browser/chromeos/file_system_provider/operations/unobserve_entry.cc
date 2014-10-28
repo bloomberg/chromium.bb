@@ -17,9 +17,11 @@ UnobserveEntry::UnobserveEntry(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& entry_path,
+    bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       entry_path_(entry_path),
+      recursive_(recursive),
       callback_(callback) {
 }
 
@@ -33,6 +35,7 @@ bool UnobserveEntry::Execute(int request_id) {
   options.file_system_id = file_system_info_.file_system_id();
   options.request_id = request_id;
   options.entry_path = entry_path_.AsUTF8Unsafe();
+  options.recursive = recursive_;
 
   return SendEvent(
       request_id,

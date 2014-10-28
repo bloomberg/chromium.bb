@@ -64,8 +64,8 @@ void Registry::RememberFileSystem(
 
   for (const auto& it : observed_entries) {
     base::DictionaryValue* const observed_entry = new base::DictionaryValue();
-    observed_entries_value->SetWithoutPathExpansion(it.first.value(),
-                                                    observed_entry);
+    observed_entries_value->SetWithoutPathExpansion(
+        it.second.entry_path.value(), observed_entry);
     observed_entry->SetStringWithoutPathExpansion(
         kPrefKeyObservedEntryEntryPath, it.second.entry_path.value());
     observed_entry->SetBooleanWithoutPathExpansion(
@@ -201,8 +201,8 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
             base::FilePath::FromUTF8Unsafe(entry_path);
         restored_observed_entry.recursive = recursive;
         restored_observed_entry.last_tag = last_tag;
-        restored_file_system
-            .observed_entries[base::FilePath::FromUTF8Unsafe(entry_path)] =
+        restored_file_system.observed_entries[ObservedEntryKey(
+            base::FilePath::FromUTF8Unsafe(entry_path), recursive)] =
             restored_observed_entry;
       }
     }

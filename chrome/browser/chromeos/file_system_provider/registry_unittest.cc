@@ -126,8 +126,8 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
 
   ASSERT_EQ(1u, restored_file_system.observed_entries.size());
   const auto& restored_observed_entry_it =
-      restored_file_system.observed_entries.find(
-          fake_observed_entry_.entry_path);
+      restored_file_system.observed_entries.find(ObservedEntryKey(
+          fake_observed_entry_.entry_path, fake_observed_entry_.recursive));
   ASSERT_NE(restored_file_system.observed_entries.end(),
             restored_observed_entry_it);
 
@@ -148,7 +148,9 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
 
   ObservedEntries observed_entries;
-  observed_entries[fake_observed_entry_.entry_path] = fake_observed_entry_;
+  observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
+                                    fake_observed_entry_.recursive)] =
+      fake_observed_entry_;
 
   registry_->RememberFileSystem(file_system_info, observed_entries);
 
@@ -249,7 +251,9 @@ TEST_F(FileSystemProviderRegistryTest, UpdateObservedEntryTag) {
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
 
   ObservedEntries observed_entries;
-  observed_entries[fake_observed_entry_.entry_path] = fake_observed_entry_;
+  observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
+                                    fake_observed_entry_.recursive)] =
+      fake_observed_entry_;
 
   registry_->RememberFileSystem(file_system_info, observed_entries);
 

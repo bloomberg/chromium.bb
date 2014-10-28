@@ -56,6 +56,7 @@ TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kEntryPath),
+      true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -80,6 +81,7 @@ TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute) {
   EXPECT_EQ(kFileSystemId, options.file_system_id);
   EXPECT_EQ(kRequestId, options.request_id);
   EXPECT_EQ(kEntryPath, options.entry_path);
+  EXPECT_TRUE(options.recursive);
 }
 
 TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute_NoListener) {
@@ -90,6 +92,7 @@ TEST_F(FileSystemProviderOperationsUnobserveEntryTest, Execute_NoListener) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kEntryPath),
+      true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -106,6 +109,7 @@ TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnSuccess) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kEntryPath),
+      true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -128,6 +132,7 @@ TEST_F(FileSystemProviderOperationsUnobserveEntryTest, OnError) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kEntryPath),
+      true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   unobserve_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

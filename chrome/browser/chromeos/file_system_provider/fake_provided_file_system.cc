@@ -332,6 +332,7 @@ FakeProvidedFileSystem::ObserveDirectory(
 
 void FakeProvidedFileSystem::UnobserveEntry(
     const base::FilePath& entry_path,
+    bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // TODO(mtomasz): Implement it once needed.
   callback.Run(base::File::FILE_OK);
@@ -364,8 +365,9 @@ void FakeProvidedFileSystem::RemoveObserver(
 
 bool FakeProvidedFileSystem::Notify(
     const base::FilePath& observed_path,
+    bool recursive,
     ProvidedFileSystemObserver::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
+    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag) {
   NOTREACHED();
   return false;

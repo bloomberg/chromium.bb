@@ -339,13 +339,16 @@ namespace fileSystemProvider {
     // The unique identifier of this request.
     long requestId;
 
+    // Mode of the observed entry.
+    boolean recursive;
+
     // The path of the entry to be not observed anymore.
     DOMString entryPath;
   };
 
   // Information about a change happened to an entry within the observed
-  // directory.
-  dictionary ChildChange {
+  // directory (including the entry itself).
+  dictionary Change {
     // The path of the changed entry.
     DOMString entryPath;
 
@@ -361,13 +364,17 @@ namespace fileSystemProvider {
     // The path of the observed entry.
     DOMString observedPath;
 
+    // Mode of the observed entry.
+    boolean recursive;
+
     // The type of the change which happened to the observed entry. If it is
     // DELETED, then the observed entry will be automatically removed from the
     // list of observed entries.
     ChangeType changeType;
 
-    // List of changes to entries within the observed directory.
-    ChildChange[]? childChanges;
+    // List of changes to entries within the observed directory (including the
+    // entry itself)
+    Change[]? changes;
 
     // Tag for the notification. Required if the file system was mounted with
     // the <code>supportsNotifyTag</code> option. Note, that this flag is

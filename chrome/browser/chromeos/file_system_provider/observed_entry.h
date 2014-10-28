@@ -15,8 +15,23 @@ namespace file_system_provider {
 
 struct ObservedEntry;
 
+// Key for storing an observed entry in the map. There may be two observers
+// per path, as long as one is recursive, and the other one not.
+struct ObservedEntryKey {
+  ObservedEntryKey(const base::FilePath& entry_path, bool recursive);
+  ~ObservedEntryKey();
+
+  struct Comparator {
+    bool operator()(const ObservedEntryKey& a, const ObservedEntryKey& b) const;
+  };
+
+  base::FilePath entry_path;
+  bool recursive;
+};
+
 // List of observed entries.
-typedef std::map<base::FilePath, ObservedEntry> ObservedEntries;
+typedef std::map<ObservedEntryKey, ObservedEntry, ObservedEntryKey::Comparator>
+    ObservedEntries;
 
 // Represents an observed entry on a file system.
 struct ObservedEntry {

@@ -101,20 +101,20 @@ class Observer : public ProvidedFileSystemObserver {
   class ChangeEvent {
    public:
     ChangeEvent(ProvidedFileSystemObserver::ChangeType change_type,
-                const ProvidedFileSystemObserver::ChildChanges& child_changes)
-        : change_type_(change_type), child_changes_(child_changes) {}
+                const ProvidedFileSystemObserver::Changes& changes)
+        : change_type_(change_type), changes_(changes) {}
     virtual ~ChangeEvent() {}
 
     ProvidedFileSystemObserver::ChangeType change_type() const {
       return change_type_;
     }
-    const ProvidedFileSystemObserver::ChildChanges& child_changes() const {
-      return child_changes_;
+    const ProvidedFileSystemObserver::Changes& changes() const {
+      return changes_;
     }
 
    private:
     const ProvidedFileSystemObserver::ChangeType change_type_;
-    const ProvidedFileSystemObserver::ChildChanges child_changes_;
+    const ProvidedFileSystemObserver::Changes changes_;
 
     DISALLOW_COPY_AND_ASSIGN(ChangeEvent);
   };
@@ -126,10 +126,10 @@ class Observer : public ProvidedFileSystemObserver {
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntry& observed_entry,
       ProvidedFileSystemObserver::ChangeType change_type,
-      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      const ProvidedFileSystemObserver::Changes& changes,
       const base::Closure& callback) override {
     EXPECT_EQ(kFileSystemId, file_system_info.file_system_id());
-    change_events_.push_back(new ChangeEvent(change_type, child_changes));
+    change_events_.push_back(new ChangeEvent(change_type, changes));
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 
@@ -369,8 +369,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
 
   {
     // Create another observer on the same path, but a recursive one. That
-    // should
-    // succeed.
+    // should succeed.
     Log log;
     provided_file_system_->ObserveDirectory(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
@@ -385,11 +384,14 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, ObserveDirectory_Exists) {
 
     ObservedEntries* const observed_entries =
         provided_file_system_->GetObservedEntries();
-    ASSERT_EQ(1u, observed_entries->size());
-    const ObservedEntry& observed_entry = observed_entries->begin()->second;
-    EXPECT_EQ(kDirectoryPath, observed_entry.entry_path.value());
-    EXPECT_TRUE(observed_entry.recursive);
-    EXPECT_EQ("", observed_entry.last_tag);
+    const auto& observed_entry_it = observed_entries->find(
+        ObservedEntryKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
+                         true /* recursive */));
+    ASSERT_NE(observed_entries->end(), observed_entry_it);
+
+    EXPECT_EQ(kDirectoryPath, observed_entry_it->second.entry_path.value());
+    EXPECT_TRUE(observed_entry_it->second.recursive);
+    EXPECT_EQ("", observed_entry_it->second.last_tag);
   }
 
   {
@@ -420,6 +422,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     Log log;
     provided_file_system_->UnobserveEntry(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -453,6 +456,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     Log log;
     provided_file_system_->UnobserveEntry(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -494,6 +498,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, UnobserveEntry) {
     Log log;
     provided_file_system_->UnobserveEntry(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
         base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
 
@@ -542,8 +547,9 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     const std::string tag = "hello-world";
     EXPECT_TRUE(provided_file_system_->Notify(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
         change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
+        make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
         tag));
 
     // Verify the observer event.
@@ -551,7 +557,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     const Observer::ChangeEvent* const change_event =
         observer.change_events()[0];
     EXPECT_EQ(change_type, change_event->change_type());
-    EXPECT_EQ(0u, change_event->child_changes().size());
+    EXPECT_EQ(0u, change_event->changes().size());
 
     // The tag should not be updated in advance, before all observers handle
     // the notification.
@@ -576,12 +582,13 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Notify about deleting of the observed entry.
     const ProvidedFileSystemObserver::ChangeType change_type =
         ProvidedFileSystemObserver::DELETED;
-    const ProvidedFileSystemObserver::ChildChanges child_changes;
+    const ProvidedFileSystemObserver::Changes changes;
     const std::string tag = "chocolate-disco";
     EXPECT_TRUE(provided_file_system_->Notify(
         base::FilePath::FromUTF8Unsafe(kDirectoryPath),
+        false /* recursive */,
         change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
+        make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
         tag));
     base::RunLoop().RunUntilIdle();
 
@@ -590,7 +597,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     const Observer::ChangeEvent* const change_event =
         observer.change_events()[1];
     EXPECT_EQ(change_type, change_event->change_type());
-    EXPECT_EQ(0u, change_event->child_changes().size());
+    EXPECT_EQ(0u, change_event->changes().size());
   }
 
   // Confirm, that the entry is not observed anymore.

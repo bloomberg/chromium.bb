@@ -134,8 +134,8 @@ class FakeRegistry : public RegistryInterface {
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntry& observed_entry) override {
     ASSERT_TRUE(observed_entries_.get());
-    const ObservedEntries::iterator it =
-        observed_entries_->find(observed_entry.entry_path);
+    const ObservedEntries::iterator it = observed_entries_->find(
+        ObservedEntryKey(observed_entry.entry_path, observed_entry.recursive));
     ASSERT_NE(observed_entries_->end(), it);
     it->second.last_tag = observed_entry.last_tag;
   }
@@ -401,7 +401,9 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")));
   ObservedEntries fake_observed_entries;
-  fake_observed_entries[fake_observed_entry_.entry_path] = fake_observed_entry_;
+  fake_observed_entries[ObservedEntryKey(fake_observed_entry_.entry_path,
+                                         fake_observed_entry_.recursive)] =
+      fake_observed_entry_;
   registry_->RememberFileSystem(file_system_info, fake_observed_entries);
 
   EXPECT_EQ(0u, observer.mounts.size());
@@ -435,7 +437,8 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   ASSERT_EQ(1u, observed_entries->size());
 
   const ObservedEntries::const_iterator restored_observed_entry_it =
-      observed_entries->find(fake_observed_entry_.entry_path);
+      observed_entries->find(ObservedEntryKey(fake_observed_entry_.entry_path,
+                                              fake_observed_entry_.recursive));
   ASSERT_NE(observed_entries->end(), restored_observed_entry_it);
 
   EXPECT_EQ(fake_observed_entry_.entry_path,

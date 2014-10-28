@@ -31,6 +31,7 @@ class UnobserveEntry : public Operation {
   UnobserveEntry(extensions::EventRouter* event_router,
                  const ProvidedFileSystemInfo& file_system_info,
                  const base::FilePath& entry_path,
+                 bool recursive,
                  const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~UnobserveEntry();
 
@@ -45,6 +46,7 @@ class UnobserveEntry : public Operation {
 
  private:
   const base::FilePath entry_path_;
+  bool recursive_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UnobserveEntry);

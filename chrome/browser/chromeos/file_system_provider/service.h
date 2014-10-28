@@ -133,7 +133,7 @@ class Service : public KeyedService,
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntry& observed_entry,
       ProvidedFileSystemObserver::ChangeType change_type,
-      const ProvidedFileSystemObserver::ChildChanges& child_changes,
+      const ProvidedFileSystemObserver::Changes& changes,
       const base::Closure& callback) override;
   virtual void OnObservedEntryTagUpdated(
       const ProvidedFileSystemInfo& file_system_info,

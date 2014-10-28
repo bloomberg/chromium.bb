@@ -363,13 +363,12 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::ObserveDirectory(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // TODO(mtomasz): Wrap the entire method body with an asynchronous queue to
   // avoid races.
-  const ObservedEntries::const_iterator it =
-      observed_entries_.find(directory_path);
+  const ObservedEntryKey key(directory_path, recursive);
+  const ObservedEntries::const_iterator it = observed_entries_.find(key);
   if (it != observed_entries_.end()) {
-    if (!recursive || it->second.recursive) {
-      callback.Run(base::File::FILE_ERROR_EXISTS);
-      return AbortCallback();
-    }
+    OnObserveDirectoryCompleted(
+        directory_path, recursive, callback, base::File::FILE_ERROR_EXISTS);
+    return AbortCallback();
   }
 
   const int request_id = request_manager_->CreateRequest(
@@ -396,8 +395,10 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::ObserveDirectory(
 
 void ProvidedFileSystem::UnobserveEntry(
     const base::FilePath& entry_path,
+    bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  const ObservedEntries::const_iterator it = observed_entries_.find(entry_path);
+  const ObservedEntryKey key(entry_path, recursive);
+  const ObservedEntries::const_iterator it = observed_entries_.find(key);
   if (it == observed_entries_.end()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
@@ -418,8 +419,11 @@ void ProvidedFileSystem::UnobserveEntry(
   const int request_id = request_manager_->CreateRequest(
       UNOBSERVE_ENTRY,
       scoped_ptr<RequestManager::HandlerInterface>(
-          new operations::UnobserveEntry(
-              event_router_, file_system_info_, entry_path, callback)));
+          new operations::UnobserveEntry(event_router_,
+                                         file_system_info_,
+                                         entry_path,
+                                         recursive,
+                                         callback)));
   if (!request_id)
     callback.Run(base::File::FILE_ERROR_SECURITY);
 }
@@ -448,10 +452,12 @@ void ProvidedFileSystem::RemoveObserver(ProvidedFileSystemObserver* observer) {
 
 bool ProvidedFileSystem::Notify(
     const base::FilePath& observed_path,
+    bool recursive,
     ProvidedFileSystemObserver::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
+    scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag) {
-  const ObservedEntries::iterator it = observed_entries_.find(observed_path);
+  const ObservedEntryKey key(observed_path, recursive);
+  const ObservedEntries::iterator it = observed_entries_.find(key);
   if (it == observed_entries_.end())
     return false;
 
@@ -461,15 +467,15 @@ bool ProvidedFileSystem::Notify(
 
   // The object is owned by AutoUpdated, so the reference is valid as long as
   // callbacks created with AutoUpdater::CreateCallback().
-  const ProvidedFileSystemObserver::ChildChanges& child_changes_ref =
-      *child_changes.get();
+  const ProvidedFileSystemObserver::Changes& changes_ref = *changes.get();
 
   scoped_refptr<AutoUpdater> auto_updater(
       new AutoUpdater(base::Bind(&ProvidedFileSystem::OnNotifyCompleted,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  observed_path,
+                                 recursive,
                                  change_type,
-                                 base::Passed(&child_changes),
+                                 base::Passed(&changes),
                                  it->second.last_tag,
                                  tag)));
 
@@ -478,7 +484,7 @@ bool ProvidedFileSystem::Notify(
                     OnObservedEntryChanged(file_system_info_,
                                            it->second,
                                            change_type,
-                                           child_changes_ref,
+                                           changes_ref,
                                            auto_updater->CreateCallback()));
 
   return true;
@@ -515,24 +521,33 @@ void ProvidedFileSystem::OnObserveDirectoryCompleted(
     return;
   }
 
-  observed_entries_[directory_path].entry_path = directory_path;
-  observed_entries_[directory_path].recursive |= recursive;
+  const ObservedEntryKey key(directory_path, recursive);
+  const ObservedEntries::iterator it = observed_entries_.find(key);
+  if (it != observed_entries_.end()) {
+    callback.Run(base::File::FILE_OK);
+    return;
+  }
+
+  observed_entries_[key].entry_path = directory_path;
+  observed_entries_[key].recursive = recursive;
 
   FOR_EACH_OBSERVER(
       ProvidedFileSystemObserver,
       observers_,
       OnObservedEntryListChanged(file_system_info_, observed_entries_));
 
-  callback.Run(result);
+  callback.Run(base::File::FILE_OK);
 }
 
 void ProvidedFileSystem::OnNotifyCompleted(
     const base::FilePath& observed_path,
+    bool recursive,
     ProvidedFileSystemObserver::ChangeType change_type,
-    scoped_ptr<ProvidedFileSystemObserver::ChildChanges> /* child_changes */,
+    scoped_ptr<ProvidedFileSystemObserver::Changes> /* changes */,
     const std::string& last_tag,
     const std::string& tag) {
-  const ObservedEntries::iterator it = observed_entries_.find(observed_path);
+  const ObservedEntryKey key(observed_path, recursive);
+  const ObservedEntries::iterator it = observed_entries_.find(key);
   // Check if the entry is still observed.
   if (it == observed_entries_.end())
     return;
@@ -555,7 +570,7 @@ void ProvidedFileSystem::OnNotifyCompleted(
 
   // If the observed entry is deleted, then unobserve it.
   if (change_type == ProvidedFileSystemObserver::DELETED)
-    UnobserveEntry(observed_path, base::Bind(&EmptyStatusCallback));
+    UnobserveEntry(observed_path, recursive, base::Bind(&EmptyStatusCallback));
 }
 
 }  // namespace file_system_provider

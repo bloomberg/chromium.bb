@@ -22,18 +22,18 @@ class RequestManager;
 // system, especially observed entries.
 class ProvidedFileSystemObserver {
  public:
-  struct ChildChange;
+  struct Change;
 
   // Type of a change to an observed entry.
   enum ChangeType { CHANGED, DELETED };
 
-  // Lust of child changes.
-  typedef std::vector<ChildChange> ChildChanges;
+  // Lust of changes.
+  typedef std::vector<Change> Changes;
 
-  // Describes a change in an entry contained in an observed directory.
-  struct ChildChange {
-    ChildChange();
-    ~ChildChange();
+  // Describes a change related to an observed directory.
+  struct Change {
+    Change();
+    ~Change();
 
     base::FilePath entry_path;
     ChangeType change_type;
@@ -42,13 +42,12 @@ class ProvidedFileSystemObserver {
   // Called when an observed entry is changed, including removals. |callback|
   // *must* be called after the entry change is handled. Once all observers
   // call the callback, the tag will be updated and OnObservedEntryTagUpdated
-  // called. The reference to |child_changes| is valid at least as long as
-  // |callback|.
+  // called. The reference to |changes| is valid at least as long as |callback|.
   virtual void OnObservedEntryChanged(
       const ProvidedFileSystemInfo& file_system_info,
       const ObservedEntry& observed_entry,
       ChangeType change_type,
-      const ChildChanges& child_changes,
+      const Changes& changes,
       const base::Closure& callback) = 0;
 
   // Called after the tag value is updated for the observed entry.

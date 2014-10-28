@@ -351,7 +351,7 @@ void Service::OnObservedEntryChanged(
     const ProvidedFileSystemInfo& file_system_info,
     const ObservedEntry& observed_entry,
     ChangeType change_type,
-    const ChildChanges& child_changes,
+    const Changes& changes,
     const base::Closure& callback) {
   callback.Run();
 }

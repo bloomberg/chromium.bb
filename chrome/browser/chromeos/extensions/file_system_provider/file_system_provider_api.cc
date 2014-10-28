@@ -28,8 +28,7 @@ using chromeos::file_system_provider::Service;
 namespace extensions {
 namespace {
 
-typedef std::vector<linked_ptr<api::file_system_provider::ChildChange>>
-    IDLChildChanges;
+typedef std::vector<linked_ptr<api::file_system_provider::Change>> IDLChanges;
 
 const char kNotifyFailedErrorMessage[] =
     "Sending a response for the request failed.";
@@ -51,26 +50,23 @@ ProvidedFileSystemObserver::ChangeType ParseChangeType(
   return ProvidedFileSystemObserver::CHANGED;
 }
 
-// Convert the child change from the IDL type to a native type. The reason IDL
-// types are not used is since they are imperfect, eg. paths are stored as
-// strings.
-ProvidedFileSystemObserver::ChildChange ParseChildChange(
-    const api::file_system_provider::ChildChange& child_change) {
-  ProvidedFileSystemObserver::ChildChange result;
-  result.entry_path = base::FilePath::FromUTF8Unsafe(child_change.entry_path);
-  result.change_type = ParseChangeType(child_change.change_type);
+// Convert the change from the IDL type to a native type. The reason IDL types
+// are not used is since they are imperfect, eg. paths are stored as strings.
+ProvidedFileSystemObserver::Change ParseChange(
+    const api::file_system_provider::Change& change) {
+  ProvidedFileSystemObserver::Change result;
+  result.entry_path = base::FilePath::FromUTF8Unsafe(change.entry_path);
+  result.change_type = ParseChangeType(change.change_type);
   return result;
 }
 
 // Converts a list of child changes from the IDL type to a native type.
-scoped_ptr<ProvidedFileSystemObserver::ChildChanges> ParseChildChanges(
-    const IDLChildChanges& child_changes) {
-  scoped_ptr<ProvidedFileSystemObserver::ChildChanges> results(
-      new ProvidedFileSystemObserver::ChildChanges);
-  for (IDLChildChanges::const_iterator it = child_changes.begin();
-       it != child_changes.end();
-       ++it) {
-    results->push_back(ParseChildChange(*it->get()));
+scoped_ptr<ProvidedFileSystemObserver::Changes> ParseChanges(
+    const IDLChanges& changes) {
+  scoped_ptr<ProvidedFileSystemObserver::Changes> results(
+      new ProvidedFileSystemObserver::Changes);
+  for (const auto& change : changes) {
+    results->push_back(ParseChange(*change));
   }
   return results;
 }
@@ -195,10 +191,11 @@ bool FileSystemProviderNotifyFunction::RunSync() {
 
   if (!file_system->Notify(
           base::FilePath::FromUTF8Unsafe(params->options.observed_path),
+          params->options.recursive,
           ParseChangeType(params->options.change_type),
-          params->options.child_changes.get()
-              ? ParseChildChanges(*params->options.child_changes.get())
-              : make_scoped_ptr(new ProvidedFileSystemObserver::ChildChanges),
+          params->options.changes.get()
+              ? ParseChanges(*params->options.changes.get())
+              : make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
           params->options.tag.get() ? *params->options.tag.get() : "")) {
     base::ListValue* const result = new base::ListValue();
     result->Append(

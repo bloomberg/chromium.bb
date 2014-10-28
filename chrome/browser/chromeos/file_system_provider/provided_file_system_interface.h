@@ -57,7 +57,7 @@ struct EntryMetadata {
 // fails synchronously.
 class ProvidedFileSystemInterface {
  public:
-  struct ChildChange;
+  struct Change;
 
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
@@ -185,16 +185,17 @@ class ProvidedFileSystemInterface {
   // internal list, hence the operation is not abortable.
   virtual void UnobserveEntry(
       const base::FilePath& entry_path,
+      bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Notifies about changes to the observed entries within the file system.
   // Invoked by the file system implementation. Returns false if the
   // notification arguments are malformed or the entry is not observed anymore.
-  virtual bool Notify(
-      const base::FilePath& observed_path,
-      ProvidedFileSystemObserver::ChangeType change_type,
-      scoped_ptr<ProvidedFileSystemObserver::ChildChanges> child_changes,
-      const std::string& tag) = 0;
+  virtual bool Notify(const base::FilePath& observed_path,
+                      bool recursive,
+                      ProvidedFileSystemObserver::ChangeType change_type,
+                      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+                      const std::string& tag) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

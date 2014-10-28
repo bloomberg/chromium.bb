@@ -7,10 +7,10 @@
 namespace chromeos {
 namespace file_system_provider {
 
-ProvidedFileSystemObserver::ChildChange::ChildChange() : change_type(CHANGED) {
+ProvidedFileSystemObserver::Change::Change() : change_type(CHANGED) {
 }
 
-ProvidedFileSystemObserver::ChildChange::~ChildChange() {
+ProvidedFileSystemObserver::Change::~Change() {
 }
 
 }  // namespace file_system_provider

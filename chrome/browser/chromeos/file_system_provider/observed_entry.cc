@@ -7,6 +7,21 @@
 namespace chromeos {
 namespace file_system_provider {
 
+ObservedEntryKey::ObservedEntryKey(const base::FilePath& entry_path,
+                                   bool recursive)
+    : entry_path(entry_path), recursive(recursive) {
+}
+
+ObservedEntryKey::~ObservedEntryKey() {
+}
+
+bool ObservedEntryKey::Comparator::operator()(const ObservedEntryKey& a,
+                                              const ObservedEntryKey& b) const {
+  if (a.entry_path != b.entry_path)
+    return a.entry_path < b.entry_path;
+  return a.recursive < b.recursive;
+}
+
 ObservedEntry::ObservedEntry() : recursive(false) {
 }
 
