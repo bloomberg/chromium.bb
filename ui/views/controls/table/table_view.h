@@ -90,7 +90,7 @@ class VIEWS_EXPORT TableView
             const std::vector<ui::TableColumn>& columns,
             TableTypes table_type,
             bool single_selection);
-  virtual ~TableView();
+  ~TableView() override;
 
   // Assigns a new model to the table view, detaching the old one if present.
   // If |model| is NULL, the table view cannot be used after this call. This
@@ -165,28 +165,28 @@ class VIEWS_EXPORT TableView
   int row_height() const { return row_height_; }
 
   // View overrides:
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p,
-                                    gfx::Point* loc) const override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  bool GetTooltipTextOrigin(const gfx::Point& p,
+                            gfx::Point* loc) const override;
 
   // ui::TableModelObserver overrides:
-  virtual void OnModelChanged() override;
-  virtual void OnItemsChanged(int start, int length) override;
-  virtual void OnItemsAdded(int start, int length) override;
-  virtual void OnItemsRemoved(int start, int length) override;
+  void OnModelChanged() override;
+  void OnItemsChanged(int start, int length) override;
+  void OnItemsAdded(int start, int length) override;
+  void OnItemsRemoved(int start, int length) override;
 
  protected:
   // View overrides:
-  virtual gfx::Point GetKeyboardContextMenuLocation() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  gfx::Point GetKeyboardContextMenuLocation() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
  private:
   friend class TableViewTestHelper;

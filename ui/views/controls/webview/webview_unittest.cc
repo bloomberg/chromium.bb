@@ -21,10 +21,10 @@ namespace {
 class WebViewTestViewsDelegate : public views::TestViewsDelegate {
  public:
   WebViewTestViewsDelegate() {}
-  virtual ~WebViewTestViewsDelegate() {}
+  ~WebViewTestViewsDelegate() override {}
 
   // Overriden from TestViewsDelegate.
-  virtual content::WebContents* CreateWebContents(
+  content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) override {
     return content::WebContentsTester::CreateTestWebContents(browser_context,
@@ -44,9 +44,9 @@ class WebViewUnitTest : public views::test::WidgetTest {
                               base::MessageLoop::current()),
         io_thread_(content::BrowserThread::IO, base::MessageLoop::current()) {}
 
-  virtual ~WebViewUnitTest() {}
+  ~WebViewUnitTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // The ViewsDelegate is deleted when the ViewsTestBase class is torn down.
     WidgetTest::set_views_delegate(new WebViewTestViewsDelegate);
     browser_context_.reset(new content::TestBrowserContext);
@@ -56,7 +56,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
     SetBrowserClientForTesting(&test_browser_client_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     browser_context_.reset(NULL);
     // Flush the message loop to execute pending relase tasks as this would
     // upset ASAN and Valgrind.
@@ -90,25 +90,25 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
     content::WebContentsObserver::Observe(web_contents);
   }
 
-  virtual ~WebViewTestWebContentsObserver() {
+  ~WebViewTestWebContentsObserver() override {
     if (web_contents_)
       content::WebContentsObserver::Observe(NULL);
   }
 
-  virtual void WebContentsDestroyed() override {
+  void WebContentsDestroyed() override {
     DCHECK(web_contents_);
     content::WebContentsObserver::Observe(NULL);
     web_contents_ = NULL;
   }
 
-  virtual void WasShown() override {
+  void WasShown() override {
     valid_root_while_shown_ =
         web_contents()->GetNativeView()->GetRootWindow() != NULL;
     was_shown_ = true;
     ++shown_count_;
   }
 
-  virtual void WasHidden() override {
+  void WasHidden() override {
     was_shown_ = false;
     ++hidden_count_;
   }

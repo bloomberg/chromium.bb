@@ -11,13 +11,13 @@
 class TestTableModel : public ui::TableModel {
  public:
   explicit TestTableModel(int row_count);
-  virtual ~TestTableModel();
+  ~TestTableModel() override;
 
   // ui::TableModel overrides:
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int row, int column_id) override;
-  virtual gfx::ImageSkia GetIcon(int row) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
+  int RowCount() override;
+  base::string16 GetText(int row, int column_id) override;
+  gfx::ImageSkia GetIcon(int row) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
   int row_count_;

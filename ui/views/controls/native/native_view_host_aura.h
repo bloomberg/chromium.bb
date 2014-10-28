@@ -21,21 +21,21 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
                                         public aura::WindowObserver {
  public:
   explicit NativeViewHostAura(NativeViewHost* host);
-  virtual ~NativeViewHostAura();
+  ~NativeViewHostAura() override;
 
   // Overridden from NativeViewHostWrapper:
-  virtual void AttachNativeView() override;
-  virtual void NativeViewDetaching(bool destroyed) override;
-  virtual void AddedToWidget() override;
-  virtual void RemovedFromWidget() override;
-  virtual void InstallClip(int x, int y, int w, int h) override;
-  virtual bool HasInstalledClip() override;
-  virtual void UninstallClip() override;
-  virtual void ShowWidget(int x, int y, int w, int h) override;
-  virtual void HideWidget() override;
-  virtual void SetFocus() override;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  virtual gfx::NativeCursor GetCursor(int x, int y) override;
+  void AttachNativeView() override;
+  void NativeViewDetaching(bool destroyed) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+  void InstallClip(int x, int y, int w, int h) override;
+  bool HasInstalledClip() override;
+  void UninstallClip() override;
+  void ShowWidget(int x, int y, int w, int h) override;
+  void HideWidget() override;
+  void SetFocus() override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  gfx::NativeCursor GetCursor(int x, int y) override;
 
  private:
   friend class NativeViewHostAuraTest;
@@ -43,8 +43,8 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
   class ClippingWindowDelegate;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // Reparents the native view with the clipping window existing between it and
   // its old parent, so that the fast resize path works.

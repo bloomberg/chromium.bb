@@ -25,14 +25,13 @@ class VIEWS_EXPORT Separator : public View {
   static const char kViewClassName[];
 
   explicit Separator(Orientation orientation);
-  virtual ~Separator();
+  ~Separator() override;
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) override;
-  virtual const char* GetClassName() const override;
+  gfx::Size GetPreferredSize() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) override;
+  const char* GetClassName() const override;
 
  private:
   const Orientation orientation_;

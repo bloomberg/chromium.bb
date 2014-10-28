@@ -27,7 +27,7 @@ namespace {
 class TestSliderListener : public views::SliderListener {
  public:
   TestSliderListener();
-  virtual ~TestSliderListener();
+  ~TestSliderListener() override;
 
   int last_event_epoch() {
     return last_event_epoch_;
@@ -53,12 +53,12 @@ class TestSliderListener : public views::SliderListener {
   virtual void ResetCallHistory();
 
   // views::SliderListener:
-  virtual void SliderValueChanged(views::Slider* sender,
-                                  float value,
-                                  float old_value,
-                                  views::SliderChangeReason reason) override;
-  virtual void SliderDragStarted(views::Slider* sender) override;
-  virtual void SliderDragEnded(views::Slider* sender) override;
+  void SliderValueChanged(views::Slider* sender,
+                          float value,
+                          float old_value,
+                          views::SliderChangeReason reason) override;
+  void SliderDragStarted(views::Slider* sender) override;
+  void SliderDragEnded(views::Slider* sender) override;
 
  private:
   // The epoch of the last event.
@@ -121,7 +121,7 @@ namespace views {
 class SliderTest : public views::ViewsTestBase {
  public:
   explicit SliderTest(Slider::Orientation orientation);
-  virtual ~SliderTest();
+  ~SliderTest() override;
 
  protected:
   Slider* slider() {
@@ -143,8 +143,8 @@ class SliderTest : public views::ViewsTestBase {
   virtual void ClickAt(int x, int y);
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   ui::test::EventGenerator* event_generator() {
     return event_generator_.get();
@@ -226,7 +226,7 @@ void SliderTest::ClickAt(int x, int y) {
 class HorizontalSliderTest : public SliderTest {
  public:
   HorizontalSliderTest();
-  virtual ~HorizontalSliderTest();
+  ~HorizontalSliderTest() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HorizontalSliderTest);
@@ -243,7 +243,7 @@ HorizontalSliderTest::~HorizontalSliderTest() {
 class VerticalSliderTest : public SliderTest {
  public:
   VerticalSliderTest();
-  virtual ~VerticalSliderTest();
+  ~VerticalSliderTest() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VerticalSliderTest);

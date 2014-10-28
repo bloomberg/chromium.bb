@@ -22,7 +22,7 @@ class WebViewInteractiveUiTest : public views::test::WidgetTest {
   WebViewInteractiveUiTest()
       : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
     WidgetTest::SetUp();
   }

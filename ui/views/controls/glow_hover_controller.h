@@ -35,7 +35,7 @@ class VIEWS_EXPORT GlowHoverController : public gfx::AnimationDelegate {
   };
 
   explicit GlowHoverController(views::View* view);
-  virtual ~GlowHoverController();
+  ~GlowHoverController() override;
 
   // Sets the AnimationContainer used by the animation.
   void SetAnimationContainer(gfx::AnimationContainer* container);
@@ -65,8 +65,8 @@ class VIEWS_EXPORT GlowHoverController : public gfx::AnimationDelegate {
   void Draw(gfx::Canvas* canvas, const gfx::ImageSkia& mask_image) const;
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   // View we're drawing to.

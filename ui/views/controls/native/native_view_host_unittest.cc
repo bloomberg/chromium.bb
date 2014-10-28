@@ -18,7 +18,7 @@ class NativeViewHostTest : public test::NativeViewHostTestBase {
   NativeViewHostTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ViewsTestBase::SetUp();
     CreateTopLevel();
   }
@@ -43,7 +43,7 @@ class NativeViewHierarchyChangedTestView : public View {
   int notification_count() const { return notification_count_; }
 
   // Overriden from View:
-  virtual void NativeViewHierarchyChanged() override {
+  void NativeViewHierarchyChanged() override {
     ++notification_count_;
     View::NativeViewHierarchyChanged();
   }
@@ -73,7 +73,7 @@ class ViewHierarchyChangedTestHost : public NativeViewHost {
   }
 
   // Overriden from NativeViewHost:
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     gfx::NativeView parent_before = native_view() ?
         GetNativeParent(native_view()) : NULL;

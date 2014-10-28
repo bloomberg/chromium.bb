@@ -16,7 +16,7 @@ class VIEWS_EXPORT ProgressBar : public View {
  public:
   // The value range defaults to [0.0, 1.0].
   ProgressBar();
-  virtual ~ProgressBar();
+  ~ProgressBar() override;
 
   double current_value() const { return current_value_; }
 
@@ -38,17 +38,17 @@ class VIEWS_EXPORT ProgressBar : public View {
   void SetTooltipText(const base::string16& tooltip_text);
 
   // Overridden from View:
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   static const char kViewClassName[];
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Inclusive range used when displaying values.
   double min_display_value_;

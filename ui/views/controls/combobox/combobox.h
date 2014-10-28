@@ -61,7 +61,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
 
   // |model| is not owned by the combobox.
   explicit Combobox(ui::ComboboxModel* model);
-  virtual ~Combobox();
+  ~Combobox() override;
 
   static const gfx::FontList& GetFontList();
 
@@ -93,36 +93,35 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   bool invalid() const { return invalid_; }
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual const char* GetClassName() const override;
-  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& e) override;
-  virtual bool OnKeyReleased(const ui::KeyEvent& e) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual ui::TextInputClient* GetTextInputClient() override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
+  bool OnKeyPressed(const ui::KeyEvent& e) override;
+  bool OnKeyReleased(const ui::KeyEvent& e) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  ui::TextInputClient* GetTextInputClient() override;
+  void Layout() override;
 
   // Overridden from MenuDelegate:
-  virtual bool IsItemChecked(int id) const override;
-  virtual bool IsCommandEnabled(int id) const override;
-  virtual void ExecuteCommand(int id) override;
-  virtual bool GetAccelerator(int id,
-                              ui::Accelerator* accelerator) const override;
+  bool IsItemChecked(int id) const override;
+  bool IsCommandEnabled(int id) const override;
+  void ExecuteCommand(int id) override;
+  bool GetAccelerator(int id, ui::Accelerator* accelerator) const override;
 
   // Overridden from PrefixDelegate:
-  virtual int GetRowCount() override;
-  virtual int GetSelectedRow() override;
-  virtual void SetSelectedRow(int row) override;
-  virtual base::string16 GetTextForRow(int row) override;
+  int GetRowCount() override;
+  int GetSelectedRow() override;
+  void SetSelectedRow(int row) override;
+  base::string16 GetTextForRow(int row) override;
 
   // Overriden from ComboboxModelObserver:
-  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) override;
+  void OnComboboxModelChanged(ui::ComboboxModel* model) override;
 
   // Overriden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) override;
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, Click);

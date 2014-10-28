@@ -23,16 +23,16 @@ class VIEWS_EXPORT ResizeArea : public View {
   static const char kViewClassName[];
 
   explicit ResizeArea(ResizeAreaDelegate* delegate);
-  virtual ~ResizeArea();
+  ~ResizeArea() override;
 
   // Overridden from views::View:
-  virtual const char* GetClassName() const override;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  const char* GetClassName() const override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // Report the amount the user resized by to the delegate, accounting for

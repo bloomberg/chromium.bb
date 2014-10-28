@@ -92,9 +92,9 @@ class TransparentButton : public CustomButton {
       : CustomButton(listener) {
     SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
   }
-  virtual ~TransparentButton() {}
+  ~TransparentButton() override {}
 
-  virtual bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
+  bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
     parent()->RequestFocus();
     return true;
   }

@@ -18,7 +18,7 @@ namespace test {
 class NativeViewHostTestBase : public ViewsTestBase {
  public:
   NativeViewHostTestBase();
-  virtual ~NativeViewHostTestBase();
+  ~NativeViewHostTestBase() override;
 
   // Create the |toplevel_| widget.
   void CreateTopLevel();

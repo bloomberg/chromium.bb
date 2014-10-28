@@ -35,12 +35,12 @@ class TestMenuRunnerHandler : public MenuRunnerHandler {
 
   bool executed() const { return executed_; }
 
-  virtual MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                          MenuButton* button,
-                                          const gfx::Rect& bounds,
-                                          MenuAnchorPosition anchor,
-                                          ui::MenuSourceType source_type,
-                                          int32 types) override {
+  MenuRunner::RunResult RunMenuAt(Widget* parent,
+                                  MenuButton* button,
+                                  const gfx::Rect& bounds,
+                                  MenuAnchorPosition anchor,
+                                  ui::MenuSourceType source_type,
+                                  int32 types) override {
     executed_ = true;
     return MenuRunner::NORMAL_EXIT;
   }
@@ -60,13 +60,13 @@ class TestCombobox : public Combobox {
         key_handled_(false),
         key_received_(false) {}
 
-  virtual bool OnKeyPressed(const ui::KeyEvent& e) override {
+  bool OnKeyPressed(const ui::KeyEvent& e) override {
     key_received_ = true;
     key_handled_ = Combobox::OnKeyPressed(e);
     return key_handled_;
   }
 
-  virtual bool OnKeyReleased(const ui::KeyEvent& e) override {
+  bool OnKeyReleased(const ui::KeyEvent& e) override {
     key_received_ = true;
     key_handled_ = Combobox::OnKeyReleased(e);
     return key_handled_;
@@ -90,26 +90,24 @@ class TestCombobox : public Combobox {
 class TestComboboxModel : public ui::ComboboxModel {
  public:
   TestComboboxModel() {}
-  virtual ~TestComboboxModel() {}
+  ~TestComboboxModel() override {}
 
   static const int kItemCount = 10;
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const override {
-    return kItemCount;
-  }
-  virtual base::string16 GetItemAt(int index) override {
+  int GetItemCount() const override { return kItemCount; }
+  base::string16 GetItemAt(int index) override {
     if (IsItemSeparatorAt(index)) {
       NOTREACHED();
       return ASCIIToUTF16("SEPARATOR");
     }
     return ASCIIToUTF16(index % 2 == 0 ? "PEANUT BUTTER" : "JELLY");
   }
-  virtual bool IsItemSeparatorAt(int index) override {
+  bool IsItemSeparatorAt(int index) override {
     return separators_.find(index) != separators_.end();
   }
 
-  virtual int GetDefaultIndex() const override {
+  int GetDefaultIndex() const override {
     // Return the first index that is not a separator.
     for (int index = 0; index < kItemCount; ++index) {
       if (separators_.find(index) == separators_.end())
@@ -134,18 +132,14 @@ class VectorComboboxModel : public ui::ComboboxModel {
  public:
   explicit VectorComboboxModel(std::vector<std::string>* values)
       : values_(values) {}
-  virtual ~VectorComboboxModel() {}
+  ~VectorComboboxModel() override {}
 
   // ui::ComboboxModel:
-  virtual int GetItemCount() const override {
-    return (int)values_->size();
-  }
-  virtual base::string16 GetItemAt(int index) override {
+  int GetItemCount() const override { return (int)values_->size(); }
+  base::string16 GetItemAt(int index) override {
     return ASCIIToUTF16(values_->at(index));
   }
-  virtual bool IsItemSeparatorAt(int index) override {
-    return false;
-  }
+  bool IsItemSeparatorAt(int index) override { return false; }
 
  private:
   std::vector<std::string>* values_;
@@ -154,10 +148,10 @@ class VectorComboboxModel : public ui::ComboboxModel {
 class EvilListener : public ComboboxListener {
  public:
   EvilListener() : deleted_(false) {}
-  virtual ~EvilListener() {};
+  ~EvilListener() override{};
 
   // ComboboxListener:
-  virtual void OnPerformAction(Combobox* combobox) override {
+  void OnPerformAction(Combobox* combobox) override {
     delete combobox;
     deleted_ = true;
   }
@@ -173,9 +167,9 @@ class EvilListener : public ComboboxListener {
 class TestComboboxListener : public views::ComboboxListener {
  public:
   TestComboboxListener() : perform_action_index_(-1), actions_performed_(0) {}
-  virtual ~TestComboboxListener() {}
+  ~TestComboboxListener() override {}
 
-  virtual void OnPerformAction(views::Combobox* combobox) override {
+  void OnPerformAction(views::Combobox* combobox) override {
     perform_action_index_ = combobox->selected_index();
     actions_performed_++;
   }
@@ -206,7 +200,7 @@ class ComboboxTest : public ViewsTestBase {
  public:
   ComboboxTest() : widget_(NULL), combobox_(NULL) {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();

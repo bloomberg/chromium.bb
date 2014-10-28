@@ -35,7 +35,7 @@ const char TabbedPane::kViewClassName[] = "TabbedPane";
 class Tab : public View {
  public:
   Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents);
-  virtual ~Tab();
+  ~Tab() override;
 
   View* contents() const { return contents_; }
 
@@ -43,12 +43,12 @@ class Tab : public View {
   void SetSelected(bool selected);
 
   // Overridden from View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
  private:
   enum TabState {
@@ -73,12 +73,12 @@ class Tab : public View {
 class TabStrip : public View {
  public:
   explicit TabStrip(TabbedPane* tabbed_pane);
-  virtual ~TabStrip();
+  ~TabStrip() override;
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   TabbedPane* tabbed_pane_;

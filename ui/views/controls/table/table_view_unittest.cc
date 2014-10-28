@@ -66,10 +66,10 @@ class TestTableModel2 : public ui::TableModel {
   void ChangeRow(int row, int c1_value, int c2_value);
 
   // ui::TableModel:
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int row, int column_id) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
-  virtual int CompareValues(int row1, int row2, int column_id) override;
+  int RowCount() override;
+  base::string16 GetText(int row, int column_id) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
+  int CompareValues(int row1, int row2, int column_id) override;
 
  private:
   ui::TableModelObserver* observer_;
@@ -157,7 +157,7 @@ class TestTableView : public TableView {
   }
 
   // View overrides:
-  virtual bool HasFocus() const override {
+  bool HasFocus() const override {
     // Overriden so key processing works.
     return true;
   }
@@ -172,7 +172,7 @@ class TableViewTest : public testing::Test {
  public:
   TableViewTest() : table_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     model_.reset(new TestTableModel2);
     std::vector<ui::TableColumn> columns(2);
     columns[0].title = base::ASCIIToUTF16("Title Column 0");
@@ -410,7 +410,7 @@ class TableGrouperImpl : public TableGrouper {
   }
 
   // TableGrouper overrides:
-  virtual void GetGroupRange(int model_index, GroupRange* range) override {
+  void GetGroupRange(int model_index, GroupRange* range) override {
     int offset = 0;
     size_t range_index = 0;
     for (; range_index < ranges_.size() && offset < model_index; ++range_index)
@@ -514,9 +514,7 @@ class TableViewObserverImpl : public TableViewObserver {
   }
 
   // TableViewObserver overrides:
-  virtual void OnSelectionChanged() override {
-    selection_changed_count_++;
-  }
+  void OnSelectionChanged() override { selection_changed_count_++; }
 
  private:
   int selection_changed_count_;

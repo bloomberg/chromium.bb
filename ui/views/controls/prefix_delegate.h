@@ -26,7 +26,7 @@ class VIEWS_EXPORT PrefixDelegate : public View {
   virtual base::string16 GetTextForRow(int row) = 0;
 
  protected:
-  virtual ~PrefixDelegate() {}
+  ~PrefixDelegate() override {}
 };
 
 } // namespace views

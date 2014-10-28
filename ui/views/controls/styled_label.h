@@ -56,7 +56,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // Note that any trailing whitespace in |text| will be trimmed.
   StyledLabel(const base::string16& text, StyledLabelListener* listener);
-  virtual ~StyledLabel();
+  ~StyledLabel() override;
 
   // Sets the text to be displayed, and clears any previous styling.
   void SetText(const base::string16& text);
@@ -91,13 +91,13 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   }
 
   // View implementation:
-  virtual gfx::Insets GetInsets() const override;
-  virtual int GetHeightForWidth(int w) const override;
-  virtual void Layout() override;
-  virtual void PreferredSizeChanged() override;
+  gfx::Insets GetInsets() const override;
+  int GetHeightForWidth(int w) const override;
+  void Layout() override;
+  void PreferredSizeChanged() override;
 
   // LinkListener implementation:
-  virtual void LinkClicked(Link* source, int event_flags) override;
+  void LinkClicked(Link* source, int event_flags) override;
 
  private:
   struct StyleRange {

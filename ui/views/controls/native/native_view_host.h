@@ -31,7 +31,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   static const char kViewClassName[];
 
   NativeViewHost();
-  virtual ~NativeViewHost();
+  ~NativeViewHost() override;
 
   // Attach a gfx::NativeView to this View. Its bounds will be kept in sync
   // with the bounds of this View until Detach is called.
@@ -79,20 +79,20 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void NativeViewDestroyed();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void VisibilityChanged(View* starting_from, bool is_visible) override;
-  virtual void OnFocus() override;
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void OnFocus() override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
 
  protected:
-  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
-  virtual void OnVisibleBoundsChanged() override;
-  virtual void ViewHierarchyChanged(
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual const char* GetClassName() const override;
+  const char* GetClassName() const override;
 
  private:
   friend class test::NativeViewHostTestBase;

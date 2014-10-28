@@ -31,7 +31,7 @@ class VIEWS_EXPORT Label : public View {
   Label();
   explicit Label(const base::string16& text);
   Label(const base::string16& text, const gfx::FontList& font_list);
-  virtual ~Label();
+  ~Label() override;
 
   // Gets or sets the fonts used by this label.
   const gfx::FontList& font_list() const { return font_list_; }
@@ -120,17 +120,17 @@ class VIEWS_EXPORT Label : public View {
   const base::string16& GetLayoutTextForTesting() const;
 
   // View:
-  virtual gfx::Insets GetInsets() const override;
-  virtual int GetBaseline() const override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual int GetHeightForWidth(int w) const override;
-  virtual const char* GetClassName() const override;
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  virtual bool CanProcessEventsWithinSubtree() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
+  gfx::Insets GetInsets() const override;
+  int GetBaseline() const override;
+  gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
+  int GetHeightForWidth(int w) const override;
+  const char* GetClassName() const override;
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool CanProcessEventsWithinSubtree() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
  protected:
   // Called by Paint to paint the text.
@@ -144,9 +144,9 @@ class VIEWS_EXPORT Label : public View {
   SkColor disabled_color() const { return actual_disabled_color_; }
 
   // View:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
   // These tests call CalculateDrawStringParams in order to verify the

@@ -24,23 +24,15 @@ class TestPrefixDelegate : public PrefixDelegate {
     rows_.push_back(ASCIIToUTF16("gnu"));
   }
 
-  virtual ~TestPrefixDelegate() {}
+  ~TestPrefixDelegate() override {}
 
-  virtual int GetRowCount() override {
-    return static_cast<int>(rows_.size());
-  }
+  int GetRowCount() override { return static_cast<int>(rows_.size()); }
 
-  virtual int GetSelectedRow() override {
-    return selected_row_;
-  }
+  int GetSelectedRow() override { return selected_row_; }
 
-  virtual void SetSelectedRow(int row) override {
-    selected_row_ = row;
-  }
+  void SetSelectedRow(int row) override { selected_row_ = row; }
 
-  virtual base::string16 GetTextForRow(int row) override {
-    return rows_[row];
-  }
+  base::string16 GetTextForRow(int row) override { return rows_[row]; }
 
  private:
   std::vector<base::string16> rows_;

@@ -15,7 +15,7 @@ class NativeViewHostTestBase::NativeViewHostTesting : public NativeViewHost {
  public:
   explicit NativeViewHostTesting(NativeViewHostTestBase* owner)
       : owner_(owner) {}
-  virtual ~NativeViewHostTesting() { owner_->host_destroyed_count_++; }
+  ~NativeViewHostTesting() override { owner_->host_destroyed_count_++; }
 
  private:
   NativeViewHostTestBase* owner_;

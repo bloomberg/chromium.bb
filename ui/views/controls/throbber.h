@@ -27,7 +27,7 @@ class VIEWS_EXPORT Throbber : public View {
   // running.
   Throbber(int frame_time_ms, bool paint_while_stopped);
   Throbber(int frame_time_ms, bool paint_while_stopped, gfx::ImageSkia* frames);
-  virtual ~Throbber();
+  ~Throbber() override;
 
   // Start and stop the throbber animation
   virtual void Start();
@@ -37,8 +37,8 @@ class VIEWS_EXPORT Throbber : public View {
   void SetFrames(const gfx::ImageSkia* frames);
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
   // Specifies whether the throbber is currently animating or not
@@ -65,10 +65,10 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
  public:
   explicit SmoothedThrobber(int frame_delay_ms);
   SmoothedThrobber(int frame_delay_ms, gfx::ImageSkia* frames);
-  virtual ~SmoothedThrobber();
+  ~SmoothedThrobber() override;
 
-  virtual void Start() override;
-  virtual void Stop() override;
+  void Start() override;
+  void Stop() override;
 
   void set_start_delay_ms(int value) { start_delay_ms_ = value; }
   void set_stop_delay_ms(int value) { stop_delay_ms_ = value; }
@@ -108,7 +108,7 @@ class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
   void SetChecked(bool checked);
 
   // Overridden from Throbber:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   static const int kFrameTimeMs = 30;

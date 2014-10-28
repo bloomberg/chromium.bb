@@ -24,11 +24,11 @@ namespace views {
 class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
  public:
   StyledLabelTest() {}
-  virtual ~StyledLabelTest() {}
+  ~StyledLabelTest() override {}
 
   // StyledLabelListener implementation.
-  virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) override {}
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override {}
 
  protected:
   StyledLabel* styled() { return styled_.get(); }

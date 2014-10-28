@@ -45,7 +45,7 @@ class SingleSplitViewListenerImpl : public views::SingleSplitViewListener {
  public:
   SingleSplitViewListenerImpl() : count_(0) {}
 
-  virtual bool SplitHandleMoved(views::SingleSplitView* sender) override {
+  bool SplitHandleMoved(views::SingleSplitView* sender) override {
     ++count_;
     return false;
   }
@@ -64,7 +64,7 @@ class MinimumSizedView: public views::View {
 
  private:
   gfx::Size min_size_;
-  virtual gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMinimumSize() const override;
 };
 
 gfx::Size MinimumSizedView::GetMinimumSize() const {

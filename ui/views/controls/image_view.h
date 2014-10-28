@@ -35,7 +35,7 @@ class VIEWS_EXPORT ImageView : public View {
   };
 
   ImageView();
-  virtual ~ImageView();
+  ~ImageView() override;
 
   // Set the image that should be displayed.
   void SetImage(const gfx::ImageSkia& img);
@@ -80,14 +80,14 @@ class VIEWS_EXPORT ImageView : public View {
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
   // Overriden from View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual bool CanProcessEventsWithinSubtree() const override;
+  gfx::Size GetPreferredSize() const override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  bool CanProcessEventsWithinSubtree() const override;
 
  private:
   void OnPaintImage(gfx::Canvas* canvas);
