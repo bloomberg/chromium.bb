@@ -30,6 +30,7 @@ DWORD CALLBACK WorkItemCallback(void* param) {
   g_worker_pool_running_on_this_thread.Get().Set(true);
 
   tracked_objects::TaskStopwatch stopwatch;
+  stopwatch.Start();
   pending_task->task.Run();
   stopwatch.Stop();
 

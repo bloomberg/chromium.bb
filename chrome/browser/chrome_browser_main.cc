@@ -25,6 +25,7 @@
 #include "base/prefs/pref_value_store.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/process/process_info.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -91,6 +92,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -639,6 +641,20 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
+
+  // Enable profiler instrumentation depending on the channel.
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      tracked_objects::ScopedTracker::Enable();
+      break;
+
+    case chrome::VersionInfo::CHANNEL_DEV:
+    case chrome::VersionInfo::CHANNEL_BETA:
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      // Don't enable instrumentation.
+      break;
+  }
 }
 
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------

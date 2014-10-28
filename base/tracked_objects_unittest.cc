@@ -111,6 +111,16 @@ class TrackedObjectsTest : public testing::Test {
 // static
 unsigned int TrackedObjectsTest::test_time_;
 
+TEST_F(TrackedObjectsTest, TaskStopwatchNoStartStop) {
+  if (!ThreadData::InitializeAndSetTrackingStatus(
+          ThreadData::PROFILING_CHILDREN_ACTIVE)) {
+    return;
+  }
+
+  // Check that creating and destroying a stopwatch without starting it doesn't
+  // crash.
+  TaskStopwatch stopwatch;
+}
 
 TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
   // Minimal test doesn't even create any tasks.
@@ -190,6 +200,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   base::TrackingInfo pending_task(location, kBogusBirthTime);
   SetTestTime(1);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   // Finally conclude the outer run.
   const int32 time_elapsed = 1000;
   SetTestTime(start_time + time_elapsed);
@@ -382,6 +393,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -422,6 +434,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -456,6 +469,7 @@ TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -485,6 +499,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotWorkerThread) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -552,6 +567,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -562,6 +578,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
   pending_task2.time_posted = kTimePosted;  // Overwrite implied Now().
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch2;
+  stopwatch2.Start();
   SetTestTime(kEndOfRun);
   stopwatch2.Stop();
 
@@ -595,6 +612,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   const unsigned int kEndOfRun = 7;
   SetTestTime(kStartOfRun);
   TaskStopwatch stopwatch;
+  stopwatch.Start();
   SetTestTime(kEndOfRun);
   stopwatch.Stop();
 
@@ -659,9 +677,11 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
 
   SetTestTime(5);
   TaskStopwatch task_stopwatch;
+  task_stopwatch.Start();
   {
     SetTestTime(8);
     TaskStopwatch exclusion_stopwatch;
+    exclusion_stopwatch.Start();
     SetTestTime(12);
     exclusion_stopwatch.Stop();
   }
@@ -695,14 +715,17 @@ TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
 
   SetTestTime(5);
   TaskStopwatch task_stopwatch;
+  task_stopwatch.Start();
   {
     SetTestTime(8);
     TaskStopwatch exclusion_stopwatch;
+    exclusion_stopwatch.Start();
     SetTestTime(12);
     exclusion_stopwatch.Stop();
 
     SetTestTime(15);
     TaskStopwatch exclusion_stopwatch2;
+    exclusion_stopwatch2.Start();
     SetTestTime(18);
     exclusion_stopwatch2.Stop();
   }
@@ -739,9 +762,11 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
 
   SetTestTime(5);
   TaskStopwatch task_stopwatch;
+  task_stopwatch.Start();
   {
     SetTestTime(8);
     TaskStopwatch exclusion_stopwatch;
+    exclusion_stopwatch.Start();
     {
       Location second_location(kFunction, kFile, kSecondFakeLineNumber, NULL);
       base::TrackingInfo nested_task(second_location, kDelayedStartTime);
@@ -750,6 +775,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(8);
       SetTestTime(9);
       TaskStopwatch nested_task_stopwatch;
+      nested_task_stopwatch.Start();
       SetTestTime(11);
       nested_task_stopwatch.Stop();
       ThreadData::TallyRunOnNamedThreadIfTracking(

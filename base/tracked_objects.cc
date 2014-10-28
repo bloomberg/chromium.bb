@@ -854,16 +854,32 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
 
 //------------------------------------------------------------------------------
 TaskStopwatch::TaskStopwatch()
-    : start_time_(ThreadData::Now()),
-      current_thread_data_(ThreadData::Get()),
+    : wallclock_duration_ms_(0),
+      current_thread_data_(NULL),
       excluded_duration_ms_(0),
       parent_(NULL) {
 #if DCHECK_IS_ON
-  state_ = RUNNING;
+  state_ = CREATED;
   child_ = NULL;
 #endif
+}
 
-  wallclock_duration_ms_ = 0;
+TaskStopwatch::~TaskStopwatch() {
+#if DCHECK_IS_ON
+  DCHECK(state_ != RUNNING);
+  DCHECK(child_ == NULL);
+#endif
+}
+
+void TaskStopwatch::Start() {
+#if DCHECK_IS_ON
+  DCHECK(state_ == CREATED);
+  state_ = RUNNING;
+#endif
+
+  start_time_ = ThreadData::Now();
+
+  current_thread_data_ = ThreadData::Get();
   if (!current_thread_data_)
     return;
 
@@ -876,13 +892,6 @@ TaskStopwatch::TaskStopwatch()
   }
 #endif
   current_thread_data_->current_stopwatch_ = this;
-}
-
-TaskStopwatch::~TaskStopwatch() {
-#if DCHECK_IS_ON
-  DCHECK(state_ != RUNNING);
-  DCHECK(child_ == NULL);
-#endif
 }
 
 void TaskStopwatch::Stop() {
@@ -910,12 +919,15 @@ void TaskStopwatch::Stop() {
   DCHECK(parent_->child_ == this);
   parent_->child_ = NULL;
 #endif
-  parent_->excluded_duration_ms_ +=
-      wallclock_duration_ms_;
+  parent_->excluded_duration_ms_ += wallclock_duration_ms_;
   parent_ = NULL;
 }
 
 TrackedTime TaskStopwatch::StartTime() const {
+#if DCHECK_IS_ON
+  DCHECK(state_ != CREATED);
+#endif
+
   return start_time_;
 }
 
@@ -928,6 +940,10 @@ int32 TaskStopwatch::RunDurationMs() const {
 }
 
 ThreadData* TaskStopwatch::GetThreadData() const {
+#if DCHECK_IS_ON
+  DCHECK(state_ != CREATED);
+#endif
+
   return current_thread_data_;
 }
 

@@ -35,11 +35,17 @@ class Births;
 
 class BASE_EXPORT ScopedProfile {
  public:
-  explicit ScopedProfile(const Location& location);
-  ~ScopedProfile();
+  // Mode of operation. Specifies whether ScopedProfile should be a no-op or
+  // needs to create and tally a task.
+  enum Mode {
+    DISABLED,  // Do nothing.
+    ENABLED    // Create and tally a task.
+  };
 
-  // Stop tracing prior to the end destruction of the instance.
-  void StopClockAndTally();
+  // TODO(vadimt): Remove this constructor.
+  explicit ScopedProfile(const Location& location);
+  ScopedProfile(const Location& location, Mode mode);
+  ~ScopedProfile();
 
  private:
   Births* birth_;  // Place in code where tracking started.

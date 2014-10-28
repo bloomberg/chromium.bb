@@ -180,6 +180,8 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
     // to do with its efficiency. Using task stopwatch to exclude the waiting
     // time from the current task run time.
     tracked_objects::TaskStopwatch stopwatch;
+    stopwatch.Start();
+
     // We're blocking the UI thread, which is generally undesirable.
     // In this case we need to wait for this before we can show any UI
     // /anyway/, so it won't cause additional jank.

@@ -97,6 +97,7 @@ void WorkerThread::ThreadMain() {
 
     tracked_objects::ThreadData::PrepareForStartOfRun(pending_task.birth_tally);
     tracked_objects::TaskStopwatch stopwatch;
+    stopwatch.Start();
     pending_task.task.Run();
     stopwatch.Stop();
 

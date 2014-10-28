@@ -709,6 +709,9 @@ class BASE_EXPORT TaskStopwatch {
   TaskStopwatch();
   ~TaskStopwatch();
 
+  // Starts stopwatch.
+  void Start();
+
   // Stops stopwatch.
   void Stop();
 
@@ -744,12 +747,9 @@ class BASE_EXPORT TaskStopwatch {
   TaskStopwatch* parent_;
 
 #if DCHECK_IS_ON
-  // State of the stopwatch. Stopwatch is first constructed in a running state,
-  // then stopped, then destructed.
-  enum {
-    RUNNING,
-    STOPPED
-  } state_;
+  // State of the stopwatch. Stopwatch is first constructed in a created state
+  // state, then is optionally started/stopped, then destructed.
+  enum { CREATED, RUNNING, STOPPED } state_;
 
   // Currently running stopwatch that is directly nested in this one, if such
   // stopwatch exists. NULL otherwise.

@@ -30,6 +30,7 @@ void TaskAnnotator::RunTask(const char* queue_function,
                             const PendingTask& pending_task) {
   tracked_objects::ThreadData::PrepareForStartOfRun(pending_task.birth_tally);
   tracked_objects::TaskStopwatch stopwatch;
+  stopwatch.Start();
   tracked_objects::Duration queue_duration =
       stopwatch.StartTime() - pending_task.EffectiveTimePosted();
 

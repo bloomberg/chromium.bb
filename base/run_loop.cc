@@ -51,6 +51,7 @@ void RunLoop::Run() {
   // Use task stopwatch to exclude the loop run time from the current task, if
   // any.
   tracked_objects::TaskStopwatch stopwatch;
+  stopwatch.Start();
   loop_->RunHandler();
   stopwatch.Stop();
 
