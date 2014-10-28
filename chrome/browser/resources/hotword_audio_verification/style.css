@@ -76,8 +76,9 @@ div.content {
 }
 
 
-button.grayed-out {
+.buttonbar button.grayed-out {
   color: rgba(0, 0, 0, .28);
+  text-transform: none;
 }
 
 .col-3 {
@@ -180,7 +181,13 @@ button.primary {
   color: rgb(213, 0, 0);
 }
 
+@-webkit-keyframes rotate {
+  from { -webkit-transform: rotate(0); }
+  to { -webkit-transform: rotate(359deg); }
+}
+
 .train.listening .icon {
+  -webkit-animation: rotate 2s linear infinite;
   background: url(../images/placeholder-loader-1x.png) no-repeat;
 }
 

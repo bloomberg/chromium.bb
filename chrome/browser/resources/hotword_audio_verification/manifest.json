@@ -9,10 +9,12 @@
       "scripts": ["event_page.js"],
       "persistent": false
     },
-    "content_security_policy": "default-src 'self'; script-src 'self' chrome://resources"
+    "content_security_policy": "default-src 'self'; script-src 'self' chrome://resources chrome://settings"
   },
   "permissions": [
     "chrome://resources/",
+    "chrome://settings/",
+    "browser",
     "hotwordPrivate"
   ],
   "display_in_launcher": false
