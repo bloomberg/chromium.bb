@@ -77,3 +77,4 @@ crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-
 crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
 
 crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
+crbug.com/427628 inspector/sources/debugger/debugger-save-to-temp-var.html [ Leak ]
