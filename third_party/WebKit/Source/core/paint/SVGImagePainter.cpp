@@ -42,10 +42,10 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
 
         SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
         if (renderingContext.isRenderingPrepared()) {
-            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() == BR_STATIC && renderingContext.bufferForeground(m_renderSVGImage.bufferedForeground()))
+            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() == BR_STATIC && bufferForeground(childPaintInfo))
                 return;
 
-            paintForeground(m_renderSVGImage, childPaintInfo);
+            paintForeground(childPaintInfo);
         }
     }
 
@@ -53,18 +53,56 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
         ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(boundingBox));
 }
 
-void SVGImagePainter::paintForeground(RenderSVGImage& renderer, PaintInfo& paintInfo)
+static IntSize estimateBufferSize(const AffineTransform& transform, const IntSize& boundingBox)
 {
-    RefPtr<Image> image = renderer.imageResource()->image();
-    FloatRect destRect = renderer.objectBoundingBox();
+    // This is supposed to be the exact same calculation as GraphicsContext::createRasterBuffer performs.
+    int estimatedWidth = static_cast<int>(ceil(boundingBox.width() * transform.xScale()));
+    int estimatedHeight = static_cast<int>(ceil(boundingBox.height() * transform.yScale()));
+    return IntSize(estimatedWidth, estimatedHeight);
+}
+
+bool SVGImagePainter::bufferForeground(PaintInfo& paintInfo)
+{
+    FloatRect boundingBox = m_renderSVGImage.objectBoundingBox();
+    OwnPtr<ImageBuffer>& imageBuffer = m_renderSVGImage.bufferedForeground();
+    IntSize expandedBoundingBox = expandedIntSize(boundingBox.size());
+
+    // Invalidate an existing buffer if the scale is not correct.
+    if (imageBuffer) {
+        IntSize estimatedBufferSize = estimateBufferSize(paintInfo.context->getCTM(), expandedBoundingBox);
+        if (estimatedBufferSize != imageBuffer->size())
+            imageBuffer.clear();
+    }
+
+    // Create a new buffer and paint the foreground into it.
+    if (!imageBuffer) {
+        imageBuffer = paintInfo.context->createRasterBuffer(expandedBoundingBox);
+        if (!imageBuffer)
+            return false;
+
+        GraphicsContext* bufferedRenderingContext = imageBuffer->context();
+        bufferedRenderingContext->translate(-boundingBox.x(), -boundingBox.y());
+        PaintInfo bufferedInfo(paintInfo);
+        bufferedInfo.context = bufferedRenderingContext;
+        paintForeground(bufferedInfo);
+    }
+
+    paintInfo.context->drawImageBuffer(imageBuffer.get(), boundingBox);
+    return true;
+}
+
+void SVGImagePainter::paintForeground(PaintInfo& paintInfo)
+{
+    RefPtr<Image> image = m_renderSVGImage.imageResource()->image();
+    FloatRect destRect = m_renderSVGImage.objectBoundingBox();
     FloatRect srcRect(0, 0, image->width(), image->height());
 
-    SVGImageElement* imageElement = toSVGImageElement(renderer.element());
+    SVGImageElement* imageElement = toSVGImageElement(m_renderSVGImage.element());
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     InterpolationQuality interpolationQuality = InterpolationDefault;
-    if (renderer.style()->svgStyle().bufferedRendering() != BR_STATIC)
-        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &renderer, image.get(), image.get(), LayoutSize(destRect.size()));
+    if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC)
+        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &m_renderSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
 
     InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
     paintInfo.context->setImageInterpolationQuality(interpolationQuality);

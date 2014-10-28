@@ -25,15 +25,14 @@
 #ifndef SVGRenderingContext_h
 #define SVGRenderingContext_h
 
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
 class RenderObject;
 class FloatRect;
+struct PaintInfo;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;
 
@@ -85,9 +84,6 @@ public:
     static void renderSubtree(GraphicsContext*, RenderObject*);
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
-
-    // Support for the buffered-rendering hint.
-    bool bufferForeground(OwnPtr<ImageBuffer>&);
 
 private:
     // To properly revert partially successful initializtions in the destructor, we record all successful steps.

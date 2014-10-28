@@ -7,6 +7,10 @@
 
 namespace blink {
 
+class AffineTransform;
+class FloatRect;
+class ImageBuffer;
+class IntSize;
 struct PaintInfo;
 class RenderSVGImage;
 
@@ -16,10 +20,11 @@ public:
 
     void paint(PaintInfo&);
 
-    // Assumes the PaintInfo context has had all local transforms applied.
-    static void paintForeground(RenderSVGImage&, PaintInfo&);
-
 private:
+    bool bufferForeground(PaintInfo&);
+    // Assumes the PaintInfo context has had all local transforms applied.
+    void paintForeground(PaintInfo&);
+
     RenderSVGImage& m_renderSVGImage;
 };
 

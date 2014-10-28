@@ -33,11 +33,11 @@
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/SVGPathData.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/StrokeData.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

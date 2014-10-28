@@ -23,13 +23,11 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/frame/FrameHost.h"
-#include "core/paint/SVGImagePainter.h"
+#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -243,37 +241,6 @@ void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* 
 
     PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
     item->paint(info, IntPoint());
-}
-
-bool SVGRenderingContext::bufferForeground(OwnPtr<ImageBuffer>& imageBuffer)
-{
-    ASSERT(m_paintInfo);
-    ASSERT(m_object->isSVGImage());
-    FloatRect boundingBox = m_object->objectBoundingBox();
-
-    // Invalidate an existing buffer if the scale is not correct.
-    if (imageBuffer) {
-        AffineTransform transform = m_paintInfo->context->getCTM();
-        IntSize expandedBoundingBox = expandedIntSize(boundingBox.size());
-        IntSize bufferSize(static_cast<int>(ceil(expandedBoundingBox.width() * transform.xScale())), static_cast<int>(ceil(expandedBoundingBox.height() * transform.yScale())));
-        if (bufferSize != imageBuffer->size())
-            imageBuffer.clear();
-    }
-
-    // Create a new buffer and paint the foreground into it.
-    if (!imageBuffer) {
-        if ((imageBuffer = m_paintInfo->context->createRasterBuffer(expandedIntSize(boundingBox.size())))) {
-            GraphicsContext* bufferedRenderingContext = imageBuffer->context();
-            bufferedRenderingContext->translate(-boundingBox.x(), -boundingBox.y());
-            PaintInfo bufferedInfo(*m_paintInfo);
-            bufferedInfo.context = bufferedRenderingContext;
-            SVGImagePainter::paintForeground(toRenderSVGImage(*m_object), bufferedInfo);
-        } else
-            return false;
-    }
-
-    m_paintInfo->context->drawImageBuffer(imageBuffer.get(), boundingBox);
-    return true;
 }
 
 } // namespace blink
