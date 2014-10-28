@@ -15,14 +15,14 @@ namespace test {
 class TestUserWallpaperDelegate : public DefaultUserWallpaperDelegate {
  public:
   TestUserWallpaperDelegate();
-  virtual ~TestUserWallpaperDelegate();
+  ~TestUserWallpaperDelegate() override;
 
   void set_custom_wallpaper(const gfx::ImageSkia& wallpaper) {
     custom_wallpaper_ = wallpaper;
   }
 
   // DefaultUserWallpaperDelegate overrides:
-  virtual void UpdateWallpaper(bool clear_cache) override;
+  void UpdateWallpaper(bool clear_cache) override;
 
   // Returns and clears |update_wallpaper_count_|.
   int GetUpdateWallpaperCountAndReset();

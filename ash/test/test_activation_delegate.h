@@ -40,12 +40,12 @@ class TestActivationDelegate : public aura::client::ActivationDelegate,
   }
 
   // Overridden from aura::client::ActivationDelegate:
-  virtual bool ShouldActivate() const override;
+  bool ShouldActivate() const override;
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   aura::Window* window_;
   bool window_was_active_;

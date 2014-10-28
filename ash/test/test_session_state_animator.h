@@ -25,7 +25,7 @@ namespace test {
 class TestSessionStateAnimator : public SessionStateAnimator {
  public:
   TestSessionStateAnimator();
-  virtual ~TestSessionStateAnimator();
+  ~TestSessionStateAnimator() override;
 
   int last_animation_epoch() {
     return last_animation_epoch_;
@@ -64,19 +64,17 @@ class TestSessionStateAnimator : public SessionStateAnimator {
   size_t GetAnimationCount() const;
 
   // ash::SessionStateAnimator:
-  virtual void StartAnimation(int container_mask,
-                              AnimationType type,
-                              AnimationSpeed speed) override;
-  virtual void StartAnimationWithCallback(
-      int container_mask,
-      AnimationType type,
-      AnimationSpeed speed,
-      base::Closure callback) override;
-  virtual AnimationSequence* BeginAnimationSequence(
-      base::Closure callback) override;
-  virtual bool IsBackgroundHidden() const override;
-  virtual void ShowBackground() override;
-  virtual void HideBackground() override;
+  void StartAnimation(int container_mask,
+                      AnimationType type,
+                      AnimationSpeed speed) override;
+  void StartAnimationWithCallback(int container_mask,
+                                  AnimationType type,
+                                  AnimationSpeed speed,
+                                  base::Closure callback) override;
+  AnimationSequence* BeginAnimationSequence(base::Closure callback) override;
+  bool IsBackgroundHidden() const override;
+  void ShowBackground() override;
+  void HideBackground() override;
 
  private:
   class AnimationSequence;

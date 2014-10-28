@@ -17,15 +17,15 @@
 class AshTestHelperTest : public testing::Test {
  public:
   AshTestHelperTest() {}
-  virtual ~AshTestHelperTest() {}
+  ~AshTestHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     ash_test_helper_.reset(new ash::test::AshTestHelper(&message_loop_));
     ash_test_helper_->SetUp(true);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ash_test_helper_->TearDown();
     testing::Test::TearDown();
   }

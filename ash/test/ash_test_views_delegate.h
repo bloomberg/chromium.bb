@@ -16,13 +16,13 @@ namespace test {
 class AshTestViewsDelegate : public views::TestViewsDelegate {
  public:
   AshTestViewsDelegate();
-  virtual ~AshTestViewsDelegate();
+  ~AshTestViewsDelegate() override;
 
   // Overriden from TestViewsDelegate.
-  virtual content::WebContents* CreateWebContents(
+  content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) override;
-  virtual void OnBeforeWidgetInit(
+  void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
 

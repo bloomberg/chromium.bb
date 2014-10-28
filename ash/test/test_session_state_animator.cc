@@ -41,7 +41,7 @@ class TestSessionStateAnimator::AnimationSequence
         animator_(animator) {
   }
 
-  virtual ~AnimationSequence() {}
+  ~AnimationSequence() override {}
 
   virtual void SequenceAttached() {
     ++sequence_count_;
@@ -61,9 +61,9 @@ class TestSessionStateAnimator::AnimationSequence
   }
 
   // ash::SessionStateAnimator::AnimationSequence:
-  virtual void StartAnimation(int container_mask,
-                              AnimationType type,
-                              AnimationSpeed speed) override {
+  void StartAnimation(int container_mask,
+                      AnimationType type,
+                      AnimationSpeed speed) override {
     animator_->StartAnimationInSequence(container_mask, type, speed, this);
   }
 

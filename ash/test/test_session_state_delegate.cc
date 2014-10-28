@@ -32,29 +32,27 @@ std::string GetUserIDFromEmail(const std::string& email) {
 class MockUserInfo : public user_manager::UserInfo {
  public:
   explicit MockUserInfo(const std::string& id) : email_(id) {}
-  virtual ~MockUserInfo() {}
+  ~MockUserInfo() override {}
 
   void SetUserImage(const gfx::ImageSkia& user_image) {
     user_image_ = user_image;
   }
 
-  virtual base::string16 GetDisplayName() const override {
+  base::string16 GetDisplayName() const override {
     return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
   }
 
-  virtual base::string16 GetGivenName() const override {
+  base::string16 GetGivenName() const override {
     return base::UTF8ToUTF16("Über Über Über Über");
   }
 
-  virtual std::string GetEmail() const override { return email_; }
+  std::string GetEmail() const override { return email_; }
 
-  virtual std::string GetUserID() const override {
+  std::string GetUserID() const override {
     return GetUserIDFromEmail(GetEmail());
   }
 
-  virtual const gfx::ImageSkia& GetImage() const override {
-    return user_image_;
-  }
+  const gfx::ImageSkia& GetImage() const override { return user_image_; }
 
   // A test user image.
   gfx::ImageSkia user_image_;

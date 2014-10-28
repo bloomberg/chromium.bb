@@ -22,8 +22,8 @@ class AuraShellTestSuite : public base::TestSuite {
 
  protected:
   // base::TestSuite:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
+  void Initialize() override;
+  void Shutdown() override;
 
  private:
 #if defined(OS_WIN)

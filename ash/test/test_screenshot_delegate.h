@@ -16,13 +16,13 @@ namespace test {
 class TestScreenshotDelegate : public ScreenshotDelegate {
  public:
   TestScreenshotDelegate();
-  virtual ~TestScreenshotDelegate();
+  ~TestScreenshotDelegate() override;
 
   // Overridden from ScreenshotDelegate:
-  virtual void HandleTakeScreenshotForAllRootWindows() override;
-  virtual void HandleTakePartialScreenshot(
-      aura::Window* window, const gfx::Rect& rect) override;
-  virtual bool CanTakeScreenshot() override;
+  void HandleTakeScreenshotForAllRootWindows() override;
+  void HandleTakePartialScreenshot(aura::Window* window,
+                                   const gfx::Rect& rect) override;
+  bool CanTakeScreenshot() override;
 
   int handle_take_screenshot_count() const {
     return handle_take_screenshot_count_;

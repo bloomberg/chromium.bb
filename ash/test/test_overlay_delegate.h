@@ -19,9 +19,9 @@ class TestOverlayDelegate : public OverlayEventFilter::Delegate {
 
  private:
   // Overridden from OverlayEventFilter::Delegate:
-  virtual void Cancel() override;
-  virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) override;
-  virtual aura::Window* GetWindow() override;
+  void Cancel() override;
+  bool IsCancelingKeyEvent(ui::KeyEvent* event) override;
+  aura::Window* GetWindow() override;
 
   int cancel_count_;
 

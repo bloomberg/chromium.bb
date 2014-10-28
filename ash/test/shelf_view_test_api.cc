@@ -19,12 +19,11 @@ namespace {
 class TestAPIAnimationObserver : public views::BoundsAnimatorObserver {
  public:
   TestAPIAnimationObserver() {}
-  virtual ~TestAPIAnimationObserver() {}
+  ~TestAPIAnimationObserver() override {}
 
   // views::BoundsAnimatorObserver overrides:
-  virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) override {}
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
     base::MessageLoop::current()->Quit();
   }
 

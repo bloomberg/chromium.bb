@@ -38,18 +38,18 @@ namespace {
 class NewWindowDelegateImpl : public NewWindowDelegate {
  public:
   NewWindowDelegateImpl() {}
-  virtual ~NewWindowDelegateImpl() {}
+  ~NewWindowDelegateImpl() override {}
 
  private:
   // NewWindowDelegate:
-  virtual void NewTab() override {}
-  virtual void NewWindow(bool incognito) override {}
-  virtual void OpenFileManager() override {}
-  virtual void OpenCrosh() override {}
-  virtual void RestoreTab() override {}
-  virtual void ShowKeyboardOverlay() override {}
-  virtual void ShowTaskManager() override {}
-  virtual void OpenFeedbackPage() override {}
+  void NewTab() override {}
+  void NewWindow(bool incognito) override {}
+  void OpenFileManager() override {}
+  void OpenCrosh() override {}
+  void RestoreTab() override {}
+  void ShowKeyboardOverlay() override {}
+  void ShowTaskManager() override {}
+  void OpenFeedbackPage() override {}
 
   DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
 };
@@ -57,16 +57,16 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
 class MediaDelegateImpl : public MediaDelegate {
  public:
   MediaDelegateImpl() : state_(MEDIA_CAPTURE_NONE) {}
-  virtual ~MediaDelegateImpl() {}
+  ~MediaDelegateImpl() override {}
 
   void set_media_capture_state(MediaCaptureState state) { state_ = state; }
 
  private:
   // MediaDelegate:
-  virtual void HandleMediaNextTrack() override {}
-  virtual void HandleMediaPlayPause() override {}
-  virtual void HandleMediaPrevTrack() override {}
-  virtual MediaCaptureState GetMediaCaptureState(
+  void HandleMediaNextTrack() override {}
+  void HandleMediaPlayPause() override {}
+  void HandleMediaPrevTrack() override {}
+  MediaCaptureState GetMediaCaptureState(
       content::BrowserContext* context) override {
     return state_;
   }

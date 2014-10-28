@@ -50,11 +50,11 @@ class TestMetroViewerProcessHost;
 class AshTestBase : public testing::Test {
  public:
   AshTestBase();
-  virtual ~AshTestBase();
+  ~AshTestBase() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Update the display configuration as given in |display_specs|.
   // See ash::test::DisplayManagerTestApi::UpdateDisplay for more details.
@@ -151,7 +151,7 @@ class NoSessionAshTestBase : public AshTestBase {
   NoSessionAshTestBase() {
     set_start_session(false);
   }
-  virtual ~NoSessionAshTestBase() {}
+  ~NoSessionAshTestBase() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);

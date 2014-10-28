@@ -58,18 +58,18 @@ void CreateChildModalParent(gfx::NativeView context) {
 class ChildModalWindow : public views::WidgetDelegateView {
  public:
   ChildModalWindow();
-  virtual ~ChildModalWindow();
+  ~ChildModalWindow() override;
 
  private:
   // Overridden from View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
 
   // Overridden from WidgetDelegate:
-  virtual View* GetContentsView() override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool CanResize() const override;
-  virtual ui::ModalType GetModalType() const override;
+  View* GetContentsView() override;
+  base::string16 GetWindowTitle() const override;
+  bool CanResize() const override;
+  ui::ModalType GetModalType() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ChildModalWindow);
 };

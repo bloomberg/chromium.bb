@@ -59,10 +59,10 @@ class AshEventGeneratorDelegate
     : public aura::test::EventGeneratorDelegateAura {
  public:
   AshEventGeneratorDelegate() {}
-  virtual ~AshEventGeneratorDelegate() {}
+  ~AshEventGeneratorDelegate() override {}
 
   // aura::test::EventGeneratorDelegateAura overrides:
-  virtual aura::WindowTreeHost* GetHostAt(
+  aura::WindowTreeHost* GetHostAt(
       const gfx::Point& point_in_screen) const override {
     gfx::Screen* screen = Shell::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
@@ -70,7 +70,7 @@ class AshEventGeneratorDelegate
         GetRootWindowForDisplayId(display.id())->GetHost();
   }
 
-  virtual aura::client::ScreenPositionClient* GetScreenPositionClient(
+  aura::client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const override {
     return aura::client::GetScreenPositionClient(window->GetRootWindow());
   }
