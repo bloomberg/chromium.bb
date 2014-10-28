@@ -10,7 +10,6 @@ group("mojo") {
   deps = [
     ":tests",
     "//mojo/common",
-    "//mojo/examples",
     "//mojo/public",
     "//mojo/services",
     "//mojo/tools/package_manager",
