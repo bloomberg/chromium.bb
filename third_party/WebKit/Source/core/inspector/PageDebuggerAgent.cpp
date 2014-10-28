@@ -121,7 +121,10 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
 {
     if (!executionContextId) {
         ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->mainFrame());
-        return injectedScriptManager()->injectedScriptFor(scriptState);
+        InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
+        if (result.isEmpty())
+            *errorString = "Internal error: main world execution context not found.";
+        return result;
     }
     InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);
     if (injectedScript.isEmpty())

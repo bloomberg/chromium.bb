@@ -3,8 +3,39 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
+function startWorker()
+{
+    var workerScript = "postMessage('Done.');";
+    var blob = new Blob([workerScript], { type: "text/javascript" });
+    var worker = new Worker(URL.createObjectURL(blob));
+}
+
 function test()
 {
+    function evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, callback)
+    {
+        InspectorTest.addSniffer(WebInspector.SnippetScriptMapping.prototype, "addScript", dumpScript);
+        InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", dumpResult);
+        WebInspector.scriptSnippetModel.evaluateScriptSnippet(context, uiSourceCode);
+        var target = context.target();
+        var mapping = WebInspector.scriptSnippetModel._mappingForTarget.get(target);
+        var evaluationSourceURL = mapping._evaluationSourceURL(uiSourceCode);
+        var snippetId = WebInspector.scriptSnippetModel._snippetIdForUISourceCode.get(uiSourceCode);
+        InspectorTest.addResult("Last evaluation source url for snippet: " + evaluationSourceURL);
+        InspectorTest.assertEquals(snippetId, WebInspector.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL), "Snippet can not be identified by its evaluation sourceURL.");
+
+        function dumpScript(script)
+        {
+            InspectorTest.addResult("Snippet script added, sourceURL = " + script.sourceURL);
+        }
+
+        function dumpResult(target, result, wasThrown)
+        {
+            InspectorTest.addResult("Snippet execution result: " + result.description);
+            callback();
+        }
+    }
+
     function resetSnippetsSettings()
     {
         WebInspector.scriptSnippetModel._snippetStorage._lastSnippetIdentifierSetting.set(0);
@@ -123,28 +154,7 @@ function test()
         {
             var uiSourceCode1;
             var uiSourceCode2;
-
-            function evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, callback)
-            {
-                InspectorTest.addSniffer(WebInspector.SnippetScriptMapping.prototype, "addScript", dumpScript);
-                InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", dumpResult);
-                WebInspector.scriptSnippetModel.evaluateScriptSnippet(WebInspector.context.flavor(WebInspector.ExecutionContext), uiSourceCode);
-                var evaluationSourceURL = snippetScriptMapping._evaluationSourceURL(uiSourceCode);
-                var snippetId = WebInspector.scriptSnippetModel._snippetIdForUISourceCode.get(uiSourceCode);
-                InspectorTest.addResult("Last evaluation source url for snippet: " + evaluationSourceURL);
-                InspectorTest.assertEquals(snippetId, WebInspector.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL), "Snippet can not be identified by its evaluation sourceURL.");
-
-                function dumpScript(script)
-                {
-                    InspectorTest.addResult("Snippet script added, sourceURL = " + script.sourceURL);
-                }
-
-                function dumpResult(target, result, wasThrown)
-                {
-                    InspectorTest.addResult("Snippet execution result: " + result.description);
-                    callback();
-                }
-            }
+            var context = WebInspector.context.flavor(WebInspector.ExecutionContext);
 
             resetSnippetsSettings();
             var snippetScriptMapping = WebInspector.scriptSnippetModel.snippetScriptMapping(WebInspector.targetManager.targets()[0]);
@@ -173,17 +183,17 @@ function test()
                 content += "};\n";
                 content += "doesNothing;\n";
                 uiSourceCode2.setWorkingCopy(content);
-                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, step4);
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, context, step4);
             }
 
             function step4()
             {
-                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode2, step5);
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode2, context, step5);
             }
 
             function step5()
             {
-                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, next);
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, context, next);
             }
         },
 
@@ -221,7 +231,33 @@ function test()
 
                 evaluateSnippetAndReloadPage(uiSourceCode1, next);
             }
-        }
+        },
+
+        function testEvaluateInWorker(next)
+        {
+            var context;
+
+            InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
+            InspectorTest.evaluateInPage("startWorker()");
+
+            function contextCreated()
+            {
+                // Take the only execution context from the worker's RuntimeModel.
+                context = this.executionContexts()[0];
+
+                resetSnippetsSettings();
+                WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
+            }
+
+            function step2(path)
+            {
+                var uiSourceCode = WebInspector.scriptSnippetModel.project().uiSourceCode(path);
+                uiSourceCode.rename("Snippet1", function() { });
+                var content = "2+2;\n";
+                uiSourceCode.setWorkingCopy(content);
+                evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, next);
+            }
+        },
     ]);
 };
 </script>
