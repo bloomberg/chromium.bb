@@ -55,8 +55,6 @@
         'browser/chromeos/attestation/platform_verification_flow.h',
         'browser/chromeos/audio/audio_devices_pref_handler_impl.cc',
         'browser/chromeos/audio/audio_devices_pref_handler_impl.h',
-        'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
-        'browser/chromeos/background/ash_user_wallpaper_delegate.h',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.cc',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.h',
         'browser/chromeos/base/locale_util.cc',
@@ -649,8 +647,6 @@
         'browser/chromeos/login/users/supervised_user_manager.h',
         'browser/chromeos/login/users/supervised_user_manager_impl.cc',
         'browser/chromeos/login/users/supervised_user_manager_impl.h',
-        'browser/chromeos/login/users/wallpaper/wallpaper_manager.cc',
-        'browser/chromeos/login/users/wallpaper/wallpaper_manager.h',
         'browser/chromeos/login/version_info_updater.cc',
         'browser/chromeos/login/version_info_updater.h',
         'browser/chromeos/login/wizard_controller.cc',
@@ -955,6 +951,12 @@
         'browser/supervised_user/chromeos/supervised_user_password_service_factory.cc',
         'browser/supervised_user/chromeos/supervised_user_password_service_factory.h',
     ],
+    'browser_chromeos_non_athena_sources': [
+        'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
+        'browser/chromeos/background/ash_user_wallpaper_delegate.h',
+        'browser/chromeos/login/users/wallpaper/wallpaper_manager.cc',
+        'browser/chromeos/login/users/wallpaper/wallpaper_manager.h',
+    ],
     # These files lists are shared with the GN build.
     'browser_chromeos_extension_sources': [
             # Only extension API implementations should go here.
@@ -999,12 +1001,15 @@
             'browser/chromeos/extensions/media_player_api.h',
             'browser/chromeos/extensions/wallpaper_manager_util.cc',
             'browser/chromeos/extensions/wallpaper_manager_util.h',
-            'browser/chromeos/extensions/wallpaper_api.h',
-            'browser/chromeos/extensions/wallpaper_api.cc',
-            'browser/chromeos/extensions/wallpaper_function_base.h',
-            'browser/chromeos/extensions/wallpaper_function_base.cc',
-            'browser/chromeos/extensions/wallpaper_private_api.cc',
-            'browser/chromeos/extensions/wallpaper_private_api.h',
+
+    ],
+    'browser_chromeos_extension_non_athena_sources': [
+        'browser/chromeos/extensions/wallpaper_api.h',
+        'browser/chromeos/extensions/wallpaper_api.cc',
+        'browser/chromeos/extensions/wallpaper_function_base.h',
+        'browser/chromeos/extensions/wallpaper_function_base.cc',
+        'browser/chromeos/extensions/wallpaper_private_api.cc',
+        'browser/chromeos/extensions/wallpaper_private_api.h',
     ],
   },
   'targets': [
@@ -1135,12 +1140,19 @@
       'conditions': [
         ['use_athena==1', {
           'defines': ['USE_ATHENA=1'],
+        }, { # use_athena==0
+          'sources': [ '<@(browser_chromeos_non_athena_sources)' ],
         }],
         ['enable_extensions==1', {
           'dependencies': [
             '../ui/file_manager/file_manager.gyp:file_manager',
           ],
           'sources': [ '<@(browser_chromeos_extension_sources)' ],
+          'conditions': [
+            ['use_athena==0', {
+              'sources': [ '<@(browser_chromeos_extension_non_athena_sources)' ],
+            }],
+          ],
         }],
         ['use_x11==0', {
           'sources!': [

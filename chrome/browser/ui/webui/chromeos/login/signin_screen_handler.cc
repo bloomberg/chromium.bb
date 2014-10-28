@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
@@ -36,7 +38,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
@@ -74,9 +75,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ash/wm/lock_state_controller.h"
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
 namespace {

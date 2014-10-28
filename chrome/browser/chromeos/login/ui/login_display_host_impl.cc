@@ -368,11 +368,13 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     initialize_webui_hidden_ = false;
 
+#if !defined(USE_ATHENA)
   if (waiting_for_wallpaper_load_) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                    content::NotificationService::AllSources());
   }
+#endif
 
   // When we wait for WebUI to be initialized we wait for one of
   // these notifications.
@@ -746,26 +748,8 @@ void LoginDisplayHostImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
-    VLOG(1) << "Login WebUI >> wp animation done";
-    is_wallpaper_loaded_ = true;
-    ash::Shell::GetInstance()->user_wallpaper_delegate()
-        ->OnWallpaperBootAnimationFinished();
-    if (waiting_for_wallpaper_load_) {
-      // StartWizard / StartSignInScreen could be called multiple times through
-      // the lifetime of host.
-      // Make sure that subsequent calls are not postponed.
-      waiting_for_wallpaper_load_ = false;
-      if (initialize_webui_hidden_)
-        ShowWebUI();
-      else
-        StartPostponedWebUI();
-    }
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-                      content::NotificationService::AllSources());
-  } else if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
-             chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
+  if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
+      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
     VLOG(1) << "Login WebUI >> WEBUI_VISIBLE";
     if (waiting_for_user_pods_ && initialize_webui_hidden_) {
       waiting_for_user_pods_ = false;
@@ -804,6 +788,26 @@ void LoginDisplayHostImpl::Observe(
     registrar_.Remove(this,
                       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                       content::NotificationService::AllSources());
+#if !defined(USE_ATHENA)
+  } else if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
+    VLOG(1) << "Login WebUI >> wp animation done";
+    is_wallpaper_loaded_ = true;
+    ash::Shell::GetInstance()->user_wallpaper_delegate()
+        ->OnWallpaperBootAnimationFinished();
+    if (waiting_for_wallpaper_load_) {
+      // StartWizard / StartSignInScreen could be called multiple times through
+      // the lifetime of host.
+      // Make sure that subsequent calls are not postponed.
+      waiting_for_wallpaper_load_ = false;
+      if (initialize_webui_hidden_)
+        ShowWebUI();
+      else
+        StartPostponedWebUI();
+    }
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+                      content::NotificationService::AllSources());
+#endif
   }
 }
 

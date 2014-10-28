@@ -101,9 +101,13 @@ content::BrowserContext* ChromeShellDelegate::GetActiveBrowserContext() {
 }
 
 app_list::AppListViewDelegate* ChromeShellDelegate::GetAppListViewDelegate() {
+#if defined(USE_ATHENA)
+  return NULL;
+#else
   DCHECK(ash::Shell::HasInstance());
   return AppListServiceAsh::GetInstance()->GetViewDelegate(
       Profile::FromBrowserContext(GetActiveBrowserContext()));
+#endif
 }
 
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(

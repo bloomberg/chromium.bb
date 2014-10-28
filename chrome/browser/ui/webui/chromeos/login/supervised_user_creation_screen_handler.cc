@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
@@ -25,6 +24,10 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#endif
 
 const char kJsScreenPath[] = "login.SupervisedUserCreationScreen";
 
@@ -289,9 +292,11 @@ void SupervisedUserCreationScreenHandler::
 
 void SupervisedUserCreationScreenHandler::HandleManagerSelected(
     const std::string& manager_id) {
+#if !defined(USE_ATHENA)
   if (!delegate_)
     return;
   WallpaperManager::Get()->SetUserWallpaperNow(manager_id);
+#endif
 }
 
 void SupervisedUserCreationScreenHandler::HandleImportUserSelected(

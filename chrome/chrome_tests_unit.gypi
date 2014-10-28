@@ -2118,6 +2118,12 @@
             }],
           ],
         }],
+        ['use_athena==1', {
+          'sources/': [
+            ['exclude', '^browser/chromeos/login/users/wallpaper/wallpaper_manager_unittest.cc'],
+            ['exclude', '^browser/chromeos/extensions/wallpaper_private_api_unittest.cc'],
+          ],
+        }],
         ['use_aura==1', {
           'dependencies': [
             '../ui/wm/wm.gyp:wm',

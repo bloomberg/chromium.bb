@@ -50,7 +50,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
@@ -127,6 +126,10 @@
 #include "chrome/browser/chromeos/device_uma.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
+#endif
+
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
 namespace chromeos {
@@ -736,7 +739,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // that the UserManager has no URLRequest pending (see
   // http://crbug.com/276659).
   g_browser_process->platform_part()->user_manager()->Shutdown();
+#if !defined(USE_ATHENA)
   WallpaperManager::Get()->Shutdown();
+#endif
 
   // Let the AutomaticRebootManager unregister itself as an observer of several
   // subsystems.

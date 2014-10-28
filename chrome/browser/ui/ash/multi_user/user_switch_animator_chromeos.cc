@@ -12,11 +12,14 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "ui/wm/public/activation_client.h"
+
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#endif
 
 namespace chrome {
 
@@ -137,7 +140,9 @@ void UserSwichAnimatorChromeOS::TransitionWallpaper(
     wallpaper_delegate->SetAnimationDurationOverride(
         std::max(duration, kMinimalAnimationTimeMS));
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
+#if !defined(USE_ATHENA)
       chromeos::WallpaperManager::Get()->SetUserWallpaperNow(new_user_id_);
+#endif
       wallpaper_user_id_ =
           (NO_USER_COVERS_SCREEN == screen_cover_ ? "->" : "") +
           new_user_id_;
@@ -145,8 +150,10 @@ void UserSwichAnimatorChromeOS::TransitionWallpaper(
   } else if (animation_step == ANIMATION_STEP_FINALIZE) {
     // Revert the wallpaper cross dissolve animation duration back to the
     // default.
+#if !defined(USE_ATHENA)
     if (screen_cover_ == NEW_USER_COVERS_SCREEN)
       chromeos::WallpaperManager::Get()->SetUserWallpaperNow(new_user_id_);
+#endif
 
     // Coming here the wallpaper user id is the final result. No matter how we
     // got here.
