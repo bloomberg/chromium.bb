@@ -1962,7 +1962,7 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedByRelease) {
   EXPECT_EQ(3, demuxer_->num_data_requests());
 }
 
-TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySurfaceChange) {
+TEST_F(MediaSourcePlayerTest, DISABLED_DecoderDrainInterruptedBySurfaceChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test if a video decoder is being drained while surface changes, draining
