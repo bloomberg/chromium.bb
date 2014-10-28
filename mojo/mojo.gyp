@@ -27,31 +27,6 @@
       ],
     },
     {
-      # GN version: //mojo/spy
-      'target_name': 'mojo_spy',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../net/net.gyp:http_server',
-        '../url/url.gyp:url_lib',
-        'mojo_application_manager',
-      ],
-      'variables': {
-        'mojom_base_output_dir': 'mojo',
-      },
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'sources': [
-        'spy/public/spy.mojom',
-        'spy/common.h',
-        'spy/spy.cc',
-        'spy/spy.h',
-        'spy/spy_server_impl.h',
-        'spy/spy_server_impl.cc',
-        'spy/websocket_server.cc',
-        'spy/websocket_server.h',
-      ],
-    },
-    {
       # GN version: //mojo/application_manager
       'target_name': 'mojo_application_manager',
       'type': '<(component)',
