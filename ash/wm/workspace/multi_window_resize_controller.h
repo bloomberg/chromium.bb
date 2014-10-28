@@ -40,7 +40,7 @@ class ASH_EXPORT MultiWindowResizeController :
     public views::MouseWatcherListener, public aura::WindowObserver {
  public:
   MultiWindowResizeController();
-  virtual ~MultiWindowResizeController();
+  ~MultiWindowResizeController() override;
 
   // If necessary, shows the resize widget. |window| is the window the mouse
   // is over, |component| the edge and |point| the location of the mouse.
@@ -50,10 +50,10 @@ class ASH_EXPORT MultiWindowResizeController :
   void Hide();
 
   // MouseWatcherListenre overrides:
-  virtual void MouseMovedOutOfHost() override;
+  void MouseMovedOutOfHost() override;
 
   // WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class MultiWindowResizeControllerTest;

@@ -49,17 +49,16 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // to move or resize beyond that edge.
   static const int kStickyDistancePixels;
 
-  virtual ~WorkspaceWindowResizer();
+  ~WorkspaceWindowResizer() override;
 
   static WorkspaceWindowResizer* Create(
       wm::WindowState* window_state,
       const std::vector<aura::Window*>& attached_windows);
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location_in_parent,
-                    int event_flags) override;
-  virtual void CompleteDrag() override;
-  virtual void RevertDrag() override;
+  void Drag(const gfx::Point& location_in_parent, int event_flags) override;
+  void CompleteDrag() override;
+  void RevertDrag() override;
 
  private:
   WorkspaceWindowResizer(wm::WindowState* window_state,

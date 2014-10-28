@@ -32,7 +32,7 @@ namespace ash {
 class WorkspaceEventHandlerTest : public test::AshTestBase {
  public:
   WorkspaceEventHandlerTest() {}
-  virtual ~WorkspaceEventHandlerTest() {}
+  ~WorkspaceEventHandlerTest() override {}
 
  protected:
   aura::Window* CreateTestWindow(aura::WindowDelegate* delegate,
@@ -58,9 +58,7 @@ class WindowPropertyObserver : public aura::WindowObserver {
     window->AddObserver(this);
   }
 
-  virtual ~WindowPropertyObserver() {
-    window_->RemoveObserver(this);
-  }
+  ~WindowPropertyObserver() override { window_->RemoveObserver(this); }
 
   bool DidPropertyChange(const void* property) const {
     return std::find(properties_changed_.begin(),
@@ -69,9 +67,9 @@ class WindowPropertyObserver : public aura::WindowObserver {
   }
 
  private:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override {
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
     properties_changed_.push_back(key);
   }
 

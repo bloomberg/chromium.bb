@@ -18,11 +18,11 @@ class WindowState;
 class WorkspaceEventHandler : public ui::EventHandler {
  public:
   WorkspaceEventHandler();
-  virtual ~WorkspaceEventHandler();
+  ~WorkspaceEventHandler() override;
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   friend class WorkspaceEventHandlerTestHelper;

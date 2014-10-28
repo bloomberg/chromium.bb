@@ -46,12 +46,11 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
   explicit MaximizeDelegateView(const gfx::Rect& initial_bounds)
       : initial_bounds_(initial_bounds) {
   }
-  virtual ~MaximizeDelegateView() {}
+  ~MaximizeDelegateView() override {}
 
-  virtual bool GetSavedWindowPlacement(
-      const views::Widget* widget,
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const override {
+  bool GetSavedWindowPlacement(const views::Widget* widget,
+                               gfx::Rect* bounds,
+                               ui::WindowShowState* show_state) const override {
     *bounds = initial_bounds_;
     *show_state = ui::SHOW_STATE_MAXIMIZED;
     return true;
@@ -70,12 +69,12 @@ class TestShellObserver : public ShellObserver {
     Shell::GetInstance()->AddShellObserver(this);
   }
 
-  virtual ~TestShellObserver() {
+  ~TestShellObserver() override {
     Shell::GetInstance()->RemoveShellObserver(this);
   }
 
-  virtual void OnFullscreenStateChanged(bool is_fullscreen,
-                                        aura::Window* root_window) override {
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                aura::Window* root_window) override {
     call_count_++;
     is_fullscreen_ = is_fullscreen;
   }
@@ -313,9 +312,9 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 
   void set_window(aura::Window* window) { window_ = window; }
 
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override {
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
     if (!window_)
       return;
 
@@ -529,7 +528,7 @@ namespace {
 class WorkspaceLayoutManagerSoloTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerSoloTest() {}
-  virtual ~WorkspaceLayoutManagerSoloTest() {}
+  ~WorkspaceLayoutManagerSoloTest() override {}
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     return CreateTestWindowInShellWithBounds(bounds);
@@ -574,12 +573,12 @@ class FocusDelegate : public aura::test::TestWindowDelegate {
       : window_(NULL),
         show_state_(ui::SHOW_STATE_END) {
   }
-  virtual ~FocusDelegate() {}
+  ~FocusDelegate() override {}
 
   void set_window(aura::Window* window) { window_ = window; }
 
   // aura::test::TestWindowDelegate overrides:
-  virtual void OnWindowTargetVisibilityChanged(bool visible) override {
+  void OnWindowTargetVisibilityChanged(bool visible) override {
     if (window_) {
       if (visible)
         window_->Focus();
@@ -788,9 +787,9 @@ namespace {
 class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerBackdropTest() {}
-  virtual ~WorkspaceLayoutManagerBackdropTest() {}
+  ~WorkspaceLayoutManagerBackdropTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     default_container_ = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -976,9 +975,9 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
 class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerKeyboardTest() {}
-  virtual ~WorkspaceLayoutManagerKeyboardTest() {}
+  ~WorkspaceLayoutManagerKeyboardTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
@@ -1048,11 +1047,9 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 class FakeTextInputClient : public ui::DummyTextInputClient {
  public:
   explicit FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
-  virtual ~FakeTextInputClient() {}
+  ~FakeTextInputClient() override {}
 
-  virtual gfx::NativeWindow GetAttachedWindow() const override {
-    return window_;
-  }
+  gfx::NativeWindow GetAttachedWindow() const override { return window_; }
 
  private:
   gfx::NativeWindow window_;

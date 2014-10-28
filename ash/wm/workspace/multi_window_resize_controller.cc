@@ -71,32 +71,29 @@ class MultiWindowResizeController::ResizeView : public views::View {
   }
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     return gfx::Size(image_->width(), image_->height());
   }
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     canvas->DrawImageInt(*image_, 0, 0);
   }
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->StartResize(location);
     return true;
   }
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override {
+  bool OnMouseDragged(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->Resize(location, event.flags());
     return true;
   }
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override {
+  void OnMouseReleased(const ui::MouseEvent& event) override {
     controller_->CompleteResize();
   }
-  virtual void OnMouseCaptureLost() override {
-    controller_->CancelResize();
-  }
-  virtual gfx::NativeCursor GetCursor(
-      const ui::MouseEvent& event) override {
+  void OnMouseCaptureLost() override { controller_->CancelResize(); }
+  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
     return ::wm::CompoundEventFilter::CursorForWindowComponent(
         component);
@@ -118,8 +115,8 @@ class MultiWindowResizeController::ResizeMouseWatcherHost :
   ResizeMouseWatcherHost(MultiWindowResizeController* host) : host_(host) {}
 
   // MouseWatcherHost overrides:
-  virtual bool Contains(const gfx::Point& point_in_screen,
-                        MouseEventType type) override {
+  bool Contains(const gfx::Point& point_in_screen,
+                MouseEventType type) override {
     return host_->IsOverWindows(point_in_screen);
   }
 
