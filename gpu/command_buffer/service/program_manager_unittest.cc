@@ -170,9 +170,9 @@ class ProgramManagerWithShaderTest : public GpuServiceTest {
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
-  static const int kUniform1Precision = SH_PRECISION_LOWP;
-  static const int kUniform2Precision = SH_PRECISION_MEDIUMP;
-  static const int kUniform3Precision = SH_PRECISION_HIGHP;
+  static const int kUniform1Precision = GL_LOW_FLOAT;
+  static const int kUniform2Precision = GL_MEDIUM_INT;
+  static const int kUniform3Precision = GL_HIGH_FLOAT;
   static const int kUniform1StaticUse = 1;
   static const int kUniform2StaticUse = 1;
   static const int kUniform3StaticUse = 1;
@@ -1128,7 +1128,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
     attrib_map[kAttribs[ii].name] = TestHelper::ConstructAttribute(
         kAttribs[ii].type,
         kAttribs[ii].size,
-        SH_PRECISION_MEDIUMP,
+        GL_MEDIUM_FLOAT,
         kAttribStaticUse,
         kAttribs[ii].name);
   }
@@ -1136,7 +1136,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   attrib_map[kAttribMatName] = TestHelper::ConstructAttribute(
       GL_FLOAT_MAT2,
       1,
-      SH_PRECISION_MEDIUMP,
+      GL_MEDIUM_FLOAT,
       kAttribStaticUse,
       kAttribMatName);
   // Check we can create shader.
