@@ -821,19 +821,12 @@ void RemoteDesktopBrowserTest::DismissHostVersionWarningIfVisible() {
 void RemoteDesktopBrowserTest::SetUserNameAndPassword(
     const base::FilePath &accounts_file_path, const std::string& account_type) {
 
-  // ReadFileToString returns an error if the file-path is relative.
-  // Tests that run on the swarming slaves use relative paths, so we have to use
-  // ReadFile instead.
-  int64 accounts_file_size;
-  base::GetFileSize(accounts_file_path, &accounts_file_size);
-  // There is a compile error on Windows if you use a non-constant array size.
-  // For the test-accounts file, we'll assume a maximum file size of 10K.
-  char buf[10240];
-  ASSERT_FALSE(base::ReadFile(accounts_file_path, buf, accounts_file_size - 1)
-    == -1);
+  // Read contents of accounts file, using its absolute path.
+  base::FilePath absolute_path = base::MakeAbsoluteFilePath(accounts_file_path);
+  std::string accounts_info;
+  ASSERT_TRUE(base::ReadFileToString(absolute_path, &accounts_info));
 
   // Get the root dictionary from the input json file contents.
-  std::string accounts_info(buf);
   scoped_ptr<base::Value> root(
       base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS));
 
