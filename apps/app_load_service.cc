@@ -29,7 +29,7 @@ namespace apps {
 
 AppLoadService::PostReloadAction::PostReloadAction()
     : action_type(LAUNCH),
-      command_line(CommandLine::NO_PROGRAM) {
+      command_line(base::CommandLine::NO_PROGRAM) {
 }
 
 AppLoadService::AppLoadService(Profile* profile)
@@ -59,7 +59,7 @@ void AppLoadService::RestartApplicationIfRunning(
 }
 
 bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
-                                   const CommandLine& command_line,
+                                   const base::CommandLine& command_line,
                                    const base::FilePath& current_dir) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();

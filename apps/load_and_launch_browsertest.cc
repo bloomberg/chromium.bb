@@ -34,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_LoadAndLaunchAppChromeRunning) {
   ExtensionTestMessageListener launched_listener("Launched", false);
 
-  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
-  CommandLine new_cmdline(cmdline.GetProgram());
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  base::CommandLine new_cmdline(cmdline.GetProgram());
 
   const char* kSwitchNames[] = {
     switches::kUserDataDir,
@@ -71,8 +71,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_LoadAndLaunchAppWithFile) {
   ExtensionTestMessageListener launched_listener("Launched", false);
 
-  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
-  CommandLine new_cmdline(cmdline.GetProgram());
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  base::CommandLine new_cmdline(cmdline.GetProgram());
 
   const char* kSwitchNames[] = {
     switches::kUserDataDir,
@@ -109,7 +109,7 @@ class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
  protected:
   PlatformAppLoadAndLaunchBrowserTest() {}
 
-  void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     app_path_ = test_data_dir_
         .AppendASCII("platform_apps")

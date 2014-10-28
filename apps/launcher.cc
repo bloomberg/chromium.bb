@@ -312,7 +312,7 @@ class PlatformAppPathLauncher
 
 void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
-                                      const CommandLine& command_line,
+                                      const base::CommandLine& command_line,
                                       const base::FilePath& current_directory) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
@@ -337,7 +337,7 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
 #else
   base::CommandLine::StringType about_blank_url(url::kAboutBlankURL);
 #endif
-  CommandLine::StringVector args = command_line.GetArgs();
+  base::CommandLine::StringVector args = command_line.GetArgs();
   // Browser tests will add about:blank to the command line. This should
   // never be interpreted as a file to open, as doing so with an app that
   // has write access will result in a file 'about' being created, which
@@ -365,7 +365,8 @@ void LaunchPlatformAppWithPath(Profile* profile,
 void LaunchPlatformApp(Profile* profile, const Extension* extension) {
   LaunchPlatformAppWithCommandLine(profile,
                                    extension,
-                                   CommandLine(CommandLine::NO_PROGRAM),
+                                   base::CommandLine(
+                                       base::CommandLine::NO_PROGRAM),
                                    base::FilePath());
 }
 
