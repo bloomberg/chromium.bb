@@ -186,3 +186,7 @@ file changed, we used version 4-0.
 
 On Mar 4, 2014, we added tg_TG dictionaries for Tajik language. We used 5-0
 version to denote a new batch of dictionaries.
+
+On Oct 28, 2014, we updated the en dictionaries to the latest upstream version.
+We also added a bunch of words from bugs that were being flagged as incorrect.
+Given that the aff & dic files changed, we used version 4-0.
