@@ -83,35 +83,15 @@ blsmsk Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /2, CPUFeature_BMI1
 # viable addresses.
 blsr Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /1, CPUFeature_BMI1
 ######## BSF ###################################################################
-# Textbook definition of "bsf" as per AMD/Intel manuals looks like this:
-#  bsf Ev Gv, 0x0f 0xbc
-# For consistency with the production validators, drop support for the 16-bit
-#  version of "bsf" in ia32 mode.
-# Note that the former 32- and 64-bit validators treat "bsf" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2972
-#
 # "bsf" is not marked as nacl-amd64-zero-extends because it does not always
 # writes to it's second operand:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2010
-bsf Ew Gw, data16 0x0f 0xbc, norexw nacl-ia32-forbidden
-bsf Ed Gd, 0x0f 0xbc, norexw
-bsf Eq Gq, rexw 0x0f 0xbc, amd64
-bsf Eq Gq, data16 rexw 0x0f 0xbc, amd64 nacl-forbidden
+bsf Ev Gv, 0x0f 0xbc
 ######## BSR ###################################################################
-# Textbook definition of "bsr" as per AMD/Intel manuals looks like this:
-#  bsr Ev Gv, 0x0f 0xbd
-# For consistency with the production validators, drop support for the 16-bit
-#  version of "bsr" in ia32 mode.
-# Note that the former 32- and 64-bit validators treat "bsr" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2973
-#
 # "bsr" is not marked as nacl-amd64-zero-extends because it does not always
 # writes to it's second operand:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2010
-bsr Ew Gw, data16 0x0f 0xbd, norexw nacl-ia32-forbidden
-bsr Ed Gd, 0x0f 0xbd, norexw
-bsr Eq Gq, rexw 0x0f 0xbd, amd64
-bsr Eq Gq, data16 rexw 0x0f 0xbd, amd64 nacl-forbidden
+bsr Ev Gv, 0x0f 0xbd
 ######## BSWAP #################################################################
 # "bswap" is not marked as nacl-amd64-zero-extends because we don't really think
 # that swapping the bottom bytes is a good thing to do to mask a memory
