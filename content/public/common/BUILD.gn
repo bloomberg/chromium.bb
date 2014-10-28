@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//content/common/common.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 
 # See //content/BUILD.gn for how this works.
 group("common") {
@@ -43,10 +42,4 @@ source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
-}
-
-mojom("mojo_bindings") {
-  sources = [
-    "mojo_geoposition.mojom",
-  ]
 }

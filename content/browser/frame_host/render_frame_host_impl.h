@@ -451,9 +451,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnHidePopup();
 #endif
 
-  // Registers Mojo services that this frame host makes available.
-  void RegisterMojoServices();
-
   // Updates the state of this RenderFrameHost and clears any waiting state
   // that is no longer relevant.
   void SetState(RenderFrameHostImplState rfh_state);
@@ -476,9 +473,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // guest WebContents.
   void UpdateGuestFrameAccessibility(
       const std::map<int32, int> node_to_browser_plugin_instance_id_map);
-
-  // Informs the content client that geolocation permissions were used.
-  void DidUseGeolocationPermission();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

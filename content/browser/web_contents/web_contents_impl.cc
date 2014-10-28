@@ -36,7 +36,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
-#include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
@@ -285,8 +284,9 @@ WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
 
 // WebContentsImpl -------------------------------------------------------------
 
-WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
-                                 WebContentsImpl* opener)
+WebContentsImpl::WebContentsImpl(
+    BrowserContext* browser_context,
+    WebContentsImpl* opener)
     : delegate_(NULL),
       controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
@@ -296,10 +296,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       accessible_parent_(NULL),
 #endif
       frame_tree_(new NavigatorImpl(&controller_, this),
-                  this,
-                  this,
-                  this,
-                  this),
+                  this, this, this, this),
       is_loading_(false),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
@@ -330,7 +327,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       is_subframe_(false),
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
-      geolocation_service_context_(new GeolocationServiceContext()),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
@@ -1807,10 +1803,6 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
   if (!guest)
     return NULL;
   return guest->GetMainFrame();
-}
-
-GeolocationServiceContext* WebContentsImpl::GetGeolocationServiceContext() {
-  return geolocation_service_context_.get();
 }
 
 void WebContentsImpl::OnShowValidationMessage(

@@ -63,11 +63,6 @@ RenderFrameHost* RenderFrameHostDelegate::GetGuestByInstanceID(
   return NULL;
 }
 
-GeolocationServiceContext*
-RenderFrameHostDelegate::GetGeolocationServiceContext() {
-  return NULL;
-}
-
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
     RenderFrameHostDelegate::GetParentNativeViewAccessible() {

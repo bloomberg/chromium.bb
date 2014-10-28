@@ -7,14 +7,64 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/geoposition.h"
 #include "content/common/geolocation_messages.h"
 
 namespace content {
+namespace {
+
+// Geoposition error codes for reporting in UMA.
+enum GeopositionErrorCode {
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
+
+  // There was no error.
+  GEOPOSITION_ERROR_CODE_NONE = 0,
+
+  // User denied use of geolocation.
+  GEOPOSITION_ERROR_CODE_PERMISSION_DENIED = 1,
+
+  // Geoposition could not be determined.
+  GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE = 2,
+
+  // Timeout.
+  GEOPOSITION_ERROR_CODE_TIMEOUT = 3,
+
+  // NOTE: Add entries only immediately above this line.
+  GEOPOSITION_ERROR_CODE_COUNT = 4
+};
+
+void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
+  GeopositionErrorCode code = GEOPOSITION_ERROR_CODE_NONE;
+  switch (error_code) {
+    case Geoposition::ERROR_CODE_NONE:
+      code = GEOPOSITION_ERROR_CODE_NONE;
+      break;
+    case Geoposition::ERROR_CODE_PERMISSION_DENIED:
+      code = GEOPOSITION_ERROR_CODE_PERMISSION_DENIED;
+      break;
+    case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+      code = GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE;
+      break;
+    case Geoposition::ERROR_CODE_TIMEOUT:
+      code = GEOPOSITION_ERROR_CODE_TIMEOUT;
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Geolocation.LocationUpdate.ErrorCode",
+                            code,
+                            GEOPOSITION_ERROR_CODE_COUNT);
+}
+
+}  // namespace
 
 GeolocationDispatcherHost::PendingPermission::PendingPermission(
     int render_frame_id,
@@ -33,6 +83,7 @@ GeolocationDispatcherHost::PendingPermission::~PendingPermission() {
 GeolocationDispatcherHost::GeolocationDispatcherHost(
     WebContents* web_contents)
     : WebContentsObserver(web_contents),
+      paused_(false),
       weak_factory_(this) {
   // This is initialized by WebContentsImpl. Do not add any non-trivial
   // initialization here, defer to OnStartUpdating which is triggered whenever
@@ -42,9 +93,31 @@ GeolocationDispatcherHost::GeolocationDispatcherHost(
 GeolocationDispatcherHost::~GeolocationDispatcherHost() {
 }
 
+void GeolocationDispatcherHost::SetOverride(
+    scoped_ptr<Geoposition> geoposition) {
+  geoposition_override_.swap(geoposition);
+  RefreshGeolocationOptions();
+  OnLocationUpdate(*geoposition_override_);
+}
+
+void GeolocationDispatcherHost::ClearOverride() {
+  geoposition_override_.reset();
+  RefreshGeolocationOptions();
+}
+
 void GeolocationDispatcherHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+  OnStopUpdating(render_frame_host);
+
   CancelPermissionRequestsForFrame(render_frame_host);
+}
+
+void GeolocationDispatcherHost::RenderViewHostChanged(
+    RenderViewHost* old_host,
+    RenderViewHost* new_host) {
+  updating_frames_.clear();
+  paused_ = false;
+  geolocation_subscription_.reset();
 }
 
 void GeolocationDispatcherHost::DidNavigateAnyFrame(
@@ -64,9 +137,42 @@ bool GeolocationDispatcherHost::OnMessageReceived(
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(GeolocationHostMsg_RequestPermission,
                         OnRequestPermission)
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_StartUpdating, OnStartUpdating)
+    IPC_MESSAGE_HANDLER(GeolocationHostMsg_StopUpdating, OnStopUpdating)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void GeolocationDispatcherHost::OnLocationUpdate(
+    const Geoposition& geoposition) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RecordGeopositionErrorCode(geoposition.error_code);
+  if (paused_)
+    return;
+
+  for (std::map<RenderFrameHost*, bool>::iterator i = updating_frames_.begin();
+       i != updating_frames_.end(); ++i) {
+    UpdateGeoposition(i->first, geoposition);
+  }
+}
+
+void GeolocationDispatcherHost::UpdateGeoposition(
+    RenderFrameHost* frame,
+    const Geoposition& geoposition) {
+  RenderFrameHost* top_frame = frame;
+  while (top_frame->GetParent()) {
+    top_frame = top_frame->GetParent();
+  }
+  GetContentClient()->browser()->RegisterPermissionUsage(
+      content::PERMISSION_GEOLOCATION,
+      web_contents(),
+      frame->GetLastCommittedURL().GetOrigin(),
+      top_frame->GetLastCommittedURL().GetOrigin());
+
+  frame->Send(new GeolocationMsg_PositionUpdated(
+      frame->GetRoutingID(), geoposition));
 }
 
 void GeolocationDispatcherHost::OnRequestPermission(
@@ -92,6 +198,59 @@ void GeolocationDispatcherHost::OnRequestPermission(
                  render_process_id,
                  render_frame_id,
                  bridge_id));
+}
+
+void GeolocationDispatcherHost::OnStartUpdating(
+    RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    bool enable_high_accuracy) {
+  // StartUpdating() can be invoked as a result of high-accuracy mode
+  // being enabled / disabled. No need to record the dispatcher again.
+  UMA_HISTOGRAM_BOOLEAN(
+      "Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy",
+      enable_high_accuracy);
+
+  updating_frames_[render_frame_host] = enable_high_accuracy;
+  RefreshGeolocationOptions();
+  if (geoposition_override_.get())
+    UpdateGeoposition(render_frame_host, *geoposition_override_);
+}
+
+void GeolocationDispatcherHost::OnStopUpdating(
+    RenderFrameHost* render_frame_host) {
+  updating_frames_.erase(render_frame_host);
+  RefreshGeolocationOptions();
+}
+
+void GeolocationDispatcherHost::PauseOrResume(bool should_pause) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  paused_ = should_pause;
+  RefreshGeolocationOptions();
+  if (geoposition_override_.get())
+    OnLocationUpdate(*geoposition_override_);
+}
+
+void GeolocationDispatcherHost::RefreshGeolocationOptions() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (updating_frames_.empty() || paused_ || geoposition_override_.get()) {
+    geolocation_subscription_.reset();
+    return;
+  }
+
+  bool high_accuracy = false;
+  for (std::map<RenderFrameHost*, bool>::iterator i =
+            updating_frames_.begin(); i != updating_frames_.end(); ++i) {
+    if (i->second) {
+      high_accuracy = true;
+      break;
+    }
+  }
+  geolocation_subscription_ = GeolocationProvider::GetInstance()->
+      AddLocationUpdateCallback(
+          base::Bind(&GeolocationDispatcherHost::OnLocationUpdate,
+                      base::Unretained(this)),
+          high_accuracy);
 }
 
 void GeolocationDispatcherHost::SendGeolocationPermissionResponse(

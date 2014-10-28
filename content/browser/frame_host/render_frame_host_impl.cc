@@ -24,7 +24,6 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -211,6 +210,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
   }
 
   SetUpMojoIfNeeded();
+
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 }
@@ -1224,21 +1224,6 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
-void RenderFrameHostImpl::RegisterMojoServices() {
-  GeolocationServiceContext* geolocation_service_context =
-      delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
-  if (geolocation_service_context) {
-    // TODO(creis): Bind process ID here so that GeolocationServiceImpl
-    // can perform permissions checks once site isolation is complete.
-    // crbug.com/426384
-    GetServiceRegistry()->AddService<GeolocationService>(
-        base::Bind(&GeolocationServiceContext::CreateService,
-                   base::Unretained(geolocation_service_context),
-                   base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
-                              base::Unretained(this))));
-  }
-}
-
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {
   // Only main frames should be swapped out and retained inside a proxy host.
   if (rfh_state == STATE_SWAPPED_OUT)
@@ -1464,7 +1449,6 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (!GetProcess()->GetServiceRegistry())
     return;
 
-  RegisterMojoServices();
   RenderFrameSetupPtr setup;
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
   mojo::ServiceProviderPtr service_provider;
@@ -1650,15 +1634,6 @@ void RenderFrameHostImpl::CancelSuspendedNavigations() {
   TRACE_EVENT_ASYNC_END0("navigation",
                          "RenderFrameHostImpl navigation suspended", this);
   navigations_suspended_ = false;
-}
-
-void RenderFrameHostImpl::DidUseGeolocationPermission() {
-  RenderFrameHost* top_frame = frame_tree_node()->frame_tree()->GetMainFrame();
-  GetContentClient()->browser()->RegisterPermissionUsage(
-      PERMISSION_GEOLOCATION,
-      delegate_->GetAsWebContents(),
-      GetLastCommittedURL().GetOrigin(),
-      top_frame->GetLastCommittedURL().GetOrigin());
 }
 
 }  // namespace content

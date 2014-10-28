@@ -96,7 +96,6 @@ source_set("browser") {
       "//content/app/strings",
       "//content/browser/devtools:resources",
       "//content/common:mojo_bindings",
-      "//content/public/common:mojo_bindings",
       "//mojo/public/cpp/bindings",
       "//mojo/public/interfaces/application",
       "//mojo/public/js/bindings",

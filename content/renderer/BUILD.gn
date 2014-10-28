@@ -31,7 +31,6 @@ source_set("renderer") {
     "//content/common:mojo_bindings",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//content/public/common:mojo_bindings",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

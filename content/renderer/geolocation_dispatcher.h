@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/geolocation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
@@ -24,10 +23,8 @@ struct Geoposition;
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.
 // It's the complement of GeolocationDispatcherHost.
-class GeolocationDispatcher
-    : public RenderFrameObserver,
-      public blink::WebGeolocationClient,
-      public mojo::InterfaceImpl<GeolocationServiceClient> {
+class GeolocationDispatcher : public RenderFrameObserver,
+                              public blink::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderFrame* render_frame);
   virtual ~GeolocationDispatcher();
@@ -47,18 +44,18 @@ class GeolocationDispatcher
   virtual void cancelPermissionRequest(
       const blink::WebGeolocationPermissionRequest& permissionRequest);
 
-  // GeolocationServiceClient
-  void OnLocationUpdate(MojoGeopositionPtr geoposition) override;
-
   // Permission for using geolocation has been set.
   void OnPermissionSet(int bridge_id, bool is_allowed);
+
+  // We have an updated geolocation position or error code.
+  void OnPositionUpdated(const content::Geoposition& geoposition);
 
   scoped_ptr<blink::WebGeolocationController> controller_;
 
   scoped_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
-  GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
+  bool updating_;
 };
 
 }  // namespace content
