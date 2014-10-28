@@ -22,50 +22,43 @@ class FakeTabController : public TabController {
  public:
   FakeTabController() : immersive_style_(false), active_tab_(false) {
   }
-  virtual ~FakeTabController() {}
+  ~FakeTabController() override {}
 
   void set_immersive_style(bool value) { immersive_style_ = value; }
   void set_active_tab(bool value) { active_tab_ = value; }
 
-  virtual const ui::ListSelectionModel& GetSelectionModel() override {
+  const ui::ListSelectionModel& GetSelectionModel() override {
     return selection_model_;
   }
-  virtual bool SupportsMultipleSelection() override { return false; }
-  virtual void SelectTab(Tab* tab) override {}
-  virtual void ExtendSelectionTo(Tab* tab) override {}
-  virtual void ToggleSelected(Tab* tab) override {}
-  virtual void AddSelectionFromAnchorTo(Tab* tab) override {}
-  virtual void CloseTab(Tab* tab, CloseTabSource source) override {}
-  virtual void ToggleTabAudioMute(Tab* tab) override {}
-  virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p,
-                                     ui::MenuSourceType source_type) override {}
-  virtual bool IsActiveTab(const Tab* tab) const override {
-    return active_tab_;
-  }
-  virtual bool IsTabSelected(const Tab* tab) const override {
-    return false;
-  }
-  virtual bool IsTabPinned(const Tab* tab) const override { return false; }
-  virtual void MaybeStartDrag(
+  bool SupportsMultipleSelection() override { return false; }
+  void SelectTab(Tab* tab) override {}
+  void ExtendSelectionTo(Tab* tab) override {}
+  void ToggleSelected(Tab* tab) override {}
+  void AddSelectionFromAnchorTo(Tab* tab) override {}
+  void CloseTab(Tab* tab, CloseTabSource source) override {}
+  void ToggleTabAudioMute(Tab* tab) override {}
+  void ShowContextMenuForTab(Tab* tab,
+                             const gfx::Point& p,
+                             ui::MenuSourceType source_type) override {}
+  bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
+  bool IsTabSelected(const Tab* tab) const override { return false; }
+  bool IsTabPinned(const Tab* tab) const override { return false; }
+  void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) override {}
-  virtual void ContinueDrag(views::View* view,
-                            const ui::LocatedEvent& event) override {}
-  virtual bool EndDrag(EndDragReason reason) override { return false; }
-  virtual Tab* GetTabAt(Tab* tab,
-                        const gfx::Point& tab_in_tab_coordinates) override {
+  void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override {
+  }
+  bool EndDrag(EndDragReason reason) override { return false; }
+  Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override {
     return NULL;
   }
-  virtual void OnMouseEventInTab(views::View* source,
-                                 const ui::MouseEvent& event) override {}
-  virtual bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override {
-    return true;
-  }
-  virtual bool IsImmersiveStyle() const override { return immersive_style_; }
-  virtual void UpdateTabAccessibilityState(const Tab* tab,
-                                           ui::AXViewState* state) override{};
+  void OnMouseEventInTab(views::View* source,
+                         const ui::MouseEvent& event) override {}
+  bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override { return true; }
+  bool IsImmersiveStyle() const override { return immersive_style_; }
+  void UpdateTabAccessibilityState(const Tab* tab,
+                                   ui::AXViewState* state) override{};
 
  private:
   ui::ListSelectionModel selection_model_;
@@ -83,7 +76,7 @@ class TabTest : public views::ViewsTestBase,
 
   bool testing_for_rtl_locale() const { return GetParam(); }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     if (testing_for_rtl_locale()) {
       original_locale_ = base::i18n::GetConfiguredLocale();
       base::i18n::SetICUDefaultLocale("he");
@@ -91,7 +84,7 @@ class TabTest : public views::ViewsTestBase,
     views::ViewsTestBase::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     views::ViewsTestBase::TearDown();
     if (testing_for_rtl_locale())
       base::i18n::SetICUDefaultLocale(original_locale_);

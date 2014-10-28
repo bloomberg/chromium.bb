@@ -134,9 +134,9 @@ base::string16 GetClipboardText() {
 class TabAnimationDelegate : public gfx::AnimationDelegate {
  public:
   TabAnimationDelegate(TabStrip* tab_strip, Tab* tab);
-  virtual ~TabAnimationDelegate();
+  ~TabAnimationDelegate() override;
 
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:
   TabStrip* tab_strip() { return tab_strip_; }
@@ -167,10 +167,10 @@ void TabAnimationDelegate::AnimationProgressed(
 class ResetDraggingStateDelegate : public TabAnimationDelegate {
  public:
   ResetDraggingStateDelegate(TabStrip* tab_strip, Tab* tab);
-  virtual ~ResetDraggingStateDelegate();
+  ~ResetDraggingStateDelegate() override;
 
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
@@ -236,7 +236,7 @@ class NewTabButton : public views::ImageButton,
                      public views::MaskedTargeterDelegate {
  public:
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
-  virtual ~NewTabButton();
+  ~NewTabButton() override;
 
   // Set the background offset used to match the background image to the frame
   // image.
@@ -249,14 +249,14 @@ class NewTabButton : public views::ImageButton,
 #if defined(OS_WIN)
   virtual void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // views::MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(gfx::Path* mask) const override;
 
   bool ShouldWindowContentsBeTransparent() const;
   gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
@@ -476,8 +476,8 @@ class TabStrip::RemoveTabDelegate : public TabAnimationDelegate {
  public:
   RemoveTabDelegate(TabStrip* tab_strip, Tab* tab);
 
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoveTabDelegate);

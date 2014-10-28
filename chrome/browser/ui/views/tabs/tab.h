@@ -50,7 +50,7 @@ class Tab : public gfx::AnimationDelegate,
   static const char kViewClassName[];
 
   explicit Tab(TabController* controller);
-  virtual ~Tab();
+  ~Tab() override;
 
   TabController* controller() const { return controller_; }
 
@@ -170,42 +170,41 @@ class Tab : public gfx::AnimationDelegate,
   typedef std::list<ImageCacheEntry> ImageCache;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // views::MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(gfx::Path* mask) const override;
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void Layout() override;
-  virtual void OnThemeChanged() override;
-  virtual const char* GetClassName() const override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p,
-                                    gfx::Point* origin) const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
+  void OnThemeChanged() override;
+  const char* GetClassName() const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  bool GetTooltipTextOrigin(const gfx::Point& p,
+                            gfx::Point* origin) const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Invoked from Layout to adjust the position of the favicon or media
   // indicator for mini tabs.

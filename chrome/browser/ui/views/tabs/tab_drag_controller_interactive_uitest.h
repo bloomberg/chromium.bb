@@ -31,7 +31,7 @@ class View;
 class TabDragControllerTest : public InProcessBrowserTest {
  public:
   TabDragControllerTest();
-  virtual ~TabDragControllerTest();
+  ~TabDragControllerTest() override;
 
   // Cover for TabStrip::StopAnimating(true).
   void StopAnimating(TabStrip* tab_strip);

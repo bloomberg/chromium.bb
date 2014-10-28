@@ -71,7 +71,7 @@ class TabDragController : public content::NotificationObserver,
   static const int kVerticalDetachMagnetism;
 
   TabDragController();
-  virtual ~TabDragController();
+  ~TabDragController() override;
 
   // Initializes TabDragController to drag the tabs in |tabs| originating from
   // |source_tabstrip|. |source_tab| is the tab that initiated the drag and is
@@ -208,16 +208,16 @@ class TabDragController : public content::NotificationObserver,
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
 
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Overriden from views::WidgetObserver:
-  virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // Overriden from TabStripModelObserver:
-  virtual void TabStripEmpty() override;
+  void TabStripEmpty() override;
 
   // Initialize the offset used to calculate the position to create windows
   // in |GetWindowCreatePoint|. This should only be invoked from |Init|.

@@ -199,10 +199,10 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
       : gfx::LinearAnimation(1000, 25, this),
         target_(target) {
   }
-  virtual ~FaviconCrashAnimation() {}
+  ~FaviconCrashAnimation() override {}
 
   // gfx::Animation overrides:
-  virtual void AnimateToState(double state) override {
+  void AnimateToState(double state) override {
     const double kHidingOffset = 27;
 
     if (state < .5) {
@@ -217,7 +217,7 @@ class Tab::FaviconCrashAnimation : public gfx::LinearAnimation,
   }
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationCanceled(const gfx::Animation* animation) override {
+  void AnimationCanceled(const gfx::Animation* animation) override {
     target_->SetFaviconHidingOffset(0);
   }
 
@@ -242,10 +242,10 @@ class Tab::TabCloseButton : public views::ImageButton,
         scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   }
 
-  virtual ~TabCloseButton() {}
+  ~TabCloseButton() override {}
 
   // views::View:
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
     // Tab close button has no children, so tooltip handler should be the same
     // as the event handler.
     // In addition, a hit test has to be performed for the point (as
@@ -255,7 +255,7 @@ class Tab::TabCloseButton : public views::ImageButton,
     return GetEventHandlerForPoint(point);
   }
 
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
+  bool OnMousePressed(const ui::MouseEvent& event) override {
     tab_->controller_->OnMouseEventInTab(this, event);
 
     bool handled = ImageButton::OnMousePressed(event);
@@ -264,26 +264,24 @@ class Tab::TabCloseButton : public views::ImageButton,
     return event.IsOnlyMiddleMouseButton() ? false : handled;
   }
 
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override {
+  void OnMouseMoved(const ui::MouseEvent& event) override {
     tab_->controller_->OnMouseEventInTab(this, event);
     CustomButton::OnMouseMoved(event);
   }
 
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override {
+  void OnMouseReleased(const ui::MouseEvent& event) override {
     tab_->controller_->OnMouseEventInTab(this, event);
     CustomButton::OnMouseReleased(event);
   }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     // Consume all gesture events here so that the parent (Tab) does not
     // start consuming gestures.
     ImageButton::OnGestureEvent(event);
     event->SetHandled();
   }
 
-  virtual const char* GetClassName() const override {
-    return kTabCloseButtonName;
-  }
+  const char* GetClassName() const override { return kTabCloseButtonName; }
 
  private:
   // Returns the rectangular bounds of parent tab's visible region in the
@@ -316,7 +314,7 @@ class Tab::TabCloseButton : public views::ImageButton,
   }
 
   // views::ViewTargeterDelegate:
-  virtual View* TargetForRect(View* root, const gfx::Rect& rect) override {
+  View* TargetForRect(View* root, const gfx::Rect& rect) override {
     CHECK_EQ(root, this);
 
     if (!views::UsePointBasedTargeting(rect))
@@ -334,7 +332,7 @@ class Tab::TabCloseButton : public views::ImageButton,
   }
 
   // views:MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const override {
+  bool GetHitTestMask(gfx::Path* mask) const override {
     DCHECK(mask);
     mask->reset();
 
@@ -355,8 +353,8 @@ class Tab::TabCloseButton : public views::ImageButton,
     return false;
   }
 
-  virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const override {
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override {
     CHECK_EQ(target, this);
 
     // If the request is not made in response to a gesture, use the

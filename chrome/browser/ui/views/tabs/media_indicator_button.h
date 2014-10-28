@@ -30,7 +30,7 @@ class MediaIndicatorButton : public views::ImageButton,
   static const char kViewClassName[];
 
   MediaIndicatorButton();
-  virtual ~MediaIndicatorButton();
+  ~MediaIndicatorButton() override;
 
   // Returns the current TabMediaState except, while the indicator image is
   // fading out, returns the prior TabMediaState.
@@ -44,17 +44,17 @@ class MediaIndicatorButton : public views::ImageButton,
 
  protected:
   // views::View:
-  virtual const char* GetClassName() const override;
-  virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ViewTargeterDelegate
-  virtual bool DoesIntersectRect(const View* target,
-                                 const gfx::Rect& rect) const override;
+  bool DoesIntersectRect(const View* target,
+                         const gfx::Rect& rect) const override;
 
   // views::Button:
-  virtual void NotifyClick(const ui::Event& event) override;
+  void NotifyClick(const ui::Event& event) override;
 
  private:
   class FadeAnimationDelegate;

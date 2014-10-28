@@ -32,7 +32,7 @@ class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver {
  public:
   BrowserTabStripController(Browser* browser, TabStripModel* model);
-  virtual ~BrowserTabStripController();
+  ~BrowserTabStripController() override;
 
   void InitFromModel(TabStrip* tabstrip);
 
@@ -45,63 +45,59 @@ class BrowserTabStripController : public TabStripController,
   bool IsTabPinned(Tab* tab) const;
 
   // TabStripController implementation:
-  virtual const ui::ListSelectionModel& GetSelectionModel() override;
-  virtual int GetCount() const override;
-  virtual bool IsValidIndex(int model_index) const override;
-  virtual bool IsActiveTab(int model_index) const override;
-  virtual int GetActiveIndex() const override;
-  virtual bool IsTabSelected(int model_index) const override;
-  virtual bool IsTabPinned(int model_index) const override;
-  virtual bool IsNewTabPage(int model_index) const override;
-  virtual void SelectTab(int model_index) override;
-  virtual void ExtendSelectionTo(int model_index) override;
-  virtual void ToggleSelected(int model_index) override;
-  virtual void AddSelectionFromAnchorTo(int model_index) override;
-  virtual void CloseTab(int model_index, CloseTabSource source) override;
-  virtual void ToggleTabAudioMute(int model_index) override;
-  virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p,
-                                     ui::MenuSourceType source_type) override;
-  virtual void UpdateLoadingAnimations() override;
-  virtual int HasAvailableDragActions() const override;
-  virtual void OnDropIndexUpdate(int index, bool drop_before) override;
-  virtual void PerformDrop(bool drop_before,
-                           int index,
-                           const GURL& url) override;
-  virtual bool IsCompatibleWith(TabStrip* other) const override;
-  virtual void CreateNewTab() override;
-  virtual void CreateNewTabWithLocation(const base::string16& loc) override;
-  virtual bool IsIncognito() override;
-  virtual void StackedLayoutMaybeChanged() override;
-  virtual void OnStartedDraggingTabs() override;
-  virtual void OnStoppedDraggingTabs() override;
-  virtual void CheckFileSupported(const GURL& url) override;
+  const ui::ListSelectionModel& GetSelectionModel() override;
+  int GetCount() const override;
+  bool IsValidIndex(int model_index) const override;
+  bool IsActiveTab(int model_index) const override;
+  int GetActiveIndex() const override;
+  bool IsTabSelected(int model_index) const override;
+  bool IsTabPinned(int model_index) const override;
+  bool IsNewTabPage(int model_index) const override;
+  void SelectTab(int model_index) override;
+  void ExtendSelectionTo(int model_index) override;
+  void ToggleSelected(int model_index) override;
+  void AddSelectionFromAnchorTo(int model_index) override;
+  void CloseTab(int model_index, CloseTabSource source) override;
+  void ToggleTabAudioMute(int model_index) override;
+  void ShowContextMenuForTab(Tab* tab,
+                             const gfx::Point& p,
+                             ui::MenuSourceType source_type) override;
+  void UpdateLoadingAnimations() override;
+  int HasAvailableDragActions() const override;
+  void OnDropIndexUpdate(int index, bool drop_before) override;
+  void PerformDrop(bool drop_before, int index, const GURL& url) override;
+  bool IsCompatibleWith(TabStrip* other) const override;
+  void CreateNewTab() override;
+  void CreateNewTabWithLocation(const base::string16& loc) override;
+  bool IsIncognito() override;
+  void StackedLayoutMaybeChanged() override;
+  void OnStartedDraggingTabs() override;
+  void OnStoppedDraggingTabs() override;
+  void CheckFileSupported(const GURL& url) override;
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(content::WebContents* contents,
-                             int model_index,
-                             bool is_active) override;
-  virtual void TabDetachedAt(content::WebContents* contents,
+  void TabInsertedAt(content::WebContents* contents,
+                     int model_index,
+                     bool is_active) override;
+  void TabDetachedAt(content::WebContents* contents, int model_index) override;
+  void TabSelectionChanged(TabStripModel* tab_strip_model,
+                           const ui::ListSelectionModel& old_model) override;
+  void TabMoved(content::WebContents* contents,
+                int from_model_index,
+                int to_model_index) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int model_index,
+                    TabChangeType change_type) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int model_index) override;
+  void TabPinnedStateChanged(content::WebContents* contents,
                              int model_index) override;
-  virtual void TabSelectionChanged(
-      TabStripModel* tab_strip_model,
-      const ui::ListSelectionModel& old_model) override;
-  virtual void TabMoved(content::WebContents* contents,
-                        int from_model_index,
-                        int to_model_index) override;
-  virtual void TabChangedAt(content::WebContents* contents,
-                            int model_index,
-                            TabChangeType change_type) override;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int model_index) override;
-  virtual void TabPinnedStateChanged(content::WebContents* contents,
-                                     int model_index) override;
-  virtual void TabMiniStateChanged(content::WebContents* contents,
-                                   int model_index) override;
-  virtual void TabBlockedStateChanged(content::WebContents* contents,
-                                      int model_index) override;
+  void TabMiniStateChanged(content::WebContents* contents,
+                           int model_index) override;
+  void TabBlockedStateChanged(content::WebContents* contents,
+                              int model_index) override;
 
  protected:
   // The context in which SetTabRendererDataFromModel is being called.
