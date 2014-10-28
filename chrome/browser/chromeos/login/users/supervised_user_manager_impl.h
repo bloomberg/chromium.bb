@@ -16,6 +16,7 @@ namespace chromeos {
 
 class ChromeUserManagerImpl;
 class CrosSettings;
+class SupervisedUserTestBase;
 
 // Implementation of the UserManager.
 class SupervisedUserManagerImpl
@@ -62,6 +63,7 @@ class SupervisedUserManagerImpl
  private:
   friend class ChromeUserManagerImpl;
   friend class UserManager;
+  friend class SupervisedUserTestBase;
 
   explicit SupervisedUserManagerImpl(ChromeUserManagerImpl* owner);
 

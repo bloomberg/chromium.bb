@@ -84,10 +84,11 @@ bool LoginManagerTest::AddUserToSession(const UserContext& user_context) {
     ADD_FAILURE();
     return false;
   }
-  controller->Login(user_context, SigninSpecifics());
-  content::WindowedNotificationObserver(
+  content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources()).Wait();
+      content::NotificationService::AllSources());
+  controller->Login(user_context, SigninSpecifics());
+  observer.Wait();
   const user_manager::UserList& logged_users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = logged_users.begin();

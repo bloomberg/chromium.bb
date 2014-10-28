@@ -90,12 +90,12 @@ class SupervisedUserTransactionCleanupTest2
 };
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-                       DISABLED_PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
   PrepareUsers();
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-                       DISABLED_PRE_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_PRE_CreateAndRemoveSupervisedUser) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
   StartUserCreation("supervised-user-creation-next-button",
@@ -103,22 +103,22 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-                       DISABLED_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_CreateAndRemoveSupervisedUser) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
-                       DISABLED_CreateAndRemoveSupervisedUser) {
+                       CreateAndRemoveSupervisedUser) {
   RemoveSupervisedUser(3, 0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
-                       DISABLED_PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_PRE_PRE_CreateAndRemoveSupervisedUser) {
   PrepareUsers();
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
-                       DISABLED_PRE_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_PRE_CreateAndRemoveSupervisedUser) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
   StartUserCreation("supervised-user-creation-next-button",
@@ -126,22 +126,22 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
-                       DISABLED_PRE_CreateAndRemoveSupervisedUser) {
+                       PRE_CreateAndRemoveSupervisedUser) {
   SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
-                       DISABLED_CreateAndRemoveSupervisedUser) {
+                       CreateAndRemoveSupervisedUser) {
   RemoveSupervisedUser(3, 0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
-                       DISABLED_PRE_PRE_CreateAndCancelSupervisedUser) {
+                       PRE_PRE_CreateAndCancelSupervisedUser) {
   PrepareUsers();
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
-                       DISABLED_PRE_CreateAndCancelSupervisedUser) {
+                       PRE_CreateAndCancelSupervisedUser) {
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
 
@@ -162,12 +162,12 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   ASSERT_EQ(3UL, user_manager::UserManager::Get()->GetUsers().size());
 
   // We wait for token now. Press cancel button at this point.
-  JSEval("$('cancel-add-user-button').click()");
+  JSEvalOrExitBrowser("$('cancel-add-user-button').click()");
 }
 
 IN_PROC_BROWSER_TEST_(
     SupervisedUserTransactionCleanupTest,
-    DISABLED_CreateAndCancelSupervisedUser,
+    CreateAndCancelSupervisedUser,
     SupervisedUserTransactionCleanupTest2,
     testing::internal::GetTypeId<SupervisedUserTransactionCleanupTest>()) {
   // Make sure there is no supervised user in list.
