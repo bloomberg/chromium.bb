@@ -71,13 +71,12 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
       : host_(host) {
   }
 
-  virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) override {
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override {
     host_->AnchorUpdated();
   }
 
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) override {
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
     host_->AnchorUpdated();
   }
 
@@ -150,7 +149,7 @@ class TrayBackground : public views::Background {
             IDR_AURA_TRAY_BG_VERTICAL_BOTTOM_PRESSED).ToImageSkia();
   }
 
-  virtual ~TrayBackground() {}
+  ~TrayBackground() override {}
 
   SkColor color() { return color_; }
   void set_color(SkColor color) { color_ = color; }
@@ -163,7 +162,7 @@ class TrayBackground : public views::Background {
   }
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
     int orientation = kImageHorizontal;
     ShelfWidget* shelf_widget = GetShelfWidget();
     if (shelf_widget &&

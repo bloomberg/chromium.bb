@@ -15,7 +15,7 @@ namespace ash {
 class FixedSizedScrollView : public views::ScrollView {
  public:
   FixedSizedScrollView();
-  virtual ~FixedSizedScrollView();
+  ~FixedSizedScrollView() override;
 
   void SetContentsView(views::View* view);
 
@@ -26,12 +26,12 @@ class FixedSizedScrollView : public views::ScrollView {
   void set_fixed_size(const gfx::Size& size) { fixed_size_ = size; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
  protected:
   // Overridden from views::View:
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   gfx::Size fixed_size_;

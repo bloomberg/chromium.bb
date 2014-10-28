@@ -23,12 +23,12 @@ class TrayBubbleWrapper : public views::WidgetObserver {
  public:
   TrayBubbleWrapper(TrayBackgroundView* tray,
                     views::TrayBubbleView* bubble_view);
-  virtual ~TrayBubbleWrapper();
+  ~TrayBubbleWrapper() override;
 
   // views::WidgetObserver overrides:
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
-  virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   const TrayBackgroundView* tray() const { return tray_; }
   TrayBackgroundView* tray() { return tray_; }

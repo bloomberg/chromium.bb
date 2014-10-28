@@ -22,7 +22,7 @@ class SystemTrayItem;
 class TrayItemMore : public ActionableView {
  public:
   TrayItemMore(SystemTrayItem* owner, bool show_more);
-  virtual ~TrayItemMore();
+  ~TrayItemMore() override;
 
   SystemTrayItem* owner() const { return owner_; }
 
@@ -38,11 +38,11 @@ class TrayItemMore : public ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) override;
+  bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual void Layout() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void Layout() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   SystemTrayItem* owner_;
   // True if |more_| should be shown.

@@ -37,10 +37,10 @@ class TrayBarButtonWithTitle::TrayBarButton : public views::View {
       bar_disabled_images_(bar_disabled_images),
       painter_(new views::HorizontalPainter(bar_active_images_)){
   }
-  virtual ~TrayBarButton() {}
+  ~TrayBarButton() override {}
 
   // Overriden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     painter_->Paint(canvas, size());
   }
 

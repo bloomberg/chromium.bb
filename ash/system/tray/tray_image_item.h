@@ -17,7 +17,7 @@ class TrayItemView;
 class TrayImageItem : public SystemTrayItem {
  public:
   TrayImageItem(SystemTray* system_tray, int resource_id);
-  virtual ~TrayImageItem();
+  ~TrayImageItem() override;
 
   views::View* tray_view();
 
@@ -28,15 +28,14 @@ class TrayImageItem : public SystemTrayItem {
   virtual bool GetInitialVisibility() = 0;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
  private:
   // Set the alignment of the image depending on the shelf alignment.

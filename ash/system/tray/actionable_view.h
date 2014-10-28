@@ -24,7 +24,7 @@ class ASH_EXPORT ActionableView : public views::View {
 
   ActionableView();
 
-  virtual ~ActionableView();
+  ~ActionableView() override;
 
   void SetAccessibleName(const base::string16& name);
   const base::string16& accessible_name() const { return accessible_name_; }
@@ -41,18 +41,18 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual bool PerformAction(const ui::Event& event) = 0;
 
   // Overridden from views::View.
-  virtual const char* GetClassName() const override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  const char* GetClassName() const override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // Overridden from ui::EventHandler.
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   base::string16 accessible_name_;

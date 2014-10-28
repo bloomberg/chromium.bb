@@ -14,11 +14,10 @@ namespace {
 class EmptyBackground : public views::Background {
  public:
   EmptyBackground() {}
-  virtual ~EmptyBackground() {}
+  ~EmptyBackground() override {}
 
  private:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
-  }
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {}
 
   DISALLOW_COPY_AND_ASSIGN(EmptyBackground);
 };

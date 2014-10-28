@@ -42,14 +42,14 @@ class TestDetailsView : public TrayDetailsView, public ViewClickListener {
     CreateSpecialRow(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
   }
 
-  virtual ~TestDetailsView() {}
+  ~TestDetailsView() override {}
 
   void FocusFooter() {
     footer()->content()->RequestFocus();
   }
 
   // Overridden from ViewClickListener:
-  virtual void OnViewClicked(views::View* sender) override {}
+  void OnViewClicked(views::View* sender) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDetailsView);
@@ -61,28 +61,22 @@ class TestItem : public SystemTrayItem {
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
   // Overridden from SystemTrayItem:
-  virtual views::View* CreateTrayView(user::LoginStatus status) override {
+  views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
     return tray_view_;
   }
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetFocusable(true);
     return default_view_;
   }
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
+  views::View* CreateDetailedView(user::LoginStatus status) override {
     detailed_view_ = new TestDetailsView(this);
     return detailed_view_;
   }
-  virtual void DestroyTrayView() override {
-    tray_view_ = NULL;
-  }
-  virtual void DestroyDefaultView() override {
-    default_view_ = NULL;
-  }
-  virtual void DestroyDetailedView() override {
-    detailed_view_ = NULL;
-  }
+  void DestroyTrayView() override { tray_view_ = NULL; }
+  void DestroyDefaultView() override { default_view_ = NULL; }
+  void DestroyDetailedView() override { detailed_view_ = NULL; }
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }
@@ -101,7 +95,7 @@ class TestItem : public SystemTrayItem {
 class TrayDetailsViewTest : public AshTestBase {
  public:
   TrayDetailsViewTest() {}
-  virtual ~TrayDetailsViewTest() {}
+  ~TrayDetailsViewTest() override {}
 
   HoverHighlightView* CreateAndShowHoverHighlightView() {
     SystemTray* tray = GetSystemTray();
@@ -116,7 +110,7 @@ class TrayDetailsViewTest : public AshTestBase {
         footer()->content());
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();

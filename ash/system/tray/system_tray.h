@@ -38,7 +38,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
                               public views::TrayBubbleView::Delegate {
  public:
   explicit SystemTray(StatusAreaWidget* status_area_widget);
-  virtual ~SystemTray();
+  ~SystemTray() override;
 
   // Calls TrayBackgroundView::Initialize(), creates the tray items, and
   // adds them to SystemTrayNotifier.
@@ -123,24 +123,22 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   bool CloseNotificationBubbleForTest() const;
 
   // Overridden from TrayBackgroundView.
-  virtual void SetShelfAlignment(ShelfAlignment alignment) override;
-  virtual void AnchorUpdated() override;
-  virtual base::string16 GetAccessibleNameForTray() override;
-  virtual void BubbleResized(const views::TrayBubbleView* bubble_view) override;
-  virtual void HideBubbleWithView(
-      const views::TrayBubbleView* bubble_view) override;
-  virtual bool ClickedOutsideBubble() override;
+  void SetShelfAlignment(ShelfAlignment alignment) override;
+  void AnchorUpdated() override;
+  base::string16 GetAccessibleNameForTray() override;
+  void BubbleResized(const views::TrayBubbleView* bubble_view) override;
+  void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
+  bool ClickedOutsideBubble() override;
 
   // Overridden from message_center::TrayBubbleView::Delegate.
-  virtual void BubbleViewDestroyed() override;
-  virtual void OnMouseEnteredView() override;
-  virtual void OnMouseExitedView() override;
-  virtual base::string16 GetAccessibleNameForBubble() override;
-  virtual gfx::Rect GetAnchorRect(
-      views::Widget* anchor_widget,
-      AnchorType anchor_type,
-      AnchorAlignment anchor_alignment) const override;
-  virtual void HideBubble(const views::TrayBubbleView* bubble_view) override;
+  void BubbleViewDestroyed() override;
+  void OnMouseEnteredView() override;
+  void OnMouseExitedView() override;
+  base::string16 GetAccessibleNameForBubble() override;
+  gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
+                          AnchorType anchor_type,
+                          AnchorAlignment anchor_alignment) const override;
+  void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
   ScreenTrayItem* GetScreenCaptureItem() { return screen_capture_tray_item_; }
@@ -202,7 +200,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) override;
+  bool PerformAction(const ui::Event& event) override;
 
   // Owned items.
   ScopedVector<SystemTrayItem> items_;

@@ -24,7 +24,7 @@ class ViewClickListener;
 class HoverHighlightView : public ActionableView {
  public:
   explicit HoverHighlightView(ViewClickListener* listener);
-  virtual ~HoverHighlightView();
+  ~HoverHighlightView() override;
 
   // Convenience function for adding an icon and a label.  This also sets the
   // accessible name.
@@ -61,24 +61,24 @@ class HoverHighlightView : public ActionableView {
 
  protected:
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  private:
   // Sets the highlighted color on a text label if |hover| is set.
   void SetHoverHighlight(bool hover);
 
   // Overridden from ActionableView:
-  virtual bool PerformAction(const ui::Event& event) override;
+  bool PerformAction(const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void OnEnabledChanged() override;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnEnabledChanged() override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnFocus() override;
 
   ViewClickListener* listener_;
   views::Label* text_label_;

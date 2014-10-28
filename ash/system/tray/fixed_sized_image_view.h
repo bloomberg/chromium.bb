@@ -17,10 +17,10 @@ namespace ash {
 class FixedSizedImageView : public views::ImageView {
  public:
   FixedSizedImageView(int width, int height);
-  virtual ~FixedSizedImageView();
+  ~FixedSizedImageView() override;
 
  private:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   int width_;
   int height_;

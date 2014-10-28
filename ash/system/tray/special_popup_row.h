@@ -23,7 +23,7 @@ class ViewClickListener;
 class SpecialPopupRow : public views::View {
  public:
   SpecialPopupRow();
-  virtual ~SpecialPopupRow();
+  ~SpecialPopupRow() override;
 
   void SetTextLabel(int string_id, ViewClickListener* listener);
   void SetContent(views::View* view);
@@ -35,9 +35,9 @@ class SpecialPopupRow : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void Layout() override;
 
   views::View* content_;
   views::View* button_container_;

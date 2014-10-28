@@ -31,7 +31,7 @@ class TrayNotificationView : public views::SlideOutView,
   // If icon_id is 0, no icon image will be set. SetIconImage can be called
   // to later set the icon image.
   TrayNotificationView(SystemTrayItem* owner, int icon_id);
-  virtual ~TrayNotificationView();
+  ~TrayNotificationView() override;
 
   // InitView must be called once with the contents to be displayed.
   void InitView(views::View* contents);
@@ -55,14 +55,13 @@ class TrayNotificationView : public views::SlideOutView,
   void RestartAutoCloseTimer();
 
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from views::View.
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from ui::EventHandler.
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
   // Called when the close button is pressed. Does nothing by default.
@@ -71,7 +70,7 @@ class TrayNotificationView : public views::SlideOutView,
   virtual void OnClickAction();
 
   // Overridden from views::SlideOutView.
-  virtual void OnSlideOut() override;
+  void OnSlideOut() override;
 
   SystemTrayItem* owner() { return owner_; }
 

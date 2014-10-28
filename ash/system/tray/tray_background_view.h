@@ -34,20 +34,20 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   class TrayContainer : public views::View {
    public:
     explicit TrayContainer(ShelfAlignment alignment);
-    virtual ~TrayContainer() {}
+    ~TrayContainer() override {}
 
     void SetAlignment(ShelfAlignment alignment);
 
     void set_size(const gfx::Size& size) { size_ = size; }
 
     // views::View:
-    virtual gfx::Size GetPreferredSize() const override;
+    gfx::Size GetPreferredSize() const override;
 
    protected:
     // views::View:
-    virtual void ChildPreferredSizeChanged(views::View* child) override;
-    virtual void ChildVisibilityChanged(View* child) override;
-    virtual void ViewHierarchyChanged(
+    void ChildPreferredSizeChanged(views::View* child) override;
+    void ChildVisibilityChanged(View* child) override;
+    void ViewHierarchyChanged(
         const ViewHierarchyChangedDetails& details) override;
 
    private:
@@ -60,27 +60,27 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   };
 
   explicit TrayBackgroundView(StatusAreaWidget* status_area_widget);
-  virtual ~TrayBackgroundView();
+  ~TrayBackgroundView() override;
 
   // Called after the tray has been added to the widget containing it.
   virtual void Initialize();
 
   // views::View:
-  virtual void SetVisible(bool visible) override;
-  virtual const char* GetClassName() const override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void SetVisible(bool visible) override;
+  const char* GetClassName() const override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // ActionableView:
-  virtual bool PerformAction(const ui::Event& event) override;
-  virtual gfx::Rect GetFocusBounds() override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  bool PerformAction(const ui::Event& event) override;
+  gfx::Rect GetFocusBounds() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // BackgroundAnimatorDelegate:
-  virtual void UpdateBackground(int alpha) override;
+  void UpdateBackground(int alpha) override;
 
   // Called whenever the shelf alignment changes.
   virtual void SetShelfAlignment(ShelfAlignment alignment);
@@ -157,7 +157,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void SetTrayBorder();
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
   // Applies transformations to the |layer()| to animate the view when
   // SetVisible(false) is called.

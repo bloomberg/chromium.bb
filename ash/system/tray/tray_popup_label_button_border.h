@@ -16,10 +16,10 @@ namespace ash {
 class TrayPopupLabelButtonBorder : public views::LabelButtonBorder {
  public:
   TrayPopupLabelButtonBorder();
-  virtual ~TrayPopupLabelButtonBorder();
+  ~TrayPopupLabelButtonBorder() override;
 
   // views::LabelButtonBorder:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) override;
+  void Paint(const views::View& view, gfx::Canvas* canvas) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButtonBorder);

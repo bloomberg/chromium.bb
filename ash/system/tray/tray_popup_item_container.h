@@ -17,7 +17,7 @@ class TrayPopupItemContainer : public views::View {
                          bool change_background,
                          bool draw_border);
 
-  virtual ~TrayPopupItemContainer();
+  ~TrayPopupItemContainer() override;
 
   bool active() {
     return active_;
@@ -28,12 +28,12 @@ class TrayPopupItemContainer : public views::View {
   void SetActive(bool active);
 
   // views::View:
-  virtual void ChildVisibilityChanged(views::View* child) override;
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  void ChildVisibilityChanged(views::View* child) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // True if either a mouse is hovering over this view, or if a user has touched
   // down.

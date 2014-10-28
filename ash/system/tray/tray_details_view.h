@@ -22,7 +22,7 @@ class ViewClickListener;
 class ASH_EXPORT TrayDetailsView : public views::View {
  public:
   explicit TrayDetailsView(SystemTrayItem* owner);
-  virtual ~TrayDetailsView();
+  ~TrayDetailsView() override;
 
   // Creates a row with special highlighting etc. This is typically the
   // bottom-most row in the popup.
@@ -50,8 +50,8 @@ class ASH_EXPORT TrayDetailsView : public views::View {
 
  protected:
   // Overridden from views::View.
-  virtual void Layout() override;
-  virtual void OnPaintBorder(gfx::Canvas* canvas) override;
+  void Layout() override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
   SystemTrayItem* owner_;

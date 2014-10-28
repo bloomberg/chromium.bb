@@ -15,13 +15,13 @@ namespace ash {
 class SystemTrayThrobber : public views::SmoothedThrobber {
  public:
   SystemTrayThrobber(int frame_delay_ms);
-  virtual ~SystemTrayThrobber();
+  ~SystemTrayThrobber() override;
 
   void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
-  virtual bool GetTooltipText(
-        const gfx::Point& p, base::string16* tooltip) const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
  private:
   // The current tooltip text.
@@ -34,17 +34,17 @@ class SystemTrayThrobber : public views::SmoothedThrobber {
 class ThrobberView : public views::View {
  public:
   ThrobberView();
-  virtual ~ThrobberView();
+  ~ThrobberView() override;
 
   void Start();
   void Stop();
   void SetTooltipText(const base::string16& tooltip_text);
 
   // Overriden from views::View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool GetTooltipText(
-      const gfx::Point& p, base::string16* tooltip) const override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
  private:
   // Schedules animation for starting/stopping throbber.

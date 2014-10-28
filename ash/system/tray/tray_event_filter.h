@@ -23,14 +23,14 @@ class TrayBubbleWrapper;
 class TrayEventFilter : public ui::EventHandler {
  public:
   explicit TrayEventFilter();
-  virtual ~TrayEventFilter();
+  ~TrayEventFilter() override;
 
   void AddWrapper(TrayBubbleWrapper* wrapper);
   void RemoveWrapper(TrayBubbleWrapper* wrapper);
 
   // Overridden from ui::EventHandler.
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
   // Returns true if the event is handled.

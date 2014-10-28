@@ -28,7 +28,7 @@ class ASH_EXPORT TrayItemView : public views::View,
                                 public gfx::AnimationDelegate {
  public:
   explicit TrayItemView(SystemTrayItem* owner);
-  virtual ~TrayItemView();
+  ~TrayItemView() override;
 
   static void DisableAnimationsForTest();
 
@@ -41,9 +41,9 @@ class ASH_EXPORT TrayItemView : public views::View,
   views::ImageView* image_view() const { return image_view_; }
 
   // Overridden from views::View.
-  virtual void SetVisible(bool visible) override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
+  void SetVisible(bool visible) override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
 
  protected:
   // Makes sure the widget relayouts after the size/visibility of the view
@@ -61,12 +61,12 @@ class ASH_EXPORT TrayItemView : public views::View,
 
  private:
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(View* child) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
   // Overridden from gfx::AnimationDelegate.
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   SystemTrayItem* owner_;
   scoped_ptr<gfx::SlideAnimation> animation_;

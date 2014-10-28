@@ -53,7 +53,7 @@ class TestItem : public SystemTrayItem {
  public:
   TestItem() : SystemTrayItem(GetSystemTray()), tray_view_(NULL) {}
 
-  virtual views::View* CreateTrayView(user::LoginStatus status) override {
+  views::View* CreateTrayView(user::LoginStatus status) override {
     tray_view_ = new views::View;
     // Add a label so it has non-zero width.
     tray_view_->SetLayoutManager(new views::FillLayout);
@@ -61,14 +61,14 @@ class TestItem : public SystemTrayItem {
     return tray_view_;
   }
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
     default_view_->SetLayoutManager(new views::FillLayout);
     default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view_;
   }
 
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
+  views::View* CreateDetailedView(user::LoginStatus status) override {
     detailed_view_ = new views::View;
     detailed_view_->SetLayoutManager(new views::FillLayout);
     detailed_view_->AddChildView(
@@ -76,31 +76,20 @@ class TestItem : public SystemTrayItem {
     return detailed_view_;
   }
 
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) override {
+  views::View* CreateNotificationView(user::LoginStatus status) override {
     notification_view_ = new views::View;
     return notification_view_;
   }
 
-  virtual void DestroyTrayView() override {
-    tray_view_ = NULL;
-  }
+  void DestroyTrayView() override { tray_view_ = NULL; }
 
-  virtual void DestroyDefaultView() override {
-    default_view_ = NULL;
-  }
+  void DestroyDefaultView() override { default_view_ = NULL; }
 
-  virtual void DestroyDetailedView() override {
-    detailed_view_ = NULL;
-  }
+  void DestroyDetailedView() override { detailed_view_ = NULL; }
 
-  virtual void DestroyNotificationView() override {
-    notification_view_ = NULL;
-  }
+  void DestroyNotificationView() override { notification_view_ = NULL; }
 
-  virtual void UpdateAfterLoginStatusChange(
-      user::LoginStatus status) override {
-  }
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }
@@ -120,41 +109,36 @@ class TestNoViewItem : public SystemTrayItem {
  public:
   TestNoViewItem() : SystemTrayItem(GetSystemTray()) {}
 
-  virtual views::View* CreateTrayView(user::LoginStatus status) override {
+  views::View* CreateTrayView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override {
+  views::View* CreateDefaultView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override {
+  views::View* CreateDetailedView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) override {
+  views::View* CreateNotificationView(user::LoginStatus status) override {
     return NULL;
   }
 
-  virtual void DestroyTrayView() override {}
-  virtual void DestroyDefaultView() override {}
-  virtual void DestroyDetailedView() override {}
-  virtual void DestroyNotificationView() override {}
-  virtual void UpdateAfterLoginStatusChange(
-      user::LoginStatus status) override {
-  }
+  void DestroyTrayView() override {}
+  void DestroyDefaultView() override {}
+  void DestroyDetailedView() override {}
+  void DestroyNotificationView() override {}
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
 };
 
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
   ModalWidgetDelegate() {}
-  virtual ~ModalWidgetDelegate() {}
+  ~ModalWidgetDelegate() override {}
 
-  virtual views::View* GetContentsView() override { return this; }
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
-  }
+  views::View* GetContentsView() override { return this; }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModalWidgetDelegate);
@@ -165,9 +149,9 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 class SystemTrayTest : public AshTestBase {
  public:
   SystemTrayTest() {}
-  virtual ~SystemTrayTest() {}
+  ~SystemTrayTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();

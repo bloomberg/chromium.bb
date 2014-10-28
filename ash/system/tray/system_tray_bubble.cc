@@ -46,10 +46,9 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
       : layer_(layer) {
   }
 
-  virtual ~AnimationObserverDeleteLayer() {
-  }
+  ~AnimationObserverDeleteLayer() override {}
 
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
   }
 
