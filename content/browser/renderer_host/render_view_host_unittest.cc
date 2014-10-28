@@ -42,14 +42,14 @@ class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
 class RenderViewHostTest : public RenderViewHostImplTestHarness {
  public:
   RenderViewHostTest() : old_browser_client_(NULL) {}
-  virtual ~RenderViewHostTest() {}
+  ~RenderViewHostTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SetBrowserClientForTesting(old_browser_client_);
     RenderViewHostImplTestHarness::TearDown();
   }

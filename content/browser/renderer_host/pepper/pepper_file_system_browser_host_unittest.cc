@@ -19,9 +19,9 @@ class PepperFileSystemBrowserHostTest : public testing::Test,
                                         public BrowserPpapiHostTest {
  public:
   PepperFileSystemBrowserHostTest() {}
-  virtual ~PepperFileSystemBrowserHostTest() {}
+  ~PepperFileSystemBrowserHostTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     PP_Instance pp_instance = 12345;
     PP_Resource pp_resource = 67890;
     host_.reset(new PepperFileSystemBrowserHost(GetBrowserPpapiHost(),
@@ -30,7 +30,7 @@ class PepperFileSystemBrowserHostTest : public testing::Test,
                                                 PP_FILESYSTEMTYPE_ISOLATED));
   }
 
-  virtual void TearDown() override { host_.reset(); }
+  void TearDown() override { host_.reset(); }
 
  protected:
   std::string GeneratePluginId(const std::string& mime_type) {

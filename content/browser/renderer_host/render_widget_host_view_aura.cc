@@ -352,16 +352,16 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit
     aura::Env::GetInstance()->AddPreTargetHandler(this);
   }
 
-  virtual ~EventFilterForPopupExit() {
+  ~EventFilterForPopupExit() override {
     aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
 
   // Overridden from ui::EventHandler
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     rwhva_->ApplyEventFilterForPopupExit(event);
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     rwhva_->ApplyEventFilterForPopupExit(event);
   }
 
@@ -403,18 +403,16 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
     view_->window_->AddObserver(this);
   }
 
-  virtual ~WindowObserver() {
-    view_->window_->RemoveObserver(this);
-  }
+  ~WindowObserver() override { view_->window_->RemoveObserver(this); }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) override {
+  void OnWindowAddedToRootWindow(aura::Window* window) override {
     if (window == view_->window_)
       view_->AddedToRootWindow();
   }
 
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) override {
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override {
     if (window == view_->window_)
       view_->RemovingFromRootWindow();
   }

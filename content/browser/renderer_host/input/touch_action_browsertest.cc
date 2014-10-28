@@ -71,7 +71,7 @@ namespace content {
 class TouchActionBrowserTest : public ContentBrowserTest {
  public:
   TouchActionBrowserTest() {}
-  virtual ~TouchActionBrowserTest() {}
+  ~TouchActionBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
     return RenderWidgetHostImpl::From(shell()->web_contents()->

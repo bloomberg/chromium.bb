@@ -60,7 +60,7 @@ class WebSocketDispatcherHostTest : public ::testing::Test {
                    base::Unretained(this)));
   }
 
-  virtual ~WebSocketDispatcherHostTest() {
+  ~WebSocketDispatcherHostTest() override {
     // We need to invalidate the issued WeakPtrs at the beginning of the
     // destructor in order not to access destructed member variables.
     weak_ptr_factory_.InvalidateWeakPtrs();

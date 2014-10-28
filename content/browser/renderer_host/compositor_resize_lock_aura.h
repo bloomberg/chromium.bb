@@ -26,13 +26,13 @@ class CompositorResizeLock : public ResizeLock {
                        const gfx::Size new_size,
                        bool defer_compositor_lock,
                        const base::TimeDelta& timeout);
-  virtual ~CompositorResizeLock();
+  ~CompositorResizeLock() override;
 
-  virtual bool GrabDeferredLock() override;
-  virtual void UnlockCompositor() override;
+  bool GrabDeferredLock() override;
+  void UnlockCompositor() override;
 
  protected:
-  virtual void LockCompositor() override;
+  void LockCompositor() override;
   void CancelLock();
 
  private:

@@ -169,7 +169,7 @@ namespace content {
 
 class P2PSocketHostUdpTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(sender_, Send(
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));

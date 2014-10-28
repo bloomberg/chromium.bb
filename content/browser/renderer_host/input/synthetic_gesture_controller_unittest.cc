@@ -359,7 +359,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
 class SyntheticGestureControllerTest : public testing::Test {
  public:
   SyntheticGestureControllerTest() {}
-  virtual ~SyntheticGestureControllerTest() {}
+  ~SyntheticGestureControllerTest() override {}
 
  protected:
   template<typename MockGestureTarget>
@@ -369,14 +369,14 @@ class SyntheticGestureControllerTest : public testing::Test {
         scoped_ptr<SyntheticGestureTarget>(target_)));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     start_time_ = base::TimeTicks::Now();
     time_ = start_time_;
     num_success_ = 0;
     num_failure_ = 0;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_.reset();
     target_ = NULL;
     time_ = base::TimeTicks();

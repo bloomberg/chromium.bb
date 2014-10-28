@@ -24,9 +24,9 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   // the other end of.
   // browser_socket: the browser's end of the sandbox IPC socketpair.
   SandboxIPCHandler(int lifeline_fd, int browser_socket);
-  virtual ~SandboxIPCHandler();
+  ~SandboxIPCHandler() override;
 
-  virtual void Run() override;
+  void Run() override;
 
  private:
   void EnsureWebKitInitialized();

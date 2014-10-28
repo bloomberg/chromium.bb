@@ -26,7 +26,7 @@ class PepperGamepadHostTest : public testing::Test,
                               public BrowserPpapiHostTest {
  public:
   PepperGamepadHostTest() {}
-  virtual ~PepperGamepadHostTest() {}
+  ~PepperGamepadHostTest() override {}
 
   void ConstructService(const blink::WebGamepads& test_data) {
     service_.reset(new GamepadServiceTestConstructor(test_data));

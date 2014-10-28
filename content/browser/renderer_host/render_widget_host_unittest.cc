@@ -295,7 +295,7 @@ class TestView : public TestRenderWidgetHostView {
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
   }
 #if defined(USE_AURA)
-  virtual ~TestView() {
+  ~TestView() override {
     // Simulate the mouse exit event dispatched when an aura window is
     // destroyed. (MakeWebMouseEventFromAuraEvent translates ET_MOUSE_EXITED
     // into WebInputEvent::MouseMove.)
@@ -407,8 +407,7 @@ class RenderWidgetHostTest : public testing::Test {
     last_simulated_event_time_seconds_ =
         (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   }
-  virtual ~RenderWidgetHostTest() {
-  }
+  ~RenderWidgetHostTest() override {}
 
   bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
     return handle_key_press_event_;
@@ -419,7 +418,7 @@ class RenderWidgetHostTest : public testing::Test {
 
  protected:
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kValidateInputEventStream);
 
@@ -445,7 +444,7 @@ class RenderWidgetHostTest : public testing::Test {
     host_->Init();
     host_->DisableGestureDebounce();
   }
-  virtual void TearDown() {
+  void TearDown() override {
     view_.reset();
     host_.reset();
     delegate_.reset();

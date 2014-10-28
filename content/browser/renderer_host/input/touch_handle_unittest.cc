@@ -69,7 +69,7 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
         tapped_(false),
         needs_animate_(false) {}
 
-  virtual ~TouchHandleTest() {}
+  ~TouchHandleTest() override {}
 
   // TouchHandleClient implementation.
   void OnHandleDragBegin(const TouchHandle& handle) override {

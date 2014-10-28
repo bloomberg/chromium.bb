@@ -70,7 +70,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // RenderWidgetHostView implementation.
   void SetBackgroundColor(SkColor color) override;
-  void SetBackgroundColorToDefault() final override;
+  void SetBackgroundColorToDefault() final;
   bool GetBackgroundOpaque() override;
   ui::TextInputClient* GetTextInputClient() override;
   bool IsShowingContextMenu() const override;

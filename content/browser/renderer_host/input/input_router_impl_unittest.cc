@@ -142,11 +142,11 @@ float PinchScaleToWheelDelta(float scale) {
 class InputRouterImplTest : public testing::Test {
  public:
   InputRouterImplTest() {}
-  virtual ~InputRouterImplTest() {}
+  ~InputRouterImplTest() override {}
 
  protected:
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     browser_context_.reset(new TestBrowserContext());
     process_.reset(new MockRenderProcessHost(browser_context_.get()));
     client_.reset(new MockInputRouterClient());
@@ -162,7 +162,7 @@ class InputRouterImplTest : public testing::Test {
     ack_handler_->set_input_router(input_router());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Process all pending tasks to avoid leaks.
     base::MessageLoop::current()->RunUntilIdle();
 

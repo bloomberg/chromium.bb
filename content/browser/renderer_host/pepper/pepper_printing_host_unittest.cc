@@ -47,7 +47,7 @@ class PepperPrintingHostTest : public testing::Test,
  public:
   PepperPrintingHostTest() {}
 
-  virtual ~PepperPrintingHostTest() {}
+  ~PepperPrintingHostTest() override {}
 
   DISALLOW_COPY_AND_ASSIGN(PepperPrintingHostTest);
 };

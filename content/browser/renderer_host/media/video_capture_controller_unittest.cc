@@ -110,12 +110,12 @@ class MockVideoCaptureControllerEventHandler
 class VideoCaptureControllerTest : public testing::Test {
  public:
   VideoCaptureControllerTest() {}
-  virtual ~VideoCaptureControllerTest() {}
+  ~VideoCaptureControllerTest() override {}
 
  protected:
   static const int kPoolSize = 3;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     controller_.reset(new VideoCaptureController(kPoolSize));
     device_ = controller_->NewDeviceClient().Pass();
     client_a_.reset(new MockVideoCaptureControllerEventHandler(
@@ -124,9 +124,7 @@ class VideoCaptureControllerTest : public testing::Test {
         controller_.get()));
   }
 
-  virtual void TearDown() override {
-    base::RunLoop().RunUntilIdle();
-  }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   scoped_refptr<media::VideoFrame> WrapI420Buffer(
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,

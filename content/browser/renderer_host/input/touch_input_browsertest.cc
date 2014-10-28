@@ -131,7 +131,7 @@ class InputEventMessageFilter : public BrowserMessageFilter {
 class TouchInputBrowserTest : public ContentBrowserTest {
  public:
   TouchInputBrowserTest() {}
-  virtual ~TouchInputBrowserTest() {}
+  ~TouchInputBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
     return RenderWidgetHostImpl::From(shell()->web_contents()->

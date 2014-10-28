@@ -67,16 +67,16 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 class QuotaReservationTest : public testing::Test {
  public:
   QuotaReservationTest() {}
-  virtual ~QuotaReservationTest() {}
+  ~QuotaReservationTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
 
     reservation_manager_.reset(new QuotaReservationManager(
         scoped_ptr<QuotaReservationManager::QuotaBackend>(new FakeBackend)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     reservation_manager_.reset();
     base::RunLoop().RunUntilIdle();
   }

@@ -46,17 +46,17 @@ class TouchSelectionControllerTest : public testing::Test,
         animation_enabled_(true),
         dragging_enabled_(false) {}
 
-  virtual ~TouchSelectionControllerTest() {}
+  ~TouchSelectionControllerTest() override {}
 
   // testing::Test implementation.
-  virtual void SetUp() override {
+  void SetUp() override {
     controller_.reset(new TouchSelectionController(
         this,
         base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs),
         kDefaulTapSlop));
   }
 
-  virtual void TearDown() override { controller_.reset(); }
+  void TearDown() override { controller_.reset(); }
 
   // TouchSelectionControllerClient implementation.
 

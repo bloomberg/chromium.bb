@@ -39,7 +39,7 @@ class MockTapSuppressionController : public TapSuppressionController,
         time_(),
         timer_started_(false) {}
 
-  virtual ~MockTapSuppressionController() {}
+  ~MockTapSuppressionController() override {}
 
   void SendGestureFlingCancel() {
     last_actions_ = NONE;
@@ -89,26 +89,20 @@ class MockTapSuppressionController : public TapSuppressionController,
   int last_actions() { return last_actions_; }
 
  protected:
-  virtual base::TimeTicks Now() override {
-    return time_;
-  }
+  base::TimeTicks Now() override { return time_; }
 
-  virtual void StartTapDownTimer(const base::TimeDelta& delay) override {
+  void StartTapDownTimer(const base::TimeDelta& delay) override {
     timer_expiry_time_ = time_ + delay;
     timer_started_ = true;
   }
 
-  virtual void StopTapDownTimer() override {
-    timer_started_ = false;
-  }
+  void StopTapDownTimer() override { timer_started_ = false; }
 
  private:
   // TapSuppressionControllerClient implementation
-  virtual void DropStashedTapDown() override {
-    last_actions_ |= TAP_DOWN_DROPPED;
-  }
+  void DropStashedTapDown() override { last_actions_ |= TAP_DOWN_DROPPED; }
 
-  virtual void ForwardStashedTapDown() override {
+  void ForwardStashedTapDown() override {
     last_actions_ |= STASHED_TAP_DOWN_FORWARDED;
   }
 
@@ -131,19 +125,16 @@ class TapSuppressionControllerTest : public testing::Test {
  public:
   TapSuppressionControllerTest() {
   }
-  virtual ~TapSuppressionControllerTest() {
-  }
+  ~TapSuppressionControllerTest() override {}
 
  protected:
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     tap_suppression_controller_.reset(
         new MockTapSuppressionController(GetConfig()));
   }
 
-  virtual void TearDown() {
-    tap_suppression_controller_.reset();
-  }
+  void TearDown() override { tap_suppression_controller_.reset(); }
 
   static TapSuppressionController::Config GetConfig() {
     TapSuppressionController::Config config;

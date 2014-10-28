@@ -23,15 +23,15 @@ class GestureTextSelectorTest : public testing::Test,
                                 public GestureTextSelectorClient {
  public:
   GestureTextSelectorTest() {}
-  virtual ~GestureTextSelectorTest() {}
+  ~GestureTextSelectorTest() override {}
 
   // Test implementation.
-  virtual void SetUp() override {
+  void SetUp() override {
     selector_.reset(new GestureTextSelector(this));
     event_log_.clear();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     selector_.reset();
     event_log_.clear();
   }

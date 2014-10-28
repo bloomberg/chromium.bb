@@ -197,11 +197,11 @@ class InputEventTimer {
 class InputRouterImplPerfTest : public testing::Test {
  public:
   InputRouterImplPerfTest() : last_input_id_(0) {}
-  virtual ~InputRouterImplPerfTest() {}
+  ~InputRouterImplPerfTest() override {}
 
  protected:
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     sender_.reset(new NullIPCSender());
     client_.reset(new NullInputRouterClient());
     ack_handler_.reset(new NullInputAckHandler());
@@ -212,7 +212,7 @@ class InputRouterImplPerfTest : public testing::Test {
                                             InputRouterImpl::Config()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     base::MessageLoop::current()->RunUntilIdle();
 
     input_router_.reset();

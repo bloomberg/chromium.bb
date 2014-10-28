@@ -70,10 +70,10 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
 class VideoCaptureManagerTest : public testing::Test {
  public:
   VideoCaptureManagerTest() : next_client_id_(1) {}
-  virtual ~VideoCaptureManagerTest() {}
+  ~VideoCaptureManagerTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     listener_.reset(new MockMediaStreamProviderListener());
     message_loop_.reset(new base::MessageLoopForIO);
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
@@ -89,7 +89,7 @@ class VideoCaptureManagerTest : public testing::Test {
     frame_observer_.reset(new MockFrameObserver());
   }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void OnGotControllerCallback(
       VideoCaptureControllerID id,

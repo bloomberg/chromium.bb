@@ -59,7 +59,7 @@ class MediaStreamUIProxyTest : public testing::Test {
     proxy_ = MediaStreamUIProxy::CreateForTests(&delegate_);
   }
 
-  virtual ~MediaStreamUIProxyTest() {
+  ~MediaStreamUIProxyTest() override {
     proxy_.reset();
     message_loop_.RunUntilIdle();
   }

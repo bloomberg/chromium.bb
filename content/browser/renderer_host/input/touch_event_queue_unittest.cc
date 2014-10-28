@@ -37,14 +37,12 @@ class TouchEventQueueTest : public testing::Test,
         slop_length_dips_(0),
         touch_scrolling_mode_(TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT) {}
 
-  virtual ~TouchEventQueueTest() {}
+  ~TouchEventQueueTest() override {}
 
   // testing::Test
-  virtual void SetUp() override { ResetQueueWithConfig(CreateConfig()); }
+  void SetUp() override { ResetQueueWithConfig(CreateConfig()); }
 
-  virtual void TearDown() override {
-    queue_.reset();
-  }
+  void TearDown() override { queue_.reset(); }
 
   // TouchEventQueueClient
   void SendTouchEventImmediately(

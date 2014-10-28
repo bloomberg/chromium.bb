@@ -31,14 +31,14 @@ class GestureEventQueueTest : public testing::Test,
       : acked_gesture_event_count_(0),
         sent_gesture_event_count_(0) {}
 
-  virtual ~GestureEventQueueTest() {}
+  ~GestureEventQueueTest() override {}
 
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     queue_.reset(new GestureEventQueue(this, this, DefaultConfig()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Process all pending tasks to avoid leaks.
     RunUntilIdle();
     queue_.reset();

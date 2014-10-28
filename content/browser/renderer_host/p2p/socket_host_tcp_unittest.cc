@@ -25,7 +25,7 @@ class P2PSocketHostTcpTestBase : public testing::Test {
       : socket_type_(type) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(sender_, Send(
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));

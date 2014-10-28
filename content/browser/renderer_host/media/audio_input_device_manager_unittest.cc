@@ -55,7 +55,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
   MAYBE_AudioInputDeviceManagerTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // The test must run on Browser::IO.
     message_loop_.reset(new base::MessageLoopForIO);
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
@@ -84,7 +84,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
     message_loop_->RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     manager_->Unregister();
     io_thread_.reset();
   }

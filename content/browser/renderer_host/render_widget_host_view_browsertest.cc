@@ -207,7 +207,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   explicit CompositingRenderWidgetHostViewBrowserTest()
       : compositing_mode_(GetParam()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     if (compositing_mode_ == SOFTWARE_COMPOSITING)
       UseSoftwareCompositing();
     RenderWidgetHostViewBrowserTest::SetUp();
@@ -408,7 +408,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         allowable_error_(0),
         test_url_("data:text/html,<!doctype html>") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EnablePixelOutput();
     CompositingRenderWidgetHostViewBrowserTest::SetUp();
   }
