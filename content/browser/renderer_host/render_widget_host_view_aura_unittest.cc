@@ -56,6 +56,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/window_util.h"
 
 using testing::_;
 
@@ -841,6 +842,35 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupRetainsCaptureAfterMouseRelease) {
   EXPECT_TRUE(window->HasCapture());
 }
 #endif
+
+// Test that select boxes close when their parent window loses focus (e.g. due
+// to an alert or system modal dialog).
+TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  EXPECT_TRUE(parent_view_->HasFocus());
+
+  view_->SetPopupType(blink::WebPopupTypeSelect);
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+
+  aura::Window* popup_window = view_->GetNativeView();
+  TestWindowObserver observer(popup_window);
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> dialog_window(new aura::Window(&delegate));
+  dialog_window->Init(aura::WINDOW_LAYER_TEXTURED);
+  aura::client::ParentWindowWithContext(
+      dialog_window.get(), popup_window, gfx::Rect());
+  dialog_window->Show();
+  wm::ActivateWindow(dialog_window.get());
+  dialog_window->Focus();
+
+  ASSERT_TRUE(wm::IsActiveWindow(dialog_window.get()));
+  EXPECT_TRUE(observer.destroyed());
+
+  widget_host_ = NULL;
+  view_ = NULL;
+}
 
 // Checks that IME-composition-event state is maintained correctly.
 TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {

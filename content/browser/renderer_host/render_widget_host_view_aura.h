@@ -410,6 +410,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   ui::InputMethod* GetInputMethod() const;
 
+  // Sends shutdown request.
+  void Shutdown();
+
   // Returns whether the widget needs an input grab to work properly.
   bool NeedsInputGrab();
 
