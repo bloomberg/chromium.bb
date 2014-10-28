@@ -1046,8 +1046,6 @@
       'browser/ui/webui/cookies_tree_model_util.h',
       'browser/ui/webui/crashes_ui.cc',
       'browser/ui/webui/crashes_ui.h',
-      'browser/ui/webui/devtools_ui.cc',
-      'browser/ui/webui/devtools_ui.h',
       'browser/ui/webui/domain_reliability_internals_ui.cc',
       'browser/ui/webui/domain_reliability_internals_ui.h',
       'browser/ui/webui/favicon_source.cc',
@@ -1802,6 +1800,10 @@
       'browser/ui/window_sizer/window_sizer.h',
       'browser/ui/zoom/zoom_controller.cc',
       'browser/ui/zoom/zoom_controller.h',
+    ],
+    'chrome_browser_ui_non_mobile_sources': [
+      'browser/ui/webui/devtools_ui.cc',
+      'browser/ui/webui/devtools_ui.h',
     ],
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/print_preview_handler.cc',
@@ -3038,6 +3040,7 @@
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
+          'sources': [ '<@(chrome_browser_ui_non_mobile_sources)' ],
         }],
       ],
     },

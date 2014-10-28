@@ -88,7 +88,6 @@ static_library("ui") {
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//components/power",
-      "//device/bluetooth",
       "//device/nfc",
       "//media",
       "//mojo/edk/system",
@@ -122,6 +121,12 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_ios_sources,
                            ".", "//chrome")
     deps += [ "//net" ]
+  }
+
+  if (!is_android && !is_ios) {
+    sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
+                           ".", "//chrome")
+    deps += [ "//device/bluetooth" ]
   }
 
   if (printing_mode != 0) {

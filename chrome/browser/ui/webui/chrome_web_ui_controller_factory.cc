@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
-#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
@@ -32,7 +31,6 @@
 #include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
-#include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/invalidations_ui.h"
@@ -99,6 +97,9 @@
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/ui/webui/net_export_ui.h"
+#else
+#include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/ui/webui/inspect_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -354,8 +355,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Bookmarks are part of NTP on Android.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
-  if (url.SchemeIs(content::kChromeDevToolsScheme))
-    return &NewWebUI<DevToolsUI>;
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
@@ -370,11 +369,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Identity API is not available on Android.
   if (url.host() == chrome::kChromeUIIdentityInternalsHost)
     return &NewWebUI<IdentityInternalsUI>;
-  // chrome://inspect isn't supported on Android. Page debugging is handled by a
-  // remote devtools on the host machine, and other elements (Shared Workers,
-  // extensions, etc) aren't supported.
-  if (url.host() == chrome::kChromeUIInspectHost)
-    return &NewWebUI<InspectUI>;
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
@@ -462,6 +456,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (url.host() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
+  if (url.SchemeIs(content::kChromeDevToolsScheme))
+    return &NewWebUI<DevToolsUI>;
+  // chrome://inspect isn't supported on Android nor iOS. Page debugging is
+  // handled by a remote devtools on the host machine, and other elements, i.e.
+  // extensions aren't supported.
+  if (url.host() == chrome::kChromeUIInspectHost)
+    return &NewWebUI<InspectUI>;
 #endif
 
   /****************************************************************************
