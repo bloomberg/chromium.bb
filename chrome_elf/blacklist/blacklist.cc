@@ -158,7 +158,7 @@ bool LeaveSetupBeacon() {
                              reinterpret_cast<LPBYTE>(&blacklist_state),
                              &blacklist_state_size);
 
-  if (blacklist_state == BLACKLIST_DISABLED || result != ERROR_SUCCESS ||
+  if (result != ERROR_SUCCESS || blacklist_state == BLACKLIST_DISABLED ||
       type != REG_DWORD) {
     ::RegCloseKey(key);
     return false;
@@ -227,7 +227,7 @@ bool IsBlacklistInitialized() {
 }
 
 int GetBlacklistIndex(const wchar_t* dll_name) {
-  for (int i = 0; i < kTroublesomeDllsMaxCount, g_troublesome_dlls[i]; ++i) {
+  for (int i = 0; i < kTroublesomeDllsMaxCount && g_troublesome_dlls[i]; ++i) {
     if (_wcsicmp(dll_name, g_troublesome_dlls[i]) == 0)
       return i;
   }
