@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/common/aw_crash_handler.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -87,6 +88,12 @@ jstring GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
 // static
 void SetRecordFullDocument(JNIEnv* env, jclass, jboolean record_full_document) {
   content::SynchronousCompositor::SetRecordFullDocument(record_full_document);
+}
+
+// static
+void RegisterCrashHandler(JNIEnv* env, jclass, jstring version) {
+  crash_handler::RegisterCrashHandler(
+      ConvertJavaStringToUTF8(env, version));
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {
