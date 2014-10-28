@@ -336,7 +336,8 @@ cr.define('print_preview', function() {
         if (destination.isRecent) {
           recentDestinations.push(destination);
         }
-        if (destination.isLocal) {
+        if (destination.isLocal ||
+            destination.origin == print_preview.Destination.Origin.DEVICE) {
           localDestinations.push(destination);
         } else {
           if (destination.connectionStatus ==
