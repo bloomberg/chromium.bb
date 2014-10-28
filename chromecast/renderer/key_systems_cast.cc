@@ -19,17 +19,17 @@ namespace shell {
 
 void AddKeySystemWithCodecs(
     const std::string& key_system_name,
-    std::vector<media::KeySystemInfo>* concrete_key_systems) {
-  media::KeySystemInfo info(key_system_name);
-  info.supported_codecs = media::EME_CODEC_MP4_ALL;
+    std::vector< ::media::KeySystemInfo>* concrete_key_systems) {
+  ::media::KeySystemInfo info(key_system_name);
+  info.supported_codecs = ::media::EME_CODEC_MP4_ALL;
   concrete_key_systems->push_back(info);
 }
 
 void AddChromecastKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems_info) {
+    std::vector< ::media::KeySystemInfo>* key_systems_info) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
   AddWidevineWithCodecs(cdm::WIDEVINE,
-                        media::EME_CODEC_MP4_ALL,
+                        ::media::EME_CODEC_MP4_ALL,
                         key_systems_info);
 #endif
 

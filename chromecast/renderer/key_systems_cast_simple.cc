@@ -8,7 +8,7 @@ namespace chromecast {
 namespace shell {
 
 void AddChromecastPlatformKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems_info) {
+    std::vector< ::media::KeySystemInfo>* key_systems_info) {
   // Intentional no-op for public build.
 }
 

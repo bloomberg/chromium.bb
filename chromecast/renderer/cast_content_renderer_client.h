@@ -19,7 +19,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
   virtual void RenderThreadStarted() override;
   virtual void RenderViewCreated(content::RenderView* render_view) override;
   virtual void AddKeySystems(
-      std::vector<content::KeySystemInfo>* key_systems) override;
+      std::vector< ::media::KeySystemInfo>* key_systems) override;
 };
 
 }  // namespace shell

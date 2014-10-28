@@ -49,7 +49,7 @@ void CastContentRendererClient::RenderViewCreated(
 }
 
 void CastContentRendererClient::AddKeySystems(
-    std::vector<content::KeySystemInfo>* key_systems) {
+    std::vector< ::media::KeySystemInfo>* key_systems) {
   AddChromecastKeySystems(key_systems);
   AddChromecastPlatformKeySystems(key_systems);
 }

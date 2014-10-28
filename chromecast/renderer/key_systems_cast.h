@@ -15,14 +15,14 @@ namespace shell {
 // Adds a single key system by name.
 void AddKeySystemWithCodecs(
     const std::string& key_system_name,
-    std::vector<media::KeySystemInfo>* concrete_key_systems);
+    std::vector< ::media::KeySystemInfo>* concrete_key_systems);
 
 void AddChromecastKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems_info);
+    std::vector< ::media::KeySystemInfo>* key_systems_info);
 
 // TODO(gunsch): Remove when prefixed EME is removed.
 void AddChromecastPlatformKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems_info);
+    std::vector< ::media::KeySystemInfo>* key_systems_info);
 
 }  // namespace shell
 }  // namespace chromecast
