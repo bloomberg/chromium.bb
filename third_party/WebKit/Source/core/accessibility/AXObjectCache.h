@@ -84,6 +84,9 @@ public:
     virtual AXObject* root() = 0;
     virtual AXObject* getOrCreateAXObjectFromRenderView(RenderView*) = 0;
 
+    // will only return the AXObject if it already exists
+    virtual AXObject* get(Node*) = 0;
+
     virtual void selectionChanged(Node*) = 0;
     virtual void childrenChanged(Node*) = 0;
     virtual void childrenChanged(RenderObject*) = 0;

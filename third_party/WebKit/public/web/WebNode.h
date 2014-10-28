@@ -39,6 +39,7 @@
 namespace blink {
 
 class Node;
+class WebAXObject;
 class WebDOMEvent;
 class WebDocument;
 class WebElement;
@@ -124,6 +125,8 @@ public:
     BLINK_EXPORT bool containsIncludingShadowDOM(const WebNode&) const;
     BLINK_EXPORT WebPluginContainer* pluginContainer() const;
     BLINK_EXPORT WebElement shadowHost() const;
+
+    BLINK_EXPORT WebAXObject accessibilityObject();
 
     template<typename T> T to()
     {

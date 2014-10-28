@@ -32,6 +32,7 @@
 #include "public/web/WebNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -46,6 +47,7 @@
 #include "platform/Widget.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"
@@ -245,6 +247,16 @@ WebElement WebNode::shadowHost() const
         return WebElement();
     const Node* coreNode = constUnwrap<Node>();
     return WebElement(coreNode->shadowHost());
+}
+
+
+WebAXObject WebNode::accessibilityObject()
+{
+    WebDocument webDocument = document();
+    const Document* doc = document().constUnwrap<Document>();
+    AXObjectCache* cache = doc->existingAXObjectCache();
+    Node* node = unwrap<Node>();
+    return cache ? WebAXObject(cache->get(node)) : WebAXObject();
 }
 
 WebNode::WebNode(const PassRefPtrWillBeRawPtr<Node>& node)

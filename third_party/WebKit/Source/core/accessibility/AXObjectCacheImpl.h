@@ -73,6 +73,9 @@ public:
     virtual void checkedStateChanged(Node*) override;
     virtual void selectedChildrenChanged(Node*) override;
 
+    // will only return the AXObject if it already exists
+    virtual AXObject* get(Node*);
+
     virtual void remove(RenderObject*) override;
     virtual void remove(Node*) override;
     virtual void remove(Widget*) override;
@@ -125,7 +128,6 @@ public:
     // will only return the AXObject if it already exists
     AXObject* get(RenderObject*);
     AXObject* get(Widget*);
-    AXObject* get(Node*);
     AXObject* get(AbstractInlineTextBox*);
 
     void remove(AXID);
