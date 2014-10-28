@@ -52,7 +52,8 @@ namespace {
 
 void ApplyCmdlineOverridesToURLRequestContextBuilder(
     net::URLRequestContextBuilder* builder) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kHostResolverRules)) {
     // If hostname remappings were specified on the command-line, layer these
     // rules on top of the real host resolver. This allows forwarding all
@@ -69,7 +70,8 @@ void ApplyCmdlineOverridesToURLRequestContextBuilder(
 void ApplyCmdlineOverridesToNetworkSessionParams(
     net::HttpNetworkSession::Params* params) {
   int value;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     base::StringToInt(command_line.GetSwitchValueASCII(
         switches::kTestingFixedHttpPort), &value);

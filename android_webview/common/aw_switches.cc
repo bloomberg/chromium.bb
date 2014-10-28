@@ -11,7 +11,7 @@ const char kForceAuxiliaryBitmap[] = "force-auxiliary-bitmap";
 
 bool ForceAuxiliaryBitmap() {
   static bool force_auxiliary_bitmap =
-      CommandLine::ForCurrentProcess()->HasSwitch(kForceAuxiliaryBitmap);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kForceAuxiliaryBitmap);
   return force_auxiliary_bitmap;
 }
 

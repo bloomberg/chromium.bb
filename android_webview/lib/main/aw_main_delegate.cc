@@ -54,7 +54,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   BrowserViewRenderer::CalculateTileMemoryPolicy();
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
   cl->AppendSwitch(switches::kEnableImplSidePainting);
 

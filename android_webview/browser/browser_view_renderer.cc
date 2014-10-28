@@ -39,7 +39,7 @@ uint64 g_memory_override_in_bytes = 0u;
 
 // static
 void BrowserViewRenderer::CalculateTileMemoryPolicy() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
 
   // If the value was overridden on the command line, use the specified value.
   bool client_hard_limit_bytes_overridden =
