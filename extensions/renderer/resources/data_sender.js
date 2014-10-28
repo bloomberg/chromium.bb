@@ -296,7 +296,7 @@ define('data_sender', [
       return Promise.resolve(null);
 
     var readyToSerialize = Promise.resolve();
-    if (this.pendingSends_.length) {
+    if (this.pendingSends_.length || this.sendsAwaitingAck_.length) {
       if (this.pendingCancel_)
         readyToSerialize = this.cancelPromise_;
       else
