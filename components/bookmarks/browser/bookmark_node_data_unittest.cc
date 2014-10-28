@@ -276,6 +276,20 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   EXPECT_TRUE(read_data.GetFirstNode(model(), GetProfilePath()) == NULL);
 }
 
+TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
+  BookmarkNodeData data;
+  GURL url(GURL("http://foo.com"));
+  const base::string16 title(ASCIIToUTF16("blah"));
+
+  data.ReadFromTuple(url, title);
+  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+
+  // Now read the data back in.
+  base::string16 clipboard_result;
+  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
+}
+
 TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   BookmarkNodeData data;
   const BookmarkNode* root = model()->bookmark_bar_node();
