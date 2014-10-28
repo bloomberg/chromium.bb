@@ -30,7 +30,7 @@ class ExpandingTextfield : public views::View,
                      const base::string16& placeholder,
                      bool multiline,
                      views::TextfieldController* controller);
-  virtual ~ExpandingTextfield();
+  ~ExpandingTextfield() override;
 
   // Sets the contents of the textfields. Textfield n is set to the nth line
   // of |text|, as separated by line returns.
@@ -59,16 +59,16 @@ class ExpandingTextfield : public views::View,
   void SetTooltipIcon(const base::string16& text);
 
   // View implementation.
-  virtual const char* GetClassName() const override;
+  const char* GetClassName() const override;
   using views::View::needs_layout;
 
   // TextfieldController implementation.
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
-  virtual bool HandleMouseEvent(views::Textfield* sender,
-                                const ui::MouseEvent& mouse_event) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+  bool HandleMouseEvent(views::Textfield* sender,
+                        const ui::MouseEvent& mouse_event) override;
 
  private:
   // Calls a given function on every textfield.

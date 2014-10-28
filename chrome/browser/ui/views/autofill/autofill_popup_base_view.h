@@ -37,7 +37,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
  protected:
   explicit AutofillPopupBaseView(AutofillPopupViewDelegate* delegate,
                                  views::Widget* observing_widget);
-  virtual ~AutofillPopupBaseView();
+  ~AutofillPopupBaseView() override;
 
   // Show this popup. Idempotent.
   void DoShow();
@@ -52,22 +52,22 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   friend class AutofillPopupBaseViewTest;
 
   // views::Views implementation.
-  virtual void OnMouseCaptureLost() override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnMouseCaptureLost() override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::WidgetFocusChangeListener implementation.
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) override;
+  void OnNativeFocusChange(gfx::NativeView focused_before,
+                           gfx::NativeView focused_now) override;
 
   // views::WidgetObserver implementation.
-  virtual void OnWidgetBoundsChanged(views::Widget* widget,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // Stop observing the |observing_widget_|.
   void RemoveObserver();

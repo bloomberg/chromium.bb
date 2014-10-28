@@ -32,7 +32,7 @@ const int kHelpVerticalOffset = 5;
 class PasswordTextBox : public views::View {
  public:
   PasswordTextBox() {}
-  virtual ~PasswordTextBox() {}
+  ~PasswordTextBox() override {}
 
   // |suggestion_text| prompts the user to select the password,
   // |generated_password| is the generated password, and |font_list| is the font
@@ -62,7 +62,7 @@ class PasswordTextBox : public views::View {
   }
 
   // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const override {
+  bool CanProcessEventsWithinSubtree() const override {
     // Send events to the parent view for handling.
     return false;
   }
@@ -78,7 +78,7 @@ class PasswordTextBox : public views::View {
 class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
  public:
   PasswordBox() {}
-  virtual ~PasswordBox() {}
+  ~PasswordBox() override {}
 
   // |password| is the generated password, |suggestion| is the text prompting
   // the user to select the password, and |font_list| is the font used for all
@@ -112,12 +112,12 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
   }
 
   // views::View:
-  virtual bool CanProcessEventsWithinSubtree() const override {
+  bool CanProcessEventsWithinSubtree() const override {
     // Send events to the parent view for handling.
     return false;
   }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     state->role = ui::AX_ROLE_ALERT;
     state->name = accessible_name_;
   }

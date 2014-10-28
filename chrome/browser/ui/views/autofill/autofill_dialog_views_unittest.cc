@@ -34,7 +34,7 @@ class TestAutofillDialogViews : public AutofillDialogViews {
  public:
   explicit TestAutofillDialogViews(AutofillDialogViewDelegate* delegate)
       : AutofillDialogViews(delegate) {}
-  virtual ~TestAutofillDialogViews() {}
+  ~TestAutofillDialogViews() override {}
 
   using AutofillDialogViews::GetLoadingShieldForTesting;
   using AutofillDialogViews::GetSignInWebViewForTesting;

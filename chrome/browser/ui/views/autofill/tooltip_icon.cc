@@ -34,11 +34,11 @@ class TooltipBubble : public InfoBubble {
  public:
   TooltipBubble(views::View* anchor, const base::string16& message)
       : InfoBubble(anchor, message) {}
-  virtual ~TooltipBubble() {}
+  ~TooltipBubble() override {}
 
  protected:
   // InfoBubble:
-  virtual gfx::Rect GetAnchorRect() const override {
+  gfx::Rect GetAnchorRect() const override {
     gfx::Rect bounds = views::BubbleDelegateView::GetAnchorRect();
     bounds.Inset(GetPreferredInsets(anchor()));
     return bounds;

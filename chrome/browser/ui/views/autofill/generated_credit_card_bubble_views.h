@@ -23,21 +23,21 @@ class GeneratedCreditCardBubbleViews : public GeneratedCreditCardBubbleView,
                                        public views::BubbleDelegateView,
                                        public views::StyledLabelListener {
  public:
-  virtual ~GeneratedCreditCardBubbleViews();
+  ~GeneratedCreditCardBubbleViews() override;
 
   // GeneratedCreditCardBubbleView:
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual bool IsHiding() const override;
+  void Show() override;
+  void Hide() override;
+  bool IsHiding() const override;
 
   // views::BubbleDelegateView:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void Init() override;
+  gfx::Size GetPreferredSize() const override;
+  base::string16 GetWindowTitle() const override;
+  void Init() override;
 
   // views::StyledLabelListener:
-  virtual void StyledLabelLinkClicked(const gfx::Range& range, int event_flags)
-      override;
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
  private:
   friend base::WeakPtr<GeneratedCreditCardBubbleView>

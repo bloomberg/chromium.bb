@@ -15,22 +15,21 @@ class AutofillDialogViews;
 class AutofillDialogViewTesterViews : public AutofillDialogViewTester {
  public:
   explicit AutofillDialogViewTesterViews(AutofillDialogViews* view);
-  virtual ~AutofillDialogViewTesterViews();
+  ~AutofillDialogViewTesterViews() override;
 
   // TestableAutofillDialogView implementation:
-  virtual void SubmitForTesting() override;
-  virtual void CancelForTesting() override;
-  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) override;
-  virtual void SetTextContentsOfInput(ServerFieldType type,
-                                      const base::string16& contents) override;
-  virtual void SetTextContentsOfSuggestionInput(
-      DialogSection section,
-      const base::string16& text) override;
-  virtual void ActivateInput(ServerFieldType type) override;
-  virtual gfx::Size GetSize() const override;
-  virtual content::WebContents* GetSignInWebContents() override;
-  virtual bool IsShowingOverlay() const override;
-  virtual bool IsShowingSection(DialogSection section) const override;
+  void SubmitForTesting() override;
+  void CancelForTesting() override;
+  base::string16 GetTextContentsOfInput(ServerFieldType type) override;
+  void SetTextContentsOfInput(ServerFieldType type,
+                              const base::string16& contents) override;
+  void SetTextContentsOfSuggestionInput(DialogSection section,
+                                        const base::string16& text) override;
+  void ActivateInput(ServerFieldType type) override;
+  gfx::Size GetSize() const override;
+  content::WebContents* GetSignInWebContents() override;
+  bool IsShowingOverlay() const override;
+  bool IsShowingSection(DialogSection section) const override;
 
  private:
   AutofillDialogViews* view_;
