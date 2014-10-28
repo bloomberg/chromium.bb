@@ -505,6 +505,11 @@ CL_ACTION_VALIDATION_PENDING_PRE_CQ = 'validation_pending_pre_cq'
 # irrelevant to that slave build.
 CL_ACTION_IRRELEVANT_TO_SLAVE = 'irrelevant_to_slave'
 
+# Recorded by pre-cq-launcher when it launches a tryjob with a particular
+# config. The |reason| field of the action will be the config.
+CL_ACTION_TRYBOT_LAUNCHING = 'trybot_launching'
+
+
 CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
               CL_ACTION_KICKED_OUT,
@@ -519,7 +524,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_REQUEUED,
               CL_ACTION_SCREENED_FOR_PRE_CQ,
               CL_ACTION_VALIDATION_PENDING_PRE_CQ,
-              CL_ACTION_IRRELEVANT_TO_SLAVE]
+              CL_ACTION_IRRELEVANT_TO_SLAVE,
+              CL_ACTION_TRYBOT_LAUNCHING]
 
 # CQ types.
 CQ = 'cq'
