@@ -17,6 +17,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -208,6 +209,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // indicates there is no pending result, otherwise 0 indicates EOF and < 0
   // indicates an error.
   int pending_read_error_;
+
+  // If there is a pending read result, the OpenSSL result code (output of
+  // SSL_get_error) associated with it.
+  int pending_read_ssl_error_;
+
+  // If there is a pending read result, the OpenSSLErrorInfo associated with it.
+  OpenSSLErrorInfo pending_read_error_info_;
 
   // Used by TransportReadComplete() to signify an error reading from the
   // transport socket. A value of OK indicates the socket is still

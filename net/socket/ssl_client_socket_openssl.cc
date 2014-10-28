@@ -30,7 +30,6 @@
 #include "net/cert/x509_util_openssl.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/ssl_session_cache_openssl.h"
-#include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -339,6 +338,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       pending_read_error_(kNoPendingReadResult),
+      pending_read_ssl_error_(SSL_ERROR_NONE),
       transport_read_error_(OK),
       transport_write_error_(OK),
       server_cert_chain_(new PeerCertificateChain(NULL)),
@@ -497,6 +497,9 @@ void SSLClientSocketOpenSSL::Disconnect() {
   user_write_buf_len_    = 0;
 
   pending_read_error_ = kNoPendingReadResult;
+  pending_read_ssl_error_ = SSL_ERROR_NONE;
+  pending_read_error_info_ = OpenSSLErrorInfo();
+
   transport_read_error_ = OK;
   transport_write_error_ = OK;
 
@@ -1320,7 +1323,14 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
     if (rv == 0) {
       net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED,
                                     rv, user_read_buf_->data());
+    } else {
+      net_log_.AddEvent(
+          NetLog::TYPE_SSL_READ_ERROR,
+          CreateNetLogOpenSSLErrorCallback(rv, pending_read_ssl_error_,
+                                           pending_read_error_info_));
     }
+    pending_read_ssl_error_ = SSL_ERROR_NONE;
+    pending_read_error_info_ = OpenSSLErrorInfo();
     return rv;
   }
 
@@ -1355,8 +1365,10 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
     if (client_auth_cert_needed_) {
       *next_result = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     } else if (*next_result < 0) {
-      int err = SSL_get_error(ssl_, *next_result);
-      *next_result = MapOpenSSLError(err, err_tracer);
+      pending_read_ssl_error_ = SSL_get_error(ssl_, *next_result);
+      *next_result = MapOpenSSLErrorWithDetails(pending_read_ssl_error_,
+                                                err_tracer,
+                                                &pending_read_error_info_);
 
       // Many servers do not reliably send a close_notify alert when shutting
       // down a connection, and instead terminate the TCP connection. This is
@@ -1382,6 +1394,13 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
   if (rv >= 0) {
     net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
                                   user_read_buf_->data());
+  } else if (rv != ERR_IO_PENDING) {
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_READ_ERROR,
+        CreateNetLogOpenSSLErrorCallback(rv, pending_read_ssl_error_,
+                                         pending_read_error_info_));
+    pending_read_ssl_error_ = SSL_ERROR_NONE;
+    pending_read_error_info_ = OpenSSLErrorInfo();
   }
   return rv;
 }
@@ -1395,8 +1414,17 @@ int SSLClientSocketOpenSSL::DoPayloadWrite() {
     return rv;
   }
 
-  int err = SSL_get_error(ssl_, rv);
-  return MapOpenSSLError(err, err_tracer);
+  int ssl_error = SSL_get_error(ssl_, rv);
+  OpenSSLErrorInfo error_info;
+  int net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer,
+                                             &error_info);
+
+  if (net_error != ERR_IO_PENDING) {
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_WRITE_ERROR,
+        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+  }
+  return net_error;
 }
 
 int SSLClientSocketOpenSSL::BufferSend(void) {
