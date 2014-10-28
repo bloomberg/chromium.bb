@@ -62,7 +62,8 @@ bool JingleSocketOptionToP2PSocketOption(rtc::Socket::Option option,
 }
 
 // TODO(miu): This needs tuning.  http://crbug.com/237960
-const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
+// http://crbug.com/427555
+const size_t kMaximumInFlightBytes = 256 * 1024;  // 256 KB
 
 // IpcPacketSocket implements rtc::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
