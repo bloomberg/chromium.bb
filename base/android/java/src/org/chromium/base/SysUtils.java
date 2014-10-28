@@ -103,13 +103,12 @@ public class SysUtils {
     }
 
     private static boolean detectLowEndDevice() {
-        if (CommandLine.isInitialized()) {
-            if (CommandLine.getInstance().hasSwitch(BaseSwitches.LOW_END_DEVICE_MODE)) {
-                int mode = Integer.parseInt(CommandLine.getInstance().getSwitchValue(
-                        BaseSwitches.LOW_END_DEVICE_MODE));
-                if (mode == 1) return true;
-                if (mode == 0) return false;
-            }
+        assert CommandLine.isInitialized();
+        if (CommandLine.getInstance().hasSwitch(BaseSwitches.LOW_END_DEVICE_MODE)) {
+            int mode = Integer.parseInt(CommandLine.getInstance().getSwitchValue(
+                    BaseSwitches.LOW_END_DEVICE_MODE));
+            if (mode == 1) return true;
+            if (mode == 0) return false;
         }
 
         if (Build.VERSION.SDK_INT <= ANDROID_LOW_MEMORY_ANDROID_SDK_THRESHOLD) {
