@@ -159,8 +159,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   }
 
   // ::testing::Test:
-  void SetUp() override { ViewsTestBase::SetUp(); }
-
   void TearDown() override {
     if (widget_)
       widget_->Close();
