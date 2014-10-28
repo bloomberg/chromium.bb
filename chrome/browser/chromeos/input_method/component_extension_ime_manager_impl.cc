@@ -254,12 +254,6 @@ void DoLoadExtension(Profile* profile,
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   ExtensionService* extension_service = extension_system->extension_service();
-#if defined(USE_ATHENA)
-  // ExtensionService is not properly initialized for Athena yet.
-  // http://crbug.com/426787
-  if (!extension_service)
-    return;
-#endif
   DCHECK(extension_service);
   if (extension_service->GetExtensionById(extension_id, false))
     return;
@@ -300,12 +294,16 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
                                             const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
+  // For Athena, should always do async extension loading because the extension
+  // service may not be initialized yet.
+#if !defined(USE_ATHENA)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // In the case of real Chrome OS device, the no need to check the file path
     // for preinstalled files existence.
     DoLoadExtension(profile, extension_id, manifest, file_path);
     return;
   }
+#endif
   // If current environment is linux_chromeos, check the existence of file path
   // to avoid unnecessary extension loading and InputMethodEngine creation, so
   // that the virtual keyboard web content url won't be override by IME
