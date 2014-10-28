@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_GPU_MEMORY_BUFFER_MANAGER_H_
-#define CC_RESOURCES_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
+#define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/base/cc_export.h"
+#include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace cc {
+namespace gpu {
 
-class CC_EXPORT GpuMemoryBufferManager {
+class GPU_EXPORT GpuMemoryBufferManager {
  public:
+  GpuMemoryBufferManager();
+
   // Allocates a GpuMemoryBuffer that can be shared with another process.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
@@ -26,9 +28,9 @@ class CC_EXPORT GpuMemoryBufferManager {
       ClientBuffer buffer) = 0;
 
  protected:
-  virtual ~GpuMemoryBufferManager() {}
+  virtual ~GpuMemoryBufferManager();
 };
 
-}  // namespace cc
+}  // namespace gpu
 
-#endif  // CC_RESOURCES_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_MANAGER_H_

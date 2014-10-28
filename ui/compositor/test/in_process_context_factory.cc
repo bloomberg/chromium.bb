@@ -98,7 +98,7 @@ cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {
   return &shared_bitmap_manager_;
 }
 
-cc::GpuMemoryBufferManager*
+gpu::GpuMemoryBufferManager*
 InProcessContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }

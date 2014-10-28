@@ -36,6 +36,7 @@
 class GrContext;
 
 namespace gpu {
+class GpuMemoryBufferManager;
 namespace gles {
 class GLES2Interface;
 }
@@ -49,7 +50,6 @@ class Vector2d;
 
 namespace cc {
 class BlockingTaskRunner;
-class GpuMemoryBufferManager;
 class IdAllocator;
 class SharedBitmap;
 class SharedBitmapManager;
@@ -82,7 +82,7 @@ class CC_EXPORT ResourceProvider {
   static scoped_ptr<ResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
@@ -319,7 +319,7 @@ class CC_EXPORT ResourceProvider {
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
-    GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
     gfx::GpuMemoryBuffer* gpu_memory_buffer_;
     gfx::Size size_;
     ResourceFormat format_;
@@ -488,7 +488,7 @@ class CC_EXPORT ResourceProvider {
 
   ResourceProvider(OutputSurface* output_surface,
                    SharedBitmapManager* shared_bitmap_manager,
-                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
@@ -532,7 +532,7 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_output_surface_;
   int highp_threshold_min_;

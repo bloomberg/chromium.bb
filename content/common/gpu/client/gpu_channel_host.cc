@@ -36,7 +36,7 @@ scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     const gpu::GPUInfo& gpu_info,
     const IPC::ChannelHandle& channel_handle,
     base::WaitableEvent* shutdown_event,
-    cc::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   DCHECK(factory->IsMainThread());
   scoped_refptr<GpuChannelHost> host =
       new GpuChannelHost(factory, gpu_info, gpu_memory_buffer_manager);
@@ -47,7 +47,7 @@ scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
 GpuChannelHost::GpuChannelHost(
     GpuChannelHostFactory* factory,
     const gpu::GPUInfo& gpu_info,
-    cc::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : factory_(factory),
       gpu_info_(gpu_info),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {

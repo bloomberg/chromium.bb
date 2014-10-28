@@ -121,7 +121,7 @@ class CC_EXPORT LayerTreeHostImpl
       Proxy* proxy,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
   ~LayerTreeHostImpl() override;
 
@@ -489,7 +489,7 @@ class CC_EXPORT LayerTreeHostImpl
       Proxy* proxy,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
 
   void UpdateViewportContainerSizes();
@@ -700,7 +700,7 @@ class CC_EXPORT LayerTreeHostImpl
   base::Closure tree_activation_callback_;
 
   SharedBitmapManager* shared_bitmap_manager_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   int id_;
 
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

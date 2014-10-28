@@ -54,6 +54,7 @@ source_set("common") {
     "//build/util:webkit_version",
     "//components/tracing",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/client:gpu_memory_buffer_manager",
     "//net",
     "//skia",
     "//third_party/icu",

@@ -114,7 +114,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       LayerTreeHostImplClient* host_impl_client,
       Proxy* proxy,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       RenderingStatsInstrumentation* stats_instrumentation) {
     return make_scoped_ptr(
         new LayerTreeHostImplForTesting(test_hooks,
@@ -133,7 +133,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       LayerTreeHostImplClient* host_impl_client,
       Proxy* proxy,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       RenderingStatsInstrumentation* stats_instrumentation)
       : LayerTreeHostImpl(settings,
                           host_impl_client,

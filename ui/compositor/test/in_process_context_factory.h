@@ -38,7 +38,7 @@ class InProcessContextFactory : public ContextFactory {
   void RemoveCompositor(Compositor* compositor) override;
   bool DoesCreateTestContexts() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
-  cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   base::MessageLoopProxy* GetCompositorMessageLoop() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
 

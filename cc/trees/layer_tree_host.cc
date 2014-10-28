@@ -68,7 +68,7 @@ RendererCapabilities::~RendererCapabilities() {}
 scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     LayerTreeHostClient* client,
     SharedBitmapManager* shared_bitmap_manager,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
@@ -84,7 +84,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostClient* client,
     LayerTreeHostSingleThreadClient* single_thread_client,
     SharedBitmapManager* shared_bitmap_manager,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
@@ -94,10 +94,11 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
   return layer_tree_host.Pass();
 }
 
-LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
-                             SharedBitmapManager* shared_bitmap_manager,
-                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                             const LayerTreeSettings& settings)
+LayerTreeHost::LayerTreeHost(
+    LayerTreeHostClient* client,
+    SharedBitmapManager* shared_bitmap_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const LayerTreeSettings& settings)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
       inside_begin_main_frame_(false),

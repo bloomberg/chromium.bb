@@ -41,9 +41,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace cc {
 class AnimationRegistrar;
-class GpuMemoryBufferManager;
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostImpl;
@@ -85,7 +88,7 @@ class CC_EXPORT LayerTreeHost {
   static scoped_ptr<LayerTreeHost> CreateThreaded(
       LayerTreeHostClient* client,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
@@ -94,7 +97,7 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostClient* client,
       LayerTreeHostSingleThreadClient* single_thread_client,
       SharedBitmapManager* shared_bitmap_manager,
-      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   virtual ~LayerTreeHost();
@@ -307,7 +310,7 @@ class CC_EXPORT LayerTreeHost {
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,
-                GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                 const LayerTreeSettings& settings);
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -456,7 +459,7 @@ class CC_EXPORT LayerTreeHost {
   LayerSelectionBound selection_end_;
 
   SharedBitmapManager* shared_bitmap_manager_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

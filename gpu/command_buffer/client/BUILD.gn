@@ -104,6 +104,16 @@ source_set("gles2_interface") {
   ]
 }
 
+source_set("gpu_memory_buffer_manager") {
+  sources = [
+    "gpu_memory_buffer_manager.cc",
+    "gpu_memory_buffer_manager.h",
+  ]
+  deps = [
+    "//ui/gfx",
+  ]
+}
+
 # Library emulates GLES2 using command_buffers.
 component("gles2_implementation") {
   sources = gles2_implementation_source_files
@@ -161,6 +171,7 @@ component("gl_in_process_context") {
 
   deps = [
     ":gles2_implementation",
+    ":gpu_memory_buffer_manager",
     "//gpu",
     "//gpu/command_buffer/common:gles2_utils",
     "//base",

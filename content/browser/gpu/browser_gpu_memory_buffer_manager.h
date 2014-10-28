@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include "base/callback.h"
-#include "cc/resources/gpu_memory_buffer_manager.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 namespace content {
 class GpuMemoryBufferImpl;
 
 class CONTENT_EXPORT BrowserGpuMemoryBufferManager
-    : public cc::GpuMemoryBufferManager {
+    : public gpu::GpuMemoryBufferManager {
  public:
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
@@ -23,7 +23,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   static BrowserGpuMemoryBufferManager* current();
 
-  // Overridden from cc::GpuMemoryBufferManager:
+  // Overridden from gpu::GpuMemoryBufferManager:
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,

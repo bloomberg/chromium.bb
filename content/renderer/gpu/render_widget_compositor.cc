@@ -524,7 +524,7 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
       main_thread_compositor_task_runner(base::MessageLoopProxy::current());
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   cc::SharedBitmapManager* shared_bitmap_manager = NULL;
-  cc::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
   // render_thread may be NULL in tests.
   if (render_thread) {
     compositor_message_loop_proxy =

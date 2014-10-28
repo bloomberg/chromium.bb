@@ -34,7 +34,6 @@ class RunLoop;
 
 namespace cc {
 class ContextProvider;
-class GpuMemoryBufferManager;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
@@ -48,6 +47,7 @@ class Size;
 }
 
 namespace gpu {
+class GpuMemoryBufferManager;
 struct Mailbox;
 }
 
@@ -96,7 +96,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Gets the GPU memory buffer manager.
-  virtual cc::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
+  virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 
   // Gets the compositor message loop, or NULL if not using threaded
   // compositing.

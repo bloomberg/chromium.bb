@@ -345,7 +345,7 @@ cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
   return HostSharedBitmapManager::current();
 }
 
-cc::GpuMemoryBufferManager*
+gpu::GpuMemoryBufferManager*
 GpuProcessTransportFactory::GetGpuMemoryBufferManager() {
   return BrowserGpuMemoryBufferManager::current();
 }

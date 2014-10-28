@@ -355,7 +355,6 @@
         'resources/content_layer_updater.h',
         'resources/eviction_tile_priority_queue.cc',
         'resources/eviction_tile_priority_queue.h',
-        'resources/gpu_memory_buffer_manager.h',
         'resources/gpu_raster_worker_pool.cc',
         'resources/gpu_raster_worker_pool.h',
         'resources/image_layer_updater.cc',

@@ -249,7 +249,7 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int id) {
   return make_scoped_ptr(new LayerTreeHostImpl(settings,
                                                client,
@@ -266,7 +266,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
-    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int id)
     : BeginFrameSourceMixIn(),
       client_(client),

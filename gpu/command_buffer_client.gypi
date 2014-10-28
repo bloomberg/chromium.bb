@@ -20,6 +20,8 @@
     'command_buffer/client/fenced_allocator.cc',
     'command_buffer/client/fenced_allocator.h',
     'command_buffer/client/gpu_control.h',
+    'command_buffer/client/gpu_memory_buffer_manager.cc',
+    'command_buffer/client/gpu_memory_buffer_manager.h',
     'command_buffer/client/mapped_memory.cc',
     'command_buffer/client/mapped_memory.h',
     'command_buffer/client/ring_buffer.cc',

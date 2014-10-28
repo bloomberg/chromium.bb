@@ -24,7 +24,7 @@ namespace cc {
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
                  SharedBitmapManager* bitmap_manager,
-                 GpuMemoryBufferManager* gpu_memory_buffer_manager)
+                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : client_(client),
       manager_(manager),
       bitmap_manager_(bitmap_manager),
