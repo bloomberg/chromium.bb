@@ -355,6 +355,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            '../chrome/chrome.gyp:app_installer',
             '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
             # ../chrome/test/mini_installer requires mini_installer.
@@ -1180,6 +1181,9 @@
               'type': 'none',
               'dependencies': [
                 '../base/base.gyp:base_unittests',
+                # TODO(jackhou): Ensure that app_installer builds on trybots
+                # and waterfall, then de-comment here.
+                #'../chrome/chrome.gyp:app_installer',
                 '../chrome/chrome.gyp:browser_tests',
                 '../chrome/chrome.gyp:sync_integration_tests',
                 '../chrome/chrome.gyp:crash_service',

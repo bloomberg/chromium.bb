@@ -357,6 +357,10 @@ deps_os = {
     # Binaries for nacl sdk.
     'src/third_party/nacl_sdk_binaries':
      Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
+
+    # Omaha code for src/app_installer/.
+    'src/third_party/omaha/src/omaha':
+     Var('chromium_git') + '/external/omaha.git' + '@' + '098c7a3d157218dab4eed595e8f2fbe5a20a0bae',
   },
   'ios': {
     'src/third_party/google_toolbox_for_mac/src':

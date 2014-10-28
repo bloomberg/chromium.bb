@@ -25,6 +25,9 @@ const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 // Copied from google_chrome_distribution.cc.
 const wchar_t kBrowserAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
+// Copied frome google_chrome_sxs_distribution.cc.
+const wchar_t kSxSBrowserAppGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
+
 // Copied from util_constants.cc.
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kUninstallStringField[] = L"UninstallString";
@@ -99,6 +102,13 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
   return base::FilePath();
 }
 
+// Returns the path to an installed SxS chrome.exe at the specified level, if
+// it can be found via Omaha client state.
+base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level) {
+  return FindExeRelativeToSetupExe(
+      GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
+}
+
 }  // namespace
 
 base::FilePath GetChromePathForInstallationLevel(InstallationLevel level) {
@@ -113,6 +123,14 @@ base::FilePath GetAnyChromePath() {
   if (chrome_path.empty())
     chrome_path = GetChromePathForInstallationLevel(USER_LEVEL_INSTALLATION);
   return chrome_path;
+}
+
+base::FilePath GetAnyChromeSxSPath() {
+  base::FilePath path =
+      GetChromeSxSPathForInstallationLevel(USER_LEVEL_INSTALLATION);
+  if (path.empty())
+    path = GetChromeSxSPathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION);
+  return path;
 }
 
 }  // namespace chrome_launcher_support

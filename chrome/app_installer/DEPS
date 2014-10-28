@@ -1,0 +1,5 @@
+include_rules = [
+  "+chrome/installer/launcher_support",
+  "+chrome/installer/util",
+  "+third_party/omaha",
+]

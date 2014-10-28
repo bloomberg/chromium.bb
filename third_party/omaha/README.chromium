@@ -1,0 +1,16 @@
+Name: Omaha (Google Update)
+Short Name: omaha
+URL: https://code.google.com/p/omaha/
+Version: 0
+Date: 2013-09-16
+Revision: r147
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+We use base/extractor from Omaha to extract tags from signed binaries.
+
+Local Modifications:
+Checks for security:
+https://chromium.googlesource.com/external/omaha.git.

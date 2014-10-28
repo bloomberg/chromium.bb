@@ -103,6 +103,7 @@
     ['OS!="ios"', {
       'includes': [
         '../apps/apps.gypi',
+        'app_installer/app_installer.gypi',
         'chrome_debugger.gypi',
         'chrome_dll.gypi',
         'chrome_exe.gypi',

@@ -28,6 +28,12 @@ base::FilePath GetChromePathForInstallationLevel(InstallationLevel level);
 // The file path returned (if any) is guaranteed to exist.
 base::FilePath GetAnyChromePath();
 
+// Returns the path to an installed SxS chrome.exe, or an empty path. Prefers a
+// user-level installation to a system-level installation. Uses Omaha client
+// state to identify a Chrome Canary installation location.
+// The file path returned (if any) is guaranteed to exist.
+base::FilePath GetAnyChromeSxSPath();
+
 }  // namespace chrome_launcher_support
 
 #endif  // CHROME_INSTALLER_LAUNCHER_SUPPORT_CHROME_LAUNCHER_SUPPORT_H_
