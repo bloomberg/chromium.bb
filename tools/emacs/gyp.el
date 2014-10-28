@@ -23,7 +23,28 @@
                            (buffer-substring-no-properties
                             (line-beginning-position) (line-end-position))))
     (setf (first python-indent-levels)
-          (- (first python-indent-levels) python-indent-offset))))
+          (- (first python-indent-levels) python-continuation-offset))))
+
+(defadvice python-indent-guess-indent-offset (around
+                                              gyp-indent-guess-indent-offset
+                                              activate)
+  "Guess correct indent offset in gyp-mode."
+  (or (and (not (eq major-mode 'gyp-mode))
+           ad-do-it)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (goto-char (point-min))
+          ;; Find first line ending with an opening brace that is not a comment.
+          (or (and (re-search-forward "\\(^[[{]$\\|^.*[^#].*[[{]$\\)")
+                   (forward-line)
+                   (/= (current-indentation) 0)
+                   (set (make-local-variable 'python-indent-offset)
+                        (current-indentation))
+                   (set (make-local-variable 'python-continuation-offset)
+                        (current-indentation)))
+              (message "Can't guess gyp indent offset, using default: %s"
+                       python-continuation-offset))))))
 
 (define-derived-mode gyp-mode python-mode "Gyp"
   "Major mode for editing .gyp files. See http://code.google.com/p/gyp/"
@@ -36,9 +57,10 @@
 
 (defun gyp-set-indentation ()
   "Hook function to configure python indentation to suit gyp mode."
-  (setq python-continuation-offset 2
-        python-indent-offset 2
-        python-indent-guess-indent-offset nil))
+  (set (make-local-variable 'python-indent-offset) 2)
+  (set (make-local-variable 'python-continuation-offset) 2)
+  (set (make-local-variable 'python-indent-guess-indent-offset) t)
+  (python-indent-guess-indent-offset))
 
 (add-hook 'gyp-mode-hook 'gyp-set-indentation)
 
@@ -223,7 +245,7 @@
                                 "copies" "defines" "dependencies" "destination"
                                 "direct_dependent_settings"
                                 "export_dependent_settings" "extension" "files"
-                                "include_dirs" "includes" "inputs" "libraries"
+                                "include_dirs" "includes" "inputs" "ldflags" "libraries"
                                 "link_settings" "mac_bundle" "message"
                                 "msvs_external_rule" "outputs" "product_name"
                                 "process_outputs_as_sources" "rules" "rule_name"
