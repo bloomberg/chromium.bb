@@ -13,9 +13,11 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace content {
 
+class NavigationEntry;
 class BrowserContext;
 class ResourceContext;
 class WebContents;
@@ -52,6 +54,10 @@ class HostZoomMap {
 
   typedef std::vector<ZoomLevelChange> ZoomLevelVector;
 
+  // Extracts the URL from NavigationEntry, substituting the error page
+  // URL in the event that the error page is showing.
+  CONTENT_EXPORT static GURL GetURLFromEntry(const NavigationEntry* entry);
+
   CONTENT_EXPORT static HostZoomMap* GetDefaultForBrowserContext(
       BrowserContext* browser_context);
 
@@ -63,6 +69,11 @@ class HostZoomMap {
   // be temporary or host-specific depending on the particular WebContents.
   CONTENT_EXPORT static void SetZoomLevel(const WebContents* web_contents,
                                           double level);
+
+  // Send an IPC to refresh any displayed error page's zoom levels. Needs to
+  // be called since error pages don't get loaded via the normal channel.
+  CONTENT_EXPORT static void SendErrorPageZoomLevelRefresh(
+      const WebContents* web_contents);
 
   // Copy the zoom levels from the given map. Can only be called on the UI
   // thread.

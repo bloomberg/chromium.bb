@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, OnPreferenceChanged) {
   zoom_change_watcher.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesDoNotZoom) {
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesCanZoom) {
   ui_test_utils::NavigateToURL(browser(), GURL("http://kjfhkjsdf.com"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -131,5 +131,5 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesDoNotZoom) {
   // The following attempt to change the zoom level for an error page should
   // fail.
   zoom_controller->SetZoomLevel(new_zoom_level);
-  EXPECT_FLOAT_EQ(old_zoom_level, zoom_controller->GetZoomLevel());
+  EXPECT_FLOAT_EQ(new_zoom_level, zoom_controller->GetZoomLevel());
 }

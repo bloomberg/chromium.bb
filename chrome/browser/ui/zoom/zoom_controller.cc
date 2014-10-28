@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -81,13 +82,10 @@ bool ZoomController::SetZoomLevelByExtension(
     const scoped_refptr<const extensions::Extension>& extension) {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  bool is_normal_page =
-      entry && entry->GetPageType() == content::PAGE_TYPE_NORMAL;
   // Cannot zoom in disabled mode. Also, don't allow changing zoom level on
   // a crashed tab, an error page or an interstitial page.
   if (zoom_mode_ == ZOOM_MODE_DISABLED ||
-      !web_contents()->GetRenderViewHost()->IsRenderViewLive() ||
-      !is_normal_page)
+      !web_contents()->GetRenderViewHost()->IsRenderViewLive())
     return false;
 
   // Store extension data so that |extension| can be attributed when the zoom
@@ -139,7 +137,8 @@ bool ZoomController::SetZoomLevelByExtension(
       last_extension_ = NULL;
       return false;
     }
-    std::string host = net::GetHostOrSpecFromURL(entry->GetURL());
+    std::string host =
+        net::GetHostOrSpecFromURL(content::HostZoomMap::GetURLFromEntry(entry));
     zoom_map->SetZoomLevelForHost(host, zoom_level);
   }
 
@@ -172,7 +171,7 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
           web_contents()->GetController().GetLastCommittedEntry();
 
       if (entry) {
-        GURL url = entry->GetURL();
+        GURL url = content::HostZoomMap::GetURLFromEntry(entry);
         std::string host = net::GetHostOrSpecFromURL(url);
 
         if (zoom_map->HasZoomLevel(url.scheme(), host)) {
@@ -245,6 +244,9 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
 void ZoomController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (details.entry && details.entry->GetPageType() == content::PAGE_TYPE_ERROR)
+    content::HostZoomMap::SendErrorPageZoomLevelRefresh(web_contents());
+
   // If the main frame's content has changed, the new page may have a different
   // zoom level from the old one.
   UpdateState(std::string());
@@ -269,7 +271,8 @@ void ZoomController::UpdateState(const std::string& host) {
     content::NavigationEntry* entry =
         web_contents()->GetController().GetLastCommittedEntry();
     if (!entry ||
-        host != net::GetHostOrSpecFromURL(entry->GetURL())) {
+        host != net::GetHostOrSpecFromURL(
+                    content::HostZoomMap::GetURLFromEntry(entry))) {
       return;
     }
   }

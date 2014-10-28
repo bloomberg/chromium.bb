@@ -8075,6 +8075,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL" desc="Label for Zoom Level tab and a header the on Content Settings dialog (zoom levels indicate that a page should be shown for example at 110% magnification).">
         Zoom Levels
       </message>
+      <message name="IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL" desc="Label for zoom level list entry for Chrome error pages.">
+        (Chrome error pages)
+      </message>
       <message name="IDS_ZOOMLEVELS_MANAGE_BUTTON" desc="Button on the Content Settings dialog that opens a dialog to manage your page zoom levels (zoom levels indicate that a page should be shown for example at 110% magnification).">
         Manage...
       </message>

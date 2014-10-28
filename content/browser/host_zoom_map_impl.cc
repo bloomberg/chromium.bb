@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -43,10 +44,21 @@ std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
   if (!entry)
     return std::string();
 
-  return net::GetHostOrSpecFromURL(entry->GetURL());
+  return net::GetHostOrSpecFromURL(HostZoomMap::GetURLFromEntry(entry));
 }
 
 }  // namespace
+
+GURL HostZoomMap::GetURLFromEntry(const NavigationEntry* entry) {
+  switch (entry->GetPageType()) {
+    case PAGE_TYPE_ERROR:
+      return GURL(kUnreachableWebDataURL);
+    // TODO(wjmaclean): In future, give interstitial pages special treatment as
+    // well.
+    default:
+      return entry->GetURL();
+  }
+}
 
 HostZoomMap* HostZoomMap::GetDefaultForBrowserContext(BrowserContext* context) {
   HostZoomMapImpl* rv = static_cast<HostZoomMapImpl*>(
@@ -74,6 +86,14 @@ void HostZoomMap::SetZoomLevel(const WebContents* web_contents, double level) {
           web_contents->GetBrowserContext()));
   host_zoom_map->SetZoomLevelForWebContents(
       *static_cast<const WebContentsImpl*>(web_contents), level);
+}
+
+void HostZoomMap::SendErrorPageZoomLevelRefresh(
+    const WebContents* web_contents) {
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
+          web_contents->GetBrowserContext()));
+  host_zoom_map->SendErrorPageZoomLevelRefresh();
 }
 
 HostZoomMapImpl::HostZoomMapImpl()
@@ -253,7 +273,7 @@ double HostZoomMapImpl::GetZoomLevelForWebContents(
   // It is possible for a WebContent's zoom level to be queried before
   // a navigation has occurred.
   if (entry)
-    url = entry->GetURL();
+    url = GetURLFromEntry(entry);
   return GetZoomLevelForHostAndScheme(url.scheme(),
                                       net::GetHostOrSpecFromURL(url));
 }
@@ -277,7 +297,7 @@ void HostZoomMapImpl::SetZoomLevelForWebContents(
     if (!entry)
       return;
 
-    GURL url = entry->GetURL();
+    GURL url = GetURLFromEntry(entry);
     SetZoomLevelForHost(net::GetHostOrSpecFromURL(url), level);
   }
 }
@@ -382,6 +402,14 @@ void HostZoomMapImpl::SendZoomLevelChange(const std::string& scheme,
           new ViewMsg_SetZoomLevelForCurrentURL(scheme, host, level));
     }
   }
+}
+
+void HostZoomMapImpl::SendErrorPageZoomLevelRefresh() {
+  GURL error_url(kUnreachableWebDataURL);
+  std::string host = net::GetHostOrSpecFromURL(error_url);
+  double error_page_zoom_level = GetZoomLevelForHost(host);
+
+  SendZoomLevelChange(std::string(), host, error_page_zoom_level);
 }
 
 HostZoomMapImpl::~HostZoomMapImpl() {

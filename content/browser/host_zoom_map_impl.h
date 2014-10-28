@@ -86,6 +86,8 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
                const NotificationSource& source,
                const NotificationDetails& details) override;
 
+  void SendErrorPageZoomLevelRefresh();
+
  private:
   typedef std::map<std::string, double> HostZoomLevels;
   typedef std::map<std::string, HostZoomLevels> SchemeHostZoomLevels;

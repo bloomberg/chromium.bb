@@ -44,6 +44,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -996,9 +997,15 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
        ++i) {
     scoped_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
     switch (i->mode) {
-      case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST:
+      case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
         exception->SetString(kOrigin, i->host);
-        break;
+        std::string host = i->host;
+        if (host == content::kUnreachableWebDataURL) {
+          host =
+              l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
+        }
+        exception->SetString(kOrigin, host);
+      }
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
         // These are not stored in preferences and get cleared on next browser
         // start. Therefore, we don't care for them.
@@ -1218,6 +1225,11 @@ void ContentSettingsHandler::RemoveZoomLevelException(
   std::string pattern;
   rv = args->GetString(2, &pattern);
   DCHECK(rv);
+
+  if (pattern ==
+          l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL)) {
+    pattern = content::kUnreachableWebDataURL;
+  }
 
   content::HostZoomMap* host_zoom_map =
       content::HostZoomMap::GetDefaultForBrowserContext(
