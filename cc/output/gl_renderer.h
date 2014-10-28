@@ -448,7 +448,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   ScopedPtrDeque<SyncQuery> available_sync_queries_;
   scoped_ptr<SyncQuery> current_sync_query_;
   bool use_sync_query_;
-  bool use_blend_minmax_;
   bool use_blend_equation_advanced_;
   bool use_blend_equation_advanced_coherent_;
 

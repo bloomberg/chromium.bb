@@ -374,7 +374,6 @@ GLRenderer::GLRenderer(RendererClient* client,
   capabilities_.allow_rasterize_on_demand = true;
 
   use_sync_query_ = context_caps.gpu.sync_query;
-  use_blend_minmax_ = context_caps.gpu.blend_minmax;
   use_blend_equation_advanced_ = context_caps.gpu.blend_equation_advanced;
   use_blend_equation_advanced_coherent_ =
       context_caps.gpu.blend_equation_advanced_coherent;
@@ -739,7 +738,6 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
 
 bool GLRenderer::CanApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
   return use_blend_equation_advanced_ ||
-         (use_blend_minmax_ && blend_mode == SkXfermode::kLighten_Mode) ||
          blend_mode == SkXfermode::kScreen_Mode ||
          blend_mode == SkXfermode::kSrcOver_Mode;
 }
@@ -805,9 +803,6 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
   } else {
     if (blend_mode == SkXfermode::kScreen_Mode) {
       GLC(gl_, gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE));
-    } else if (blend_mode == SkXfermode::kLighten_Mode) {
-      GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE));
-      GLC(gl_, gl_->BlendEquation(GL_MAX_EXT));
     }
   }
 }
@@ -820,9 +815,6 @@ void GLRenderer::RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode) {
     GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
   } else {
     GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-
-    if (blend_mode == SkXfermode::kLighten_Mode)
-      GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
   }
 }
 
