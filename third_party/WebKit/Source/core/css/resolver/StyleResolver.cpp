@@ -1335,6 +1335,11 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             continue;
         }
 
+        if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
+            continue;
+        if (propertyWhitelistType == PropertyWhitelistFirstLetter && !isValidFirstLetterStyleProperty(property))
+            continue;
+
         if (inheritedOnly && !current.isInherited()) {
             // If the property value is explicitly inherited, we need to apply further non-inherited properties
             // as they might override the value inherited here. For this reason we don't allow declarations with
@@ -1343,10 +1348,6 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
             continue;
         }
 
-        if (propertyWhitelistType == PropertyWhitelistCue && !isValidCueStyleProperty(property))
-            continue;
-        if (propertyWhitelistType == PropertyWhitelistFirstLetter && !isValidFirstLetterStyleProperty(property))
-            continue;
         if (!isPropertyForPass<pass>(property))
             continue;
         if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
