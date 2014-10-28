@@ -10,6 +10,7 @@
 
 namespace content {
 
+// static
 MediaStreamTrack* MediaStreamTrack::GetTrack(
     const blink::WebMediaStreamTrack& track) {
   if (track.isNull())
@@ -32,18 +33,20 @@ void MediaStreamTrack::SetEnabled(bool enabled) {
     track_->set_enabled(enabled);
 }
 
+// TODO(tommi): Remove this hack when we have a separate implementation for
+// remote media stream tracks.  Stop() can probably be made pure virtual.
 void MediaStreamTrack::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!is_local_track_) << "Local implementations must override Stop()";
   // Stop means that a track should be stopped permanently. But
   // since there is no proper way of doing that on a remote track, we can
   // at least disable the track. Blink will not call down to the content layer
   // after a track has been stopped.
-  if (track_.get())
-    track_->set_enabled(false);
+  SetEnabled(false);
 }
 
 webrtc::AudioTrackInterface* MediaStreamTrack::GetAudioAdapter() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(track_->kind(), "audio");
   return static_cast<webrtc::AudioTrackInterface*>(track_.get());
 }
 

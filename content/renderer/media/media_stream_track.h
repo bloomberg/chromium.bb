@@ -42,10 +42,10 @@ class CONTENT_EXPORT MediaStreamTrack
 
   virtual webrtc::AudioTrackInterface* GetAudioAdapter();
 
-  bool is_local_track () const { return is_local_track_; }
+  bool is_local_track() const { return is_local_track_; }
 
  protected:
-  scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  const scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
 
  private:
   const bool is_local_track_;
