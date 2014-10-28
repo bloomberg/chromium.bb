@@ -27,12 +27,12 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
   // Creates a VideoCaptureDevice for the Aura desktop.
   static media::VideoCaptureDevice* Create(const DesktopMediaID& source);
 
-  virtual ~DesktopCaptureDeviceAura();
+  ~DesktopCaptureDeviceAura() override;
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const media::VideoCaptureParams& params,
-                                scoped_ptr<Client> client) override;
-  virtual void StopAndDeAllocate() override;
+  void AllocateAndStart(const media::VideoCaptureParams& params,
+                        scoped_ptr<Client> client) override;
+  void StopAndDeAllocate() override;
 
  private:
   DesktopCaptureDeviceAura(const DesktopMediaID& source);

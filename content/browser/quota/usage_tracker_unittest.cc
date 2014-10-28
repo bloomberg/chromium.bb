@@ -130,7 +130,7 @@ class UsageTrackerTest : public testing::Test {
                        storage_policy_.get(), NULL) {
   }
 
-  virtual ~UsageTrackerTest() {}
+  ~UsageTrackerTest() override {}
 
   UsageTracker* usage_tracker() {
     return &usage_tracker_;

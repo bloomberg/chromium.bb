@@ -49,7 +49,7 @@ class ConnectionListener : public GamepadConsumer {
 class GamepadServiceTest : public testing::Test {
  protected:
   GamepadServiceTest();
-  virtual ~GamepadServiceTest() override;
+  ~GamepadServiceTest() override;
 
   void SetPadsConnected(bool connected);
   void WaitForData();
@@ -61,7 +61,7 @@ class GamepadServiceTest : public testing::Test {
     return connection_listener_->disconnected_counter();
   }
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  private:
   MockGamepadDataFetcher* fetcher_;

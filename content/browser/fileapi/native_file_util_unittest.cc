@@ -21,9 +21,7 @@ class NativeFileUtilTest : public testing::Test {
  public:
   NativeFileUtilTest() {}
 
-  virtual void SetUp() {
-    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 
  protected:
   base::FilePath Path() {

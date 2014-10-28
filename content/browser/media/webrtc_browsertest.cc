@@ -43,7 +43,7 @@ namespace content {
 class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
  public:
   MAYBE_WebRtcBrowserTest() {}
-  virtual ~MAYBE_WebRtcBrowserTest() {}
+  ~MAYBE_WebRtcBrowserTest() override {}
 
   // Convenience function since most peerconnection-call.html tests just load
   // the page, kick off some javascript and wait for the title to change to OK.

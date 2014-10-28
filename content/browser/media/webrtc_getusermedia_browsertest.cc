@@ -78,7 +78,7 @@ namespace content {
 class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
  public:
   WebRtcGetUserMediaBrowserTest() : trace_log_(NULL) {}
-  virtual ~WebRtcGetUserMediaBrowserTest() {}
+  ~WebRtcGetUserMediaBrowserTest() override {}
 
   void StartTracing() {
     CHECK(trace_log_ == NULL) << "Can only can start tracing once";

@@ -149,7 +149,7 @@ static const int64 FAKE_TIME_STAMP = 3600000;
 class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
  public:
   MAYBE_WebRtcInternalsBrowserTest() {}
-  virtual ~MAYBE_WebRtcInternalsBrowserTest() {}
+  ~MAYBE_WebRtcInternalsBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     // Assume this is set by the content test launcher.

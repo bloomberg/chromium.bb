@@ -42,7 +42,7 @@ class MockQuotaManagerTest : public testing::Test {
       weak_factory_(this) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     policy_ = new MockSpecialStoragePolicy;
     manager_ = new MockQuotaManager(false /* is_incognito */,
@@ -52,7 +52,7 @@ class MockQuotaManagerTest : public testing::Test {
                                     policy_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Make sure the quota manager cleans up correctly.
     manager_ = NULL;
     base::RunLoop().RunUntilIdle();

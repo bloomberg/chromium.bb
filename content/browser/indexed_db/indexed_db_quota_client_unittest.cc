@@ -69,7 +69,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     idb_context()->set_data_path_for_testing(indexeddb_dir);
   }
 
-  virtual ~IndexedDBQuotaClientTest() {
+  ~IndexedDBQuotaClientTest() override {
     FlushIndexedDBTaskRunner();
     idb_context_ = NULL;
     browser_context_.reset();

@@ -22,11 +22,11 @@ class CONTENT_EXPORT WifiDataProviderLinux : public WifiDataProviderCommon {
  private:
   friend class GeolocationWifiDataProviderLinuxTest;
 
-  virtual ~WifiDataProviderLinux();
+  ~WifiDataProviderLinux() override;
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi() override;
-  virtual WifiPollingPolicy* NewPollingPolicy() override;
+  WlanApiInterface* NewWlanApi() override;
+  WifiPollingPolicy* NewPollingPolicy() override;
 
   // For testing.
   WlanApiInterface* NewWlanApiForTesting(dbus::Bus* bus);

@@ -40,16 +40,16 @@ void GetCancelStatus(bool* operation_done,
 class FileSystemOperationRunnerTest : public testing::Test {
  protected:
   FileSystemOperationRunnerTest() {}
-  virtual ~FileSystemOperationRunnerTest() {}
+  ~FileSystemOperationRunnerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
     file_system_context_ =
         CreateFileSystemContextForTesting(NULL, base_dir);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     file_system_context_ = NULL;
     base::RunLoop().RunUntilIdle();
   }

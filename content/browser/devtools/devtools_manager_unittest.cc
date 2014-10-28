@@ -202,13 +202,13 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
       : old_browser_client_(NULL) {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SetBrowserClientForTesting(old_browser_client_);
     RenderViewHostImplTestHarness::TearDown();
   }

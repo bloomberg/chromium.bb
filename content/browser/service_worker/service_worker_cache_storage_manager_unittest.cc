@@ -32,7 +32,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         origin1_("http://example1.com"),
         origin2_("http://example2.com") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context(
         ChromeBlobStorageContext::GetFor(&browser_context_));
     // Wait for ChromeBlobStorageContext to finish initializing.
@@ -60,7 +60,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
         url_request_context, blob_storage_context->context()->AsWeakPtr());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     base::RunLoop().RunUntilIdle();
   }
@@ -473,7 +473,7 @@ class ServiceWorkerCacheQuotaClientTest
  protected:
   ServiceWorkerCacheQuotaClientTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ServiceWorkerCacheStorageManagerTest::SetUp();
     quota_client_.reset(
         new ServiceWorkerCacheQuotaClient(cache_manager_->AsWeakPtr()));

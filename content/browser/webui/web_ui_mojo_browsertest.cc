@@ -179,7 +179,7 @@ class WebUIMojoTest : public ContentBrowserTest {
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  virtual ~WebUIMojoTest() {
+  ~WebUIMojoTest() override {
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }
 

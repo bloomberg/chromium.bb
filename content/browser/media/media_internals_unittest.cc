@@ -101,7 +101,7 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
     media_internals_->AddUpdateCallback(update_cb_);
   }
 
-  virtual ~MediaInternalsVideoCaptureDeviceTest() {
+  ~MediaInternalsVideoCaptureDeviceTest() override {
     media_internals_->RemoveUpdateCallback(update_cb_);
   }
 

@@ -11,7 +11,7 @@ namespace content {
 
 class TransitionRequestManagerTest : public testing::Test {
  public:
-  virtual ~TransitionRequestManagerTest() {}
+  ~TransitionRequestManagerTest() override {}
 };
 
 TEST_F(TransitionRequestManagerTest,

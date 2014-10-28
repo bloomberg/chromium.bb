@@ -24,7 +24,7 @@ using ::testing::Unused;
 namespace content {
 
 class GeolocationWifiDataProviderLinuxTest : public testing::Test {
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;

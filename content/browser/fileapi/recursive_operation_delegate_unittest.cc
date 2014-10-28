@@ -128,14 +128,12 @@ void CallCancelLater(storage::RecursiveOperationDelegate* operation,
 
 class RecursiveOperationDelegateTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     sandbox_file_system_.SetUp(base_.path().AppendASCII("filesystem"));
   }
 
-  virtual void TearDown() override {
-    sandbox_file_system_.TearDown();
-  }
+  void TearDown() override { sandbox_file_system_.TearDown(); }
 
   scoped_ptr<FileSystemOperationContext> NewContext() {
     FileSystemOperationContext* context =

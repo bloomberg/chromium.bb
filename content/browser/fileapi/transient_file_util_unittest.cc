@@ -23,9 +23,9 @@ namespace content {
 class TransientFileUtilTest : public testing::Test {
  public:
   TransientFileUtilTest() {}
-  virtual ~TransientFileUtilTest() {}
+  ~TransientFileUtilTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, base::FilePath(FILE_PATH_LITERAL("dummy")));
     transient_file_util_.reset(new storage::TransientFileUtil);
@@ -33,7 +33,7 @@ class TransientFileUtilTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     file_system_context_ = NULL;
     base::RunLoop().RunUntilIdle();
   }

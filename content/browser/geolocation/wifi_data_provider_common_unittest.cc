@@ -113,13 +113,13 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
       : loop_quitter_(&main_message_loop_) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     provider_ = new WifiDataProviderCommonWithMock;
     wlan_api_ = provider_->new_wlan_api_.get();
     polling_policy_ = provider_->new_polling_policy_.get();
     provider_->AddCallback(&loop_quitter_.callback_);
   }
-  virtual void TearDown() {
+  void TearDown() override {
     provider_->RemoveCallback(&loop_quitter_.callback_);
     provider_->StopDataProvider();
     provider_ = NULL;

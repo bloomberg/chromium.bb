@@ -151,7 +151,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         quota_status_(storage::kQuotaStatusUnknown),
         usage_(-1) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     storage_policy_ = new MockSpecialStoragePolicy();
@@ -177,7 +177,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         storage::MockFileChangeObserver::CreateList(&change_observer_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     quota_manager_ = NULL;
     sandbox_file_system_.TearDown();
   }

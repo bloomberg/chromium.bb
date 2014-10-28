@@ -40,7 +40,7 @@ class DOMStorageContextImplTest : public testing::Test {
   const bool kDontIncludeFileInfo;
   const bool kDoIncludeFileInfo;
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy;
     task_runner_ =
@@ -51,9 +51,7 @@ class DOMStorageContextImplTest : public testing::Test {
                                          task_runner_.get());
   }
 
-  virtual void TearDown() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
+  void TearDown() override { base::MessageLoop::current()->RunUntilIdle(); }
 
   void VerifySingleOriginRemains(const GURL& origin) {
     // Use a new instance to examine the contexts of temp_dir_.

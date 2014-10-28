@@ -744,12 +744,12 @@ class ResourceDispatcherHostTest : public testing::Test,
   friend class TestURLRequestJobFactory;
 
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
     HandleScheme("test");
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
     URLRequestTestDelayedStartJob::ClearQueue();
 

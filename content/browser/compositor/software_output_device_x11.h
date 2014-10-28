@@ -20,9 +20,9 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceX11(ui::Compositor* compositor);
 
-  virtual ~SoftwareOutputDeviceX11();
+  ~SoftwareOutputDeviceX11() override;
 
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  void EndPaint(cc::SoftwareFrameData* frame_data) override;
 
  private:
   ui::Compositor* compositor_;

@@ -48,7 +48,7 @@ class FileAPIMessageFilterTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_context_ =
         CreateFileSystemContextForTesting(NULL, base::FilePath());
 

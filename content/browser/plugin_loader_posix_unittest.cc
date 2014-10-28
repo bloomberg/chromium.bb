@@ -77,9 +77,7 @@ class PluginLoaderPosixTest : public testing::Test {
         plugin_loader_(new MockPluginLoaderPosix) {
   }
 
-  virtual void SetUp() override {
-    PluginServiceImpl::GetInstance()->Init();
-  }
+  void SetUp() override { PluginServiceImpl::GetInstance()->Init(); }
 
   base::MessageLoop* message_loop() { return &message_loop_; }
   MockPluginLoaderPosix* plugin_loader() { return plugin_loader_.get(); }

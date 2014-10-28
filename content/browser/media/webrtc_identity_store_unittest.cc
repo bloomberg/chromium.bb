@@ -49,9 +49,7 @@ class WebRTCIdentityStoreTest : public testing::Test {
     webrtc_identity_store_->SetTaskRunnerForTesting(pool_owner_->pool());
   }
 
-  virtual ~WebRTCIdentityStoreTest() {
-    pool_owner_->pool()->Shutdown();
-  }
+  ~WebRTCIdentityStoreTest() override { pool_owner_->pool()->Shutdown(); }
 
   void SetValidityPeriod(base::TimeDelta validity_period) {
     webrtc_identity_store_->SetValidityPeriodForTesting(validity_period);

@@ -49,7 +49,7 @@ class FileSystemContextTest : public testing::Test {
  public:
   FileSystemContextTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     storage_policy_ = new MockSpecialStoragePolicy();

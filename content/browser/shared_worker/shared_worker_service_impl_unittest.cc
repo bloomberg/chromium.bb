@@ -60,8 +60,8 @@ class SharedWorkerServiceImplTest : public testing::Test {
             &SharedWorkerServiceImplTest::MockTryIncrementWorkerRefCount);
   }
 
-  virtual void SetUp() override {}
-  virtual void TearDown() override {
+  void SetUp() override {}
+  void TearDown() override {
     s_update_worker_dependency_call_count_ = 0;
     s_worker_dependency_added_ids_.clear();
     s_worker_dependency_removed_ids_.clear();

@@ -108,13 +108,11 @@ class ServiceWorkerContextTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         render_process_id_(99) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
   }
 
-  virtual void TearDown() override {
-    helper_.reset();
-  }
+  void TearDown() override { helper_.reset(); }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 

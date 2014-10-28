@@ -48,7 +48,7 @@ class ServiceWorkerCacheTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         callback_error_(ServiceWorkerCache::ErrorTypeOK) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
         ChromeBlobStorageContext::GetFor(&browser_context_);
     // Wait for chrome_blob_storage_context to finish initializing.
@@ -86,7 +86,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     }
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     base::RunLoop().RunUntilIdle();
   }

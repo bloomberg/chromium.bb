@@ -46,7 +46,7 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
     clock_.Advance(base::TimeDelta::FromSeconds(1000000));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
     WebContentsImpl* web_contents = reinterpret_cast<WebContentsImpl*>(

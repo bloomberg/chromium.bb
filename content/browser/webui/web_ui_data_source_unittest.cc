@@ -52,7 +52,7 @@ class TestClient : public TestContentClient {
 class WebUIDataSourceTest : public testing::Test {
  public:
   WebUIDataSourceTest() : result_data_(NULL) {}
-  virtual ~WebUIDataSourceTest() {}
+  ~WebUIDataSourceTest() override {}
   WebUIDataSourceImpl* source() { return source_.get(); }
 
   void StartDataRequest(const std::string& path) {
@@ -70,7 +70,7 @@ class WebUIDataSourceTest : public testing::Test {
   scoped_refptr<base::RefCountedMemory> result_data_;
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     SetContentClient(&client_);
     WebUIDataSource* source = WebUIDataSourceImpl::Create("host");
     WebUIDataSourceImpl* source_impl = static_cast<WebUIDataSourceImpl*>(

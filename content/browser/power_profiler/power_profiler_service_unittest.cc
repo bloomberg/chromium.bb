@@ -111,7 +111,7 @@ class PowerProfilerServiceTest : public testing::Test {
 
  protected:
   PowerProfilerServiceTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
-  virtual ~PowerProfilerServiceTest() {}
+  ~PowerProfilerServiceTest() override {}
 
   void RegisterQuitClosure(base::Closure closure) {
     observer_.set_quit_closure(closure);

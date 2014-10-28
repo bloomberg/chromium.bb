@@ -125,8 +125,7 @@ class DownloadFileTest : public testing::Test {
       file_thread_(BrowserThread::FILE, &loop_) {
   }
 
-  virtual ~DownloadFileTest() {
-  }
+  ~DownloadFileTest() override {}
 
   void SetUpdateDownloadInfo(int64 bytes, int64 bytes_per_sec,
                              const std::string& hash_state) {
@@ -139,7 +138,7 @@ class DownloadFileTest : public testing::Test {
     observer_->CurrentUpdateStatus(bytes_, bytes_per_sec_, hash_state_);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));

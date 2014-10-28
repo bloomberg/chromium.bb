@@ -364,7 +364,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
     cache_ = ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
   }
 
-  virtual ~StoragePartitionShaderClearTest() {
+  ~StoragePartitionShaderClearTest() override {
     cache_ = NULL;
     ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
   }

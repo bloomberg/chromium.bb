@@ -228,7 +228,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
 class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest() {}
-  virtual void SetUp() {
+  void SetUp() override {
     const GURL origin("http://localhost:81");
     task_runner_ = new base::TestSimpleTaskRunner();
     special_storage_policy_ = new MockSpecialStoragePolicy();

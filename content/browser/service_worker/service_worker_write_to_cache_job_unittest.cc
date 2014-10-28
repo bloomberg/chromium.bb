@@ -77,7 +77,7 @@ class SSLCertificateErrorJob : public net::URLRequestTestJob {
                                response_data,
                                auto_advance),
         weak_factory_(this) {}
-  virtual void Start() override {
+  void Start() override {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SSLCertificateErrorJob::NotifyError,
@@ -116,7 +116,7 @@ class CertStatusErrorJob : public net::URLRequestTestJob {
                                response_headers,
                                response_data,
                                auto_advance) {}
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) override {
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
     URLRequestTestJob::GetResponseInfo(info);
     info->ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
   }
@@ -145,7 +145,7 @@ class MockHttpProtocolHandler
       : resource_context_(resource_context) {}
   ~MockHttpProtocolHandler() override {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(
+  net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     ServiceWorkerRequestHandler* handler =
@@ -173,7 +173,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         mock_protocol_handler_(NULL) {}
   ~ServiceWorkerWriteToCacheJobTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kMockRenderProcessId));
 
     // A new unstored registration/version.
@@ -218,7 +218,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         scoped_refptr<ResourceRequestBody>());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     request_.reset();
     url_request_context_.reset();
     url_request_job_factory_.reset();

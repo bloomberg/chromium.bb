@@ -33,7 +33,7 @@ FileSystemURL CreateFileSystemURL(const char* path) {
 
 class SandboxFileSystemBackendDelegateTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     delegate_.reset(new storage::SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,

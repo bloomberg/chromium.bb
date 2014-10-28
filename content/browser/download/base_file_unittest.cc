@@ -45,7 +45,7 @@ class BaseFileTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ResetHash();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base_file_.reset(new BaseFile(base::FilePath(),
@@ -58,7 +58,7 @@ class BaseFileTest : public testing::Test {
                                   net::BoundNetLog()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_FALSE(base_file_->in_progress());
     if (!expected_error_) {
       EXPECT_EQ(static_cast<int64>(expected_data_.size()),

@@ -173,11 +173,9 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     return contents;
   }
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     DestroyStore();
     pool_owner_->pool()->Shutdown();
   }

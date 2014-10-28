@@ -25,7 +25,7 @@ class ShaderDiskCacheTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  virtual ~ShaderDiskCacheTest() {}
+  ~ShaderDiskCacheTest() override {}
 
   const base::FilePath& cache_path() { return temp_dir_.path(); }
 
@@ -36,7 +36,7 @@ class ShaderDiskCacheTest : public testing::Test {
   }
 
  private:
-  virtual void TearDown() override {
+  void TearDown() override {
     ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
   }
 

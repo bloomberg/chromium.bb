@@ -58,10 +58,10 @@ class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
 class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  public:
   SoftwareBrowserCompositorOutputSurfaceTest();
-  virtual ~SoftwareBrowserCompositorOutputSurfaceTest();
+  ~SoftwareBrowserCompositorOutputSurfaceTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   scoped_ptr<content::BrowserCompositorOutputSurface> CreateSurface(
       scoped_ptr<cc::SoftwareOutputDevice> device);

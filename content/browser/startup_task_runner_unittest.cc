@@ -42,8 +42,7 @@ void Observer(int result) {
 
 class StartupTaskRunnerTest : public testing::Test {
  public:
-
-  virtual void SetUp() {
+  void SetUp() override {
     last_task_ = 0;
     observer_calls = 0;
     task_count = 0;

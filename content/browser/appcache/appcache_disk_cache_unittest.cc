@@ -19,7 +19,7 @@ class AppCacheDiskCacheTest : public testing::Test {
  public:
   AppCacheDiskCacheTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Use the current thread for the DiskCache's cache_thread.
     message_loop_.reset(new base::MessageLoopForIO());
     cache_thread_ = base::ThreadTaskRunnerHandle::Get();
@@ -29,7 +29,7 @@ class AppCacheDiskCacheTest : public testing::Test {
         base::Unretained(this));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     base::RunLoop().RunUntilIdle();
     message_loop_.reset(NULL);
   }

@@ -43,13 +43,13 @@ class LocalFileUtilTest : public testing::Test {
  public:
   LocalFileUtilTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, data_dir_.path());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     file_system_context_ = NULL;
     base::RunLoop().RunUntilIdle();
   }

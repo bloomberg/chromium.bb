@@ -71,7 +71,7 @@ void DidOpenFileSystem(base::File::Error* error_out,
 
 class SandboxFileSystemBackendTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     SetUpNewDelegate(CreateAllowFileAccessOptions());
   }

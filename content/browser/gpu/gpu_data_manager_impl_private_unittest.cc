@@ -71,7 +71,7 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
  public:
   GpuDataManagerImplPrivateTest() { }
 
-  virtual ~GpuDataManagerImplPrivateTest() { }
+  ~GpuDataManagerImplPrivateTest() override {}
 
  protected:
   // scoped_ptr doesn't work with GpuDataManagerImpl because its
@@ -117,11 +117,9 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(ScopedGpuDataManagerImplPrivate);
   };
 
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   base::Time JustBeforeExpiration(const GpuDataManagerImplPrivate* manager);
   base::Time JustAfterExpiration(const GpuDataManagerImplPrivate* manager);

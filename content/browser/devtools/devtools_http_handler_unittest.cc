@@ -100,14 +100,12 @@ class DevToolsHttpHandlerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     file_thread_.reset(new BrowserThreadImpl(BrowserThread::FILE));
     file_thread_->Start();
   }
 
-  virtual void TearDown() {
-    file_thread_->Stop();
-  }
+  void TearDown() override { file_thread_->Stop(); }
 
  private:
   base::MessageLoopForIO message_loop_;

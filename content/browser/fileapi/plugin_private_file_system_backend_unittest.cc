@@ -48,7 +48,7 @@ std::string RegisterFileSystem() {
 
 class PluginPrivateFileSystemBackendTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = CreateFileSystemContextForTesting(
         NULL /* quota_manager_proxy */,

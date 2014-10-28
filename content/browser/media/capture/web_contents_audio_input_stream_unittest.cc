@@ -188,7 +188,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     audio_thread_.Start();
   }
 
-  virtual ~WebContentsAudioInputStreamTest() {
+  ~WebContentsAudioInputStreamTest() override {
     audio_thread_.Stop();
     thread_bundle_.reset();
 

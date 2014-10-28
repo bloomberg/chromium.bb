@@ -185,7 +185,7 @@ class NavigationControllerTest
   NavigationControllerTest() : navigation_entry_committed_counter_(0) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.

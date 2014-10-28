@@ -24,13 +24,11 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
   EmbeddedWorkerInstanceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
   }
 
-  virtual void TearDown() override {
-    helper_.reset();
-  }
+  void TearDown() override { helper_.reset(); }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 

@@ -19,9 +19,7 @@ class FileSystemUsageCacheTest : public testing::Test {
   FileSystemUsageCacheTest()
       : usage_cache_(base::MessageLoopProxy::current().get()) {}
 
-  virtual void SetUp() {
-    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 
  protected:
   base::FilePath GetUsageFilePath() {

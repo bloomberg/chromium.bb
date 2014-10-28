@@ -87,7 +87,7 @@ class GeofencingManagerTest : public testing::Test {
     expected_regions_[kTestRegionId] = test_region_;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     service_ = new TestGeofencingService();
     ON_CALL(*service_, IsServiceAvailable())
         .WillByDefault(testing::Return(false));
@@ -95,7 +95,7 @@ class GeofencingManagerTest : public testing::Test {
     manager_->SetServiceForTesting(service_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     manager_ = nullptr;
     delete service_;
     service_ = nullptr;

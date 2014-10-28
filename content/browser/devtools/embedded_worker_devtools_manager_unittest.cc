@@ -58,10 +58,10 @@ class EmbeddedWorkerDevToolsManagerTest : public testing::Test {
         partition_id_(*partition_.get()) {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     manager_ = EmbeddedWorkerDevToolsManager::GetInstance();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     EmbeddedWorkerDevToolsManager::GetInstance()->ResetForTesting();
   }
 

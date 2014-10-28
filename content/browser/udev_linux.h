@@ -71,16 +71,15 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
   // Calls |callback| upon device change events.
   UdevLinux(const std::vector<UdevMonitorFilter>& filters,
             const UdevNotificationCallback& callback);
-  virtual ~UdevLinux();
-
+  ~UdevLinux() override;
 
   // Returns the udev handle to be passed into other udev_*() functions.
   udev* udev_handle();
 
  private:
   // base::MessagePump:Libevent::Watcher implementation.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // libudev-related items, the main context, and the monitoring context to be
   // notified about changes to device states.

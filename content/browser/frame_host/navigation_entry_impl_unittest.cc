@@ -20,7 +20,7 @@ class NavigationEntryTest : public testing::Test {
   NavigationEntryTest() : instance_(NULL) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     entry1_.reset(new NavigationEntryImpl);
 
 #if !defined(OS_IOS)
@@ -35,8 +35,7 @@ class NavigationEntryTest : public testing::Test {
           false));
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
  protected:
   scoped_ptr<NavigationEntryImpl> entry1_;

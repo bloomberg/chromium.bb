@@ -23,14 +23,14 @@ class BrowserThreadTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI));
     file_thread_.reset(new BrowserThreadImpl(BrowserThread::FILE));
     ui_thread_->Start();
     file_thread_->Start();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     ui_thread_->Stop();
     file_thread_->Stop();
   }

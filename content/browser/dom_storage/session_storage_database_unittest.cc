@@ -26,8 +26,8 @@ namespace content {
 class SessionStorageDatabaseTest : public testing::Test {
  public:
   SessionStorageDatabaseTest();
-  virtual ~SessionStorageDatabaseTest();
-  virtual void SetUp() override;
+  ~SessionStorageDatabaseTest() override;
+  void SetUp() override;
 
  protected:
   typedef std::map<std::string, std::string> DataMap;

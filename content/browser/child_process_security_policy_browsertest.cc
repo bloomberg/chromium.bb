@@ -20,14 +20,14 @@ namespace content {
 class ChildProcessSecurityPolicyInProcessBrowserTest
     : public ContentBrowserTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           0U);
     ContentBrowserTest::SetUp();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_EQ(
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           0U);

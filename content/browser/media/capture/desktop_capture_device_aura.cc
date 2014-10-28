@@ -96,30 +96,29 @@ class DesktopVideoCaptureMachine
       public base::SupportsWeakPtr<DesktopVideoCaptureMachine> {
  public:
   DesktopVideoCaptureMachine(const DesktopMediaID& source);
-  virtual ~DesktopVideoCaptureMachine();
+  ~DesktopVideoCaptureMachine() override;
 
   // VideoCaptureFrameSource overrides.
-  virtual bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
-                     const media::VideoCaptureParams& params) override;
-  virtual void Stop(const base::Closure& callback) override;
+  bool Start(const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy,
+             const media::VideoCaptureParams& params) override;
+  void Stop(const base::Closure& callback) override;
 
   // Implements aura::WindowObserver.
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) override;
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override;
 
   // Implements ui::CompositorObserver.
-  virtual void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  virtual void OnCompositingStarted(ui::Compositor* compositor,
-                                    base::TimeTicks start_time) override {}
-  virtual void OnCompositingEnded(ui::Compositor* compositor) override;
-  virtual void OnCompositingAborted(ui::Compositor* compositor) override {}
-  virtual void OnCompositingLockStateChanged(
-      ui::Compositor* compositor) override {}
+  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override {}
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingAborted(ui::Compositor* compositor) override {}
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
 
  private:
   // Captures a frame.

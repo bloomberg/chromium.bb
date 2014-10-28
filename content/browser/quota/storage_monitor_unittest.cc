@@ -164,12 +164,12 @@ class StorageMonitorTestBase : public testing::Test {
 
 class StorageTestWithManagerBase : public StorageMonitorTestBase {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new UsageMockQuotaManager(storage_policy_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // This ensures the quota manager is destroyed correctly.
     quota_manager_ = NULL;
     base::RunLoop().RunUntilIdle();
@@ -563,7 +563,7 @@ class StorageMonitorTest : public StorageTestWithManagerBase {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     StorageTestWithManagerBase::SetUp();
 
     storage_monitor_ = quota_manager_->storage_monitor_.get();
@@ -645,7 +645,7 @@ TEST_F(StorageMonitorTest, RemoveObserverForFilter) {
 
 class StorageMonitorIntegrationTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new QuotaManager(
@@ -663,7 +663,7 @@ class StorageMonitorIntegrationTest : public testing::Test {
     quota_manager_->proxy()->RegisterClient(client_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // This ensures the quota manager is destroyed correctly.
     quota_manager_ = NULL;
     base::RunLoop().RunUntilIdle();

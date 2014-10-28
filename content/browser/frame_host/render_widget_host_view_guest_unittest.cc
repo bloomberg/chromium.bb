@@ -27,7 +27,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
  public:
   RenderWidgetHostViewGuestTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
@@ -38,7 +38,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (view_)
       view_->Destroy();
     delete widget_host_;

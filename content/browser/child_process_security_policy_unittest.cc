@@ -57,7 +57,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   ChildProcessSecurityPolicyTest() : old_browser_client_(NULL) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
 
     // Claim to always handle chrome:// URLs because the CPSP's notion of
@@ -71,7 +71,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
     test_browser_client_.AddScheme(url::kFileScheme);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     test_browser_client_.ClearSchemes();
     SetBrowserClientForTesting(old_browser_client_);
   }

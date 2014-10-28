@@ -14,7 +14,7 @@ const char kTestFile[] = "files/simple_page.html";
 
 class SavePackageBrowserTest : public ContentBrowserTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     ContentBrowserTest::SetUp();
   }

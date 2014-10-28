@@ -40,7 +40,7 @@ enum { NM_DEVICE_TYPE_WIFI = 2 };
 class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   NetworkManagerWlanApi();
-  virtual ~NetworkManagerWlanApi();
+  ~NetworkManagerWlanApi() override;
 
   // Must be called before any other interface method. Will return false if the
   // NetworkManager session cannot be created (e.g. not present on this distro),
@@ -54,7 +54,7 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   //
   // This function makes blocking D-Bus calls, but it's totally fine as
   // the code runs in "Geolocation" thread, not the browser's UI thread.
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
   // Enumerates the list of available network adapter devices known to

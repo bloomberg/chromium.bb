@@ -67,7 +67,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
  public:
   FileSystemFileStreamReaderTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     file_system_context_ = CreateFileSystemContextForTesting(
@@ -84,9 +84,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
               &test_file_modification_time_);
   }
 
-  virtual void TearDown() override {
-    base::RunLoop().RunUntilIdle();
-  }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   storage::FileSystemFileStreamReader* CreateFileReader(

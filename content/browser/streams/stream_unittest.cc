@@ -16,9 +16,7 @@ class StreamTest : public testing::Test {
  public:
   StreamTest() : producing_seed_key_(0) {}
 
-  virtual void SetUp() override {
-    registry_.reset(new StreamRegistry());
-  }
+  void SetUp() override { registry_.reset(new StreamRegistry()); }
 
   // Create a new IO buffer of the given |buffer_size| and fill it with random
   // data.

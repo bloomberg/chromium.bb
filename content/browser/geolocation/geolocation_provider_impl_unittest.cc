@@ -118,7 +118,7 @@ class GeolocationProviderTest : public testing::Test {
         provider_(new LocationProviderForTestArbitrator) {
   }
 
-  virtual ~GeolocationProviderTest() {}
+  ~GeolocationProviderTest() override {}
 
   LocationProviderForTestArbitrator* provider() { return provider_.get(); }
 

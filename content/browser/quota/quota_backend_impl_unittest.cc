@@ -93,7 +93,7 @@ class QuotaBackendImplTest : public testing::Test {
       : file_system_usage_cache_(file_task_runner()),
         quota_manager_proxy_(new MockQuotaManagerProxy) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
@@ -104,7 +104,7 @@ class QuotaBackendImplTest : public testing::Test {
                                         quota_manager_proxy_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     backend_.reset();
     quota_manager_proxy_ = NULL;
     file_util_.reset();

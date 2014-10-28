@@ -63,7 +63,7 @@ class FileSystemOperationImplWriteTest
         storage::MockFileChangeObserver::CreateList(&change_observer_);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     quota_manager_ =
@@ -88,7 +88,7 @@ class FileSystemOperationImplWriteTest
         ->AddFileChangeObserver(change_observer());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     quota_manager_ = NULL;
     file_system_context_ = NULL;
     base::RunLoop().RunUntilIdle();

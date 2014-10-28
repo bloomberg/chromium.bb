@@ -100,9 +100,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::GLSurfaceHandle GetCompositingSurface() override;
 #if defined(USE_AURA)
-  virtual void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
-      InputEventAckState ack_result) override;
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override;
 #endif  // defined(USE_AURA)
   bool LockMouse() override;
   void UnlockMouse() override;

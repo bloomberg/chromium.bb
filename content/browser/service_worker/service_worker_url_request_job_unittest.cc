@@ -96,9 +96,9 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   ServiceWorkerURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         blob_data_(new storage::BlobData("blob-id:myblob")) {}
-  virtual ~ServiceWorkerURLRequestJobTest() {}
+  ~ServiceWorkerURLRequestJobTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
     SetUpWithHelper(new EmbeddedWorkerTestHelper(kProcessID));
   }
@@ -141,7 +141,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     helper_->context()->AddProviderHost(provider_host.Pass());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     version_ = NULL;
     registration_ = NULL;
     helper_.reset();

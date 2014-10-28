@@ -22,7 +22,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   ServiceWorkerRegistrationTest()
       : io_thread_(BrowserThread::IO, &message_loop_) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
         new MockServiceWorkerDatabaseTaskManager(
             base::ThreadTaskRunnerHandle::Get()));
@@ -38,7 +38,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     context_ptr_ = context_->AsWeakPtr();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     context_.reset();
     base::RunLoop().RunUntilIdle();
   }

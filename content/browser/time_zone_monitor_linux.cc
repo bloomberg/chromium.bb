@@ -27,7 +27,7 @@ class TimeZoneMonitorLinuxImpl;
 class TimeZoneMonitorLinux : public TimeZoneMonitor {
  public:
   TimeZoneMonitorLinux();
-  virtual ~TimeZoneMonitorLinux();
+  ~TimeZoneMonitorLinux() override;
 
   void NotifyRenderersFromImpl() {
     NotifyRenderers();

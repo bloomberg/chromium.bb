@@ -90,7 +90,7 @@ class SiteInstanceTest : public testing::Test {
         old_browser_client_(NULL) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
     url::AddStandardScheme(kPrivilegedScheme);
     url::AddStandardScheme(kChromeUIScheme);
@@ -98,7 +98,7 @@ class SiteInstanceTest : public testing::Test {
     SiteInstanceImpl::set_render_process_host_factory(&rph_factory_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Ensure that no RenderProcessHosts are left over after the tests.
     EXPECT_TRUE(RenderProcessHost::AllHostsIterator().IsAtEnd());
 

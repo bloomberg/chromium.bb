@@ -84,8 +84,8 @@ class FileWriterDelegateTest : public PlatformTest {
   FileWriterDelegateTest() {}
 
  protected:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   int64 usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)

@@ -64,7 +64,7 @@ class LocalFileStreamReaderTest : public testing::Test {
   LocalFileStreamReaderTest()
       : file_thread_("FileUtilProxyTestFileThread") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(file_thread_.Start());
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
@@ -74,7 +74,7 @@ class LocalFileStreamReaderTest : public testing::Test {
     test_file_modification_time_ = info.last_modified;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Give another chance for deleted streams to perform Close.
     base::RunLoop().RunUntilIdle();
     file_thread_.Stop();

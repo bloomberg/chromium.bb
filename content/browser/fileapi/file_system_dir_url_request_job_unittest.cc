@@ -112,7 +112,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     : weak_factory_(this) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
@@ -128,7 +128,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // NOTE: order matters, request must die before delegate
     request_.reset(NULL);
     delegate_.reset(NULL);

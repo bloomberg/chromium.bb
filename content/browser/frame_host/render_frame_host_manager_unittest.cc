@@ -297,13 +297,13 @@ class FrameLifetimeConsistencyChecker : public WebContentsObserver {
 class RenderFrameHostManagerTest
     : public RenderViewHostImplTestHarness {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
     lifetime_checker_.reset(new FrameLifetimeConsistencyChecker(contents()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     lifetime_checker_.reset();
     RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);

@@ -119,7 +119,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   FileSystemURLRequestJobTest() : weak_factory_(this) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // We use the main thread so that we can get the root path synchronously.
@@ -136,7 +136,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // FileReader posts a task to close the file in destructor.
     base::RunLoop().RunUntilIdle();
   }

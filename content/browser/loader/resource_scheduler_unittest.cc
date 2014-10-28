@@ -156,7 +156,7 @@ class ResourceSchedulerTest : public testing::Test {
     context_.set_http_server_properties(http_server_properties_.GetWeakPtr());
   }
 
-  virtual ~ResourceSchedulerTest() {
+  ~ResourceSchedulerTest() override {
     scheduler_.OnClientDeleted(kChildId, kRouteId);
     scheduler_.OnClientDeleted(kBackgroundChildId, kBackgroundRouteId);
   }

@@ -54,16 +54,16 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
                                                int* exit_code);
 
   // ZygoteHost implementation:
-  virtual pid_t GetPid() const override;
-  virtual int GetSandboxStatus() const override;
-  virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
-                                      int score) override;
+  pid_t GetPid() const override;
+  int GetSandboxStatus() const override;
+  void AdjustRendererOOMScore(base::ProcessHandle process_handle,
+                              int score) override;
 
  private:
   friend struct DefaultSingletonTraits<ZygoteHostImpl>;
 
   ZygoteHostImpl();
-  virtual ~ZygoteHostImpl();
+  ~ZygoteHostImpl() override;
 
   // Notify the Zygote to exit immediately. This object should not be
   // used afterwards.

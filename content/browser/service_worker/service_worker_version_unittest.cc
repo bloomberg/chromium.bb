@@ -114,7 +114,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   ServiceWorkerVersionTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new MessageReceiver());
 
     pattern_ = GURL("http://www.example.com/");
@@ -134,7 +134,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         ->PatternHasProcessToRun(pattern_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     version_ = 0;
     registration_ = 0;
     helper_.reset();

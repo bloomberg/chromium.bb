@@ -510,7 +510,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &fake_screen_);
     ASSERT_EQ(&fake_screen_, gfx::Screen::GetNativeScreen());
 
@@ -545,7 +545,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Tear down in opposite order of set-up.
 
     // The device is destroyed asynchronously, and will notify the

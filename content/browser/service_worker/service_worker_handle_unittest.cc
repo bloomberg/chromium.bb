@@ -43,7 +43,7 @@ class ServiceWorkerHandleTest : public testing::Test {
   ServiceWorkerHandleTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
 
     const GURL pattern("http://www.example.com/");
@@ -60,7 +60,7 @@ class ServiceWorkerHandleTest : public testing::Test {
     helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     registration_ = NULL;
     version_ = NULL;
     helper_.reset();

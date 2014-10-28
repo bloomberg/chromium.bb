@@ -44,7 +44,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         additional_callback_count_(0),
         deletion_status_(storage::kQuotaStatusUnknown) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ = CreateFileSystemContextForTesting(
             NULL, data_dir_.path());

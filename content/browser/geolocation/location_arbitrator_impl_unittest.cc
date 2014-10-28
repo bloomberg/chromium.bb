@@ -105,7 +105,7 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
 class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     access_token_store_ = new NiceMock<FakeAccessTokenStore>;
     observer_.reset(new MockLocationObserver);
     LocationArbitratorImpl::LocationUpdateCallback callback =
@@ -116,8 +116,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   }
 
   // testing::Test
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   void CheckLastPositionInfo(double latitude,
                              double longitude,

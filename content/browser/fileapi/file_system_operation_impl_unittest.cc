@@ -48,7 +48,7 @@ class FileSystemOperationImplTest
   FileSystemOperationImplTest() : weak_factory_(this) {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     change_observers_ =
         storage::MockFileChangeObserver::CreateList(&change_observer_);
@@ -70,7 +70,7 @@ class FileSystemOperationImplTest
     update_observer_.Disable();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Let the client go away before dropping a ref of the quota manager proxy.
     quota_manager_proxy()->SimulateQuotaManagerDestroyed();
     quota_manager_ = NULL;

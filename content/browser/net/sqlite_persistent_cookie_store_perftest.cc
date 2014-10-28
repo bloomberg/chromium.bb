@@ -61,7 +61,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         pool_owner_->pool()->GetNamedSequenceToken("client"));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.path().Append(cookie_filename),
@@ -101,7 +101,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         false, NULL, NULL);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     store_ = NULL;
     pool_owner_->pool()->Shutdown();
   }

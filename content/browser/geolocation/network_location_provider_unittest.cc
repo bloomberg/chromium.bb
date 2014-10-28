@@ -107,13 +107,15 @@ MockWifiDataProvider* MockWifiDataProvider::instance_ = NULL;
 // Main test fixture
 class GeolocationNetworkProviderTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     test_server_url_ = GURL(kTestServerUrl);
     access_token_store_ = new FakeAccessTokenStore;
     wifi_data_provider_ = MockWifiDataProvider::CreateInstance();
   }
 
-  virtual void TearDown() { WifiDataProviderManager::ResetFactoryForTesting(); }
+  void TearDown() override {
+    WifiDataProviderManager::ResetFactoryForTesting();
+  }
 
   LocationProvider* CreateProvider(bool set_permission_granted) {
     LocationProvider* provider = NewNetworkLocationProvider(

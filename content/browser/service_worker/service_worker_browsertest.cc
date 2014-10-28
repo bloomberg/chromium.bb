@@ -311,7 +311,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
   EmbeddedWorkerBrowserTest()
       : last_worker_status_(EmbeddedWorkerInstance::STOPPED),
         pause_mode_(DONT_PAUSE) {}
-  virtual ~EmbeddedWorkerBrowserTest() {}
+  ~EmbeddedWorkerBrowserTest() override {}
 
   void TearDownOnIOThread() override {
     if (worker_) {
@@ -416,7 +416,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
  public:
   typedef ServiceWorkerVersionBrowserTest self;
 
-  virtual ~ServiceWorkerVersionBrowserTest() {}
+  ~ServiceWorkerVersionBrowserTest() override {}
 
   void TearDownOnIOThread() override {
     registration_ = NULL;

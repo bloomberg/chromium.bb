@@ -50,7 +50,7 @@ class FileMetadataLinuxTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &test_file_));
     int result = setxattr(test_file_.value().c_str(),

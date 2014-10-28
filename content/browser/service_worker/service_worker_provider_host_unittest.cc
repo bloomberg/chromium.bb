@@ -22,9 +22,9 @@ class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
-  virtual ~ServiceWorkerProviderHostTest() {}
+  ~ServiceWorkerProviderHostTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
     context_ = helper_->context();
     pattern_ = GURL("http://www.example.com/");
@@ -47,7 +47,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     context_->AddProviderHost(make_scoped_ptr(host2.release()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     version_ = 0;
     registration_ = 0;
     helper_.reset();

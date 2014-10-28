@@ -38,7 +38,7 @@ namespace content {
 class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
  public:
   WebRtcAecDumpBrowserTest() {}
-  virtual ~WebRtcAecDumpBrowserTest() {}
+  ~WebRtcAecDumpBrowserTest() override {}
 };
 
 #if defined(OS_WIN)

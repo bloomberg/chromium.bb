@@ -56,15 +56,13 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   ServiceWorkerDispatcherHostTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(kRenderProcessId));
     dispatcher_host_ = new TestingServiceWorkerDispatcherHost(
         kRenderProcessId, context_wrapper(), &resource_context_, helper_.get());
   }
 
-  virtual void TearDown() {
-    helper_.reset();
-  }
+  void TearDown() override { helper_.reset(); }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
   ServiceWorkerContextWrapper* context_wrapper() {

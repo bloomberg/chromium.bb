@@ -18,7 +18,7 @@ namespace content {
 class ManifestBrowserTest : public ContentBrowserTest  {
  protected:
   ManifestBrowserTest() {}
-  virtual ~ManifestBrowserTest() {}
+  ~ManifestBrowserTest() override {}
 
   void GetManifestAndWait() {
     shell()->web_contents()->GetManifest(

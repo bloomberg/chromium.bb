@@ -49,13 +49,13 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
  public:
   IndexedDBBrowserTest() : disk_usage_(-1) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     GetTestClassFactory()->Reset();
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
     ContentBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(NULL);
     ContentBrowserTest::TearDown();
   }

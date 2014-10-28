@@ -98,9 +98,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void OnSwapCompositorFrame(uint32 output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
 #if defined(USE_AURA)
-  virtual void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
-      InputEventAckState ack_result) override;
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
+                              InputEventAckState ack_result) override;
 #endif
   bool LockMouse() override;
   void UnlockMouse() override;
@@ -124,8 +123,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
 #if defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
   // RenderWidgetHostViewBase implementation.
-  virtual void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                                       const SkBitmap& zoomed_bitmap) override;
+  void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
+                               const SkBitmap& zoomed_bitmap) override;
 #endif  // defined(OS_ANDROID) || defined(TOOLKIT_VIEWS)
 
 #if defined(OS_ANDROID)

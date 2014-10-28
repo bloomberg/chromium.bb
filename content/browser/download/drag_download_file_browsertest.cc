@@ -49,7 +49,7 @@ class MockDownloadFileObserver : public ui::DownloadFileObserver {
 class DragDownloadFileTest : public ContentBrowserTest {
  public:
   DragDownloadFileTest() {}
-  virtual ~DragDownloadFileTest() {}
+  ~DragDownloadFileTest() override {}
 
   void Succeed() {
     BrowserThread::PostTask(BrowserThread::UI,

@@ -94,7 +94,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
     // Do the initialization in SetUp so contents() is initialized by

@@ -66,9 +66,9 @@ class GeofencingServiceTest : public testing::Test {
     test_region_.radius = 100;
   }
 
-  virtual void SetUp() { service_ = new GeofencingServiceImpl(); }
+  void SetUp() override { service_ = new GeofencingServiceImpl(); }
 
-  virtual void TearDown() { delete service_; }
+  void TearDown() override { delete service_; }
 
   void SetProviderForTests() {
     provider_ = new MockGeofencingProvider();

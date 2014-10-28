@@ -78,13 +78,13 @@ class QuotaManagerTest : public testing::Test {
         weak_factory_(this) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     mock_special_storage_policy_ = new MockSpecialStoragePolicy;
     ResetQuotaManager(false /* is_incognito */);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Make sure the quota manager cleans up correctly.
     quota_manager_ = NULL;
     base::RunLoop().RunUntilIdle();

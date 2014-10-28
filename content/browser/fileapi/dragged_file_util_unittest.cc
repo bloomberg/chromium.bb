@@ -97,7 +97,7 @@ class DraggedFileUtilTest : public testing::Test {
  public:
   DraggedFileUtilTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
     file_util_.reset(new storage::DraggedFileUtil());
@@ -113,7 +113,7 @@ class DraggedFileUtilTest : public testing::Test {
     isolated_context()->AddReference(filesystem_id_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     isolated_context()->RemoveReference(filesystem_id_);
   }
 

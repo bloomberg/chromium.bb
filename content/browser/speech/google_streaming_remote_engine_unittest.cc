@@ -52,8 +52,8 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   }
 
   // testing::Test methods.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   enum DownstreamError {

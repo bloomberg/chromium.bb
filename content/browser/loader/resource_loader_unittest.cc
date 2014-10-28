@@ -306,7 +306,7 @@ class ResourceLoaderTest : public testing::Test,
     return leaf_handler.Pass();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     const int kRenderProcessId = 1;
     const int kRenderViewId = 2;
 

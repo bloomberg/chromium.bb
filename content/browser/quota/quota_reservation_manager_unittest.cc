@@ -180,9 +180,9 @@ void RefreshReservation(QuotaReservation* reservation, int64 size) {
 class QuotaReservationManagerTest : public testing::Test {
  public:
   QuotaReservationManagerTest() {}
-  virtual ~QuotaReservationManagerTest() {}
+  ~QuotaReservationManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
     file_path_ = work_dir_.path().Append(FILE_PATH_LITERAL("hoge"));
     SetFileSize(file_path_, kInitialFileSize);
@@ -191,9 +191,7 @@ class QuotaReservationManagerTest : public testing::Test {
     reservation_manager_.reset(new QuotaReservationManager(backend.Pass()));
   }
 
-  virtual void TearDown() override {
-    reservation_manager_.reset();
-  }
+  void TearDown() override { reservation_manager_.reset(); }
 
   FakeBackend* fake_backend() {
     return static_cast<FakeBackend*>(reservation_manager_->backend_.get());

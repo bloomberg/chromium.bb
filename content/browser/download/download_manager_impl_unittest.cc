@@ -446,12 +446,12 @@ class DownloadManagerTest : public testing::Test {
   }
 
   // We tear down everything in TearDown().
-  virtual ~DownloadManagerTest() {}
+  ~DownloadManagerTest() override {}
 
   // Create a MockDownloadItemFactory and MockDownloadManagerDelegate,
   // then create a DownloadManager that points
   // at all of those.
-  virtual void SetUp() {
+  void SetUp() override {
     DCHECK(!download_manager_);
 
     mock_download_item_factory_ = (new MockDownloadItemFactory())->AsWeakPtr();
@@ -477,7 +477,7 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     while (MockDownloadItemImpl*
            item = mock_download_item_factory_->PopItem()) {
       EXPECT_CALL(*item, GetState())

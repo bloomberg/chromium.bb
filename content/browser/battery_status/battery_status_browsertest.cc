@@ -88,7 +88,7 @@ class BatteryStatusBrowserTest : public ContentBrowserTest  {
     io_loop_finished_event_.Signal();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     battery_service_->SetBatteryManagerForTesting(0);
   }
 

@@ -37,7 +37,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Painting has to happen otherwise the Resize messages will be added on top
     // of each other without properly ack-painting which will fail and crash.
     UseSoftwareCompositing();

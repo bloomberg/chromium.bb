@@ -147,12 +147,12 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
   // testing::Test methods.
-  virtual void SetUp() override {
+  void SetUp() override {
     AudioInputController::set_factory_for_testing(
         &audio_input_controller_factory_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     AudioInputController::set_factory_for_testing(NULL);
   }
 

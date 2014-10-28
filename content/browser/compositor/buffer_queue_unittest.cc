@@ -32,7 +32,7 @@ class BufferQueueTest : public ::testing::Test {
  public:
   BufferQueueTest() : doublebuffering_(true), first_frame_(true) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     scoped_refptr<cc::TestContextProvider> context_provider =
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
     context_provider->BindToCurrentThread();

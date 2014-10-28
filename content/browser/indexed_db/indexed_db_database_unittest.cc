@@ -228,7 +228,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
       : commit_success_(leveldb::Status::OK()),
         factory_(new MockIndexedDBFactory()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     backing_store_ = new IndexedDBFakeBackingStore();
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(ASCIIToUTF16("db"),
