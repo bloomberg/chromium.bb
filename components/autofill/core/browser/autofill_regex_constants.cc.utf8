@@ -145,7 +145,7 @@ const char kCardNumberRe[] =
 const char kCardCvcRe[] =
     "verification|card identification|security code|cvn|cvv|cvc|csc|\\bcid\\b";
 const char kCardTypeRe[] =
-    "card.?type|cc.?type|payment.?method";
+    "(card|cc|payment).?type|payment.?method";
 
 // "Expiration date" is the most common label here, but some pages have
 // "Expires", "exp. date" or "exp. month" and "exp. year".  We also look
