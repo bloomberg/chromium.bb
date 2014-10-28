@@ -174,6 +174,7 @@ public class ChromeShellToolbar extends LinearLayout {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 setKeyboardVisibilityForUrl(hasFocus);
+                mStopReloadButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 if (!hasFocus && mTab != null) {
                     mUrlTextView.setText(mTab.getWebContents().getUrl());
                     mSuggestionPopup.dismissPopup();
