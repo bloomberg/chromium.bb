@@ -363,21 +363,21 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
 void ServiceWorkerRegisterJob::InstallAndContinue() {
   SetPhase(INSTALL);
 
-  // "2. Set registration.installingWorker to worker."
+  // "Set registration.installingWorker to worker."
   DCHECK(!registration()->installing_version());
   registration()->SetInstallingVersion(new_version());
 
-  // "3. Resolve promise with registration."
-  ResolvePromise(SERVICE_WORKER_OK, registration());
-
-  // "4. Run the [[UpdateState]] algorithm passing registration.installingWorker
-  // and "installing" as the arguments."
+  // "Run the Update State algorithm passing registration's installing worker
+  // and installing as the arguments."
   new_version()->SetStatus(ServiceWorkerVersion::INSTALLING);
 
-  // "5. Fire a simple event named updatefound..."
+  // "Resolve registrationPromise with registration."
+  ResolvePromise(SERVICE_WORKER_OK, registration());
+
+  // "Fire a simple event named updatefound..."
   registration()->NotifyUpdateFound();
 
-  // "6. Fire an event named install..."
+  // "Fire an event named install..."
   new_version()->DispatchInstallEvent(
       -1,
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,

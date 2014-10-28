@@ -18,10 +18,7 @@ GetWebServiceWorkerState(ServiceWorkerVersion* version) {
   DCHECK(version);
   switch (version->status()) {
     case ServiceWorkerVersion::NEW:
-      if (version->running_status() == ServiceWorkerVersion::RUNNING)
-        return blink::WebServiceWorkerStateParsed;
-      else
-        return blink::WebServiceWorkerStateUnknown;
+      return blink::WebServiceWorkerStateUnknown;
     case ServiceWorkerVersion::INSTALLING:
       return blink::WebServiceWorkerStateInstalling;
     case ServiceWorkerVersion::INSTALLED:
