@@ -4,56 +4,95 @@
 
 #include "content/renderer/media/peer_connection_identity_service.h"
 
+#include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
+namespace {
+// Bridges identity requests between the main render thread and libjingle's
+// signaling thread.
+class RequestHandler : public base::RefCountedThreadSafe<RequestHandler> {
+ public:
+  RequestHandler(const GURL& origin,
+                 webrtc::DTLSIdentityRequestObserver* observer,
+                 const std::string& identity_name,
+                 const std::string& common_name)
+      : signaling_thread_(base::ThreadTaskRunnerHandle::Get()),
+        observer_(observer), origin_(origin), identity_name_(identity_name),
+        common_name_(common_name) {}
+
+  void RequestIdentityOnUIThread() {
+    int request_id = RenderThreadImpl::current()->get_webrtc_identity_service()
+        ->RequestIdentity(origin_, identity_name_, common_name_,
+            base::Bind(&RequestHandler::OnIdentityReady, this),
+            base::Bind(&RequestHandler::OnRequestFailed, this));
+    DCHECK_NE(request_id, 0);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<RequestHandler>;
+  ~RequestHandler() {
+    DCHECK(!observer_.get());
+  }
+
+  void OnIdentityReady(
+      const std::string& certificate,
+      const std::string& private_key) {
+    signaling_thread_->PostTask(FROM_HERE,
+        base::Bind(&webrtc::DTLSIdentityRequestObserver::OnSuccess, observer_,
+                   certificate, private_key));
+    signaling_thread_->PostTask(FROM_HERE,
+        base::Bind(&RequestHandler::EnsureReleaseObserverOnSignalingThread,
+            this));
+  }
+
+  void OnRequestFailed(int error) {
+    signaling_thread_->PostTask(FROM_HERE,
+        base::Bind(&webrtc::DTLSIdentityRequestObserver::OnFailure, observer_,
+                   error));
+    signaling_thread_->PostTask(FROM_HERE,
+        base::Bind(&RequestHandler::EnsureReleaseObserverOnSignalingThread,
+            this));
+  }
+
+  void EnsureReleaseObserverOnSignalingThread() {
+    DCHECK(signaling_thread_->BelongsToCurrentThread());
+    observer_ = nullptr;
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
+  scoped_refptr<webrtc::DTLSIdentityRequestObserver> observer_;
+  const GURL origin_;
+  const std::string identity_name_;
+  const std::string common_name_;
+};
+}  // namespace
 
 PeerConnectionIdentityService::PeerConnectionIdentityService(const GURL& origin)
-    : origin_(origin), pending_observer_(NULL), pending_request_id_(0) {}
+    : main_thread_(base::ThreadTaskRunnerHandle::Get()), origin_(origin) {
+  signaling_thread_.DetachFromThread();
+  DCHECK(main_thread_.get());
+}
 
 PeerConnectionIdentityService::~PeerConnectionIdentityService() {
-  if (pending_observer_)
-    RenderThreadImpl::current()->get_webrtc_identity_service()
-        ->CancelRequest(pending_request_id_);
+  // Typically destructed on libjingle's signaling thread.
 }
 
 bool PeerConnectionIdentityService::RequestIdentity(
     const std::string& identity_name,
     const std::string& common_name,
     webrtc::DTLSIdentityRequestObserver* observer) {
+  DCHECK(signaling_thread_.CalledOnValidThread());
   DCHECK(observer);
-  if (pending_observer_)
-    return false;
 
-  pending_observer_ = observer;
-  pending_request_id_ = RenderThreadImpl::current()
-      ->get_webrtc_identity_service()->RequestIdentity(
-          origin_,
-          identity_name,
-          common_name,
-          base::Bind(&PeerConnectionIdentityService::OnIdentityReady,
-                     base::Unretained(this)),
-          base::Bind(&PeerConnectionIdentityService::OnRequestFailed,
-                     base::Unretained(this)));
+  scoped_refptr<RequestHandler> handler(
+      new RequestHandler(origin_, observer, identity_name, common_name));
+  main_thread_->PostTask(FROM_HERE,
+      base::Bind(&RequestHandler::RequestIdentityOnUIThread, handler));
+
   return true;
-}
-
-void PeerConnectionIdentityService::OnIdentityReady(
-    const std::string& certificate,
-    const std::string& private_key) {
-  pending_observer_->OnSuccess(certificate, private_key);
-  ResetPendingRequest();
-}
-
-void PeerConnectionIdentityService::OnRequestFailed(int error) {
-  pending_observer_->OnFailure(error);
-  ResetPendingRequest();
-}
-
-void PeerConnectionIdentityService::ResetPendingRequest() {
-  pending_observer_ = NULL;
-  pending_request_id_ = 0;
 }
 
 }  // namespace content

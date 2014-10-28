@@ -6,8 +6,11 @@
 #define CONTENT_RENDERER_MEDIA_PEER_CONNECTION_IDENTITY_SERVICE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "url/gurl.h"
@@ -29,17 +32,12 @@ class PeerConnectionIdentityService
                        webrtc::DTLSIdentityRequestObserver* observer) override;
 
  private:
-  void OnIdentityReady(const std::string& certificate,
-                       const std::string& private_key);
-  void OnRequestFailed(int error);
+  base::ThreadChecker signaling_thread_;
 
-  void ResetPendingRequest();
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
   // The origin of the DTLS connection.
-  GURL origin_;
-  rtc::scoped_refptr<webrtc::DTLSIdentityRequestObserver>
-      pending_observer_;
-  int pending_request_id_;
+  const GURL origin_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionIdentityService);
 };
