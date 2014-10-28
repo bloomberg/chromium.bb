@@ -10,8 +10,7 @@
 namespace ui {
 namespace {
 
-class GESTURE_DETECTION_EXPORT GestureConfigurationAura
-    : public GestureConfiguration {
+class GestureConfigurationAura : public GestureConfiguration {
  public:
   ~GestureConfigurationAura() override {
   }
