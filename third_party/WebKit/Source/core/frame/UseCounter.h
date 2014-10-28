@@ -542,11 +542,10 @@ public:
         QuotedAnimationName = 571,
         QuotedKeyframesRule = 572,
         SrcsetDroppedCandidate = 573,
-        RenderRuby = 574,
-
         WindowPostMessage = 574,
         WindowPostMessageWithLegacyTargetOriginArgument = 575,
-        CanvasRenderingContext2DCompositeOperationDarker = 576,
+        RenderRuby = 576,
+        CanvasRenderingContext2DCompositeOperationDarker = 577,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
