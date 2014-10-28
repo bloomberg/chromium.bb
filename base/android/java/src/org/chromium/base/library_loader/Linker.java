@@ -232,6 +232,7 @@ public class Linker {
                     System.loadLibrary(TAG);
                 } catch (UnsatisfiedLinkError  e) {
                     // In a component build, the ".cr" suffix is added to each library name.
+                    Log.w(TAG, "Couldn't load lib" + TAG + ".so, trying lib" + TAG + ".cr.so");
                     System.loadLibrary(TAG + ".cr");
                 }
                 sRelroSharingSupported = nativeCanUseSharedRelro();
