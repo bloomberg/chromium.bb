@@ -619,9 +619,13 @@ bool ResourceFetcher::isControlledByServiceWorker() const
     LocalFrame* localFrame = frame();
     if (!localFrame)
         return false;
-    if (!m_documentLoader)
-        return false;
-    return localFrame->loader().client()->isControlledByServiceWorker(*m_documentLoader);
+    ASSERT(m_documentLoader || localFrame->loader().documentLoader());
+    if (m_documentLoader)
+        return localFrame->loader().client()->isControlledByServiceWorker(*m_documentLoader);
+    // m_documentLoader is null while loading resources from the imported HTML.
+    // In such cases whether the request is controlled by ServiceWorker or not
+    // is determined by the document loader of the frame.
+    return localFrame->loader().client()->isControlledByServiceWorker(*localFrame->loader().documentLoader());
 }
 
 bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const

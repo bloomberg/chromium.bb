@@ -362,6 +362,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     if (responseNeedsAccessControlCheck()) {
         if (response.wasFetchedViaServiceWorker()) {
             if (response.wasFallbackRequiredByServiceWorker()) {
+                ASSERT(m_fallbackRequestForServiceWorker);
                 m_loader->cancel();
                 m_loader.clear();
                 m_connectionState = ConnectionStateStarted;
