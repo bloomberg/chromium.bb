@@ -68,26 +68,23 @@ class TaskManagerTableModel
     model_->AddObserver(this);
   }
 
-  virtual ~TaskManagerTableModel() {
-    model_->RemoveObserver(this);
-  }
+  ~TaskManagerTableModel() override { model_->RemoveObserver(this); }
 
   // TableModel overrides:
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int row, int column) override;
-  virtual gfx::ImageSkia GetIcon(int row) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
-  virtual int CompareValues(int row1, int row2, int column_id) override;
+  int RowCount() override;
+  base::string16 GetText(int row, int column) override;
+  gfx::ImageSkia GetIcon(int row) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
+  int CompareValues(int row1, int row2, int column_id) override;
 
   // TableGrouper overrides:
-  virtual void GetGroupRange(int model_index,
-                             views::GroupRange* range) override;
+  void GetGroupRange(int model_index, views::GroupRange* range) override;
 
   // TaskManagerModelObserver overrides:
-  virtual void OnModelChanged() override;
-  virtual void OnItemsChanged(int start, int length) override;
-  virtual void OnItemsAdded(int start, int length) override;
-  virtual void OnItemsRemoved(int start, int length) override;
+  void OnModelChanged() override;
+  void OnItemsChanged(int start, int length) override;
+  void OnItemsAdded(int start, int length) override;
+  void OnItemsRemoved(int start, int length) override;
 
  private:
   TaskManagerModel* model_;
@@ -153,7 +150,7 @@ class TaskManagerView : public views::ButtonListener,
                         public ui::SimpleMenuModel::Delegate {
  public:
   explicit TaskManagerView(chrome::HostDesktopType desktop_type);
-  virtual ~TaskManagerView();
+  ~TaskManagerView() override;
 
   // Shows the Task Manager window, or re-activates an existing one.
   static void Show(Browser* browser);
@@ -162,51 +159,49 @@ class TaskManagerView : public views::ButtonListener,
   static void Hide();
 
   // views::View:
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual void ViewHierarchyChanged(
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::DialogDelegateView:
-  virtual bool CanResize() const override;
-  virtual bool CanMaximize() const override;
-  virtual bool CanMinimize() const override;
-  virtual bool ExecuteWindowsCommand(int command_id) override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual std::string GetWindowName() const override;
-  virtual int GetDialogButtons() const override;
-  virtual void WindowClosing() override;
-  virtual bool UseNewStyleForThisDialog() const override;
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
+  bool ExecuteWindowsCommand(int command_id) override;
+  base::string16 GetWindowTitle() const override;
+  std::string GetWindowName() const override;
+  int GetDialogButtons() const override;
+  void WindowClosing() override;
+  bool UseNewStyleForThisDialog() const override;
 
   // views::TableViewObserver:
-  virtual void OnSelectionChanged() override;
-  virtual void OnDoubleClick() override;
-  virtual void OnKeyDown(ui::KeyboardCode keycode) override;
+  void OnSelectionChanged() override;
+  void OnDoubleClick() override;
+  void OnKeyDown(ui::KeyboardCode keycode) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Called by the column picker to pick up any new stat counters that
   // may have appeared since last time.
   void UpdateStatsCounters();
 
   // views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int id) const override;
-  virtual bool IsCommandIdEnabled(int id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int id, int event_flags) override;
+  bool IsCommandIdChecked(int id) const override;
+  bool IsCommandIdEnabled(int id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int id, int event_flags) override;
 
  private:
   // Creates the child controls.

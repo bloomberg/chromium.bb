@@ -21,22 +21,21 @@ class PDFPasswordDialogViews : public views::DialogDelegate {
   PDFPasswordDialogViews(content::WebContents* web_contents,
                          const base::string16& prompt,
                          const pdf::PasswordDialogClosedCallback& callback);
-  virtual ~PDFPasswordDialogViews();
+  ~PDFPasswordDialogViews() override;
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  base::string16 GetWindowTitle() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual views::View* GetContentsView() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
-  virtual void DeleteDelegate() override;
-  virtual ui::ModalType GetModalType() const override;
+  views::View* GetInitiallyFocusedView() override;
+  views::View* GetContentsView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  void DeleteDelegate() override;
+  ui::ModalType GetModalType() const override;
 
  private:
   // The message box view whose commands we handle.

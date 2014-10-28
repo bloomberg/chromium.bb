@@ -22,12 +22,12 @@ class ValidationMessageBubbleImpl
                               const base::string16& main_text,
                               const base::string16& sub_text);
 
-  virtual ~ValidationMessageBubbleImpl() {
+  ~ValidationMessageBubbleImpl() override {
     if (delegate_ != NULL)
       delegate_->Close();
   }
 
-  virtual void SetPositionRelativeToAnchor(
+  void SetPositionRelativeToAnchor(
       content::RenderWidgetHost* widget_host,
       const gfx::Rect& anchor_in_root_view) override {
     if (!delegate_)
@@ -37,9 +37,7 @@ class ValidationMessageBubbleImpl
   }
 
   // ValidationMessageBubbleDelegate::Observer override:
-  virtual void WindowClosing() override {
-    delegate_ = NULL;
-  }
+  void WindowClosing() override { delegate_ = NULL; }
 
  private:
   ValidationMessageBubbleDelegate* delegate_;

@@ -92,7 +92,7 @@ class InfobarView : public views::View {
     info_image_->SetImage(rb.GetImageSkiaNamed(IDR_INFO));
     label_ = new views::Label();
   }
-  virtual ~InfobarView() {}
+  ~InfobarView() override {}
 
   // Update the visibility of the infobar. If |is_visible| is true, a rule for
   // |setting| on |domain_name| was created.
@@ -144,7 +144,7 @@ class InfobarView : public views::View {
   }
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     if (!visible())
       return gfx::Size();
 
@@ -154,13 +154,13 @@ class InfobarView : public views::View {
     return size;
   }
 
-  virtual void Layout() override {
+  void Layout() override {
     content_->SetBounds(
         0, views::kRelatedControlVerticalSpacing,
         width(), height() - views::kRelatedControlVerticalSpacing);
   }
 
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       Init();

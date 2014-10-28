@@ -104,12 +104,10 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
     BrowserList::AddObserver(this);
   }
 
-  virtual ~BrowserRemovalObserver() {
-    BrowserList::RemoveObserver(this);
-  }
+  ~BrowserRemovalObserver() override { BrowserList::RemoveObserver(this); }
 
   // Overridden from chrome::BrowserListObserver.
-  virtual void OnBrowserRemoved(Browser* browser) override {
+  void OnBrowserRemoved(Browser* browser) override {
     if (browser == browser_)
       browser_ = NULL;
   }

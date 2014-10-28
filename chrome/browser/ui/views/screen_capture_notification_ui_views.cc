@@ -48,12 +48,12 @@ class NotificationBarClientView : public views::ClientView {
   NotificationBarClientView(views::Widget* widget, views::View* view)
       : views::ClientView(widget, view) {
   }
-  virtual ~NotificationBarClientView() {}
+  ~NotificationBarClientView() override {}
 
   void set_client_rect(const gfx::Rect& rect) { rect_ = rect; }
 
   // views::ClientView overrides.
-  virtual int NonClientHitTest(const gfx::Point& point) override  {
+  int NonClientHitTest(const gfx::Point& point) override {
     if (!bounds().Contains(point))
       return HTNOWHERE;
     // The whole window is HTCAPTION, except the |rect_|.
@@ -79,33 +79,31 @@ class ScreenCaptureNotificationUIViews
       public views::LinkListener {
  public:
   explicit ScreenCaptureNotificationUIViews(const base::string16& text);
-  virtual ~ScreenCaptureNotificationUIViews();
+  ~ScreenCaptureNotificationUIViews() override;
 
   // ScreenCaptureNotificationUI interface.
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
-      override;
+  gfx::NativeViewId OnStarted(const base::Closure& stop_callback) override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
   // views::WidgetDelegateView overrides.
-  virtual void DeleteDelegate() override;
-  virtual views::View* GetContentsView() override;
-  virtual views::ClientView* CreateClientView(views::Widget* widget) override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  void DeleteDelegate() override;
+  views::View* GetContentsView() override;
+  views::ClientView* CreateClientView(views::Widget* widget) override;
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool ShouldShowWindowTitle() const override;
-  virtual bool ShouldShowCloseButton() const override;
-  virtual bool CanActivate() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
+  bool CanActivate() const override;
 
   // views::ButtonListener interface.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener interface.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
   // Helper to call |stop_callback_|.

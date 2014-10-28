@@ -31,10 +31,10 @@ class DropdownBackground : public views::Background {
   explicit DropdownBackground(BrowserView* browser,
                               const gfx::ImageSkia* left_alpha_mask,
                               const gfx::ImageSkia* right_alpha_mask);
-  virtual ~DropdownBackground() {}
+  ~DropdownBackground() override {}
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
+  void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
  private:
   BrowserView* browser_view_;

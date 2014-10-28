@@ -37,7 +37,7 @@ class MenuTestBase : public ViewEventTestBase,
                      public views::MenuDelegate {
  public:
   MenuTestBase();
-  virtual ~MenuTestBase();
+  ~MenuTestBase() override;
 
   // Generate a mouse click and run |next| once the event has been processed.
   virtual void Click(views::View* view, const base::Closure& next);
@@ -65,18 +65,18 @@ class MenuTestBase : public ViewEventTestBase,
   virtual int GetMenuRunnerFlags();
 
   // ViewEventTestBase implementation.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
-  virtual views::View* CreateContentsView() override;
-  virtual void DoTestOnMessageLoop() override;
-  virtual gfx::Size GetPreferredSize() const override;
+  void SetUp() override;
+  void TearDown() override;
+  views::View* CreateContentsView() override;
+  void DoTestOnMessageLoop() override;
+  gfx::Size GetPreferredSize() const override;
 
   // views::MenuButtonListener implementation
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::View* source,
+                           const gfx::Point& point) override;
 
   // views::MenuDelegate implementation
-  virtual void ExecuteCommand(int id) override;
+  void ExecuteCommand(int id) override;
 
  private:
   views::MenuButton* button_;

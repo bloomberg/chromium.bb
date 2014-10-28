@@ -23,34 +23,33 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
                                       public views::DialogDelegate {
  public:
   explicit JavaScriptAppModalDialogViews(JavaScriptAppModalDialog* parent);
-  virtual ~JavaScriptAppModalDialogViews();
+  ~JavaScriptAppModalDialogViews() override;
 
   // Overridden from NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const override;
-  virtual void ShowAppModalDialog() override;
-  virtual void ActivateAppModalDialog() override;
-  virtual void CloseAppModalDialog() override;
-  virtual void AcceptAppModalDialog() override;
-  virtual void CancelAppModalDialog() override;
+  int GetAppModalDialogButtons() const override;
+  void ShowAppModalDialog() override;
+  void ActivateAppModalDialog() override;
+  void CloseAppModalDialog() override;
+  void AcceptAppModalDialog() override;
+  void CancelAppModalDialog() override;
 
   // Overridden from views::DialogDelegate:
-  virtual int GetDefaultDialogButton() const override;
-  virtual int GetDialogButtons() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void WindowClosing() override;
-  virtual void DeleteDelegate() override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
+  int GetDefaultDialogButton() const override;
+  int GetDialogButtons() const override;
+  base::string16 GetWindowTitle() const override;
+  void WindowClosing() override;
+  void DeleteDelegate() override;
+  bool Cancel() override;
+  bool Accept() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override;
-  virtual views::View* GetContentsView() override;
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual void OnClosed() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
+  ui::ModalType GetModalType() const override;
+  views::View* GetContentsView() override;
+  views::View* GetInitiallyFocusedView() override;
+  void OnClosed() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
  private:
   // A pointer to the AppModalDialog that owns us.

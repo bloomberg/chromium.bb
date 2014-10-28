@@ -35,26 +35,25 @@ class SadTabView : public chrome::SadTab,
                    public views::ButtonListener {
  public:
   SadTabView(content::WebContents* web_contents, chrome::SadTabKind kind);
-  virtual ~SadTabView();
+  ~SadTabView() override;
 
   // Overridden from views::View:
-  virtual void Layout() override;
+  void Layout() override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* source,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* source, const ui::Event& event) override;
 
  protected:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   // Overridden from chrome::SadTab:
-  virtual void Show() override;
-  virtual void Close() override;
+  void Show() override;
+  void Close() override;
 
   views::Label* CreateLabel(const base::string16& text);
   views::Link* CreateLink(const base::string16& text);

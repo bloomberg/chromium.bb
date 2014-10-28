@@ -34,25 +34,24 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
   static bool IsAvailable();
 
   // views::BubbleDelegateView method.
-  virtual views::View* GetInitiallyFocusedView() override;
+  views::View* GetInitiallyFocusedView() override;
 
   // views::WidgetDelegate method.
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
  private:
   OutdatedUpgradeBubbleView(views::View* anchor_view,
                             content::PageNavigator* navigator,
                             bool auto_update_enabled);
-  virtual ~OutdatedUpgradeBubbleView();
+  ~OutdatedUpgradeBubbleView() override;
 
   static bool IsShowing() { return upgrade_bubble_ != NULL; }
 
   // views::BubbleDelegateView method.
-  virtual void Init() override;
+  void Init() override;
 
   // views::ButtonListener method.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);

@@ -30,7 +30,7 @@ class EditSearchEngineDialog : public views::TextfieldController,
   EditSearchEngineDialog(TemplateURL* template_url,
                          EditSearchEngineControllerDelegate* delegate,
                          Profile* profile);
-  virtual ~EditSearchEngineDialog();
+  ~EditSearchEngineDialog() override;
 
   // Shows the dialog to the user.
   static void Show(gfx::NativeWindow parent,
@@ -39,19 +39,20 @@ class EditSearchEngineDialog : public views::TextfieldController,
                    Profile* profile);
 
   // views::DialogDelegate:
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // views::TextfieldController:
   // Updates whether the user can accept the dialog as well as updating image
   // views showing whether value is valid.
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+
  private:
   void Init();
 

@@ -45,30 +45,28 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   explicit CollectedCookiesViews(content::WebContents* web_contents);
 
   // views::DialogDelegate:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual int GetDialogButtons() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
+  ui::ModalType GetModalType() const override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::TabbedPaneListener:
-  virtual void TabSelectedAt(int index) override;
+  void TabSelectedAt(int index) override;
 
   // views::TreeViewController:
-  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) override;
+  void OnTreeViewSelectionChanged(views::TreeView* tree_view) override;
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetMinimumSize() const override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
  private:
-  virtual ~CollectedCookiesViews();
+  ~CollectedCookiesViews() override;
 
   void Init();
 
@@ -86,9 +84,9 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

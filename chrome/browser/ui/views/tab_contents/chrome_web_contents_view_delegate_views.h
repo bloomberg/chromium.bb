@@ -38,31 +38,30 @@ class ChromeWebContentsViewDelegateViews
  public:
   explicit ChromeWebContentsViewDelegateViews(
       content::WebContents* web_contents);
-  virtual ~ChromeWebContentsViewDelegateViews();
+  ~ChromeWebContentsViewDelegateViews() override;
 
   // Overridden from WebContentsViewDelegate:
-  virtual content::WebDragDestDelegate* GetDragDestDelegate() override;
-  virtual void StoreFocus() override;
-  virtual void RestoreFocus() override;
-  virtual bool Focus() override;
-  virtual void TakeFocus(bool reverse) override;
-  virtual void ShowContextMenu(
-      content::RenderFrameHost* render_frame_host,
-      const content::ContextMenuParams& params) override;
-  virtual void SizeChanged(const gfx::Size& size) override;
-  virtual void ShowDisambiguationPopup(
+  content::WebDragDestDelegate* GetDragDestDelegate() override;
+  void StoreFocus() override;
+  void RestoreFocus() override;
+  bool Focus() override;
+  void TakeFocus(bool reverse) override;
+  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
+                       const content::ContextMenuParams& params) override;
+  void SizeChanged(const gfx::Size& size) override;
+  void ShowDisambiguationPopup(
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap,
       const gfx::NativeView content,
       const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
       const base::Callback<void(ui::MouseEvent*)>& mouse_cb) override;
-  virtual void HideDisambiguationPopup() override;
+  void HideDisambiguationPopup() override;
 
   // Overridden from ContextMenuDelegate.
-  virtual scoped_ptr<RenderViewContextMenu> BuildMenu(
+  scoped_ptr<RenderViewContextMenu> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) override;
-  virtual void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) override;
+  void ShowMenu(scoped_ptr<RenderViewContextMenu> menu) override;
 
  private:
   aura::Window* GetActiveNativeView();

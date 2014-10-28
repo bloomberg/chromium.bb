@@ -49,7 +49,7 @@ class SessionCrashedBubbleView
                            Browser* browser,
                            content::WebContents* web_contents,
                            bool offer_uma_optin);
-  virtual ~SessionCrashedBubbleView();
+  ~SessionCrashedBubbleView() override;
 
   // Creates and shows the session crashed bubble, with |uma_opted_in_already|
   // indicating whether the user has already opted-in to UMA. It will be called
@@ -58,45 +58,41 @@ class SessionCrashedBubbleView
                           bool uma_opted_in_already);
 
   // WidgetDelegateView methods.
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool ShouldShowWindowTitle() const override;
-  virtual bool ShouldShowCloseButton() const override;
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  views::View* GetInitiallyFocusedView() override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::BubbleDelegateView methods.
-  virtual void Init() override;
+  void Init() override;
 
   // views::ButtonListener methods.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::StyledLabelListener methods.
-  virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) override;
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // content::WebContentsObserver methods.
-  virtual void DidStartNavigationToPendingEntry(
+  void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-  virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                             const GURL& validated_url) override;
-  virtual void WasShown() override;
-  virtual void WasHidden() override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void WasShown() override;
+  void WasHidden() override;
 
   // content::NotificationObserver methods.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // TabStripModelObserver methods.
   // When the tab with current bubble is being dragged and dropped to a new
   // window or to another window, the bubble will be dismissed as if the user
   // chose not to restore the previous session.
-  virtual void TabDetachedAt(
-      content::WebContents* contents,
-      int index) override;
+  void TabDetachedAt(content::WebContents* contents, int index) override;
 
   // Create the view for the user to opt in to UMA.
   views::View* CreateUMAOptinView();

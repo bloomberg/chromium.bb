@@ -20,7 +20,7 @@ class DetachableToolbarView : public views::AccessiblePaneView {
   static const SkColor kMiddleDividerColor;
 
   DetachableToolbarView() {}
-  virtual ~DetachableToolbarView() {}
+  ~DetachableToolbarView() override {}
 
   // Whether the view is currently detached from the Chrome frame.
   virtual bool IsDetached() const = 0;

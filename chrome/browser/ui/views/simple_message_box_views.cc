@@ -35,24 +35,23 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
                         const base::string16& yes_text,
                         const base::string16& no_text,
                         bool is_system_modal);
-  virtual ~SimpleMessageBoxViews();
+  ~SimpleMessageBoxViews() override;
 
   MessageBoxResult RunDialogAndGetResult();
 
   // Overridden from views::DialogDelegate:
-  virtual int GetDialogButtons() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // Overridden from views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual views::View* GetContentsView() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  ui::ModalType GetModalType() const override;
+  views::View* GetContentsView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
  private:
 

@@ -24,18 +24,18 @@ class DropdownBarView : public views::AccessiblePaneView,
                         public DropdownBarHostDelegate {
  public:
   explicit DropdownBarView(DropdownBarHost* host);
-  virtual ~DropdownBarView();
+  ~DropdownBarView() override;
 
   // Updates the view to let it know where the host is clipping the
   // dropdown widget (while animating the opening or closing of the widget).
-  virtual void SetAnimationOffset(int offset) override;
+  void SetAnimationOffset(int offset) override;
 
   // Returns the offset used while animating.
   int animation_offset() const { return animation_offset_; }
 
  protected:
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Returns the DropdownBarHost that manages this view.
   DropdownBarHost* host() const { return host_; }

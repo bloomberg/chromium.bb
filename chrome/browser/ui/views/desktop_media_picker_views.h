@@ -25,7 +25,7 @@ class DesktopMediaListView : public views::View,
  public:
   DesktopMediaListView(DesktopMediaPickerDialogView* parent,
                        scoped_ptr<DesktopMediaList> media_list);
-  virtual ~DesktopMediaListView();
+  ~DesktopMediaListView() override;
 
   void StartUpdating(content::DesktopMediaID::Id dialog_window_id);
 
@@ -39,17 +39,17 @@ class DesktopMediaListView : public views::View,
   DesktopMediaSourceView* GetSelection();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
  private:
   // DesktopMediaList::Observer interface
-  virtual void OnSourceAdded(int index) override;
-  virtual void OnSourceRemoved(int index) override;
-  virtual void OnSourceMoved(int old_index, int new_index) override;
-  virtual void OnSourceNameChanged(int index) override;
-  virtual void OnSourceThumbnailChanged(int index) override;
+  void OnSourceAdded(int index) override;
+  void OnSourceRemoved(int index) override;
+  void OnSourceMoved(int old_index, int new_index) override;
+  void OnSourceNameChanged(int index) override;
+  void OnSourceThumbnailChanged(int index) override;
 
   // Accepts whatever happens to be selected right now.
   void AcceptSelection();
@@ -67,7 +67,7 @@ class DesktopMediaSourceView : public views::View {
  public:
   DesktopMediaSourceView(DesktopMediaListView* parent,
                          content::DesktopMediaID source_id);
-  virtual ~DesktopMediaSourceView();
+  ~DesktopMediaSourceView() override;
 
   // Updates thumbnail and title from |source|.
   void SetName(const base::string16& name);
@@ -80,15 +80,15 @@ class DesktopMediaSourceView : public views::View {
   bool is_selected() const { return selected_; }
 
   // views::View interface.
-  virtual const char* GetClassName() const override;
-  virtual void Layout() override;
-  virtual views::View* GetSelectedViewForGroup(int group) override;
-  virtual bool IsGroupFocusTraversable() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  const char* GetClassName() const override;
+  void Layout() override;
+  views::View* GetSelectedViewForGroup(int group) override;
+  bool IsGroupFocusTraversable() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Updates selection state of the element. If |selected| is true then also
@@ -116,7 +116,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
                                const base::string16& app_name,
                                const base::string16& target_name,
                                scoped_ptr<DesktopMediaList> media_list);
-  virtual ~DesktopMediaPickerDialogView();
+  ~DesktopMediaPickerDialogView() override;
 
   // Called by parent (DesktopMediaPickerViews) when it's destroyed.
   void DetachParent();
@@ -126,17 +126,16 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   void OnDoubleClick();
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
   // views::DialogDelegateView overrides.
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Accept() override;
-  virtual void DeleteDelegate() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Accept() override;
+  void DeleteDelegate() override;
 
   void OnMediaListRowsChanged();
 
@@ -157,18 +156,18 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
 class DesktopMediaPickerViews : public DesktopMediaPicker {
  public:
   DesktopMediaPickerViews();
-  virtual ~DesktopMediaPickerViews();
+  ~DesktopMediaPickerViews() override;
 
   void NotifyDialogResult(content::DesktopMediaID source);
 
   // DesktopMediaPicker overrides.
-  virtual void Show(content::WebContents* web_contents,
-                    gfx::NativeWindow context,
-                    gfx::NativeWindow parent,
-                    const base::string16& app_name,
-                    const base::string16& target_name,
-                    scoped_ptr<DesktopMediaList> media_list,
-                    const DoneCallback& done_callback) override;
+  void Show(content::WebContents* web_contents,
+            gfx::NativeWindow context,
+            gfx::NativeWindow parent,
+            const base::string16& app_name,
+            const base::string16& target_name,
+            scoped_ptr<DesktopMediaList> media_list,
+            const DoneCallback& done_callback) override;
 
   DesktopMediaPickerDialogView* GetDialogViewForTesting() const {
     return dialog_;

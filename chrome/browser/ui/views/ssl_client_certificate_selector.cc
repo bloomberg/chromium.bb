@@ -38,9 +38,9 @@ class CertificateSelectorTableModel : public ui::TableModel {
       net::SSLCertRequestInfo* cert_request_info);
 
   // ui::TableModel implementation:
-  virtual int RowCount() override;
-  virtual base::string16 GetText(int index, int column_id) override;
-  virtual void SetObserver(ui::TableModelObserver* observer) override;
+  int RowCount() override;
+  base::string16 GetText(int index, int column_id) override;
+  void SetObserver(ui::TableModelObserver* observer) override;
 
  private:
   std::vector<base::string16> items_;

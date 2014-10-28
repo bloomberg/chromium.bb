@@ -35,7 +35,7 @@ class StatusBubbleViews : public StatusBubble {
 
   // |base_view| is the view that this bubble is positioned relative to.
   explicit StatusBubbleViews(views::View* base_view);
-  virtual ~StatusBubbleViews();
+  ~StatusBubbleViews() override;
 
   views::View* base_view() { return base_view_; }
 
@@ -54,12 +54,11 @@ class StatusBubbleViews : public StatusBubble {
   void SetBubbleWidth(int width);
 
   // Overridden from StatusBubble:
-  virtual void SetStatus(const base::string16& status) override;
-  virtual void SetURL(const GURL& url, const std::string& languages) override;
-  virtual void Hide() override;
-  virtual void MouseMoved(const gfx::Point& location,
-                          bool left_content) override;
-  virtual void UpdateDownloadShelfVisibility(bool visible) override;
+  void SetStatus(const base::string16& status) override;
+  void SetURL(const GURL& url, const std::string& languages) override;
+  void Hide() override;
+  void MouseMoved(const gfx::Point& location, bool left_content) override;
+  void UpdateDownloadShelfVisibility(bool visible) override;
 
   views::Widget* GetPopupForTest() { return popup(); }
 

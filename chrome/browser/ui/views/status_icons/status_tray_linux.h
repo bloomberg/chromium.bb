@@ -11,14 +11,13 @@
 class StatusTrayLinux : public StatusTray {
  public:
   StatusTrayLinux();
-  virtual ~StatusTrayLinux();
+  ~StatusTrayLinux() override;
 
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon(
-      StatusIconType type,
-      const gfx::ImageSkia& image,
-      const base::string16& tool_tip) override;
+  StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
+                                       const gfx::ImageSkia& image,
+                                       const base::string16& tool_tip) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayLinux);

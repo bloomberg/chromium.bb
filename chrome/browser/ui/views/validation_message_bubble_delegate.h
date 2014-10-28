@@ -27,15 +27,15 @@ class ValidationMessageBubbleDelegate : public views::BubbleDelegateView {
                                   const base::string16& main_text,
                                   const base::string16& sub_text,
                                   Observer* observer);
-  virtual ~ValidationMessageBubbleDelegate();
+  ~ValidationMessageBubbleDelegate() override;
 
   void Close();
   void SetPositionRelativeToAnchor(const gfx::Rect& anchor_in_screen);
 
   // BubbleDelegateView overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void DeleteDelegate() override;
-  virtual void WindowClosing() override;
+  gfx::Size GetPreferredSize() const override;
+  void DeleteDelegate() override;
+  void WindowClosing() override;
 
  private:
   Observer* observer_;

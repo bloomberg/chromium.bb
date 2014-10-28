@@ -28,27 +28,26 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
                                  const std::string& server,
                                  const CryptoModulePasswordCallback& callback);
 
-  virtual ~CryptoModulePasswordDialogView();
+  ~CryptoModulePasswordDialogView() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CryptoModulePasswordDialogViewTest, TestAccept);
 
   // views::WidgetDelegate:
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
+  views::View* GetInitiallyFocusedView() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
 
   // views::DialogDelegate:
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& keystroke) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& keystroke) override;
 
   // Initialize views and layout.
   void Init(const std::string& server,

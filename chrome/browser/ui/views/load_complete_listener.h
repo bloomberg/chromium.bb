@@ -26,13 +26,13 @@ class LoadCompleteListener : public content::NotificationObserver {
 
   explicit LoadCompleteListener(Delegate* delegate);
 
-  virtual ~LoadCompleteListener();
+  ~LoadCompleteListener() override;
 
  private:
   // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

@@ -36,7 +36,7 @@ int SCTOriginToResourceID(const net::ct::SignedCertificateTimestamp& sct);
 class SignedCertificateTimestampInfoView : public views::View {
  public:
   SignedCertificateTimestampInfoView();
-  virtual ~SignedCertificateTimestampInfoView();
+  ~SignedCertificateTimestampInfoView() override;
 
   // Updates the display to show information for the given SCT.
   void SetSignedCertificateTimestamp(
@@ -48,8 +48,8 @@ class SignedCertificateTimestampInfoView : public views::View {
 
  private:
   // views::View implementation
-  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   // Layout helper routines.
   void AddLabelRow(int layout_id,

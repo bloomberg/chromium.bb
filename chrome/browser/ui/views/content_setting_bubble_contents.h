@@ -52,9 +52,9 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
       content::WebContents* web_contents,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);
-  virtual ~ContentSettingBubbleContents();
+  ~ContentSettingBubbleContents() override;
 
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // Callback to allow ContentSettingMediaMenuModel to update the menu label.
   void UpdateMenuLabel(content::MediaStreamType type,
@@ -62,7 +62,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
  protected:
   // views::BubbleDelegateView:
-  virtual void Init() override;
+  void Init() override;
 
  private:
   class Favicon;
@@ -72,23 +72,22 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   typedef std::map<views::MenuButton*, MediaMenuParts*> MediaMenuPartsMap;
 
   // content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
   // views::View:
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::View* source,
+                           const gfx::Point& point) override;
 
   // Helper to get the preferred width of the media menu.
   void UpdateMenuButtonSizes(const ui::NativeTheme* theme);

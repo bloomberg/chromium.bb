@@ -75,16 +75,16 @@ class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
   StatusViewAnimation(StatusView* status_view,
                       double opacity_start,
                       double opacity_end);
-  virtual ~StatusViewAnimation();
+  ~StatusViewAnimation() override;
 
   double GetCurrentOpacity();
 
  private:
   // gfx::LinearAnimation:
-  virtual void AnimateToState(double state) override;
+  void AnimateToState(double state) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationEnded(const Animation* animation) override;
+  void AnimationEnded(const Animation* animation) override;
 
   StatusView* status_view_;
 
@@ -123,7 +123,7 @@ class StatusBubbleViews::StatusView : public views::View {
 
   StatusView(views::Widget* popup,
              ui::ThemeProvider* theme_provider);
-  virtual ~StatusView();
+  ~StatusView() override;
 
   // Set the bubble text to a certain value, hides the bubble if text is
   // an empty string.  Trigger animation sequence to display if
@@ -166,7 +166,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartShowing();
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   BubbleState state_;
   BubbleStyle style_;
@@ -491,8 +491,8 @@ class StatusBubbleViews::StatusViewExpander : public gfx::LinearAnimation,
   // Animation functions.
   int GetCurrentBubbleWidth();
   void SetBubbleWidth(int width);
-  virtual void AnimateToState(double state) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimateToState(double state) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Manager that owns us.
   StatusBubbleViews* status_bubble_;

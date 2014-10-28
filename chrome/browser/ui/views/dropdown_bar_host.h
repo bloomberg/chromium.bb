@@ -45,7 +45,7 @@ class DropdownBarHost : public ui::AcceleratorTarget,
                         public gfx::AnimationDelegate {
  public:
   explicit DropdownBarHost(BrowserView* browser_view);
-  virtual ~DropdownBarHost();
+  ~DropdownBarHost() override;
 
   // Initializes the DropdownBarHost. This creates the widget that |view| paints
   // into.
@@ -79,18 +79,18 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) = 0;
 
   // Overridden from views::FocusChangeListener:
-  virtual void OnWillChangeFocus(views::View* focused_before,
-                                 views::View* focused_now) override;
-  virtual void OnDidChangeFocus(views::View* focused_before,
-                                views::View* focused_now) override;
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override;
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override;
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) = 0;
   virtual bool CanHandleAccelerators() const = 0;
 
   // gfx::AnimationDelegate implementation:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // During testing we can disable animations by setting this flag to true,
   // so that opening and closing the dropdown bar is shown instantly, instead of

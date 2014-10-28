@@ -21,17 +21,17 @@ class Window;
 class JavascriptAppModalEventBlockerX11 : public ui::EventHandler {
  public:
   explicit JavascriptAppModalEventBlockerX11(aura::Window* app_modal_window);
-  virtual ~JavascriptAppModalEventBlockerX11();
+  ~JavascriptAppModalEventBlockerX11() override;
 
  private:
   // Returns true if the propagation of events to |target| should be stopped.
   bool ShouldStopPropagationTo(ui::EventTarget* target);
 
   // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
-  virtual void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // The app modal dialog.
   aura::Window* modal_window_;

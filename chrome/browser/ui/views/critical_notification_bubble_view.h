@@ -22,25 +22,23 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
                                        public views::ButtonListener {
  public:
   explicit CriticalNotificationBubbleView(views::View* anchor_view);
-  virtual ~CriticalNotificationBubbleView();
+  ~CriticalNotificationBubbleView() override;
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetDelegate overrides:
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // views::View overrides:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void ViewHierarchyChanged(
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
  protected:
   // views::BubbleDelegateView overrides:
-  virtual bool AcceleratorPressed(
-      const ui::Accelerator& accelerator) override;
-  virtual void Init() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void Init() override;
 
  private:
   // Helper function to calculate the remaining time (in seconds) until

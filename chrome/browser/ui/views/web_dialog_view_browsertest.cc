@@ -50,8 +50,8 @@ class TestWebDialogView : public views::WebDialogView {
 
  private:
   // TODO(xiyuan): Update this when WidgetDelegate has bounds change hook.
-  virtual void SaveWindowPlacement(const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) override {
+  void SaveWindowPlacement(const gfx::Rect& bounds,
+                           ui::WindowShowState show_state) override {
     if (should_quit_on_size_change_ && last_size_ != bounds.size()) {
       // Schedule message loop quit because we could be called while
       // the bounds change call is on the stack and not in the nested message
@@ -65,7 +65,7 @@ class TestWebDialogView : public views::WebDialogView {
     last_size_ = bounds.size();
   }
 
-  virtual void OnDialogClosed(const std::string& json_retval) override {
+  void OnDialogClosed(const std::string& json_retval) override {
     should_quit_on_size_change_ = false;  // No quit when we are closing.
     views::WebDialogView::OnDialogClosed(json_retval);
   }

@@ -33,7 +33,7 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   FullscreenExitBubbleViews(BrowserView* browser,
                             const GURL& url,
                             FullscreenExitBubbleType bubble_type);
-  virtual ~FullscreenExitBubbleViews();
+  ~FullscreenExitBubbleViews() override;
 
   void UpdateContent(const GURL& url, FullscreenExitBubbleType bubble_type);
 
@@ -63,25 +63,24 @@ class FullscreenExitBubbleViews : public FullscreenExitBubble,
   views::View* GetBrowserRootView() const;
 
   // FullScreenExitBubble overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual gfx::Rect GetPopupRect(bool ignore_animation_state) const override;
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual bool WindowContainsPoint(gfx::Point pos) override;
-  virtual bool IsWindowActive() override;
-  virtual void Hide() override;
-  virtual void Show() override;
-  virtual bool IsAnimating() override;
-  virtual bool CanMouseTriggerSlideIn() const override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  gfx::Rect GetPopupRect(bool ignore_animation_state) const override;
+  gfx::Point GetCursorScreenPoint() override;
+  bool WindowContainsPoint(gfx::Point pos) override;
+  bool IsWindowActive() override;
+  void Hide() override;
+  void Show() override;
+  bool IsAnimating() override;
+  bool CanMouseTriggerSlideIn() const override;
 
   // content::NotificationObserver override:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // views::WidgetObserver override:
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   BrowserView* browser_view_;
 
