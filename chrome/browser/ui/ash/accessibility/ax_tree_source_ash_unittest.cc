@@ -42,9 +42,9 @@ size_t GetSize(AXAuraObjWrapper* tree) {
 class AXTreeSourceAshTest : public ash::test::AshTestBase {
  public:
   AXTreeSourceAshTest() {}
-  virtual ~AXTreeSourceAshTest() {}
+  ~AXTreeSourceAshTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
 
     widget_ = new Widget();

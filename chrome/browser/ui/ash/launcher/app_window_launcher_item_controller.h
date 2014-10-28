@@ -41,7 +41,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
                                   const std::string& app_id,
                                   ChromeLauncherController* controller);
 
-  virtual ~AppWindowLauncherItemController();
+  ~AppWindowLauncherItemController() override;
 
   void AddAppWindow(extensions::AppWindow* app_window,
                     ash::ShelfItemStatus status);
@@ -53,24 +53,23 @@ class AppWindowLauncherItemController : public LauncherItemController,
   const std::string& app_shelf_id() const { return app_shelf_id_; }
 
   // LauncherItemController overrides:
-  virtual bool IsOpen() const override;
-  virtual bool IsVisible() const override;
-  virtual void Launch(ash::LaunchSource source, int event_flags) override;
-  virtual bool Activate(ash::LaunchSource source) override;
-  virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags)
-      override;
-  virtual bool ItemSelected(const ui::Event& eent) override;
-  virtual base::string16 GetTitle() override;
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
-  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  virtual bool IsDraggable() override;
-  virtual bool ShouldShowTooltip() override;
-  virtual void Close() override;
+  bool IsOpen() const override;
+  bool IsVisible() const override;
+  void Launch(ash::LaunchSource source, int event_flags) override;
+  bool Activate(ash::LaunchSource source) override;
+  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
+  bool ItemSelected(const ui::Event& eent) override;
+  base::string16 GetTitle() override;
+  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
+  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  bool IsDraggable() override;
+  bool ShouldShowTooltip() override;
+  void Close() override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // Get the number of running applications/incarnations of this.
   size_t app_window_count() const { return app_windows_.size(); }

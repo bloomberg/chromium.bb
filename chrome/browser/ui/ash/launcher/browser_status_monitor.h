@@ -39,7 +39,7 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
                              public TabStripModelObserver {
  public:
   explicit BrowserStatusMonitor(ChromeLauncherController* launcher_controller);
-  virtual ~BrowserStatusMonitor();
+  ~BrowserStatusMonitor() override;
 
   // A function which gets called when the current user has changed.
   // Note that this function is called by the ChromeLauncherController to be
@@ -56,37 +56,37 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   void UpdateBrowserItemState();
 
   // aura::client::ActivationChangeObserver overrides:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   // chrome::BrowserListObserver overrides:
-  virtual void OnBrowserAdded(Browser* browser) override;
-  virtual void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   // TabStripModelObserver overrides:
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason) override;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int index) override;
-  virtual void TabInsertedAt(content::WebContents* contents,
-                             int index,
-                             bool foreground) override;
-  virtual void TabClosingAt(TabStripModel* tab_strip_mode,
-                            content::WebContents* contents,
-                            int index) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
+  void TabInsertedAt(content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
+  void TabClosingAt(TabStripModel* tab_strip_mode,
+                    content::WebContents* contents,
+                    int index) override;
 
   // Called from our own |LocalWebContentsObserver| when web contents did go
   // away without any other notification. This might happen in case of

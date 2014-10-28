@@ -39,7 +39,7 @@ class AppWindowLauncherController
       public aura::client::ActivationChangeObserver {
  public:
   explicit AppWindowLauncherController(ChromeLauncherController* owner);
-  virtual ~AppWindowLauncherController();
+  ~AppWindowLauncherController() override;
 
   // Called by ChromeLauncherController when the active user changed and the
   // items need to be updated.
@@ -50,17 +50,16 @@ class AppWindowLauncherController
   virtual void AdditionalUserAddedToSession(Profile* profile);
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowIconChanged(
-      extensions::AppWindow* app_window) override;
-  virtual void OnAppWindowShown(extensions::AppWindow* app_window) override;
-  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) override;
+  void OnAppWindowIconChanged(extensions::AppWindow* app_window) override;
+  void OnAppWindowShown(extensions::AppWindow* app_window) override;
+  void OnAppWindowHidden(extensions::AppWindow* app_window) override;
 
   // Overriden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // Overriden from client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
  protected:
   // Registers a app window with the shelf and this object.

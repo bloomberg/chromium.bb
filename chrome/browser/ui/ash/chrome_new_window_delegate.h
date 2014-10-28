@@ -14,14 +14,14 @@ class Browser;
 class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
  public:
   ChromeNewWindowDelegate();
-  virtual ~ChromeNewWindowDelegate();
+  ~ChromeNewWindowDelegate() override;
 
   // Overridden from ash::NewWindowDelegate:
-  virtual void NewTab() override;
-  virtual void NewWindow(bool incognito) override;
-  virtual void RestoreTab() override;
-  virtual void ShowTaskManager() override;
-  virtual void OpenFeedbackPage() override;
+  void NewTab() override;
+  void NewWindow(bool incognito) override;
+  void RestoreTab() override;
+  void ShowTaskManager() override;
+  void OpenFeedbackPage() override;
 
  private:
   class TabRestoreHelper;

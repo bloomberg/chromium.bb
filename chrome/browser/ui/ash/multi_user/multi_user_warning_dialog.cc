@@ -32,18 +32,18 @@ const int kTopInset = 10;
 class TeleportWarningView : public views::DialogDelegateView {
  public:
   explicit TeleportWarningView(const base::Callback<void(bool)>& on_accept);
-  virtual ~TeleportWarningView();
+  ~TeleportWarningView() override;
 
   static void ShowDialog(const base::Callback<void(bool)>& on_accept);
 
   // views::DialogDelegate overrides.
-  virtual bool Accept() override;
+  bool Accept() override;
 
   // views::WidgetDelegate overrides.
-  virtual ui::ModalType GetModalType() const override;
+  ui::ModalType GetModalType() const override;
 
   // views::View overrides.
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   void InitDialog();

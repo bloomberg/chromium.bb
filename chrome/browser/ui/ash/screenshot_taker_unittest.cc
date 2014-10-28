@@ -36,19 +36,16 @@ class ScreenshotTakerTest : public AshTestBase,
         screenshot_result_(ScreenshotTakerObserver::SCREENSHOT_SUCCESS) {
   }
 
-  virtual void SetUp() {
-    AshTestBase::SetUp();
-  }
+  void SetUp() override { AshTestBase::SetUp(); }
 
-  virtual void TearDown() {
+  void TearDown() override {
     RunAllPendingInMessageLoop();
     AshTestBase::TearDown();
   }
 
   // Overridden from ScreenshotTakerObserver
-  virtual void OnScreenshotCompleted(
-      ScreenshotTakerObserver::Result screenshot_result,
-      const base::FilePath& screenshot_path) override {
+  void OnScreenshotCompleted(ScreenshotTakerObserver::Result screenshot_result,
+                             const base::FilePath& screenshot_path) override {
     screenshot_complete_ = true;
     screenshot_result_ = screenshot_result;
     screenshot_path_ = screenshot_path;

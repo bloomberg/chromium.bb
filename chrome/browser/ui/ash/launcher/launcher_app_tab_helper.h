@@ -16,12 +16,12 @@ class Profile;
 class LauncherAppTabHelper : public ChromeLauncherController::AppTabHelper {
  public:
   explicit LauncherAppTabHelper(Profile* profile);
-  virtual ~LauncherAppTabHelper();
+  ~LauncherAppTabHelper() override;
 
   // AppTabHelper:
-  virtual std::string GetAppID(content::WebContents* tab) override;
-  virtual bool IsValidIDForCurrentUser(const std::string& id) override;
-  virtual void SetCurrentUser(Profile* profile) override;
+  std::string GetAppID(content::WebContents* tab) override;
+  bool IsValidIDForCurrentUser(const std::string& id) override;
+  void SetCurrentUser(Profile* profile) override;
 
  private:
   Profile* profile_;

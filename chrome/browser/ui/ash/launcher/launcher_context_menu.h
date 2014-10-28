@@ -45,7 +45,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // Creates a menu used as a desktop context menu on |root_window|.
   LauncherContextMenu(ChromeLauncherController* controller,
                       aura::Window* root_window);
-  virtual ~LauncherContextMenu();
+  ~LauncherContextMenu() override;
 
   void Init();
 
@@ -53,15 +53,14 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   ash::ShelfID id() const { return item_.id; }
 
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
-  virtual base::string16 GetLabelForCommandId(int command_id) const override;
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool IsCommandIdVisible(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

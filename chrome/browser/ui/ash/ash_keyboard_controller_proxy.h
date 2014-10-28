@@ -33,19 +33,20 @@ class AshKeyboardControllerProxy
       public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   AshKeyboardControllerProxy();
-  virtual ~AshKeyboardControllerProxy();
+  ~AshKeyboardControllerProxy() override;
 
  private:
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // keyboard::KeyboardControllerProxy overrides
-  virtual content::BrowserContext* GetBrowserContext() override;
-  virtual ui::InputMethod* GetInputMethod() override;
-  virtual void RequestAudioInput(content::WebContents* web_contents,
+  content::BrowserContext* GetBrowserContext() override;
+  ui::InputMethod* GetInputMethod() override;
+  void RequestAudioInput(
+      content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual void SetupWebContents(content::WebContents* contents) override;
-  virtual void ShowKeyboardContainer(aura::Window* container) override;
+  void SetupWebContents(content::WebContents* contents) override;
+  void ShowKeyboardContainer(aura::Window* container) override;
 
   // The overridden implementation dispatches
   // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to
@@ -54,15 +55,14 @@ class AshKeyboardControllerProxy
   // information, but not when the virtual keyboard is used in conjunction with
   // another IME. virtualKeyboardPrivate.onTextInputBoxFocused is the remedy in
   // that case.
-  virtual void SetUpdateInputType(ui::TextInputType type) override;
+  void SetUpdateInputType(ui::TextInputType type) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides
-  virtual extensions::WindowController* GetExtensionWindowController() const
-      override;
-  virtual content::WebContents* GetAssociatedWebContents() const override;
+  extensions::WindowController* GetExtensionWindowController() const override;
+  content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver overrides
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;

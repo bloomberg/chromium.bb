@@ -134,7 +134,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   };
 
   ChromeLauncherController(Profile* profile, ash::ShelfModel* model);
-  virtual ~ChromeLauncherController();
+  ~ChromeLauncherController() override;
 
   // Initializes this ChromeLauncherController.
   void Init();
@@ -291,54 +291,52 @@ class ChromeLauncherController : public ash::ShelfDelegate,
                                         bool allow_minimize);
 
   // ash::ShelfDelegate overrides:
-  virtual void OnShelfCreated(ash::Shelf* shelf) override;
-  virtual void OnShelfDestroyed(ash::Shelf* shelf) override;
-  virtual ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
-  virtual const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
-  virtual void PinAppWithID(const std::string& app_id) override;
-  virtual bool IsAppPinned(const std::string& app_id) override;
-  virtual bool CanPin() const override;
-  virtual void UnpinAppWithID(const std::string& app_id) override;
+  void OnShelfCreated(ash::Shelf* shelf) override;
+  void OnShelfDestroyed(ash::Shelf* shelf) override;
+  ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
+  const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
+  void PinAppWithID(const std::string& app_id) override;
+  bool IsAppPinned(const std::string& app_id) override;
+  bool CanPin() const override;
+  void UnpinAppWithID(const std::string& app_id) override;
 
   // ash::ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int index) override;
-  virtual void ShelfItemRemoved(int index, ash::ShelfID id) override;
-  virtual void ShelfItemMoved(int start_index, int target_index) override;
-  virtual void ShelfItemChanged(int index,
-                                const ash::ShelfItem& old_item) override;
-  virtual void ShelfStatusChanged() override;
+  void ShelfItemAdded(int index) override;
+  void ShelfItemRemoved(int index, ash::ShelfID id) override;
+  void ShelfItemMoved(int start_index, int target_index) override;
+  void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
+  void ShelfStatusChanged() override;
 
   // ash::ShellObserver overrides:
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ash::DisplayController::Observer overrides:
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
   // ExtensionRegistryObserver overrides:
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) override;
-  virtual void OnExtensionUnloaded(
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // PrefServiceSyncableObserver overrides:
-  virtual void OnIsSyncingChanged() override;
+  void OnIsSyncingChanged() override;
 
   // AppSyncUIStateObserver overrides:
-  virtual void OnAppSyncUIStatusChanged() override;
+  void OnAppSyncUIStatusChanged() override;
 
   // ExtensionEnableFlowDelegate overrides:
-  virtual void ExtensionEnableFlowFinished() override;
-  virtual void ExtensionEnableFlowAborted(bool user_initiated) override;
+  void ExtensionEnableFlowFinished() override;
+  void ExtensionEnableFlowAborted(bool user_initiated) override;
 
   // extensions::AppIconLoader overrides:
-  virtual void SetAppImage(const std::string& app_id,
-                           const gfx::ImageSkia& image) override;
+  void SetAppImage(const std::string& app_id,
+                   const gfx::ImageSkia& image) override;
 
   // ash::ShelfLayoutManagerObserver overrides:
-  virtual void OnAutoHideBehaviorChanged(
+  void OnAutoHideBehaviorChanged(
       aura::Window* root_window,
       ash::ShelfAutoHideBehavior new_behavior) override;
 

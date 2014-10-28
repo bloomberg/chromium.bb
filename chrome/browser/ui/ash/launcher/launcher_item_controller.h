@@ -41,7 +41,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   LauncherItemController(Type type,
                          const std::string& app_id,
                          ChromeLauncherController* launcher_controller);
-  virtual ~LauncherItemController();
+  ~LauncherItemController() override;
 
   Type type() const { return type_; }
   ash::ShelfID shelf_id() const { return shelf_id_; }

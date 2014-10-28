@@ -21,9 +21,7 @@ class TestChromeLauncherController : public ChromeLauncherController {
  public:
   TestChromeLauncherController(Profile* profile, ash::ShelfModel* model)
       : ChromeLauncherController(profile, model) {}
-  virtual bool IsLoggedInAsGuest() override {
-    return false;
-  }
+  bool IsLoggedInAsGuest() override { return false; }
  private:
   DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherController);
 };
@@ -38,13 +36,13 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   LauncherContextMenuTest()
       : profile_(new TestingProfile()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ash::test::AshTestBase::SetUp();
     controller_.reset(
         new TestChromeLauncherController(profile(), &shelf_model_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_.reset(NULL);
     ash::test::AshTestBase::TearDown();
   }

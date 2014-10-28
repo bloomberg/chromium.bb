@@ -14,12 +14,12 @@ class MultiProfileBrowserStatusMonitor : public BrowserStatusMonitor {
  public:
   explicit MultiProfileBrowserStatusMonitor(
       ChromeLauncherController* launcher_controller);
-  virtual ~MultiProfileBrowserStatusMonitor();
+  ~MultiProfileBrowserStatusMonitor() override;
 
   // BrowserStatusMonitor overrides.
-  virtual void ActiveUserChanged(const std::string& user_email) override;
-  virtual void AddV1AppToShelf(Browser* browser) override;
-  virtual void RemoveV1AppFromShelf(Browser* browser) override;
+  void ActiveUserChanged(const std::string& user_email) override;
+  void AddV1AppToShelf(Browser* browser) override;
+  void RemoveV1AppFromShelf(Browser* browser) override;
 
  private:
   typedef std::vector<Browser*> AppList;

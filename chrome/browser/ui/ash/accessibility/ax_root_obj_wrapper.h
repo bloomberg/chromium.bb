@@ -11,17 +11,17 @@
 class AXRootObjWrapper : public views::AXAuraObjWrapper {
  public:
   explicit AXRootObjWrapper(int32 id);
-  virtual ~AXRootObjWrapper();
+  ~AXRootObjWrapper() override;
 
   // Convenience method to check for existence of a child.
   bool HasChild(views::AXAuraObjWrapper* child);
 
   // views::AXAuraObjWrapper overrides.
-  virtual views::AXAuraObjWrapper* GetParent() override;
-  virtual void GetChildren(
+  views::AXAuraObjWrapper* GetParent() override;
+  void GetChildren(
       std::vector<views::AXAuraObjWrapper*>* out_children) override;
-  virtual void Serialize(ui::AXNodeData* out_node_data) override;
-  virtual int32 GetID() override;
+  void Serialize(ui::AXNodeData* out_node_data) override;
+  int32 GetID() override;
 
  private:
   int32 id_;

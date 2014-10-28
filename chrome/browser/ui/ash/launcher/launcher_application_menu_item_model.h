@@ -21,18 +21,17 @@ class LauncherApplicationMenuItemModel : public ash::ShelfMenuModel,
  public:
   explicit LauncherApplicationMenuItemModel(
       ChromeLauncherAppMenuItems item_list);
-  virtual ~LauncherApplicationMenuItemModel();
+  ~LauncherApplicationMenuItemModel() override;
 
   // Overridden from ash::ShelfMenuModel:
-  virtual bool IsCommandActive(int command_id) const override;
+  bool IsCommandActive(int command_id) const override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   void Build();

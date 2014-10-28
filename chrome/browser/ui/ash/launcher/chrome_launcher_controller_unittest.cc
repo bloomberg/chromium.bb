@@ -94,32 +94,29 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
       changed_(0) {
   }
 
-  virtual ~TestShelfModelObserver() {
-  }
+  ~TestShelfModelObserver() override {}
 
   // Overridden from ash::ShelfModelObserver:
-  virtual void ShelfItemAdded(int index) override {
+  void ShelfItemAdded(int index) override {
     ++added_;
     last_index_ = index;
   }
 
-  virtual void ShelfItemRemoved(int index, ash::ShelfID id) override {
+  void ShelfItemRemoved(int index, ash::ShelfID id) override {
     ++removed_;
     last_index_ = index;
   }
 
-  virtual void ShelfItemChanged(int index,
-                                const ash::ShelfItem& old_item) override {
+  void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override {
     ++changed_;
     last_index_ = index;
   }
 
-  virtual void ShelfItemMoved(int start_index, int target_index) override {
+  void ShelfItemMoved(int start_index, int target_index) override {
     last_index_ = target_index;
   }
 
-  virtual void ShelfStatusChanged() override {
-  }
+  void ShelfStatusChanged() override {}
 
   void clear_counts() {
     added_ = 0;
@@ -148,19 +145,14 @@ class TestAppIconLoaderImpl : public extensions::AppIconLoader {
   TestAppIconLoaderImpl() : fetch_count_(0) {
   }
 
-  virtual ~TestAppIconLoaderImpl() {
-  }
+  ~TestAppIconLoaderImpl() override {}
 
   // AppIconLoader implementation:
-  virtual void FetchImage(const std::string& id) override {
-    ++fetch_count_;
-  }
+  void FetchImage(const std::string& id) override { ++fetch_count_; }
 
-  virtual void ClearImage(const std::string& id) override {
-  }
+  void ClearImage(const std::string& id) override {}
 
-  virtual void UpdateImage(const std::string& id) override {
-  }
+  void UpdateImage(const std::string& id) override {}
 
   int fetch_count() const { return fetch_count_; }
 
@@ -174,7 +166,7 @@ class TestAppIconLoaderImpl : public extensions::AppIconLoader {
 class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
  public:
   TestAppTabHelperImpl() {}
-  virtual ~TestAppTabHelperImpl() {}
+  ~TestAppTabHelperImpl() override {}
 
   // Sets the id for the specified tab. The id is removed if Remove() is
   // invoked.
@@ -188,12 +180,12 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
   }
 
   // AppTabHelper implementation:
-  virtual std::string GetAppID(content::WebContents* tab) override {
+  std::string GetAppID(content::WebContents* tab) override {
     return tab_id_map_.find(tab) != tab_id_map_.end() ? tab_id_map_[tab] :
         std::string();
   }
 
-  virtual bool IsValidIDForCurrentUser(const std::string& id) override {
+  bool IsValidIDForCurrentUser(const std::string& id) override {
     for (TabToStringMap::const_iterator i = tab_id_map_.begin();
          i != tab_id_map_.end(); ++i) {
       if (i->second == id)
@@ -202,7 +194,7 @@ class TestAppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
     return false;
   }
 
-  virtual void SetCurrentUser(Profile* profile) override {
+  void SetCurrentUser(Profile* profile) override {
     // We can ignore this for now.
   }
 
@@ -224,18 +216,17 @@ class TestV2AppLauncherItemController : public LauncherItemController {
                                controller) {
   }
 
-  virtual ~TestV2AppLauncherItemController() {}
+  ~TestV2AppLauncherItemController() override {}
 
   // Override for LauncherItemController:
-  virtual bool IsOpen() const override { return true; }
-  virtual bool IsVisible() const override { return true; }
-  virtual void Launch(ash::LaunchSource source, int event_flags) override {}
-  virtual bool Activate(ash::LaunchSource source) override { return false; }
-  virtual void Close() override {}
-  virtual bool ItemSelected(const ui::Event& event) override { return false; }
-  virtual base::string16 GetTitle() override { return base::string16(); }
-  virtual ChromeLauncherAppMenuItems GetApplicationList(
-      int event_flags) override {
+  bool IsOpen() const override { return true; }
+  bool IsVisible() const override { return true; }
+  void Launch(ash::LaunchSource source, int event_flags) override {}
+  bool Activate(ash::LaunchSource source) override { return false; }
+  void Close() override {}
+  bool ItemSelected(const ui::Event& event) override { return false; }
+  base::string16 GetTitle() override { return base::string16(); }
+  ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override {
     ChromeLauncherAppMenuItems items;
     items.push_back(
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
@@ -243,14 +234,14 @@ class TestV2AppLauncherItemController : public LauncherItemController {
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
     return items.Pass();
   }
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
+  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
     return NULL;
   }
-  virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
+  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
     return NULL;
   }
-  virtual bool IsDraggable() override { return false; }
-  virtual bool ShouldShowTooltip() override { return false; }
+  bool IsDraggable() override { return false; }
+  bool ShouldShowTooltip() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
@@ -269,10 +260,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         extension_service_(NULL) {
   }
 
-  virtual ~ChromeLauncherControllerTest() {
-  }
+  ~ChromeLauncherControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     model_.reset(new ash::ShelfModel);
@@ -411,7 +401,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     InsertPrefValue(user_b, 1, extension8_->id());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (!ash::Shell::HasInstance())
       delete item_delegate_manager_;
     model_->RemoveObserver(model_observer_.get());

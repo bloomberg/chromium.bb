@@ -21,11 +21,11 @@ class Profile;
 class AppSyncUIStateWatcher : public AppSyncUIStateObserver {
  public:
   AppSyncUIStateWatcher(Profile* profile, app_list::AppListModel* model);
-  virtual ~AppSyncUIStateWatcher();
+  ~AppSyncUIStateWatcher() override;
 
  private:
   // AppSyncUIStateObserver overrides:
-  virtual void OnAppSyncUIStatusChanged() override;
+  void OnAppSyncUIStatusChanged() override;
 
   AppSyncUIState* app_sync_ui_state_;
   app_list::AppListModel* model_;  // Owned by AppListView

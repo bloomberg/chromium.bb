@@ -49,21 +49,18 @@ class ChromeNewWindowDelegate::TabRestoreHelper
     tab_restore_service_->AddObserver(this);
   }
 
-  virtual ~TabRestoreHelper() {
-    tab_restore_service_->RemoveObserver(this);
-  }
+  ~TabRestoreHelper() override { tab_restore_service_->RemoveObserver(this); }
 
   TabRestoreService* tab_restore_service() { return tab_restore_service_; }
 
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) override {
-  }
+  void TabRestoreServiceChanged(TabRestoreService* service) override {}
 
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) override {
+  void TabRestoreServiceDestroyed(TabRestoreService* service) override {
     // This destroys us.
     delegate_->tab_restore_helper_.reset();
   }
 
-  virtual void TabRestoreServiceLoaded(TabRestoreService* service) override {
+  void TabRestoreServiceLoaded(TabRestoreService* service) override {
     RestoreTabUsingProfile(profile_);
     // This destroys us.
     delegate_->tab_restore_helper_.reset();

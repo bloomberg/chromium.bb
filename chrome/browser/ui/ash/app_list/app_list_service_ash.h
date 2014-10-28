@@ -21,23 +21,22 @@ class AppListServiceAsh : public AppListServiceImpl {
   friend struct DefaultSingletonTraits<AppListServiceAsh>;
 
   AppListServiceAsh();
-  virtual ~AppListServiceAsh();
+  ~AppListServiceAsh() override;
 
   // AppListService overrides:
-  virtual base::FilePath GetProfilePath(
-      const base::FilePath& user_data_dir) override;
-  virtual void ShowForProfile(Profile* default_profile) override;
-  virtual bool IsAppListVisible() const override;
-  virtual void DismissAppList() override;
-  virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) override;
-  virtual gfx::NativeWindow GetAppListWindow() override;
-  virtual Profile* GetCurrentAppListProfile() override;
-  virtual AppListControllerDelegate* GetControllerDelegate() override;
+  base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override;
+  void ShowForProfile(Profile* default_profile) override;
+  bool IsAppListVisible() const override;
+  void DismissAppList() override;
+  void EnableAppList(Profile* initial_profile,
+                     AppListEnableSource enable_source) override;
+  gfx::NativeWindow GetAppListWindow() override;
+  Profile* GetCurrentAppListProfile() override;
+  AppListControllerDelegate* GetControllerDelegate() override;
 
   // ApplistServiceImpl overrides:
-  virtual void CreateForProfile(Profile* default_profile) override;
-  virtual void DestroyAppList() override;
+  void CreateForProfile(Profile* default_profile) override;
+  void DestroyAppList() override;
 
   scoped_ptr<AppListControllerDelegateAsh> controller_delegate_;
 
