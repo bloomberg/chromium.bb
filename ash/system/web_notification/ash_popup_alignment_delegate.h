@@ -37,7 +37,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
       public gfx::DisplayObserver {
  public:
   AshPopupAlignmentDelegate();
-  virtual ~AshPopupAlignmentDelegate();
+  ~AshPopupAlignmentDelegate() override;
 
   // Start observing the system.
   void StartObserving(gfx::Screen* screen, const gfx::Display& display);
@@ -47,12 +47,12 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void SetSystemTrayHeight(int height);
 
   // Overridden from message_center::PopupAlignmentDelegate:
-  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
-  virtual int GetBaseLine() const override;
-  virtual int GetWorkAreaBottom() const override;
-  virtual bool IsTopDown() const override;
-  virtual bool IsFromLeft() const override;
-  virtual void RecomputeAlignment(const gfx::Display& display) override;
+  int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
+  int GetBaseLine() const override;
+  int GetWorkAreaBottom() const override;
+  bool IsTopDown() const override;
+  bool IsFromLeft() const override;
+  void RecomputeAlignment(const gfx::Display& display) override;
 
  private:
   friend class AshPopupAlignmentDelegateTest;
@@ -67,16 +67,16 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void UpdateShelf();
 
   // Overridden from ShellObserver:
-  virtual void OnDisplayWorkAreaInsetsChanged() override;
+  void OnDisplayWorkAreaInsetsChanged() override;
 
   // Overridden from ShelfLayoutManagerObserver:
-  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   int64_t display_id_;
   gfx::Screen* screen_;

@@ -29,20 +29,20 @@ class TrayTracing : public TrayImageItem,
                     public TracingObserver {
  public:
   explicit TrayTracing(SystemTray* system_tray);
-  virtual ~TrayTracing();
+  ~TrayTracing() override;
 
  private:
   void SetTrayIconVisible(bool visible);
 
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
+  bool GetInitialVisibility() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
 
   // Overridden from TracingObserver.
-  virtual void OnTracingModeChanged(bool value) override;
+  void OnTracingModeChanged(bool value) override;
 
   views::View* default_;
 

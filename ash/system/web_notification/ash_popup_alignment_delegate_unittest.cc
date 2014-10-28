@@ -19,16 +19,16 @@ namespace ash {
 class AshPopupAlignmentDelegateTest : public test::AshTestBase {
  public:
   AshPopupAlignmentDelegateTest() {}
-  virtual ~AshPopupAlignmentDelegateTest() {}
+  ~AshPopupAlignmentDelegateTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     alignment_delegate_.reset(new AshPopupAlignmentDelegate());
     alignment_delegate_->StartObserving(
         Shell::GetScreen(), Shell::GetScreen()->GetPrimaryDisplay());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     alignment_delegate_.reset();
     test::AshTestBase::TearDown();
   }

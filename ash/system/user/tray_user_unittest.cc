@@ -28,7 +28,7 @@ class TrayUserTest : public ash::test::AshTestBase {
   TrayUserTest();
 
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // This has to be called prior to first use with the proper configuration.
   void InitializeParameters(int users_logged_in, bool multiprofile);

@@ -31,18 +31,17 @@ class AccountsDetailedView : public TrayDetailsView,
                              public ash::tray::UserAccountsDelegate::Observer {
  public:
   AccountsDetailedView(TrayUser* owner, user::LoginStatus login_status);
-  virtual ~AccountsDetailedView();
+  ~AccountsDetailedView() override;
 
  private:
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override;
+  void OnViewClicked(views::View* sender) override;
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from ash::tray::UserAccountsDelegate::Observer.
-  virtual void AccountListChanged() override;
+  void AccountListChanged() override;
 
   void AddHeader(user::LoginStatus login_status);
   void AddAccountList();

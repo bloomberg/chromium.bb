@@ -26,7 +26,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   static const char kNativeViewName[];
 
   explicit StatusAreaWidget(aura::Window* status_container);
-  virtual ~StatusAreaWidget();
+  ~StatusAreaWidget() override;
 
   // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.
   void CreateTrayViews();
@@ -72,7 +72,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void SchedulePaint();
 
   // Overridden from views::Widget:
-  virtual void OnNativeWidgetActivationChanged(bool active) override;
+  void OnNativeWidgetActivationChanged(bool active) override;
 
  private:
   void AddSystemTray();

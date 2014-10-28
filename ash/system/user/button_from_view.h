@@ -25,17 +25,17 @@ class ButtonFromView : public views::CustomButton {
                  views::ButtonListener* listener,
                  bool highlight_on_hover,
                  const gfx::Insets& tab_frame_inset);
-  virtual ~ButtonFromView();
+  ~ButtonFromView() override;
 
   // Called when the border should remain even in the non highlighted state.
   void ForceBorderVisible(bool show);
 
   // Overridden from views::View
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // Check if the item is hovered.
   bool is_hovered_for_test() { return button_hovered_; }

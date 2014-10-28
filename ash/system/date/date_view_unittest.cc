@@ -13,7 +13,7 @@ namespace tray {
 class TimeViewTest : public ash::test::AshTestBase {
  public:
   TimeViewTest() {}
-  virtual ~TimeViewTest() {}
+  ~TimeViewTest() override {}
 
   TimeView* time_view() { return time_view_.get(); }
 

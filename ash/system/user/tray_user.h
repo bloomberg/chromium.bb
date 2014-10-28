@@ -36,7 +36,7 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   // in users (if there are any). Depending on the multi user mode, there will
   // be either one (index #0) or all users be visible in the system tray.
   TrayUser(SystemTray* system_tray, MultiProfileIndex index);
-  virtual ~TrayUser();
+  ~TrayUser() override;
 
   // Allows unit tests to see if the item was created.
   enum TestState {
@@ -61,19 +61,18 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
 
  private:
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from UserObserver.
-  virtual void OnUserUpdate() override;
-  virtual void OnUserAddedToSession() override;
+  void OnUserUpdate() override;
+  void OnUserAddedToSession() override;
 
   void UpdateAvatarImage(user::LoginStatus status);
 

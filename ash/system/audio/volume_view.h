@@ -36,7 +36,7 @@ class VolumeView : public ActionableView,
              system::TrayAudioDelegate* audio_delegate,
              bool is_default_view);
 
-  virtual ~VolumeView();
+  ~VolumeView() override;
 
   void Update();
 
@@ -50,20 +50,19 @@ class VolumeView : public ActionableView,
   void HandleVolumeDown(float percent);
 
   // Overridden from views::View.
-  virtual void Layout() override;
+  void Layout() override;
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from views::SliderListener.
-  virtual void SliderValueChanged(views::Slider* sender,
-                                  float value,
-                                  float old_value,
-                                  views::SliderChangeReason reason) override;
+  void SliderValueChanged(views::Slider* sender,
+                          float value,
+                          float old_value,
+                          views::SliderChangeReason reason) override;
 
   // Overriden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) override;
+  bool PerformAction(const ui::Event& event) override;
 
   SystemTrayItem* owner_;
   system::TrayAudioDelegate* audio_delegate_;

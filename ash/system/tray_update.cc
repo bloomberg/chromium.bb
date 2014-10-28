@@ -85,11 +85,11 @@ class UpdateView : public ash::ActionableView {
     SetAccessibleName(label);
   }
 
-  virtual ~UpdateView() {}
+  ~UpdateView() override {}
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const ui::Event& event) override {
+  bool PerformAction(const ui::Event& event) override {
     ash::Shell::GetInstance()->
         system_tray_delegate()->RequestRestartForUpdate();
     return true;
@@ -112,7 +112,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
         GetAnimator()->AddObserver(this);
   }
 
-  virtual ~UpdateNagger() {
+  ~UpdateNagger() override {
     StatusAreaWidget* status_area =
         Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
     if (status_area) {
@@ -135,8 +135,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   }
 
   // Overridden from ui::LayerAnimationObserver.
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     // TODO(oshima): Find out if the updator will be shown on non
     // primary display.
     if (Shell::GetPrimaryRootWindowController()->shelf()->IsVisible())
@@ -145,10 +144,9 @@ class UpdateNagger : public ui::LayerAnimationObserver {
       RestartTimer();
   }
 
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
 
-  virtual void OnLayerAnimationScheduled(
+  void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
 
   SystemTrayItem* owner_;

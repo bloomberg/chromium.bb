@@ -38,7 +38,7 @@ class StatusAreaWidgetDelegateAnimationSettings
     SetTweenType(gfx::Tween::EASE_IN_OUT);
   }
 
-  virtual ~StatusAreaWidgetDelegateAnimationSettings() {}
+  ~StatusAreaWidgetDelegateAnimationSettings() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegateAnimationSettings);

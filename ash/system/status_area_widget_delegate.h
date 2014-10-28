@@ -19,7 +19,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
                                             public views::WidgetDelegate {
  public:
   StatusAreaWidgetDelegate();
-  virtual ~StatusAreaWidgetDelegate();
+  ~StatusAreaWidgetDelegate() override;
 
   // Add a tray view to the widget (e.g. system tray, web notifications).
   void AddTray(views::View* tray);
@@ -33,23 +33,23 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
   // Overridden from views::AccessiblePaneView.
-  virtual View* GetDefaultFocusableChild() override;
+  View* GetDefaultFocusableChild() override;
 
   // Overridden from views::View:
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::WidgetDelegate overrides:
-  virtual bool CanActivate() const override;
-  virtual void DeleteDelegate() override;
+  bool CanActivate() const override;
+  void DeleteDelegate() override;
 
  protected:
   // Overridden from views::View:
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
-  virtual void ChildVisibilityChanged(views::View* child) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
 
  private:
   void UpdateWidgetSize();

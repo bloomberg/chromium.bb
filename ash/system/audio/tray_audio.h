@@ -26,7 +26,7 @@ class TrayAudio : public TrayImageItem,
  public:
   TrayAudio(SystemTray* system_tray,
             scoped_ptr<system::TrayAudioDelegate> audio_delegate);
-  virtual ~TrayAudio();
+  ~TrayAudio() override;
 
   static bool ShowAudioDeviceMenu();
 
@@ -42,28 +42,28 @@ class TrayAudio : public TrayImageItem,
 
  private:
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() override;
+  bool GetInitialVisibility() override;
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual bool ShouldHideArrow() const override;
-  virtual bool ShouldShowShelf() const override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  bool ShouldHideArrow() const override;
+  bool ShouldShowShelf() const override;
 
   // Overridden from AudioObserver.
-  virtual void OnOutputVolumeChanged() override;
-  virtual void OnOutputMuteChanged() override;
-  virtual void OnAudioNodesChanged() override;
-  virtual void OnActiveOutputNodeChanged() override;
-  virtual void OnActiveInputNodeChanged() override;
+  void OnOutputVolumeChanged() override;
+  void OnOutputMuteChanged() override;
+  void OnAudioNodesChanged() override;
+  void OnActiveOutputNodeChanged() override;
+  void OnActiveInputNodeChanged() override;
 
   // Overridden from gfx::DisplayObserver.
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t changed_metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override;
 
   void ChangeInternalSpeakerChannelMode();
 

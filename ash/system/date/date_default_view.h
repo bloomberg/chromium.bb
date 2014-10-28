@@ -23,7 +23,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
  public:
   explicit DateDefaultView(ash::user::LoginStatus login);
 
-  virtual ~DateDefaultView();
+  ~DateDefaultView() override;
 
   views::View* GetHelpButtonView();
 
@@ -32,8 +32,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
 
  private:
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   TrayPopupHeaderButton* help_;
   TrayPopupHeaderButton* shutdown_;

@@ -17,14 +17,14 @@ namespace ash {
 class LocaleNotificationController : public LocaleObserver {
  public:
   LocaleNotificationController();
-  virtual ~LocaleNotificationController();
+  ~LocaleNotificationController() override;
 
  private:
   // Overridden from LocaleObserver.
-  virtual void OnLocaleChanged(LocaleObserver::Delegate* delegate,
-                               const std::string& cur_locale,
-                               const std::string& from_locale,
-                               const std::string& to_locale) override;
+  void OnLocaleChanged(LocaleObserver::Delegate* delegate,
+                       const std::string& cur_locale,
+                       const std::string& from_locale,
+                       const std::string& to_locale) override;
 
   LocaleObserver::Delegate* delegate_;
   std::string cur_locale_;

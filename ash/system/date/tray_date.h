@@ -38,7 +38,7 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
   };
 
   explicit TrayDate(SystemTray* system_tray);
-  virtual ~TrayDate();
+  ~TrayDate() override;
 
   // Returns view for help button if it is exists. Returns NULL otherwise.
   views::View* GetHelpButtonView() const;
@@ -49,21 +49,20 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
 
  private:
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from ClockObserver.
-  virtual void OnDateFormatChanged() override;
-  virtual void OnSystemClockTimeUpdated() override;
-  virtual void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
-  virtual void Refresh() override;
+  void OnDateFormatChanged() override;
+  void OnSystemClockTimeUpdated() override;
+  void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
+  void Refresh() override;
 
   void SetupLabelForTimeTray(views::Label* label);
 

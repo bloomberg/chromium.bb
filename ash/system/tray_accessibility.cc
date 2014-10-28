@@ -84,8 +84,7 @@ class DefaultAccessibilityView : public TrayItemMore {
     set_id(test::kAccessibilityTrayItemViewId);
   }
 
-  virtual ~DefaultAccessibilityView() {
-  }
+  ~DefaultAccessibilityView() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityView);

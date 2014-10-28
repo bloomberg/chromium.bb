@@ -49,11 +49,11 @@ class SelectableHoverHighlightView : public HoverHighlightView {
         label, gfx::ALIGN_LEFT, selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
   }
 
-  virtual ~SelectableHoverHighlightView() {}
+  ~SelectableHoverHighlightView() override {}
 
  protected:
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) override {
+  void GetAccessibleState(ui::AXViewState* state) override {
     HoverHighlightView::GetAccessibleState(state);
     state->role = ui::AX_ROLE_CHECK_BOX;
     if (selected_)
@@ -80,7 +80,7 @@ class IMEDefaultView : public TrayItemMore {
     UpdateLabel(info);
   }
 
-  virtual ~IMEDefaultView() {}
+  ~IMEDefaultView() override {}
 
   void UpdateLabel(const IMEInfo& info) {
     SetLabel(info.name);
@@ -105,7 +105,7 @@ class IMEDetailedView : public TrayDetailsView,
     Update(list, property_list);
   }
 
-  virtual ~IMEDetailedView() {}
+  ~IMEDetailedView() override {}
 
   void Update(const IMEInfoList& list,
               const IMEPropertyInfoList& property_list) {
@@ -168,7 +168,7 @@ class IMEDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override {
+  void OnViewClicked(views::View* sender) override {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
       TransitionToDefaultView();

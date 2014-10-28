@@ -24,17 +24,17 @@ class TrayUpdate : public TrayImageItem,
                    public UpdateObserver {
  public:
   explicit TrayUpdate(SystemTray* system_tray);
-  virtual ~TrayUpdate();
+  ~TrayUpdate() override;
 
  private:
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyDetailedView() override;
+  bool GetInitialVisibility() override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyDetailedView() override;
 
   // Overridden from UpdateObserver.
-  virtual void OnUpdateRecommended(const UpdateInfo& info) override;
+  void OnUpdateRecommended(const UpdateInfo& info) override;
 
   // Used to nag the user in case the tray has been hidden too long with an
   // unseen update notification.

@@ -29,15 +29,15 @@ class LocaleNotificationDelegate : public message_center::NotificationDelegate {
   explicit LocaleNotificationDelegate(LocaleObserver::Delegate* delegate);
 
  protected:
-  virtual ~LocaleNotificationDelegate();
+  ~LocaleNotificationDelegate() override;
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual bool HasClickedListener() override;
-  virtual void Click() override;
-  virtual void ButtonClick(int button_index) override;
+  void Display() override;
+  void Error() override;
+  void Close(bool by_user) override;
+  bool HasClickedListener() override;
+  void Click() override;
+  void ButtonClick(int button_index) override;
 
  private:
   LocaleObserver::Delegate* delegate_;

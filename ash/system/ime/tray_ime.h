@@ -27,24 +27,23 @@ class TrayIME : public SystemTrayItem,
                 public IMEObserver {
  public:
   explicit TrayIME(SystemTray* system_tray);
-  virtual ~TrayIME();
+  ~TrayIME() override;
 
  private:
   void UpdateTrayLabel(const IMEInfo& info, size_t count);
 
   // Overridden from SystemTrayItem.
-  virtual views::View* CreateTrayView(user::LoginStatus status) override;
-  virtual views::View* CreateDefaultView(user::LoginStatus status) override;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) override;
-  virtual void DestroyTrayView() override;
-  virtual void DestroyDefaultView() override;
-  virtual void DestroyDetailedView() override;
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) override;
+  views::View* CreateTrayView(user::LoginStatus status) override;
+  views::View* CreateDefaultView(user::LoginStatus status) override;
+  views::View* CreateDetailedView(user::LoginStatus status) override;
+  void DestroyTrayView() override;
+  void DestroyDefaultView() override;
+  void DestroyDetailedView() override;
+  void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
+  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from IMEObserver.
-  virtual void OnIMERefresh() override;
+  void OnIMERefresh() override;
 
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;

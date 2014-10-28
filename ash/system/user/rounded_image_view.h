@@ -20,7 +20,7 @@ class RoundedImageView : public views::View {
   // |corner_radius|. If |active_user| is set, the icon will be drawn in
   // full colors - otherwise it will fade into the background.
   RoundedImageView(int corner_radius, bool active_user);
-  virtual ~RoundedImageView();
+  ~RoundedImageView() override;
 
   // Set the image that should be displayed. The image contents is copied to the
   // receiver's image.
@@ -34,8 +34,8 @@ class RoundedImageView : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   gfx::ImageSkia image_;
   gfx::ImageSkia resized_;

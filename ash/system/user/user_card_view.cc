@@ -126,16 +126,16 @@ class PublicAccountUserDetails : public views::View,
                                  public views::LinkListener {
  public:
   PublicAccountUserDetails(int max_width);
-  virtual ~PublicAccountUserDetails();
+  ~PublicAccountUserDetails() override;
 
  private:
   // Overridden from views::View.
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Overridden from views::LinkListener.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Calculate a preferred size that ensures the label text and the following
   // link do not wrap over more than three lines in total for aesthetic reasons

@@ -71,7 +71,7 @@ class BluetoothDefaultView : public TrayItemMore {
     UpdateLabel();
   }
 
-  virtual ~BluetoothDefaultView() {}
+  ~BluetoothDefaultView() override {}
 
   void UpdateLabel() {
     ash::SystemTrayDelegate* delegate =
@@ -107,7 +107,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     CreateItems();
   }
 
-  virtual ~BluetoothDetailedView() {
+  ~BluetoothDetailedView() override {
     // Stop discovering bluetooth devices when exiting BT detailed view.
     BluetoothStopDiscovering();
   }
@@ -357,7 +357,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ViewClickListener.
-  virtual void OnViewClicked(views::View* sender) override {
+  void OnViewClicked(views::View* sender) override {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
@@ -386,8 +386,7 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   // Overridden from ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == toggle_bluetooth_)

@@ -40,7 +40,7 @@ OverviewButtonTray* GetSecondaryTray() {
 class OverviewButtonTrayTest : public test::AshTestBase {
  public:
   OverviewButtonTrayTest() {}
-  virtual ~OverviewButtonTrayTest() {}
+  ~OverviewButtonTrayTest() override {}
 
  protected:
   views::ImageView* GetImageView(OverviewButtonTray* tray) {
