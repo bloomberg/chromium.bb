@@ -119,7 +119,7 @@ const char kStateRe[] =
 // credit_card_field.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kNameOnCardRe[] =
-    "card.?holder|name.*\\bon\\b.*card|cc.?name|cc.?full.?name|owner"
+    "card.?holder|name.*\\bon\\b.*card|(card|cc).?name|cc.?full.?name|owner"
     "|karteninhaber"  // de-DE
     "|nombre.*tarjeta"  // es
     "|nom.*carte"  // fr-FR
@@ -131,7 +131,7 @@ const char kNameOnCardRe[] =
 const char kNameOnCardContextualRe[] =
     "name";
 const char kCardNumberRe[] =
-    "card.?number|card.?#|card.?no|cc.?num|acct.?num"
+    "(card|cc|acct).?(number|#|no|num)"
     "|nummer"  // de-DE
     "|credito|numero|número"  // es
     "|numéro"  // fr-FR
