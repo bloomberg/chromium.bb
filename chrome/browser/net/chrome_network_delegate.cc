@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -232,13 +231,6 @@ void ReportInvalidReferrerSend(const GURL& target_url,
                                const GURL& referrer_url) {
   base::RecordAction(
       base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
-  // http://crbug.com/422871
-  char url_buf[128];
-  char referrer_buf[128];
-  base::strlcpy(url_buf, target_url.spec().c_str(), arraysize(url_buf));
-  base::strlcpy(referrer_buf, referrer_url.spec().c_str(), arraysize(url_buf));
-  base::debug::Alias(url_buf);
-  base::debug::Alias(referrer_buf);
   base::debug::DumpWithoutCrashing();
   NOTREACHED();
 }
