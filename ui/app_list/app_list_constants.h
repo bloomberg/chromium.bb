@@ -38,6 +38,10 @@ APP_LIST_EXPORT extern const SkColor kGridTitleHoverColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
 APP_LIST_EXPORT extern const SkColor kFolderBubbleColor;
+APP_LIST_EXPORT extern const SkColor kFolderShadowColor;
+APP_LIST_EXPORT extern const float kFolderBubbleRadius;
+APP_LIST_EXPORT extern const float kFolderShadowRadius;
+APP_LIST_EXPORT extern const float kFolderShadowOffsetY;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;

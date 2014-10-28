@@ -6,7 +6,7 @@
 
 namespace app_list {
 
-const SkColor kContentsBackgroundColor = SkColorSetRGB(0xFA, 0xFA, 0xFA);
+const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 
 // In Windows, transparent background color will cause ugly text rendering,
@@ -43,7 +43,12 @@ const SkColor kGridTitleHoverColor = kGridTitleColor;
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 // Color of the folder ink bubble.
-const SkColor kFolderBubbleColor = SkColorSetRGB(0xD7, 0xD7, 0xD7);
+const SkColor kFolderBubbleColor = SK_ColorWHITE;
+// Color of the folder bubble shadow.
+const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
+const float kFolderBubbleRadius = 22;
+const float kFolderShadowRadius = 22.5;
+const float kFolderShadowOffsetY = 1;
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;
