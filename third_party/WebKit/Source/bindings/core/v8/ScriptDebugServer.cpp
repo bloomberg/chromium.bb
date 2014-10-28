@@ -697,7 +697,7 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
         return;
     ScriptState::Scope scope(scriptState);
     v8::TryCatch tryCatch;
-    v8::Local<v8::Value> value = V8ScriptRunner::runCompiledScript(script, scriptState->executionContext(), m_isolate);
+    v8::Local<v8::Value> value = V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext());
     *wasThrown = false;
     if (tryCatch.HasCaught()) {
         *wasThrown = true;
