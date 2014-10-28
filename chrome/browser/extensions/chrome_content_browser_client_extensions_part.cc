@@ -532,6 +532,10 @@ void ChromeContentBrowserClientExtensionsPart::
 #if defined(ENABLE_WEBRTC)
     command_line->AppendSwitch(::switches::kEnableWebRtcHWH264Encoding);
 #endif
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableMojoSerialService)) {
+      command_line->AppendSwitch(switches::kEnableMojoSerialService);
+    }
   }
 }
 

@@ -94,6 +94,8 @@ source_set("test_support") {
     "test/test_extensions_client.h",
     "test/test_permission_message_provider.cc",
     "test/test_permission_message_provider.h",
+    "test/test_service_registration_manager.cc",
+    "test/test_service_registration_manager.h",
    ]
 
   deps = [

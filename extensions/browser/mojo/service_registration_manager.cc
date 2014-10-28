@@ -23,6 +23,8 @@ namespace {
 base::LazyInstance<ServiceRegistrationManager> g_lazy_instance =
     LAZY_INSTANCE_INITIALIZER;
 
+ServiceRegistrationManager* g_test_instance = nullptr;
+
 }  // namespace
 
 ServiceRegistrationManager::ServiceRegistrationManager() {
@@ -44,6 +46,8 @@ ServiceRegistrationManager::~ServiceRegistrationManager() {
 }
 
 ServiceRegistrationManager* ServiceRegistrationManager::GetSharedInstance() {
+  if (g_test_instance)
+    return g_test_instance;
   return g_lazy_instance.Pointer();
 }
 
@@ -72,9 +76,23 @@ void ServiceRegistrationManager::AddServicesToRenderFrame(
   for (const auto& factory : factories_) {
     auto availability = ExtensionAPI::GetSharedInstance()->IsAvailable(
         factory.first, extension, context_type, extension_url);
-    if (availability.is_available())
-      factory.second->Register(render_frame_host->GetServiceRegistry());
+    if (availability.is_available()) {
+      AddServiceToServiceRegistry(render_frame_host->GetServiceRegistry(),
+                                  factory.second.get());
+    }
   }
+}
+
+void ServiceRegistrationManager::AddServiceToServiceRegistry(
+    content::ServiceRegistry* service_registry,
+    internal::ServiceFactoryBase* factory) {
+  factory->Register(service_registry);
+}
+
+// static
+void ServiceRegistrationManager::SetServiceRegistrationManagerForTest(
+    ServiceRegistrationManager* service_registration_manager) {
+  g_test_instance = service_registration_manager;
 }
 
 }  // namespace extensions

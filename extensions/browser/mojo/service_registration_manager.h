@@ -19,6 +19,7 @@ class RenderFrameHost;
 }
 
 namespace extensions {
+
 namespace internal {
 
 // A base class for forwarding calls to ServiceRegistry::AddService().
@@ -28,6 +29,8 @@ class ServiceFactoryBase {
 
   // Add this service factory to |service_registry|.
   virtual void Register(content::ServiceRegistry* service_registry) const = 0;
+
+  virtual std::string GetName() const = 0;
 };
 
 template <typename Interface>
@@ -41,6 +44,8 @@ class ServiceFactory : public ServiceFactoryBase {
   void Register(content::ServiceRegistry* service_registry) const override {
     service_registry->AddService(factory_);
   }
+
+  std::string GetName() const override { return Interface::Name_; }
 
  private:
   const base::Callback<void(mojo::InterfaceRequest<Interface>)> factory_;
@@ -57,7 +62,7 @@ class ServiceFactory : public ServiceFactoryBase {
 class ServiceRegistrationManager {
  public:
   ServiceRegistrationManager();
-  ~ServiceRegistrationManager();
+  virtual ~ServiceRegistrationManager();
 
   static ServiceRegistrationManager* GetSharedInstance();
 
@@ -84,7 +89,17 @@ class ServiceRegistrationManager {
   // ServiceRegistry.
   void AddServicesToRenderFrame(content::RenderFrameHost* render_frame_host);
 
+ protected:
+  virtual void AddServiceToServiceRegistry(
+      content::ServiceRegistry* service_registry,
+      internal::ServiceFactoryBase* service_factory);
+
  private:
+  friend class TestServiceRegistrationManager;
+
+  static void SetServiceRegistrationManagerForTest(
+      ServiceRegistrationManager* service_registration_manager);
+
   // All factories and their corresponding API permissions.
   std::vector<std::pair<std::string, linked_ptr<internal::ServiceFactoryBase>>>
       factories_;

@@ -397,18 +397,7 @@ class SerialApiTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    env()->RegisterModule("async_waiter", IDR_ASYNC_WAITER_JS);
-    env()->RegisterModule("data_receiver", IDR_DATA_RECEIVER_JS);
-    env()->RegisterModule("data_sender", IDR_DATA_SENDER_JS);
     env()->RegisterModule("serial", IDR_SERIAL_CUSTOM_BINDINGS_JS);
-    env()->RegisterModule("serial_service", IDR_SERIAL_SERVICE_JS);
-    env()->RegisterModule("device/serial/data_stream.mojom",
-                          IDR_DATA_STREAM_MOJOM_JS);
-    env()->RegisterModule("device/serial/data_stream_serialization.mojom",
-                          IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
-    env()->RegisterModule("device/serial/serial.mojom", IDR_SERIAL_MOJOM_JS);
-    env()->RegisterModule("device/serial/serial_serialization.mojom",
-                          IDR_SERIAL_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService<device::serial::SerialService>(base::Bind(
         &SerialApiTest::CreateSerialService, base::Unretained(this)));
     service_provider()->IgnoreServiceRequests<KeepAlive>();

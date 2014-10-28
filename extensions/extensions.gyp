@@ -1047,6 +1047,8 @@
         'test/test_extensions_client.h',
         'test/test_permission_message_provider.cc',
         'test/test_permission_message_provider.h',
+        'test/test_service_registration_manager.cc',
+        'test/test_service_registration_manager.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

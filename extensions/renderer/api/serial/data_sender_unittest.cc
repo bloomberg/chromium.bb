@@ -18,12 +18,6 @@ class DataSenderTest : public ApiTestBase {
 
   void SetUp() override {
     ApiTestBase::SetUp();
-    env()->RegisterModule("async_waiter", IDR_ASYNC_WAITER_JS);
-    env()->RegisterModule("data_sender", IDR_DATA_SENDER_JS);
-    env()->RegisterModule("device/serial/data_stream.mojom",
-                          IDR_DATA_STREAM_MOJOM_JS);
-    env()->RegisterModule("device/serial/data_stream_serialization.mojom",
-                          IDR_DATA_STREAM_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService(
         base::Bind(&DataSenderTest::CreateDataSink, base::Unretained(this)));
   }

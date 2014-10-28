@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
@@ -144,6 +145,10 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
                          v8::External::New(isolate, this));
 
   gin::ModuleRegistry::From(context->v8_context())->AddObserver(this);
+  if (context_->GetRenderFrame()) {
+    context_->GetRenderFrame()->EnsureMojoBuiltinsAreAvailable(
+        context->isolate(), context->v8_context());
+  }
 }
 
 ModuleSystem::~ModuleSystem() { Invalidate(); }
