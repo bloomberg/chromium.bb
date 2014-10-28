@@ -73,6 +73,7 @@ class EVENTS_EXPORT Event {
   void set_latency(const LatencyInfo& latency) { latency_ = latency; }
 
   int source_device_id() const { return source_device_id_; }
+  void set_source_device_id(int id) { source_device_id_ = id; }
 
   // By default, events are "cancelable", this means any default processing that
   // the containing abstraction layer may perform can be prevented by calling
