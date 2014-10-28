@@ -50,7 +50,7 @@ class NotificationCenterButton : public views::ToggleImageButton {
 
  protected:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   gfx::Size size_;

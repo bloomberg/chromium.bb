@@ -38,11 +38,11 @@ class MockNotificationView : public NotificationView {
   explicit MockNotificationView(MessageCenterController* controller,
                                 const Notification& notification,
                                 Test* test);
-  virtual ~MockNotificationView();
+  ~MockNotificationView() override;
 
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int w) const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int w) const override;
+  void Layout() override;
 
  private:
   Test* test_;
@@ -85,28 +85,28 @@ class MessageCenterViewTest : public testing::Test,
                               public MessageCenterController {
  public:
   MessageCenterViewTest();
-  virtual ~MessageCenterViewTest();
+  ~MessageCenterViewTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   MessageCenterView* GetMessageCenterView();
   int GetNotificationCount();
   int GetCallCount(CallType type);
 
  // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) override;
-  virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) override;
-  virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
+  void ClickOnNotification(const std::string& notification_id) override;
+  void RemoveNotification(const std::string& notification_id,
+                          bool by_user) override;
+  scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
       const base::string16& display_source) override;
-  virtual bool HasClickedListener(const std::string& notification_id) override;
-  virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) override;
+  bool HasClickedListener(const std::string& notification_id) override;
+  void ClickOnNotificationButton(const std::string& notification_id,
+                                 int button_index) override;
 
   // Overridden from MockNotificationView::Test
-  virtual void RegisterCall(CallType type) override;
+  void RegisterCall(CallType type) override;
 
   void LogBounds(int depth, views::View* view);
 

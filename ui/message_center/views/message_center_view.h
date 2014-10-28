@@ -50,7 +50,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                     bool initially_settings_visible,
                     bool top_down,
                     const base::string16& title);
-  virtual ~MessageCenterView();
+  ~MessageCenterView() override;
 
   void SetNotifications(const NotificationList::Notifications& notifications);
 
@@ -68,33 +68,32 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
  protected:
   // Overridden from views::View:
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // Overridden from MessageCenterObserver:
-  virtual void OnNotificationAdded(const std::string& id) override;
-  virtual void OnNotificationRemoved(const std::string& id,
-                                     bool by_user) override;
-  virtual void OnNotificationUpdated(const std::string& id) override;
+  void OnNotificationAdded(const std::string& id) override;
+  void OnNotificationRemoved(const std::string& id, bool by_user) override;
+  void OnNotificationUpdated(const std::string& id) override;
 
   // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) override;
-  virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) override;
-  virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
+  void ClickOnNotification(const std::string& notification_id) override;
+  void RemoveNotification(const std::string& notification_id,
+                          bool by_user) override;
+  scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
       const base::string16& display_source) override;
-  virtual bool HasClickedListener(const std::string& notification_id) override;
-  virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) override;
+  bool HasClickedListener(const std::string& notification_id) override;
+  void ClickOnNotificationButton(const std::string& notification_id,
+                                 int button_index) override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationCanceled(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
  private:
   friend class MessageCenterViewTest;

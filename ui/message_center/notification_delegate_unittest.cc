@@ -15,7 +15,7 @@ namespace message_center {
 class NotificationDelegateTest : public testing::Test {
  public:
   NotificationDelegateTest();
-  virtual ~NotificationDelegateTest();
+  ~NotificationDelegateTest() override;
 
   void ClickCallback();
 

@@ -46,9 +46,9 @@ class MockDelegate : public MessageCenterTrayDelegate {
 class MessageCenterTrayTest : public testing::Test {
  public:
   MessageCenterTrayTest() {}
-  virtual ~MessageCenterTrayTest() {}
+  ~MessageCenterTrayTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     MessageCenter::Initialize();
     delegate_.reset(new MockDelegate);
     message_center_ = MessageCenter::Get();
@@ -56,7 +56,7 @@ class MessageCenterTrayTest : public testing::Test {
         new MessageCenterTray(delegate_.get(), message_center_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     message_center_tray_.reset();
     delegate_.reset();
     message_center_ = NULL;

@@ -26,7 +26,7 @@ namespace test {
 
 class MessagePopupCollectionTest : public views::ViewsTestBase {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
     MessageCenter::Initialize();
     MessageCenter::Get()->DisableTimersForTest();
@@ -42,7 +42,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     PrepareForWait();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     collection_.reset();
     MessageCenter::Shutdown();
     views::ViewsTestBase::TearDown();

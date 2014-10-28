@@ -19,14 +19,14 @@ namespace message_center {
 class ContentsView : public views::View {
  public:
   explicit ContentsView(MessageCenterBubble* bubble, views::View* contents);
-  virtual ~ContentsView();
+  ~ContentsView() override;
 
   // Overridden from views::View:
-  virtual int GetHeightForWidth(int width) const override;
+  int GetHeightForWidth(int width) const override;
 
  protected:
   // Overridden from views::View:
-  virtual void ChildPreferredSizeChanged(View* child) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
  private:
   base::WeakPtr<MessageCenterBubble> bubble_;

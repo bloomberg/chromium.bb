@@ -27,7 +27,7 @@ class MessageCenterImplTest : public testing::Test,
  public:
   MessageCenterImplTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     MessageCenter::Initialize();
     message_center_ = MessageCenter::Get();
     loop_.reset(new base::MessageLoop);
@@ -35,7 +35,7 @@ class MessageCenterImplTest : public testing::Test,
     closure_ = run_loop_->QuitClosure();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     run_loop_.reset();
     loop_.reset();
     message_center_ = NULL;

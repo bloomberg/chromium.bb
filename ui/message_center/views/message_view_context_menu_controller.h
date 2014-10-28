@@ -16,13 +16,13 @@ class MessageViewContextMenuController : public views::ContextMenuController {
  public:
   explicit MessageViewContextMenuController(
       MessageCenterController* controller);
-  virtual ~MessageViewContextMenuController();
+  ~MessageViewContextMenuController() override;
 
  private:
   // Overridden from views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   MessageCenterController* controller_;
 

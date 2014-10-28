@@ -25,17 +25,17 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
       public gfx::DisplayObserver {
  public:
   DesktopPopupAlignmentDelegate();
-  virtual ~DesktopPopupAlignmentDelegate();
+  ~DesktopPopupAlignmentDelegate() override;
 
   void StartObserving(gfx::Screen* screen);
 
   // Overridden from PopupAlignmentDelegate:
-  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
-  virtual int GetBaseLine() const override;
-  virtual int GetWorkAreaBottom() const override;
-  virtual bool IsTopDown() const override;
-  virtual bool IsFromLeft() const override;
-  virtual void RecomputeAlignment(const gfx::Display& display) override;
+  int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
+  int GetBaseLine() const override;
+  int GetWorkAreaBottom() const override;
+  bool IsTopDown() const override;
+  bool IsFromLeft() const override;
+  void RecomputeAlignment(const gfx::Display& display) override;
 
  private:
   friend class test::MessagePopupCollectionTest;
@@ -48,10 +48,10 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
   };
 
   // Overridden from gfx::DisplayObserver:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   int32_t alignment_;
   int64_t display_id_;

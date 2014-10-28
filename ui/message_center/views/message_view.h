@@ -55,7 +55,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
               const NotifierId& notifier_id,
               const gfx::ImageSkia& small_image,
               const base::string16& display_source);
-  virtual ~MessageView();
+  ~MessageView() override;
 
   // Updates this view with the new data contained in the notification.
   virtual void UpdateWithNotification(const Notification& notification);
@@ -74,21 +74,20 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   }
 
   // Overridden from views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual void Layout() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void Layout() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() { return notification_id_; }
@@ -97,7 +96,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
 
  protected:
   // Overridden from views::SlideOutView:
-  virtual void OnSlideOut() override;
+  void OnSlideOut() override;
 
   views::ImageView* small_image() { return small_image_view_.get(); }
   views::ImageButton* close_button() { return close_button_.get(); }

@@ -35,7 +35,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
  public:
   BoundedLabel(const base::string16& text, const gfx::FontList& font_list);
   BoundedLabel(const base::string16& text);
-  virtual ~BoundedLabel();
+  ~BoundedLabel() override;
 
   void SetColors(SkColor textColor, SkColor backgroundColor);
   void SetLineHeight(int height);  // Pass in 0 for default height.
@@ -50,18 +50,17 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
 
   // views::View:
-  virtual int GetBaseline() const override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void Paint(gfx::Canvas* canvas,
-                     const views::CullSet& cull_set) override;
-  virtual bool CanProcessEventsWithinSubtree() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  int GetBaseline() const override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) override;
+  bool CanProcessEventsWithinSubtree() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
   // Overridden from views::View.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
   friend class test::BoundedLabelTest;

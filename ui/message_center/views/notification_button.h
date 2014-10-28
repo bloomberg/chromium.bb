@@ -21,22 +21,22 @@ namespace message_center {
 class NotificationButton : public views::CustomButton {
  public:
   NotificationButton(views::ButtonListener* listener);
-  virtual ~NotificationButton();
+  ~NotificationButton() override;
 
   void SetIcon(const gfx::ImageSkia& icon);
   void SetTitle(const base::string16& title);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // Overridden from views::CustomButton:
-  virtual void StateChanged() override;
+  void StateChanged() override;
 
  private:
   views::ImageView* icon_;

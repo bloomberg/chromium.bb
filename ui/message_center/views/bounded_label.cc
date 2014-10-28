@@ -34,7 +34,7 @@ namespace message_center {
 class InnerBoundedLabel : public views::Label {
  public:
   InnerBoundedLabel(const BoundedLabel& owner);
-  virtual ~InnerBoundedLabel();
+  ~InnerBoundedLabel() override;
 
   void SetNativeTheme(const ui::NativeTheme* theme);
 
@@ -44,12 +44,12 @@ class InnerBoundedLabel : public views::Label {
   std::vector<base::string16> GetWrappedText(int width, int lines);
 
   // Overridden from views::Label.
-  virtual void SetText(const base::string16& text) override;
+  void SetText(const base::string16& text) override;
 
  protected:
   // Overridden from views::Label.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   int GetTextFlags();

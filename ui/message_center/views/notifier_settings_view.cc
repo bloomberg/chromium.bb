@@ -126,17 +126,17 @@ scoped_ptr<views::Painter> CreateFocusPainter() {
 class EntryView : public views::View {
  public:
   explicit EntryView(views::View* contents);
-  virtual ~EntryView();
+  ~EntryView() override;
 
   // views::View:
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnFocus() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnBlur() override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnFocus() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnBlur() override;
 
  private:
   scoped_ptr<views::Painter> focus_painter_;
@@ -207,15 +207,14 @@ class NotifierGroupMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate {
  public:
   NotifierGroupMenuModel(NotifierSettingsProvider* notifier_settings_provider);
-  virtual ~NotifierGroupMenuModel();
+  ~NotifierGroupMenuModel() override;
 
   // ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   NotifierSettingsProvider* notifier_settings_provider_;

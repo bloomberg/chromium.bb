@@ -32,7 +32,7 @@ class MessageCenterButtonBar : public views::View,
                          NotifierSettingsProvider* notifier_settings_provider,
                          bool settings_initially_visible,
                          const base::string16& title);
-  virtual ~MessageCenterButtonBar();
+  ~MessageCenterButtonBar() override;
 
   // Enables or disables all of the buttons in the center.  This is used to
   // prevent user clicks during the close-all animation.
@@ -50,11 +50,10 @@ class MessageCenterButtonBar : public views::View,
   void ViewVisibilityChanged();
 
   // Overridden from views::View:
-  virtual void ChildVisibilityChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   MessageCenterView* message_center_view() const {
     return message_center_view_;

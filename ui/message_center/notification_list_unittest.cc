@@ -22,9 +22,9 @@ namespace message_center {
 class NotificationListTest : public testing::Test {
  public:
   NotificationListTest() {}
-  virtual ~NotificationListTest() {}
+  ~NotificationListTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     notification_list_.reset(new NotificationList());
     counter_ = 0;
   }

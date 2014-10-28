@@ -29,7 +29,7 @@ class BoundedLabelTest : public testing::Test {
                                            font_list_);
   }
 
-  virtual ~BoundedLabelTest() {}
+  ~BoundedLabelTest() override {}
 
   // Replaces all occurences of three periods ("...") in the specified string
   // with an ellipses character (UTF8 "\xE2\x80\xA6") and returns a string16

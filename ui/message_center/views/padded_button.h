@@ -21,12 +21,12 @@ namespace message_center {
 class PaddedButton : public views::ImageButton {
  public:
   PaddedButton(views::ButtonListener* listener);
-  virtual ~PaddedButton();
+  ~PaddedButton() override;
 
   // Overridden from views::ImageButton:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
 
   // The SetPadding() method also sets the button's image alignment (positive
   // values yield left/top alignments, negative values yield right/bottom ones,

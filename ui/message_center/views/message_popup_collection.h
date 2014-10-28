@@ -59,18 +59,18 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                          MessageCenter* message_center,
                          MessageCenterTray* tray,
                          PopupAlignmentDelegate* alignment_delegate);
-  virtual ~MessagePopupCollection();
+  ~MessagePopupCollection() override;
 
   // Overridden from MessageCenterController:
-  virtual void ClickOnNotification(const std::string& notification_id) override;
-  virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) override;
-  virtual scoped_ptr<ui::MenuModel> CreateMenuModel(
+  void ClickOnNotification(const std::string& notification_id) override;
+  void RemoveNotification(const std::string& notification_id,
+                          bool by_user) override;
+  scoped_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
       const base::string16& display_source) override;
-  virtual bool HasClickedListener(const std::string& notification_id) override;
-  virtual void ClickOnNotificationButton(const std::string& notification_id,
-                                         int button_index) override;
+  bool HasClickedListener(const std::string& notification_id) override;
+  void ClickOnNotificationButton(const std::string& notification_id,
+                                 int button_index) override;
 
   void MarkAllPopupsShown();
 
@@ -128,11 +128,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   int GetBaseLine(ToastContentsView* last_toast) const;
 
   // Overridden from MessageCenterObserver:
-  virtual void OnNotificationAdded(const std::string& notification_id) override;
-  virtual void OnNotificationRemoved(const std::string& notification_id,
-                                     bool by_user) override;
-  virtual void OnNotificationUpdated(
-      const std::string& notification_id) override;
+  void OnNotificationAdded(const std::string& notification_id) override;
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
+  void OnNotificationUpdated(const std::string& notification_id) override;
 
   ToastContentsView* FindToast(const std::string& notification_id) const;
 

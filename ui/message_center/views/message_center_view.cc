@@ -59,12 +59,12 @@ const int kDefaultFrameRateHz = 60;
 class NoNotificationMessageView : public views::View {
  public:
   NoNotificationMessageView();
-  virtual ~NoNotificationMessageView();
+  ~NoNotificationMessageView() override;
 
   // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void Layout() override;
 
  private:
   views::Label* label_;
@@ -110,7 +110,7 @@ class MessageListView : public views::View,
  public:
   explicit MessageListView(MessageCenterView* message_center_view,
                            bool top_down);
-  virtual ~MessageListView();
+  ~MessageListView() override;
 
   void AddNotificationAt(MessageView* view, int i);
   void RemoveNotification(MessageView* view);
@@ -121,17 +121,16 @@ class MessageListView : public views::View,
 
  protected:
   // Overridden from views::View.
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual int GetHeightForWidth(int width) const override;
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) override;
-  virtual void ReorderChildLayers(ui::Layer* parent_layer) override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
+  void PaintChildren(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) override;
+  void ReorderChildLayers(ui::Layer* parent_layer) override;
 
   // Overridden from views::BoundsAnimatorObserver.
-  virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) override;
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
  private:
   bool IsValidChild(const views::View* child) const;
