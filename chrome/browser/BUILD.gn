@@ -476,6 +476,11 @@ static_library("browser") {
                            ".", "//chrome")
   }
 
+  if (!is_android && !is_ios && !is_chromeos) {
+    sources += rebase_path(gypi_values.chrome_browser_desktop_sources,
+                           ".", "//chrome")
+  }
+
   if (is_android || is_ios) {
     # Mobile.
     sources += rebase_path(gypi_values.chrome_browser_mobile_sources,

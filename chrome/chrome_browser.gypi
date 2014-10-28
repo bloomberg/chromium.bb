@@ -817,8 +817,6 @@
       'browser/platform_util_chromeos.cc',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
-      'browser/power/process_power_collector.cc',
-      'browser/power/process_power_collector.h',
       'browser/precache/most_visited_urls_provider.cc',
       'browser/precache/most_visited_urls_provider.h',
       'browser/predictors/autocomplete_action_predictor.cc',
@@ -2250,8 +2248,19 @@
       'browser/chrome_page_zoom.h',
       'browser/chrome_page_zoom_constants.cc',
       'browser/chrome_page_zoom_constants.h',
+      'browser/power/process_power_collector.cc',
+      'browser/power/process_power_collector.h',
       'browser/signin/signin_promo.cc',
       'browser/signin/signin_promo.h',
+    ],
+    # Everything but Android, iOS, and CrOS.
+    'chrome_browser_desktop_sources': [
+      'browser/profiles/avatar_menu_desktop.cc',
+      'browser/profiles/avatar_menu_observer.h',
+      'browser/profiles/avatar_menu_actions_desktop.cc',
+      'browser/profiles/avatar_menu_actions_desktop.h',
+      'browser/profiles/profile_list_desktop.cc',
+      'browser/profiles/profile_list_desktop.h',
     ],
     'chrome_browser_supervised_user_sources': [
       'browser/supervised_user/custodian_profile_downloader_service.cc',
@@ -2653,14 +2662,6 @@
     ],
     # Used everywhere but ChromeOS.
     'chrome_browser_non_chromeos_sources': [
-      # TODO(brettw) it's suspicious that these _desktop.cc files are compiled
-      # for Android. We should test removing them on Android.
-      'browser/profiles/avatar_menu_desktop.cc',
-      'browser/profiles/avatar_menu_observer.h',
-      'browser/profiles/avatar_menu_actions_desktop.cc',
-      'browser/profiles/avatar_menu_actions_desktop.h',
-      'browser/profiles/profile_list_desktop.cc',
-      'browser/profiles/profile_list_desktop.h',
       'browser/signin/signin_global_error.cc',
       'browser/signin/signin_global_error.h',
       'browser/signin/signin_global_error_factory.cc',
@@ -3248,6 +3249,9 @@
         }],
         ['enable_session_service==1', {
           'sources': [ '<@(chrome_browser_session_service_sources)' ],
+        }],
+        ['OS!="android" and OS!="ios" and chromeos==0', {
+          'sources': [ '<@(chrome_browser_desktop_sources)' ],
         }],
         ['OS=="android" or OS=="ios"', {
           'sources': [ '<@(chrome_browser_mobile_sources)' ],

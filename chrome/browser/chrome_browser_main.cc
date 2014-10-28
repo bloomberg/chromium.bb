@@ -1574,12 +1574,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     run_message_loop_ = false;
   }
   browser_creator_.reset();
-#endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
   process_power_collector_.reset(new ProcessPowerCollector);
   process_power_collector_->Initialize();
-#endif
+#endif  // !defined(OS_ANDROID)
 
   PostBrowserStart();
 
