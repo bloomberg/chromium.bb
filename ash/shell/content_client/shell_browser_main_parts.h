@@ -36,15 +36,15 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
   explicit ShellBrowserMainParts(
       const content::MainFunctionParams& parameters);
-  virtual ~ShellBrowserMainParts();
+  ~ShellBrowserMainParts() override;
 
   // Overridden from content::BrowserMainParts:
-  virtual void PreMainMessageLoopStart() override;
-  virtual void PostMainMessageLoopStart() override;
-  virtual void ToolkitInitialized() override;
-  virtual void PreMainMessageLoopRun() override;
-  virtual bool MainMessageLoopRun(int* result_code) override;
-  virtual void PostMainMessageLoopRun() override;
+  void PreMainMessageLoopStart() override;
+  void PostMainMessageLoopStart() override;
+  void ToolkitInitialized() override;
+  void PreMainMessageLoopRun() override;
+  bool MainMessageLoopRun(int* result_code) override;
+  void PostMainMessageLoopRun() override;
 
   content::ShellBrowserContext* browser_context() {
     return browser_context_.get();

@@ -33,22 +33,22 @@ namespace {
 class NewWindowDelegateImpl : public NewWindowDelegate {
  public:
   NewWindowDelegateImpl() {}
-  virtual ~NewWindowDelegateImpl() {}
+  ~NewWindowDelegateImpl() override {}
 
   // NewWindowDelegate:
-  virtual void NewTab() override {}
-  virtual void NewWindow(bool incognito) override {
+  void NewTab() override {}
+  void NewWindow(bool incognito) override {
     ash::shell::ToplevelWindow::CreateParams create_params;
     create_params.can_resize = true;
     create_params.can_maximize = true;
     ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
   }
-  virtual void OpenFileManager() override {}
-  virtual void OpenCrosh() override {}
-  virtual void RestoreTab() override {}
-  virtual void ShowKeyboardOverlay() override {}
-  virtual void ShowTaskManager() override {}
-  virtual void OpenFeedbackPage() override {}
+  void OpenFileManager() override {}
+  void OpenCrosh() override {}
+  void RestoreTab() override {}
+  void ShowKeyboardOverlay() override {}
+  void ShowTaskManager() override {}
+  void OpenFeedbackPage() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
@@ -57,13 +57,13 @@ class NewWindowDelegateImpl : public NewWindowDelegate {
 class MediaDelegateImpl : public MediaDelegate {
  public:
   MediaDelegateImpl() {}
-  virtual ~MediaDelegateImpl() {}
+  ~MediaDelegateImpl() override {}
 
   // MediaDelegate:
-  virtual void HandleMediaNextTrack() override {}
-  virtual void HandleMediaPlayPause() override {}
-  virtual void HandleMediaPrevTrack() override {}
-  virtual MediaCaptureState GetMediaCaptureState(
+  void HandleMediaNextTrack() override {}
+  void HandleMediaPlayPause() override {}
+  void HandleMediaPrevTrack() override {}
+  MediaCaptureState GetMediaCaptureState(
       content::BrowserContext* context) override {
     return MEDIA_CAPTURE_VIDEO;
   }
@@ -77,64 +77,61 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   SessionStateDelegateImpl()
       : screen_locked_(false), user_info_(new user_manager::UserInfoImpl()) {}
 
-  virtual ~SessionStateDelegateImpl() {}
+  ~SessionStateDelegateImpl() override {}
 
   // SessionStateDelegate:
-  virtual content::BrowserContext* GetBrowserContextByIndex(
+  content::BrowserContext* GetBrowserContextByIndex(
       MultiProfileIndex index) override {
     return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
   }
-  virtual content::BrowserContext* GetBrowserContextForWindow(
+  content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override {
     return Shell::GetInstance()->delegate()->GetActiveBrowserContext();
   }
-  virtual int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
-  virtual int NumberOfLoggedInUsers() const override {
+  int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
+  int NumberOfLoggedInUsers() const override {
     // ash_shell has 2 users.
     return 2;
   }
-  virtual bool IsActiveUserSessionStarted() const override { return true; }
-  virtual bool CanLockScreen() const override { return true; }
-  virtual bool IsScreenLocked() const override { return screen_locked_; }
-  virtual bool ShouldLockScreenBeforeSuspending() const override {
-    return false;
-  }
-  virtual void LockScreen() override {
+  bool IsActiveUserSessionStarted() const override { return true; }
+  bool CanLockScreen() const override { return true; }
+  bool IsScreenLocked() const override { return screen_locked_; }
+  bool ShouldLockScreenBeforeSuspending() const override { return false; }
+  void LockScreen() override {
     shell::CreateLockScreen();
     screen_locked_ = true;
     Shell::GetInstance()->UpdateShelfVisibility();
   }
-  virtual void UnlockScreen() override {
+  void UnlockScreen() override {
     screen_locked_ = false;
     Shell::GetInstance()->UpdateShelfVisibility();
   }
-  virtual bool IsUserSessionBlocked() const override {
+  bool IsUserSessionBlocked() const override {
     return !IsActiveUserSessionStarted() || IsScreenLocked();
   }
-  virtual SessionState GetSessionState() const override {
+  SessionState GetSessionState() const override {
     // Assume that if session is not active we're at login.
     return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
                                         : SESSION_STATE_LOGIN_PRIMARY;
   }
-  virtual const user_manager::UserInfo* GetUserInfo(
+  const user_manager::UserInfo* GetUserInfo(
       MultiProfileIndex index) const override {
     return user_info_.get();
   }
-  virtual const user_manager::UserInfo* GetUserInfo(
+  const user_manager::UserInfo* GetUserInfo(
       content::BrowserContext* context) const override {
     return user_info_.get();
   }
-  virtual bool ShouldShowAvatar(aura::Window* window) const override {
+  bool ShouldShowAvatar(aura::Window* window) const override {
     return !user_info_->GetImage().isNull();
   }
-  virtual void SwitchActiveUser(const std::string& user_id) override {}
-  virtual void CycleActiveUser(CycleUser cycle_user) override {}
-  virtual bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
+  void SwitchActiveUser(const std::string& user_id) override {}
+  void CycleActiveUser(CycleUser cycle_user) override {}
+  bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
     return true;
   }
-  virtual void AddSessionStateObserver(
-      ash::SessionStateObserver* observer) override {}
-  virtual void RemoveSessionStateObserver(
+  void AddSessionStateObserver(ash::SessionStateObserver* observer) override {}
+  void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) override {}
 
  private:

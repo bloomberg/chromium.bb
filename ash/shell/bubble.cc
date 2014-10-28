@@ -24,7 +24,7 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
       : BubbleDelegateView(config.anchor_view, config.arrow),
         label_(config.label) {}
 
-  virtual void Init() override {
+  void Init() override {
     SetLayoutManager(new views::FillLayout());
     views::Label* label = new views::Label(label_);
     AddChildView(label);

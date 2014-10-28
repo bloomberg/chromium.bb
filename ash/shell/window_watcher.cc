@@ -25,14 +25,13 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   explicit WorkspaceWindowWatcher(WindowWatcher* watcher) : watcher_(watcher) {
   }
 
-  virtual ~WorkspaceWindowWatcher() {
-  }
+  ~WorkspaceWindowWatcher() override {}
 
-  virtual void OnWindowAdded(aura::Window* new_window) override {
+  void OnWindowAdded(aura::Window* new_window) override {
     new_window->AddObserver(watcher_);
   }
 
-  virtual void OnWillRemoveWindow(aura::Window* window) override {
+  void OnWillRemoveWindow(aura::Window* window) override {
     DCHECK(window->children().empty());
     window->RemoveObserver(watcher_);
   }

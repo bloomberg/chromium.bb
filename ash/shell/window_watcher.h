@@ -29,19 +29,19 @@ class WindowWatcher : public aura::WindowObserver,
                       public gfx::DisplayObserver {
  public:
   WindowWatcher();
-  virtual ~WindowWatcher();
+  ~WindowWatcher() override;
 
   aura::Window* GetWindowByID(ash::ShelfID id);
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* new_window) override;
-  virtual void OnWillRemoveWindow(aura::Window* window) override;
+  void OnWindowAdded(aura::Window* new_window) override;
+  void OnWillRemoveWindow(aura::Window* window) override;
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& new_display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& new_display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
  private:
   class WorkspaceWindowWatcher;

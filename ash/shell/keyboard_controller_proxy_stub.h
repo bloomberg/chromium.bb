@@ -18,20 +18,21 @@ namespace ash {
 class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
  public:
   KeyboardControllerProxyStub();
-  virtual ~KeyboardControllerProxyStub();
+  ~KeyboardControllerProxyStub() override;
 
-  virtual bool HasKeyboardWindow() const override;
-  virtual aura::Window* GetKeyboardWindow() override;
+  bool HasKeyboardWindow() const override;
+  aura::Window* GetKeyboardWindow() override;
 
  private:
   // Overridden from keyboard::KeyboardControllerProxy:
-  virtual content::BrowserContext* GetBrowserContext() override;
-  virtual ui::InputMethod* GetInputMethod() override;
-  virtual void RequestAudioInput(content::WebContents* web_contents,
+  content::BrowserContext* GetBrowserContext() override;
+  ui::InputMethod* GetInputMethod() override;
+  void RequestAudioInput(
+      content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override;
-  virtual void LoadSystemKeyboard() override;
-  virtual void ReloadKeyboardIfNeeded() override;
+  void LoadSystemKeyboard() override;
+  void ReloadKeyboardIfNeeded() override;
 
   aura::test::TestWindowDelegate delegate_;
   scoped_ptr<aura::Window> keyboard_;

@@ -24,12 +24,12 @@ class ShellBrowserMainParts;
 class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
   ShellContentBrowserClient();
-  virtual ~ShellContentBrowserClient();
+  ~ShellContentBrowserClient() override;
 
   // Overridden from content::ContentBrowserClient:
-  virtual content::BrowserMainParts* CreateBrowserMainParts(
+  content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
+  net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;

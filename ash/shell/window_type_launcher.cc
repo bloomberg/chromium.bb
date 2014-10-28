@@ -61,8 +61,7 @@ class ModalWindow : public views::WidgetDelegateView,
     open_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(open_button_);
   }
-  virtual ~ModalWindow() {
-  }
+  ~ModalWindow() override {}
 
   static void OpenModalWindow(aura::Window* parent, ui::ModalType modal_type) {
     views::Widget* widget =
@@ -73,13 +72,11 @@ class ModalWindow : public views::WidgetDelegateView,
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(200, 200);
-  }
-  virtual void Layout() override {
+  gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
+  void Layout() override {
     gfx::Size open_ps = open_button_->GetPreferredSize();
     gfx::Rect local_bounds = GetLocalBounds();
     open_button_->SetBounds(
@@ -88,22 +85,15 @@ class ModalWindow : public views::WidgetDelegateView,
   }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
-  virtual bool CanResize() const override {
-    return true;
-  }
-  virtual base::string16 GetWindowTitle() const override {
+  views::View* GetContentsView() override { return this; }
+  bool CanResize() const override { return true; }
+  base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Modal Window");
   }
-  virtual ui::ModalType GetModalType() const override {
-    return modal_type_;
-  }
+  ui::ModalType GetModalType() const override { return modal_type_; }
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == open_button_);
     OpenModalWindow(GetWidget()->GetNativeView(), modal_type_);
   }
@@ -122,8 +112,7 @@ class NonModalTransient : public views::WidgetDelegateView {
       : color_(g_colors[g_color_index]) {
     ++g_color_index %= arraysize(g_colors);
   }
-  virtual ~NonModalTransient() {
-  }
+  ~NonModalTransient() override {}
 
   static void OpenNonModalTransient(aura::Window* parent) {
     views::Widget* widget =
@@ -145,24 +134,18 @@ class NonModalTransient : public views::WidgetDelegateView {
   }
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), color_);
   }
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(250, 250);
-  }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(250, 250); }
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override {
-    return this;
-  }
-  virtual bool CanResize() const override {
-    return true;
-  }
-  virtual base::string16 GetWindowTitle() const override {
+  views::View* GetContentsView() override { return this; }
+  bool CanResize() const override { return true; }
+  base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Non-Modal Transient");
   }
-  virtual void DeleteDelegate() override {
+  void DeleteDelegate() override {
     if (GetWidget() == non_modal_transient_)
       non_modal_transient_ = NULL;
 

@@ -19,16 +19,16 @@ class WindowWatcher;
 class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
  public:
   WindowWatcherShelfItemDelegate(ShelfID id, WindowWatcher* watcher);
-  virtual ~WindowWatcherShelfItemDelegate();
+  ~WindowWatcherShelfItemDelegate() override;
 
   // ShelfItemDelegate:
-  virtual bool ItemSelected(const ui::Event& event) override;
-  virtual base::string16 GetTitle() override;
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
-  virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  virtual bool IsDraggable() override;
-  virtual bool ShouldShowTooltip() override;
-  virtual void Close() override;
+  bool ItemSelected(const ui::Event& event) override;
+  base::string16 GetTitle() override;
+  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
+  ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
+  bool IsDraggable() override;
+  bool ShouldShowTooltip() override;
+  void Close() override;
 
  private:
   ShelfID id_;

@@ -27,17 +27,17 @@ const int kWindowHeight = 400;
 class WidgetsWindow : public views::WidgetDelegateView {
  public:
   WidgetsWindow();
-  virtual ~WidgetsWindow();
+  ~WidgetsWindow() override;
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::WidgetDelegate:
-  virtual views::View* GetContentsView() override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual bool CanResize() const override;
+  views::View* GetContentsView() override;
+  base::string16 GetWindowTitle() const override;
+  bool CanResize() const override;
 
  private:
   views::LabelButton* button_;

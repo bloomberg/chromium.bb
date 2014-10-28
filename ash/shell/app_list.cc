@@ -138,9 +138,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
   }
 
   // AppListItem
-  virtual void Activate(int event_flags) override {
-    ActivateItem(type_, event_flags);
-  }
+  void Activate(int event_flags) override { ActivateItem(type_, event_flags); }
 
  private:
   Type type_;
@@ -189,7 +187,7 @@ class ExampleSearchResult : public app_list::SearchResult {
   WindowTypeShelfItem::Type type() const { return type_; }
 
   // app_list::SearchResult:
-  virtual scoped_ptr<SearchResult> Duplicate() override {
+  scoped_ptr<SearchResult> Duplicate() override {
     return scoped_ptr<SearchResult>();
   }
 
@@ -240,56 +238,45 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   // Overridden from app_list::AppListViewDelegate:
-  virtual bool ForceNativeDesktop() const override {
-    return false;
-  }
+  bool ForceNativeDesktop() const override { return false; }
 
-  virtual void SetProfileByPath(const base::FilePath& profile_path) override {
+  void SetProfileByPath(const base::FilePath& profile_path) override {
     // Nothing needs to be done.
   }
 
-  virtual const Users& GetUsers() const override {
-    return users_;
-  }
+  const Users& GetUsers() const override { return users_; }
 
-  virtual bool ShouldCenterWindow() const override {
-    return false;
-  }
+  bool ShouldCenterWindow() const override { return false; }
 
-  virtual app_list::AppListModel* GetModel() override { return model_.get(); }
+  app_list::AppListModel* GetModel() override { return model_.get(); }
 
-  virtual app_list::SpeechUIModel* GetSpeechUI() override {
-    return &speech_ui_;
-  }
+  app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
 
-  virtual void GetShortcutPathForApp(
+  void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) override {
     callback.Run(base::FilePath());
   }
 
-  virtual void OpenSearchResult(app_list::SearchResult* result,
-                                bool auto_launch,
-                                int event_flags) override {
+  void OpenSearchResult(app_list::SearchResult* result,
+                        bool auto_launch,
+                        int event_flags) override {
     const ExampleSearchResult* example_result =
         static_cast<const ExampleSearchResult*>(result);
     WindowTypeShelfItem::ActivateItem(example_result->type(), event_flags);
   }
 
-  virtual void InvokeSearchResultAction(app_list::SearchResult* result,
-                                        int action_index,
-                                        int event_flags) override {
+  void InvokeSearchResultAction(app_list::SearchResult* result,
+                                int action_index,
+                                int event_flags) override {
     NOTIMPLEMENTED();
   }
 
-  virtual base::TimeDelta GetAutoLaunchTimeout() override {
-    return base::TimeDelta();
-  }
+  base::TimeDelta GetAutoLaunchTimeout() override { return base::TimeDelta(); }
 
-  virtual void AutoLaunchCanceled() override {
-  }
+  void AutoLaunchCanceled() override {}
 
-  virtual void StartSearch() override {
+  void StartSearch() override {
     base::string16 query;
     base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
     query = base::i18n::ToLower(query);
@@ -311,60 +298,53 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  virtual void StopSearch() override {
+  void StopSearch() override {
     // Nothing needs to be done.
   }
 
-  virtual void ViewInitialized() override {
+  void ViewInitialized() override {
     // Nothing needs to be done.
   }
 
-  virtual void Dismiss() override {
+  void Dismiss() override {
     DCHECK(ash::Shell::HasInstance());
     Shell::GetInstance()->DismissAppList();
   }
 
-  virtual void ViewClosing() override {
+  void ViewClosing() override {
     // Nothing needs to be done.
   }
 
-  virtual gfx::ImageSkia GetWindowIcon() override {
-    return gfx::ImageSkia();
-  }
+  gfx::ImageSkia GetWindowIcon() override { return gfx::ImageSkia(); }
 
-  virtual void OpenSettings() override {
+  void OpenSettings() override {
     // Nothing needs to be done.
   }
 
-  virtual void OpenHelp() override {
+  void OpenHelp() override {
     // Nothing needs to be done.
   }
 
-  virtual void OpenFeedback() override {
+  void OpenFeedback() override {
     // Nothing needs to be done.
   }
 
-  virtual void ToggleSpeechRecognition() override {
-    NOTIMPLEMENTED();
-  }
+  void ToggleSpeechRecognition() override { NOTIMPLEMENTED(); }
 
-  virtual void ShowForProfileByPath(
-      const base::FilePath& profile_path) override {
+  void ShowForProfileByPath(const base::FilePath& profile_path) override {
     // Nothing needs to be done.
   }
 
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override {
+  views::View* CreateStartPageWebView(const gfx::Size& size) override {
     return NULL;
   }
 
-  virtual std::vector<views::View*> CreateCustomPageWebViews(
+  std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override {
     return std::vector<views::View*>();
   }
 
-  virtual bool IsSpeechRecognitionEnabled() override {
-    return false;
-  }
+  bool IsSpeechRecognitionEnabled() override { return false; }
 
   scoped_ptr<app_list::AppListModel> model_;
   app_list::SpeechUIModel speech_ui_;

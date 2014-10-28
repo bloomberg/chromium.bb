@@ -32,16 +32,14 @@ class LockView : public views::WidgetDelegateView,
     AddChildView(unlock_button_);
     unlock_button_->SetFocusable(true);
   }
-  virtual ~LockView() {}
+  ~LockView() override {}
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override {
-    return gfx::Size(500, 400);
-  }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(500, 400); }
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
     base::string16 text = base::ASCIIToUTF16("LOCKED!");
     int string_width = gfx::GetStringWidth(text, font_list_);
@@ -50,7 +48,7 @@ class LockView : public views::WidgetDelegateView,
                                      (height() - font_list_.GetHeight()) / 2,
                                      string_width, font_list_.GetHeight()));
   }
-  virtual void Layout() override {
+  void Layout() override {
     gfx::Rect bounds = GetLocalBounds();
     gfx::Size ps = unlock_button_->GetPreferredSize();
     bounds.set_y(bounds.bottom() - ps.height() - 5);
@@ -58,20 +56,19 @@ class LockView : public views::WidgetDelegateView,
     bounds.set_size(ps);
     unlock_button_->SetBoundsRect(bounds);
   }
-  virtual void ViewHierarchyChanged(
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       unlock_button_->RequestFocus();
   }
 
   // Overridden from views::WidgetDelegateView:
-  virtual void WindowClosing() override {
+  void WindowClosing() override {
     Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   }
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == unlock_button_);
     GetWidget()->Close();
   }

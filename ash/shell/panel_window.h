@@ -20,7 +20,7 @@ class PanelFrameView;
 class PanelWindow : public views::WidgetDelegateView {
  public:
   explicit PanelWindow(const std::string& name);
-  virtual ~PanelWindow();
+  ~PanelWindow() override;
 
   // Creates the widget for the panel window using |params_|.
   views::Widget* CreateWidget();
@@ -33,16 +33,16 @@ class PanelWindow : public views::WidgetDelegateView {
 
  private:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Overridden from views::WidgetDelegate:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual View* GetContentsView() override;
-  virtual bool CanResize() const override;
-  virtual bool CanMaximize() const override;
-  virtual bool CanMinimize() const override;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
+  base::string16 GetWindowTitle() const override;
+  View* GetContentsView() override;
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
+  views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
 
   std::string name_;
