@@ -30,7 +30,6 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
-#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -75,6 +74,10 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
+#endif
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #endif
 
 #if defined(USE_SYSTEM_PROTOBUF)

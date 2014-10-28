@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -18,6 +17,10 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#endif
 
 // static
 void SavePasswordInfoBarDelegate::Create(

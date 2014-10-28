@@ -2033,6 +2033,7 @@
           'sources!': [
             'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
+            'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
             'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
           ]
@@ -2524,7 +2525,11 @@
             '../skia/ext/vector_canvas_unittest.cc',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['OS=="android" or OS=="ios"', {
+          'sources!': [
+            'browser/ui/sync/sync_promo_ui_unittest.cc',
+          ],
+        }, { # 'OS!="android" and OS!="ios"'
           'dependencies': [
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
           ],

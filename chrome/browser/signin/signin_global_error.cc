@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -25,6 +24,10 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/signin/signin_promo.h"
+#endif
 
 SigninGlobalError::SigninGlobalError(
     SigninErrorController* error_controller,

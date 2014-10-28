@@ -1158,8 +1158,6 @@
       'browser/signin/signin_header_helper.h',
       'browser/signin/signin_tracker_factory.cc',
       'browser/signin/signin_tracker_factory.h',
-      'browser/signin/signin_promo.cc',
-      'browser/signin/signin_promo.h',
       'browser/site_details.cc',
       'browser/site_details.h',
       'browser/speech/chrome_speech_recognition_manager_delegate.cc',
@@ -2252,6 +2250,8 @@
       'browser/chrome_page_zoom.h',
       'browser/chrome_page_zoom_constants.cc',
       'browser/chrome_page_zoom_constants.h',
+      'browser/signin/signin_promo.cc',
+      'browser/signin/signin_promo.h',
     ],
     'chrome_browser_supervised_user_sources': [
       'browser/supervised_user/custodian_profile_downloader_service.cc',

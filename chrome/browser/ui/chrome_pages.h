@@ -7,10 +7,13 @@
 
 #include <string>
 
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/signin/signin_promo.h"
+#endif
 
 class Browser;
 
@@ -76,9 +79,12 @@ void ShowPasswordManager(Browser* browser);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // If the user is already signed in, shows the "Signin" portion of Settings,
 // otherwise initiates signin.
 void ShowBrowserSignin(Browser* browser, signin::Source source);
+#endif
 
 }  // namespace chrome
 

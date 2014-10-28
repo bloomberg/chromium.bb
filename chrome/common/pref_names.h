@@ -562,12 +562,12 @@ extern const char kGoogleServicesPasswordHash[];
 
 extern const char kInvalidationServiceUseGCMChannel[];
 
-// TODO(thestig): These 4 prefs should not be defined on mobile.
-// Fix for http://crbug.com/159847
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];
 extern const char kSignInPromoShowOnFirstRunAllowed[];
 extern const char kSignInPromoShowNTPBubble[];
+#endif
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];
