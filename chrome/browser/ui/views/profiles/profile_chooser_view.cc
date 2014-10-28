@@ -54,6 +54,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -1161,8 +1162,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       manage_accounts_link_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
       layout->AddView(manage_accounts_link_);
     } else {
-      // Add a small padding between the email button and the profile name.
-      layout->StartRowWithPadding(1, 0, 0, 2);
       // Badge the email address if there's an authentication error.
       if (HasAuthError(browser_->profile())) {
         const gfx::ImageSkia warning_image = *rb->GetImageNamed(
@@ -1170,15 +1169,20 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         auth_error_email_button_ =
             new RightAlignedIconLabelButton(this, avatar_item.sync_state);
         auth_error_email_button_->SetElideBehavior(gfx::ELIDE_EMAIL);
-        auth_error_email_button_->SetBorder(views::Border::NullBorder());
         auth_error_email_button_->SetImage(
             views::LabelButton::STATE_NORMAL, warning_image);
         auth_error_email_button_->SetTextColor(
             views::LabelButton::STATE_NORMAL,
             views::Link::GetDefaultEnabledColor());
         auth_error_email_button_->SetFocusable(true);
+        gfx::Insets insets = views::LabelButtonBorder::GetDefaultInsetsForStyle(
+            views::Button::STYLE_TEXTBUTTON);
+        auth_error_email_button_->SetBorder(views::Border::CreateEmptyBorder(
+            insets.top(), insets.left(), insets.bottom(), insets.right()));
         layout->AddView(auth_error_email_button_);
       } else {
+        // Add a small padding between the email button and the profile name.
+        layout->StartRowWithPadding(1, 0, 0, 2);
         views::Label* email_label = new views::Label(avatar_item.sync_state);
         email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
         email_label->SetEnabled(false);

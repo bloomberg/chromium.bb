@@ -21,6 +21,9 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   explicit LabelButtonBorder(Button::ButtonStyle style);
   ~LabelButtonBorder() override;
 
+  // Returns the default insets for a given |style|.
+  static gfx::Insets GetDefaultInsetsForStyle(Button::ButtonStyle style);
+
   Button::ButtonStyle style() const { return style_; }
 
   // Overridden from Border:

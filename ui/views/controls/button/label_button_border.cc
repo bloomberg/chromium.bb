@@ -57,8 +57,8 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
                            kButtonInsets,
                            kButtonInsets);
 
+  set_insets(GetDefaultInsetsForStyle(style_));
   if (style == Button::STYLE_BUTTON) {
-    set_insets(gfx::Insets(8, 13, 8, 13));
     SetPainter(false, Button::STATE_NORMAL,
                Painter::CreateImagePainter(
                    *rb.GetImageSkiaNamed(IDR_BUTTON_NORMAL), insets));
@@ -84,7 +84,6 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
                Painter::CreateImagePainter(
                    *rb.GetImageSkiaNamed(IDR_BUTTON_DISABLED), insets));
   } else if (style == Button::STYLE_TEXTBUTTON) {
-    set_insets(gfx::Insets(5, 6, 5, 6));
     SetPainter(false, Button::STATE_HOVERED,
                Painter::CreateImageGridPainter(kTextHoveredImages));
     SetPainter(false, Button::STATE_PRESSED,
@@ -93,6 +92,20 @@ LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
 }
 
 LabelButtonBorder::~LabelButtonBorder() {}
+
+// static
+gfx::Insets LabelButtonBorder::GetDefaultInsetsForStyle(
+    Button::ButtonStyle style) {
+  gfx::Insets insets;
+  if (style == Button::STYLE_BUTTON) {
+    insets = gfx::Insets(8, 13, 8, 13);
+  } else if (style == Button::STYLE_TEXTBUTTON) {
+    insets = gfx::Insets(5, 6, 5, 6);
+  } else {
+    NOTREACHED();
+  }
+  return insets;
+}
 
 void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const NativeThemeDelegate* native_theme_delegate =
