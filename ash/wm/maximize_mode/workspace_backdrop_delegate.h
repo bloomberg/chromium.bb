@@ -32,23 +32,22 @@ class ASH_EXPORT WorkspaceBackdropDelegate
       public NON_EXPORTED_BASE(WorkspaceLayoutManagerDelegate) {
  public:
   explicit WorkspaceBackdropDelegate(aura::Window* container);
-  virtual ~WorkspaceBackdropDelegate();
+  ~WorkspaceBackdropDelegate() override;
 
   // WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
   // WorkspaceLayoutManagerDelegate overrides:
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) override;
-  virtual void OnWindowStackingChanged(aura::Window* window) override;
-  virtual void OnPostWindowStateTypeChange(
-      wm::WindowState* window_state,
-      wm::WindowStateType old_type) override;
-  virtual void OnDisplayWorkAreaInsetsChanged() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visible) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   wm::WindowStateType old_type) override;
+  void OnDisplayWorkAreaInsetsChanged() override;
 
  private:
   // Restack the backdrop relatively to the other windows in the container.

@@ -26,7 +26,7 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   // was reverted to the old window manager.
   MaximizeModeWindowState(aura::Window* window,
                           MaximizeModeWindowManager* creator);
-  virtual ~MaximizeModeWindowState();
+  ~MaximizeModeWindowState() override;
 
   // Leaves the maximize mode by reverting to previous state object.
   void LeaveMaximizeMode(wm::WindowState* window_state);
@@ -36,13 +36,13 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   void SetDeferBoundsUpdates(bool defer_bounds_updates);
 
   // WindowState::State overrides:
-  virtual void OnWMEvent(wm::WindowState* window_state,
-                         const wm::WMEvent* event) override;
+  void OnWMEvent(wm::WindowState* window_state,
+                 const wm::WMEvent* event) override;
 
-  virtual wm::WindowStateType GetType() const override;
-  virtual void AttachState(wm::WindowState* window_state,
-                           wm::WindowState::State* previous_state) override;
-  virtual void DetachState(wm::WindowState* window_state) override;
+  wm::WindowStateType GetType() const override;
+  void AttachState(wm::WindowState* window_state,
+                   wm::WindowState::State* previous_state) override;
+  void DetachState(wm::WindowState* window_state) override;
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:

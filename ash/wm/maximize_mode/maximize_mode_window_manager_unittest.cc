@@ -39,7 +39,7 @@ namespace ash {
 class MaximizeModeWindowManagerTest : public test::AshTestBase {
  public:
   MaximizeModeWindowManagerTest() {}
-  virtual ~MaximizeModeWindowManagerTest() {}
+  ~MaximizeModeWindowManagerTest() override {}
 
   // Creates a window which has a fixed size.
   aura::Window* CreateFixedSizeNonMaximizableWindow(ui::wm::WindowType type,

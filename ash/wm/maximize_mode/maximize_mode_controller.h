@@ -60,7 +60,7 @@ class ASH_EXPORT MaximizeModeController
   };
 
   MaximizeModeController();
-  virtual ~MaximizeModeController();
+  ~MaximizeModeController() override;
 
   bool ignore_display_configuration_updates() const {
     return ignore_display_configuration_updates_;
@@ -109,16 +109,15 @@ class ASH_EXPORT MaximizeModeController
   void Shutdown();
 
   // AccelerometerObserver:
-  virtual void OnAccelerometerUpdated(
-      const ui::AccelerometerUpdate& update) override;
+  void OnAccelerometerUpdated(const ui::AccelerometerUpdate& update) override;
 
   // ShellObserver:
-  virtual void OnAppTerminating() override;
-  virtual void OnMaximizeModeStarted() override;
-  virtual void OnMaximizeModeEnded() override;
+  void OnAppTerminating() override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
   // DisplayController::Observer:
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
 #if defined(OS_CHROMEOS)
   // PowerManagerClient::Observer:

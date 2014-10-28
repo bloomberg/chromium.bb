@@ -53,9 +53,9 @@ extern const size_t kAccelerometerFullyOpenTestDataLength;
 class MaximizeModeControllerTest : public test::AshTestBase {
  public:
   MaximizeModeControllerTest() {}
-  virtual ~MaximizeModeControllerTest() {}
+  ~MaximizeModeControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     Shell::GetInstance()->accelerometer_controller()->RemoveObserver(
         maximize_mode_controller());
@@ -66,7 +66,7 @@ class MaximizeModeControllerTest : public test::AshTestBase {
         SetFirstDisplayAsInternalDisplay();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     Shell::GetInstance()->accelerometer_controller()->AddObserver(
         maximize_mode_controller());
     test::AshTestBase::TearDown();
@@ -619,9 +619,9 @@ TEST_F(MaximizeModeControllerTest, UpdateUserRotationWhileRotationLocked) {
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
  public:
   MaximizeModeControllerSwitchesTest() {}
-  virtual ~MaximizeModeControllerSwitchesTest(){}
+  ~MaximizeModeControllerSwitchesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTouchViewTesting);
     MaximizeModeControllerTest::SetUp();
