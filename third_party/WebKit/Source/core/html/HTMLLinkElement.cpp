@@ -276,8 +276,11 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode* 
         return InsertionDone;
 
     m_isInShadowTree = isInShadowTree();
-    if (m_isInShadowTree)
+    if (m_isInShadowTree) {
+        String message = "HTML element <link> is ignored in shadow tree.";
+        document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
         return InsertionDone;
+    }
 
     document().styleEngine()->addStyleSheetCandidateNode(this, m_createdByParser);
 
