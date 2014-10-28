@@ -68,7 +68,7 @@ public:
         ASSERT(stringImpl);
         if (m_lastStringImpl.get() == stringImpl)
             return m_lastV8String.NewLocal(isolate);
-        return v8ExternalStringSlow(stringImpl, isolate);
+        return v8ExternalStringSlow(isolate, stringImpl);
     }
 
     void setReturnValueFromString(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
@@ -83,9 +83,9 @@ public:
     friend class StringCacheMapTraits;
 
 private:
-    v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
+    v8::Handle<v8::String> v8ExternalStringSlow(v8::Isolate*, StringImpl*);
     void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
-    v8::Local<v8::String> createStringAndInsertIntoCache(StringImpl*, v8::Isolate*);
+    v8::Local<v8::String> createStringAndInsertIntoCache(v8::Isolate*, StringImpl*);
     void InvalidateLastString();
 
     StringCacheMapTraits::MapType m_stringCache;

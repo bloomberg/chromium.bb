@@ -71,7 +71,7 @@ static v8::Local<v8::String> makeExternalString(const String& string, v8::Isolat
     return newString;
 }
 
-v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl, v8::Isolate* isolate)
+v8::Handle<v8::String> StringCache::v8ExternalStringSlow(v8::Isolate* isolate, StringImpl* stringImpl)
 {
     if (!stringImpl->length())
         return v8::String::Empty(isolate);
@@ -83,7 +83,7 @@ v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl,
         return m_lastV8String.NewLocal(isolate);
     }
 
-    return createStringAndInsertIntoCache(stringImpl, isolate);
+    return createStringAndInsertIntoCache(isolate, stringImpl);
 }
 
 void StringCache::setReturnValueFromStringSlow(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
@@ -101,10 +101,10 @@ void StringCache::setReturnValueFromStringSlow(v8::ReturnValue<v8::Value> return
         return;
     }
 
-    returnValue.Set(createStringAndInsertIntoCache(stringImpl, returnValue.GetIsolate()));
+    returnValue.Set(createStringAndInsertIntoCache(returnValue.GetIsolate(), stringImpl));
 }
 
-v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* stringImpl, v8::Isolate* isolate)
+v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(v8::Isolate* isolate, StringImpl* stringImpl)
 {
     ASSERT(!m_stringCache.Contains(stringImpl));
     ASSERT(stringImpl->length());
