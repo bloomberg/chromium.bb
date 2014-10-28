@@ -257,7 +257,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleTestAuthRequest(
 class PasswordManagerBrowserTest : public InProcessBrowserTest {
  public:
   PasswordManagerBrowserTest() {}
-  virtual ~PasswordManagerBrowserTest() {}
+  ~PasswordManagerBrowserTest() override {}
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {

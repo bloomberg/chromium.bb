@@ -239,8 +239,8 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
         kwallet_running_(true), kwallet_enabled_(true) {
   }
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Let the DB thread run to completion of all current tasks.
   void RunDBThread() {

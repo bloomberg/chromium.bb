@@ -86,29 +86,28 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
  public:
   explicit NativeBackendGnome(LocalProfileId id);
 
-  virtual ~NativeBackendGnome();
+  ~NativeBackendGnome() override;
 
-  virtual bool Init() override;
+  bool Init() override;
 
   // Implements NativeBackend interface.
-  virtual password_manager::PasswordStoreChangeList AddLogin(
+  password_manager::PasswordStoreChangeList AddLogin(
       const autofill::PasswordForm& form) override;
-  virtual bool UpdateLogin(
-      const autofill::PasswordForm& form,
-      password_manager::PasswordStoreChangeList* changes) override;
-  virtual bool RemoveLogin(const autofill::PasswordForm& form) override;
-  virtual bool RemoveLoginsCreatedBetween(
+  bool UpdateLogin(const autofill::PasswordForm& form,
+                   password_manager::PasswordStoreChangeList* changes) override;
+  bool RemoveLogin(const autofill::PasswordForm& form) override;
+  bool RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  virtual bool RemoveLoginsSyncedBetween(
+  bool RemoveLoginsSyncedBetween(
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  virtual bool GetLogins(const autofill::PasswordForm& form,
-                         PasswordFormList* forms) override;
-  virtual bool GetAutofillableLogins(PasswordFormList* forms) override;
-  virtual bool GetBlacklistLogins(PasswordFormList* forms) override;
+  bool GetLogins(const autofill::PasswordForm& form,
+                 PasswordFormList* forms) override;
+  bool GetAutofillableLogins(PasswordFormList* forms) override;
+  bool GetBlacklistLogins(PasswordFormList* forms) override;
 
  private:
   enum TimestampToCompare {

@@ -338,7 +338,7 @@ class NativeBackendGnomeTest : public testing::Test {
         db_thread_(BrowserThread::DB) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(db_thread_.Start());
 
     ASSERT_TRUE(MockGnomeKeyringLoader::LoadMockGnomeKeyring());
@@ -393,7 +393,7 @@ class NativeBackendGnomeTest : public testing::Test {
     other_auth_.date_synced = base::Time::Now();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());
     base::MessageLoop::current()->Run();
