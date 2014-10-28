@@ -482,7 +482,8 @@ void ExternalProviderImpl::CreateExternalProviders(
                 service,
                 new ExternalPrefLoader(
                     chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                    ExternalPrefLoader::NONE),
+                    ExternalPrefLoader::NONE,
+                    NULL),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
@@ -495,11 +496,15 @@ void ExternalProviderImpl::CreateExternalProviders(
     int external_apps_path_id = profile->IsSupervised() ?
         chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS :
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
+    ExternalPrefLoader::Options pref_load_flags = profile->IsNewProfile() ?
+        ExternalPrefLoader::DELAY_LOAD_UNTIL_PRIORITY_SYNC :
+        ExternalPrefLoader::NONE;
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
             service,
             new ExternalPrefLoader(external_apps_path_id,
-                                   ExternalPrefLoader::NONE),
+                                   pref_load_flags,
+                                   profile),
             profile,
             Manifest::EXTERNAL_PREF,
             Manifest::EXTERNAL_PREF_DOWNLOAD,
@@ -541,7 +546,8 @@ void ExternalProviderImpl::CreateExternalProviders(
             new ExternalProviderImpl(
                 service,
                 new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
-                                       check_admin_permissions_on_mac),
+                                       check_admin_permissions_on_mac,
+                                       NULL),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
@@ -555,7 +561,8 @@ void ExternalProviderImpl::CreateExternalProviders(
             new ExternalProviderImpl(
                 service,
                 new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                                       ExternalPrefLoader::NONE),
+                                       ExternalPrefLoader::NONE,
+                                       NULL),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
@@ -583,7 +590,8 @@ void ExternalProviderImpl::CreateExternalProviders(
                 profile,
                 service,
                 new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
-                                       ExternalPrefLoader::NONE),
+                                       ExternalPrefLoader::NONE,
+                                       NULL),
                 Manifest::INTERNAL,
                 Manifest::INTERNAL,
                 Extension::FROM_WEBSTORE |

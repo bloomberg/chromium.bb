@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_LOADER_H_
 
-#include "chrome/browser/extensions/external_loader.h"
-
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/external_loader.h"
+#include "chrome/browser/prefs/pref_service_syncable_observer.h"
+
+class PrefServiceSyncable;
+class Profile;
 
 namespace extensions {
 
@@ -19,7 +23,8 @@ namespace extensions {
 // look up which external extensions are registered.
 // Instances of this class are expected to be created and destroyed on the UI
 // thread and they are expecting public method calls from the UI thread.
-class ExternalPrefLoader : public ExternalLoader {
+class ExternalPrefLoader : public ExternalLoader,
+                           public PrefServiceSyncableObserver {
  public:
   enum Options {
     NONE = 0,
@@ -27,18 +32,23 @@ class ExternalPrefLoader : public ExternalLoader {
     // Ensure that only root can force an external install by checking
     // that all components of the path to external extensions files are
     // owned by root and not writable by any non-root user.
-    ENSURE_PATH_CONTROLLED_BY_ADMIN = 1 << 0
+    ENSURE_PATH_CONTROLLED_BY_ADMIN = 1 << 0,
+
+    // Delay external preference load. It delays default apps installation
+    // to not overload the system on first time user login.
+    DELAY_LOAD_UNTIL_PRIORITY_SYNC = 1 << 1,
   };
 
   // |base_path_id| is the directory containing the external_extensions.json
   // file or the standalone extension manifest files. Relative file paths to
-  // extension files are resolved relative to this path.
-  ExternalPrefLoader(int base_path_id, Options options);
+  // extension files are resolved relative to this path. |profile| is used to
+  // wait priority sync if DELAY_LOAD_UNTIL_PRIORITY_SYNC set.
+  ExternalPrefLoader(int base_path_id, Options options, Profile* profile);
 
   const base::FilePath GetBaseCrxFilePath() override;
 
  protected:
-  ~ExternalPrefLoader() override {}
+  ~ExternalPrefLoader() override;
 
   void StartLoading() override;
   bool IsOptionSet(Options option) {
@@ -53,6 +63,12 @@ class ExternalPrefLoader : public ExternalLoader {
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
+
+  // PrefServiceSyncableObserver:
+  void OnIsSyncingChanged() override;
+
+  // If priority sync ready posts LoadOnFileThread and return true.
+  bool PostLoadIfPrioritySyncReady();
 
   // Actually searches for and loads candidate standalone extension preference
   // files in the path corresponding to |base_path_id|.
@@ -75,6 +91,14 @@ class ExternalPrefLoader : public ExternalLoader {
   // The path (coresponding to |base_path_id_| containing the json files
   // describing which extensions to load.
   base::FilePath base_path_;
+
+  // Profile that loads these external prefs.
+  // Needed for waiting for waiting priority sync.
+  Profile* profile_;
+
+  // Used for registering observer for PrefServiceSyncable.
+  ScopedObserver<PrefServiceSyncable, PrefServiceSyncableObserver>
+      syncable_pref_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);
 };

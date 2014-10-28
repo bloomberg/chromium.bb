@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -61,7 +62,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     chromeos::ScopedUserManagerEnabler scoped_user_manager(
         new chromeos::FakeUserManager);
 #endif
-    InitializeExtensionServiceWithUpdater();
+    InitializeExtensionServiceWithUpdaterAndPrefs();
 
     service()->updater()->SetExtensionCacheForTesting(
         test_extension_cache_.get());
@@ -80,6 +81,17 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
          ++i) {
       service_->AddProviderForTesting(i->release());
     }
+  }
+
+  void InitializeExtensionServiceWithUpdaterAndPrefs() {
+    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    params.autoupdate_enabled = true;
+    // Create prefs file to make the profile not new.
+    const char prefs[] = "{}";
+    EXPECT_EQ(base::WriteFile(params.pref_file, prefs, sizeof(prefs)),
+              int(sizeof(prefs)));
+    InitializeExtensionService(params);
+    service_->updater()->Start();
   }
 
   // ExtensionServiceTestBase overrides:

@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -90,9 +91,17 @@ base::DictionaryValue* ExtractExtensionPrefs(base::ValueSerializer* serializer,
 
 namespace extensions {
 
-ExternalPrefLoader::ExternalPrefLoader(int base_path_id, Options options)
-    : base_path_id_(base_path_id), options_(options) {
+ExternalPrefLoader::ExternalPrefLoader(int base_path_id,
+                                       Options options,
+                                       Profile* profile)
+    : base_path_id_(base_path_id),
+      options_(options),
+      profile_(profile),
+      syncable_pref_observer_(this) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+ExternalPrefLoader::~ExternalPrefLoader() {
 }
 
 const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
@@ -104,9 +113,39 @@ const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
 
 void ExternalPrefLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
+  if (options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) {
+    if (!PostLoadIfPrioritySyncReady()) {
+      DCHECK(profile_);
+      PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+      DCHECK(prefs);
+      syncable_pref_observer_.Add(prefs);
+    }
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
+  }
+}
+
+void ExternalPrefLoader::OnIsSyncingChanged() {
+  PostLoadIfPrioritySyncReady();
+}
+
+bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
+  DCHECK(options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC);
+  DCHECK(profile_);
+
+  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  DCHECK(prefs);
+  if (prefs->IsPrioritySyncing()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ExternalPrefLoader::LoadOnFileThread, this));
+    syncable_pref_observer_.Remove(prefs);
+    return true;
+  }
+
+  return false;
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {
