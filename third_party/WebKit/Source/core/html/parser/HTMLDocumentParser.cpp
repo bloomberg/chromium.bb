@@ -196,6 +196,12 @@ void HTMLDocumentParser::detach()
     m_preloadScanner.clear();
     m_insertionPreloadScanner.clear();
     m_parserScheduler.clear(); // Deleting the scheduler will clear any timers.
+    // Oilpan: It is important to clear m_token to deallocate backing memory of
+    // HTMLToken::m_data and let the allocator reuse the memory for
+    // HTMLToken::m_data of a next HTMLDocumentParser. We need to clear
+    // m_tokenizer first because m_tokenizer has a raw pointer to m_token.
+    m_tokenizer.clear();
+    m_token.clear();
 }
 
 void HTMLDocumentParser::stopParsing()
@@ -591,7 +597,7 @@ void HTMLDocumentParser::pumpTokenizer()
         }
 
         constructTreeFromHTMLToken(token());
-        ASSERT(token().isUninitialized());
+        ASSERT(isStopped() || token().isUninitialized());
     }
 
 #if !ENABLE(OILPAN)
@@ -624,6 +630,7 @@ void HTMLDocumentParser::pumpTokenizer()
 
 void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
 {
+    ASSERT(&rawToken == m_token.get());
     AtomicHTMLToken token(rawToken);
 
     // We clear the rawToken in case constructTreeFromAtomicToken
@@ -641,6 +648,11 @@ void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
 
     m_treeBuilder->constructTree(&token);
 
+    // FIXME: constructTree may synchronously cause Document to be detached.
+    if (!m_token)
+        return;
+
+    ASSERT(&rawToken == m_token.get());
     if (!rawToken.isUninitialized()) {
         ASSERT(rawToken.type() == HTMLToken::Character);
         rawToken.clear();
