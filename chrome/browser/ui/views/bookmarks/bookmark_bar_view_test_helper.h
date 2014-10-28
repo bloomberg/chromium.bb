@@ -15,7 +15,13 @@ class BookmarkBarViewTestHelper {
 
   int GetBookmarkButtonCount() { return bbv_->GetBookmarkButtonCount(); }
 
+  views::LabelButton* GetBookmarkButton(int index) {
+    return bbv_->GetBookmarkButton(index);
+  }
+
   views::LabelButton* apps_page_shortcut() { return bbv_->apps_page_shortcut_; }
+
+  views::MenuButton* overflow_button() { return bbv_->overflow_button_; }
 
  private:
   BookmarkBarView* bbv_;

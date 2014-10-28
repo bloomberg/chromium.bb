@@ -1416,6 +1416,7 @@
             # TODO(tapted): Enable toolkit-views tests on Mac when their
             # respective implementations are ported.
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+            'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
             'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',

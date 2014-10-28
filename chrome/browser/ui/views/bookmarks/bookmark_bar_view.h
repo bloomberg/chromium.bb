@@ -282,9 +282,11 @@ class BookmarkBarView : public DetachableToolbarView,
   // It's easy to get the mapping wrong. For this reason all these methods are
   // private.
 
-  // Returns the number of buttons corresponding to starred urls/folders. This
-  // is equivalent to the number of children the bookmark bar node from the
-  // bookmark bar model has.
+  // Returns the number of bookmark bar url/folder buttons that have been
+  // created. This does not necessarily represent the number of bookmark bar
+  // nodes, nor the number of visible bookmark bar buttons. Buttons are created
+  // lazily to fill available space, and may be hidden for ordering or sizing
+  // changes.
   int GetBookmarkButtonCount() const;
 
   // Returns the button at the specified index.
