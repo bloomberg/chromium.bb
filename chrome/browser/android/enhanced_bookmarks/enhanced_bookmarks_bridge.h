@@ -47,7 +47,7 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
 
  private:
   JavaObjectWeakGlobalRef weak_java_ref_;
-  BookmarkModel* bookmark_model_;  // weak
+  EnhancedBookmarkModel* enhanced_bookmark_model_;
   BookmarkServerClusterService* cluster_service_;  // weak
   Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);

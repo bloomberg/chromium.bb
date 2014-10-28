@@ -16,7 +16,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
-#include "components/enhanced_bookmarks/metadata_accessor.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -29,9 +28,9 @@ EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
     jobject obj,
     Profile* profile) : weak_java_ref_(env, obj) {
   profile_ = profile;
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
-  EnhancedBookmarkModelFactory::GetForBrowserContext(profile_)->
-      SetVersionSuffix(chrome::VersionInfo().OSType());
+  enhanced_bookmark_model_ =
+      EnhancedBookmarkModelFactory::GetForBrowserContext(profile_);
+  enhanced_bookmark_model_->SetVersionSuffix(chrome::VersionInfo().OSType());
   cluster_service_ =
       ChromeBookmarkServerClusterServiceFactory::GetForBrowserContext(profile_);
   cluster_service_->AddObserver(this);
@@ -47,16 +46,15 @@ void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
 
 ScopedJavaLocalRef<jstring> EnhancedBookmarksBridge::GetBookmarkDescription(
     JNIEnv* env, jobject obj, jlong id, jint type) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(enhanced_bookmark_model_->loaded());
   DCHECK_EQ(BookmarkType::BOOKMARK_TYPE_NORMAL, type);
 
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-      bookmark_model_, static_cast<int64>(id));
+      enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
 
-  return node ?
-          base::android::ConvertUTF8ToJavaString(
-              env, enhanced_bookmarks::DescriptionFromBookmark(node)) :
-          ScopedJavaLocalRef<jstring>();
+  return node ? base::android::ConvertUTF8ToJavaString(
+                    env, enhanced_bookmark_model_->GetDescription(node))
+              : ScopedJavaLocalRef<jstring>();
 }
 
 void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
@@ -64,22 +62,21 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
                                                      jlong id,
                                                      jint type,
                                                      jstring description) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(enhanced_bookmark_model_->loaded());
   DCHECK_EQ(type, BookmarkType::BOOKMARK_TYPE_NORMAL);
 
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-      bookmark_model_, static_cast<int64>(id));
+      enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
 
-  enhanced_bookmarks::SetDescriptionForBookmark(
-      bookmark_model_, node,
-      base::android::ConvertJavaStringToUTF8(env, description));
+  enhanced_bookmark_model_->SetDescription(
+      node, base::android::ConvertJavaStringToUTF8(env, description));
 }
 
 void EnhancedBookmarksBridge::GetBookmarksForFilter(JNIEnv* env,
                                                     jobject obj,
                                                     jstring j_filter,
                                                     jobject j_result_obj) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(enhanced_bookmark_model_->loaded());
   const std::string title =
       base::android::ConvertJavaStringToUTF8(env, j_filter);
   const std::vector<const BookmarkNode*> bookmarks =
@@ -93,14 +90,14 @@ void EnhancedBookmarksBridge::GetBookmarksForFilter(JNIEnv* env,
 ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFilters(
     JNIEnv* env,
     jobject obj) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(enhanced_bookmark_model_->loaded());
   const std::vector<std::string> filters =
       cluster_service_->GetClusters();
   return base::android::ToJavaArrayOfStrings(env, filters);
 }
 
 void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(enhanced_bookmark_model_->loaded());
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
