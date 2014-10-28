@@ -41,7 +41,7 @@ class TopIconAnimationView : public views::View,
   TopIconAnimationView(const gfx::ImageSkia& icon,
                        const gfx::Rect& scaled_rect,
                        bool open_folder);
-  virtual ~TopIconAnimationView();
+  ~TopIconAnimationView() override;
 
   void AddObserver(TopIconAnimationObserver* observer);
   void RemoveObserver(TopIconAnimationObserver* observer);
@@ -54,12 +54,12 @@ class TopIconAnimationView : public views::View,
 
  private:
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() override;
-  virtual bool RequiresNotificationWhenAnimatorDestroyed() const override;
+  void OnImplicitAnimationsCompleted() override;
+  bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
   gfx::Size icon_size_;
   views::ImageView* icon_;  // Owned by views hierarchy.

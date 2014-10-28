@@ -68,15 +68,11 @@ class TestObserver : public AppListModelObserver {
 class AppListModelTest : public testing::Test {
  public:
   AppListModelTest() {}
-  virtual ~AppListModelTest() {}
+  ~AppListModelTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
-    model_.AddObserver(&observer_);
-  }
-  virtual void TearDown() override {
-    model_.RemoveObserver(&observer_);
-  }
+  void SetUp() override { model_.AddObserver(&observer_); }
+  void TearDown() override { model_.RemoveObserver(&observer_); }
 
  protected:
   bool ItemObservedByFolder(AppListFolderItem* folder,
@@ -227,15 +223,11 @@ class AppListModelFolderTest : public AppListModelTest {
   AppListModelFolderTest() {
     model_.SetFoldersEnabled(true);
   }
-  virtual ~AppListModelFolderTest() {}
+  ~AppListModelFolderTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
-    AppListModelTest::SetUp();
-  }
-  virtual void TearDown() override {
-    AppListModelTest::TearDown();
-  }
+  void SetUp() override { AppListModelTest::SetUp(); }
+  void TearDown() override { AppListModelTest::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListModelFolderTest);

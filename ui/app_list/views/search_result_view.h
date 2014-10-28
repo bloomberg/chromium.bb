@@ -47,7 +47,7 @@ class SearchResultView : public views::CustomButton,
   static const char kViewClassName[];
 
   explicit SearchResultView(SearchResultListView* list_view);
-  virtual ~SearchResultView();
+  ~SearchResultView() override;
 
   // Sets/gets SearchResult displayed by this view.
   void SetResult(SearchResult* result);
@@ -66,33 +66,31 @@ class SearchResultView : public views::CustomButton,
   void UpdateDetailsText();
 
   // views::View overrides:
-  virtual const char* GetClassName() const override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual void ChildPreferredSizeChanged(views::View* child) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController overrides:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // SearchResultObserver overrides:
-  virtual void OnIconChanged() override;
-  virtual void OnActionsChanged() override;
-  virtual void OnIsInstallingChanged() override;
-  virtual void OnPercentDownloadedChanged() override;
-  virtual void OnItemInstalled() override;
-  virtual void OnItemUninstalled() override;
+  void OnIconChanged() override;
+  void OnActionsChanged() override;
+  void OnIsInstallingChanged() override;
+  void OnPercentDownloadedChanged() override;
+  void OnItemInstalled() override;
+  void OnItemUninstalled() override;
 
   // SearchResultActionsViewDelegate overrides:
-  virtual void OnSearchResultActionActivated(size_t index,
-                                             int event_flags) override;
+  void OnSearchResultActionActivated(size_t index, int event_flags) override;
 
   SearchResult* result_;  // Owned by AppListModel::SearchResults.
 

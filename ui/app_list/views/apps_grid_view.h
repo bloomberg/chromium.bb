@@ -70,7 +70,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Constructs the app icon grid view. |delegate| is the delegate of this
   // view, which usually is the hosting AppListView.
   explicit AppsGridView(AppsGridViewDelegate* delegate);
-  virtual ~AppsGridView();
+  ~AppsGridView() override;
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
   // is no longer called to dynamically choosing those layout params.
@@ -127,22 +127,22 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   PaginationModel* pagination_model() { return &pagination_model_; }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  virtual void ViewHierarchyChanged(
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  virtual bool GetDropFormats(
+  bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) override;
-  virtual bool CanDrop(const OSExchangeData& data) override;
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  bool CanDrop(const OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
@@ -368,28 +368,27 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool IsPointWithinDragBuffer(const gfx::Point& point) const;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from AppListItemListObserver:
-  virtual void OnListItemAdded(size_t index, AppListItem* item) override;
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) override;
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               AppListItem* item) override;
-  virtual void OnAppListItemHighlight(size_t index, bool highlight) override;
+  void OnListItemAdded(size_t index, AppListItem* item) override;
+  void OnListItemRemoved(size_t index, AppListItem* item) override;
+  void OnListItemMoved(size_t from_index,
+                       size_t to_index,
+                       AppListItem* item) override;
+  void OnAppListItemHighlight(size_t index, bool highlight) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() override;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
-  virtual void TransitionStarted() override;
-  virtual void TransitionChanged() override;
+  void TotalPagesChanged() override;
+  void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionStarted() override;
+  void TransitionChanged() override;
 
   // Overridden from AppListModelObserver:
-  virtual void OnAppListModelStatusChanged() override;
+  void OnAppListModelStatusChanged() override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be

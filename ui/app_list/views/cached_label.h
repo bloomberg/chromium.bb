@@ -32,7 +32,7 @@ class CachedLabel : public views::Label {
 #endif
 
   // Overridden from ui::LayerDelegate:
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
  private:
   bool needs_repaint_;

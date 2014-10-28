@@ -50,10 +50,10 @@ class DummySearchBoxView : public SearchBoxView {
       : SearchBoxView(delegate, view_delegate) {
   }
 
-  virtual ~DummySearchBoxView() {}
+  ~DummySearchBoxView() override {}
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override {
+  gfx::Size GetPreferredSize() const override {
     gfx::Size size(SearchBoxView::GetPreferredSize());
     size.set_width(kDummySearchBoxWidth);
     return size;

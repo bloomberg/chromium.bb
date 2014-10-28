@@ -49,11 +49,11 @@ const SkColor kBackgroundBorderBottomColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
 class ExperimentalSearchBoxBackground : public views::Background {
  public:
   ExperimentalSearchBoxBackground() {}
-  virtual ~ExperimentalSearchBoxBackground() {}
+  ~ExperimentalSearchBoxBackground() override {}
 
  private:
   // views::Background overrides:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
     gfx::Rect bounds = view->GetContentsBounds();
 
     SkPaint paint;

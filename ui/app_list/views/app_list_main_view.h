@@ -40,7 +40,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
  public:
   // Takes ownership of |delegate|.
   explicit AppListMainView(AppListViewDelegate* delegate);
-  virtual ~AppListMainView();
+  ~AppListMainView() override;
 
   void Init(gfx::NativeView parent,
             int initial_apps_page,
@@ -99,18 +99,18 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void OnItemIconLoaded(IconLoader* loader);
 
   // Overridden from AppsGridViewDelegate:
-  virtual void ActivateApp(AppListItem* item, int event_flags) override;
-  virtual void GetShortcutPathForApp(
+  void ActivateApp(AppListItem* item, int event_flags) override;
+  void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) override;
-  virtual void CancelDragInActiveFolder() override;
+  void CancelDragInActiveFolder() override;
 
   // Overridden from SearchBoxViewDelegate:
-  virtual void QueryChanged(SearchBoxView* sender) override;
+  void QueryChanged(SearchBoxView* sender) override;
 
   // Overridden from SearchResultListViewDelegate:
-  virtual void OnResultInstalled(SearchResult* result) override;
-  virtual void OnResultUninstalled(SearchResult* result) override;
+  void OnResultInstalled(SearchResult* result) override;
+  void OnResultUninstalled(SearchResult* result) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.

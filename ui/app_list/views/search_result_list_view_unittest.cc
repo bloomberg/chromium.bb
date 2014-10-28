@@ -26,10 +26,10 @@ class SearchResultListViewTest : public views::ViewsTestBase,
                                  public SearchResultListViewDelegate {
  public:
   SearchResultListViewTest() {}
-  virtual ~SearchResultListViewTest() {}
+  ~SearchResultListViewTest() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
     view_.reset(new SearchResultListView(this, &view_delegate_));
     view_->SetResults(view_delegate_.GetModel()->results());
@@ -111,8 +111,8 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   }
 
  private:
-  virtual void OnResultInstalled(SearchResult* result) override {}
-  virtual void OnResultUninstalled(SearchResult* result) override {}
+  void OnResultInstalled(SearchResult* result) override {}
+  void OnResultUninstalled(SearchResult* result) override {}
 
   AppListTestViewDelegate view_delegate_;
   scoped_ptr<SearchResultListView> view_;

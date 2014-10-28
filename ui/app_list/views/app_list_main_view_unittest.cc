@@ -67,10 +67,10 @@ class AppListMainViewTest : public views::ViewsTestBase {
       : widget_(NULL),
         main_view_(NULL) {}
 
-  virtual ~AppListMainViewTest() {}
+  ~AppListMainViewTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
     delegate_.reset(new AppListTestViewDelegate);
 
@@ -92,7 +92,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     widget_->SetContentsView(main_view_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     widget_->Close();
     views::ViewsTestBase::TearDown();
     search_box_view_.reset();

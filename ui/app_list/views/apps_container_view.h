@@ -34,7 +34,7 @@ class AppsContainerView : public views::View,
  public:
   AppsContainerView(AppListMainView* app_list_main_view,
                     AppListModel* model);
-  virtual ~AppsContainerView();
+  ~AppsContainerView() override;
 
   // Shows the active folder content specified by |folder_item|.
   void ShowActiveFolder(AppListFolderItem* folder_item);
@@ -62,12 +62,12 @@ class AppsContainerView : public views::View,
   bool IsInFolderView() const;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // TopIconAnimationObserver overrides:
-  virtual void OnTopIconAnimationsComplete() override;
+  void OnTopIconAnimationsComplete() override;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {

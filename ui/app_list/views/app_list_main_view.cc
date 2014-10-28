@@ -57,13 +57,11 @@ class AppListMainView::IconLoader : public AppListItemObserver {
     item_->icon().GetRepresentation(scale);
   }
 
-  virtual ~IconLoader() {
-    item_->RemoveObserver(this);
-  }
+  ~IconLoader() override { item_->RemoveObserver(this); }
 
  private:
   // AppListItemObserver overrides:
-  virtual void ItemIconChanged() override {
+  void ItemIconChanged() override {
     owner_->OnItemIconLoaded(this);
     // Note that IconLoader is released here.
   }

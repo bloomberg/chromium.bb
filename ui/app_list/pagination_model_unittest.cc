@@ -112,16 +112,16 @@ class TestPaginationModelObserver : public PaginationModelObserver {
 class PaginationModelTest : public testing::Test {
  public:
   PaginationModelTest() {}
-  virtual ~PaginationModelTest() {}
+  ~PaginationModelTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     pagination_.SetTotalPages(5);
     pagination_.SetTransitionDurations(1, 1);
     observer_.set_model(&pagination_);
     pagination_.AddObserver(&observer_);
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     pagination_.RemoveObserver(&observer_);
     observer_.set_model(NULL);
   }

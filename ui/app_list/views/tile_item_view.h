@@ -25,21 +25,20 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
                                      public SearchResultObserver {
  public:
   TileItemView();
-  virtual ~TileItemView();
+  ~TileItemView() override;
 
   void SetSearchResult(SearchResult* item);
 
  private:
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from SearchResultObserver:
-  virtual void OnIconChanged() override;
-  virtual void OnResultDestroying() override;
+  void OnIconChanged() override;
+  void OnResultDestroying() override;
 
   // Owned by the model provided by the AppListViewDelegate.
   SearchResult* item_;

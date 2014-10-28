@@ -34,14 +34,14 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
                                          public AppListItemObserver {
  public:
   explicit FolderHeaderView(FolderHeaderViewDelegate* delegate);
-  virtual ~FolderHeaderView();
+  ~FolderHeaderView() override;
 
   void SetFolderItem(AppListFolderItem* folder_item);
   void UpdateFolderNameVisibility(bool visible);
   void OnFolderItemRemoved();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   class FolderNameView;
@@ -61,20 +61,19 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   bool IsFolderNameEnabledForTest() const;
 
   // views::View overrides:
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // views::TextfieldController overrides:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AppListItemObserver overrides:
-  virtual void ItemNameChanged() override;
+  void ItemNameChanged() override;
 
   AppListFolderItem* folder_item_;  // Not owned.
 

@@ -44,7 +44,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                      public PaginationModelObserver {
  public:
   ContentsView(AppListMainView* app_list_main_view);
-  virtual ~ContentsView();
+  ~ContentsView() override;
 
   // Initialize the pages of the launcher. In the experimental launcher, should
   // be called after set_contents_switcher_view(), or switcher buttons will not
@@ -106,15 +106,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   gfx::Rect GetDefaultContentsBounds() const;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() override;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
-  virtual void TransitionStarted() override;
-  virtual void TransitionChanged() override;
+  void TotalPagesChanged() override;
+  void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionStarted() override;
+  void TransitionChanged() override;
 
  private:
   // Sets the active launcher page, accounting for whether the change is for

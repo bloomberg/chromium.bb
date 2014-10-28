@@ -46,8 +46,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     SetTextColor(kFolderTitleColor);
   }
 
-  virtual ~FolderNameView() {
-  }
+  ~FolderNameView() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);

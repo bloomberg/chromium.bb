@@ -63,16 +63,12 @@ std::string GetItemId(int id) {
 class AppListItemListTest : public testing::Test {
  public:
   AppListItemListTest() {}
-  virtual ~AppListItemListTest() {}
+  ~AppListItemListTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
-    item_list_.AddObserver(&observer_);
-  }
+  void SetUp() override { item_list_.AddObserver(&observer_); }
 
-  virtual void TearDown() override {
-    item_list_.RemoveObserver(&observer_);
-  }
+  void TearDown() override { item_list_.RemoveObserver(&observer_); }
 
  protected:
   AppListItem* FindItem(const std::string& id) {

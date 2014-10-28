@@ -24,7 +24,7 @@ class FolderBackgroundView : public views::View,
   };
 
   FolderBackgroundView();
-  virtual ~FolderBackgroundView();
+  ~FolderBackgroundView() override;
 
   // Updates the ink bubble's ShowState.
   void UpdateFolderContainerBubble(ShowState state);
@@ -38,10 +38,10 @@ class FolderBackgroundView : public views::View,
 
  private:
   // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::ImplicitAnimationObserver overrides:
-  virtual void OnImplicitAnimationsCompleted() override;
+  void OnImplicitAnimationsCompleted() override;
 
   AppListFolderView* folder_view_;
   ShowState show_state_;

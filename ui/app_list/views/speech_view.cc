@@ -49,11 +49,11 @@ const SkColor kSoundLevelIndicatorColor = SkColorSetRGB(219, 219, 219);
 class SoundLevelIndicator : public views::View {
  public:
   SoundLevelIndicator();
-  virtual ~SoundLevelIndicator();
+  ~SoundLevelIndicator() override;
 
  private:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   DISALLOW_COPY_AND_ASSIGN(SoundLevelIndicator);
 };
@@ -75,11 +75,11 @@ class MicButton : public views::ImageButton,
                   public views::MaskedTargeterDelegate {
  public:
   explicit MicButton(views::ButtonListener* listener);
-  virtual ~MicButton();
+  ~MicButton() override;
 
  private:
   // views::MaskedTargeterDelegate:
-  virtual bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(gfx::Path* mask) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MicButton);
 };

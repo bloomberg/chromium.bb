@@ -22,11 +22,11 @@ class AppListBackground : public views::Background {
  public:
   AppListBackground(int corner_radius,
                     AppListMainView* main_view);
-  virtual ~AppListBackground();
+  ~AppListBackground() override;
 
  private:
   // views::Background overrides:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
+  void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
   const int corner_radius_;
   const AppListMainView* main_view_;  // Owned by views hierarchy.

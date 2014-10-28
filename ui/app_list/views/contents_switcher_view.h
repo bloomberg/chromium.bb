@@ -23,7 +23,7 @@ class ContentsSwitcherView : public views::View,
                              public PaginationModelObserver {
  public:
   explicit ContentsSwitcherView(ContentsView* contents_view);
-  virtual ~ContentsSwitcherView();
+  ~ContentsSwitcherView() override;
 
   ContentsView* contents_view() const { return contents_view_; }
 
@@ -33,14 +33,13 @@ class ContentsSwitcherView : public views::View,
 
  private:
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() override;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
-  virtual void TransitionStarted() override;
-  virtual void TransitionChanged() override;
+  void TotalPagesChanged() override;
+  void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionStarted() override;
+  void TransitionChanged() override;
 
   ContentsView* contents_view_;  // Owned by views hierarchy.
 

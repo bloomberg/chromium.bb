@@ -82,10 +82,10 @@ class TestSearchProvider : public SearchProvider {
 class MixerTest : public testing::Test {
  public:
   MixerTest() {}
-  virtual ~MixerTest() {}
+  ~MixerTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     results_.reset(new AppListModel::SearchResults);
 
     providers_.push_back(new TestSearchProvider("app"));

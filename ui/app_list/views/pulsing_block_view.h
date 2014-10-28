@@ -22,13 +22,13 @@ class PulsingBlockView : public views::View {
   // Constructs a PulsingBlockView of |size|. If |start_delay| is true,
   // starts the pulsing animation after a random delay.
   PulsingBlockView(const gfx::Size& size, bool start_delay);
-  virtual ~PulsingBlockView();
+  ~PulsingBlockView() override;
 
  private:
   void OnStartDelayTimer();
 
   // views::View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   base::OneShotTimer<PulsingBlockView> start_delay_timer_;
 

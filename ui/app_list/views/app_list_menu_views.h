@@ -25,7 +25,7 @@ namespace app_list {
 class AppListMenuViews : public AppListMenu {
  public:
   explicit AppListMenuViews(AppListViewDelegate* delegate);
-  virtual ~AppListMenuViews();
+  ~AppListMenuViews() override;
 
   void RunMenuAt(views::MenuButton* button, const gfx::Point& point);
   void Cancel();

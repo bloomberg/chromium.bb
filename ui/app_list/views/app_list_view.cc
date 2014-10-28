@@ -87,10 +87,10 @@ class AppListOverlayBackground : public views::Background {
  public:
   AppListOverlayBackground(int corner_radius)
       : corner_radius_(corner_radius) {};
-  virtual ~AppListOverlayBackground() {};
+  ~AppListOverlayBackground() override{};
 
   // Overridden from views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(SK_ColorWHITE);
@@ -113,7 +113,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
         target_(NULL) {
   }
 
-  virtual ~HideViewAnimationObserver() {
+  ~HideViewAnimationObserver() override {
     if (target_)
       StopObservingImplicitAnimations();
   }
@@ -128,7 +128,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     if (target_) {
       target_->SetVisible(false);
       target_ = NULL;

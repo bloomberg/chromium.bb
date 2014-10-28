@@ -41,7 +41,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate);
-  virtual ~SearchBoxView();
+  ~SearchBoxView() override;
 
   void ModelChanged();
   bool HasSearch() const;
@@ -55,8 +55,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   }
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
  private:
   // Updates model text and selection model with current Textfield info.
@@ -66,28 +66,26 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void NotifyQueryChanged();
 
   // Overridden from views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
 
   // Overridden from SearchBoxModelObserver:
-  virtual void IconChanged() override;
-  virtual void SpeechRecognitionButtonPropChanged() override;
-  virtual void HintTextChanged() override;
-  virtual void SelectionModelChanged() override;
-  virtual void TextChanged() override;
+  void IconChanged() override;
+  void SpeechRecognitionButtonPropChanged() override;
+  void HintTextChanged() override;
+  void SelectionModelChanged() override;
+  void TextChanged() override;
 
   // Overridden from SpeechUIModelObserver:
-  virtual void OnSpeechRecognitionStateChanged(
+  void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.

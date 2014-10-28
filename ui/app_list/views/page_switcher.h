@@ -22,7 +22,7 @@ class PageSwitcher : public views::View,
                      public PaginationModelObserver {
  public:
   explicit PageSwitcher(PaginationModel* model);
-  virtual ~PageSwitcher();
+  ~PageSwitcher() override;
 
   // Returns the page index of the page switcher button under the point. If no
   // page switcher button is under the point, -1 is return. |point| is in
@@ -34,21 +34,20 @@ class PageSwitcher : public views::View,
   void UpdateUIForDragPoint(const gfx::Point& point);
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
  private:
   void CalculateButtonWidthAndSpacing(int contents_width);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from PaginationModelObserver:
-  virtual void TotalPagesChanged() override;
-  virtual void SelectedPageChanged(int old_selected, int new_selected) override;
-  virtual void TransitionStarted() override;
-  virtual void TransitionChanged() override;
+  void TotalPagesChanged() override;
+  void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionStarted() override;
+  void TransitionChanged() override;
 
   PaginationModel* model_;  // Owned by AppsGridView.
   views::View* buttons_;  // Owned by views hierarchy.

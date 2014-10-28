@@ -42,14 +42,14 @@ std::string GetDataContent(const HistoryData::Data& data) {
 class HistoryDataStoreTest : public testing::Test {
  public:
   HistoryDataStoreTest() {}
-  virtual ~HistoryDataStoreTest() {}
+  ~HistoryDataStoreTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     worker_pool_ = new base::SequencedWorkerPool(1, "AppLauncherTest");
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     // Release |store_| while ui loop is still running.
     store_ = NULL;
   }

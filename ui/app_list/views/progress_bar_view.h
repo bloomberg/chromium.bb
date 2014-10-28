@@ -19,11 +19,11 @@ namespace app_list {
 class ProgressBarView : public views::ProgressBar {
  public:
   ProgressBarView();
-  virtual ~ProgressBarView();
+  ~ProgressBarView() override;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   scoped_ptr<views::Painter> background_painter_;

@@ -33,7 +33,7 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
  public:
   SearchResultListView(SearchResultListViewDelegate* delegate,
                        AppListViewDelegate* view_delegate);
-  virtual ~SearchResultListView();
+  ~SearchResultListView() override;
 
   void SetResults(AppListModel::SearchResults* results);
 
@@ -54,8 +54,8 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
   void OnSearchResultUninstalled(SearchResultView* view);
 
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  gfx::Size GetPreferredSize() const override;
 
  private:
   friend class test::SearchResultListViewTest;
@@ -78,20 +78,19 @@ class APP_LIST_EXPORT SearchResultListView : public views::View,
   void ForceAutoLaunchForTest();
 
   // Overridden from views::View:
-  virtual void Layout() override;
-  virtual int GetHeightForWidth(int w) const override;
-  virtual void VisibilityChanged(
-      views::View* starting_from, bool is_visible) override;
+  void Layout() override;
+  int GetHeightForWidth(int w) const override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Overridden from ui::ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) override;
-  virtual void ListItemsRemoved(size_t start, size_t count) override;
-  virtual void ListItemMoved(size_t index, size_t target_index) override;
-  virtual void ListItemsChanged(size_t start, size_t count) override;
+  void ListItemsAdded(size_t start, size_t count) override;
+  void ListItemsRemoved(size_t start, size_t count) override;
+  void ListItemMoved(size_t index, size_t target_index) override;
+  void ListItemsChanged(size_t start, size_t count) override;
 
   SearchResultListViewDelegate* delegate_;  // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.

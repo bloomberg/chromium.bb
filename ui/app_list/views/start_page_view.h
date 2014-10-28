@@ -28,7 +28,7 @@ class APP_LIST_EXPORT StartPageView : public views::View,
  public:
   StartPageView(AppListMainView* app_list_main_view,
                 AppListViewDelegate* view_delegate);
-  virtual ~StartPageView();
+  ~StartPageView() override;
 
   void Reset();
   void ShowSearchResults();
@@ -41,8 +41,8 @@ class APP_LIST_EXPORT StartPageView : public views::View,
   SearchBoxView* dummy_search_box_view() { return search_box_view_; }
 
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void Layout() override;
 
  private:
   enum ShowState {
@@ -64,13 +64,13 @@ class APP_LIST_EXPORT StartPageView : public views::View,
   void ScheduleUpdate();
 
   // Overridden from SearchBoxViewDelegate:
-  virtual void QueryChanged(SearchBoxView* sender) override;
+  void QueryChanged(SearchBoxView* sender) override;
 
   // Overridden from ui::ListModelObserver:
-  virtual void ListItemsAdded(size_t start, size_t count) override;
-  virtual void ListItemsRemoved(size_t start, size_t count) override;
-  virtual void ListItemMoved(size_t index, size_t target_index) override;
-  virtual void ListItemsChanged(size_t start, size_t count) override;
+  void ListItemsAdded(size_t start, size_t count) override;
+  void ListItemsRemoved(size_t start, size_t count) override;
+  void ListItemMoved(size_t index, size_t target_index) override;
+  void ListItemsChanged(size_t start, size_t count) override;
 
   // The parent view of ContentsView which is the parent of this view.
   AppListMainView* app_list_main_view_;

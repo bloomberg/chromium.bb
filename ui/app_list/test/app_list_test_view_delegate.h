@@ -75,8 +75,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void ToggleSpeechRecognition() override;
   void ShowForProfileByPath(const base::FilePath& profile_path) override {}
 #if defined(TOOLKIT_VIEWS)
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override;
-  virtual std::vector<views::View*> CreateCustomPageWebViews(
+  views::View* CreateStartPageWebView(const gfx::Size& size) override;
+  std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override;
 #endif
   bool IsSpeechRecognitionEnabled() override;

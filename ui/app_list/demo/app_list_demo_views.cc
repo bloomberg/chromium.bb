@@ -34,14 +34,14 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
  public:
   explicit DemoAppListViewDelegate(content::BrowserContext* browser_context)
       : view_(NULL), browser_context_(browser_context) {}
-  virtual ~DemoAppListViewDelegate() {}
+  ~DemoAppListViewDelegate() override {}
 
   app_list::AppListView* InitView(gfx::NativeWindow window_context);
 
   // Overridden from AppListViewDelegate:
-  virtual void Dismiss() override;
-  virtual void ViewClosing() override;
-  virtual views::View* CreateStartPageWebView(const gfx::Size& size) override;
+  void Dismiss() override;
+  void ViewClosing() override;
+  views::View* CreateStartPageWebView(const gfx::Size& size) override;
 
  private:
   app_list::AppListView* view_;  // Weak. Owns this.

@@ -45,9 +45,7 @@ class PageFlipWaiter : public PaginationModelObserver {
     model_->AddObserver(this);
   }
 
-  virtual ~PageFlipWaiter() {
-    model_->RemoveObserver(this);
-  }
+  ~PageFlipWaiter() override { model_->RemoveObserver(this); }
 
   void Wait() {
     DCHECK(!wait_);
@@ -63,10 +61,8 @@ class PageFlipWaiter : public PaginationModelObserver {
 
  private:
   // PaginationModelObserver overrides:
-  virtual void TotalPagesChanged() override {
-  }
-  virtual void SelectedPageChanged(int old_selected,
-                                   int new_selected) override {
+  void TotalPagesChanged() override {}
+  void SelectedPageChanged(int old_selected, int new_selected) override {
     if (!selected_pages_.empty())
       selected_pages_ += ',';
     selected_pages_ += base::IntToString(new_selected);
@@ -74,10 +70,8 @@ class PageFlipWaiter : public PaginationModelObserver {
     if (wait_)
       ui_loop_->Quit();
   }
-  virtual void TransitionStarted() override {
-  }
-  virtual void TransitionChanged() override {
-  }
+  void TransitionStarted() override {}
+  void TransitionChanged() override {}
 
   base::MessageLoopForUI* ui_loop_;
   PaginationModel* model_;
@@ -92,10 +86,10 @@ class PageFlipWaiter : public PaginationModelObserver {
 class AppsGridViewTest : public views::ViewsTestBase {
  public:
   AppsGridViewTest() {}
-  virtual ~AppsGridViewTest() {}
+  ~AppsGridViewTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
     model_.reset(new AppListTestModel);
     model_->SetFoldersEnabled(true);
@@ -108,7 +102,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_.get()));
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     apps_grid_view_.reset();  // Release apps grid view before models.
     views::ViewsTestBase::TearDown();
   }
@@ -186,33 +180,30 @@ class AppsGridViewTest : public views::ViewsTestBase {
 class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
  public:
   TestAppsGridViewFolderDelegate() : show_bubble_(false) {}
-  virtual ~TestAppsGridViewFolderDelegate() {}
+  ~TestAppsGridViewFolderDelegate() override {}
 
   // Overridden from AppsGridViewFolderDelegate:
-  virtual void UpdateFolderViewBackground(bool show_bubble) override {
+  void UpdateFolderViewBackground(bool show_bubble) override {
     show_bubble_ = show_bubble;
   }
 
-  virtual void ReparentItem(AppListItemView* original_drag_view,
-                            const gfx::Point& drag_point_in_folder_grid)
-      override {}
+  void ReparentItem(AppListItemView* original_drag_view,
+                    const gfx::Point& drag_point_in_folder_grid) override {}
 
-  virtual void DispatchDragEventForReparent(
+  void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,
       const gfx::Point& drag_point_in_folder_grid) override {}
 
-  virtual void DispatchEndDragEventForReparent(
-      bool events_forwarded_to_drag_drop_host,
-      bool cancel_drag) override {}
+  void DispatchEndDragEventForReparent(bool events_forwarded_to_drag_drop_host,
+                                       bool cancel_drag) override {}
 
-  virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point)
-      override {
+  bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) override {
     return false;
   }
 
-  virtual bool IsOEMFolder() const override { return false; }
+  bool IsOEMFolder() const override { return false; }
 
-  virtual void SetRootLevelDragViewVisible(bool visible) override {}
+  void SetRootLevelDragViewVisible(bool visible) override {}
 
   bool show_bubble() { return show_bubble_; }
 
