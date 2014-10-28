@@ -18,6 +18,21 @@ function test()
     textEditor.setCompletionDictionary(completionDictionary);
 
     InspectorTest.runTestSuite([
+        // This test has to be the first. It validates that autocompletion controller
+        // will initialize as a key will be pressed.
+        function testCompletionsShowUpOnKeyPress(next)
+        {
+            textEditor.setText("name1 name2 name3 name4\nna");
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, 2));
+            InspectorTest.addSniffer(WebInspector.SuggestBox.prototype, "updateSuggestions", onAutocompletionSuggestBox);
+            InspectorTest.typeIn(textEditor, "m", new Function());
+            function onAutocompletionSuggestBox()
+            {
+                document.activeElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+                dumpDictionary(next);
+            }
+        },
+
         function testSetInitialText(next)
         {
             textEditor.setText("one two three3_\nfour five\na_b\nsix\n123foo\n132\nseven");

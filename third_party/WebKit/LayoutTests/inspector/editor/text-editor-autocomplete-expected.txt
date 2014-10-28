@@ -1,6 +1,14 @@
 This test checks how text editor updates autocompletion dictionary in a response to user input.
 
 
+Running: testCompletionsShowUpOnKeyPress
+========= Text in editor =========
+name1 name2 name3 name4
+name1|
+======= Words in dictionary =======
+[name1, name2, name3, name4]
+=============
+
 Running: testSetInitialText
 ========= Text in editor =========
 |one two three3_
