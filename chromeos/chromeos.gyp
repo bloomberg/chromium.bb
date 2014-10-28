@@ -230,6 +230,7 @@
       'ime/fake_ime_keyboard.h',
       'ime/ime_keyboard.h',
       'ime/ime_keyboard_ozone.cc',
+      'ime/ime_keyboard_x11.h',
       'ime/ime_keyboard_x11.cc',
       'ime/input_method_delegate.h',
       'ime/input_method_descriptor.cc',
