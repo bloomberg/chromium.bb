@@ -59,7 +59,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 if (mSuggestionsPopup == null || !mSuggestionsPopup.isShowing()) return;
-                mSuggestionsPopup.setWidth(mUrlField.getWidth());
+                mSuggestionsPopup.setWidth(mToolbar.getWidth());
                 mSuggestionsPopup.setHeight(getSuggestionPopupHeight());
                 mSuggestionsPopup.show();
             }
