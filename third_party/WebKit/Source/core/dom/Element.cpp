@@ -2787,21 +2787,21 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 void Element::didAddAttribute(const QualifiedName& name, const AtomicString& value)
 {
     attributeChanged(name, value);
-    InspectorInstrumentation::didModifyDOMAttr(this, name.localName(), value);
+    InspectorInstrumentation::didModifyDOMAttr(this, name.toString(), value);
     dispatchSubtreeModifiedEvent();
 }
 
 void Element::didModifyAttribute(const QualifiedName& name, const AtomicString& value)
 {
     attributeChanged(name, value);
-    InspectorInstrumentation::didModifyDOMAttr(this, name.localName(), value);
+    InspectorInstrumentation::didModifyDOMAttr(this, name.toString(), value);
     // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
 
 void Element::didRemoveAttribute(const QualifiedName& name)
 {
     attributeChanged(name, nullAtom);
-    InspectorInstrumentation::didRemoveDOMAttr(this, name.localName());
+    InspectorInstrumentation::didRemoveDOMAttr(this, name.toString());
     dispatchSubtreeModifiedEvent();
 }
 

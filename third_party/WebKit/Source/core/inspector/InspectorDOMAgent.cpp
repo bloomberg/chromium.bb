@@ -1924,7 +1924,7 @@ void InspectorDOMAgent::willModifyDOMAttr(Element*, const AtomicString& oldValue
     m_suppressAttributeModifiedEvent = (oldValue == newValue);
 }
 
-void InspectorDOMAgent::didModifyDOMAttr(Element* element, const AtomicString& name, const AtomicString& value)
+void InspectorDOMAgent::didModifyDOMAttr(Element* element, const String& name, const AtomicString& value)
 {
     bool shouldSuppressEvent = m_suppressAttributeModifiedEvent;
     m_suppressAttributeModifiedEvent = false;
@@ -1942,7 +1942,7 @@ void InspectorDOMAgent::didModifyDOMAttr(Element* element, const AtomicString& n
     m_frontend->attributeModified(id, name, value);
 }
 
-void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const AtomicString& name)
+void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const String& name)
 {
     int id = boundNodeId(element);
     // If node is not mapped yet -> ignore the event.
