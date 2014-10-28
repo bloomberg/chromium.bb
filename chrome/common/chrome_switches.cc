@@ -437,9 +437,6 @@ const char kEnableDomainReliability[]          = "enable-domain-reliability";
 // Enable Enhanced Bookmarks.
 const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 
-// Enable Enhanced Bookmarks sync.
-const char kEnableEnhancedBookmarksSync[] = "enable-enhanced-bookmarks-sync";
-
 // Enables experimentation with ephemeral apps, which are launched without
 // installing in Chrome.
 const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";

@@ -290,15 +290,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
           this,
           profile_));
 #endif
-
-  // Enhanced bookmark sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (IsEnhancedBookmarksSyncEnabled()) {
-    pss->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        base::Bind(&ChromeReportUnrecoverableError),
-        syncer::ENHANCED_BOOKMARKS, this));
-  }
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
@@ -570,11 +561,6 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
 #else
       return base::WeakPtr<syncer::SyncableService>();
 #endif
-    }
-    case syncer::ENHANCED_BOOKMARKS: {
-      // TODO(wittman): Return enhanced bookmarks SyncableService once
-      // implemented.
-      return base::WeakPtr<syncer::SyncableService>();
     }
     default:
       // The following datatypes still need to be transitioned to the

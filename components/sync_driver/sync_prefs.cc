@@ -301,8 +301,6 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncThemes;
     case syncer::TYPED_URLS:
       return prefs::kSyncTypedUrls;
-    case syncer::ENHANCED_BOOKMARKS:
-      return prefs::kSyncEnhancedBookmarks;
     case syncer::EXTENSION_SETTINGS:
       return prefs::kSyncExtensionSettings;
     case syncer::EXTENSIONS:

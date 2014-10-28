@@ -110,8 +110,6 @@ enum ModelType {
   ARTICLES,
   // App List items
   APP_LIST,
-  // Enhanced bookmarks clips or folios.
-  ENHANCED_BOOKMARKS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

@@ -265,10 +265,3 @@ bool IsEnableSyncArticlesSet() {
 
   return false;
 }
-
-bool IsEnhancedBookmarksSyncEnabled() {
-  // Gate by command line flag during development. Ultimately this should check
-  // whether the user is using the enhanced bookmarks extension.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEnhancedBookmarksSync);
-}

@@ -33,7 +33,6 @@ import bookmark_specifics_pb2
 import client_commands_pb2
 import dictionary_specifics_pb2
 import get_updates_caller_info_pb2
-import enhanced_bookmark_specifics_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
 import favicon_image_specifics_pb2
@@ -73,7 +72,6 @@ ALL_TYPES = (
     BOOKMARK,
     DEVICE_INFO,
     DICTIONARY,
-    ENHANCED_BOOKMARK,
     EXPERIMENTS,
     EXTENSIONS,
     HISTORY_DELETE_DIRECTIVE,
@@ -92,7 +90,7 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(31)
+    FAVICON_TRACKING) = range(30)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -119,7 +117,6 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
     DEVICE_INFO: SYNC_TYPE_FIELDS['device_info'],
     DICTIONARY: SYNC_TYPE_FIELDS['dictionary'],
-    ENHANCED_BOOKMARK: SYNC_TYPE_FIELDS['enhanced_bookmark'],
     EXPERIMENTS: SYNC_TYPE_FIELDS['experiments'],
     EXTENSION_SETTINGS: SYNC_TYPE_FIELDS['extension_setting'],
     EXTENSIONS: SYNC_TYPE_FIELDS['extension'],
@@ -512,9 +509,6 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=AUTOFILL_PROFILE),
       PermanentItem('google_chrome_device_info', name='Device Info',
                     parent_tag=ROOT_ID, sync_type=DEVICE_INFO),
-      PermanentItem('google_chrome_enhanced_bookmarks',
-                    name='Enhanced_Bookmarks',
-                    parent_tag=ROOT_ID, sync_type=ENHANCED_BOOKMARK),
       PermanentItem('google_chrome_experiments', name='Experiments',
                     parent_tag=ROOT_ID, sync_type=EXPERIMENTS),
       PermanentItem('google_chrome_extension_settings',

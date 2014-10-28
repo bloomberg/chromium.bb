@@ -512,81 +512,6 @@ base::DictionaryValue* DictionarySpecificsToValue(
   return value;
 }
 
-base::DictionaryValue* FolioInfoToValue(
-    const sync_pb::ChromeSyncFolioInfo& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(folio_id);
-  SET_STR(position);
-  SET_ENUM(display_size, GetDisplaySizeString);
-  return value;
-}
-
-base::DictionaryValue* ImageInfoToValue(
-    const sync_pb::ChromeSyncImageData::ImageInfo& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(url);
-  SET_INT32(width);
-  SET_INT32(height);
-  return value;
-}
-
-base::DictionaryValue* ImageDataToValue(
-    const sync_pb::ChromeSyncImageData& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET(original_info, ImageInfoToValue);
-  SET(thumbnail_info, ImageInfoToValue);
-  SET_INT64(expiration_timestamp_us);
-  return value;
-}
-
-base::DictionaryValue* LegacyBookmarkDataToValue(
-    const sync_pb::ChromeSyncClip::LegacyBookmarkData& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_BYTES(favicon);
-  SET_STR(icon_url);
-  return value;
-}
-
-base::DictionaryValue* ClipToValue(const sync_pb::ChromeSyncClip& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(id);
-  SET_STR(note);
-  SET_REP(folio_info, &FolioInfoToValue);
-  SET_STR(url);
-  SET_STR(title);
-  SET_STR(snippet);
-  SET(image, ImageDataToValue);
-  SET_INT64(created_timestamp_us);
-  SET_BOOL(is_malware);
-  SET_ENUM(fetch_error_reason, GetFetchErrorReasonString);
-  SET_STR(client_version);
-  SET(bookmark_data, LegacyBookmarkDataToValue);
-  SET_REP(meta_info, &MetaInfoToValue);
-  return value;
-}
-
-base::DictionaryValue* FolioToValue(const sync_pb::ChromeSyncFolio& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(id);
-  SET_STR(parent_id);
-  SET_STR(title);
-  SET_STR(description);
-  SET_BOOL(is_public);
-  SET_INT64(created_timestamp_us);
-  SET_STR(position);
-  SET_STR(client_version);
-  SET_REP(meta_info, &MetaInfoToValue);
-  return value;
-}
-
-base::DictionaryValue* EnhancedBookmarkSpecificsToValue(
-    const sync_pb::EnhancedBookmarkSpecifics& proto) {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  SET(clip, ClipToValue);
-  SET(folio, FolioToValue);
-  return value;
-}
-
 namespace {
 
 base::DictionaryValue* FaviconSyncFlagsToValue(
@@ -871,7 +796,6 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
   SET_FIELD(dictionary, DictionarySpecificsToValue);
-  SET_FIELD(enhanced_bookmark, EnhancedBookmarkSpecificsToValue);
   SET_FIELD(experiments, ExperimentsSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);

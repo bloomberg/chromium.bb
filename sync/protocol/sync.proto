@@ -27,7 +27,6 @@ import "client_debug_info.proto";
 import "device_info_specifics.proto";
 import "dictionary_specifics.proto";
 import "encryption.proto";
-import "enhanced_bookmark_specifics.proto";
 import "experiments_specifics.proto";
 import "extension_setting_specifics.proto";
 import "extension_specifics.proto";
@@ -130,7 +129,6 @@ message EntitySpecifics {
       202026;
   optional ArticleSpecifics article = 223759;
   optional AppListSpecifics app_list = 229170;
-  optional EnhancedBookmarkSpecifics enhanced_bookmark = 294694;
 }
 
 message SyncEntity {

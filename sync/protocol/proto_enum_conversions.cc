@@ -263,30 +263,6 @@ const char* GetBlockedStateString(
   return "";
 }
 
-const char* GetDisplaySizeString(
-    sync_pb::ChromeSyncFolioInfo::DisplaySize display_size) {
-  ASSERT_ENUM_BOUNDS(sync_pb::ChromeSyncFolioInfo, DisplaySize, SMALL, MEDIUM);
-  switch (display_size) {
-    ENUM_CASE(sync_pb::ChromeSyncFolioInfo, SMALL);
-    ENUM_CASE(sync_pb::ChromeSyncFolioInfo, MEDIUM);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* GetFetchErrorReasonString(
-    sync_pb::ChromeSyncClip::FetchErrorReason fetch_error_reason) {
-  ASSERT_ENUM_BOUNDS(
-      sync_pb::ChromeSyncClip, FetchErrorReason, UNKNOWN, UNREACHABLE);
-  switch (fetch_error_reason) {
-    ENUM_CASE(sync_pb::ChromeSyncClip, UNKNOWN);
-    ENUM_CASE(sync_pb::ChromeSyncClip, LIKELY_404);
-    ENUM_CASE(sync_pb::ChromeSyncClip, UNREACHABLE);
-  }
-  NOTREACHED();
-  return "";
-}
-
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

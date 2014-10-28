@@ -40,7 +40,6 @@ const char kSyncAutofill[] = "sync.autofill";
 const char kSyncBookmarks[] = "sync.bookmarks";
 const char kSyncDeviceInfo[] = "sync.device_info";
 const char kSyncDictionary[] = "sync.dictionary";
-const char kSyncEnhancedBookmarks[] = "sync.enhanced_bookmarks";
 const char kSyncExtensionSettings[] = "sync.extension_settings";
 const char kSyncExtensions[] = "sync.extensions";
 const char kSyncFaviconImages[] = "sync.favicon_images";

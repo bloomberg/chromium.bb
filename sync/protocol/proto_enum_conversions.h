@@ -11,7 +11,6 @@
 #include "sync/protocol/app_list_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/client_debug_info.pb.h"
-#include "sync/protocol/enhanced_bookmark_specifics.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -65,12 +64,6 @@ const char* SingletonDebugEventTypeString(
     sync_pb::SyncEnums::SingletonDebugEventType type);
 
 const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state);
-
-const char* GetDisplaySizeString(
-    sync_pb::ChromeSyncFolioInfo::DisplaySize display_size);
-
-const char* GetFetchErrorReasonString(
-    sync_pb::ChromeSyncClip::FetchErrorReason fetch_error_reason);
 
 }  // namespace syncer
 

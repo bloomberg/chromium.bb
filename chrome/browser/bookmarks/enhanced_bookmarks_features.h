@@ -77,7 +77,4 @@ bool IsEnableDomDistillerSet();
 // Returns true when flag enable-sync-articles is set or enabled from Finch.
 bool IsEnableSyncArticlesSet();
 
-// Returns true if sync of enhanced bookmarks is enabled.
-bool IsEnhancedBookmarksSyncEnabled();
-
 #endif  // CHROME_BROWSER_BOOKMARKS_ENHANCED_BOOKMARKS_FEATURES_H_

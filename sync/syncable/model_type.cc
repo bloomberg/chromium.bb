@@ -119,9 +119,6 @@ void AddDefaultFieldValue(ModelType datatype,
     case ARTICLES:
       specifics->mutable_article();
       break;
-    case ENHANCED_BOOKMARKS:
-      specifics->mutable_enhanced_bookmark();
-      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -199,8 +196,6 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber;
     case ARTICLES:
       return sync_pb::EntitySpecifics::kArticleFieldNumber;
-    case ENHANCED_BOOKMARKS:
-      return sync_pb::EntitySpecifics::kEnhancedBookmarkFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -329,9 +324,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_article())
     return ARTICLES;
 
-  if (specifics.has_enhanced_bookmark())
-    return ENHANCED_BOOKMARKS;
-
   return UNSPECIFIED;
 }
 
@@ -374,8 +366,6 @@ bool IsUserSelectableType(ModelType model_type) {
 
 ModelTypeSet EncryptableUserTypes() {
   ModelTypeSet encryptable_user_types = UserTypes();
-  // Encrypted bookmarks are handled through standard bookmark sync.
-  encryptable_user_types.Remove(ENHANCED_BOOKMARKS);
   // We never encrypt history delete directives.
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
@@ -534,8 +524,6 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Managed User Shared Settings";
     case ARTICLES:
       return "Articles";
-    case ENHANCED_BOOKMARKS:
-      return "Enhanced Bookmarks";
     case PROXY_TABS:
       return "Tabs";
     default:
@@ -615,8 +603,6 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 30;
     case SYNCED_NOTIFICATION_APP_INFO:
       return 31;
-    case ENHANCED_BOOKMARKS:
-      return 32;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -712,8 +698,6 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return ARTICLES;
   else if (model_type_string == "Tabs")
     return PROXY_TABS;
-  else if (model_type_string == "Enhanced Bookmarks")
-    return ENHANCED_BOOKMARKS;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -838,8 +822,6 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_articles";
     case PROXY_TABS:
       return std::string();
-    case ENHANCED_BOOKMARKS:
-      return "google_chrome_enhanced_bookmarks";
     default:
       break;
   }
@@ -882,7 +864,6 @@ const char kSupervisedUserNotificationType[] = "MANAGED_USER";
 const char kSupervisedUserSharedSettingNotificationType[] =
     "MANAGED_USER_SHARED_SETTING";
 const char kArticleNotificationType[] = "ARTICLE";
-const char kEnhancedBookmarkNotificationType[] = "ENHANCED_BOOKMARK";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -974,9 +955,6 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case ARTICLES:
       *notification_type = kArticleNotificationType;
-      return true;
-    case ENHANCED_BOOKMARKS:
-      *notification_type = kEnhancedBookmarkNotificationType;
       return true;
     default:
       break;
@@ -1074,9 +1052,6 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kArticleNotificationType) {
     *model_type = ARTICLES;
-    return true;
-  } else if (notification_type == kEnhancedBookmarkNotificationType) {
-    *model_type = ENHANCED_BOOKMARKS;
     return true;
   }
   *model_type = UNSPECIFIED;

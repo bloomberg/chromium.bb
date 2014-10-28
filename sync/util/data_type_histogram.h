@@ -126,9 +126,6 @@
       case ::syncer::PROXY_TABS: \
         PER_DATA_TYPE_MACRO("Tabs"); \
         break; \
-      case ::syncer::ENHANCED_BOOKMARKS: \
-        PER_DATA_TYPE_MACRO("EnhancedBookmarks"); \
-        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \
