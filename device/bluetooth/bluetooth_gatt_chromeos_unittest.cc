@@ -827,7 +827,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   // Run the message loop so that the characteristics appear.
   base::MessageLoop::current()->Run();
 
-  // Issue write request to non-writeable characteristics.
+  // Issue write request to non-writable characteristics.
   observer.last_gatt_characteristic_id_.clear();
   observer.last_gatt_characteristic_uuid_ = BluetoothUUID();
 
@@ -878,7 +878,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
             last_service_error_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count_);
 
-  // Issue write request to writeable characteristic. The "Body Sensor Location"
+  // Issue write request to writable characteristic. The "Body Sensor Location"
   // characteristic does not send notifications and WriteValue does not result
   // in a CharacteristicValueChanged event, thus no such event should be
   // received.

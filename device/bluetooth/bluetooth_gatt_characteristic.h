@@ -25,7 +25,7 @@ class BluetoothGattNotifySession;
 // with a BluetoothGattService. There are two ways in which this class is used:
 //
 //   1. To represent GATT characteristics that belong to a service hosted by a
-//      a remote device. In this case the characteristic will be constructed by
+//      remote device. In this case the characteristic will be constructed by
 //      the subsystem.
 //   2. To represent GATT characteristics that belong to a locally hosted
 //      service. To achieve this, users can construct instances of

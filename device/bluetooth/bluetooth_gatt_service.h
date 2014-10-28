@@ -45,7 +45,7 @@ class BluetoothGattService {
     // Called when a remote device in the central role requests to read the
     // value of the characteristic |characteristic| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
-    // readable and any authentication and authorization challanges were
+    // readable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
     // To respond to the request with success and return the requested value,
@@ -65,7 +65,7 @@ class BluetoothGattService {
     // Called when a remote device in the central role requests to write the
     // value of the characteristic |characteristic| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
-    // writeable and any authentication and authorization challanges were
+    // writable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
     // To respond to the request with success the delegate must invoke
@@ -86,7 +86,7 @@ class BluetoothGattService {
     // Called when a remote device in the central role requests to read the
     // value of the descriptor |descriptor| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
-    // readable and any authentication and authorization challanges were
+    // readable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
     // To respond to the request with success and return the requested value,
@@ -106,7 +106,7 @@ class BluetoothGattService {
     // Called when a remote device in the central role requests to write the
     // value of the descriptor |descriptor| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
-    // writeable and any authentication and authorization challanges were
+    // writable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
     // To respond to the request with success the delegate must invoke

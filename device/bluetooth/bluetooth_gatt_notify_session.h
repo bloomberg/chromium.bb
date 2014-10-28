@@ -17,7 +17,7 @@ namespace device {
 // BluetoothGattCharacteristic::StartNotifySession.
 class BluetoothGattNotifySession {
  public:
-  // Destructor autmatically stops this session.
+  // Destructor automatically stops this session.
   virtual ~BluetoothGattNotifySession();
 
   // Returns the identifier of the associated characteristic.

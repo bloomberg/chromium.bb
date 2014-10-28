@@ -116,8 +116,8 @@ class BluetoothTaskManagerWin
 
   virtual ~BluetoothTaskManagerWin();
 
-  // Logs Win32 errors occuring during polling on the worker thread. The method
-  // may discards messages to avoid logging being too verbose.
+  // Logs Win32 errors occurring during polling on the worker thread. The method
+  // may discard messages to avoid logging being too verbose.
   void LogPollingError(const char* message, int win32_error);
 
   // Notify all Observers of updated AdapterState. Should only be called on the

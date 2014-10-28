@@ -19,7 +19,7 @@ class DeviceRegistryPropertyValue {
  public:
   // Creates a property value instance, where |property_type| is one of REG_xxx
   // registry value type (e.g. REG_SZ, REG_DWORD), |value| is a byte array
-  // containing the propery value and |value_size| is the number of bytes in
+  // containing the property value and |value_size| is the number of bytes in
   // |value|. Note the returned instance takes ownership of the bytes in
   // |value|.
   static scoped_ptr<DeviceRegistryPropertyValue> Create(
@@ -51,7 +51,7 @@ class DevicePropertyValue {
  public:
   // Creates a property value instance, where |property_type| is one of
   // DEVPROP_TYPE_xxx value type , |value| is a byte array containing the
-  // propery value and |value_size| is the number of bytes in |value|. Note the
+  // property value and |value_size| is the number of bytes in |value|. Note the
   // returned instance takes ownership of the bytes in |value|.
   DevicePropertyValue(DEVPROPTYPE property_type,
                       scoped_ptr<uint8_t[]> value,

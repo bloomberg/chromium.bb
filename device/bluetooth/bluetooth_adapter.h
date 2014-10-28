@@ -230,7 +230,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // Requests that the adapter change its discoverability state. If
   // |discoverable| is true, then it will be discoverable by other Bluetooth
-  // devices. On successly changing the adapter's discoverability, |callback|
+  // devices. On successfully changing the adapter's discoverability, |callback|
   // will be called. On failure, |error_callback| will be called.
   virtual void SetDiscoverable(bool discoverable,
                                const base::Closure& callback,

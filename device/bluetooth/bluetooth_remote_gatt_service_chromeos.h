@@ -33,7 +33,7 @@ class BluetoothRemoteGattCharacteristicChromeOS;
 class BluetoothRemoteGattDescriptorChromeOS;
 
 // The BluetoothRemoteGattServiceChromeOS class implements BluetootGattService
-// for remote GATT services on the the Chrome OS platform.
+// for remote GATT services on the Chrome OS platform.
 class BluetoothRemoteGattServiceChromeOS
     : public device::BluetoothGattService,
       public BluetoothGattServiceClient::Observer,

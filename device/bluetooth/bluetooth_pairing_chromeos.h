@@ -109,7 +109,7 @@ class BluetoothPairingChromeOS {
 
  private:
   // Internal method to reset the current set of callbacks because a new
-  // request has arrived that supercedes them.
+  // request has arrived that supersedes them.
   void ResetCallbacks();
 
   // Internal method to respond to the relevant callback for a RejectPairing
