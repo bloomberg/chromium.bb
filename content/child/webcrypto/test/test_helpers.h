@@ -48,6 +48,9 @@ void PrintTo(const CryptoData& data, ::std::ostream* os);
 bool operator==(const CryptoData& a, const CryptoData& b);
 bool operator!=(const CryptoData& a, const CryptoData& b);
 
+// Gives a human-readable description of |status| and any error it represents.
+std::string StatusToString(const Status& status);
+
 // TODO(eroman): For Linux builds using system NSS, AES-GCM and RSA-OAEP, and
 // RSA key import are a runtime dependency.
 bool SupportsAesGcm();

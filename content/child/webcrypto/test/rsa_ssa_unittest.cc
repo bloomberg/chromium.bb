@@ -58,26 +58,6 @@ TEST(WebCryptoRsaSsaTest, ImportExportSpki) {
       "010001",
       CryptoData(key.algorithm().rsaHashedParams()->publicExponent()));
 
-  // Failing case: Empty SPKI data
-  EXPECT_EQ(
-      Status::ErrorImportEmptyKeyData(),
-      ImportKey(blink::WebCryptoKeyFormatSpki,
-                CryptoData(std::vector<uint8_t>()),
-                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
-                true,
-                blink::WebCryptoKeyUsageVerify,
-                &key));
-
-  // Failing case: Bad DER encoding.
-  EXPECT_EQ(
-      Status::DataError(),
-      ImportKey(blink::WebCryptoKeyFormatSpki,
-                CryptoData(HexStringToBytes("618333c4cb")),
-                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
-                true,
-                blink::WebCryptoKeyUsageVerify,
-                &key));
-
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
   EXPECT_EQ(Status::ErrorUnsupportedImportKeyFormat(),
             ImportKey(blink::WebCryptoKeyFormatSpki,
@@ -154,27 +134,6 @@ TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
             ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &exported_key));
   EXPECT_BYTES_EQ_HEX(kPrivateKeyPkcs8DerHex, exported_key);
 
-  // Failing case: Empty PKCS#8 data
-  EXPECT_EQ(Status::ErrorImportEmptyKeyData(),
-            ImportKey(blink::WebCryptoKeyFormatPkcs8,
-                      CryptoData(std::vector<uint8_t>()),
-                      CreateRsaHashedImportAlgorithm(
-                          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                          blink::WebCryptoAlgorithmIdSha1),
-                      true,
-                      blink::WebCryptoKeyUsageSign,
-                      &key));
-
-  // Failing case: Bad DER encoding.
-  EXPECT_EQ(
-      Status::DataError(),
-      ImportKey(blink::WebCryptoKeyFormatPkcs8,
-                CryptoData(HexStringToBytes("618333c4cb")),
-                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
-                true,
-                blink::WebCryptoKeyUsageSign,
-                &key));
-
   // Failing case: Import RSA key but provide an inconsistent input algorithm
   // and usage. Several issues here:
   //   * AES-CBC doesn't support PKCS8 key format
@@ -189,6 +148,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
 }
 
 // Tests importing of PKCS8 data that does not define a valid RSA key.
+// TODO(eroman): Move to bad_rsa_keys.json
 TEST(WebCryptoRsaSsaTest, ImportInvalidPkcs8) {
   if (!SupportsRsaPrivateKeyImport())
     return;
@@ -431,6 +391,7 @@ TEST(WebCryptoRsaSsaTest, ImportJwkExistingModulusAndInvalid) {
 //
 // This fails because JWA says that producers must include either ALL optional
 // parameters or NONE.
+// TODO(eroman): Move to bad_rsa_keys.json
 TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkMissingOptionalParams) {
   blink::WebCryptoKey key;
 
@@ -471,6 +432,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkMissingOptionalParams) {
 // include all the parameters when sending, and recipients MAY
 // accept them, but are not required to. Chromium's WebCrypto does
 // not allow such degenerate keys.
+// TODO(eroman): Move to bad_rsa_keys.json
 TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkIncorrectOptionalEmpty) {
   if (!SupportsRsaPrivateKeyImport())
     return;
@@ -504,6 +466,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkIncorrectOptionalEmpty) {
 }
 
 // Tries importing a public RSA key whose exponent contains leading zeros.
+// TODO(eroman): Move to bad_rsa_keys.json
 TEST(WebCryptoRsaSsaTest, ImportJwkRsaNonMinimalExponent) {
   base::DictionaryValue dict;
 
@@ -1224,6 +1187,64 @@ TEST(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
                 true,
                 blink::WebCryptoKeyUsageVerify | blink::WebCryptoKeyUsageSign,
                 &key));
+}
+
+// Reads a key format string as used in bad_rsa_keys.json, and converts to a
+// WebCryptoKeyFormat.
+blink::WebCryptoKeyFormat GetKeyFormatForTestCase(
+    const base::DictionaryValue* test) {
+  std::string format;
+  EXPECT_TRUE(test->GetString("format", &format));
+  if (format == "jwk")
+    return blink::WebCryptoKeyFormatJwk;
+  else if (format == "pkcs8")
+    return blink::WebCryptoKeyFormatPkcs8;
+  else if (format == "spki")
+    return blink::WebCryptoKeyFormatSpki;
+
+  EXPECT_TRUE(false) << "Unrecognized key format: " << format;
+  return blink::WebCryptoKeyFormatRaw;
+}
+
+// Extracts the key data bytes from |test|, as it appears in bad_rsa_keys.json.
+std::vector<uint8_t> GetKeyDataForTestCase(
+    const base::DictionaryValue* test,
+    blink::WebCryptoKeyFormat key_format) {
+  if (key_format == blink::WebCryptoKeyFormatJwk) {
+    const base::DictionaryValue* json;
+    EXPECT_TRUE(test->GetDictionary("data", &json));
+    return MakeJsonVector(*json);
+  }
+  return GetBytesFromHexString(test, "data");
+}
+
+// Imports invalid JWK/SPKI/PKCS8 data and verifies that it fails as expected.
+TEST(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
+  if (!SupportsRsaPrivateKeyImport())
+    return;
+
+  scoped_ptr<base::ListValue> tests;
+  ASSERT_TRUE(ReadJsonTestFileToList("bad_rsa_keys.json", &tests));
+
+  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+    SCOPED_TRACE(test_index);
+
+    const base::DictionaryValue* test;
+    ASSERT_TRUE(tests->GetDictionary(test_index, &test));
+
+    blink::WebCryptoKeyFormat key_format = GetKeyFormatForTestCase(test);
+    std::vector<uint8_t> key_data = GetKeyDataForTestCase(test, key_format);
+    std::string test_error;
+    ASSERT_TRUE(test->GetString("error", &test_error));
+
+    blink::WebCryptoKey key;
+    Status status = ImportKey(key_format, CryptoData(key_data),
+                              CreateRsaHashedImportAlgorithm(
+                                  blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                  blink::WebCryptoAlgorithmIdSha256),
+                              true, 0, &key);
+    EXPECT_EQ(test_error, StatusToString(status));
+  }
 }
 
 }  // namespace

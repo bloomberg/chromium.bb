@@ -39,11 +39,7 @@ namespace content {
 namespace webcrypto {
 
 void PrintTo(const Status& status, ::std::ostream* os) {
-  if (status.IsSuccess())
-    *os << "Success";
-  else
-    *os << "Error type: " << status.error_type()
-        << " Error details: " << status.error_details();
+  *os << StatusToString(status);
 }
 
 bool operator==(const Status& a, const Status& b) {
@@ -70,6 +66,39 @@ bool operator==(const CryptoData& a, const CryptoData& b) {
 
 bool operator!=(const CryptoData& a, const CryptoData& b) {
   return !(a == b);
+}
+
+static std::string ErrorTypeToString(blink::WebCryptoErrorType type) {
+  switch (type) {
+    case blink::WebCryptoErrorTypeNotSupported:
+      return "NotSupported";
+    case blink::WebCryptoErrorTypeType:
+      return "TypeError";
+    case blink::WebCryptoErrorTypeData:
+      return "DataError";
+    case blink::WebCryptoErrorTypeSyntax:
+      return "SyntaxError";
+    case blink::WebCryptoErrorTypeOperation:
+      return "OperationError";
+    case blink::WebCryptoErrorTypeUnknown:
+      return "UnknownError";
+    case blink::WebCryptoErrorTypeInvalidState:
+      return "InvalidState";
+    case blink::WebCryptoErrorTypeInvalidAccess:
+      return "InvalidAccess";
+  }
+
+  return "?";
+}
+
+std::string StatusToString(const Status& status) {
+  if (status.IsSuccess())
+    return "Success";
+
+  std::string result = ErrorTypeToString(status.error_type());
+  if (!status.error_details().empty())
+    result += ": " + status.error_details();
+  return result;
 }
 
 bool SupportsAesGcm() {
