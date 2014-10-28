@@ -377,10 +377,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) = 0;
 
-  // Invoked when the amount of vertical overscroll changes. |delta_y| is the
-  // amount of overscroll that has occured in the y-direction.
-  virtual void OverscrollUpdate(float delta_y) {}
-
   // Returns the height inset for RenderView when detached bookmark bar is
   // shown.  Invoked when a new RenderHostView is created for a non-NTP
   // navigation entry and the bookmark bar is detached.

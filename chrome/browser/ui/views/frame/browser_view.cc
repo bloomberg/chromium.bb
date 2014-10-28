@@ -399,9 +399,6 @@ BrowserView::BrowserView()
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
-#if defined(OS_CHROMEOS)
-      scroll_end_effect_controller_(ScrollEndEffectController::Create()),
-#endif
       activate_modal_dialog_factory_(this) {
 }
 
@@ -2436,11 +2433,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                      alignment, bounds, browser());
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
-}
-
-void BrowserView::OverscrollUpdate(float delta_y) {
-  if (scroll_end_effect_controller_)
-    scroll_end_effect_controller_->OverscrollUpdate(delta_y);
 }
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {

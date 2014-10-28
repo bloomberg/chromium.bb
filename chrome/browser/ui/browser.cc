@@ -1197,10 +1197,6 @@ bool Browser::TabsNeedBeforeUnloadFired() {
   return unload_controller_->TabsNeedBeforeUnloadFired();
 }
 
-void Browser::OverscrollUpdate(float delta_y) {
-  window_->OverscrollUpdate(delta_y);
-}
-
 void Browser::ShowValidationMessage(content::WebContents* web_contents,
                                     const gfx::Rect& anchor_in_root_view,
                                     const base::string16& main_text,

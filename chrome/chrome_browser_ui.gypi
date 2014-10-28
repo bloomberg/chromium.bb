@@ -2039,7 +2039,6 @@
       'browser/ui/views/frame/opaque_browser_frame_view_linux.h',
       'browser/ui/views/frame/opaque_browser_frame_view_platform_specific.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h',
-      'browser/ui/views/frame/scroll_end_effect_controller.h',
       'browser/ui/views/frame/system_menu_insertion_delegate_win.cc',
       'browser/ui/views/frame/system_menu_insertion_delegate_win.h',
       'browser/ui/views/frame/system_menu_model_builder.cc',
@@ -2438,8 +2437,6 @@
       'browser/ui/views/frame/browser_non_client_frame_view_ash.h',
       'browser/ui/views/frame/immersive_mode_controller_ash.cc',
       'browser/ui/views/frame/immersive_mode_controller_ash.h',
-      'browser/ui/views/frame/scroll_end_effect_controller_ash.cc',
-      'browser/ui/views/frame/scroll_end_effect_controller_ash.h',
       'browser/ui/views/tabs/window_finder_ash.cc',
     ],
     # Used when Ash is enabled but not Athena.

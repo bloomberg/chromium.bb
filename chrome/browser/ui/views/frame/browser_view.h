@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/scroll_end_effect_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "components/infobars/core/infobar_container.h"
@@ -363,7 +362,6 @@ class BrowserView : public BrowserWindow,
                                 const gfx::Rect& rect) override;
   virtual void ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params) override;
-  virtual void OverscrollUpdate(float delta_y) override;
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   virtual void ExecuteExtensionCommand(
       const extensions::Extension* extension,
@@ -707,8 +705,6 @@ class BrowserView : public BrowserWindow,
   bool force_location_bar_focus_;
 
   scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
-
-  scoped_ptr<ScrollEndEffectController> scroll_end_effect_controller_;
 
   scoped_ptr<WebContentsCloseHandler> web_contents_close_handler_;
 

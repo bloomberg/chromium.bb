@@ -443,7 +443,6 @@ class Browser : public TabStripModelObserver,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void OverscrollUpdate(float delta_y) override;
   void ShowValidationMessage(content::WebContents* web_contents,
                              const gfx::Rect& anchor_in_root_view,
                              const base::string16& main_text,
