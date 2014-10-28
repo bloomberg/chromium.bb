@@ -318,6 +318,7 @@ void DevToolsHttpHandlerImpl::StartHandlerThread() {
 
 void DevToolsHttpHandlerImpl::ResetHandlerThread() {
   thread_.reset();
+  server_ip_address_.reset();
 }
 
 void DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease() {
@@ -344,10 +345,9 @@ void DevToolsHttpHandlerImpl::StopWithoutRelease() {
 }
 
 GURL DevToolsHttpHandlerImpl::GetFrontendURL() {
-  net::IPEndPoint ip_address;
-  if (server_ && server_->GetLocalAddress(&ip_address))
+  if (!server_ip_address_)
     return GURL();
-  return GURL(std::string("http://") + ip_address.ToString() + frontend_url_);
+  return GURL(std::string("http://") + server_ip_address_->ToString() + frontend_url_);
 }
 
 static std::string PathWithoutParams(const std::string& path) {
@@ -776,6 +776,11 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
   }
 }
 
+void DevToolsHttpHandlerImpl::OnHttpServerInitialized(
+    const net::IPEndPoint& ip_address) {
+  server_ip_address_.reset(new net::IPEndPoint(ip_address));
+}
+
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     scoped_ptr<ServerSocketFactory> server_socket_factory,
     const std::string& frontend_url,
@@ -805,13 +810,19 @@ void DevToolsHttpHandlerImpl::Init() {
   }
 
   server_.reset(new net::HttpServer(server_socket.Pass(), this));
+  net::IPEndPoint ip_address;
+  server_->GetLocalAddress(&ip_address);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::OnHttpServerInitialized,
+                 this, ip_address));
   if (!active_port_output_directory_.empty())
     WriteActivePortToUserProfile();
 }
 
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Teardown() {
-  server_.reset(NULL);
+  server_.reset();
 }
 
 // Runs on FILE thread to make sure that it is serialized against
