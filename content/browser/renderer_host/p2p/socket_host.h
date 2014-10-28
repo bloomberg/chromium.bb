@@ -91,6 +91,9 @@ class CONTENT_EXPORT P2PSocketHost {
  protected:
   friend class P2PSocketHostTcpTestBase;
 
+  // This should match suffix IPProtocolType defined in histograms.xml.
+  enum ProtocolType { UDP = 0x1, TCP = 0x2 };
+
   // TODO(mallinath) - Remove this below enum and use one defined in
   // libjingle/souce/talk/p2p/base/stun.h
   enum StunMessageType {
@@ -125,7 +128,9 @@ class CONTENT_EXPORT P2PSocketHost {
     STATE_ERROR,
   };
 
-  P2PSocketHost(IPC::Sender* message_sender, int socket_id);
+  P2PSocketHost(IPC::Sender* message_sender,
+                int socket_id,
+                ProtocolType protocol_type);
 
   // Verifies that the packet |data| has a valid STUN header. In case
   // of success stores type of the message in |type|.
@@ -142,6 +147,12 @@ class CONTENT_EXPORT P2PSocketHost {
                                size_t packet_length,
                                bool incoming);
 
+  // Used by subclasses to track the metrics of delayed bytes and packets.
+  void IncrementDelayedPackets();
+  void IncrementTotalSentPackets();
+  void IncrementDelayedBytes(uint32 size);
+  void DecrementDelayedBytes(uint32 size);
+
   IPC::Sender* message_sender_;
   int id_;
   State state_;
@@ -150,6 +161,19 @@ class CONTENT_EXPORT P2PSocketHost {
   RenderProcessHost::WebRtcRtpPacketCallback packet_dump_callback_;
 
   base::WeakPtrFactory<P2PSocketHost> weak_ptr_factory_;
+
+  ProtocolType protocol_type_;
+
+ private:
+  // Track total delayed packets for calculating how many packets are
+  // delayed by system at the end of call.
+  uint32 send_packets_delayed_total_;
+  uint32 send_packets_total_;
+
+  // Track the maximum of consecutive delayed bytes caused by system's
+  // EWOULDBLOCK.
+  int32 send_bytes_delayed_max_;
+  int32 send_bytes_delayed_cur_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHost);
 };

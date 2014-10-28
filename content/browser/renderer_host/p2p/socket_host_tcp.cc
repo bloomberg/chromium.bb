@@ -49,7 +49,7 @@ P2PSocketHostTcpBase::P2PSocketHostTcpBase(
     int socket_id,
     P2PSocketType type,
     net::URLRequestContextGetter* url_context)
-    : P2PSocketHost(message_sender, socket_id),
+    : P2PSocketHost(message_sender, socket_id, P2PSocketHost::TCP),
       write_pending_(false),
       connected_(false),
       type_(type),
@@ -361,8 +361,11 @@ void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
 
 void P2PSocketHostTcpBase::WriteOrQueue(
     scoped_refptr<net::DrainableIOBuffer>& buffer) {
+  IncrementTotalSentPackets();
   if (write_buffer_.get()) {
     write_queue_.push(buffer);
+    IncrementDelayedPackets();
+    IncrementDelayedBytes(buffer->size());
     return;
   }
 
@@ -400,6 +403,8 @@ void P2PSocketHostTcpBase::HandleWriteResult(int result) {
       } else {
         write_buffer_ = write_queue_.front();
         write_queue_.pop();
+        // Update how many bytes are still waiting to be sent.
+        DecrementDelayedBytes(write_buffer_->size());
       }
     }
   } else if (result == net::ERR_IO_PENDING) {

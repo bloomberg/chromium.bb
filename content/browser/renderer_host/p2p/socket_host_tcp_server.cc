@@ -23,7 +23,7 @@ namespace content {
 P2PSocketHostTcpServer::P2PSocketHostTcpServer(IPC::Sender* message_sender,
                                                int socket_id,
                                                P2PSocketType client_type)
-    : P2PSocketHost(message_sender, socket_id),
+    : P2PSocketHost(message_sender, socket_id, P2PSocketHost::TCP),
       client_type_(client_type),
       socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
       accept_callback_(base::Bind(&P2PSocketHostTcpServer::OnAccepted,

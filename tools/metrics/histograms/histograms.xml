@@ -38775,6 +38775,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.ApplicationMaxConsecutiveBytesDiscard">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The maximum consecutive discarded bytes caused by not enough buffer
+    available in WebRTC's socket implementation.  This happens when WebRTC
+    IpcPacketSocket's throttling mechanism kicks in.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.ApplicationPercentPacketsDiscarded" units="%">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The percentage of packets discarded by WebRTC's socket layer due to
+    EWOULDBLOCKs when WebRTC IpcPacketSocket's throttling mechanism kicks in.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.AudioCaptureTime" units="milliseconds">
   <obsolete>
     Removed from code 2014/2/25.
@@ -39003,6 +39020,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Durations of video tracks sent over a PeerConnection. The stopwatch starts
     when the track first becomes connected, and ends when it is disconnected or
     very soon thereafter.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.SystemMaxConsecutiveBytesDelayed">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The maximum of consecutive delayed bytes caused by EWOULDBLOCKs from system.
+    This happens when system can't send any packet synchronously at that moment.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.SystemPercentPacketsDelayed" units="%">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The percentage of packets delayed due to ERR_IO_PENDING from system in a
+    WebRTC socket. This happens when system can't send any packet synchronously
+    at that moment.
   </summary>
 </histogram>
 
@@ -55338,6 +55372,13 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="more than 10ms, and less than or equal to 20ms."/>
   <suffix name="GreaterThan_20ms" label="greater than 20ms."/>
   <affected-histogram name="Net.TCP_Connection_Latency_Interval"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="IPProtocolType" separator="_">
+  <suffix name="UDP"/>
+  <suffix name="TCP"/>
+  <affected-histogram name="WebRTC.SystemMaxConsecutiveBytesDelayed"/>
+  <affected-histogram name="WebRTC.SystemPercentPacketsDelayed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPv6_Probe">

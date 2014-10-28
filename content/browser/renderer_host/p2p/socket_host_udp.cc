@@ -68,7 +68,7 @@ P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
                                    int socket_id,
                                    P2PMessageThrottler* throttler)
-    : P2PSocketHost(message_sender, socket_id),
+    : P2PSocketHost(message_sender, socket_id, P2PSocketHost::UDP),
       socket_(
           new net::UDPServerSocket(GetContentClient()->browser()->GetNetLog(),
                                    net::NetLog::Source())),
@@ -211,8 +211,12 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
     }
   }
 
+  IncrementTotalSentPackets();
+
   if (send_pending_) {
     send_queue_.push_back(PendingPacket(to, data, options, packet_id));
+    IncrementDelayedBytes(data.size());
+    IncrementDelayedPackets();
   } else {
     // TODO(mallinath: Remove unnecessary memcpy in this case.
     PendingPacket packet(to, data, options, packet_id);
@@ -281,8 +285,10 @@ void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
 
   // Send next packets if we have them waiting in the buffer.
   while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
-    DoSend(send_queue_.front());
+    PendingPacket packet = send_queue_.front();
+    DoSend(packet);
     send_queue_.pop_front();
+    DecrementDelayedBytes(packet.size);
   }
 }
 

@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -114,6 +115,10 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
     IS_ERROR,
   };
 
+  // Increment the counter for consecutive bytes discarded as socket is running
+  // out of buffer.
+  void IncrementDiscardCounters(size_t bytes_discarded);
+
   // Update trace of send throttling internal state. This should be called
   // immediately after any changes to |send_bytes_available_| and/or
   // |in_flight_packet_sizes_|.
@@ -161,6 +166,15 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   int error_;
   int options_[P2P_SOCKET_OPT_MAX];
 
+  // Track the maximum and current consecutive bytes discarded due to not enough
+  // send_bytes_available_.
+  size_t max_discard_bytes_sequence_;
+  size_t current_discard_bytes_sequence_;
+
+  // Track the total number of packets and the number of packets discarded.
+  size_t packets_discarded_;
+  size_t total_packets_;
+
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocket);
 };
 
@@ -195,7 +209,11 @@ IpcPacketSocket::IpcPacketSocket()
       state_(IS_UNINITIALIZED),
       send_bytes_available_(kMaximumInFlightBytes),
       writable_signal_expected_(false),
-      error_(0) {
+      error_(0),
+      max_discard_bytes_sequence_(0),
+      current_discard_bytes_sequence_(0),
+      packets_discarded_(0),
+      total_packets_(0) {
   COMPILE_ASSERT(kMaximumInFlightBytes > 0, would_send_at_zero_rate);
   std::fill_n(options_, static_cast<int> (P2P_SOCKET_OPT_MAX),
               kDefaultNonSetOptionValue);
@@ -206,6 +224,14 @@ IpcPacketSocket::~IpcPacketSocket() {
       state_ == IS_ERROR) {
     Close();
   }
+
+  UMA_HISTOGRAM_COUNTS_10000("WebRTC.ApplicationMaxConsecutiveBytesDiscard",
+                             max_discard_bytes_sequence_);
+
+  if (total_packets_ > 0) {
+    UMA_HISTOGRAM_PERCENTAGE("WebRTC.ApplicationPercentPacketsDiscarded",
+                             (packets_discarded_ * 100) / total_packets_);
+  }
 }
 
 void IpcPacketSocket::TraceSendThrottlingState() const {
@@ -213,6 +239,15 @@ void IpcPacketSocket::TraceSendThrottlingState() const {
                     send_bytes_available_);
   TRACE_COUNTER_ID1("p2p", "P2PSendPacketsInFlight", local_address_.port(),
                     in_flight_packet_sizes_.size());
+}
+
+void IpcPacketSocket::IncrementDiscardCounters(size_t bytes_discarded) {
+  current_discard_bytes_sequence_ += bytes_discarded;
+  packets_discarded_++;
+
+  if (current_discard_bytes_sequence_ > max_discard_bytes_sequence_) {
+    max_discard_bytes_sequence_ = current_discard_bytes_sequence_;
+  }
 }
 
 bool IpcPacketSocket::Init(P2PSocketType type,
@@ -316,6 +351,8 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
     return 0;
   }
 
+  total_packets_++;
+
   if (data_size > send_bytes_available_) {
     TRACE_EVENT_INSTANT1("p2p", "MaxPendingBytesWouldBlock",
                          TRACE_EVENT_SCOPE_THREAD,
@@ -330,7 +367,10 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
     }
 
     error_ = EWOULDBLOCK;
+    IncrementDiscardCounters(data_size);
     return -1;
+  } else {
+    current_discard_bytes_sequence_ = 0;
   }
 
   net::IPEndPoint address_chrome;

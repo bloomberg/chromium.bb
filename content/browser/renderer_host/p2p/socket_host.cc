@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/p2p/socket_host.h"
 
+#include "base/metrics/histogram.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
@@ -454,16 +455,42 @@ bool UpdateRtpAbsSendTimeExtension(char* rtp,
 
 }  // packet_processing_helpers
 
-P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender, int socket_id)
+P2PSocketHost::P2PSocketHost(IPC::Sender* message_sender,
+                             int socket_id,
+                             ProtocolType protocol_type)
     : message_sender_(message_sender),
       id_(socket_id),
       state_(STATE_UNINITIALIZED),
       dump_incoming_rtp_packet_(false),
       dump_outgoing_rtp_packet_(false),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      protocol_type_(protocol_type),
+      send_packets_delayed_total_(0),
+      send_packets_total_(0),
+      send_bytes_delayed_max_(0),
+      send_bytes_delayed_cur_(0) {
 }
 
-P2PSocketHost::~P2PSocketHost() { }
+P2PSocketHost::~P2PSocketHost() {
+  if (protocol_type_ == P2PSocketHost::UDP) {
+    UMA_HISTOGRAM_COUNTS_10000("WebRTC.SystemMaxConsecutiveBytesDelayed_UDP",
+                               send_bytes_delayed_max_);
+  } else {
+    UMA_HISTOGRAM_COUNTS_10000("WebRTC.SystemMaxConsecutiveBytesDelayed_TCP",
+                               send_bytes_delayed_max_);
+  }
+
+  if (send_packets_total_ > 0) {
+    int delay_rate = (send_packets_delayed_total_ * 100) / send_packets_total_;
+    if (protocol_type_ == P2PSocketHost::UDP) {
+      UMA_HISTOGRAM_PERCENTAGE("WebRTC.SystemPercentPacketsDelayed_UDP",
+                               delay_rate);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE("WebRTC.SystemPercentPacketsDelayed_TCP",
+                               delay_rate);
+    }
+  }
+}
 
 // Verifies that the packet |data| has a valid STUN header.
 // static
@@ -642,6 +669,26 @@ void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
                                      header_length,
                                      packet_length,
                                      incoming));
+}
+
+void P2PSocketHost::IncrementDelayedPackets() {
+  send_packets_delayed_total_++;
+}
+
+void P2PSocketHost::IncrementTotalSentPackets() {
+  send_packets_total_++;
+}
+
+void P2PSocketHost::IncrementDelayedBytes(uint32 size) {
+  send_bytes_delayed_cur_ += size;
+  if (send_bytes_delayed_cur_ > send_bytes_delayed_max_) {
+    send_bytes_delayed_max_ = send_bytes_delayed_cur_;
+  }
+}
+
+void P2PSocketHost::DecrementDelayedBytes(uint32 size) {
+  send_bytes_delayed_cur_ -= size;
+  DCHECK_GE(send_bytes_delayed_cur_, 0);
 }
 
 }  // namespace content
