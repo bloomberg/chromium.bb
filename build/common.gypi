@@ -1354,9 +1354,6 @@
     # Enable new NPDevice API.
     'enable_new_npdevice_api%': 0,
 
-    # Enable EGLImage support in OpenMAX
-    'enable_eglimage%': 1,
-
     # .gyp files or targets should set chromium_code to 1 if they build
     # Chromium-specific code, as opposed to external code.  This variable is
     # used to control such things as the set of warnings to enable, and
@@ -2751,11 +2748,6 @@
           ['OS=="win"', {
             'defines': ['NO_TCMALLOC'],
           }],
-        ],
-      }],
-      ['enable_eglimage==1', {
-        'defines': [
-          'ENABLE_EGLIMAGE=1',
         ],
       }],
       ['asan==1', {
