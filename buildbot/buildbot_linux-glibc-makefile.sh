@@ -89,7 +89,8 @@ echo @@@BUILD_STEP compile_toolchain@@@
   tar czSvpf nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
     LICENSE Makefile download_SRC.sh \
     _default_types.h linux newlib-libc-script \
-    create_redirector{,s,s_cygwin}.sh redirector{.c,.exe} redirect_table.txt
+    create_redirector{,s,s_cygwin}.sh redirector.exe redirect_table.txt \
+    redirector/redirector{.c,.h} redirector/redirector_table.txt
   rm Makefile
   mv Makefile.orig Makefile
   rm linux/getcpu.h _default_types.h LICENSE
