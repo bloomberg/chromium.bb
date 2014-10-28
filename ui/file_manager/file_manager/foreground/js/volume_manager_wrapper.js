@@ -187,13 +187,21 @@ VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
 };
 
 /**
+ * Returns whether the VolumeManager is initialized or not.
+ * @return {boolean} True if the VolumeManager is initialized.
+ */
+VolumeManagerWrapper.prototype.isInitialized = function() {
+  return this.pendingTasks_ === null;
+};
+
+/**
  * Ensures the VolumeManager is initialized, and then invokes callback.
  * If the VolumeManager is already initialized, callback will be called
  * immediately.
  * @param {function()} callback Called on initialization completion.
  */
 VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
-  if (this.pendingTasks_) {
+  if (!this.isInitialized()) {
     this.pendingTasks_.push(this.ensureInitialized.bind(this, callback));
     return;
   }
@@ -321,4 +329,24 @@ VolumeManagerWrapper.prototype.filterDisabledDriveVolume_ =
   var isDrive = volumeInfo && volumeInfo.volumeType ===
       VolumeManagerCommon.VolumeType.DRIVE;
   return this.driveEnabled_ || !isDrive ? volumeInfo : null;
+};
+
+/**
+ * Returns current state of VolumeManagerWrapper.
+ * @return {string} Current state of VolumeManagerWrapper.
+ */
+VolumeManagerWrapper.prototype.toString = function() {
+  var initialized = this.isInitialized();
+  var volumeManager = initialized ?
+      this.volumeManager_ :
+      this.backgroundPage_.VolumeManager.getInstanceForDebug();
+
+  var str = 'VolumeManagerWrapper\n' +
+      '- Initialized: ' + initialized + '\n';
+
+  if (!initialized)
+    str += '- PendingTasksCount: ' + this.pendingTasks_.length + '\n';
+
+  return str + '- VolumeManager:\n' +
+      '  ' + volumeManager.toString().replace(/\n/g, '\n  ');
 };

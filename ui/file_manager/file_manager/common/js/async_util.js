@@ -149,6 +149,17 @@ AsyncUtil.ConcurrentQueue.prototype.onTaskFinished_ = function(closure) {
 };
 
 /**
+ * Returns string representation of current AsyncUtil.ConcurrentQueue instance.
+ * @return {string} String representation of the instance.
+ */
+AsyncUtil.ConcurrentQueue.prototype.toString = function() {
+  return 'AsyncUtil.ConcurrentQueue\n' +
+      '- WaitingTasksCount: ' + this.getWaitingTasksCount() + '\n' +
+      '- RunningTasksCount: ' + this.getRunningTasksCount() + '\n' +
+      '- isCancelled: ' + this.isCancelled();
+};
+
+/**
  * Creates a class for executing several asynchronous closures in a fifo queue.
  * Added tasks will be executed sequentially in order they were added.
  *
@@ -164,6 +175,32 @@ AsyncUtil.Queue.prototype = {
 };
 
 /**
+ * A task which is executed by AsyncUtil.Group.
+ *
+ * @param {!function(function())} closure Closure with a completion callback to
+ *     be executed.
+ * @param {!Array.<string>} dependencies Array of dependencies.
+ * @param {!string} name Task identifier. Specify to use in dependencies.
+ *
+ * @constructor
+ */
+AsyncUtil.GroupTask = function(closure, dependencies, name) {
+  this.closure = closure;
+  this.dependencies = dependencies;
+  this.name = name;
+};
+
+/**
+ * Returns string representation of AsyncUti.GroupTask instance.
+ * @return {string} String representation of the instance.
+ */
+AsyncUtil.GroupTask.prototype.toString = function() {
+  return 'AsyncUtil.GroupTask\n' +
+      '- name: ' + this.name + '\n' +
+      '- dependencies: ' + this.dependencies.join();
+};
+
+/**
  * Creates a class for executing several asynchronous closures in a group in
  * a dependency order.
  *
@@ -174,6 +211,15 @@ AsyncUtil.Group = function() {
   this.pendingTasks_ = {};
   this.finishedTasks_ = {};
   this.completionCallbacks_ = [];
+};
+
+AsyncUtil.Group.prototype = {
+  /**
+   * @return {Object.<string, AsyncUtil.GroupTask>} Pending tasks
+   */
+  get pendingTasks() {
+    return this.pendingTasks_;
+  }
 };
 
 /**
@@ -189,11 +235,7 @@ AsyncUtil.Group.prototype.add = function(closure, opt_dependencies, opt_name) {
   var length = Object.keys(this.addedTasks_).length;
   var name = opt_name || ('(unnamed#' + (length + 1) + ')');
 
-  var task = {
-    closure: closure,
-    dependencies: opt_dependencies || [],
-    name: name
-  };
+  var task = new AsyncUtil.GroupTask(closure, opt_dependencies || [], name);
 
   this.addedTasks_[name] = task;
   this.pendingTasks_[name] = task;

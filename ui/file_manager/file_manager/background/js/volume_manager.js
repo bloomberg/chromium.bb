@@ -518,6 +518,16 @@ VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
 VolumeManager.instance_ = null;
 
 /**
+ * Returns instance of VolumeManager for debug purpose.
+ * This method returns VolumeManager.instance_ which may not be initialized.
+ *
+ * @return {VolumeManager} Volume manager.
+ */
+VolumeManager.getInstanceForDebug = function() {
+  return VolumeManager.instance_;
+};
+
+/**
  * @type {Promise}
  * @private
  */
@@ -868,6 +878,16 @@ VolumeManager.prototype.invokeRequestCallbacks_ = function(
     volumeManagerUtil.validateError(status);
     callEach(request.errorCallbacks, this, [status]);
   }
+};
+
+/**
+ * Returns current state of VolumeManager.
+ * @return {string} Current state of VolumeManager.
+ */
+VolumeManager.prototype.toString = function() {
+  return 'VolumeManager\n' +
+      '- MountQueue_:\n' +
+      '  ' + this.mountQueue_.toString().replace(/\n/g, '\n  ');
 };
 
 /**

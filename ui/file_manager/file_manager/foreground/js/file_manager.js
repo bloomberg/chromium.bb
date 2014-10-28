@@ -3867,4 +3867,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       callback(prefs);
     }.bind(this));
   };
+
+  /**
+   * Outputs the current state for debugging.
+   */
+  FileManager.prototype.debugMe = function() {
+    var out = 'Debug information.\n' +
+        '1. fileManager.initializeQueue_.pendingTasks_\n';
+    var keys = Object.keys(this.initializeQueue_.pendingTasks);
+    out += 'Length: ' + keys.length + '\n';
+    keys.forEach(function(key) {
+      out += this.initializeQueue_.pendingTasks[key].toString() + '\n';
+    }.bind(this));
+
+    out += '2. VolumeManagerWrapper\n' +
+        this.volumeManager_.toString() + '\n';
+
+    out += 'End of debug information.';
+    console.log(out);
+  };
 })();
