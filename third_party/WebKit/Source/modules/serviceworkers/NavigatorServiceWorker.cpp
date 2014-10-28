@@ -24,7 +24,7 @@ NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document)
 {
     if (!document.frame() || !document.frame()->domWindow())
         return 0;
-    Navigator& navigator = document.frame()->domWindow()->navigator();
+    Navigator& navigator = *document.frame()->domWindow()->navigator();
     return &from(navigator);
 }
 

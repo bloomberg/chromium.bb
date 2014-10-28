@@ -196,7 +196,7 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
     if (!initiatorDocument || !initiatorDocument->loader())
         return;
     if (LocalDOMWindow* initiatorWindow = initiatorDocument->domWindow())
-        initiatorWindow->performance().addResourceTiming(*info, initiatorDocument);
+        initiatorWindow->performance()->addResourceTiming(*info, initiatorDocument);
 }
 
 static WebURLRequest::RequestContext requestContextFromType(const ResourceFetcher* fetcher, Resource::Type type)

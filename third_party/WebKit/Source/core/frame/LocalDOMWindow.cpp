@@ -480,7 +480,7 @@ void LocalDOMWindow::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stat
         return;
 
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs to fire asynchronously
-    dispatchEvent(PopStateEvent::create(stateObject, &history()));
+    dispatchEvent(PopStateEvent::create(stateObject, history()));
 }
 
 void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
@@ -638,67 +638,67 @@ int LocalDOMWindow::orientation() const
     return orientation;
 }
 
-Screen& LocalDOMWindow::screen() const
+Screen* LocalDOMWindow::screen() const
 {
     if (!m_screen)
         m_screen = Screen::create(m_frame);
-    return *m_screen;
+    return m_screen.get();
 }
 
-History& LocalDOMWindow::history() const
+History* LocalDOMWindow::history() const
 {
     if (!m_history)
         m_history = History::create(m_frame);
-    return *m_history;
+    return m_history.get();
 }
 
-BarProp& LocalDOMWindow::locationbar() const
+BarProp* LocalDOMWindow::locationbar() const
 {
     if (!m_locationbar)
         m_locationbar = BarProp::create(m_frame, BarProp::Locationbar);
-    return *m_locationbar;
+    return m_locationbar.get();
 }
 
-BarProp& LocalDOMWindow::menubar() const
+BarProp* LocalDOMWindow::menubar() const
 {
     if (!m_menubar)
         m_menubar = BarProp::create(m_frame, BarProp::Menubar);
-    return *m_menubar;
+    return m_menubar.get();
 }
 
-BarProp& LocalDOMWindow::personalbar() const
+BarProp* LocalDOMWindow::personalbar() const
 {
     if (!m_personalbar)
         m_personalbar = BarProp::create(m_frame, BarProp::Personalbar);
-    return *m_personalbar;
+    return m_personalbar.get();
 }
 
-BarProp& LocalDOMWindow::scrollbars() const
+BarProp* LocalDOMWindow::scrollbars() const
 {
     if (!m_scrollbars)
         m_scrollbars = BarProp::create(m_frame, BarProp::Scrollbars);
-    return *m_scrollbars;
+    return m_scrollbars.get();
 }
 
-BarProp& LocalDOMWindow::statusbar() const
+BarProp* LocalDOMWindow::statusbar() const
 {
     if (!m_statusbar)
         m_statusbar = BarProp::create(m_frame, BarProp::Statusbar);
-    return *m_statusbar;
+    return m_statusbar.get();
 }
 
-BarProp& LocalDOMWindow::toolbar() const
+BarProp* LocalDOMWindow::toolbar() const
 {
     if (!m_toolbar)
         m_toolbar = BarProp::create(m_frame, BarProp::Toolbar);
-    return *m_toolbar;
+    return m_toolbar.get();
 }
 
-Console& LocalDOMWindow::console() const
+Console* LocalDOMWindow::console() const
 {
     if (!m_console)
         m_console = Console::create(m_frame);
-    return *m_console;
+    return m_console.get();
 }
 
 FrameConsole* LocalDOMWindow::frameConsole() const
@@ -717,18 +717,18 @@ ApplicationCache* LocalDOMWindow::applicationCache() const
     return m_applicationCache.get();
 }
 
-Navigator& LocalDOMWindow::navigator() const
+Navigator* LocalDOMWindow::navigator() const
 {
     if (!m_navigator)
         m_navigator = Navigator::create(m_frame);
-    return *m_navigator;
+    return m_navigator.get();
 }
 
-Performance& LocalDOMWindow::performance() const
+Performance* LocalDOMWindow::performance() const
 {
     if (!m_performance)
         m_performance = Performance::create(m_frame);
-    return *m_performance;
+    return m_performance.get();
 }
 
 Location& LocalDOMWindow::location() const
@@ -1313,11 +1313,11 @@ Document* LocalDOMWindow::document() const
     return m_document.get();
 }
 
-StyleMedia& LocalDOMWindow::styleMedia() const
+StyleMedia* LocalDOMWindow::styleMedia() const
 {
     if (!m_media)
         m_media = StyleMedia::create(m_frame);
-    return *m_media;
+    return m_media.get();
 }
 
 PassRefPtrWillBeRawPtr<CSSStyleDeclaration> LocalDOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
@@ -1503,11 +1503,11 @@ void LocalDOMWindow::cancelAnimationFrame(int id)
         d->cancelAnimationFrame(id);
 }
 
-DOMWindowCSS& LocalDOMWindow::css() const
+DOMWindowCSS* LocalDOMWindow::css() const
 {
     if (!m_css)
         m_css = DOMWindowCSS::create();
-    return *m_css;
+    return m_css.get();
 }
 
 static void didAddStorageEventListener(LocalDOMWindow* window)

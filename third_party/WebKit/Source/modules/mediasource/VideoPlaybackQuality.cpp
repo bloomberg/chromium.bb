@@ -51,7 +51,7 @@ VideoPlaybackQuality::VideoPlaybackQuality(
     , m_corruptedVideoFrames(corruptedVideoFrames)
 {
     if (document.domWindow())
-        m_creationTime = document.domWindow()->performance().now();
+        m_creationTime = document.domWindow()->performance()->now();
 }
 
 }

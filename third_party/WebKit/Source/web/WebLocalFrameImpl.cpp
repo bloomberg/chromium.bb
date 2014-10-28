@@ -663,7 +663,7 @@ WebPerformance WebLocalFrameImpl::performance() const
 {
     if (!frame())
         return WebPerformance();
-    return WebPerformance(&frame()->domWindow()->performance());
+    return WebPerformance(frame()->domWindow()->performance());
 }
 
 bool WebLocalFrameImpl::dispatchBeforeUnloadEvent()

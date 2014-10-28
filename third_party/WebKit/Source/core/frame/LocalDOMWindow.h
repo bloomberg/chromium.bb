@@ -84,6 +84,8 @@ enum PageshowEventPersistence {
 
 enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
+// Note: if you're thinking of returning something DOM-related by reference,
+// please ping dcheng@chromium.org first. You probably don't want to do that.
 class LocalDOMWindow final : public RefCountedWillBeGarbageCollectedFinalized<LocalDOMWindow>, public EventTargetWithInlineData, public DOMWindow, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(LocalDOMWindow);
@@ -123,16 +125,16 @@ public:
 
     // DOM Level 0
 
-    Screen& screen() const;
-    History& history() const;
-    BarProp& locationbar() const;
-    BarProp& menubar() const;
-    BarProp& personalbar() const;
-    BarProp& scrollbars() const;
-    BarProp& statusbar() const;
-    BarProp& toolbar() const;
-    Navigator& navigator() const;
-    Navigator& clientInformation() const { return navigator(); }
+    Screen* screen() const;
+    History* history() const;
+    BarProp* locationbar() const;
+    BarProp* menubar() const;
+    BarProp* personalbar() const;
+    BarProp* scrollbars() const;
+    BarProp* statusbar() const;
+    BarProp* toolbar() const;
+    Navigator* navigator() const;
+    Navigator* clientInformation() const { return navigator(); }
 
     Location& location() const;
     void setLocation(const String& location, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow,
@@ -204,7 +206,7 @@ public:
 
     // CSSOM View Module
 
-    StyleMedia& styleMedia() const;
+    StyleMedia* styleMedia() const;
 
     // DOM Level 2 Style Interface
 
@@ -215,7 +217,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const;
     double devicePixelRatio() const;
 
-    Console& console() const;
+    Console* console() const;
     FrameConsole* frameConsole() const;
 
     void printErrorMessage(const String&);
@@ -244,7 +246,7 @@ public:
     int webkitRequestAnimationFrame(RequestAnimationFrameCallback*);
     void cancelAnimationFrame(int id);
 
-    DOMWindowCSS& css() const;
+    DOMWindowCSS* css() const;
 
     // Events
     // EventTarget API
@@ -298,7 +300,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 
-    Performance& performance() const;
+    Performance* performance() const;
 
     // FIXME: When this LocalDOMWindow is no longer the active LocalDOMWindow (i.e.,
     // when its document is no longer the document that is displayed in its

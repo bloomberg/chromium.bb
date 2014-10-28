@@ -45,7 +45,7 @@ namespace {
 double now(ExecutionContext* context)
 {
     LocalDOMWindow* window = context ? context->executingWindow() : 0;
-    Performance* performance = window ? &window->performance() : 0;
+    Performance* performance = window ? window->performance() : 0;
     return performance ? performance->now() : 0.0;
 }
 
