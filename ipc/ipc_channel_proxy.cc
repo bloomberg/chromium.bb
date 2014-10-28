@@ -434,8 +434,7 @@ void ChannelProxy::ClearIPCTaskRunner() {
   context()->ClearIPCTaskRunner();
 }
 
-#if defined(OS_POSIX) && \
-    (!defined(OS_NACL) || defined(__native_client_nonsfi__))
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
 // See the TODO regarding lazy initialization of the channel in
 // ChannelProxy::Init().
 int ChannelProxy::GetClientFileDescriptor() {

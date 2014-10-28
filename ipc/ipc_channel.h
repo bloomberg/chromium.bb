@@ -182,8 +182,7 @@ class IPC_EXPORT Channel : public Sender {
   // NaCl in Non-SFI mode runs on Linux directly, and the following functions
   // compiled on Linux are also needed. Please see also comments in
   // components/nacl_nonsfi.gyp for more details.
-#if defined(OS_POSIX) && \
-    (!defined(OS_NACL) || defined(__native_client_nonsfi__))
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
   // This method may only be called on the server side of a channel.
@@ -200,7 +199,7 @@ class IPC_EXPORT Channel : public Sender {
   // ID. Even if true, the server may have already accepted a connection.
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
-#if !defined(OS_NACL) || defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_SFI)
   // Generates a channel ID that's non-predictable and unique.
   static std::string GenerateUniqueRandomChannelID();
 

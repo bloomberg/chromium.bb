@@ -119,8 +119,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // Returns base::kNullProcessId if the peer is not connected yet.
   base::ProcessId GetPeerPID() const { return context_->peer_pid_; }
 
-#if defined(OS_POSIX) && \
-    (!defined(OS_NACL) || defined(__native_client_nonsfi__))
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // Calls through to the underlying channel's methods.
   int GetClientFileDescriptor();
   base::ScopedFD TakeClientFileDescriptor();
