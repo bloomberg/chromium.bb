@@ -3496,7 +3496,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
-      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
@@ -3696,7 +3695,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_RADIO_GROUP:
       ia_role_ = ROLE_SYSTEM_GROUPING;
-      ia2_role_ = IA2_ROLE_SECTION;
       break;
     case ui::AX_ROLE_REGION:
       if (html_tag == L"section") {

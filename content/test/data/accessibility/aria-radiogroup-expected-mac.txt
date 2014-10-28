@@ -1,0 +1,4 @@
+AXWebArea AXRoleDescription='HTML content'
+    AXRadioGroup AXRoleDescription='radio group'
+        AXRadioButton AXRoleDescription='radio' AXValue='0'
+        AXRadioButton AXRoleDescription='radio' AXValue='0'

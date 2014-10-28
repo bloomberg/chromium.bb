@@ -336,6 +336,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaBanner) {
   RunTest(FILE_PATH_LITERAL("aria-banner.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaButton) {
+  RunTest(FILE_PATH_LITERAL("aria-button.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaCheckBox) {
   RunTest(FILE_PATH_LITERAL("aria-checkbox.html"));
 }
@@ -368,6 +372,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDefinition) {
   RunTest(FILE_PATH_LITERAL("aria-definition.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDialog) {
+  RunTest(FILE_PATH_LITERAL("aria-dialog.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaHasPopup) {
@@ -423,6 +431,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-listbox-childfocus.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLive) {
+  RunTest(FILE_PATH_LITERAL("aria-live.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLog) {
   RunTest(FILE_PATH_LITERAL("aria-log.html"));
 }
@@ -470,6 +482,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaProgressbar) {
   RunTest(FILE_PATH_LITERAL("aria-progressbar.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaRadiogroup) {
+  RunTest(FILE_PATH_LITERAL("aria-radiogroup.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRelevant) {
@@ -615,6 +632,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDl) {
   RunTest(FILE_PATH_LITERAL("dl.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDt) {
+  RunTest(FILE_PATH_LITERAL("dt.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
@@ -731,6 +752,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRadio) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRange) {
   RunTest(FILE_PATH_LITERAL("input-range.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputReset) {
+  RunTest(FILE_PATH_LITERAL("input-reset.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputSearch) {
@@ -880,8 +905,20 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityPre) {
   RunTest(FILE_PATH_LITERAL("pre.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityProgress) {
+  RunTest(FILE_PATH_LITERAL("progress.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityQ) {
   RunTest(FILE_PATH_LITERAL("q.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityS) {
+  RunTest(FILE_PATH_LITERAL("s.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySamp) {
+  RunTest(FILE_PATH_LITERAL("samp.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySection) {

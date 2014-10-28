@@ -1,0 +1,6 @@
+AXWebArea AXRoleDescription='HTML content'
+    AXList AXSubrole=AXDescriptionList AXRoleDescription='list'
+        AXGroup AXSubrole=AXTerm AXRoleDescription='group'
+            AXStaticText AXRoleDescription='text' AXValue='Coffee'
+        AXGroup AXSubrole=AXDescription AXRoleDescription='group'
+            AXStaticText AXRoleDescription='text' AXValue='Black hot drink'
