@@ -1117,6 +1117,9 @@ void RenderWidgetHostViewAndroid::RetainFrame(
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     const cc::CompositorFrameMetadata& frame_metadata) {
+  if (!content_view_core_)
+    return;
+
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
   OnFrameMetadataUpdated(frame_metadata);
