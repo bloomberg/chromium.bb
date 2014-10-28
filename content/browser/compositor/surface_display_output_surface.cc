@@ -69,10 +69,9 @@ bool SurfaceDisplayOutputSurface::BindToClient(
   DCHECK(client);
   DCHECK(display_client_);
   client_ = client;
-  display_client_->Initialize();
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  return true;
+  return display_client_->Initialize();
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(
