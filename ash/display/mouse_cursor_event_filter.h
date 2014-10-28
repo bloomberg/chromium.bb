@@ -35,7 +35,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   };
 
   MouseCursorEventFilter();
-  virtual ~MouseCursorEventFilter();
+  ~MouseCursorEventFilter() override;
 
   void set_mouse_warp_mode(MouseWarpMode mouse_warp_mode) {
     mouse_warp_mode_ = mouse_warp_mode;
@@ -47,11 +47,11 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   void HideSharedEdgeIndicator();
 
   // DisplayController::Observer:
-  virtual void OnDisplaysInitialized() override;
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplaysInitialized() override;
+  void OnDisplayConfigurationChanged() override;
 
   // ui::EventHandler:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   friend class DragWindowResizerTest;

@@ -71,45 +71,32 @@ class ScreenForShutdown : public gfx::Screen {
   }
 
   // gfx::Screen overrides:
-  virtual gfx::Point GetCursorScreenPoint() override {
-    return gfx::Point();
-  }
-  virtual gfx::NativeWindow GetWindowUnderCursor() override {
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return NULL;
   }
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) override {
-    return NULL;
-  }
-  virtual int GetNumDisplays() const override {
-    return display_list_.size();
-  }
-  virtual std::vector<gfx::Display> GetAllDisplays() const override {
+  int GetNumDisplays() const override { return display_list_.size(); }
+  std::vector<gfx::Display> GetAllDisplays() const override {
     return display_list_;
   }
-  virtual gfx::Display GetDisplayNearestWindow(gfx::NativeView view)
-      const override {
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     return primary_display_;
   }
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     return FindDisplayNearestPoint(display_list_, point);
   }
-  virtual gfx::Display GetDisplayMatching(const gfx::Rect& match_rect)
-      const override {
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     const gfx::Display* matching =
         FindDisplayMatching(display_list_, match_rect);
     // Fallback to the primary display if there is no matching display.
     return matching ? *matching : GetPrimaryDisplay();
   }
-  virtual gfx::Display GetPrimaryDisplay() const override {
-    return primary_display_;
-  }
-  virtual void AddObserver(gfx::DisplayObserver* observer) override {
+  gfx::Display GetPrimaryDisplay() const override { return primary_display_; }
+  void AddObserver(gfx::DisplayObserver* observer) override {
     NOTREACHED() << "Observer should not be added during shutdown";
   }
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override {
-  }
+  void RemoveObserver(gfx::DisplayObserver* observer) override {}
 
  private:
   const std::vector<gfx::Display> display_list_;

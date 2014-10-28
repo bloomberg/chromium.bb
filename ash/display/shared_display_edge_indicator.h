@@ -28,7 +28,7 @@ namespace ash {
 class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
  public:
   SharedDisplayEdgeIndicator();
-  virtual ~SharedDisplayEdgeIndicator();
+  ~SharedDisplayEdgeIndicator() override;
 
   // Shows/Hides the indicator window. The |src_bounds| is for the window on
   // the source display, and the |dst_bounds| is for the window on the other
@@ -37,7 +37,7 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
   void Hide();
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   // Used to show the displays' shared edge where a window can be moved across.

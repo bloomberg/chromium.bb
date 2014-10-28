@@ -142,14 +142,11 @@ class AshRootWindowTransformer : public RootWindowTransformer {
   }
 
   // aura::RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const override {
-    return transform_;
-  }
-  virtual gfx::Transform GetInverseTransform() const override {
+  gfx::Transform GetTransform() const override { return transform_; }
+  gfx::Transform GetInverseTransform() const override {
     return invert_transform_;
   }
-  virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const override {
+  gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
     gfx::Rect bounds(host_size);
     bounds.Inset(host_insets_);
     bounds = ui::ConvertRectToDIP(root_window_->layer(), bounds);
@@ -168,12 +165,10 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
   }
 
-  virtual gfx::Insets GetHostInsets() const override {
-    return host_insets_;
-  }
+  gfx::Insets GetHostInsets() const override { return host_insets_; }
 
  private:
-  virtual ~AshRootWindowTransformer() {}
+  ~AshRootWindowTransformer() override {}
 
   aura::Window* root_window_;
   gfx::Transform transform_;
@@ -238,24 +233,19 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
   }
 
   // aura::RootWindowTransformer overrides:
-  virtual gfx::Transform GetTransform() const override {
-    return transform_;
-  }
-  virtual gfx::Transform GetInverseTransform() const override {
+  gfx::Transform GetTransform() const override { return transform_; }
+  gfx::Transform GetInverseTransform() const override {
     gfx::Transform invert;
     CHECK(transform_.GetInverse(&invert));
     return invert;
   }
-  virtual gfx::Rect GetRootWindowBounds(
-      const gfx::Size& host_size) const override {
+  gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
     return root_bounds_;
   }
-  virtual gfx::Insets GetHostInsets() const override {
-    return insets_;
-  }
+  gfx::Insets GetHostInsets() const override { return insets_; }
 
  private:
-  virtual ~MirrorRootWindowTransformer() {}
+  ~MirrorRootWindowTransformer() override {}
 
   gfx::Transform transform_;
   gfx::Rect root_bounds_;

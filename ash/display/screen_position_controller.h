@@ -13,18 +13,18 @@ namespace ash {
 class ScreenPositionController : public aura::client::ScreenPositionClient {
  public:
   ScreenPositionController() {}
-  virtual ~ScreenPositionController() {}
+  ~ScreenPositionController() override {}
 
   // aura::client::ScreenPositionClient overrides:
-  virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) override;
-  virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) override;
-  virtual void ConvertHostPointToScreen(aura::Window* window,
-                                        gfx::Point* point) override;
-  virtual void SetBounds(aura::Window* window,
-                         const gfx::Rect& bounds,
-                         const gfx::Display& display) override;
+  void ConvertPointToScreen(const aura::Window* window,
+                            gfx::Point* point) override;
+  void ConvertPointFromScreen(const aura::Window* window,
+                              gfx::Point* point) override;
+  void ConvertHostPointToScreen(aura::Window* window,
+                                gfx::Point* point) override;
+  void SetBounds(aura::Window* window,
+                 const gfx::Rect& bounds,
+                 const gfx::Display& display) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenPositionController);

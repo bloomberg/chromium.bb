@@ -25,7 +25,7 @@ class DisplayManager;
 class ASH_EXPORT ScreenAsh : public gfx::Screen {
  public:
   ScreenAsh();
-  virtual ~ScreenAsh();
+  ~ScreenAsh() override;
 
   // Finds the display that contains |point| in screeen coordinates.
   // Returns invalid display if there is no display that can satisfy
@@ -61,21 +61,17 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   static const gfx::Display& GetDisplayForId(int64 display_id);
 
   // gfx::Screen overrides:
-  virtual gfx::Point GetCursorScreenPoint() override;
-  virtual gfx::NativeWindow GetWindowUnderCursor() override;
-  virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point)
-      override;
-  virtual int GetNumDisplays() const override;
-  virtual std::vector<gfx::Display> GetAllDisplays() const override;
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override;
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  virtual gfx::Display GetPrimaryDisplay() const override;
-  virtual void AddObserver(gfx::DisplayObserver* observer) override;
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) override;
+  gfx::Point GetCursorScreenPoint() override;
+  gfx::NativeWindow GetWindowUnderCursor() override;
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  gfx::Display GetPrimaryDisplay() const override;
+  void AddObserver(gfx::DisplayObserver* observer) override;
+  void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
   friend class DisplayManager;

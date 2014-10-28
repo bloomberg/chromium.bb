@@ -72,7 +72,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   };
 
   DisplayController();
-  virtual ~DisplayController();
+  ~DisplayController() override;
 
   void Start();
   void Shutdown();
@@ -144,20 +144,19 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& display) override;
+  void OnDisplayRemoved(const gfx::Display& display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   // aura::WindowTreeHostObserver overrides:
-  virtual void OnHostResized(const aura::WindowTreeHost* host) override;
+  void OnHostResized(const aura::WindowTreeHost* host) override;
 
   // aura::DisplayManager::Delegate overrides:
-  virtual void CreateOrUpdateNonDesktopDisplay(const DisplayInfo& info)
-      override;
-  virtual void CloseNonDesktopDisplay() override;
-  virtual void PreDisplayConfigurationChange(bool clear_focus) override;
-  virtual void PostDisplayConfigurationChange() override;
+  void CreateOrUpdateNonDesktopDisplay(const DisplayInfo& info) override;
+  void CloseNonDesktopDisplay() override;
+  void PreDisplayConfigurationChange(bool clear_focus) override;
+  void PostDisplayConfigurationChange() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);

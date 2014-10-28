@@ -40,9 +40,9 @@ class TestEventHandler : public ui::EventHandler {
                        scroll_y_offset_(0.0),
                        scroll_x_offset_ordinal_(0.0),
                        scroll_y_offset_ordinal_(0.0) {}
-  virtual ~TestEventHandler() {}
+  ~TestEventHandler() override {}
 
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->flags() & ui::EF_IS_SYNTHESIZED)
       return;
     aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -51,7 +51,7 @@ class TestEventHandler : public ui::EventHandler {
     event->StopPropagation();
   }
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) override {
+  void OnTouchEvent(ui::TouchEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Only record when the target is the background which covers
     // entire root window.
@@ -62,7 +62,7 @@ class TestEventHandler : public ui::EventHandler {
     event->StopPropagation();
   }
 
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override {
+  void OnScrollEvent(ui::ScrollEvent* event) override {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Only record when the target is the background which covers
     // entire root window.

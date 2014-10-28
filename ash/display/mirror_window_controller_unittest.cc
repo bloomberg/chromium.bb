@@ -31,18 +31,16 @@ DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
 class MirrorOnBootTest : public test::AshTestBase {
  public:
   MirrorOnBootTest() {}
-  virtual ~MirrorOnBootTest() {}
+  ~MirrorOnBootTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableSoftwareMirroring);
     test::AshTestBase::SetUp();
   }
-  virtual void TearDown() override {
-    test::AshTestBase::TearDown();
-  }
+  void TearDown() override { test::AshTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);

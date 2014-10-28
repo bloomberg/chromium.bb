@@ -26,8 +26,7 @@ class IndicatorView : public views::View {
  public:
   IndicatorView() {
   }
-  virtual ~IndicatorView() {
-  }
+  ~IndicatorView() override {}
 
   void SetColor(SkColor color) {
     color_ = color;
@@ -35,7 +34,7 @@ class IndicatorView : public views::View {
   }
 
   // views::Views overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(gfx::Rect(bounds().size()), color_);
   }
 

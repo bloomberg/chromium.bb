@@ -58,22 +58,18 @@ void DisableInput(XID window) {
 class NoneCaptureClient : public aura::client::CaptureClient {
  public:
   NoneCaptureClient() {}
-  virtual ~NoneCaptureClient() {}
+  ~NoneCaptureClient() override {}
 
  private:
   // Does a capture on the |window|.
-  virtual void SetCapture(aura::Window* window) override {}
+  void SetCapture(aura::Window* window) override {}
 
   // Releases a capture from the |window|.
-  virtual void ReleaseCapture(aura::Window* window) override {}
+  void ReleaseCapture(aura::Window* window) override {}
 
   // Returns the current capture window.
-  virtual aura::Window* GetCaptureWindow() override {
-    return NULL;
-  }
-  virtual aura::Window* GetGlobalCaptureWindow() override {
-    return NULL;
-  }
+  aura::Window* GetCaptureWindow() override { return NULL; }
+  aura::Window* GetGlobalCaptureWindow() override { return NULL; }
 
   DISALLOW_COPY_AND_ASSIGN(NoneCaptureClient);
 };

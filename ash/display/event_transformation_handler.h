@@ -23,14 +23,14 @@ class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
   };
 
   EventTransformationHandler();
-  virtual ~EventTransformationHandler();
+  ~EventTransformationHandler() override;
 
   void set_transformation_mode(TransformationMode transformation_mode) {
     transformation_mode_ = transformation_mode;
   }
 
   // Overridden from ui::EventHandler.
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
  private:
   TransformationMode transformation_mode_;
