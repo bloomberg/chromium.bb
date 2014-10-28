@@ -947,6 +947,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setJavaScriptCanAccessClipboard(
       prefs.javascript_can_access_clipboard);
   WebRuntimeFeatures::enableXSLT(prefs.xslt_enabled);
+  WebRuntimeFeatures::enableSlimmingPaint(prefs.slimming_paint_enabled);
   settings->setXSSAuditorEnabled(prefs.xss_auditor_enabled);
   settings->setDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
   settings->setLocalStorageEnabled(prefs.local_storage_enabled);

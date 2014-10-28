@@ -428,6 +428,9 @@ const char kEnableSeccompFilterSandbox[] =
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
+// Enables slimming paint: http://www.chromium.org/blink/slimming-paint
+const char kEnableSlimmingPaint[]           = "enable-slimming-paint";
+
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 

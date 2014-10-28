@@ -139,6 +139,7 @@ WebPreferences::WebPreferences()
       navigate_on_drag_drop(true),
       v8_cache_options(V8_CACHE_OPTIONS_OFF),
       v8_script_streaming_enabled(false),
+      slimming_paint_enabled(false),
       cookie_enabled(true),
       pepper_accelerated_video_decode_enabled(false)
 #if defined(OS_ANDROID)

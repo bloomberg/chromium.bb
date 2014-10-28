@@ -127,6 +127,7 @@ CONTENT_EXPORT extern const char kEnableRendererMojoChannel[];
 CONTENT_EXPORT extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompFilterSandbox[];
 extern const char kEnableSkiaBenchmarking[];
+extern const char kEnableSlimmingPaint[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
