@@ -1268,7 +1268,7 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
     host->chrome().setStatusbarText(m_frame, m_defaultStatus);
 }
 
-LocalDOMWindow* LocalDOMWindow::self() const
+DOMWindow* LocalDOMWindow::self() const
 {
     if (!m_frame)
         return 0;
@@ -1276,7 +1276,7 @@ LocalDOMWindow* LocalDOMWindow::self() const
     return m_frame->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::opener() const
+DOMWindow* LocalDOMWindow::opener() const
 {
     if (!m_frame)
         return 0;
@@ -1288,7 +1288,7 @@ LocalDOMWindow* LocalDOMWindow::opener() const
     return opener->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::parent() const
+DOMWindow* LocalDOMWindow::parent() const
 {
     if (!m_frame)
         return 0;
@@ -1300,7 +1300,7 @@ LocalDOMWindow* LocalDOMWindow::parent() const
     return m_frame->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::top() const
+DOMWindow* LocalDOMWindow::top() const
 {
     if (!m_frame)
         return 0;
@@ -1920,7 +1920,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_eventQueue);
     HeapSupplementable<LocalDOMWindow>::trace(visitor);
 #endif
-    EventTargetWithInlineData::trace(visitor);
+    DOMWindow::trace(visitor);
     LifecycleContext<LocalDOMWindow>::trace(visitor);
     FrameDestructionObserver::trace(visitor);
 }
