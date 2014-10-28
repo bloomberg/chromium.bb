@@ -55,7 +55,7 @@ class X11EventSourceGlib : public X11EventSource {
     InitXSource(ConnectionNumber(display));
   }
 
-  virtual ~X11EventSourceGlib() {
+  ~X11EventSourceGlib() override {
     g_source_destroy(x_source_);
     g_source_unref(x_source_);
   }

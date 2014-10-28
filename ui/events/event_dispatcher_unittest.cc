@@ -18,7 +18,7 @@ namespace {
 class TestTarget : public EventTarget {
  public:
   TestTarget() : parent_(NULL), valid_(true) {}
-  virtual ~TestTarget() {}
+  ~TestTarget() override {}
 
   void set_parent(TestTarget* parent) { parent_ = parent; }
 
@@ -38,21 +38,15 @@ class TestTarget : public EventTarget {
 
  private:
   // Overridden from EventTarget:
-  virtual bool CanAcceptEvent(const ui::Event& event) override {
-    return true;
-  }
+  bool CanAcceptEvent(const ui::Event& event) override { return true; }
 
-  virtual EventTarget* GetParentTarget() override {
-    return parent_;
-  }
+  EventTarget* GetParentTarget() override { return parent_; }
 
-  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const override {
+  scoped_ptr<EventTargetIterator> GetChildIterator() const override {
     return scoped_ptr<EventTargetIterator>();
   }
 
-  virtual EventTargeter* GetEventTargeter() override {
-    return NULL;
-  }
+  EventTargeter* GetEventTargeter() override { return NULL; }
 
   TestTarget* parent_;
   std::vector<int> handler_list_;
@@ -71,7 +65,7 @@ class TestEventHandler : public EventHandler {
         received_pre_target_(false) {
   }
 
-  virtual ~TestEventHandler() {}
+  ~TestEventHandler() override {}
 
   virtual void ReceivedEvent(Event* event) {
     static_cast<TestTarget*>(event->target())->AddHandlerId(id_);
@@ -94,7 +88,7 @@ class TestEventHandler : public EventHandler {
 
  private:
   // Overridden from EventHandler:
-  virtual void OnEvent(Event* event) override {
+  void OnEvent(Event* event) override {
     ui::EventHandler::OnEvent(event);
     ReceivedEvent(event);
     SetStatusOnEvent(event);
@@ -123,7 +117,7 @@ class NonCancelableEvent : public Event {
     set_cancelable(false);
   }
 
-  virtual ~NonCancelableEvent() {}
+  ~NonCancelableEvent() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonCancelableEvent);
@@ -138,10 +132,10 @@ class EventHandlerDestroyDispatcherDelegate : public TestEventHandler {
         dispatcher_delegate_(delegate) {
   }
 
-  virtual ~EventHandlerDestroyDispatcherDelegate() {}
+  ~EventHandlerDestroyDispatcherDelegate() override {}
 
  private:
-  virtual void ReceivedEvent(Event* event) override {
+  void ReceivedEvent(Event* event) override {
     TestEventHandler::ReceivedEvent(event);
     delete dispatcher_delegate_;
   }
@@ -155,10 +149,10 @@ class EventHandlerDestroyDispatcherDelegate : public TestEventHandler {
 class InvalidateTargetEventHandler : public TestEventHandler {
  public:
   explicit InvalidateTargetEventHandler(int id) : TestEventHandler(id) {}
-  virtual ~InvalidateTargetEventHandler() {}
+  ~InvalidateTargetEventHandler() override {}
 
  private:
-  virtual void ReceivedEvent(Event* event) override {
+  void ReceivedEvent(Event* event) override {
    TestEventHandler::ReceivedEvent(event);
    TestTarget* target = static_cast<TestTarget*>(event->target());
    target->set_valid(false);
@@ -177,16 +171,14 @@ class EventHandlerDestroyer : public TestEventHandler {
         dispatcher_delegate_(NULL) {
   }
 
-  virtual ~EventHandlerDestroyer() {
-    CHECK(!to_destroy_);
-  }
+  ~EventHandlerDestroyer() override { CHECK(!to_destroy_); }
 
   void set_dispatcher_delegate(EventDispatcherDelegate* dispatcher_delegate) {
     dispatcher_delegate_ = dispatcher_delegate;
   }
 
  private:
-  virtual void ReceivedEvent(Event* event) override {
+  void ReceivedEvent(Event* event) override {
     TestEventHandler::ReceivedEvent(event);
     delete to_destroy_;
     to_destroy_ = NULL;
@@ -207,7 +199,7 @@ class TestEventDispatcher : public EventDispatcherDelegate {
  public:
   TestEventDispatcher() {}
 
-  virtual ~TestEventDispatcher() {}
+  ~TestEventDispatcher() override {}
 
   EventDispatchDetails ProcessEvent(EventTarget* target, Event* event) {
     return DispatchEvent(target, event);
@@ -215,7 +207,7 @@ class TestEventDispatcher : public EventDispatcherDelegate {
 
  private:
   // Overridden from EventDispatcherDelegate:
-  virtual bool CanDispatchToTarget(EventTarget* target) override {
+  bool CanDispatchToTarget(EventTarget* target) override {
     TestTarget* test_target = static_cast<TestTarget*>(target);
     return test_target->valid();
   }

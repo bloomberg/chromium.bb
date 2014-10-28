@@ -22,7 +22,7 @@ class TestEvent : public Event {
  public:
   explicit TestEvent(EventType type)
       : Event(type, base::TimeDelta(), 0), unique_id_(next_unique_id_++) {}
-  virtual ~TestEvent() {}
+  ~TestEvent() override {}
   int unique_id() const { return unique_id_; }
 
  private:
@@ -38,14 +38,14 @@ int TestEvent::next_unique_id_ = 0;
 class TestEventRewriteProcessor : public test::TestEventProcessor {
  public:
   TestEventRewriteProcessor() {}
-  virtual ~TestEventRewriteProcessor() { CheckAllReceived(); }
+  ~TestEventRewriteProcessor() override { CheckAllReceived(); }
 
   void AddExpectedEvent(EventType type) { expected_events_.push_back(type); }
   // Test that all expected events have been received.
   void CheckAllReceived() { EXPECT_TRUE(expected_events_.empty()); }
 
   // EventProcessor:
-  virtual EventDispatchDetails OnEventFromSource(Event* event) override {
+  EventDispatchDetails OnEventFromSource(Event* event) override {
     EXPECT_FALSE(expected_events_.empty());
     EXPECT_EQ(expected_events_.front(), event->type());
     expected_events_.pop_front();
@@ -62,7 +62,7 @@ class TestEventRewriteSource : public EventSource {
  public:
   explicit TestEventRewriteSource(EventProcessor* processor)
       : processor_(processor) {}
-  virtual EventProcessor* GetEventProcessor() override { return processor_; }
+  EventProcessor* GetEventProcessor() override { return processor_; }
   void Send(EventType type) {
     scoped_ptr<Event> event(new TestEvent(type));
     (void)SendEventToProcessor(event.get());
@@ -83,16 +83,14 @@ class TestConstantEventRewriter : public EventRewriter {
     CHECK_NE(EVENT_REWRITE_DISPATCH_ANOTHER, status);
   }
 
-  virtual EventRewriteStatus RewriteEvent(const Event& event,
-                                          scoped_ptr<Event>* rewritten_event)
-      override {
+  EventRewriteStatus RewriteEvent(const Event& event,
+                                  scoped_ptr<Event>* rewritten_event) override {
     if (status_ == EVENT_REWRITE_REWRITTEN)
       rewritten_event->reset(new TestEvent(type_));
     return status_;
   }
-  virtual EventRewriteStatus NextDispatchEvent(const Event& last_event,
-                                               scoped_ptr<Event>* new_event)
-      override {
+  EventRewriteStatus NextDispatchEvent(const Event& last_event,
+                                       scoped_ptr<Event>* new_event) override {
     NOTREACHED();
     return status_;
   }
@@ -113,9 +111,8 @@ class TestStateMachineEventRewriter : public EventRewriter {
     rules_.insert(std::pair<RewriteCase, RewriteResult>(
         RewriteCase(from_state, from_type), r));
   }
-  virtual EventRewriteStatus RewriteEvent(const Event& event,
-                                          scoped_ptr<Event>* rewritten_event)
-      override {
+  EventRewriteStatus RewriteEvent(const Event& event,
+                                  scoped_ptr<Event>* rewritten_event) override {
     RewriteRules::iterator find =
         rules_.find(RewriteCase(state_, event.type()));
     if (find == rules_.end())
@@ -130,9 +127,8 @@ class TestStateMachineEventRewriter : public EventRewriter {
     state_ = find->second.state;
     return find->second.status;
   }
-  virtual EventRewriteStatus NextDispatchEvent(const Event& last_event,
-                                               scoped_ptr<Event>* new_event)
-      override {
+  EventRewriteStatus NextDispatchEvent(const Event& last_event,
+                                       scoped_ptr<Event>* new_event) override {
     EXPECT_TRUE(last_rewritten_event_);
     const TestEvent* arg_last = static_cast<const TestEvent*>(&last_event);
     EXPECT_EQ(last_rewritten_event_->unique_id(), arg_last->unique_id());

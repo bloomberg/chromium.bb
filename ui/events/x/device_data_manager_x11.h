@@ -241,12 +241,12 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
  protected:
   // DeviceHotplugEventObserver:
-  virtual void OnKeyboardDevicesUpdated(
+  void OnKeyboardDevicesUpdated(
       const std::vector<KeyboardDevice>& devices) override;
 
  private:
   DeviceDataManagerX11();
-  virtual ~DeviceDataManagerX11();
+  ~DeviceDataManagerX11() override;
 
   // Initialize the XInput related system information.
   bool InitializeXInputInternal();

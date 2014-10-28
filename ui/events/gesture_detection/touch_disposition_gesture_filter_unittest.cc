@@ -23,20 +23,18 @@ class TouchDispositionGestureFilterTest
  public:
   TouchDispositionGestureFilterTest()
       : cancel_after_next_gesture_(false), sent_gesture_count_(0) {}
-  virtual ~TouchDispositionGestureFilterTest() {}
+  ~TouchDispositionGestureFilterTest() override {}
 
   // testing::Test
-  virtual void SetUp() override {
+  void SetUp() override {
     queue_.reset(new TouchDispositionGestureFilter(this));
     touch_event_.set_flags(kDefaultEventFlags);
   }
 
-  virtual void TearDown() override {
-    queue_.reset();
-  }
+  void TearDown() override { queue_.reset(); }
 
   // TouchDispositionGestureFilterClient
-  virtual void ForwardGestureEvent(const GestureEventData& event) override {
+  void ForwardGestureEvent(const GestureEventData& event) override {
     ++sent_gesture_count_;
     last_sent_gesture_.reset(new GestureEventData(event));
     sent_gestures_.push_back(event.type());

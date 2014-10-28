@@ -20,10 +20,10 @@ namespace test {
 class EventProcessorTest : public testing::Test {
  public:
   EventProcessorTest() {}
-  virtual ~EventProcessorTest() {}
+  ~EventProcessorTest() override {}
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     processor_.SetRoot(scoped_ptr<EventTarget>(new TestEventTarget()));
     processor_.Reset();
     root()->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
@@ -78,7 +78,7 @@ class BoundsEventTargeter : public EventTargeter {
 class BoundsTestTarget : public TestEventTarget {
  public:
   BoundsTestTarget() {}
-  virtual ~BoundsTestTarget() {}
+  ~BoundsTestTarget() override {}
 
   void set_bounds(gfx::Rect rect) { bounds_ = rect; }
   gfx::Rect bounds() const { return bounds_; }
@@ -106,8 +106,7 @@ class BoundsTestTarget : public TestEventTarget {
 
  private:
   // EventTarget:
-  virtual void ConvertEventToTarget(EventTarget* target,
-                                    LocatedEvent* event) override {
+  void ConvertEventToTarget(EventTarget* target, LocatedEvent* event) override {
     event->ConvertLocationToTarget(this,
                                    static_cast<BoundsTestTarget*>(target));
   }
@@ -182,10 +181,10 @@ class ReDispatchEventHandler : public TestEventHandler {
  public:
   ReDispatchEventHandler(EventProcessor* processor, EventTarget* target)
       : processor_(processor), expected_target_(target) {}
-  virtual ~ReDispatchEventHandler() {}
+  ~ReDispatchEventHandler() override {}
 
   // TestEventHandler:
-  virtual void OnMouseEvent(MouseEvent* event) override {
+  void OnMouseEvent(MouseEvent* event) override {
     TestEventHandler::OnMouseEvent(event);
 
     EXPECT_EQ(expected_target_, event->target());
@@ -322,12 +321,12 @@ TEST_F(EventProcessorTest, OnEventProcessingStarted) {
 class IgnoreEventTargeter : public EventTargeter {
  public:
   IgnoreEventTargeter() {}
-  virtual ~IgnoreEventTargeter() {}
+  ~IgnoreEventTargeter() override {}
 
  private:
   // EventTargeter:
-  virtual bool SubtreeShouldBeExploredForEvent(
-      EventTarget* target, const LocatedEvent& event) override {
+  bool SubtreeShouldBeExploredForEvent(EventTarget* target,
+                                       const LocatedEvent& event) override {
     return false;
   }
 };
@@ -364,17 +363,16 @@ class BubblingEventTargeter : public EventTargeter {
  public:
   explicit BubblingEventTargeter(TestEventTarget* initial_target)
     : initial_target_(initial_target) {}
-  virtual ~BubblingEventTargeter() {}
+  ~BubblingEventTargeter() override {}
 
  private:
   // EventTargeter:
-  virtual EventTarget* FindTargetForEvent(EventTarget* root,
-                                          Event* event) override {
+  EventTarget* FindTargetForEvent(EventTarget* root, Event* event) override {
     return initial_target_;
   }
 
-  virtual EventTarget* FindNextBestTarget(EventTarget* previous_target,
-                                          Event* event) override {
+  EventTarget* FindNextBestTarget(EventTarget* previous_target,
+                                  Event* event) override {
     return previous_target->GetParentTarget();
   }
 

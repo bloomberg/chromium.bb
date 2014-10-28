@@ -24,7 +24,7 @@ class HotplugEventHandlerX11;
 class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
  public:
   explicit X11EventSource(XDisplay* display);
-  virtual ~X11EventSource();
+  ~X11EventSource() override;
 
   static X11EventSource* GetInstance();
 
@@ -48,8 +48,8 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
 
  private:
   // PlatformEventSource:
-  virtual uint32_t DispatchEvent(XEvent* xevent) override;
-  virtual void StopCurrentEventStream() override;
+  uint32_t DispatchEvent(XEvent* xevent) override;
+  void StopCurrentEventStream() override;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;

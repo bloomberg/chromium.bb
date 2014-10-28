@@ -19,28 +19,28 @@ namespace ui {
 class EVENTS_EXPORT MotionEventAura : public MotionEvent {
  public:
   MotionEventAura();
-  virtual ~MotionEventAura();
+  ~MotionEventAura() override;
 
   void OnTouch(const TouchEvent& touch);
 
   // MotionEvent implementation.
-  virtual int GetId() const override;
-  virtual Action GetAction() const override;
-  virtual int GetActionIndex() const override;
-  virtual size_t GetPointerCount() const override;
-  virtual int GetPointerId(size_t pointer_index) const override;
-  virtual float GetX(size_t pointer_index) const override;
-  virtual float GetY(size_t pointer_index) const override;
-  virtual float GetRawX(size_t pointer_index) const override;
-  virtual float GetRawY(size_t pointer_index) const override;
-  virtual float GetTouchMajor(size_t pointer_index) const override;
-  virtual float GetTouchMinor(size_t pointer_index) const override;
-  virtual float GetOrientation(size_t pointer_index) const override;
-  virtual float GetPressure(size_t pointer_index) const override;
-  virtual ToolType GetToolType(size_t pointer_index) const override;
-  virtual int GetButtonState() const override;
-  virtual int GetFlags() const override;
-  virtual base::TimeTicks GetEventTime() const override;
+  int GetId() const override;
+  Action GetAction() const override;
+  int GetActionIndex() const override;
+  size_t GetPointerCount() const override;
+  int GetPointerId(size_t pointer_index) const override;
+  float GetX(size_t pointer_index) const override;
+  float GetY(size_t pointer_index) const override;
+  float GetRawX(size_t pointer_index) const override;
+  float GetRawY(size_t pointer_index) const override;
+  float GetTouchMajor(size_t pointer_index) const override;
+  float GetTouchMinor(size_t pointer_index) const override;
+  float GetOrientation(size_t pointer_index) const override;
+  float GetPressure(size_t pointer_index) const override;
+  ToolType GetToolType(size_t pointer_index) const override;
+  int GetButtonState() const override;
+  int GetFlags() const override;
+  base::TimeTicks GetEventTime() const override;
 
   int GetSourceDeviceId(size_t pointer_index) const;
 

@@ -15,15 +15,13 @@ class GestureProviderAuraTest : public testing::Test,
  public:
   GestureProviderAuraTest() {}
 
-  virtual ~GestureProviderAuraTest() {}
+  ~GestureProviderAuraTest() override {}
 
-  virtual void OnGestureEvent(GestureEvent* event) override {}
+  void OnGestureEvent(GestureEvent* event) override {}
 
-  virtual void SetUp() override {
-    provider_.reset(new GestureProviderAura(this));
-  }
+  void SetUp() override { provider_.reset(new GestureProviderAura(this)); }
 
-  virtual void TearDown() override { provider_.reset(); }
+  void TearDown() override { provider_.reset(); }
 
   GestureProviderAura* provider() { return provider_.get(); }
 

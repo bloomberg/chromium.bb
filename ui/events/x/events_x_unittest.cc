@@ -83,9 +83,9 @@ bool HasFunctionKeyFlagSetIfSupported(Display* display, int x_keysym) {
 class EventsXTest : public testing::Test {
  public:
   EventsXTest() {}
-  virtual ~EventsXTest() {}
+  ~EventsXTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceDataManagerX11::CreateInstance();
     ui::TouchFactory::GetInstance()->ResetForTest();
   }

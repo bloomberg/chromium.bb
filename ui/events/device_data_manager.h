@@ -61,7 +61,7 @@ class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
   // DeviceHotplugEventObserver:
   void OnTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) override;
-  virtual void OnKeyboardDevicesUpdated(
+  void OnKeyboardDevicesUpdated(
       const std::vector<KeyboardDevice>& devices) override;
 
  private:

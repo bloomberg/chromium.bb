@@ -29,14 +29,14 @@ class TestInputDeviceObserver : public InputDeviceEventObserver {
       manager_->AddObserver(this);
   }
 
-  virtual ~TestInputDeviceObserver() {
+  ~TestInputDeviceObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
   }
 
   // InputDeviceEventObserver implementation.
-  virtual void OnTouchscreenDeviceConfigurationChanged() override {}
-  virtual void OnKeyboardDeviceConfigurationChanged() override {
+  void OnTouchscreenDeviceConfigurationChanged() override {}
+  void OnKeyboardDeviceConfigurationChanged() override {
     change_notified_ = true;
   }
 
@@ -55,11 +55,11 @@ class TestInputDeviceObserver : public InputDeviceEventObserver {
 class DeviceDataManagerX11Test : public testing::Test {
  public:
   DeviceDataManagerX11Test() {}
-  virtual ~DeviceDataManagerX11Test() {}
+  ~DeviceDataManagerX11Test() override {}
 
-  virtual void SetUp() override { DeviceDataManagerX11::CreateInstance(); }
+  void SetUp() override { DeviceDataManagerX11::CreateInstance(); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     SetKeyboardDevices(std::vector<KeyboardDevice>());
   }
 
