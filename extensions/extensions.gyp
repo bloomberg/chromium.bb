@@ -1212,6 +1212,7 @@
         'renderer/api_test_base_unittest.cc',
         'renderer/event_unittest.cc',
         'renderer/json_schema_unittest.cc',
+        'renderer/mojo/keep_alive_client_unittest.cc',
         'renderer/messaging_utils_unittest.cc',
         'renderer/module_system_test.cc',
         'renderer/module_system_test.h',

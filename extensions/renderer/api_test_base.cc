@@ -96,6 +96,10 @@ mojo::Handle TestServiceProvider::ConnectToService(
 TestServiceProvider::TestServiceProvider() {
 }
 
+// static
+void TestServiceProvider::IgnoreHandle(mojo::ScopedMessagePipeHandle handle) {
+}
+
 ApiTestBase::ApiTestBase() {
 }
 ApiTestBase::~ApiTestBase() {

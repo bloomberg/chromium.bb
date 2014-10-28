@@ -43,6 +43,13 @@ class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
         base::Bind(ForwardToServiceFactory<Interface>, service_factory)));
   }
 
+  // Ignore requests for the Interface service.
+  template <typename Interface>
+  void IgnoreServiceRequests() {
+    service_factories_.insert(std::make_pair(
+        Interface::Name_, base::Bind(&TestServiceProvider::IgnoreHandle)));
+  }
+
   static gin::WrapperInfo kWrapperInfo;
 
  private:
@@ -57,6 +64,9 @@ class TestServiceProvider : public gin::Wrappable<TestServiceProvider> {
       mojo::ScopedMessagePipeHandle handle) {
     service_factory.Run(mojo::MakeRequest<Interface>(handle.Pass()));
   }
+
+  static void IgnoreHandle(mojo::ScopedMessagePipeHandle handle);
+
   std::map<std::string, base::Callback<void(mojo::ScopedMessagePipeHandle)> >
       service_factories_;
 };

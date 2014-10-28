@@ -20,6 +20,8 @@
       <include name="IDR_EVENT_BINDINGS_JS" file="event.js" type="BINDATA" />
       <include name="IDR_IMAGE_UTIL_JS" file="image_util.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="json_schema.js" type="BINDATA" />
+      <include name="IDR_KEEP_ALIVE_JS" file="keep_alive.js" type="BINDATA" />
+      <include name="IDR_KEEP_ALIVE_MOJOM_JS" file="${mojom_root}\extensions\common\mojo\keep_alive.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_LAST_ERROR_JS" file="last_error.js" type="BINDATA" />
       <include name="IDR_MESSAGING_JS" file="messaging.js" type="BINDATA" />
       <include name="IDR_MESSAGING_UTILS_JS" file="messaging_utils.js" type="BINDATA" />

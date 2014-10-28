@@ -238,6 +238,7 @@ test("extensions_unittests") {
     "renderer/module_system_test.cc",
     "renderer/module_system_test.h",
     "renderer/module_system_unittest.cc",
+    "renderer/mojo/keep_alive_client_unittest.cc",
     "renderer/safe_builtins_unittest.cc",
     "renderer/script_context_set_unittest.cc",
     "renderer/utils_unittest.cc",

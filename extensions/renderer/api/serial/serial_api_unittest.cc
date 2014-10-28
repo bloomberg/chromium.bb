@@ -5,6 +5,7 @@
 #include "device/serial/serial_device_enumerator.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
+#include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
 
@@ -410,6 +411,7 @@ class SerialApiTest : public ApiTestBase {
                           IDR_SERIAL_SERIALIZATION_MOJOM_JS);
     service_provider()->AddService<device::serial::SerialService>(base::Bind(
         &SerialApiTest::CreateSerialService, base::Unretained(this)));
+    service_provider()->IgnoreServiceRequests<KeepAlive>();
   }
 
   scoped_refptr<TestIoHandlerBase> io_handler_;

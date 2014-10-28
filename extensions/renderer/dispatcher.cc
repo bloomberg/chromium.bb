@@ -574,6 +574,9 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
       std::make_pair(mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS));
   resources.push_back(
       std::make_pair(mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS));
+  resources.push_back(std::make_pair("keep_alive", IDR_KEEP_ALIVE_JS));
+  resources.push_back(std::make_pair("extensions/common/mojo/keep_alive.mojom",
+                                     IDR_KEEP_ALIVE_MOJOM_JS));
 
   // Custom bindings.
   resources.push_back(

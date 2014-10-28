@@ -73,12 +73,19 @@ APIFunctions.prototype.setHandleRequestWithPromise =
       var stack = exceptionHandler.getExtensionStackTrace();
       var callback = arguments[arguments.length - 1];
       var args = $Array.slice(arguments, 0, arguments.length - 1);
+      var keepAlivePromise = requireAsync('keep_alive').then(function(module) {
+        return module.createKeepAlive();
+      });
       $Function.apply(customizedFunction, this, args).then(function(result) {
         sendRequestHandler.safeCallbackApply(
             name, {'stack': stack}, callback, [result]);
       }).catch(function(error) {
         var message = exceptionHandler.safeErrorToString(error, true);
         lastError.run(name, message, stack, callback);
+      }).then(function() {
+        keepAlivePromise.then(function(keepAlive) {
+          keepAlive.close();
+        });
       });
     });
 };
