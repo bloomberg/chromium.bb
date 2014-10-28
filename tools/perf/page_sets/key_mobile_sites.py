@@ -7,10 +7,10 @@ from telemetry.page import page_set as page_set_module
 
 class KeyMobileSitesPage(page_module.Page):
 
-  def __init__(self, url, page_set, name=''):
+  def __init__(self, url, page_set, name='', labels=None):
     super(KeyMobileSitesPage, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path='data/credentials.json')
+        credentials_path='data/credentials.json', labels=labels)
     self.user_agent_type = 'mobile'
     self.archive_data_file = 'data/key_mobile_sites.json'
 
@@ -30,10 +30,7 @@ class Page1(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(Page1, self).__init__(
-      url='http://nytimes.com/',
-      page_set=page_set)
-
-    self.fastpath = True
+      url='http://nytimes.com/', page_set=page_set, labels=['fastpath'])
 
 
 class Page2(KeyMobileSitesPage):
@@ -59,10 +56,7 @@ class Page3(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(Page3, self).__init__(
-      url='http://cuteoverload.com',
-      page_set=page_set)
-
-    self.fastpath = True
+      url='http://cuteoverload.com', page_set=page_set, labels=['fastpath'])
 
 
 class Page4(KeyMobileSitesPage):
@@ -288,9 +282,7 @@ class Page18(KeyMobileSitesPage):
   def __init__(self, page_set):
     super(Page18, self).__init__(
       url='http://slashdot.org/',
-      page_set=page_set)
-
-    self.fastpath = True
+      page_set=page_set, labels=['fastpath'])
 
 
 class Page19(KeyMobileSitesPage):
@@ -300,9 +292,7 @@ class Page19(KeyMobileSitesPage):
   def __init__(self, page_set):
     super(Page19, self).__init__(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
-      page_set=page_set)
-
-    self.fastpath = True
+      page_set=page_set, labels=['fastpath'])
 
 
 class Page20(KeyMobileSitesPage):
@@ -311,10 +301,7 @@ class Page20(KeyMobileSitesPage):
 
   def __init__(self, page_set):
     super(Page20, self).__init__(
-      url='http://www.boingboing.net',
-      page_set=page_set)
-
-    self.fastpath = True
+      url='http://www.boingboing.net', page_set=page_set, labels=['fastpath'])
 
 
 class Page21(KeyMobileSitesPage):
