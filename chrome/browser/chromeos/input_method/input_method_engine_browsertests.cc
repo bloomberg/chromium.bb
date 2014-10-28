@@ -247,8 +247,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host =
-      extensions::ExtensionSystem::Get(profile())
-          ->process_manager()
+      extensions::ProcessManager::Get(profile())
           ->GetBackgroundHostForExtension(extension_->id());
   ASSERT_TRUE(host);
 

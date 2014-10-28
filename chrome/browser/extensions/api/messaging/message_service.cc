@@ -163,7 +163,7 @@ static content::RenderProcessHost* GetExtensionProcess(
     BrowserContext* context,
     const std::string& extension_id) {
   SiteInstance* site_instance =
-      ExtensionSystem::Get(context)->process_manager()->GetSiteInstanceForURL(
+      ProcessManager::Get(context)->GetSiteInstanceForURL(
           Extension::GetBaseURLFromExtensionId(extension_id));
   return site_instance->HasProcess() ? site_instance->GetProcess() : NULL;
 }

@@ -45,7 +45,6 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
   virtual void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     InitializeExtensionService(CreateDefaultInitParams());
-    InitializeProcessManager();
   }
 
  protected:

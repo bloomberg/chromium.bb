@@ -54,10 +54,9 @@ void WarnIfMissingPauseOrResumeListener(
   if (has_onpause == has_onresume)
     return;
 
-  extensions::ProcessManager* process_manager =
-      ExtensionSystem::Get(profile)->process_manager();
   extensions::ExtensionHost* host =
-      process_manager->GetBackgroundHostForExtension(extension_id);
+      extensions::ProcessManager::Get(profile)
+          ->GetBackgroundHostForExtension(extension_id);
   host->render_process_host()->Send(new ExtensionMsg_AddMessageToConsole(
       host->render_view_host()->GetRoutingID(),
       content::CONSOLE_MESSAGE_LEVEL_WARNING,

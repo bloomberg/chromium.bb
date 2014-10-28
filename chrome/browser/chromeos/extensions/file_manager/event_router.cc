@@ -44,7 +44,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -271,13 +270,9 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
 
 void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
                                                  Profile* running_profile) {
-  extensions::ProcessManager* const process_manager =
-      extensions::ExtensionSystem::Get(running_profile)->process_manager();
-  if (!process_manager)
-    return;
-
   extensions::ExtensionHost* const extension_host =
-      process_manager->GetBackgroundHostForExtension(kFileManagerAppId);
+      extensions::ProcessManager::Get(running_profile)
+          ->GetBackgroundHostForExtension(kFileManagerAppId);
   if (!extension_host || !extension_host->render_process_host())
     return;
 

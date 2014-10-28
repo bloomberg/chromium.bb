@@ -13,14 +13,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -138,9 +137,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
  private:
   void GetBackgroundHostForTestExtension() {
     ASSERT_TRUE(extension_);
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(browser()->profile());
-    background_host_ = extension_system->process_manager()
+    background_host_ = extensions::ProcessManager::Get(browser()->profile())
                            ->GetBackgroundHostForExtension(extension_->id())
                            ->render_view_host();
     ASSERT_TRUE(background_host_);

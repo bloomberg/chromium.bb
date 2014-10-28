@@ -125,7 +125,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
   scoped_ptr<ProcessManager> manager2(
       ProcessManager::CreateIncognitoForTesting(incognito_context(),
                                                 original_context(),
-                                                manager1.get(),
                                                 extension_registry()));
 
   EXPECT_EQ(incognito_context(), manager2->GetBrowserContext());

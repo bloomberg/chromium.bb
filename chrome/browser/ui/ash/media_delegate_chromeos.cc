@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 
 namespace {
@@ -77,10 +76,8 @@ void GetExtensionMediaCaptureState(
     const MediaStreamCaptureIndicator* indicator,
     content::BrowserContext* context,
     int* media_state_out) {
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(context)->process_manager();
   const extensions::ProcessManager::ViewSet view_set =
-      process_manager->GetAllViews();
+      extensions::ProcessManager::Get(context)->GetAllViews();
   for (extensions::ProcessManager::ViewSet::const_iterator iter =
            view_set.begin();
        iter != view_set.end();

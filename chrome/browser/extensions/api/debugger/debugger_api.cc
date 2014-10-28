@@ -45,7 +45,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -516,8 +515,7 @@ bool DebuggerFunction::InitAgentHost() {
     }
   } else if (debuggee_.extension_id) {
     ExtensionHost* extension_host =
-        ExtensionSystem::Get(GetProfile())
-            ->process_manager()
+        ProcessManager::Get(GetProfile())
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
       if (PermissionsData::IsRestrictedUrl(extension_host->GetURL(),

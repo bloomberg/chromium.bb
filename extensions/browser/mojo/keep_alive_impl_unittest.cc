@@ -17,22 +17,6 @@
 
 namespace extensions {
 
-namespace {
-
-class TestExtensionSystem : public MockExtensionSystem {
- public:
-  explicit TestExtensionSystem(content::BrowserContext* context)
-      : MockExtensionSystem(context),
-        process_manager_(ProcessManager::Create(context)) {}
-
-  ProcessManager* process_manager() override { return process_manager_.get(); }
-
- private:
-  scoped_ptr<ProcessManager> process_manager_;
-};
-
-}  // namespace
-
 class KeepAliveTest : public ExtensionsTest {
  public:
   KeepAliveTest()
@@ -81,14 +65,13 @@ class KeepAliveTest : public ExtensionsTest {
   const Extension* extension() { return extension_.get(); }
 
   int GetKeepAliveCount() {
-    return ExtensionSystem::Get(browser_context())
-        ->process_manager()
+    return ProcessManager::Get(browser_context())
         ->GetLazyKeepaliveCount(extension());
   }
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;
-  MockExtensionSystemFactory<TestExtensionSystem> extension_system_factory_;
+  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
   scoped_ptr<content::NotificationService> notification_service_;
   scoped_refptr<const Extension> extension_;
   scoped_ptr<TestExtensionsBrowserClient> browser_client_;

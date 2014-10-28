@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_system.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -27,7 +26,7 @@ typedef ExtensionBrowserTest ProcessManagerBrowserTest;
 // and background pages.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                        ExtensionHostCreation) {
-  ProcessManager* pm = ExtensionSystem::Get(profile())->process_manager();
+  ProcessManager* pm = ProcessManager::Get(profile());
 
   // We start with no background hosts.
   ASSERT_EQ(0u, pm->background_hosts().size());
@@ -68,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 // Disabled due to flake, see http://crbug.com/315242
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                        DISABLED_PopupHostCreation) {
-  ProcessManager* pm = ExtensionSystem::Get(profile())->process_manager();
+  ProcessManager* pm = ProcessManager::Get(profile());
 
   // Load an extension with the ability to open a popup but no background
   // page.
@@ -111,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 // interact with an installed extension with that ID. Regression test
 // for bug 357382.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
-  ProcessManager* pm = ExtensionSystem::Get(profile())->process_manager();
+  ProcessManager* pm = ProcessManager::Get(profile());
 
   // We start with no background hosts.
   ASSERT_EQ(0u, pm->background_hosts().size());

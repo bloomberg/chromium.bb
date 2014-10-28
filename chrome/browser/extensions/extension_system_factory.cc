@@ -13,6 +13,7 @@
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
 
 namespace extensions {
@@ -42,6 +43,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(policy::ProfilePolicyConnectorFactory::GetInstance());
+  DependsOn(ProcessManagerFactory::GetInstance());
   DependsOn(RendererStartupHelperFactory::GetInstance());
 }
 

@@ -250,18 +250,13 @@ void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
 
 void ExtensionMessageFilter::OnExtensionShouldSuspendAck(
      const std::string& extension_id, int sequence_id) {
-  ProcessManager* process_manager =
-      ExtensionSystem::Get(browser_context_)->process_manager();
-  if (process_manager)
-    process_manager->OnShouldSuspendAck(extension_id, sequence_id);
+  ProcessManager::Get(browser_context_)
+      ->OnShouldSuspendAck(extension_id, sequence_id);
 }
 
 void ExtensionMessageFilter::OnExtensionSuspendAck(
      const std::string& extension_id) {
-  ProcessManager* process_manager =
-      ExtensionSystem::Get(browser_context_)->process_manager();
-  if (process_manager)
-    process_manager->OnSuspendAck(extension_id);
+  ProcessManager::Get(browser_context_)->OnSuspendAck(extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionTransferBlobsAck(

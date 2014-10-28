@@ -15,7 +15,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
@@ -31,12 +30,8 @@ using extensions::Extension;
 namespace {
 
 const Extension* GetExtensionForWebContents(WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  return process_manager->GetExtensionForRenderViewHost(
-      web_contents->GetRenderViewHost());
+  return extensions::ProcessManager::Get(web_contents->GetBrowserContext())
+      ->GetExtensionForRenderViewHost(web_contents->GetRenderViewHost());
 }
 
 }  // namespace
@@ -129,18 +124,13 @@ void ExtensionInformation::GetAll(const NewWebContentsCallback& callback) {
   }
 
   for (size_t i = 0; i < profiles.size(); ++i) {
-    extensions::ProcessManager* process_manager =
-        extensions::ExtensionSystem::Get(profiles[i])->process_manager();
-    if (process_manager) {
-      const extensions::ProcessManager::ViewSet all_views =
-          process_manager->GetAllViews();
-      extensions::ProcessManager::ViewSet::const_iterator jt =
-          all_views.begin();
-      for (; jt != all_views.end(); ++jt) {
-        WebContents* web_contents = WebContents::FromRenderViewHost(*jt);
-        if (CheckOwnership(web_contents))
-          callback.Run(web_contents);
-      }
+    const extensions::ProcessManager::ViewSet all_views =
+        extensions::ProcessManager::Get(profiles[i])->GetAllViews();
+    extensions::ProcessManager::ViewSet::const_iterator jt = all_views.begin();
+    for (; jt != all_views.end(); ++jt) {
+      WebContents* web_contents = WebContents::FromRenderViewHost(*jt);
+      if (CheckOwnership(web_contents))
+        callback.Run(web_contents);
     }
   }
 }

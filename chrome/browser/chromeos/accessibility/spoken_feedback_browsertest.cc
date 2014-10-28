@@ -83,9 +83,9 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
   void RunJavaScriptInChromeVoxBackgroundPage(const std::string& script) {
     extensions::ExtensionHost* host =
-        extensions::ExtensionSystem::Get(browser()->profile())->
-        process_manager()->GetBackgroundHostForExtension(
-            extension_misc::kChromeVoxExtensionId);
+        extensions::ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(
+                extension_misc::kChromeVoxExtensionId);
     CHECK(content::ExecuteScript(host->host_contents(), script));
   }
 

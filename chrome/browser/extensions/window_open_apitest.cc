@@ -23,7 +23,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -399,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
 
   // Crash the extension.
   extensions::ExtensionHost* extension_host =
-      extensions::ExtensionSystem::Get(browser()->profile())->
-          process_manager()->GetBackgroundHostForExtension(extension->id());
+      extensions::ProcessManager::Get(browser()->profile())
+          ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(extension_host);
   base::KillProcess(extension_host->render_process_host()->GetHandle(),
                     content::RESULT_CODE_KILLED, false);

@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -56,8 +55,7 @@ void ExtensionMessagePort::DispatchOnMessage(const Message& message,
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
   Profile* profile =
       Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
+  extensions::ProcessManager* pm = ProcessManager::Get(profile);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension()))
     pm->IncrementLazyKeepaliveCount(host->extension());
@@ -70,8 +68,7 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
 void ExtensionMessagePort::DecrementLazyKeepaliveCount() {
   Profile* profile =
       Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
+  extensions::ProcessManager* pm = ProcessManager::Get(profile);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && host == background_host_ptr_)
     pm->DecrementLazyKeepaliveCount(host->extension());

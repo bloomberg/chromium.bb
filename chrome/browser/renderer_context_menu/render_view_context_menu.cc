@@ -627,14 +627,9 @@ void RenderViewContextMenu::AppendPrintPreviewItems() {
 }
 
 const Extension* RenderViewContextMenu::GetExtension() const {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(browser_context_);
-  // There is no process manager in some tests.
-  if (!system->process_manager())
-    return NULL;
-
-  return system->process_manager()->GetExtensionForRenderViewHost(
-      source_web_contents_->GetRenderViewHost());
+  return extensions::ProcessManager::Get(browser_context_)
+      ->GetExtensionForRenderViewHost(
+          source_web_contents_->GetRenderViewHost());
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {

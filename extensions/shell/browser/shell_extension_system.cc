@@ -20,7 +20,6 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/file_util.h"
@@ -101,7 +100,6 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
       new LazyBackgroundTaskQueue(browser_context_));
   event_router_.reset(
       new EventRouter(browser_context_, ExtensionPrefs::Get(browser_context_)));
-  process_manager_.reset(ProcessManager::Create(browser_context_));
   quota_service_.reset(new QuotaService);
 }
 
@@ -119,10 +117,6 @@ ManagementPolicy* ShellExtensionSystem::management_policy() {
 
 SharedUserScriptMaster* ShellExtensionSystem::shared_user_script_master() {
   return NULL;
-}
-
-ProcessManager* ShellExtensionSystem::process_manager() {
-  return process_manager_.get();
 }
 
 StateStore* ShellExtensionSystem::state_store() {

@@ -53,8 +53,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
   }
 
   extensions::ProcessManager* GetProcessManager() {
-    return extensions::ExtensionSystem::Get(browser()->profile())->
-        process_manager();
+    return extensions::ProcessManager::Get(browser()->profile());
   }
 
   ExtensionRegistry* GetExtensionRegistry() {

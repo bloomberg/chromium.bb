@@ -15,7 +15,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "net/url_request/url_request.h"
@@ -39,10 +38,8 @@ void NotifyEPMRequestStatus(RequestStatus status,
     return;
 
   extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  // This may be NULL in unit tests.
-  if (!process_manager)
-    return;
+      extensions::ProcessManager::Get(profile);
+  DCHECK(process_manager);
 
   // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
   // system-level request).

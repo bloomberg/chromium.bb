@@ -170,11 +170,6 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
   service_->updater()->Start();
 }
 
-void ExtensionServiceTestBase::InitializeProcessManager() {
-  static_cast<extensions::TestExtensionSystem*>(
-      ExtensionSystem::Get(profile_.get()))->CreateProcessManager();
-}
-
 void ExtensionServiceTestBase::SetUp() {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 }

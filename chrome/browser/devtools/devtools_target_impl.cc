@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
@@ -107,12 +106,10 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile)
     return;
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
   set_title(extension->name());
   extensions::ExtensionHost* extension_host =
-      extension_system->process_manager()->GetBackgroundHostForExtension(
-          extension->id());
+      extensions::ProcessManager::Get(profile)
+          ->GetBackgroundHostForExtension(extension->id());
   if (extension_host &&
       extension_host->host_contents() == web_contents) {
     set_type(kTargetTypeBackgroundPage);

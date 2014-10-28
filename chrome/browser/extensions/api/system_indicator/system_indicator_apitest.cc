@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
@@ -58,8 +57,7 @@ IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, SystemIndicator) {
     ASSERT_TRUE(extension) << message_;
 
     // Lazy Background Page has been shut down.
-    extensions::ProcessManager* pm =
-        extensions::ExtensionSystem::Get(profile())->process_manager();
+    extensions::ProcessManager* pm = extensions::ProcessManager::Get(profile());
     EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
 
     EXPECT_TRUE(manager->SendClickEventToExtensionForTest(extension->id()));

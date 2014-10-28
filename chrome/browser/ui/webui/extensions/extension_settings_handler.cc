@@ -1371,7 +1371,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
 
   // Get the extension process's active views.
   extensions::ProcessManager* process_manager =
-      ExtensionSystem::Get(extension_service_->profile())->process_manager();
+      ProcessManager::Get(extension_service_->profile());
   GetInspectablePagesForExtensionProcess(
       extension,
       process_manager->GetRenderViewHostsForExtension(extension->id()),
@@ -1399,9 +1399,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
       IncognitoInfo::IsSplitMode(extension) &&
       util::IsIncognitoEnabled(extension->id(),
                                extension_service_->profile())) {
-    extensions::ProcessManager* process_manager =
-        ExtensionSystem::Get(extension_service_->profile()->
-            GetOffTheRecordProfile())->process_manager();
+    extensions::ProcessManager* process_manager = ProcessManager::Get(
+        extension_service_->profile()->GetOffTheRecordProfile());
     GetInspectablePagesForExtensionProcess(
         extension,
         process_manager->GetRenderViewHostsForExtension(extension->id()),

@@ -38,10 +38,6 @@ SharedUserScriptMaster* MockExtensionSystem::shared_user_script_master() {
   return NULL;
 }
 
-ProcessManager* MockExtensionSystem::process_manager() {
-  return NULL;
-}
-
 StateStore* MockExtensionSystem::state_store() {
   return NULL;
 }

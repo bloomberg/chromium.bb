@@ -82,8 +82,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     // background page is correct.  This is to ensure that the processes are in
     // sync with the Extension.
     extensions::ProcessManager* manager =
-        extensions::ExtensionSystem::Get(browser()->profile())->
-            process_manager();
+        extensions::ProcessManager::Get(browser()->profile());
     extensions::ExtensionHost* ext_host =
         manager->GetBackgroundHostForExtension(extension->id());
     EXPECT_TRUE(ext_host);
@@ -177,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
 // Tests that disabling and re-enabling an extension works.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+      extensions::ProcessManager::Get(browser()->profile());
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const size_t size_before = registry->enabled_extensions().size();
 

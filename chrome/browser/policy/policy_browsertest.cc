@@ -1785,7 +1785,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // Wait until any background pages belonging to force-installed extensions
   // have been loaded.
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+      extensions::ProcessManager::Get(browser()->profile());
   extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
   for (extensions::ProcessManager::ViewSet::const_iterator iter =
            all_views.begin();
@@ -1816,8 +1816,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
       extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
       content::NotificationService::AllSources());
   extensions::ExtensionHost* extension_host =
-      extensions::ExtensionSystem::Get(browser()->profile())->
-          process_manager()->GetBackgroundHostForExtension(kGoodCrxId);
+      extensions::ProcessManager::Get(browser()->profile())
+          ->GetBackgroundHostForExtension(kGoodCrxId);
   base::KillProcess(extension_host->render_process_host()->GetHandle(),
                     content::RESULT_CODE_KILLED, false);
   extension_crashed_observer.Wait();

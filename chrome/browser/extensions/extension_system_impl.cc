@@ -52,7 +52,6 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/state_store.h"
@@ -515,9 +514,7 @@ ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
     : profile_(profile) {
   shared_ = ExtensionSystemSharedFactory::GetForBrowserContext(profile);
 
-  if (profile->IsOffTheRecord()) {
-    process_manager_.reset(ProcessManager::Create(profile));
-  } else {
+  if (!profile->IsOffTheRecord()) {
     shared_->InitPrefs();
   }
 }
@@ -526,7 +523,6 @@ ExtensionSystemImpl::~ExtensionSystemImpl() {
 }
 
 void ExtensionSystemImpl::Shutdown() {
-  process_manager_.reset();
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
@@ -536,9 +532,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
   // The InfoMap needs to be created before the ProcessManager.
   shared_->info_map();
-
-  process_manager_.reset(ProcessManager::Create(profile_));
-
   shared_->Init(extensions_enabled);
 }
 
@@ -556,10 +549,6 @@ ManagementPolicy* ExtensionSystemImpl::management_policy() {
 
 SharedUserScriptMaster* ExtensionSystemImpl::shared_user_script_master() {
   return shared_->shared_user_script_master();
-}
-
-ProcessManager* ExtensionSystemImpl::process_manager() {
-  return process_manager_.get();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {

@@ -85,9 +85,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // Initialize an ExtensionService with autoupdate enabled.
   void InitializeExtensionServiceWithUpdater();
 
-  // Initialize the associated ProcessManager.
-  void InitializeProcessManager();
-
   // TODO(rdevlin.cronin): Pull out more methods from ExtensionServiceTest that
   // are commonly used and/or reimplemented. For instance, methods to install
   // extensions from various locations, etc.

@@ -263,7 +263,7 @@ class PlatformAppPathLauncher
     }
 
     extensions::ProcessManager* const process_manager =
-        ExtensionSystem::Get(profile_)->process_manager();
+        extensions::ProcessManager::Get(profile_);
     ExtensionHost* const host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);

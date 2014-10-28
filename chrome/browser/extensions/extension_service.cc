@@ -598,7 +598,8 @@ void ExtensionService::ReloadExtensionImpl(
     // the inspector and hang onto a cookie for it, so that we can reattach
     // later.
     // TODO(yoz): this is not incognito-safe!
-    extensions::ProcessManager* manager = system_->process_manager();
+    extensions::ProcessManager* manager =
+        extensions::ProcessManager::Get(profile_);
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
     if (host && DevToolsAgentHost::HasFor(host->host_contents())) {

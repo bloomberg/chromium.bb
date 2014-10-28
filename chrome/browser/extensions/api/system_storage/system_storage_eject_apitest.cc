@@ -16,7 +16,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/system_storage/storage_info_provider.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -44,9 +43,9 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   content::RenderViewHost* GetHost() {
     const extensions::Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("system/storage_eject"));
-    return extensions::ExtensionSystem::Get(browser()->profile())->
-        process_manager()->GetBackgroundHostForExtension(extension->id())->
-            render_view_host();
+    return extensions::ProcessManager::Get(browser()->profile())
+        ->GetBackgroundHostForExtension(extension->id())
+        ->render_view_host();
   }
 
   void ExecuteCmdAndCheckReply(content::RenderViewHost* host,

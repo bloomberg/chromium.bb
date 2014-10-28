@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +17,7 @@ std::string ExecuteScriptInBackgroundPage(Profile* profile,
                                           const std::string& extension_id,
                                           const std::string& script) {
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
+      extensions::ProcessManager::Get(profile);
   extensions::ExtensionHost* host =
       manager->GetBackgroundHostForExtension(extension_id);
   if (host == NULL) {
@@ -38,7 +37,7 @@ bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
                                          const std::string& extension_id,
                                          const std::string& script) {
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
+      extensions::ProcessManager::Get(profile);
   extensions::ExtensionHost* host =
       manager->GetBackgroundHostForExtension(extension_id);
   if (host == NULL) {

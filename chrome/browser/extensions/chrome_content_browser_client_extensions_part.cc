@@ -260,7 +260,7 @@ ChromeContentBrowserClientExtensionsPart::ShouldTryToUseExistingProcessHost(
   std::vector<Profile*> profiles = g_browser_process->profile_manager()->
       GetLoadedProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
-    ProcessManager* epm = ExtensionSystem::Get(profiles[i])->process_manager();
+    ProcessManager* epm = ProcessManager::Get(profiles[i]);
     for (ProcessManager::const_iterator iter = epm->background_hosts().begin();
          iter != epm->background_hosts().end(); ++iter) {
       const ExtensionHost* host = *iter;

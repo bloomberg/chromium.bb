@@ -371,8 +371,8 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
 
   // Verify that the event page of the app has not been loaded.
   void VerifyAppNotLoaded(const std::string& app_id) {
-    EXPECT_FALSE(ExtensionSystem::Get(profile())->
-        process_manager()->GetBackgroundHostForExtension(app_id));
+    EXPECT_FALSE(extensions::ProcessManager::Get(profile())
+                     ->GetBackgroundHostForExtension(app_id));
   }
 
   // Verify properties of ephemeral apps.

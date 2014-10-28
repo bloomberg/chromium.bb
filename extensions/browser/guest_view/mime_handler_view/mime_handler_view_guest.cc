@@ -10,7 +10,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
@@ -98,12 +97,9 @@ void MimeHandlerViewGuest::CreateWebContents(
     return;
   }
 
-  ProcessManager* process_manager =
-      ExtensionSystem::Get(browser_context())->process_manager();
-  DCHECK(process_manager);
-
   // Use the mime handler extension's SiteInstance to create the guest so it
   // goes under the same process as the extension.
+  ProcessManager* process_manager = ProcessManager::Get(browser_context());
   content::SiteInstance* guest_site_instance =
       process_manager->GetSiteInstanceForURL(
           Extension::GetBaseURLFromExtensionId(embedder_extension_id));

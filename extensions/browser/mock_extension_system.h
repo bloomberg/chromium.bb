@@ -31,7 +31,6 @@ class MockExtensionSystem : public ExtensionSystem {
   RuntimeData* runtime_data() override;
   ManagementPolicy* management_policy() override;
   SharedUserScriptMaster* shared_user_script_master() override;
-  ProcessManager* process_manager() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
   InfoMap* info_map() override;

@@ -34,9 +34,8 @@ ExtensionViewHost* CreateViewHostForExtension(const Extension* extension,
   DCHECK(profile);
   // A NULL browser may only be given for dialogs.
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
-  ProcessManager* pm =
-      ExtensionSystem::Get(profile)->process_manager();
-  content::SiteInstance* site_instance = pm->GetSiteInstanceForURL(url);
+  content::SiteInstance* site_instance =
+      ProcessManager::Get(profile)->GetSiteInstanceForURL(url);
   ExtensionViewHost* host =
 #if defined(OS_MACOSX)
       new ExtensionViewHostMac(extension, site_instance, url, view_type);

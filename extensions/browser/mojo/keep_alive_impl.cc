@@ -4,7 +4,6 @@
 
 #include "extensions/browser/mojo/keep_alive_impl.h"
 
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 
 namespace extensions {
@@ -19,17 +18,11 @@ void KeepAliveImpl::Create(content::BrowserContext* context,
 KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
                              const Extension* extension)
     : context_(context), extension_(extension) {
-  ExtensionSystem* system = ExtensionSystem::Get(context_);
-  if (!system)
-    return;
-  system->process_manager()->IncrementLazyKeepaliveCount(extension_);
+  ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(extension_);
 }
 
 KeepAliveImpl::~KeepAliveImpl() {
-  ExtensionSystem* system = ExtensionSystem::Get(context_);
-  if (!system)
-    return;
-  system->process_manager()->DecrementLazyKeepaliveCount(extension_);
+  ProcessManager::Get(context_)->DecrementLazyKeepaliveCount(extension_);
 }
 
 }  // namespace extensions

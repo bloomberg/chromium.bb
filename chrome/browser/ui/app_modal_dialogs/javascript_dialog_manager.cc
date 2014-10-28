@@ -21,8 +21,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
 using content::BrowserContext;
@@ -39,8 +39,7 @@ namespace {
 // Returns the ProcessManager for the browser context from |web_contents|.
 extensions::ProcessManager* GetExtensionsProcessManager(
     WebContents* web_contents) {
-  return extensions::ExtensionSystem::Get(
-      web_contents->GetBrowserContext())->process_manager();
+  return extensions::ProcessManager::Get(web_contents->GetBrowserContext());
 }
 
 // Returns the extension associated with |web_contents| or NULL if there is no

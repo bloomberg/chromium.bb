@@ -2819,7 +2819,6 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
   InitPluginService();
   InitializeEmptyExtensionService();
-  InitializeProcessManager();
   service()->set_show_extensions_prompts(true);
 
   // Start by canceling any install prompts.
@@ -4070,7 +4069,6 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 // Tests reloading an extension.
 TEST_F(ExtensionServiceTest, ReloadExtension) {
   InitializeEmptyExtensionService();
-  InitializeProcessManager();
 
   // Simple extension that should install without error.
   const char* extension_id = "behllobkkfkfnphdnhnkndlbkcpglgmj";
@@ -5558,7 +5556,6 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
 
 TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
-  InitializeProcessManager();
   InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
@@ -5880,7 +5877,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InitializeEmptyExtensionService();
-  InitializeProcessManager();
   InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(

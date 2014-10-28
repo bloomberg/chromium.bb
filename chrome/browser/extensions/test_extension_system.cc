@@ -26,7 +26,6 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/state_store.h"
@@ -49,15 +48,6 @@ TestExtensionSystem::~TestExtensionSystem() {
 void TestExtensionSystem::Shutdown() {
   if (extension_service_)
     extension_service_->Shutdown();
-  process_manager_.reset();
-}
-
-void TestExtensionSystem::CreateProcessManager() {
-  process_manager_.reset(ProcessManager::Create(profile_));
-}
-
-void TestExtensionSystem::SetProcessManager(ProcessManager* manager) {
-  process_manager_.reset(manager);
 }
 
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
@@ -133,10 +123,6 @@ void TestExtensionSystem::SetExtensionService(ExtensionService* service) {
 
 SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
   return NULL;
-}
-
-ProcessManager* TestExtensionSystem::process_manager() {
-  return process_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {

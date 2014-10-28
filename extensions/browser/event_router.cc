@@ -680,7 +680,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
   if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
+    ProcessManager* pm = ProcessManager::Get(context);
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host)
       pm->IncrementLazyKeepaliveCount(extension);
@@ -689,7 +689,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
 
 void EventRouter::OnEventAck(BrowserContext* context,
                              const std::string& extension_id) {
-  ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
+  ProcessManager* pm = ProcessManager::Get(context);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be
   // NULL.

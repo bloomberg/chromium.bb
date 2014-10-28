@@ -5,16 +5,16 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/bind.h"
+#include "base/prefs/testing_pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_test.h"
-#include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -52,18 +52,9 @@ class TestProcessManager : public ProcessManager {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
-// A simple ExtensionSystem that returns a TestProcessManager.
-class MockExtensionSystemWithProcessManager : public MockExtensionSystem {
- public:
-  explicit MockExtensionSystemWithProcessManager(BrowserContext* context)
-      : MockExtensionSystem(context), test_process_manager_(context) {}
-  ~MockExtensionSystemWithProcessManager() override {}
-
-  ProcessManager* process_manager() override { return &test_process_manager_; }
-
- private:
-  TestProcessManager test_process_manager_;
-};
+KeyedService* CreateTestProcessManager(BrowserContext* context) {
+  return new TestProcessManager(context);
+}
 
 }  // namespace
 
@@ -74,8 +65,6 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   LazyBackgroundTaskQueueTest()
       : notification_service_(content::NotificationService::Create()),
         task_run_count_(0) {
-    extensions_browser_client()->set_extension_system_factory(
-        &extension_system_factory_);
   }
   ~LazyBackgroundTaskQueueTest() override {}
 
@@ -116,10 +105,15 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
     return extension;
   }
 
+ protected:
+  virtual void SetUp() override {
+    user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
+  }
+
  private:
   scoped_ptr<content::NotificationService> notification_service_;
-  MockExtensionSystemFactory<MockExtensionSystemWithProcessManager>
-      extension_system_factory_;
+
+  TestingPrefServiceSimple testing_pref_service_;
 
   // The total number of pending tasks that have been executed.
   int task_run_count_;
@@ -145,10 +139,9 @@ TEST_F(LazyBackgroundTaskQueueTest, ShouldEnqueueTask) {
 // multiple extensions can have pending tasks.
 TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
   // Get our TestProcessManager.
-  MockExtensionSystem* extension_system = static_cast<MockExtensionSystem*>(
-      ExtensionSystem::Get(browser_context()));
-  TestProcessManager* process_manager =
-      static_cast<TestProcessManager*>(extension_system->process_manager());
+  TestProcessManager* process_manager = static_cast<TestProcessManager*>(
+      ProcessManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+          browser_context(), CreateTestProcessManager));
 
   LazyBackgroundTaskQueue queue(browser_context());
 

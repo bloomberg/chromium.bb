@@ -563,8 +563,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
         bool extension_is_enabled) {
   ItemInspectViewList result;
   // Get the extension process's active views.
-  ProcessManager* process_manager =
-      ExtensionSystem::Get(GetProfile())->process_manager();
+  ProcessManager* process_manager = ProcessManager::Get(GetProfile());
   GetInspectablePagesForExtensionProcess(
       extension,
       process_manager->GetRenderViewHostsForExtension(extension->id()),
@@ -590,8 +589,8 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
   // app windows for incognito process.
   if (service->profile()->HasOffTheRecordProfile() &&
       IncognitoInfo::IsSplitMode(extension)) {
-    process_manager = ExtensionSystem::Get(
-        service->profile()->GetOffTheRecordProfile())->process_manager();
+    process_manager =
+        ProcessManager::Get(service->profile()->GetOffTheRecordProfile());
     GetInspectablePagesForExtensionProcess(
         extension,
         process_manager->GetRenderViewHostsForExtension(extension->id()),

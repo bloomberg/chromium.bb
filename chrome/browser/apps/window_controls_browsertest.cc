@@ -22,7 +22,7 @@ class WindowControlsTest : public extensions::PlatformAppBrowserTest {
 content::WebContents* WindowControlsTest::GetWebContentsForExtensionWindow(
     const extensions::Extension* extension) {
   extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile())->process_manager();
+      extensions::ProcessManager::Get(profile());
 
   // Lookup render view host for background page.
   const extensions::ExtensionHost* extension_host =

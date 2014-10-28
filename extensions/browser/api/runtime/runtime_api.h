@@ -14,6 +14,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/api/runtime.h"
@@ -105,9 +106,14 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   // Listen to extension notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+  ScopedObserver<ProcessManager, ProcessManagerObserver>
+      process_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeAPI);
 };
+
+template <>
+void BrowserContextKeyedAPIFactory<RuntimeAPI>::DeclareFactoryDependencies();
 
 class RuntimeEventRouter {
  public:

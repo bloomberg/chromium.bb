@@ -255,10 +255,6 @@ bool ShouldSyncApp(const Extension* app, content::BrowserContext* context) {
 
 bool IsExtensionIdle(const std::string& extension_id,
                      content::BrowserContext* context) {
-  ProcessManager* process_manager =
-      ExtensionSystem::Get(context)->process_manager();
-  DCHECK(process_manager);
-
   std::vector<std::string> ids_to_check;
   ids_to_check.push_back(extension_id);
 
@@ -280,6 +276,7 @@ bool IsExtensionIdle(const std::string& extension_id,
     }
   }
 
+  ProcessManager* process_manager = ProcessManager::Get(context);
   for (std::vector<std::string>::const_iterator i = ids_to_check.begin();
        i != ids_to_check.end();
        i++) {

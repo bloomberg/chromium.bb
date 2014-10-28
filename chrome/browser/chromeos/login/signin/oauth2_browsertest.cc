@@ -660,7 +660,7 @@ class MergeSessionTest : public OAuth2Test {
 
   const GURL& GetBackGroundPageUrl(const std::string& extension_id) {
     extensions::ProcessManager* manager =
-        extensions::ExtensionSystem::Get(profile())->process_manager();
+        extensions::ProcessManager::Get(profile());
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
     return host->host_contents()->GetURL();
@@ -669,7 +669,7 @@ class MergeSessionTest : public OAuth2Test {
   void JsExpectOnBackgroundPage(const std::string& extension_id,
                                 const std::string& expression) {
     extensions::ProcessManager* manager =
-        extensions::ExtensionSystem::Get(profile())->process_manager();
+        extensions::ProcessManager::Get(profile());
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
     if (host == NULL) {

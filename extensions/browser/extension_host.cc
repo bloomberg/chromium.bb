@@ -349,17 +349,13 @@ void ExtensionHost::OnEventAck() {
 }
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::Get(
-      browser_context_)->process_manager();
-  if (pm)
-    pm->IncrementLazyKeepaliveCount(extension());
+  ProcessManager::Get(browser_context_)
+      ->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::OnDecrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::Get(
-      browser_context_)->process_manager();
-  if (pm)
-    pm->DecrementLazyKeepaliveCount(extension());
+  ProcessManager::Get(browser_context_)
+      ->DecrementLazyKeepaliveCount(extension());
 }
 
 // content::WebContentsObserver

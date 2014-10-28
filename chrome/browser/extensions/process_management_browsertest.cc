@@ -16,7 +16,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -141,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
 
   // Get extension processes.
   extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->
-          process_manager();
+      extensions::ProcessManager::Get(browser()->profile());
   content::RenderProcessHost* extension1_host =
       process_manager->GetSiteInstanceForURL(extension1_url)->GetProcess();
   content::RenderProcessHost* extension2_host =
@@ -232,8 +230,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
 
   std::set<int> process_ids;
   Profile* profile = browser()->profile();
-  extensions::ProcessManager* epm = extensions::ExtensionSystem::Get(profile)->
-      process_manager();
+  extensions::ProcessManager* epm = extensions::ProcessManager::Get(profile);
   for (extensions::ProcessManager::const_iterator iter =
            epm->background_hosts().begin();
        iter != epm->background_hosts().end(); ++iter) {

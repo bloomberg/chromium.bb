@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -26,6 +25,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/result_catcher.h"
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
 
   // There is a background page and a browser action with no badge text.
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+      extensions::ProcessManager::Get(browser()->profile());
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));

@@ -80,9 +80,6 @@ class ExtensionSystem : public KeyedService {
   // The SharedUserScriptMaster is created at startup.
   virtual SharedUserScriptMaster* shared_user_script_master() = 0;
 
-  // The ProcessManager is created at startup.
-  virtual ProcessManager* process_manager() = 0;
-
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;
 

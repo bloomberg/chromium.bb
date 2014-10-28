@@ -1448,8 +1448,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BeforeTranslateExtraButtons) {
   translate::TranslateInfoBarDelegate* infobar;
   TestingProfile* test_profile =
       static_cast<TestingProfile*>(web_contents()->GetBrowserContext());
-  static_cast<extensions::TestExtensionSystem*>(
-      extensions::ExtensionSystem::Get(test_profile))->CreateProcessManager();
   test_profile->ForceIncognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i << " incognito mode="

@@ -76,7 +76,6 @@ class KeywordExtensionsDelegateImplTest : public ExtensionServiceTestBase {
 void KeywordExtensionsDelegateImplTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   InitializeExtensionService(CreateDefaultInitParams());
-  InitializeProcessManager();
 }
 
 void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {

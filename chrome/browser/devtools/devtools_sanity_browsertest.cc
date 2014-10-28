@@ -351,8 +351,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
         FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
     extensions::ProcessManager* manager =
-        extensions::ExtensionSystem::Get(browser()->profile())->
-            process_manager();
+        extensions::ProcessManager::Get(browser()->profile());
     extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
     for (extensions::ProcessManager::ViewSet::const_iterator iter =
              all_views.begin();

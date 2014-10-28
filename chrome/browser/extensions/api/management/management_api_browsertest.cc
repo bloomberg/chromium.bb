@@ -33,8 +33,8 @@ class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
  protected:
   bool CrashEnabledExtension(const std::string& extension_id) {
     ExtensionHost* background_host =
-        ExtensionSystem::Get(browser()->profile())->
-            process_manager()->GetBackgroundHostForExtension(extension_id);
+        ProcessManager::Get(browser()->profile())
+            ->GetBackgroundHostForExtension(extension_id);
     if (!background_host)
       return false;
     content::CrashTab(background_host->host_contents());

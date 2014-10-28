@@ -28,8 +28,8 @@ void InspectExtensionHost(ExtensionHost* host) {
 void InspectBackgroundPage(const Extension* extension, Profile* profile) {
   DCHECK(extension);
   ExtensionSystem* system = ExtensionSystem::Get(profile);
-  ExtensionHost* host =
-      system->process_manager()->GetBackgroundHostForExtension(extension->id());
+  ExtensionHost* host = ProcessManager::Get(profile)
+                            ->GetBackgroundHostForExtension(extension->id());
   if (host) {
     InspectExtensionHost(host);
   } else {

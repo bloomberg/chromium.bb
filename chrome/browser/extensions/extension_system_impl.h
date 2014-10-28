@@ -41,7 +41,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   ManagementPolicy* management_policy() override;  // shared
   // shared
   SharedUserScriptMaster* shared_user_script_master() override;
-  ProcessManager* process_manager() override;
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
@@ -155,12 +154,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   Profile* profile_;
 
   Shared* shared_;
-
-  // |process_manager_| must be destroyed before the Profile's |io_data_|. While
-  // |process_manager_| still lives, we handle incoming resource requests from
-  // extension processes and those require access to the ResourceContext owned
-  // by |io_data_|.
-  scoped_ptr<ProcessManager> process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };

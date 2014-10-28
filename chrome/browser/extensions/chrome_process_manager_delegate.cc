@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/one_shot_event.h"
 
 namespace extensions {
@@ -102,9 +103,8 @@ void ChromeProcessManagerDelegate::OnBrowserWindowReady(Browser* browser) {
   // Inform the process manager for this profile that the window is ready.
   // We continue to observe the notification in case browser windows open for
   // a related incognito profile or other regular profiles.
-  ProcessManager* manager = system->process_manager();
-  if (!manager)  // Tests may not have a process manager.
-    return;
+  ProcessManager* manager = ProcessManager::Get(profile);
+  DCHECK(manager);
   DCHECK_EQ(profile, manager->GetBrowserContext());
   manager->MaybeCreateStartupBackgroundHosts();
 
@@ -114,8 +114,7 @@ void ChromeProcessManagerDelegate::OnBrowserWindowReady(Browser* browser) {
   // non-incognito window opened.
   if (profile->IsOffTheRecord()) {
     Profile* original_profile = profile->GetOriginalProfile();
-    ProcessManager* original_manager =
-        ExtensionSystem::Get(original_profile)->process_manager();
+    ProcessManager* original_manager = ProcessManager::Get(original_profile);
     DCHECK(original_manager);
     DCHECK_EQ(original_profile, original_manager->GetBrowserContext());
     original_manager->MaybeCreateStartupBackgroundHosts();
@@ -128,14 +127,13 @@ void ChromeProcessManagerDelegate::OnProfileCreated(Profile* profile) {
     return;
 
   // The profile can be created before the extension system is ready.
-  ProcessManager* manager = ExtensionSystem::Get(profile)->process_manager();
-  if (!manager)
+  if (!ExtensionSystem::Get(profile)->ready().is_signaled())
     return;
 
   // The profile might have been initialized asynchronously (in parallel with
   // extension system startup). Now that initialization is complete the
   // ProcessManager can load deferred background pages.
-  manager->MaybeCreateStartupBackgroundHosts();
+  ProcessManager::Get(profile)->MaybeCreateStartupBackgroundHosts();
 }
 
 void ChromeProcessManagerDelegate::OnProfileDestroyed(Profile* profile) {
@@ -143,19 +141,22 @@ void ChromeProcessManagerDelegate::OnProfileDestroyed(Profile* profile) {
   // have time to shutdown various objects on different threads. The
   // ProfileManager destructor is called too late in the shutdown sequence.
   // http://crbug.com/15708
-  ProcessManager* manager = ExtensionSystem::Get(profile)->process_manager();
-  if (manager)
+  ProcessManager* manager =
+      ProcessManagerFactory::GetForBrowserContextIfExists(profile);
+  if (manager) {
     manager->CloseBackgroundHosts();
+  }
 
   // If this profile owns an incognito profile, but it is destroyed before the
   // incognito profile is destroyed, then close the incognito background hosts
   // as well. This happens in a few tests. http://crbug.com/138843
   if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile()) {
     ProcessManager* incognito_manager =
-        ExtensionSystem::Get(profile->GetOffTheRecordProfile())
-            ->process_manager();
-    if (incognito_manager)
+        ProcessManagerFactory::GetForBrowserContextIfExists(
+            profile->GetOffTheRecordProfile());
+    if (incognito_manager) {
       incognito_manager->CloseBackgroundHosts();
+    }
   }
 }
 

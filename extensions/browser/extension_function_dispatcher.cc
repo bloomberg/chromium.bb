@@ -410,14 +410,13 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   // now, largely for simplicity's sake. This is OK because currently, only
   // the webRequest API uses IOThreadExtensionFunction, and that API is not
   // compatible with lazy background pages.
-  extension_system->process_manager()->IncrementLazyKeepaliveCount(extension);
+  ProcessManager::Get(browser_context_)->IncrementLazyKeepaliveCount(extension);
 }
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
     const Extension* extension) {
   if (extension) {
-    ExtensionSystem::Get(browser_context_)
-        ->process_manager()
+    ProcessManager::Get(browser_context_)
         ->DecrementLazyKeepaliveCount(extension);
   }
 }

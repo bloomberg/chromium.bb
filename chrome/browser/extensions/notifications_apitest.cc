@@ -56,7 +56,6 @@ IN_PROC_BROWSER_TEST_F(NotificationIdleTest, MAYBE_NotificationsAllowUnload) {
   ASSERT_TRUE(extension) << message_;
 
   // Lazy Background Page has been shut down.
-  extensions::ProcessManager* pm =
-      extensions::ExtensionSystem::Get(profile())->process_manager();
+  extensions::ProcessManager* pm = extensions::ProcessManager::Get(profile());
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
 }

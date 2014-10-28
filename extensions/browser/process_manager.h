@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/view_type.h"
@@ -40,12 +41,13 @@ class ProcessManagerObserver;
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
-class ProcessManager : public content::NotificationObserver {
+class ProcessManager : public KeyedService,
+                       public content::NotificationObserver {
  public:
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
 
-  static ProcessManager* Create(content::BrowserContext* context);
+  static ProcessManager* Get(content::BrowserContext* context);
   ~ProcessManager() override;
 
   const ExtensionHostSet& background_hosts() const {
@@ -168,7 +170,6 @@ class ProcessManager : public content::NotificationObserver {
   static ProcessManager* CreateIncognitoForTesting(
       content::BrowserContext* incognito_context,
       content::BrowserContext* original_context,
-      ProcessManager* original_manager,
       ExtensionRegistry* registry);
 
   bool startup_background_hosts_created_for_test() const {
@@ -176,7 +177,9 @@ class ProcessManager : public content::NotificationObserver {
   }
 
  protected:
-  // If |context| is incognito pass the master context as |original_context|.
+  static ProcessManager* Create(content::BrowserContext* context);
+
+  //  |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both. Pass the ExtensionRegistry for
   // |context| as |registry|, or override it for testing.
   ProcessManager(content::BrowserContext* context,
@@ -202,6 +205,7 @@ class ProcessManager : public content::NotificationObserver {
   ExtensionRegistry* extension_registry_;
 
  private:
+  friend class ProcessManagerFactory;
   friend class ProcessManagerTest;
 
   // Extra information we keep for each extension's background page.

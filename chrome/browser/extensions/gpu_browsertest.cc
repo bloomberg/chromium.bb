@@ -7,7 +7,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 
 // Tests that background pages are marked as never visible to prevent GPU
@@ -19,7 +18,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BackgroundPageIsNeverVisible) {
                     .AppendASCII("1.0.0.0")));
 
   extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+      extensions::ProcessManager::Get(browser()->profile());
   extensions::ExtensionHost* host =
       FindHostWithPath(manager, "/backgroundpage.html", 1);
   ASSERT_TRUE(host->host_contents()->GetDelegate()->IsNeverVisible(
