@@ -797,11 +797,6 @@ void InputMethodManagerImpl::SetState(
   DCHECK(state.get());
   InputMethodManagerImpl::StateImpl* new_impl_state =
       static_cast<InputMethodManagerImpl::StateImpl*>(state.get());
-  const bool need_update_current_input_method =
-      (state_.get()
-           ? state_->current_input_method.id() !=
-                 new_impl_state->current_input_method.id()
-           : true);
 #if defined(USE_ATHENA)
   const bool profile_changed = (state_.get()
       ? state_->profile != new_impl_state->profile
@@ -820,16 +815,12 @@ void InputMethodManagerImpl::SetState(
     // indicator is used by only keyboard layout input methods.
     MaybeInitializeCandidateWindowController();
 
-    if (need_update_current_input_method) {
-      ChangeInputMethodInternal(state_->current_input_method,
-                                false /* show_message */,
-                                true /* notify_menu */);
-    } else {
-      // Update input method indicators (e.g. "US", "DV") in Chrome windows.
-      FOR_EACH_OBSERVER(InputMethodManager::Observer,
-                        observers_,
-                        InputMethodChanged(this, false /* show_message */));
-    }
+    // Always call ChangeInputMethodInternal even when the input method id
+    // remain unchanged, because onActivate event needs to be sent to IME
+    // extension to update the current screen type correctly.
+    ChangeInputMethodInternal(state_->current_input_method,
+                              false /* show_message */,
+                              true /* notify_menu */);
   }
 }
 
