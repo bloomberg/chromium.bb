@@ -53,8 +53,31 @@ message PowerSupplyProperties {
     // Next value to use: 4
   }
 
-  // Current external power source.
+  // Details about a potential source of power to the system.
+  message PowerSource {
+    // Opaque ID corresponding to the device; see |external_power_source_id|.
+    optional string id = 1;
+
+    // User-friendly name describing the device.
+    optional string name = 2;
+
+    // True if the power source will automatically deliver charge to the system
+    // when connected (assuming there isn't another |active_by_default| source
+    // doing so). If false, the source will not deliver charge unless requested
+    // to do so by the user.
+    optional bool active_by_default = 3;
+
+    // Next ID to use: 4
+  }
+
+  // Current state of the external power source.
   optional ExternalPower external_power = 14;
+
+  // ID of the PowerSource that is currently providing power to the system.
+  optional string external_power_source_id = 17;
+
+  // Currently-connected external power sources.
+  repeated PowerSource available_external_power_source = 18;
 
   // Current state of the battery.
   optional BatteryState battery_state = 15;
@@ -81,5 +104,5 @@ message PowerSupplyProperties {
   // being discharged and negative if it's being charged.
   optional double battery_discharge_rate = 16;
 
-  // Next ID to use: 17
+  // Next ID to use: 19
 }
