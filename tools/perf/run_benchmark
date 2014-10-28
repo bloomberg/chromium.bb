@@ -14,12 +14,5 @@ from telemetry.core import environment
 
 if __name__ == '__main__':
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  test_aliases = {
-      'blink_perf': 'blink_perf.all',
-      'image_decoding.tough_decoding_cases':
-          'image_decoding.image_decoding_measurement',
-      'media.tough_media_cases': 'media.tough_video_cases',
-      'page_cycler.pica': 'pica.pica',
-  }
-  benchmark_runner.config = environment.Environment([base_dir], test_aliases)
+  benchmark_runner.config = environment.Environment([base_dir])
   sys.exit(benchmark_runner.main())
