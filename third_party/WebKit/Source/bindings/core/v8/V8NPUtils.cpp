@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result, v8::Isolate* isolate)
+void convertV8ObjectToNPVariant(v8::Isolate* isolate, v8::Local<v8::Value> object, NPObject* owner, NPVariant* result)
 {
     VOID_TO_NPVARIANT(*result);
 
@@ -77,7 +77,7 @@ void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NP
     }
 }
 
-v8::Handle<v8::Value> convertNPVariantToV8Object(const NPVariant* variant, NPObject* owner, v8::Isolate* isolate)
+v8::Handle<v8::Value> convertNPVariantToV8Object(v8::Isolate* isolate, const NPVariant* variant, NPObject* owner)
 {
     NPVariantType type = variant->type;
 

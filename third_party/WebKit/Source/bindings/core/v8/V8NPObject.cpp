@@ -109,7 +109,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
     OwnPtr<NPVariant[]> npArgs = adoptArrayPtr(new NPVariant[numArgs]);
 
     for (int i = 0; i < numArgs; i++)
-        convertV8ObjectToNPVariant(info[i], npObject, &npArgs[i], isolate);
+        convertV8ObjectToNPVariant(isolate, info[i], npObject, &npArgs[i]);
 
     NPVariant result;
     VOID_TO_NPVARIANT(result);
@@ -144,7 +144,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
     // Unwrap return values.
     v8::Handle<v8::Value> returnValue;
     if (_NPN_IsAlive(npObject))
-        returnValue = convertNPVariantToV8Object(&result, npObject, isolate);
+        returnValue = convertNPVariantToV8Object(isolate, &result, npObject);
     _NPN_ReleaseVariantValue(&result);
 
     v8SetReturnValue(info, returnValue);
@@ -254,7 +254,7 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
 
         v8::Handle<v8::Value> returnValue;
         if (_NPN_IsAlive(npObject))
-            returnValue = convertNPVariantToV8Object(&result, npObject, isolate);
+            returnValue = convertNPVariantToV8Object(isolate, &result, npObject);
         _NPN_ReleaseVariantValue(&result);
         return returnValue;
 
@@ -332,7 +332,7 @@ static v8::Handle<v8::Value> npObjectSetProperty(v8::Local<v8::Object> self, NPI
 
         NPVariant npValue;
         VOID_TO_NPVARIANT(npValue);
-        convertV8ObjectToNPVariant(value, npObject, &npValue, isolate);
+        convertV8ObjectToNPVariant(isolate, value, npObject, &npValue);
         bool success = npObject->_class->setProperty(npObject, identifier, &npValue);
         _NPN_ReleaseVariantValue(&npValue);
         if (success)

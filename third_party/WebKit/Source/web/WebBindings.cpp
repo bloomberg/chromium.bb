@@ -383,7 +383,7 @@ void WebBindings::popExceptionHandler()
 
 void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVariant* result)
 {
-    convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
+    convertV8ObjectToNPVariant(v8::Isolate::GetCurrent(), object, root, result);
 }
 
 v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
@@ -394,11 +394,11 @@ v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
         V8NPObject* v8Object = npObjectToV8NPObject(object);
         if (!v8Object)
             return v8::Undefined(isolate);
-        return convertNPVariantToV8Object(variant, v8Object->rootObject->frame()->script().windowScriptNPObject(), isolate);
+        return convertNPVariantToV8Object(isolate, variant, v8Object->rootObject->frame()->script().windowScriptNPObject());
     }
     // Safe to pass 0 since we have checked the script object class to make sure the
     // argument is a primitive v8 type.
-    return convertNPVariantToV8Object(variant, 0, isolate);
+    return convertNPVariantToV8Object(isolate, variant, 0);
 }
 
 } // namespace blink

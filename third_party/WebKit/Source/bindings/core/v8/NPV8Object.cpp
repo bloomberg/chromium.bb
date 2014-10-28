@@ -101,13 +101,13 @@ static PassOwnPtr<v8::Handle<v8::Value>[]> createValueListFromVariantArgs(const 
     OwnPtr<v8::Handle<v8::Value>[]> argv = adoptArrayPtr(new v8::Handle<v8::Value>[argumentCount]);
     for (uint32_t index = 0; index < argumentCount; index++) {
         const NPVariant* arg = &arguments[index];
-        argv[index] = convertNPVariantToV8Object(arg, owner, isolate);
+        argv[index] = convertNPVariantToV8Object(isolate, arg, owner);
     }
     return argv.release();
 }
 
 // Create an identifier (null terminated utf8 char*) from the NPIdentifier.
-static v8::Local<v8::String> npIdentifierToV8Identifier(NPIdentifier name, v8::Isolate* isolate)
+static v8::Local<v8::String> npIdentifierToV8Identifier(v8::Isolate* isolate, NPIdentifier name)
 {
     PrivateIdentifier* identifier = static_cast<PrivateIdentifier*>(name);
     if (identifier->isString)
@@ -282,7 +282,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     if (resultObject.IsEmpty())
         return false;
 
-    convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
+    convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);
     return true;
 }
 
@@ -331,7 +331,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     if (resultObject.IsEmpty())
         return false;
 
-    convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
+    convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);
     return true;
 }
 
@@ -377,7 +377,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
         return false;
 
     if (_NPN_IsAlive(npObject))
-        convertV8ObjectToNPVariant(v8result, npObject, result, isolate);
+        convertV8ObjectToNPVariant(isolate, v8result, npObject, result);
     return true;
 }
 
@@ -396,12 +396,12 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
         ExceptionCatcher exceptionCatcher;
 
         v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        v8::Local<v8::Value> v8result = obj->Get(npIdentifierToV8Identifier(propertyName, isolate));
+        v8::Local<v8::Value> v8result = obj->Get(npIdentifierToV8Identifier(isolate, propertyName));
 
         if (v8result.IsEmpty())
             return false;
 
-        convertV8ObjectToNPVariant(v8result, npObject, result, isolate);
+        convertV8ObjectToNPVariant(isolate, v8result, npObject, result);
         return true;
     }
 
@@ -429,7 +429,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
         ExceptionCatcher exceptionCatcher;
 
         v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        obj->Set(npIdentifierToV8Identifier(propertyName, isolate), convertNPVariantToV8Object(value, object->rootObject->frame()->script().windowScriptNPObject(), isolate));
+        obj->Set(npIdentifierToV8Identifier(isolate, propertyName), convertNPVariantToV8Object(isolate, value, object->rootObject->frame()->script().windowScriptNPObject()));
         return true;
     }
 
@@ -457,7 +457,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
     // FIXME: Verify that setting to undefined is right.
-    obj->Set(npIdentifierToV8Identifier(propertyName, isolate), v8::Undefined(isolate));
+    obj->Set(npIdentifierToV8Identifier(isolate, propertyName), v8::Undefined(isolate));
     return true;
 }
 
@@ -475,7 +475,7 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
         ExceptionCatcher exceptionCatcher;
 
         v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        return obj->Has(npIdentifierToV8Identifier(propertyName, isolate));
+        return obj->Has(npIdentifierToV8Identifier(isolate, propertyName));
     }
 
     if (npObject->_class->hasProperty)
@@ -497,7 +497,7 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
         ExceptionCatcher exceptionCatcher;
 
         v8::Handle<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        v8::Handle<v8::Value> prop = obj->Get(npIdentifierToV8Identifier(methodName, isolate));
+        v8::Handle<v8::Value> prop = obj->Get(npIdentifierToV8Identifier(isolate, methodName));
         return prop->IsFunction();
     }
 
@@ -612,7 +612,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         if (resultObject.IsEmpty())
             return false;
 
-        convertV8ObjectToNPVariant(resultObject, npObject, result, isolate);
+        convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);
         return true;
     }
 
