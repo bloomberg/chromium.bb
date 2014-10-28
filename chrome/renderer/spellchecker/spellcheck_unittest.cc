@@ -70,8 +70,7 @@ class SpellCheckTest : public testing::Test {
     spell_check_->OnEnableAutoSpellCorrect(enable_autocorrect);
   }
 
-  virtual ~SpellCheckTest() {
-  }
+  ~SpellCheckTest() override {}
 
   SpellCheck* spell_check() { return spell_check_.get(); }
 

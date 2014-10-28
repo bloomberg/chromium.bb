@@ -442,8 +442,8 @@ class MockPrintSystem : public PrintSystem {
 class PrinterJobHandlerTest : public ::testing::Test {
  public:
   PrinterJobHandlerTest();
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
   void IdleOut();
   bool GetPrinterInfo(printing::PrinterBasicInfo* info);
   void SendCapsAndDefaults(

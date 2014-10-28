@@ -88,10 +88,10 @@ class BrowserWithTestWindowTest : public testing::Test {
                             chrome::HostDesktopType host_desktop_type,
                             bool hosted_app);
 
-  virtual ~BrowserWithTestWindowTest();
+  ~BrowserWithTestWindowTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   BrowserWindow* window() const { return window_.get(); }

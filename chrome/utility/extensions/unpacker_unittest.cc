@@ -25,7 +25,7 @@ namespace keys = manifest_keys;
 
 class UnpackerTest : public testing::Test {
  public:
-  virtual ~UnpackerTest() {
+  ~UnpackerTest() override {
     LOG(WARNING) << "Deleting temp dir: "
                  << temp_dir_.path().LossyDisplayName();
     LOG(WARNING) << temp_dir_.Delete();

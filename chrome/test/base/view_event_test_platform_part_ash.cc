@@ -16,10 +16,10 @@ namespace {
 class ViewEventTestPlatformPartAsh : public ViewEventTestPlatformPart {
  public:
   explicit ViewEventTestPlatformPartAsh(ui::ContextFactory* context_factory);
-  virtual ~ViewEventTestPlatformPartAsh();
+  ~ViewEventTestPlatformPartAsh() override;
 
   // Overridden from ViewEventTestPlatformPart:
-  virtual gfx::NativeWindow GetContext() override {
+  gfx::NativeWindow GetContext() override {
     return NULL;  // No context, so that desktop tree hosts are used by default.
   }
 

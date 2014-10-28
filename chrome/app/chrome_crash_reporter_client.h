@@ -40,9 +40,9 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
-  virtual void GetProductNameAndVersion(const char** product_name,
-                                        const char** version) override;
-  virtual base::FilePath GetReporterLogFilename() override;
+  void GetProductNameAndVersion(const char** product_name,
+                                const char** version) override;
+  base::FilePath GetReporterLogFilename() override;
 #endif
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;

@@ -39,7 +39,7 @@ class WebUITestHandler;
 // and the lone test within this class.
 class WebUIBrowserTest : public JavaScriptBrowserTest {
  public:
-  virtual ~WebUIBrowserTest();
+  ~WebUIBrowserTest() override;
 
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.

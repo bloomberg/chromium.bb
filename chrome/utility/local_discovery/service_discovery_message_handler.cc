@@ -28,14 +28,15 @@ class ScopedSocketFactory : public net::PlatformSocketFactory {
     net::PlatformSocketFactory::SetInstance(this);
   }
 
-  virtual ~ScopedSocketFactory() {
+  ~ScopedSocketFactory() override {
     net::PlatformSocketFactory::SetInstance(NULL);
     ClosePlatformSocket(socket_);
     socket_ = net::kInvalidSocket;
   }
 
-  virtual net::SocketDescriptor CreateSocket(int family, int type,
-                                             int protocol) override {
+  net::SocketDescriptor CreateSocket(int family,
+                                     int type,
+                                     int protocol) override {
     DCHECK_EQ(type, SOCK_DGRAM);
     DCHECK(family == AF_INET || family == AF_INET6);
     net::SocketDescriptor result = net::kInvalidSocket;
@@ -65,14 +66,14 @@ struct SocketInfo {
 class PreCreatedMDnsSocketFactory : public net::MDnsSocketFactory {
  public:
   PreCreatedMDnsSocketFactory() {}
-  virtual ~PreCreatedMDnsSocketFactory() {
+  ~PreCreatedMDnsSocketFactory() override {
     // Not empty if process exits too fast, before starting mDns code. If
     // happened, destructors may crash accessing destroyed global objects.
     sockets_.weak_clear();
   }
 
   // net::MDnsSocketFactory implementation:
-  virtual void CreateSockets(
+  void CreateSockets(
       ScopedVector<net::DatagramServerSocket>* sockets) override {
     sockets->swap(sockets_);
     Reset();

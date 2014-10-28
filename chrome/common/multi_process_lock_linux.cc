@@ -18,13 +18,13 @@ class MultiProcessLockLinux : public MultiProcessLock {
   explicit MultiProcessLockLinux(const std::string& name)
       : name_(name), fd_(-1) { }
 
-  virtual ~MultiProcessLockLinux() {
+  ~MultiProcessLockLinux() override {
     if (fd_ != -1) {
       Unlock();
     }
   }
 
-  virtual bool TryLock() override {
+  bool TryLock() override {
     struct sockaddr_un address;
 
     // +1 for terminator, +1 for 0 in position 0 that makes it an
@@ -85,7 +85,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
     }
   }
 
-  virtual void Unlock() override {
+  void Unlock() override {
     if (fd_ == -1) {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;

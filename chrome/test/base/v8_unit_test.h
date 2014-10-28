@@ -19,10 +19,10 @@
 class V8UnitTest : public testing::Test {
  public:
   V8UnitTest();
-  virtual ~V8UnitTest();
+  ~V8UnitTest() override;
 
   // Methods from testing::Test.
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   // Add a custom helper JS library for your test. If |library_path| is

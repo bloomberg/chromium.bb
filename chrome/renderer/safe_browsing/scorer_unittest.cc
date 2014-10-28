@@ -20,7 +20,7 @@ namespace safe_browsing {
 
 class PhishingScorerTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Setup a simple model.  Note that the scorer does not care about
     // how features are encoded so we use readable strings here to make
     // the test simpler to follow.

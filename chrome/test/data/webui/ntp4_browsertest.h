@@ -10,7 +10,7 @@
 class NTP4LoggedInWebUITest : public WebUIBrowserTest {
  public:
   NTP4LoggedInWebUITest();
-  virtual ~NTP4LoggedInWebUITest();
+  ~NTP4LoggedInWebUITest() override;
 
  protected:
   // Sets the user name in the profile as if the user had logged in.

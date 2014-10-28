@@ -56,7 +56,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
 class SpellCheckProviderTest : public testing::Test {
  public:
   SpellCheckProviderTest();
-  virtual ~SpellCheckProviderTest();
+  ~SpellCheckProviderTest() override;
 
  protected:
   TestingSpellCheckProvider provider_;

@@ -61,12 +61,12 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
   TranslateHelperBrowserTest() : translate_helper_(NULL) {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     delete translate_helper_;
     ChromeRenderViewTest::TearDown();
   }

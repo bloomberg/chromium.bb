@@ -15,7 +15,7 @@
 class ChromeManifestTest : public extensions::ManifestTest {
  public:
   ChromeManifestTest();
-  virtual ~ChromeManifestTest();
+  ~ChromeManifestTest() override;
 
   // ManifestTest overrides:
   base::FilePath GetTestDataDir() override;

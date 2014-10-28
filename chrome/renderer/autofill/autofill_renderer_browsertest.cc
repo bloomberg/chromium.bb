@@ -42,10 +42,10 @@ typedef Tuple5<int,
 class AutofillRendererTest : public ChromeRenderViewTest {
  public:
   AutofillRendererTest() {}
-  virtual ~AutofillRendererTest() {}
+  ~AutofillRendererTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
     // Don't want any delay for form state sync changes. This will still post a
@@ -251,10 +251,10 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
  public:
   RequestAutocompleteRendererTest()
       : invoking_frame_(NULL), sibling_frame_(NULL) {}
-  virtual ~RequestAutocompleteRendererTest() {}
+  ~RequestAutocompleteRendererTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     AutofillRendererTest::SetUp();
 
     // Bypass the HTTPS-only restriction to show requestAutocomplete.
@@ -295,7 +295,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
     render_thread_->sink().ClearMessages();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     invoking_form_.reset();
     AutofillRendererTest::TearDown();
   }

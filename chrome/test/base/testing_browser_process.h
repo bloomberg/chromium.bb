@@ -104,7 +104,7 @@ class TestingBrowserProcess : public BrowserProcess {
   DownloadRequestLimiter* download_request_limiter() override;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-  virtual void StartAutoupdateTimer() override {}
+  void StartAutoupdateTimer() override {}
 #endif
 
   ChromeNetLog* net_log() override;

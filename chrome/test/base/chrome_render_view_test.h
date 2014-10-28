@@ -24,12 +24,12 @@ class DispatcherDelegate;
 class ChromeRenderViewTest : public content::RenderViewTest {
  public:
   ChromeRenderViewTest();
-  virtual ~ChromeRenderViewTest();
+  ~ChromeRenderViewTest() override;
 
  protected:
   // testing::Test
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
   content::ContentClient* CreateContentClient() override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;

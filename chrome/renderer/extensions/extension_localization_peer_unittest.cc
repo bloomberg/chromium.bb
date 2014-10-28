@@ -79,7 +79,7 @@ class MockRequestPeer : public content::RequestPeer {
 
 class ExtensionLocalizationPeerTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     sender_.reset(new MockIpcMessageSender());
     original_peer_.reset(new MockRequestPeer());
     filter_peer_.reset(

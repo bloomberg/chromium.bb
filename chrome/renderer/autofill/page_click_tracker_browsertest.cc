@@ -43,7 +43,7 @@ class TestPageClickListener : public PageClickListener {
 
 class PageClickTrackerTest : public content::RenderViewTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewTest::SetUp();
 
     // RenderView creates PageClickTracker but it doesn't keep it around.
@@ -66,7 +66,7 @@ class PageClickTrackerTest : public content::RenderViewTest {
     ASSERT_FALSE(textarea_.isNull());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     text_.reset();
     textarea_.reset();
     test_listener_.ClearResults();

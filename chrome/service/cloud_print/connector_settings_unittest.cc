@@ -48,7 +48,7 @@ const char kServiceStateContent[] =
 
 class ConnectorSettingsTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     message_loop_proxy_ = base::MessageLoopProxy::current();
   }

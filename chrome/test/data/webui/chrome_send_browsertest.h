@@ -44,7 +44,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
 class ChromeSendPassthroughWebUITest : public ChromeSendWebUITest {
  public:
   ChromeSendPassthroughWebUITest();
-  virtual ~ChromeSendPassthroughWebUITest();
+  ~ChromeSendPassthroughWebUITest() override;
 
  private:
   void SetUpOnMainThread() override;

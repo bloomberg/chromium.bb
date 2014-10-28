@@ -102,13 +102,9 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
   }
 
  private:
-  virtual void SetUp() override {
-    ChromeRenderViewTest::SetUp();
-  }
+  void SetUp() override { ChromeRenderViewTest::SetUp(); }
 
-  virtual void TearDown() override {
-    ChromeRenderViewTest::TearDown();
-  }
+  void TearDown() override { ChromeRenderViewTest::TearDown(); }
 
   double ExecuteScriptAndGetNumberResult(const std::string& script) {
     WebScriptSource source = WebScriptSource(base::ASCIIToUTF16(script));

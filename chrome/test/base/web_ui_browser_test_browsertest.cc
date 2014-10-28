@@ -30,7 +30,7 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
   }
 
  protected:
-  virtual ~WebUIBrowserExpectFailTest() {
+  ~WebUIBrowserExpectFailTest() override {
     EXPECT_TRUE(s_test_);
     s_test_ = NULL;
   }

@@ -125,7 +125,7 @@ class AppModalDialogWaiter : public AppModalDialogObserver {
   }
 
   // AppModalDialogWaiter:
-  virtual void Notify(AppModalDialog* dialog) override {
+  void Notify(AppModalDialog* dialog) override {
     DCHECK(!dialog_);
     dialog_ = dialog;
     if (message_loop_runner_.get() && message_loop_runner_->loop_running())

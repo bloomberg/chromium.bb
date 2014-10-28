@@ -22,7 +22,7 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
  public:
   ChromePermissionMessageProviderUnittest()
       : message_provider_(new ChromePermissionMessageProvider()) {}
-  virtual ~ChromePermissionMessageProviderUnittest() {}
+  ~ChromePermissionMessageProviderUnittest() override {}
 
  protected:
   std::vector<base::string16> GetMessages(APIPermissionSet& permissions,

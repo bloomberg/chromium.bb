@@ -186,7 +186,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         ->DidFinishLoad(GetMainFrame());
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
     // Add a preferred login and an additional login to the FillData.
@@ -233,7 +233,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     UpdateUsernameAndPasswordElements();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     username_element_.reset();
     password_element_.reset();
     ChromeRenderViewTest::TearDown();

@@ -49,7 +49,7 @@ class TestDispatcherHostDelegate : public ResourceDispatcherHostDelegate {
 class PnaclHeaderTest : public InProcessBrowserTest {
  public:
   PnaclHeaderTest();
-  virtual ~PnaclHeaderTest();
+  ~PnaclHeaderTest() override;
 
   // Run a simple test that checks that the NaCl plugin sends the right
   // headers when doing |expected_noncors| same origin pexe load requests

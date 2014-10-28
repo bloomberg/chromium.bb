@@ -53,15 +53,13 @@ class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
   base::Value* data_;
   base::DictionaryValue* json_data_;
-  virtual void SetUp() {
+  void SetUp() override {
     base::JSONReader json_reader;
     data_ = json_reader.Read(kJobListResponse);
     data_->GetAsDictionary(&json_data_);
   }
 
-  virtual void TearDown() {
-    delete data_;
-  }
+  void TearDown() override { delete data_; }
 };
 
 TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {

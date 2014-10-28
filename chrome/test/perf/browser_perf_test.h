@@ -14,7 +14,7 @@ class CommandLine;
 class BrowserPerfTest : public InProcessBrowserTest {
  public:
   BrowserPerfTest();
-  virtual ~BrowserPerfTest();
+  ~BrowserPerfTest() override;
 
   // Set up common browser perf test flags. Typically call down to this if
   // overridden.

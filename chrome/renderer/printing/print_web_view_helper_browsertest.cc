@@ -128,7 +128,7 @@ class DidPreviewPageListener : public IPC::Listener {
 class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
  public:
   PrintWebViewHelperTestBase() {}
-  virtual ~PrintWebViewHelperTestBase() {}
+  ~PrintWebViewHelperTestBase() override {}
 
  protected:
   void PrintWithJavaScript() {
@@ -226,11 +226,9 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
 class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
  public:
   PrintWebViewHelperTest() {}
-  virtual ~PrintWebViewHelperTest() {}
+  ~PrintWebViewHelperTest() override {}
 
-  virtual void SetUp() override {
-    ChromeRenderViewTest::SetUp();
-  }
+  void SetUp() override { ChromeRenderViewTest::SetUp(); }
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTest);
@@ -470,7 +468,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
 class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
  public:
   PrintWebViewHelperPreviewTest() {}
-  virtual ~PrintWebViewHelperPreviewTest() {}
+  ~PrintWebViewHelperPreviewTest() override {}
 
  protected:
   void VerifyPrintPreviewCancelled(bool did_cancel) {

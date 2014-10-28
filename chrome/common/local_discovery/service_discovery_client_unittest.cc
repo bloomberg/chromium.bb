@@ -207,8 +207,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
     mdns_client_.StartListening(&socket_factory_);
   }
 
-  virtual ~ServiceDiscoveryTest() {
-  }
+  ~ServiceDiscoveryTest() override {}
 
  protected:
   void RunFor(base::TimeDelta time_period) {

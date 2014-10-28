@@ -113,13 +113,13 @@ class CloudPrintURLFetcherTest : public testing::Test,
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     testing::Test::SetUp();
 
     io_message_loop_proxy_ = base::MessageLoopProxy::current();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     fetcher_ = NULL;
     // Deleting the fetcher causes a task to be posted to the IO thread to
     // release references to the URLRequestContextGetter. We need to run all

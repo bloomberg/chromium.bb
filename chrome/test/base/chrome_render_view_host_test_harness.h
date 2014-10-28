@@ -20,13 +20,13 @@ class ChromeRenderViewHostTestHarness
     : public content::RenderViewHostTestHarness {
  public:
   ChromeRenderViewHostTestHarness();
-  virtual ~ChromeRenderViewHostTestHarness();
+  ~ChromeRenderViewHostTestHarness() override;
 
   TestingProfile* profile();
 
  protected:
   // testing::Test
-  virtual void TearDown() override;
+  void TearDown() override;
 
   // content::RenderViewHostTestHarness.
   content::BrowserContext* CreateBrowserContext() override;

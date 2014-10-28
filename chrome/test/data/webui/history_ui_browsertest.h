@@ -14,7 +14,7 @@ class HistoryService;
 class HistoryUIBrowserTest : public WebUIBrowserTest {
  public:
   HistoryUIBrowserTest();
-  virtual ~HistoryUIBrowserTest();
+  ~HistoryUIBrowserTest() override;
 
   void SetUpOnMainThread() override;
 

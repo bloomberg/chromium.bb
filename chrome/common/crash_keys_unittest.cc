@@ -17,14 +17,14 @@
 
 class CrashKeysTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     self_ = this;
     base::debug::SetCrashKeyReportingFunctions(
         &SetCrashKeyValue, &ClearCrashKey);
     crash_keys::RegisterChromeCrashKeys();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     base::debug::ResetCrashLoggingForTesting();
     self_ = NULL;
   }

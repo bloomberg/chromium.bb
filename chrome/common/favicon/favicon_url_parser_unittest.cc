@@ -21,8 +21,7 @@ class FaviconUrlParserTest : public testing::Test {
         new ui::test::ScopedSetSupportedScaleFactors(supported_scale_factors));
   }
 
-  virtual ~FaviconUrlParserTest() {
-  }
+  ~FaviconUrlParserTest() override {}
 
  private:
   typedef scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>

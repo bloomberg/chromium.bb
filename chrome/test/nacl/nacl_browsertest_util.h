@@ -59,7 +59,7 @@ class LoadTestMessageHandler : public StructuredMessageHandler {
 class NaClBrowserTestBase : public InProcessBrowserTest {
  public:
   NaClBrowserTestBase();
-  virtual ~NaClBrowserTestBase();
+  ~NaClBrowserTestBase() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 

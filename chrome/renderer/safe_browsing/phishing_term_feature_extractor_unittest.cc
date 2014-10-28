@@ -33,7 +33,7 @@ namespace safe_browsing {
 
 class PhishingTermFeatureExtractorTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     base::hash_set<std::string> terms;
     terms.insert("one");
     terms.insert("one one");

@@ -96,7 +96,7 @@ namespace autofill {
 class FormAutofillTest : public ChromeRenderViewTest {
  public:
   FormAutofillTest() : ChromeRenderViewTest() {}
-  virtual ~FormAutofillTest() {}
+  ~FormAutofillTest() override {}
 
   void ExpectLabels(const char* html,
                     const std::vector<base::string16>& labels,

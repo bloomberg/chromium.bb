@@ -79,15 +79,11 @@ class CloseListener : public WebSocketListener {
 class WebSocketTest : public testing::Test {
  public:
   WebSocketTest() {}
-  virtual ~WebSocketTest() {}
+  ~WebSocketTest() override {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(server_.Start());
-  }
+  void SetUp() override { ASSERT_TRUE(server_.Start()); }
 
-  virtual void TearDown() override {
-    server_.Stop();
-  }
+  void TearDown() override { server_.Stop(); }
 
  protected:
   scoped_ptr<WebSocket> CreateWebSocket(const GURL& url,

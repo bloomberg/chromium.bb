@@ -13,7 +13,7 @@
 
 class SearchBouncerTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     bouncer_.reset(new SearchBouncer);
     std::vector<GURL> search_urls;
     search_urls.push_back(GURL("http://example.com/search"));

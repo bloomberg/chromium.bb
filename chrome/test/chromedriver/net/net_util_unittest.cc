@@ -44,7 +44,7 @@ class FetchUrlTest : public testing::Test,
     event.Wait();
   }
 
-  virtual ~FetchUrlTest() {
+  ~FetchUrlTest() override {
     base::WaitableEvent event(false, false);
     io_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,

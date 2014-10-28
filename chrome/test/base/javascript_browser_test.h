@@ -28,7 +28,7 @@ class JavaScriptBrowserTest : public InProcessBrowserTest {
  protected:
   JavaScriptBrowserTest();
 
-  virtual ~JavaScriptBrowserTest();
+  ~JavaScriptBrowserTest() override;
 
   // InProcessBrowserTest overrides.
   void SetUpOnMainThread() override;

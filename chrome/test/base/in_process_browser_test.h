@@ -94,14 +94,14 @@ class ContentRendererClient;
 class InProcessBrowserTest : public content::BrowserTestBase {
  public:
   InProcessBrowserTest();
-  virtual ~InProcessBrowserTest();
+  ~InProcessBrowserTest() override;
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Restores state configured in SetUp.
-  virtual void TearDown() override;
+  void TearDown() override;
 
  protected:
   // Returns the browser created by CreateBrowser.

@@ -27,14 +27,14 @@ const int kTestPattern = 0x55555555;
 
 class ImageWriterUtilityTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &image_path_));
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.path(), &device_path_));
   }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void FillFile(const base::FilePath& path, int pattern) {
     scoped_ptr<char[]> buffer(new char[kTestFileSize]);

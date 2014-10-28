@@ -56,7 +56,7 @@ class ChromeChannelFeatureFilterTest : public testing::Test {
  protected:
   ChromeChannelFeatureFilterTest()
       : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {}
-  virtual ~ChromeChannelFeatureFilterTest() {}
+  ~ChromeChannelFeatureFilterTest() override {}
 
  private:
   ScopedCurrentChannel current_channel_;

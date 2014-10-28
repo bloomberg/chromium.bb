@@ -31,7 +31,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
  public:
   PasswordGenerationAgentTest() {}
 
-  virtual void TearDown() {
+  void TearDown() override {
     LoadHTML("");
     ChromeRenderViewTest::TearDown();
   }

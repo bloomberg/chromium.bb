@@ -53,10 +53,10 @@ namespace remoting {
 class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
  public:
   RemoteDesktopBrowserTest();
-  virtual ~RemoteDesktopBrowserTest();
+  ~RemoteDesktopBrowserTest() override;
 
   // InProcessBrowserTest Overrides
-  virtual void SetUp() override;
+  void SetUp() override;
   void SetUpOnMainThread() override;
 
  protected:

@@ -10,7 +10,7 @@
 class PrintPreviewWebUITest : public WebUIBrowserTest {
  public:
   PrintPreviewWebUITest();
-  virtual ~PrintPreviewWebUITest();
+  ~PrintPreviewWebUITest() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebUITest);
