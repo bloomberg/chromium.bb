@@ -21,10 +21,15 @@ class SelfAsDeviceProvider : public AndroidDeviceManager::DeviceProvider {
                   const std::string& socket_name,
                   const SocketCallback& callback) override;
 
+  void ReleaseDevice(const std::string& serial) override;
+
+  void set_release_callback_for_test(const base::Closure& callback);
+
  private:
-  ~SelfAsDeviceProvider() override {}
+  ~SelfAsDeviceProvider() override;
 
   int port_;
+  base::Closure release_callback_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_SELF_DEVICE_PROVIDER_H_

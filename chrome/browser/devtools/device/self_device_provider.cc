@@ -66,3 +66,17 @@ void SelfAsDeviceProvider::OpenSocket(const std::string& serial,
   socket->Connect(
       base::Bind(&RunSocketCallback, callback, base::Passed(&socket)));
 }
+
+void SelfAsDeviceProvider::ReleaseDevice(const std::string& serial) {
+  DCHECK(serial == kSerial);
+  if (!release_callback_.is_null())
+    release_callback_.Run();
+}
+
+void SelfAsDeviceProvider::set_release_callback_for_test(
+    const base::Closure& callback) {
+  release_callback_ = callback;
+}
+
+SelfAsDeviceProvider::~SelfAsDeviceProvider() {
+}

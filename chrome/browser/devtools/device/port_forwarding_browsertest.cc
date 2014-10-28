@@ -127,3 +127,42 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   prefs->SetBoolean(prefs::kDevToolsPortForwardingEnabled, false);
   content::RunMessageLoop();
 }
+
+IN_PROC_BROWSER_TEST_F(PortForwardingTest, DisconnectOnRelease) {
+  Profile* profile = browser()->profile();
+
+  AndroidDeviceManager::DeviceProviders device_providers;
+
+  scoped_refptr<SelfAsDeviceProvider> self_provider(
+      new SelfAsDeviceProvider(kDefaultDebuggingPort));
+  device_providers.push_back(self_provider);
+
+  DevToolsAndroidBridge::Factory::GetForProfile(profile)->
+      set_device_providers_for_test(device_providers);
+
+  ASSERT_TRUE(test_server()->Start());
+  GURL original_url = test_server()->GetURL(kPortForwardingTestPage);
+
+  std::string forwarding_port("8000");
+  GURL forwarding_url(original_url.scheme() + "://" +
+      original_url.host() + ":" + forwarding_port + original_url.path());
+
+  PrefService* prefs = profile->GetPrefs();
+  prefs->SetBoolean(prefs::kDevToolsPortForwardingEnabled, true);
+
+  base::DictionaryValue config;
+  config.SetString(
+      forwarding_port, original_url.host() + ":" + original_url.port());
+  prefs->Set(prefs::kDevToolsPortForwardingConfig, config);
+
+  scoped_ptr<Listener> wait_for_port_forwarding(new Listener(profile));
+  content::RunMessageLoop();
+
+  self_provider->set_release_callback_for_test(
+      base::Bind(&base::MessageLoop::PostTask,
+                 base::Unretained(base::MessageLoop::current()),
+                 FROM_HERE,
+                 base::MessageLoop::QuitClosure()));
+  wait_for_port_forwarding.reset();
+  content::RunMessageLoop();
+}
