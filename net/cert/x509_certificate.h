@@ -425,6 +425,9 @@ class NET_EXPORT X509Certificate
       OSCertHandle leaf,
       const OSCertHandles& intermediates);
 
+  // Returns true if the certificate is self-signed.
+  static bool IsSelfSigned(OSCertHandle cert_handle);
+
  private:
   friend class base::RefCountedThreadSafe<X509Certificate>;
   friend class TestRootCerts;  // For unit tests

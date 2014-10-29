@@ -531,4 +531,41 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
   }
 }
 
+// static
+bool X509Certificate::IsSelfSigned(OSCertHandle cert_handle) {
+  x509_util::CSSMCachedCertificate cached_cert;
+  OSStatus status = cached_cert.Init(cert_handle);
+  if (status != noErr)
+    return false;
+
+  x509_util::CSSMFieldValue subject;
+  status = cached_cert.GetField(&CSSMOID_X509V1SubjectNameStd, &subject);
+  if (status != CSSM_OK || !subject.field())
+    return false;
+
+  x509_util::CSSMFieldValue issuer;
+  status = cached_cert.GetField(&CSSMOID_X509V1IssuerNameStd, &issuer);
+  if (status != CSSM_OK || !issuer.field())
+    return false;
+
+  if (subject.field()->Length != issuer.field()->Length ||
+      memcmp(subject.field()->Data, issuer.field()->Data,
+             issuer.field()->Length) != 0) {
+    return false;
+  }
+
+  CSSM_CL_HANDLE cl_handle = CSSM_INVALID_HANDLE;
+  status = SecCertificateGetCLHandle(cert_handle, &cl_handle);
+  if (status)
+    return false;
+  CSSM_DATA cert_data;
+  status = SecCertificateGetData(cert_handle, &cert_data);
+  if (status)
+    return false;
+
+  if (CSSM_CL_CertVerify(cl_handle, 0, &cert_data, &cert_data, NULL, 0))
+    return false;
+  return true;
+}
+
 }  // namespace net

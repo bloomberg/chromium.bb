@@ -250,4 +250,15 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
   x509_util::GetPublicKeyInfo(nss_cert.cert_handle(), size_bits, type);
 }
 
+// static
+bool X509Certificate::IsSelfSigned(OSCertHandle cert_handle) {
+  x509_util_ios::NSSCertificate nss_cert(cert_handle);
+  crypto::ScopedSECKEYPublicKey public_key(
+      CERT_ExtractPublicKey(nss_cert.cert_handle()));
+  if (!public_key.get())
+    return false;
+  return SECSuccess == CERT_VerifySignedDataWithPublicKey(
+      &nss_cert.cert_handle()->signatureWrap, public_key.get(), NULL);
+}
+
 }  // namespace net

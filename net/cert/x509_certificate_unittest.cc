@@ -714,6 +714,20 @@ TEST(X509CertificateTest, IsIssuedByEncoded) {
   EXPECT_TRUE(google_cert->IsIssuedByEncoded(issuers));
 }
 
+TEST(X509CertificateTest, IsSelfSigned) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(certs_dir, "mit.davidben.der"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
+  EXPECT_FALSE(X509Certificate::IsSelfSigned(cert->os_cert_handle()));
+
+  scoped_refptr<X509Certificate> self_signed(
+      ImportCertFromFile(certs_dir, "aia-root.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), self_signed.get());
+  EXPECT_TRUE(X509Certificate::IsSelfSigned(self_signed->os_cert_handle()));
+}
+
 TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
   static const unsigned char kPolicyRootDN[] = {
     0x30, 0x1e, 0x31, 0x1c, 0x30, 0x1a, 0x06, 0x03, 0x55, 0x04, 0x03, 0x0c,
