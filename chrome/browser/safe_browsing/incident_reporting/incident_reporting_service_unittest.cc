@@ -175,7 +175,7 @@ class IncidentReportingServiceTest : public testing::Test {
         uploader_destroyed_(),
         delayed_analysis_ran_() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
   }

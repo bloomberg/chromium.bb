@@ -110,7 +110,7 @@ class DownloadFeedbackTest : public testing::Test {
     EXPECT_NE(io_task_runner_, file_task_runner_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     upload_file_path_ = temp_dir_.path().AppendASCII("test file");
     upload_file_data_ = "data";
@@ -120,9 +120,7 @@ class DownloadFeedbackTest : public testing::Test {
     TwoPhaseUploader::RegisterFactory(&two_phase_uploader_factory_);
   }
 
-  virtual void TearDown() override {
-    TwoPhaseUploader::RegisterFactory(NULL);
-  }
+  void TearDown() override { TwoPhaseUploader::RegisterFactory(NULL); }
 
   FakeUploader* uploader() const {
     return two_phase_uploader_factory_.uploader_;

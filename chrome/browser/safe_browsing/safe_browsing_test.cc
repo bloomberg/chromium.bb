@@ -160,8 +160,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
       is_checked_url_safe_(false) {
   }
 
-  virtual ~SafeBrowsingServerTest() {
-  }
+  ~SafeBrowsingServerTest() override {}
 
   void UpdateSafeBrowsingStatus() {
     ASSERT_TRUE(safe_browsing_service_);
@@ -255,7 +254,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     return safe_browsing_service_ != NULL;
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     base::FilePath datafile_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &datafile_path));
 
@@ -275,7 +274,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
 
     SafeBrowsingService::RegisterFactory(NULL);

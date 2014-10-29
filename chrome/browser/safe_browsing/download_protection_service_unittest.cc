@@ -201,7 +201,7 @@ class DownloadProtectionServiceTest : public testing::Test {
       : test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
-  virtual void SetUp() {
+  void SetUp() override {
 #if defined(OS_MACOSX)
     field_trial_list_.reset(new base::FieldTrialList(
           new metrics::SHA1EntropyProvider("42")));
@@ -230,7 +230,7 @@ class DownloadProtectionServiceTest : public testing::Test {
         .AppendASCII("download_protection");
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     sb_service_->ShutDown();
     // Flush all of the thread message loops to ensure that there are no
     // tasks currently running.

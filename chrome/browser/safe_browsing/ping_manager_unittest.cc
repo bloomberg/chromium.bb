@@ -22,7 +22,7 @@ class SafeBrowsingPingManagerTest : public testing::Test {
  protected:
   std::string key_param_;
 
-  virtual void SetUp() {
+  void SetUp() override {
     std::string key = google_apis::GetAPIKey();
     if (!key.empty()) {
       key_param_ = base::StringPrintf(

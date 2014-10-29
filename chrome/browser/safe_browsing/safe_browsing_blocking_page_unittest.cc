@@ -98,13 +98,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
     ResetUserResponse();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Release the UI manager before the BrowserThreads are destroyed.
     ui_manager_ = NULL;
     SafeBrowsingBlockingPage::RegisterFactory(NULL);

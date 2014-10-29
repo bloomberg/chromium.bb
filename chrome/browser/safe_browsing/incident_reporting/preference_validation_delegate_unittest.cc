@@ -26,7 +26,7 @@ class PreferenceValidationDelegateTest : public testing::Test {
       : kPrefPath_("atomic.pref"),
         null_value_(base::Value::CreateNullValue()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
     invalid_keys_.push_back(std::string("one"));
     invalid_keys_.push_back(std::string("two"));
@@ -103,7 +103,7 @@ class PreferenceValidationDelegateValues
       public testing::WithParamInterface<
           std::tr1::tuple<base::Value::Type, const char*> > {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     PreferenceValidationDelegateTest::SetUp();
     value_type_ = std::tr1::get<0>(GetParam());
     expected_value_ = std::tr1::get<1>(GetParam());
@@ -183,7 +183,7 @@ class PreferenceValidationDelegateNoIncident
     : public PreferenceValidationDelegateTest,
       public testing::WithParamInterface<PrefHashStoreTransaction::ValueState> {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     PreferenceValidationDelegateTest::SetUp();
     value_state_ = GetParam();
   }
@@ -223,7 +223,7 @@ class PreferenceValidationDelegateWithIncident
           std::tr1::tuple<PrefHashStoreTransaction::ValueState,
                           TrackedPreferenceHelper::ResetAction> > {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     PreferenceValidationDelegateTest::SetUp();
     value_state_ = std::tr1::get<0>(GetParam());
     reset_action_ = std::tr1::get<1>(GetParam());

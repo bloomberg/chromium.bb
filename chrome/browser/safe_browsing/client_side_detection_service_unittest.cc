@@ -62,7 +62,7 @@ ACTION(QuitCurrentMessageLoop) {
 
 class ClientSideDetectionServiceTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &msg_loop_));
 
@@ -72,7 +72,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
                                                          &msg_loop_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     msg_loop_.RunUntilIdle();
     csd_service_.reset();
     file_thread_.reset();

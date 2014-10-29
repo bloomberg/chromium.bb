@@ -47,13 +47,13 @@ class DelayedCallbackRunnerTest : public testing::Test {
       : task_runner_(new base::TestSimpleTaskRunner),
         thread_task_runner_handle_(task_runner_) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     instance_.reset(new safe_browsing::DelayedCallbackRunner(
         base::TimeDelta::FromMilliseconds(1),  // ignored by simple runner.
         task_runner_));
   }
 
-  virtual void TearDown() override { instance_.reset(); }
+  void TearDown() override { instance_.reset(); }
 
   void OnRun(const std::string& name, CallbackArgument* arg) {
     EXPECT_FALSE(callbacks_[name].run);

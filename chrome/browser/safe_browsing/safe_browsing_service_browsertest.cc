@@ -901,7 +901,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 
 class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
  public:
-  virtual void TearDown() override {
+  void TearDown() override {
     // Browser should be fully torn down by now, so we can safely check these
     // counters.
     EXPECT_EQ(1, TestProtocolManager::create_count());
@@ -974,7 +974,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
  public:
   SafeBrowsingDatabaseManagerCookieTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // We need to start the test server to get the host&port in the url.
     ASSERT_TRUE(test_server()->Start());
 
@@ -989,7 +989,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
 
     SafeBrowsingService::RegisterFactory(NULL);

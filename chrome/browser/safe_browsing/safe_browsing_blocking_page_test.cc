@@ -344,14 +344,14 @@ class SafeBrowsingBlockingPageBrowserTest
   SafeBrowsingBlockingPageBrowserTest() {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     SafeBrowsingService::RegisterFactory(&factory_);
     SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     MalwareDetails::RegisterFactory(&details_factory_);
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
     SafeBrowsingService::RegisterFactory(NULL);

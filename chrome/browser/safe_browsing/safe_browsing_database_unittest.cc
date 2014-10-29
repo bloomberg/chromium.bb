@@ -254,7 +254,7 @@ class ScopedLogMessageIgnorer {
 
 class SafeBrowsingDatabaseTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
 
     // Setup a database in a temporary directory.
@@ -265,7 +265,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     database_->Init(database_filename_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     database_.reset();
 
     PlatformTest::TearDown();

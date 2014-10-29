@@ -40,7 +40,7 @@ namespace safe_browsing {
 
 class SafeBrowsingStoreFileTest : public PlatformTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -54,7 +54,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
                             base::Unretained(this)));
     corruption_detected_ = false;
   }
-  virtual void TearDown() {
+  void TearDown() override {
     if (store_.get())
       store_->Delete();
     store_.reset();

@@ -137,14 +137,12 @@ class DownloadFeedbackServiceTest : public testing::Test {
             new net::TestURLRequestContextGetter(io_task_runner_)) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     DownloadFeedback::RegisterFactory(&download_feedback_factory_);
   }
 
-  virtual void TearDown() override {
-    DownloadFeedback::RegisterFactory(NULL);
-  }
+  void TearDown() override { DownloadFeedback::RegisterFactory(NULL); }
 
   base::FilePath CreateTestFile(int n) const {
     base::FilePath upload_file_path(

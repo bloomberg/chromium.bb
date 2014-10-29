@@ -201,7 +201,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
  public:
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Inject service classes.
@@ -222,7 +222,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->browse_info_.reset(new BrowseInfo);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Delete the host object on the UI thread and release the
     // SafeBrowsingService.
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
