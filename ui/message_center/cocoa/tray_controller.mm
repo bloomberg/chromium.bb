@@ -52,7 +52,7 @@
     // The global event monitor will close the tray in response to events
     // delivered to other applications, and -windowDidResignKey: will catch
     // events within the application.
-    __block typeof(self) weakSelf = self;
+    __block MCTrayController* weakSelf = self;
     clickEventMonitor_ =
         [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask |
                                                        NSRightMouseDownMask |

@@ -897,18 +897,10 @@
     const IPC::Message& ipc_message__ = msg; \
     switch (ipc_message__.type()) {
 
-// gcc gives the following error now when using decltype so type typeof there:
-//   error: identifier 'decltype' will become a keyword in C++0x [-Werror=c++0x-compat]
-#if defined(OS_WIN)
-#define IPC_DECLTYPE decltype
-#else
-#define IPC_DECLTYPE typeof
-#endif
-
 #define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, param)  \
   {                                                               \
     typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED_TYPE; \
-    IPC_DECLTYPE(param) param__ = param;                          \
+    decltype(param) param__ = param;                              \
     const IPC::Message& ipc_message__ = msg;                      \
     switch (ipc_message__.type()) {
 
