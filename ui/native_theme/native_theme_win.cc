@@ -267,7 +267,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       CommonThemePaintMenuGutter(canvas, rect);
       return;
     case kMenuPopupSeparator:
-      CommonThemePaintMenuSeparator(canvas, rect, extra.menu_separator);
+      CommonThemePaintMenuSeparator(canvas, rect);
       return;
     case kMenuPopupBackground:
       CommonThemePaintMenuBackground(canvas, rect);
@@ -413,7 +413,7 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
       PaintMenuGutter(hdc, rect);
       return;
     case kMenuPopupSeparator:
-      PaintMenuSeparator(hdc, rect, extra.menu_separator);
+      PaintMenuSeparator(hdc, rect);
       return;
     case kMenuItemBackground:
       PaintMenuItemBackground(hdc, state, rect, extra.menu_item);
@@ -824,8 +824,7 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
 
 HRESULT NativeThemeWin::PaintMenuSeparator(
     HDC hdc,
-    const gfx::Rect& rect,
-    const MenuSeparatorExtraParams& extra) const {
+    const gfx::Rect& rect) const {
   RECT rect_win = rect.ToRECT();
 
   HANDLE handle = GetThemeHandle(MENU);

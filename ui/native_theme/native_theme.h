@@ -139,10 +139,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
-  struct MenuSeparatorExtraParams {
-    bool has_gutter;
-  };
-
   struct MenuBackgroundExtraParams {
     int corner_radius;
   };
@@ -201,7 +197,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     MenuCheckExtraParams menu_check;
     MenuItemExtraParams menu_item;
     MenuListExtraParams menu_list;
-    MenuSeparatorExtraParams menu_separator;
     MenuBackgroundExtraParams menu_background;
     ProgressBarExtraParams progress_bar;
     ScrollbarArrowExtraParams scrollbar_arrow;

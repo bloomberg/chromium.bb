@@ -32,10 +32,8 @@ void NATIVE_THEME_EXPORT CommonThemePaintComboboxArrow(
     SkCanvas* canvas,
     const gfx::Rect& rect);
 
-void NATIVE_THEME_EXPORT CommonThemePaintMenuSeparator(
-    SkCanvas* canvas,
-    const gfx::Rect& rect,
-    const NativeTheme::MenuSeparatorExtraParams& extra);
+void NATIVE_THEME_EXPORT
+    CommonThemePaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect);
 
 void NATIVE_THEME_EXPORT CommonThemePaintMenuGutter(SkCanvas* canvas,
                                                     const gfx::Rect& rect);

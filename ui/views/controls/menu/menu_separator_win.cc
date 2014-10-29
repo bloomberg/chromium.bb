@@ -27,21 +27,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   }
 
   gfx::Rect separator_bounds = GetPaintBounds();
-  if (config.render_gutter) {
-    // If render_gutter is true, we're on Vista and need to render the
-    // gutter, then indent the separator from the gutter.
-    gfx::Rect gutter_bounds(MenuItemView::label_start() -
-        config.gutter_to_label - config.gutter_width, 0,
-        config.gutter_width, height());
-    ui::NativeTheme::ExtraParams extra;
-    config.native_theme->Paint(
-        canvas->sk_canvas(), ui::NativeTheme::kMenuPopupGutter,
-        ui::NativeTheme::kNormal, gutter_bounds, extra);
-    separator_bounds.set_x(gutter_bounds.x() + config.gutter_width);
-  }
 
-  ui::NativeTheme::ExtraParams extra;
-  extra.menu_separator.has_gutter = config.render_gutter;
 
   // Hack to get the separator to display correctly on Windows where we may
   // have fractional scales. We move the separator 1 pixel down to ensure that
@@ -52,6 +38,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   if (is_fractional_scale && separator_bounds.y() == 0)
     separator_bounds.set_y(1);
 
+  ui::NativeTheme::ExtraParams extra;
   config.native_theme->Paint(
       canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
       ui::NativeTheme::kNormal, separator_bounds, extra);

@@ -151,10 +151,7 @@ void CommonThemePaintComboboxArrow(SkCanvas* canvas, const gfx::Rect& rect) {
   CommonThemeCreateCanvas(canvas)->DrawImageInt(*arrow, rect.x(), rect.y());
 }
 
-void CommonThemePaintMenuSeparator(
-    SkCanvas* canvas,
-    const gfx::Rect& rect,
-    const NativeTheme::MenuSeparatorExtraParams& extra) {
+void CommonThemePaintMenuSeparator(SkCanvas* canvas, const gfx::Rect& rect) {
   SkColor color;
   CommonThemeGetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, &color);
   SkPaint paint;

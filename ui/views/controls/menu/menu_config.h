@@ -73,9 +73,6 @@ struct VIEWS_EXPORT MenuConfig {
   // Width of the submenu arrow.
   int arrow_width;
 
-  // Width of the gutter. Only used if render_gutter is true.
-  int gutter_width;
-
   // Height of a normal separator (ui::NORMAL_SEPARATOR).
   int separator_height;
 
@@ -87,10 +84,6 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Height of a ui::SPACING_SEPARATOR.
   int separator_spacing_height;
-
-  // Whether or not the gutter should be rendered. The gutter is specific to
-  // Vista.
-  bool render_gutter;
 
   // Are mnemonics shown?
   bool show_mnemonics;

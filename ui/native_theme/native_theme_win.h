@@ -156,8 +156,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                       RECT* rect) const;
 
   HRESULT PaintMenuSeparator(HDC hdc,
-                             const gfx::Rect& rect,
-                             const MenuSeparatorExtraParams& extra) const;
+                             const gfx::Rect& rect) const;
 
   HRESULT PaintMenuGutter(HDC hdc, const gfx::Rect& rect) const;
 
