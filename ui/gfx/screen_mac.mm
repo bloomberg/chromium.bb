@@ -91,6 +91,11 @@ class ScreenMac : public gfx::Screen {
         ScreenMac::DisplayReconfigurationCallBack, this);
   }
 
+  virtual ~ScreenMac() {
+    CGDisplayRemoveReconfigurationCallback(
+        ScreenMac::DisplayReconfigurationCallBack, this);
+  }
+
   gfx::Point GetCursorScreenPoint() override {
     NSPoint mouseLocation  = [NSEvent mouseLocation];
     // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.

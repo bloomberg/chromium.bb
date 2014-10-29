@@ -351,7 +351,6 @@
         ['OS=="android"', {
           'sources!': [
             'animation/throb_animation.cc',
-            'display_observer.cc',
             'selection_model.cc',
           ],
           'dependencies': [

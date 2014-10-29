@@ -9724,6 +9724,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Hardware.Display.Count.OnChange">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The number of displays present right after the user has attached or detached
+    a new display. Excludes mirrored displays, but includes sleeping displays.
+  </summary>
+</histogram>
+
+<histogram name="Hardware.Display.Count.OnStartup">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The number of displays present at start up. Excludes mirrored displays, but
+    includes sleeping displays.
+  </summary>
+</histogram>
+
 <histogram name="HIDDetection.OOBEDevicesDetectedOnContinuePressed"
     enum="HIDContinueScenarioType">
   <owner>merkulova@chromium.org</owner>
