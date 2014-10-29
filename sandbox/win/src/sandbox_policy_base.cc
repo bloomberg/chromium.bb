@@ -498,7 +498,7 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
   return SBOX_ALL_OK;
 }
 
-const AppContainerAttributes* PolicyBase::GetAppContainer() {
+const AppContainerAttributes* PolicyBase::GetAppContainer() const {
   if (!appcontainer_list_.get() || !appcontainer_list_->HasAppContainer())
     return NULL;
 

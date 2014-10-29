@@ -84,7 +84,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   // SetTokenLevel().
   ResultCode MakeTokens(HANDLE* initial, HANDLE* lockdown);
 
-  const AppContainerAttributes* GetAppContainer();
+  const AppContainerAttributes* GetAppContainer() const;
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
