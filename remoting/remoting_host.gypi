@@ -318,7 +318,6 @@
             }],
             ['chromeos==1', {
               'dependencies' : [
-                '../ash/ash.gyp:ash',
                 '../cc/cc.gyp:cc',
                 '../content/content.gyp:content',
                 '../ppapi/ppapi_internal.gyp:ppapi_host',
@@ -403,6 +402,11 @@
                 'process_outputs_as_sources': 1,
                 'message': 'Running message compiler on <(RULE_INPUT_PATH)',
               }],
+            }],
+            ['use_ash==1', {
+              'dependencies': [
+                 '../ash/ash.gyp:ash',
+              ],
             }],
             ['enable_webrtc==1', {
               'dependencies': [

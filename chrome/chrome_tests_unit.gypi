@@ -2139,7 +2139,7 @@
             '../ui/views/controls/webview/webview_unittest.cc',
           ],
         }],
-        ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {
+        ['chromeos==0 and use_ozone==0 and OS=="linux"', {
           'dependencies': [
             'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
             '../build/linux/system.gyp:gio',

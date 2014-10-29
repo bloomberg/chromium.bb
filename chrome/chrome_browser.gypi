@@ -3401,13 +3401,6 @@
         }],
         ['enable_managed_users==1', {
           'sources': [ '<@(chrome_browser_supervised_user_sources)' ],
-          'conditions' : [
-            [ 'use_ash==1', {
-              'dependencies': [
-                '<(DEPTH)/components/components.gyp:user_manager',
-              ]
-            }]
-          ]
         }],
         ['enable_webrtc==1', {
           'sources': [ '<@(chrome_browser_webrtc_sources)' ]
