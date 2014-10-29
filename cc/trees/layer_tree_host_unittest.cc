@@ -5154,4 +5154,55 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
 // Impl-side painting is not supported for synchronous compositing.
 SINGLE_THREAD_NOIMPL_TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise);
 
+// Make sure page scale and top control deltas are applied to the client even
+// when the LayerTreeHost doesn't have a root layer.
+class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer()
+      : deltas_sent_to_client_(false) {}
+
+  void BeginTest() override {
+    layer_tree_host()->SetRootLayer(nullptr);
+    info_.page_scale_delta = 3.14f;
+    info_.top_controls_delta = 2.73f;
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    EXPECT_EQ(nullptr, layer_tree_host()->root_layer());
+
+    layer_tree_host()->ApplyScrollAndScale(&info_);
+    EndTest();
+  }
+
+  void ApplyViewportDeltas(
+      const gfx::Vector2d& inner,
+      const gfx::Vector2d& outer,
+      float scale_delta,
+      float top_controls_delta) override {
+    EXPECT_EQ(info_.page_scale_delta, scale_delta);
+    EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
+    deltas_sent_to_client_ = true;
+  }
+
+  void ApplyViewportDeltas(
+      const gfx::Vector2d& scroll,
+      float scale_delta,
+      float top_controls_delta) override {
+    EXPECT_EQ(info_.page_scale_delta, scale_delta);
+    EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
+    deltas_sent_to_client_ = true;
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(deltas_sent_to_client_);
+  }
+
+  ScrollAndScaleSet info_;
+  bool deltas_sent_to_client_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer);
 }  // namespace cc

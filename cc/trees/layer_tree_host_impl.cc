@@ -2997,7 +2997,8 @@ void LayerTreeHostImpl::PinchGestureEnd() {
 
 static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                 LayerImpl* layer_impl) {
-  DCHECK(layer_impl);
+  if (!layer_impl)
+    return;
 
   gfx::Vector2d scroll_delta =
       gfx::ToFlooredVector2d(layer_impl->ScrollDelta());
@@ -3016,15 +3017,12 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
 scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scoped_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
 
-  if (active_tree_->root_layer()) {
-    CollectScrollDeltas(scroll_info.get(), active_tree_->root_layer());
-    scroll_info->page_scale_delta = active_tree_->page_scale_delta();
-    active_tree_->set_sent_page_scale_delta(scroll_info->page_scale_delta);
-    scroll_info->swap_promises.swap(
-        swap_promises_for_main_thread_scroll_update_);
-    scroll_info->top_controls_delta = active_tree()->top_controls_delta();
-    active_tree_->set_sent_top_controls_delta(scroll_info->top_controls_delta);
-  }
+  CollectScrollDeltas(scroll_info.get(), active_tree_->root_layer());
+  scroll_info->page_scale_delta = active_tree_->page_scale_delta();
+  active_tree_->set_sent_page_scale_delta(scroll_info->page_scale_delta);
+  scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
+  scroll_info->top_controls_delta = active_tree()->top_controls_delta();
+  active_tree_->set_sent_top_controls_delta(scroll_info->top_controls_delta);
 
   return scroll_info.Pass();
 }

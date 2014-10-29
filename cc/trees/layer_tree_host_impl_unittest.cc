@@ -2375,28 +2375,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
   LayerTreeSettings settings_;
 };  // class LayerTreeHostImplTopControlsTest
 
-TEST_F(LayerTreeHostImplTopControlsTest,
-       TopControlsDeltaOnlySentWithRootLayer) {
-  CreateHostImpl(settings_, CreateOutputSurface());
-
-  host_impl_->active_tree()->set_top_controls_delta(-20.f);
-
-  // Because LTH::ApplyScrollAndScale doesn't know what to do with a scroll
-  // delta packet when the root layer doesn't exist yet, make sure not to set
-  // sent_top_controls_delta either to avoid the delta getting clobbered on the
-  // next commit.
-  scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  EXPECT_EQ(scroll_info->top_controls_delta, 0.f);
-  EXPECT_EQ(host_impl_->active_tree()->sent_top_controls_delta(), 0.f);
-
-  SetupTopControlsAndScrollLayer();
-
-  // After the root layer exists, it should be set normally.
-  scroll_info = host_impl_->ProcessScrollDeltas();
-  EXPECT_EQ(scroll_info->top_controls_delta, -20.f);
-  EXPECT_EQ(host_impl_->active_tree()->sent_top_controls_delta(), -20.f);
-}
-
 TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       gfx::Size(10, 10), gfx::Size(10, 10), gfx::Size(10, 10));
