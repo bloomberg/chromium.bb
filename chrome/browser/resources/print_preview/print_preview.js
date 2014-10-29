@@ -476,9 +476,9 @@ cr.define('print_preview', function() {
      */
     setIsEnabled_: function(isEnabled) {
       if ($('system-dialog-link'))
-        $('system-dialog-link').disabled = !isEnabled;
+        $('system-dialog-link').classList.toggle('disabled', !isEnabled);
       if ($('open-pdf-in-preview-link'))
-        $('open-pdf-in-preview-link').disabled = !isEnabled;
+        $('open-pdf-in-preview-link').classList.toggle('disabled', !isEnabled);
       this.printHeader_.isEnabled = isEnabled;
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
@@ -582,6 +582,8 @@ cr.define('print_preview', function() {
      */
     openSystemPrintDialog_: function() {
       if (!this.shouldShowSystemDialogLink_())
+        return;
+      if ($('system-dialog-link').classList.contains('disabled'))
         return;
       if (cr.isWindows) {
         this.showSystemDialogBeforeNextPrint_ = true;
@@ -802,6 +804,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onOpenPdfInPreviewLinkClick_: function() {
+      if ($('open-pdf-in-preview-link').classList.contains('disabled'))
+        return;
       assert(this.uiState_ == PrintPreview.UiState_.READY,
              'Trying to open pdf in preview when not in ready state: ' +
                  this.uiState_);
@@ -886,12 +890,13 @@ cr.define('print_preview', function() {
       if (e.keyCode == 13 /*enter*/ &&
           !document.querySelector('.overlay:not([hidden])') &&
           this.destinationStore_.selectedDestination &&
-          this.printTicketStore_.isTicketValid()) {
+          this.printTicketStore_.isTicketValid() &&
+          this.printHeader_.isPrintButtonEnabled) {
         assert(this.uiState_ == PrintPreview.UiState_.READY,
             'Trying to print when not in ready state: ' + this.uiState_);
-        var activeElementTag = document.activeElement ?
-            document.activeElement.tagName.toUpperCase() : '';
-        if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT') {
+        var activeElementTag = document.activeElement.tagName.toUpperCase();
+        if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT' &&
+            activeElementTag != 'A') {
           this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
           e.preventDefault();
         }

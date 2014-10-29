@@ -65,6 +65,10 @@ cr.define('print_preview', function() {
       this.isCancelButtonEnabled = isEnabled;
     },
 
+    get isPrintButtonEnabled() {
+      return !this.getChildElement('button.print').disabled;
+    },
+
     set isPrintButtonEnabled(isEnabled) {
       this.isPrintButtonEnabled_ = isEnabled;
       this.updatePrintButtonEnabledState_();

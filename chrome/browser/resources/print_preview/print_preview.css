@@ -124,22 +124,13 @@ h1 {
 }
 
 #print-preview .navbar-link {
-  -webkit-margin-start: 20px;
-  min-height: 32px;
-  outline: 0;
-  padding: 0;
-  text-align: start;
-  text-decoration: none;
+  margin: 8px 20px;
 }
 
-#print-preview .navbar-link:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-#print-preview .navbar-link:disabled {
+#print-preview .navbar-link.disabled {
   color: rgba(0, 0, 0, .5);
   cursor: default;
-  text-shadow: none;
+  pointer-events: none;
 }
 
 button.loading {
@@ -302,6 +293,16 @@ span.jumping-dots > span:nth-child(3) {
   -webkit-box-orient: vertical;
   display: -webkit-box;
   margin: 7px 0;
+}
+
+#link-container > div {
+  display: flex;
+}
+
+#link-container > div > .throbber {
+  margin: 8px;
+  min-height: 16px;
+  min-width: 16px;
 }
 
 #main-container {
