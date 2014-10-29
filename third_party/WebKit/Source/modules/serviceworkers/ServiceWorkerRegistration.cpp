@@ -126,13 +126,10 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionConte
     if (!outerRegistration)
         return 0;
 
-    WebServiceWorkerRegistrationProxy* proxy = outerRegistration->proxy();
-    if (proxy) {
-        ServiceWorkerRegistration* existingRegistration = *proxy;
-        if (existingRegistration) {
-            ASSERT(existingRegistration->executionContext() == executionContext);
-            return existingRegistration;
-        }
+    ServiceWorkerRegistration* existingRegistration = static_cast<ServiceWorkerRegistration*>(outerRegistration->proxy());
+    if (existingRegistration) {
+        ASSERT(existingRegistration->executionContext() == executionContext);
+        return existingRegistration;
     }
 
     ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration));
@@ -142,7 +139,6 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionConte
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
     : ActiveDOMObject(executionContext)
-    , WebServiceWorkerRegistrationProxy(this)
     , m_outerRegistration(outerRegistration)
     , m_provider(0)
     , m_stopped(false)

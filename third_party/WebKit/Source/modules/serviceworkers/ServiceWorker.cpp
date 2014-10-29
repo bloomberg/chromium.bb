@@ -238,8 +238,7 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContex
     if (!outerWorker)
         return nullptr;
 
-    WebServiceWorkerProxy* proxy = outerWorker->proxy();
-    ServiceWorker* existingServiceWorker = proxy ? proxy->unwrap() : 0;
+    ServiceWorker* existingServiceWorker = static_cast<ServiceWorker*>(outerWorker->proxy());
     if (existingServiceWorker) {
         ASSERT(existingServiceWorker->executionContext() == executionContext);
         return existingServiceWorker;
@@ -252,7 +251,6 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContex
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker> worker)
     : AbstractWorker(executionContext)
-    , WebServiceWorkerProxy(this)
     , m_outerWorker(worker)
     , m_proxyState(Initial)
 {

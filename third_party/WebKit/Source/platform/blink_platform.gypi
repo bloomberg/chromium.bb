@@ -311,8 +311,6 @@
       'exported/WebScrollbarThemeGeometryNative.cpp',
       'exported/WebScrollbarThemeGeometryNative.h',
       'exported/WebSerializedOrigin.cpp',
-      'exported/WebServiceWorkerProxy.cpp',
-      'exported/WebServiceWorkerRegistrationProxy.cpp',
       'exported/WebServiceWorkerRequest.cpp',
       'exported/WebServiceWorkerResponse.cpp',
       'exported/WebSocketHandshakeRequestInfo.cpp',
