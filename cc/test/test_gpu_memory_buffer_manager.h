@@ -21,6 +21,9 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       gfx::GpuMemoryBuffer::Usage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestGpuMemoryBufferManager);
 };
 
 }  // namespace cc

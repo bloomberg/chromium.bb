@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -19,6 +20,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
@@ -52,7 +54,9 @@ class ShaderTranslatorCache;
 }
 
 class CommandBufferServiceBase;
+class GpuMemoryBufferManager;
 class GpuScheduler;
+class ImageFactory;
 class TransferBufferManagerInterface;
 
 // This class provides a thread-safe interface to the global GPU service (for
@@ -76,7 +80,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   const std::vector<int32>& attribs,
                   gfx::GpuPreference gpu_preference,
                   const base::Closure& context_lost_callback,
-                  InProcessCommandBuffer* share_group);
+                  InProcessCommandBuffer* share_group,
+                  GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                  ImageFactory* image_factory);
   void Destroy();
 
   // CommandBuffer implementation:
@@ -151,6 +157,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     gfx::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
+    ImageFactory* image_factory;
 
     InitializeOnGpuThreadParams(bool is_offscreen,
                                 gfx::AcceleratedWidget window,
@@ -158,14 +165,16 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                 const std::vector<int32>& attribs,
                                 gfx::GpuPreference gpu_preference,
                                 gpu::Capabilities* capabilities,
-                                InProcessCommandBuffer* share_group)
+                                InProcessCommandBuffer* share_group,
+                                ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
           window(window),
           size(size),
           attribs(attribs),
           gpu_preference(gpu_preference),
           capabilities(capabilities),
-          context_group(share_group) {}
+          context_group(share_group),
+          image_factory(image_factory) {}
   };
 
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
@@ -184,6 +193,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool WaitSyncPointOnGpuThread(uint32 sync_point);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);
   void DestroyTransferBufferOnGpuThread(int32 id);
+  void CreateImageOnGpuThread(int32 id,
+                              const gfx::GpuMemoryBufferHandle& handle,
+                              const gfx::Size& size,
+                              gfx::GpuMemoryBuffer::Format format,
+                              uint32 internalformat);
+  void DestroyImageOnGpuThread(int32 id);
 
   // Callbacks:
   void OnContextLost();
@@ -204,11 +219,14 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<gfx::GLSurface> surface_;
   base::Closure context_lost_callback_;
   bool idle_work_pending_;  // Used to throttle PerformIdleWork.
+  ImageFactory* image_factory_;
 
   // Members accessed on the client thread:
   State last_state_;
   int32 last_put_offset_;
   gpu::Capabilities capabilities_;
+  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  base::AtomicSequenceNumber next_image_id_;
 
   // Accessed on both threads:
   scoped_ptr<CommandBufferServiceBase> command_buffer_;

@@ -10,22 +10,39 @@
 namespace cc {
 namespace {
 
+size_t BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return 4;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  GpuMemoryBufferImpl(const gfx::Size& size, Format format)
+  GpuMemoryBufferImpl(const gfx::Size& size,
+                      Format format,
+                      scoped_ptr<base::SharedMemory> shared_memory)
       : size_(size),
         format_(format),
-        pixels_(new uint8[size.GetArea() * BytesPerPixel(format)]),
+        shared_memory_(shared_memory.Pass()),
         mapped_(false) {}
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override {
     DCHECK(!mapped_);
+    if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(format_)))
+      return NULL;
     mapped_ = true;
-    return pixels_.get();
+    return shared_memory_->memory();
   }
   void Unmap() override {
     DCHECK(mapped_);
+    shared_memory_->Unmap();
     mapped_ = false;
   }
   bool IsMapped() const override { return mapped_; }
@@ -34,29 +51,19 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return size_.width() * BytesPerPixel(format_);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
-    NOTREACHED();
-    return gfx::GpuMemoryBufferHandle();
+    gfx::GpuMemoryBufferHandle handle;
+    handle.type = gfx::SHARED_MEMORY_BUFFER;
+    handle.handle = shared_memory_->handle();
+    return handle;
   }
   ClientBuffer AsClientBuffer() override {
     return reinterpret_cast<ClientBuffer>(this);
   }
 
  private:
-  static size_t BytesPerPixel(Format format) {
-    switch (format) {
-      case RGBA_8888:
-      case RGBX_8888:
-      case BGRA_8888:
-        return 4;
-    }
-
-    NOTREACHED();
-    return 0;
-  }
-
   const gfx::Size size_;
   gfx::GpuMemoryBuffer::Format format_;
-  scoped_ptr<uint8[]> pixels_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
   bool mapped_;
 };
 
@@ -73,8 +80,11 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
+  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  if (!shared_memory->CreateAnonymous(size.GetArea() * BytesPerPixel(format)))
+    return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
-      new GpuMemoryBufferImpl(size, format));
+      new GpuMemoryBufferImpl(size, format, shared_memory.Pass()));
 }
 
 gfx::GpuMemoryBuffer*

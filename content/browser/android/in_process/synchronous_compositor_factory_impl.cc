@@ -55,7 +55,9 @@ scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
       false /* share_resources */,
       in_process_attribs,
       gpu_preference,
-      gpu::GLInProcessContextSharedMemoryLimits()));
+      gpu::GLInProcessContextSharedMemoryLimits(),
+      nullptr,
+      nullptr));
   return context.Pass();
 }
 
@@ -78,7 +80,9 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
       false /* share_resources */,
       in_process_attribs,
       gpu_preference,
-      mem_limits));
+      mem_limits,
+      nullptr,
+      nullptr));
   return context.Pass();
 }
 

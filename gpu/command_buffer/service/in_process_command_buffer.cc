@@ -18,11 +18,13 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/mailbox_manager_sync.h"
@@ -210,7 +212,9 @@ InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : context_lost_(false),
       idle_work_pending_(false),
+      image_factory_(nullptr),
       last_put_offset_(-1),
+      gpu_memory_buffer_manager_(nullptr),
       flush_event_(false, false),
       service_(service.get() ? service : GetDefaultService()),
       gpu_thread_weak_ptr_factory_(this) {
@@ -218,6 +222,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
     base::AutoLock lock(default_thread_clients_lock_.Get());
     default_thread_clients_.Get().insert(this);
   }
+  next_image_id_.GetNext();
 }
 
 InProcessCommandBuffer::~InProcessCommandBuffer() {
@@ -269,7 +274,9 @@ bool InProcessCommandBuffer::Initialize(
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
     const base::Closure& context_lost_callback,
-    InProcessCommandBuffer* share_group) {
+    InProcessCommandBuffer* share_group,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    ImageFactory* image_factory) {
   DCHECK(!share_group || service_.get() == share_group->service_.get());
   context_lost_callback_ = WrapCallback(context_lost_callback);
 
@@ -287,7 +294,8 @@ bool InProcessCommandBuffer::Initialize(
                                      attribs,
                                      gpu_preference,
                                      &capabilities,
-                                     share_group);
+                                     share_group,
+                                     image_factory);
 
   base::Callback<bool(void)> init_task =
       base::Bind(&InProcessCommandBuffer::InitializeOnGpuThread,
@@ -300,8 +308,12 @@ bool InProcessCommandBuffer::Initialize(
       base::Bind(&RunTaskWithResult<bool>, init_task, &result, &completion));
   completion.Wait();
 
-  if (result)
+  gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
+
+  if (result) {
     capabilities_ = capabilities;
+    capabilities_.image = capabilities_.image && gpu_memory_buffer_manager_;
+  }
 
   return result;
 }
@@ -422,6 +434,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&InProcessCommandBuffer::WaitSyncPointOnGpuThread,
                  base::Unretained(this)));
+
+  image_factory_ = params.image_factory;
+  params.capabilities->image = params.capabilities->image && image_factory_;
 
   return true;
 }
@@ -612,12 +627,76 @@ int32 InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
                                           size_t width,
                                           size_t height,
                                           unsigned internalformat) {
-  NOTREACHED();
-  return -1;
+  CheckSequencedThread();
+
+  DCHECK(gpu_memory_buffer_manager_);
+  gfx::GpuMemoryBuffer* gpu_memory_buffer =
+      gpu_memory_buffer_manager_->GpuMemoryBufferFromClientBuffer(buffer);
+  DCHECK(gpu_memory_buffer);
+
+  int32 new_id = next_image_id_.GetNext();
+
+  DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
+      internalformat, gpu_memory_buffer->GetFormat()));
+  QueueTask(base::Bind(&InProcessCommandBuffer::CreateImageOnGpuThread,
+                       base::Unretained(this),
+                       new_id,
+                       gpu_memory_buffer->GetHandle(),
+                       gfx::Size(width, height),
+                       gpu_memory_buffer->GetFormat(),
+                       internalformat));
+  return new_id;
+}
+
+void InProcessCommandBuffer::CreateImageOnGpuThread(
+    int32 id,
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    uint32 internalformat) {
+  if (!decoder_)
+    return;
+
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  DCHECK(image_manager);
+  if (image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image already exists with same ID.";
+    return;
+  }
+
+  // Note: this assumes that client ID is always 0.
+  const int kClientId = 0;
+
+  DCHECK(image_factory_);
+  scoped_refptr<gfx::GLImage> image =
+      image_factory_->CreateImageForGpuMemoryBuffer(
+          handle, size, format, internalformat, kClientId);
+  if (!image.get())
+    return;
+
+  image_manager->AddImage(image.get(), id);
 }
 
 void InProcessCommandBuffer::DestroyImage(int32 id) {
-  NOTREACHED();
+  CheckSequencedThread();
+
+  QueueTask(base::Bind(&InProcessCommandBuffer::DestroyImageOnGpuThread,
+                       base::Unretained(this),
+                       id));
+}
+
+void InProcessCommandBuffer::DestroyImageOnGpuThread(int32 id) {
+  if (!decoder_)
+    return;
+
+  gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+  DCHECK(image_manager);
+  if (!image_manager->LookupImage(id)) {
+    LOG(ERROR) << "Image with ID doesn't exist.";
+    return;
+  }
+
+  image_manager->RemoveImage(id);
 }
 
 int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
@@ -625,8 +704,18 @@ int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
     size_t height,
     unsigned internalformat,
     unsigned usage) {
-  NOTREACHED();
-  return -1;
+  CheckSequencedThread();
+
+  DCHECK(gpu_memory_buffer_manager_);
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+          gfx::Size(width, height),
+          gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(internalformat),
+          gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
+  if (!buffer)
+    return -1;
+
+  return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {

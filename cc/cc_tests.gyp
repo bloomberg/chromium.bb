@@ -237,6 +237,8 @@
       'test/test_gles2_interface.h',
       'test/test_gpu_memory_buffer_manager.cc',
       'test/test_gpu_memory_buffer_manager.h',
+      'test/test_image_factory.cc',
+      'test/test_image_factory.h',
       'test/test_now_source.cc',
       'test/test_now_source.h',
       'test/test_occlusion_tracker.h',

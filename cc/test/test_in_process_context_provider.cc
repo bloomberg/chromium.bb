@@ -20,7 +20,9 @@
 namespace cc {
 
 // static
-scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
+scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
+    TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TestImageFactory* image_factory) {
   const bool is_offscreen = true;
   const bool share_resources = true;
   gpu::gles2::ContextCreationAttribHelper attribs;
@@ -47,14 +49,22 @@ scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
           share_resources,
           attribs,
           gpu_preference,
-          gpu::GLInProcessContextSharedMemoryLimits()));
+          gpu::GLInProcessContextSharedMemoryLimits(),
+          gpu_memory_buffer_manager,
+          image_factory));
 
   DCHECK(context);
   return context.Pass();
 }
 
+scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
+  return CreateTestInProcessContext(nullptr, nullptr);
+}
+
 TestInProcessContextProvider::TestInProcessContextProvider()
-    : context_(CreateTestInProcessContext()) {}
+    : context_(CreateTestInProcessContext(&gpu_memory_buffer_manager_,
+                                          &image_factory_)) {
+}
 
 TestInProcessContextProvider::~TestInProcessContextProvider() {
 }

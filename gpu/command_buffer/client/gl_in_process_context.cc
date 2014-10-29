@@ -50,16 +50,17 @@ class GLInProcessContextImpl
       const GLInProcessContextSharedMemoryLimits& mem_limits);
   ~GLInProcessContextImpl() override;
 
-  bool Initialize(
-      scoped_refptr<gfx::GLSurface> surface,
-      bool is_offscreen,
-      bool use_global_share_group,
-      GLInProcessContext* share_context,
-      gfx::AcceleratedWidget window,
-      const gfx::Size& size,
-      const gpu::gles2::ContextCreationAttribHelper& attribs,
-      gfx::GpuPreference gpu_preference,
-      const scoped_refptr<InProcessCommandBuffer::Service>& service);
+  bool Initialize(scoped_refptr<gfx::GLSurface> surface,
+                  bool is_offscreen,
+                  bool use_global_share_group,
+                  GLInProcessContext* share_context,
+                  gfx::AcceleratedWidget window,
+                  const gfx::Size& size,
+                  const gpu::gles2::ContextCreationAttribHelper& attribs,
+                  gfx::GpuPreference gpu_preference,
+                  const scoped_refptr<InProcessCommandBuffer::Service>& service,
+                  GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                  ImageFactory* image_factory);
 
   // GLInProcessContext implementation:
   void SetContextLostCallback(const base::Closure& callback) override;
@@ -135,7 +136,9 @@ bool GLInProcessContextImpl::Initialize(
     const gfx::Size& size,
     const gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
-    const scoped_refptr<InProcessCommandBuffer::Service>& service) {
+    const scoped_refptr<InProcessCommandBuffer::Service>& service,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    ImageFactory* image_factory) {
   DCHECK(!use_global_share_group || !share_context);
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
@@ -181,7 +184,9 @@ bool GLInProcessContextImpl::Initialize(
                                    attrib_vector,
                                    gpu_preference,
                                    wrapped_callback,
-                                   share_command_buffer)) {
+                                   share_command_buffer,
+                                   gpu_memory_buffer_manager,
+                                   image_factory)) {
     LOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return false;
   }
@@ -271,7 +276,9 @@ GLInProcessContext* GLInProcessContext::Create(
     bool use_global_share_group,
     const ::gpu::gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
-    const GLInProcessContextSharedMemoryLimits& memory_limits) {
+    const GLInProcessContextSharedMemoryLimits& memory_limits,
+    GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    ImageFactory* image_factory) {
   DCHECK(!use_global_share_group || !share_context);
   if (surface.get()) {
     DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
@@ -289,7 +296,9 @@ GLInProcessContext* GLInProcessContext::Create(
                            size,
                            attribs,
                            gpu_preference,
-                           service))
+                           service,
+                           gpu_memory_buffer_manager,
+                           image_factory))
     return NULL;
 
   return context.release();

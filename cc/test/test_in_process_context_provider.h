@@ -6,6 +6,8 @@
 #define CC_TEST_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 
 #include "cc/output/context_provider.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "cc/test/test_image_factory.h"
 #include "skia/ext/refptr.h"
 
 class GrContext;
@@ -17,6 +19,9 @@ class GLInProcessContext;
 namespace cc {
 
 scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
+scoped_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
+    TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TestImageFactory* image_factory);
 
 class TestInProcessContextProvider : public ContextProvider {
  public:
@@ -42,6 +47,8 @@ class TestInProcessContextProvider : public ContextProvider {
   ~TestInProcessContextProvider() override;
 
  private:
+  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  TestImageFactory image_factory_;
   scoped_ptr<gpu::GLInProcessContext> context_;
   skia::RefPtr<class GrContext> gr_context_;
 };

@@ -64,7 +64,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       bool use_global_share_group,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       gfx::GpuPreference gpu_preference,
-      const GLInProcessContextSharedMemoryLimits& memory_limits);
+      const GLInProcessContextSharedMemoryLimits& memory_limits,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      ImageFactory* image_factory);
 
   virtual void SetContextLostCallback(const base::Closure& callback) = 0;
 

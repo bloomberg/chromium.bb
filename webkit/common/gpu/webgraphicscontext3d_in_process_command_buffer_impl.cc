@@ -122,7 +122,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
         share_resources_,
         attribs_,
         gpu_preference,
-        ::gpu::GLInProcessContextSharedMemoryLimits()));
+        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        nullptr,
+        nullptr));
   }
 
   if (context_) {

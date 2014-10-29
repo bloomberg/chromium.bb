@@ -62,7 +62,9 @@ scoped_refptr<cc::ContextProvider> CreateContext(
       false /* share_resources */,
       attribs_for_gles2,
       gpu_preference,
-      gpu::GLInProcessContextSharedMemoryLimits()));
+      gpu::GLInProcessContextSharedMemoryLimits(),
+      nullptr,
+      nullptr));
   DCHECK(context.get());
 
   return webkit::gpu::ContextProviderInProcess::Create(
