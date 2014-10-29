@@ -33,11 +33,6 @@ namespace blink {
 
 struct LayerFragment {
 public:
-    LayerFragment()
-        : shouldPaintContent(false)
-    {
-    }
-
     void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground, const ClipRect& outline)
     {
         layerBounds = bounds;
@@ -62,7 +57,6 @@ public:
         outlineRect.intersect(rect);
     }
 
-    bool shouldPaintContent;
     LayoutRect layerBounds;
     ClipRect backgroundRect;
     ClipRect foregroundRect;

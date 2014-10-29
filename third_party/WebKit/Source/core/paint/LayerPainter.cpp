@@ -257,12 +257,12 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
 
     LayerFragments layerFragments;
     if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {
-        // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment, as well as whether or not the content of each
-        // fragment should paint.
+        // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
         m_renderLayer.collectFragments(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect,
             (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects, IgnoreOverlayScrollbarSize,
             shouldRespectOverflowClip(paintFlags, m_renderLayer.renderer()), &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
-        updatePaintingInfoForFragments(layerFragments, localPaintingInfo, paintFlags, shouldPaintContent, &offsetFromRoot);
+        if (shouldPaintContent)
+            shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
     }
 
     bool selectionOnly  = localPaintingInfo.paintBehavior & PaintBehaviorSelectionOnly;
@@ -421,18 +421,25 @@ void LayerPainter::applyRoundedRectClips(const LayerPaintingInfo& localPaintingI
     }
 }
 
-void LayerPainter::updatePaintingInfoForFragments(LayerFragments& fragments, const LayerPaintingInfo& localPaintingInfo, PaintLayerFlags localPaintFlags,
-    bool shouldPaintContent, const LayoutPoint* offsetFromRoot)
+bool LayerPainter::atLeastOneFragmentIntersectsDamageRect(LayerFragments& fragments, const LayerPaintingInfo& localPaintingInfo, PaintLayerFlags localPaintFlags, const LayoutPoint& offsetFromRoot)
 {
-    ASSERT(offsetFromRoot);
-    for (size_t i = 0; i < fragments.size(); ++i) {
-        LayerFragment& fragment = fragments.at(i);
-        fragment.shouldPaintContent = shouldPaintContent;
-        if (&m_renderLayer != localPaintingInfo.rootLayer || !(localPaintFlags & PaintLayerPaintingOverflowContents)) {
-            LayoutPoint newOffsetFromRoot = *offsetFromRoot + fragment.paginationOffset;
-            fragment.shouldPaintContent &= m_renderLayer.intersectsDamageRect(fragment.layerBounds, fragment.backgroundRect.rect(), localPaintingInfo.rootLayer, &newOffsetFromRoot);
-        }
+    if (m_renderLayer.enclosingPaginationLayer())
+        return true; // The fragments created have already been found to intersect with the damage rect.
+
+    if (&m_renderLayer == localPaintingInfo.rootLayer && (localPaintFlags & PaintLayerPaintingOverflowContents))
+        return true;
+
+    for (LayerFragment& fragment: fragments) {
+        LayoutPoint newOffsetFromRoot = offsetFromRoot + fragment.paginationOffset;
+        // Note that this really only works reliably on the first fragment. If the layer has visible
+        // overflow and a subsequent fragment doesn't intersect with the border box of the layer
+        // (i.e. only contains an overflow portion of the layer), intersection will fail. The reason
+        // for this is that fragment.layerBounds is set to the border box, not the bounding box, of
+        // the layer.
+        if (m_renderLayer.intersectsDamageRect(fragment.layerBounds, fragment.backgroundRect.rect(), localPaintingInfo.rootLayer, &newOffsetFromRoot))
+            return true;
     }
+    return false;
 }
 
 void LayerPainter::paintLayerByApplyingTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& translationOffset)
@@ -672,8 +679,6 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
 {
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
-        if (!fragment.shouldPaintContent)
-            continue;
 
         // Begin transparency layers lazily now that we know we have to paint something.
         if (haveTransparency || m_renderLayer.paintsWithBlendMode())
@@ -701,7 +706,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     if (haveTransparency || m_renderLayer.paintsWithBlendMode()) {
         for (size_t i = 0; i < layerFragments.size(); ++i) {
             const LayerFragment& fragment = layerFragments.at(i);
-            if (fragment.shouldPaintContent && !fragment.foregroundRect.isEmpty()) {
+            if (!fragment.foregroundRect.isEmpty()) {
                 beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
                 break;
             }
@@ -709,7 +714,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     }
 
     // Optimize clipping for the single fragment case.
-    bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() == 1 && layerFragments[0].shouldPaintContent && !layerFragments[0].foregroundRect.isEmpty();
+    bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() == 1 && !layerFragments[0].foregroundRect.isEmpty();
 
     OwnPtr<ClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
@@ -736,7 +741,7 @@ void LayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase, const 
 
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
-        if (!fragment.shouldPaintContent || fragment.foregroundRect.isEmpty())
+        if (fragment.foregroundRect.isEmpty())
             continue;
 
         OwnPtr<ClipRecorder> clipRecorder;
@@ -796,9 +801,6 @@ void LayerPainter::paintMaskForFragments(const LayerFragments& layerFragments, G
 {
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
-        if (!fragment.shouldPaintContent)
-            continue;
-
         OwnPtr<ClipRecorder> clipRecorder;
         if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.backgroundRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, ClipDisplayItem::LayerFragmentMask, fragment.backgroundRect));
@@ -817,9 +819,6 @@ void LayerPainter::paintChildClippingMaskForFragments(const LayerFragments& laye
 {
     for (size_t i = 0; i < layerFragments.size(); ++i) {
         const LayerFragment& fragment = layerFragments.at(i);
-        if (!fragment.shouldPaintContent)
-            continue;
-
         OwnPtr<ClipRecorder> clipRecorder;
         if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.foregroundRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, ClipDisplayItem::LayerFragmentClippingMask, fragment.foregroundRect));
