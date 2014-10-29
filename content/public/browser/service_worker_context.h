@@ -12,8 +12,7 @@
 
 namespace content {
 
-// Represents the per-StoragePartition ServiceWorker data.  Must be used from
-// the IO thread.
+// Represents the per-StoragePartition ServiceWorker data.
 class ServiceWorkerContext {
  public:
   // https://rawgithub.com/slightlyoff/ServiceWorker/master/spec/service_worker/index.html#url-scope:
@@ -52,11 +51,6 @@ class ServiceWorkerContext {
                                        const ResultCallback& callback) = 0;
 
   // TODO(jyasskin): Provide a way to SendMessage to a Scope.
-
-  // Synchronously releases all of the RenderProcessHosts that have Service
-  // Workers running inside them, and prevents any new Service Worker instances
-  // from starting up.
-  virtual void Terminate() = 0;
 
   // Methods used in response to browsing data and quota manager requests.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;

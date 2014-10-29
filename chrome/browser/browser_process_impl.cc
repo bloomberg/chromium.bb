@@ -349,24 +349,12 @@ unsigned int BrowserProcessImpl::AddRefModule() {
   return module_ref_count_;
 }
 
-static void ShutdownServiceWorkerContext(content::StoragePartition* partition) {
-  partition->GetServiceWorkerContext()->Terminate();
-}
-
 unsigned int BrowserProcessImpl::ReleaseModule() {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(0u, module_ref_count_);
   module_ref_count_--;
   if (0 == module_ref_count_) {
     release_last_reference_callstack_ = base::debug::StackTrace();
-
-    // Stop service workers
-    ProfileManager* pm = profile_manager();
-    std::vector<Profile*> profiles(pm->GetLoadedProfiles());
-    for (size_t i = 0; i < profiles.size(); ++i) {
-      content::BrowserContext::ForEachStoragePartition(
-          profiles[i], base::Bind(ShutdownServiceWorkerContext));
-    }
 
 #if defined(ENABLE_PRINTING)
     // Wait for the pending print jobs to finish. Don't do this later, since

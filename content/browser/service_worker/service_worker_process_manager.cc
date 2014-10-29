@@ -62,6 +62,7 @@ ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
 }
 
 void ServiceWorkerProcessManager::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_context_ = NULL;
   for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
        it != instance_info_.end();

@@ -252,6 +252,8 @@ bool Profile::IsSyncAccessible() {
 void Profile::MaybeSendDestroyedNotification() {
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;
+
+    NotifyWillBeDestroyed(this);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(this),

@@ -84,6 +84,13 @@ void SaveSessionStateOnIndexedDBThread(
   indexed_db_context->SetForceKeepSessionState();
 }
 
+void ShutdownServiceWorkerContext(StoragePartition* partition) {
+  ServiceWorkerContextWrapper* wrapper =
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
+  wrapper->process_manager()->Shutdown();
+}
+
 }  // namespace
 
 // static
@@ -223,6 +230,15 @@ void BrowserContext::DeliverPushMessage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PushMessagingRouter::DeliverMessage(
       browser_context, origin, service_worker_registration_id, data, callback);
+}
+
+// static
+void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
+  // Service Workers must shutdown before the browser context is destroyed,
+  // since they keep render process hosts alive and the codebase assumes that
+  // render process hosts die before their profile (browser context) dies.
+  ForEachStoragePartition(browser_context,
+                          base::Bind(ShutdownServiceWorkerContext));
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {

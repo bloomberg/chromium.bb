@@ -34,8 +34,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // Shutdown must be called before the ProcessManager is destroyed.
   ~ServiceWorkerProcessManager();
 
-  // Synchronously prevents new processes from being allocated.
-  // TODO(jyasskin): Drop references to RenderProcessHosts too.
+  // Synchronously prevents new processes from being allocated
+  // and drops references to RenderProcessHosts.
   void Shutdown();
 
   // Returns a reference to a running process suitable for starting the Service

@@ -9,10 +9,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -61,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   sw_context->RegisterServiceWorker(
-      embedded_test_server()->GetURL("/*"),
+      embedded_test_server()->GetURL("/"),
       embedded_test_server()->GetURL("/service_worker.js"),
       base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
@@ -70,6 +73,40 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   // shut down without DCHECK'ing. It'd be nice to check here that the SW is
   // actually occupying a process, but we don't yet have the public interface to
   // do that.
+}
+
+// http://crbug.com/419290
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
+                       CanCloseIncognitoWindowWithServiceWorkerController) {
+  WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
+  WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
+            "HTTP/1.1 200 OK\nContent-Type: text/javascript");
+  WriteFile(FILE_PATH_LITERAL("test.html"), "");
+
+  embedded_test_server()->ServeFilesFromDirectory(service_worker_dir_.path());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  Browser* incognito = CreateIncognitoBrowser();
+  content::ServiceWorkerContext* sw_context =
+      content::BrowserContext::GetDefaultStoragePartition(incognito->profile())
+          ->GetServiceWorkerContext();
+
+  base::RunLoop run_loop;
+  sw_context->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/service_worker.js"),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ui_test_utils::NavigateToURL(incognito,
+                               embedded_test_server()->GetURL("/test.html"));
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(incognito));
+  incognito->window()->Close();
+  observer.Wait();
+
+  // Test passes if we don't crash.
 }
 
 }  // namespace

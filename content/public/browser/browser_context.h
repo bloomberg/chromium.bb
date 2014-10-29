@@ -96,6 +96,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       const std::string& data,
       const base::Callback<void(PushDeliveryStatus)>& callback);
 
+  static void NotifyWillBeDestroyed(BrowserContext* browser_context);
+
   // Ensures that the corresponding ResourceContext is initialized. Normally the
   // BrowserContext initializs the corresponding getters when its objects are
   // created, but if the embedder wants to pass the ResourceContext to another
