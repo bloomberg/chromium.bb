@@ -20,7 +20,7 @@ Running: testConsoleEvalObject
     configurable : true
     enumerable : true
     get : {
-        className : "Object"
+        className : "Function"
         description : "function getter() { }"
         objectId : <string>
         type : "function"
@@ -40,7 +40,7 @@ Running: testConsoleEvalObject
     isOwn : true
     name : "setter"
     set : {
-        className : "Object"
+        className : "Function"
         description : "function setter(_) { }"
         objectId : <string>
         type : "function"

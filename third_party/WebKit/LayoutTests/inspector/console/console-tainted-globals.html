@@ -96,6 +96,26 @@ function restoreError()
     return { result: "PASS" };
 }
 
+function testOverriddenToString(obj, overrideThrow)
+{
+    if (overrideThrow)
+        var func = function() { throw new Error; }
+    else
+        var func = function() { return [1]; }
+
+    Object.defineProperty(obj, "toString", { value: func, enumerable: false });
+    Object.defineProperty(obj, "valueOf", { value: func, enumerable: false });
+
+    // Now the ("" + obj) expression should throw.
+    try {
+        var dummy = "" + obj;
+        console.error("FAIL: Expected to throw but got: " + dummy);
+    } catch (e) {
+    }
+
+    return obj;
+}
+
 function test()
 {
     InspectorTest.runTestSuite([
@@ -108,6 +128,18 @@ function test()
                 "testOverriddenIsFinite()",
                 "testOverriddenError()",
                 "restoreError()",
+                "testOverriddenToString(function func() {}, true)",
+                "testOverriddenToString(function func() {}, false)",
+                "testOverriddenToString(new Function, true)",
+                "testOverriddenToString(new Function, false)",
+                "testOverriddenToString(/^regex$/, true)",
+                "testOverriddenToString(/^regex$/, false)",
+                "testOverriddenToString(new Date, true)",
+                "testOverriddenToString(new Date, false)",
+                "testOverriddenToString({}, true)",
+                "testOverriddenToString({}, false)",
+                "testOverriddenToString(new Number(1), true)",
+                "testOverriddenToString(new Number(1), false)",
             ];
 
             function iterate()

@@ -125,6 +125,8 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
                     result = constructorName;
             }
         }
+        if (toCoreStringWithUndefinedOrNullCheck(result) == "Object" && object->IsFunction())
+            result = v8AtomicString(info.GetIsolate(), "Function");
     }
 
     v8SetReturnValue(info, result);

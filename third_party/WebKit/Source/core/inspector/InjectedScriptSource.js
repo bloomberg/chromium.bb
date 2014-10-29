@@ -87,8 +87,14 @@ function concat(array1, array2)
  */
 function toString(obj)
 {
-    // We don't use String(obj) because it could be overriden.
-    return "" + obj;
+    // We don't use String(obj) because String could be overridden.
+    // Also the ("" + obj) expression may throw.
+    try {
+        return "" + obj;
+    } catch (e) {
+        var name = InjectedScriptHost.internalConstructorName(obj) || InjectedScriptHost.subtype(obj) || (typeof obj);
+        return "#<" + name + ">";
+    }
 }
 
 /**
@@ -99,7 +105,7 @@ function toStringDescription(obj)
 {
     if (typeof obj === "number" && obj === 0 && 1 / obj < 0)
         return "-0"; // Negative zero.
-    return "" + obj;
+    return toString(obj);
 }
 
 /**
@@ -122,7 +128,7 @@ function bind(func, thisObject, var_args)
     }
     bound.toString = function()
     {
-        return "bound: " + func;
+        return "bound: " + toString(func);
     };
     return bound;
 }
