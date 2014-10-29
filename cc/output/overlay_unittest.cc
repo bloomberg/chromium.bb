@@ -537,6 +537,10 @@ class OverlayInfoRendererGL : public GLRenderer {
 
   MOCK_METHOD2(DoDrawQuad, void(DrawingFrame* frame, const DrawQuad* quad));
 
+  virtual void BeginDrawingFrame(DrawingFrame* frame) override {
+    GLRenderer::BeginDrawingFrame(frame);
+  }
+
   virtual void FinishDrawingFrame(DrawingFrame* frame) override {
     GLRenderer::FinishDrawingFrame(frame);
 
@@ -737,6 +741,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   overlay2.plane_z_order = 1;
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(1);
+  renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
@@ -744,6 +749,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(1);
+  renderer_->BeginDrawingFrame(&frame2);
   renderer_->FinishDrawingFrame(&frame2);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
@@ -752,6 +758,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(1);
+  renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
@@ -763,6 +770,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   DirectRenderer::DrawingFrame frame3;
   renderer_->set_expect_overlays(false);
+  renderer_->BeginDrawingFrame(&frame3);
   renderer_->FinishDrawingFrame(&frame3);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
@@ -773,12 +781,14 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
   // Use the same buffer twice.
   renderer_->set_expect_overlays(true);
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(1);
+  renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   SwapBuffers();
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(1);
+  renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   SwapBuffers();
@@ -787,6 +797,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturned) {
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->set_expect_overlays(false);
+  renderer_->BeginDrawingFrame(&frame3);
   renderer_->FinishDrawingFrame(&frame3);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   SwapBuffers();
