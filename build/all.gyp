@@ -777,7 +777,7 @@
             '../android_webview/android_webview.gyp:android_webview_unittests',
             '../base/android/jni_generator/jni_generator.gyp:jni_generator_tests',
             '../base/base.gyp:base_unittests',
-            '../breakpad/breakpad.gyp:breakpad_unittests_stripped',
+            '../breakpad/breakpad.gyp:breakpad_unittests_deps',
             # Also compile the tools needed to deal with minidumps, they are
             # needed to run minidump tests upstream.
             '../breakpad/breakpad.gyp:dump_syms#host',
@@ -802,7 +802,7 @@
             '../media/media.gyp:media_perftests_apk',
             '../media/media.gyp:media_unittests',
             '../net/net.gyp:net_unittests',
-            '../sandbox/sandbox.gyp:sandbox_linux_unittests_stripped',
+            '../sandbox/sandbox.gyp:sandbox_linux_unittests_deps',
             '../sql/sql.gyp:sql_unittests',
             '../sync/sync.gyp:sync_unit_tests',
             '../testing/android/junit/junit_test.gyp:junit_unit_tests',

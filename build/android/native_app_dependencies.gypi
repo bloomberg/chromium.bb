@@ -25,12 +25,9 @@
 #
 
 {
-  'copies': [
-    {
-      'destination': '<(output_dir)',
-      'files': [ '<(native_binary)' ],
-    }
-  ],
+  'variables': {
+    'include_main_binary%': 1,
+  },
   'conditions': [
       ['component == "shared_library"', {
         'dependencies': [
@@ -56,6 +53,14 @@
             },
             'includes': ['../../build/android/strip_native_libraries.gypi'],
           },
+        ],
+      }],
+      ['include_main_binary==1', {
+        'copies': [
+          {
+            'destination': '<(output_dir)',
+            'files': [ '<(native_binary)' ],
+          }
         ],
       }],
   ],

@@ -93,16 +93,20 @@ class TestPackageExecutable(TestPackage):
     sh_script_file = tempfile.NamedTemporaryFile()
     # We need to capture the exit status from the script since adb shell won't
     # propagate to us.
-    sh_script_file.write('cd %s\n'
-                         '%s'
-                         '%s %s/%s --gtest_filter=%s %s\n'
-                         'echo $? > %s' %
-                         (constants.TEST_EXECUTABLE_DIR,
-                          self._AddNativeCoverageExports(device),
-                          tool_wrapper, constants.TEST_EXECUTABLE_DIR,
-                          self.suite_name,
-                          test_filter, test_arguments,
-                          TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
+    sh_script_file.write(
+        'cd %s\n'
+        '%s'
+        '%s LD_LIBRARY_PATH=%s/%s_deps %s/%s --gtest_filter=%s %s\n'
+        'echo $? > %s' %
+        (constants.TEST_EXECUTABLE_DIR,
+         self._AddNativeCoverageExports(device),
+         tool_wrapper,
+         constants.TEST_EXECUTABLE_DIR,
+         self.suite_name,
+         constants.TEST_EXECUTABLE_DIR,
+         self.suite_name,
+         test_filter, test_arguments,
+         TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
     cmd_helper.RunCmd(['chmod', '+x', sh_script_file.name])
     device.PushChangedFiles([(
@@ -114,12 +118,15 @@ class TestPackageExecutable(TestPackage):
 
   #override
   def GetAllTests(self, device):
-    all_tests = device.RunShellCommand(
-        '%s %s/%s --gtest_list_tests' %
-        (self.tool.GetTestWrapper(),
-         constants.TEST_EXECUTABLE_DIR,
-         self.suite_name))
-    return self._ParseGTestListTests(all_tests)
+    cmd = '%s %s/%s --gtest_list_tests' % (self.tool.GetTestWrapper(),
+        constants.TEST_EXECUTABLE_DIR, self.suite_name)
+    lib_path = '%s/%s_deps' % (constants.TEST_EXECUTABLE_DIR, self.suite_name)
+    (exit_code, output) = device.old_interface.GetAndroidToolStatusAndOutput(
+        cmd, lib_path=lib_path)
+    if exit_code != 0:
+      raise Exception(
+          'Failed to start binary:\n%s' % '\n'.join(output))
+    return self._ParseGTestListTests(output)
 
   #override
   def SpawnTestProcess(self, device):
@@ -147,5 +154,8 @@ class TestPackageExecutable(TestPackage):
             (target_name, target_mtime, self.suite_path, source_mtime,
              self.suite_name + '_stripped'))
 
-    test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
-    device.PushChangedFiles([(target_name, test_binary)])
+    test_binary_path = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_name
+    device.PushChangedFiles([(target_name, test_binary_path)])
+    deps_path = self.suite_path + '_deps'
+    if os.path.isdir(deps_path):
+      device.PushChangedFiles([(deps_path, test_binary_path + '_deps')])
