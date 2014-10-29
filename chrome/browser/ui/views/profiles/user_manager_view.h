@@ -29,7 +29,7 @@ class UserManagerView : public views::DialogDelegateView {
                                     const std::string& url);
 
  private:
-  virtual ~UserManagerView();
+  ~UserManagerView() override;
 
   friend struct base::DefaultDeleter<UserManagerView>;
 
@@ -37,17 +37,17 @@ class UserManagerView : public views::DialogDelegateView {
   void Init(Profile* guest_profile, const GURL& url);
 
   // views::View:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  gfx::Size GetPreferredSize() const override;
 
   // views::DialogDelegateView:
-  virtual bool CanResize() const override;
-  virtual bool CanMaximize() const override;
-  virtual bool CanMinimize() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual int GetDialogButtons() const override;
-  virtual void WindowClosing() override;
-  virtual bool UseNewStyleForThisDialog() const override;
+  bool CanResize() const override;
+  bool CanMaximize() const override;
+  bool CanMinimize() const override;
+  base::string16 GetWindowTitle() const override;
+  int GetDialogButtons() const override;
+  void WindowClosing() override;
+  bool UseNewStyleForThisDialog() const override;
 
   views::WebView* web_view_;
 

@@ -85,10 +85,10 @@ class BadgeImageSource: public gfx::CanvasImageSource {
                    const gfx::Size& icon_size,
                    const gfx::ImageSkia& badge);
 
-  virtual ~BadgeImageSource();
+  ~BadgeImageSource() override;
 
   // Overridden from CanvasImageSource:
-  virtual void Draw(gfx::Canvas* canvas) override;
+  void Draw(gfx::Canvas* canvas) override;
 
  private:
   gfx::Size ComputeSize(const gfx::ImageSkia& icon,
@@ -152,10 +152,10 @@ class EditProfileLink : public views::Link {
   explicit EditProfileLink(const base::string16& title,
                            HighlightDelegate* delegate);
 
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   views::CustomButton::ButtonState state() { return state_; }
 
@@ -207,15 +207,15 @@ class ProfileItemView : public views::CustomButton,
                   AvatarMenuBubbleView* parent,
                   AvatarMenu* menu);
 
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
-  virtual void OnHighlightStateChanged() override;
-  virtual void OnFocusStateChanged(bool has_focus) override;
+  void OnHighlightStateChanged() override;
+  void OnFocusStateChanged(bool has_focus) override;
 
   const AvatarMenu::Item& item() const { return item_; }
   EditProfileLink* edit_link() { return edit_link_; }

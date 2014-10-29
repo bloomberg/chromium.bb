@@ -33,11 +33,11 @@
 class ProfileChooserViewBrowserTest : public InProcessBrowserTest {
  public:
   ProfileChooserViewBrowserTest();
-  virtual ~ProfileChooserViewBrowserTest();
+  ~ProfileChooserViewBrowserTest() override;
 
  protected:
-  virtual void SetUp() override;
-  virtual void SetUpCommandLine(CommandLine* command_line) override;
+  void SetUp() override;
+  void SetUpCommandLine(CommandLine* command_line) override;
   void OpenProfileChooserView();
 
  private:

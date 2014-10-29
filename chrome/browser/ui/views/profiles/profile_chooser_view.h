@@ -83,34 +83,33 @@ class ProfileChooserView : public views::BubbleDelegateView,
                      profiles::BubbleViewMode view_mode,
                      profiles::TutorialMode tutorial_mode,
                      signin::GAIAServiceType service_type);
-  virtual ~ProfileChooserView();
+  ~ProfileChooserView() override;
 
   // views::BubbleDelegateView:
-  virtual void Init() override;
-  virtual void WindowClosing() override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void Init() override;
+  void WindowClosing() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* sender, int event_flags) override;
+  void LinkClicked(views::Link* sender, int event_flags) override;
 
   // views::StyledLabelListener:
-  virtual void StyledLabelLinkClicked(
-      const gfx::Range& range, int event_flags) override;
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // views::TextfieldController:
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
+  void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // OAuth2TokenService::Observer overrides.
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
-  virtual void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_for_testing_;

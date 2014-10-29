@@ -44,14 +44,14 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
       Browser* browser);
 
   // views::BubbleDelegateView methods.
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual void Init() override;
+  views::View* GetInitiallyFocusedView() override;
+  void Init() override;
 
   // views::WidgetDelegate method.
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // GlobalErrorBubbleViewBase:
-  virtual void CloseBubbleView() override;
+  void CloseBubbleView() override;
 
  private:
   ProfileResetBubbleView(
@@ -60,7 +60,7 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
       content::PageNavigator* navigator,
       Profile* profile);
 
-  virtual ~ProfileResetBubbleView();
+  ~ProfileResetBubbleView() override;
 
   // Reset all child views members and remove children from view hierarchy.
   void ResetAllChildren();
@@ -70,11 +70,10 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   void SetupLayoutManager(bool report_checked);
 
   // views::ButtonListener method.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener method.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Sets the fully populated feedback data.
   void UpdateFeedbackDetails();

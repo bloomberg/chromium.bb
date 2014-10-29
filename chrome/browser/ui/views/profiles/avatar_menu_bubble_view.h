@@ -57,28 +57,26 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   static bool IsShowing();
   static void Hide();
 
-  virtual ~AvatarMenuBubbleView();
+  ~AvatarMenuBubbleView() override;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // BubbleDelegate implementation.
-  virtual gfx::Rect GetAnchorRect() const override;
-  virtual void Init() override;
-  virtual void WindowClosing() override;
+  gfx::Rect GetAnchorRect() const override;
+  void Init() override;
+  void WindowClosing() override;
 
   // AvatarMenuObserver implementation.
-  virtual void OnAvatarMenuChanged(
-      AvatarMenu* avatar_menu) override;
+  void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.

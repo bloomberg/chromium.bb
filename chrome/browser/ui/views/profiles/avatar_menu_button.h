@@ -36,11 +36,11 @@ class AvatarMenuButton : public views::MenuButton,
   // will cause the profile menu to be displayed.
   AvatarMenuButton(Browser* browser, bool disabled);
 
-  virtual ~AvatarMenuButton();
+  ~AvatarMenuButton() override;
 
   // views::MenuButton:
-  virtual const char* GetClassName() const override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // Sets the image for the avatar button. Rectangular images, as opposed
   // to Chrome avatar icons, will be resized and modified for the title bar.
@@ -62,12 +62,12 @@ class AvatarMenuButton : public views::MenuButton,
 
  private:
   // views::ViewTargeterDelegate:
-  virtual bool DoesIntersectRect(const views::View* target,
-                                 const gfx::Rect& rect) const override;
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   // views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(views::View* source,
+                           const gfx::Point& point) override;
 
   Browser* browser_;
   bool disabled_;

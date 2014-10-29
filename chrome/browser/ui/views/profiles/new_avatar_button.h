@@ -25,11 +25,11 @@ class NewAvatarButton : public views::LabelButton,
   NewAvatarButton(views::ButtonListener* listener,
                   AvatarButtonStyle button_style,
                   Browser* browser);
-  virtual ~NewAvatarButton();
+  ~NewAvatarButton() override;
 
   // Views::LabelButton
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
 
  private:
   friend class NewAvatarMenuButtonTest;
@@ -38,20 +38,17 @@ class NewAvatarButton : public views::LabelButton,
   FRIEND_TEST_ALL_PREFIXES(ProfileChooserViewBrowserTest, ViewProfileUMA);
 
   // ProfileInfoCacheObserver:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) override;
-  virtual void OnProfileWasRemoved(
-      const base::FilePath& profile_path,
-      const base::string16& profile_name) override;
-  virtual void OnProfileNameChanged(
-      const base::FilePath& profile_path,
-      const base::string16& old_profile_name) override;
-  virtual void OnProfileAvatarChanged(
-      const base::FilePath& profile_path) override;
-  virtual void OnProfileSupervisedUserIdChanged(
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override;
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+  void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) override;
 
   // SigninErrorController::Observer:
-  virtual void OnErrorChanged() override;
+  void OnErrorChanged() override;
 
   // Called when the profile info cache has changed, which means we might
   // have to update the icon/text of the button.

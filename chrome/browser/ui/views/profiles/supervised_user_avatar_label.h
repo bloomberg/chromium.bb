@@ -18,10 +18,10 @@ class BrowserView;
 class SupervisedUserAvatarLabel : public views::LabelButton {
  public:
   explicit SupervisedUserAvatarLabel(BrowserView* browser_view);
-  virtual ~SupervisedUserAvatarLabel();
+  ~SupervisedUserAvatarLabel() override;
 
   // views::LabelButton:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Update the style of the label according to the provided theme.
   void UpdateLabelStyle();

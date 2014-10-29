@@ -21,7 +21,7 @@
 class AvatarMenuButtonTest : public InProcessBrowserTest {
  public:
   AvatarMenuButtonTest();
-  virtual ~AvatarMenuButtonTest();
+  ~AvatarMenuButtonTest() override;
 
  protected:
   void CreateTestingProfile();
