@@ -24,7 +24,7 @@ bool IsFirstStatusByte(uint8 data) {
 }
 
 bool IsSystemRealTimeMessage(uint8 data) {
-  return 0xf8 <= data && data <= 0xff;
+  return 0xf8 <= data;
 }
 
 }  // namespace
