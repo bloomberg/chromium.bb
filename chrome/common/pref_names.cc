@@ -1789,6 +1789,12 @@ const char kHotwordAlwaysOnSearchEnabled[] = "hotword.always_on_search_enabled";
 // seconds of audio data before is sent back to improve voice search.
 const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";
 
+// A boolean pref that controls the user's global account preference for
+// audio history is enabled. Updated whenever the user changes it in
+// chrome://settings and also polled for every 24 hours and on first voice
+// search action after profile startup.
+const char kHotwordAudioHistoryEnabled[] = "hotword.audio_history_enabled";
+
 // A string holding the locale information under which Hotword was installed.
 // It is used for comparison since the hotword voice search trigger must be
 // reinstalled to handle a new language.

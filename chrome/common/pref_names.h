@@ -629,6 +629,7 @@ extern const char kVideoCaptureAllowedUrls[];
 extern const char kHotwordSearchEnabled[];
 extern const char kHotwordAlwaysOnSearchEnabled[];
 extern const char kHotwordAudioLoggingEnabled[];
+extern const char kHotwordAudioHistoryEnabled[];
 extern const char kHotwordPreviousLanguage[];
 
 #if defined(OS_ANDROID)

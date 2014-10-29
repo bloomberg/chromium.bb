@@ -1446,6 +1446,8 @@
       'browser/renderer_host/chrome_extension_message_filter.h',
       'browser/safe_json_parser.cc',
       'browser/safe_json_parser.h',
+      'browser/search/hotword_audio_history_handler.cc',
+      'browser/search/hotword_audio_history_handler.h',
       'browser/search/hotword_client.h',
       'browser/search/hotword_service.cc',
       'browser/search/hotword_service.h',

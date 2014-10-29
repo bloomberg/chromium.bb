@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionService;
+class HotwordAudioHistoryHandler;
 class HotwordClient;
 class Profile;
 
@@ -133,6 +134,8 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
       extension_registry_observer_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
+
+  scoped_ptr<HotwordAudioHistoryHandler> audio_history_handler_;
 
   HotwordClient* client_;
   int error_message_;

@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
@@ -232,6 +233,8 @@ HotwordService::HotwordService(Profile* profile)
           hotword_internal::kHotwordUnusablePrefName)) {
     profile_->GetPrefs()->ClearPref(hotword_internal::kHotwordUnusablePrefName);
   }
+
+  audio_history_handler_.reset(new HotwordAudioHistoryHandler(profile_));
 }
 
 HotwordService::~HotwordService() {
