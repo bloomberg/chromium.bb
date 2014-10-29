@@ -2,15 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_clang) {
-  gcc_version = 0
-} else if (is_android) {
+if (is_android) {
   import("//build/config/android/config.gni")
   if (is_android_webview_build) {
     gcc_version = 48
   } else {
     gcc_version = 49
   }
+} else if (current_toolchain == "//build/toolchain/cros:target") {
+  # TODO(benchan): Generalize the check for platforms other than Chrome OS.
+  gcc_version = exec_script("../../compiler_version.py", [ "target", "compiler" ], "value")
+} else if (current_toolchain == "//build/toolchain/linux:x64" ||
+           current_toolchain == "//build/toolchain/linux:x86") {
+  # These are both the same and just use the default gcc on the system.
+  gcc_version = exec_script("../../compiler_version.py", [ "host", "compiler" ], "value")
 } else {
-  gcc_version = exec_script("../../compiler_version.py", [ "host",  "compiler" ], "value")
+  gcc_version = 0
 }
