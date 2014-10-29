@@ -38,7 +38,6 @@ DEFINES+=" android_webview_build=1"
 android_sdk=$(python -c \
     "import os.path; print os.path.relpath('${ANDROID_SDK_ROOT}', \
     '${ANDROID_BUILD_TOP}')")
-DEFINES+=" android_src=\$(PWD)"
 DEFINES+=" android_ndk_root=ndk_root_unused_in_webview_build"
 DEFINES+=" android_sdk=\$(PWD)/${android_sdk}"
 DEFINES+=" android_sdk_root=\$(PWD)/${android_sdk}"

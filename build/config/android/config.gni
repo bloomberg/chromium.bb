@@ -18,9 +18,6 @@ if (is_android) {
   }
 
   declare_args() {
-    # Absolute directory containing the Android source code.
-    android_src = ""
-
     android_sdk_root = default_android_sdk_root
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
@@ -38,11 +35,6 @@ if (is_android) {
     # identifying various build artifacts corresponding to a particular build of
     # chrome (e.g. where to find archived symbols).
     android_chrome_build_id = "\"\""
-  }
-
-  if (is_android_webview_build) {
-    assert(android_src != "",
-           "You must specify android_src for an Android WebView build.")
   }
 
   # Host stuff -----------------------------------------------------------------
