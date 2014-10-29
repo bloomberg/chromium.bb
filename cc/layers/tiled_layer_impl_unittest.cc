@@ -163,7 +163,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     EXPECT_EQ(0u, data.num_missing_tiles);
 
     for (const auto& quad : render_pass->quad_list)
-      EXPECT_EQ(quad.material, DrawQuad::TILED_CONTENT);
+      EXPECT_EQ(quad->material, DrawQuad::TILED_CONTENT);
   }
 
   for (int i = 0; i < num_tiles_x; ++i)
@@ -179,7 +179,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     EXPECT_LT(0u, data.num_missing_tiles);
     EXPECT_EQ(render_pass->quad_list.size(), 4u);
     for (const auto& quad : render_pass->quad_list)
-      EXPECT_NE(quad.material, DrawQuad::TILED_CONTENT);
+      EXPECT_NE(quad->material, DrawQuad::TILED_CONTENT);
   }
 }
 
@@ -258,7 +258,7 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
   for (auto iter = render_pass->quad_list.cbegin();
        iter != render_pass->quad_list.cend();
        ++iter) {
-    const TileDrawQuad* quad = TileDrawQuad::MaterialCast(&*iter);
+    const TileDrawQuad* quad = TileDrawQuad::MaterialCast(*iter);
 
     EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quad_string
                                      << iter.index();

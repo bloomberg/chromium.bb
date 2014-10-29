@@ -115,29 +115,29 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
     for (const auto& shared_quad_state : source->shared_quad_state_list) {
       SharedQuadState* copy_shared_quad_state =
           copy_pass->CreateAndAppendSharedQuadState();
-      copy_shared_quad_state->CopyFrom(&shared_quad_state);
+      copy_shared_quad_state->CopyFrom(shared_quad_state);
     }
     SharedQuadStateList::Iterator sqs_iter =
         source->shared_quad_state_list.begin();
     SharedQuadStateList::Iterator copy_sqs_iter =
         copy_pass->shared_quad_state_list.begin();
     for (const auto& quad : source->quad_list) {
-      while (quad.shared_quad_state != &*sqs_iter) {
+      while (quad->shared_quad_state != *sqs_iter) {
         ++sqs_iter;
         ++copy_sqs_iter;
         DCHECK(sqs_iter != source->shared_quad_state_list.end());
       }
-      DCHECK(quad.shared_quad_state == &*sqs_iter);
+      DCHECK(quad->shared_quad_state == *sqs_iter);
 
-      SharedQuadState* copy_shared_quad_state = &*copy_sqs_iter;
+      SharedQuadState* copy_shared_quad_state = *copy_sqs_iter;
 
-      if (quad.material == DrawQuad::RENDER_PASS) {
+      if (quad->material == DrawQuad::RENDER_PASS) {
         const RenderPassDrawQuad* pass_quad =
-            RenderPassDrawQuad::MaterialCast(&quad);
+            RenderPassDrawQuad::MaterialCast(quad);
         copy_pass->CopyFromAndAppendRenderPassDrawQuad(
             pass_quad, copy_shared_quad_state, pass_quad->render_pass_id);
       } else {
-        copy_pass->CopyFromAndAppendDrawQuad(&quad, copy_shared_quad_state);
+        copy_pass->CopyFromAndAppendDrawQuad(quad, copy_shared_quad_state);
       }
     }
     out->push_back(copy_pass.Pass());
@@ -196,7 +196,7 @@ void RenderPass::AsValueInto(base::debug::TracedValue* value) const {
   value->BeginArray("shared_quad_state_list");
   for (const auto& shared_quad_state : shared_quad_state_list) {
     value->BeginDictionary();
-    shared_quad_state.AsValueInto(value);
+    shared_quad_state->AsValueInto(value);
     value->EndDictionary();
   }
   value->EndArray();
@@ -204,7 +204,7 @@ void RenderPass::AsValueInto(base::debug::TracedValue* value) const {
   value->BeginArray("quad_list");
   for (const auto& quad : quad_list) {
     value->BeginDictionary();
-    quad.AsValueInto(value);
+    quad->AsValueInto(value);
     value->EndDictionary();
   }
   value->EndArray();

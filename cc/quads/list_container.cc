@@ -272,7 +272,7 @@ ListContainer<BaseElementType>::~ListContainer() {
 template <typename BaseElementType>
 void ListContainer<BaseElementType>::EraseAndInvalidateAllPointers(
     typename ListContainer<BaseElementType>::Iterator position) {
-  BaseElementType* item = &*position;
+  BaseElementType* item = *position;
   item->~BaseElementType();
   data_->Erase(position);
 }
@@ -376,25 +376,25 @@ ListContainer<BaseElementType>::end() {
 template <typename BaseElementType>
 BaseElementType* ListContainer<BaseElementType>::front() {
   Iterator iter = begin();
-  return &*iter;
+  return *iter;
 }
 
 template <typename BaseElementType>
 BaseElementType* ListContainer<BaseElementType>::back() {
   ReverseIterator iter = rbegin();
-  return &*iter;
+  return *iter;
 }
 
 template <typename BaseElementType>
 const BaseElementType* ListContainer<BaseElementType>::front() const {
   ConstIterator iter = begin();
-  return &*iter;
+  return *iter;
 }
 
 template <typename BaseElementType>
 const BaseElementType* ListContainer<BaseElementType>::back() const {
   ConstReverseIterator iter = rbegin();
-  return &*iter;
+  return *iter;
 }
 
 template <typename BaseElementType>
@@ -409,10 +409,10 @@ const BaseElementType* ListContainer<BaseElementType>::ElementAt(
       break;
     index -= current_size;
   }
-  return &*ConstIterator(data_.get(),
-                         list_index,
-                         data_->InnerListById(list_index)->ElementAt(index),
-                         original_index);
+  return *ConstIterator(data_.get(),
+                        list_index,
+                        data_->InnerListById(list_index)->ElementAt(index),
+                        original_index);
 }
 
 template <typename BaseElementType>
@@ -426,10 +426,10 @@ BaseElementType* ListContainer<BaseElementType>::ElementAt(size_t index) {
       break;
     index -= current_size;
   }
-  return &*Iterator(data_.get(),
-                    list_index,
-                    data_->InnerListById(list_index)->ElementAt(index),
-                    original_index);
+  return *Iterator(data_.get(),
+                   list_index,
+                   data_->InnerListById(list_index)->ElementAt(index),
+                   original_index);
 }
 
 template <typename BaseElementType>
@@ -486,8 +486,8 @@ BaseElementType* ListContainer<BaseElementType>::Iterator::operator->() const {
 }
 
 template <typename BaseElementType>
-BaseElementType& ListContainer<BaseElementType>::Iterator::operator*() const {
-  return *(reinterpret_cast<BaseElementType*>(this->item_iterator));
+BaseElementType* ListContainer<BaseElementType>::Iterator::operator*() const {
+  return reinterpret_cast<BaseElementType*>(this->item_iterator);
 }
 
 template <typename BaseElementType>
@@ -500,9 +500,9 @@ operator++(int unused_post_increment) {
 }
 
 template <typename BaseElementType>
-typename ListContainer<BaseElementType>::Iterator
-ListContainer<BaseElementType>::Iterator::
-operator++() {
+typename ListContainer<BaseElementType>::Iterator&
+    ListContainer<BaseElementType>::Iterator::
+    operator++() {
   this->Increment();
   ++index_;
   return *this;
@@ -542,9 +542,9 @@ operator->() const {
 }
 
 template <typename BaseElementType>
-const BaseElementType& ListContainer<BaseElementType>::ConstIterator::
+const BaseElementType* ListContainer<BaseElementType>::ConstIterator::
 operator*() const {
-  return *(reinterpret_cast<const BaseElementType*>(this->item_iterator));
+  return reinterpret_cast<const BaseElementType*>(this->item_iterator);
 }
 
 template <typename BaseElementType>
@@ -557,9 +557,9 @@ operator++(int unused_post_increment) {
 }
 
 template <typename BaseElementType>
-typename ListContainer<BaseElementType>::ConstIterator
-ListContainer<BaseElementType>::ConstIterator::
-operator++() {
+typename ListContainer<BaseElementType>::ConstIterator&
+    ListContainer<BaseElementType>::ConstIterator::
+    operator++() {
   this->Increment();
   ++index_;
   return *this;
@@ -593,9 +593,9 @@ BaseElementType* ListContainer<BaseElementType>::ReverseIterator::operator->()
 }
 
 template <typename BaseElementType>
-BaseElementType& ListContainer<BaseElementType>::ReverseIterator::operator*()
+BaseElementType* ListContainer<BaseElementType>::ReverseIterator::operator*()
     const {
-  return *(reinterpret_cast<BaseElementType*>(this->item_iterator));
+  return reinterpret_cast<BaseElementType*>(this->item_iterator);
 }
 
 template <typename BaseElementType>
@@ -608,9 +608,9 @@ operator++(int unused_post_increment) {
 }
 
 template <typename BaseElementType>
-typename ListContainer<BaseElementType>::ReverseIterator
-ListContainer<BaseElementType>::ReverseIterator::
-operator++() {
+typename ListContainer<BaseElementType>::ReverseIterator&
+    ListContainer<BaseElementType>::ReverseIterator::
+    operator++() {
   this->ReverseIncrement();
   ++index_;
   return *this;
@@ -650,9 +650,9 @@ operator->() const {
 }
 
 template <typename BaseElementType>
-const BaseElementType& ListContainer<BaseElementType>::ConstReverseIterator::
+const BaseElementType* ListContainer<BaseElementType>::ConstReverseIterator::
 operator*() const {
-  return *(reinterpret_cast<const BaseElementType*>(this->item_iterator));
+  return reinterpret_cast<const BaseElementType*>(this->item_iterator);
 }
 
 template <typename BaseElementType>
@@ -665,9 +665,9 @@ operator++(int unused_post_increment) {
 }
 
 template <typename BaseElementType>
-typename ListContainer<BaseElementType>::ConstReverseIterator
-ListContainer<BaseElementType>::ConstReverseIterator::
-operator++() {
+typename ListContainer<BaseElementType>::ConstReverseIterator&
+    ListContainer<BaseElementType>::ConstReverseIterator::
+    operator++() {
   this->ReverseIncrement();
   ++index_;
   return *this;

@@ -480,10 +480,9 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   DrawQuad::ResourceIteratorCallback wait_on_resource_syncpoints_callback =
       base::Bind(&WaitOnResourceSyncPoints, resource_provider_);
 
-  for (size_t i = 0; i < frame->render_passes_in_draw_order->size(); ++i) {
-    RenderPass* pass = frame->render_passes_in_draw_order->at(i);
-    for (auto& quad : pass->quad_list)
-      quad.IterateResources(wait_on_resource_syncpoints_callback);
+  for (const auto& pass : *frame->render_passes_in_draw_order) {
+    for (const auto& quad : pass->quad_list)
+      quad->IterateResources(wait_on_resource_syncpoints_callback);
   }
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?

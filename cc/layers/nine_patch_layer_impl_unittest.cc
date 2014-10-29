@@ -89,7 +89,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   gfx::Rect bitmap_rect(bitmap_size);
   Region tex_remaining(bitmap_rect);
   for (const auto& quad : quads) {
-    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(&quad);
+    const TextureDrawQuad* tex_quad = TextureDrawQuad::MaterialCast(quad);
     gfx::RectF tex_rect =
         gfx::BoundingRect(tex_quad->uv_top_left, tex_quad->uv_bottom_right);
     tex_rect.Scale(bitmap_size.width(), bitmap_size.height());

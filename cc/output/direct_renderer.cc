@@ -369,10 +369,9 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   }
 
   const QuadList& quad_list = render_pass->quad_list;
-  for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
-       it != quad_list.BackToFrontEnd();
+  for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
-    const DrawQuad& quad = *it;
+    const DrawQuad& quad = **it;
     bool should_skip_quad = false;
 
     if (using_scissor_as_optimization) {

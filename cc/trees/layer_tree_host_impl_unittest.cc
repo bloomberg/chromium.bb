@@ -4406,7 +4406,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   size_t CountGutterQuads(const QuadList& quad_list) {
     size_t num_gutter_quads = 0;
     for (const auto& quad : quad_list) {
-      num_gutter_quads += (quad.material == gutter_quad_material_) ? 1 : 0;
+      num_gutter_quads += (quad->material == gutter_quad_material_) ? 1 : 0;
     }
     return num_gutter_quads;
   }
@@ -4419,10 +4419,9 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   // Make sure that the texture coordinates match their expectations.
   void ValidateTextureDrawQuads(const QuadList& quad_list) {
     for (const auto& quad : quad_list) {
-      if (quad.material != DrawQuad::TEXTURE_CONTENT)
+      if (quad->material != DrawQuad::TEXTURE_CONTENT)
         continue;
-      const TextureDrawQuad* texture_quad =
-          TextureDrawQuad::MaterialCast(&quad);
+      const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
       gfx::SizeF gutter_texture_size_pixels = gfx::ScaleSize(
           gutter_texture_size_, host_impl_->device_scale_factor());
       EXPECT_EQ(texture_quad->uv_top_left.x(),

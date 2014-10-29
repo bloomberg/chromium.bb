@@ -90,10 +90,9 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   ResourceProvider::ResourceIdArray resources;
   DrawQuad::ResourceIteratorCallback append_to_array =
       base::Bind(&AppendToArray, &resources);
-  for (size_t i = 0; i < out_data.render_pass_list.size(); ++i) {
-    RenderPass* render_pass = out_data.render_pass_list.at(i);
-    for (auto& quad : render_pass->quad_list)
-      quad.IterateResources(append_to_array);
+  for (const auto& render_pass : out_data.render_pass_list) {
+    for (const auto& quad : render_pass->quad_list)
+      quad->IterateResources(append_to_array);
   }
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }

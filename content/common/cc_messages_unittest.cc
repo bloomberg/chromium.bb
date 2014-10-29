@@ -481,13 +481,13 @@ TEST_F(CCMessagesTest, AllQuads) {
            in_iterator = pass_in->shared_quad_state_list.begin();
        in_iterator != pass_in->shared_quad_state_list.end();
        ++cmp_iterator, ++in_iterator) {
-    Compare(&*cmp_iterator, &*in_iterator);
+    Compare(*cmp_iterator, *in_iterator);
   }
   for (auto in_iter = pass_in->quad_list.cbegin(),
             cmp_iter = pass_cmp->quad_list.cbegin();
        in_iter != pass_in->quad_list.cend();
        ++in_iter, ++cmp_iter)
-    Compare(&*cmp_iter, &*in_iter);
+    Compare(*cmp_iter, *in_iter);
 
   for (size_t i = 1; i < pass_in->quad_list.size(); ++i) {
     bool same_shared_quad_state_cmp =
@@ -520,13 +520,13 @@ TEST_F(CCMessagesTest, AllQuads) {
            out_iterator = pass_out->shared_quad_state_list.begin();
        out_iterator != pass_out->shared_quad_state_list.end();
        ++cmp_iterator, ++out_iterator) {
-    Compare(&*cmp_iterator, &*out_iterator);
+    Compare(*cmp_iterator, *out_iterator);
   }
   for (auto out_iter = pass_out->quad_list.cbegin(),
             cmp_iter = pass_cmp->quad_list.cbegin();
        out_iter != pass_out->quad_list.cend();
        ++out_iter, ++cmp_iter)
-    Compare(&*cmp_iter, &*out_iter);
+    Compare(*cmp_iter, *out_iter);
 
   for (size_t i = 1; i < pass_out->quad_list.size(); ++i) {
     bool same_shared_quad_state_cmp =

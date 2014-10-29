@@ -138,7 +138,7 @@ void TestPassMatchesExpectations(Pass expected_pass, const RenderPass* pass) {
   for (auto iter = pass->quad_list.cbegin(); iter != pass->quad_list.cend();
        ++iter) {
     SCOPED_TRACE(base::StringPrintf("Quad number %" PRIuS, iter.index()));
-    TestQuadMatchesExpectations(expected_pass.quads[iter.index()], &*iter);
+    TestQuadMatchesExpectations(expected_pass.quads[iter.index()], *iter);
   }
 }
 

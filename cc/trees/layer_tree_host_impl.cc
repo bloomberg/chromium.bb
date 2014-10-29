@@ -909,9 +909,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     draw_result = DRAW_SUCCESS;
 
 #if DCHECK_IS_ON
-  for (auto* render_pass : frame->render_passes) {
-    for (auto& quad : render_pass->quad_list)
-      DCHECK(quad.shared_quad_state);
+  for (const auto& render_pass : frame->render_passes) {
+    for (const auto& quad : render_pass->quad_list)
+      DCHECK(quad->shared_quad_state);
     DCHECK(frame->render_passes_by_id.find(render_pass->id) !=
            frame->render_passes_by_id.end());
   }
@@ -1029,11 +1029,10 @@ static void RemoveRenderPassesRecursive(RenderPassId remove_render_pass_id,
   // Now follow up for all RenderPass quads and remove their RenderPasses
   // recursively.
   const QuadList& quad_list = removed_pass->quad_list;
-  QuadList::ConstBackToFrontIterator quad_list_iterator =
-      quad_list.BackToFrontBegin();
-  for (; quad_list_iterator != quad_list.BackToFrontEnd();
+  for (auto quad_list_iterator = quad_list.BackToFrontBegin();
+       quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
-    const DrawQuad* current_quad = &*quad_list_iterator;
+    const DrawQuad* current_quad = *quad_list_iterator;
     if (current_quad->material != DrawQuad::RENDER_PASS)
       continue;
 
@@ -1052,11 +1051,10 @@ bool LayerTreeHostImpl::CullRenderPassesWithNoQuads::ShouldRemoveRenderPass(
 
   // If any quad or RenderPass draws into this RenderPass, then keep it.
   const QuadList& quad_list = render_pass->quad_list;
-  for (QuadList::ConstBackToFrontIterator quad_list_iterator =
-           quad_list.BackToFrontBegin();
+  for (auto quad_list_iterator = quad_list.BackToFrontBegin();
        quad_list_iterator != quad_list.BackToFrontEnd();
        ++quad_list_iterator) {
-    const DrawQuad* current_quad = &*quad_list_iterator;
+    const DrawQuad* current_quad = *quad_list_iterator;
 
     if (current_quad->material != DrawQuad::RENDER_PASS)
       return false;
@@ -1083,12 +1081,11 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
        it = culler.RenderPassListNext(it)) {
     const RenderPass* current_pass = frame->render_passes[it];
     const QuadList& quad_list = current_pass->quad_list;
-    QuadList::ConstBackToFrontIterator quad_list_iterator =
-        quad_list.BackToFrontBegin();
 
-    for (; quad_list_iterator != quad_list.BackToFrontEnd();
+    for (auto quad_list_iterator = quad_list.BackToFrontBegin();
+         quad_list_iterator != quad_list.BackToFrontEnd();
          ++quad_list_iterator) {
-      const DrawQuad* current_quad = &*quad_list_iterator;
+      const DrawQuad* current_quad = *quad_list_iterator;
 
       if (current_quad->material != DrawQuad::RENDER_PASS)
         continue;

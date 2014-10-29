@@ -301,65 +301,66 @@ void ParamTraits<cc::RenderPass>::Write(
   cc::SharedQuadStateList::ConstIterator last_shared_quad_state_iter =
       p.shared_quad_state_list.end();
   for (const auto& quad : p.quad_list) {
-    DCHECK(quad.rect.Contains(quad.visible_rect))
-        << quad.material << " rect: " << quad.rect.ToString()
-        << " visible_rect: " << quad.visible_rect.ToString();
-    DCHECK(quad.opaque_rect.IsEmpty() || quad.rect.Contains(quad.opaque_rect))
-        << quad.material << " rect: " << quad.rect.ToString()
-        << " opaque_rect: " << quad.opaque_rect.ToString();
+    DCHECK(quad->rect.Contains(quad->visible_rect))
+        << quad->material << " rect: " << quad->rect.ToString()
+        << " visible_rect: " << quad->visible_rect.ToString();
+    DCHECK(quad->opaque_rect.IsEmpty() ||
+           quad->rect.Contains(quad->opaque_rect))
+        << quad->material << " rect: " << quad->rect.ToString()
+        << " opaque_rect: " << quad->opaque_rect.ToString();
 
-    switch (quad.material) {
+    switch (quad->material) {
       case cc::DrawQuad::CHECKERBOARD:
-        WriteParam(m, *cc::CheckerboardDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::CheckerboardDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::DEBUG_BORDER:
-        WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::IO_SURFACE_CONTENT:
-        WriteParam(m, *cc::IOSurfaceDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::IOSurfaceDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         break;
       case cc::DrawQuad::TEXTURE_CONTENT:
-        WriteParam(m, *cc::TextureDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::TextureDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::RENDER_PASS:
-        WriteParam(m, *cc::RenderPassDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::RenderPassDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::SOLID_COLOR:
-        WriteParam(m, *cc::SolidColorDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::SolidColorDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::SURFACE_CONTENT:
-        WriteParam(m, *cc::SurfaceDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::SurfaceDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::TILED_CONTENT:
-        WriteParam(m, *cc::TileDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::TileDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-        WriteParam(m, *cc::StreamVideoDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::StreamVideoDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::YUV_VIDEO_CONTENT:
-        WriteParam(m, *cc::YUVVideoDrawQuad::MaterialCast(&quad));
+        WriteParam(m, *cc::YUVVideoDrawQuad::MaterialCast(quad));
         break;
       case cc::DrawQuad::INVALID:
         break;
     }
 
     // Null shared quad states should not occur.
-    DCHECK(quad.shared_quad_state);
+    DCHECK(quad->shared_quad_state);
 
     // SharedQuadStates should appear in the order they are used by DrawQuads.
     // Find the SharedQuadState for this DrawQuad.
     while (shared_quad_state_iter != p.shared_quad_state_list.end() &&
-           quad.shared_quad_state != &*shared_quad_state_iter)
+           quad->shared_quad_state != *shared_quad_state_iter)
       ++shared_quad_state_iter;
 
     DCHECK(shared_quad_state_iter != p.shared_quad_state_list.end());
 
     if (shared_quad_state_iter != last_shared_quad_state_iter) {
       WriteParam(m, true);
-      WriteParam(m, *shared_quad_state_iter);
+      WriteParam(m, **shared_quad_state_iter);
       last_shared_quad_state_iter = shared_quad_state_iter;
     } else {
       WriteParam(m, false);
@@ -508,47 +509,47 @@ void ParamTraits<cc::RenderPass>::Log(
 
   l->append("[");
   for (const auto& shared_quad_state : p.shared_quad_state_list) {
-    if (&shared_quad_state != p.shared_quad_state_list.front())
+    if (shared_quad_state != p.shared_quad_state_list.front())
       l->append(", ");
-    LogParam(shared_quad_state, l);
+    LogParam(*shared_quad_state, l);
   }
   l->append("], [");
   for (const auto& quad : p.quad_list) {
-    if (&quad != p.quad_list.front())
+    if (quad != p.quad_list.front())
       l->append(", ");
-    switch (quad.material) {
+    switch (quad->material) {
       case cc::DrawQuad::CHECKERBOARD:
-        LogParam(*cc::CheckerboardDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::CheckerboardDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::DEBUG_BORDER:
-        LogParam(*cc::DebugBorderDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::DebugBorderDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::IO_SURFACE_CONTENT:
-        LogParam(*cc::IOSurfaceDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::IOSurfaceDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         break;
       case cc::DrawQuad::TEXTURE_CONTENT:
-        LogParam(*cc::TextureDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::TextureDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::RENDER_PASS:
-        LogParam(*cc::RenderPassDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::RenderPassDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::SOLID_COLOR:
-        LogParam(*cc::SolidColorDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::SolidColorDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::SURFACE_CONTENT:
-        LogParam(*cc::SurfaceDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::SurfaceDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::TILED_CONTENT:
-        LogParam(*cc::TileDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::TileDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::STREAM_VIDEO_CONTENT:
-        LogParam(*cc::StreamVideoDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::StreamVideoDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::YUV_VIDEO_CONTENT:
-        LogParam(*cc::YUVVideoDrawQuad::MaterialCast(&quad), l);
+        LogParam(*cc::YUVVideoDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::INVALID:
         break;

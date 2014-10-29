@@ -30,7 +30,7 @@ bool OverlayStrategySingleOnTop::Attempt(
   QuadList& quad_list = root_render_pass->quad_list;
   auto candidate_iterator = quad_list.end();
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    const DrawQuad* draw_quad = &*it;
+    const DrawQuad* draw_quad = *it;
     if (draw_quad->material == DrawQuad::TEXTURE_CONTENT) {
       const TextureDrawQuad& quad = *TextureDrawQuad::MaterialCast(draw_quad);
       if (!resource_provider_->AllowOverlay(quad.resource_id)) {
@@ -58,7 +58,7 @@ bool OverlayStrategySingleOnTop::Attempt(
   if (candidate_iterator == quad_list.end())
     return false;
   const TextureDrawQuad& quad =
-      *TextureDrawQuad::MaterialCast(&*candidate_iterator);
+      *TextureDrawQuad::MaterialCast(*candidate_iterator);
 
   // Simple quads only.
   gfx::OverlayTransform overlay_transform =

@@ -78,9 +78,9 @@ class CC_EXPORT ListContainer {
              size_t index);
     ~Iterator();
     BaseElementType* operator->() const;
-    BaseElementType& operator*() const;
+    BaseElementType* operator*() const;
     Iterator operator++(int unused_post_increment);
-    Iterator operator++();
+    Iterator& operator++();
 
     size_t index() const;
 
@@ -103,9 +103,9 @@ class CC_EXPORT ListContainer {
     ConstIterator(const Iterator& other);  // NOLINT
     ~ConstIterator();
     const BaseElementType* operator->() const;
-    const BaseElementType& operator*() const;
+    const BaseElementType* operator*() const;
     ConstIterator operator++(int unused_post_increment);
-    ConstIterator operator++();
+    ConstIterator& operator++();
 
     size_t index() const;
 
@@ -128,9 +128,9 @@ class CC_EXPORT ListContainer {
                     size_t index);
     ~ReverseIterator();
     BaseElementType* operator->() const;
-    BaseElementType& operator*() const;
+    BaseElementType* operator*() const;
     ReverseIterator operator++(int unused_post_increment);
-    ReverseIterator operator++();
+    ReverseIterator& operator++();
 
     size_t index() const;
 
@@ -154,9 +154,9 @@ class CC_EXPORT ListContainer {
     ConstReverseIterator(const ReverseIterator& other);  // NOLINT
     ~ConstReverseIterator();
     const BaseElementType* operator->() const;
-    const BaseElementType& operator*() const;
+    const BaseElementType* operator*() const;
     ConstReverseIterator operator++(int unused_post_increment);
-    ConstReverseIterator operator++();
+    ConstReverseIterator& operator++();
 
     size_t index() const;
 

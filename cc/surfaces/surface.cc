@@ -4,6 +4,8 @@
 
 #include "cc/surfaces/surface.h"
 
+#include <algorithm>
+
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_factory.h"
@@ -71,7 +73,7 @@ void Surface::TakeCopyOutputRequests(
     std::multimap<RenderPassId, CopyOutputRequest*>* copy_requests) {
   DCHECK(copy_requests->empty());
   if (current_frame_) {
-    for (auto* render_pass :
+    for (const auto& render_pass :
          current_frame_->delegated_frame_data->render_pass_list) {
       while (!render_pass->copy_requests.empty()) {
         scoped_ptr<CopyOutputRequest> request =
@@ -111,9 +113,9 @@ void Surface::RunDrawCallbacks() {
 
 void Surface::ClearCopyRequests() {
   if (current_frame_) {
-    for (auto* render_pass :
+    for (const auto& render_pass :
          current_frame_->delegated_frame_data->render_pass_list) {
-      for (auto* copy_request : render_pass->copy_requests)
+      for (const auto& copy_request : render_pass->copy_requests)
         copy_request->SendEmptyResult();
     }
   }

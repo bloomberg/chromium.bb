@@ -368,12 +368,12 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
       input.shared_quad_state_list.begin();
   for (auto iter = input.quad_list.cbegin(); iter != input.quad_list.cend();
        ++iter) {
-    const cc::DrawQuad& quad = *iter;
+    const cc::DrawQuad& quad = **iter;
     quads[iter.index()] = Quad::From(quad);
     if (quad.shared_quad_state != last_sqs) {
       shared_quad_state[next_sqs_iter.index()] =
-          SharedQuadState::From(*next_sqs_iter);
-      last_sqs = &*next_sqs_iter;
+          SharedQuadState::From(**next_sqs_iter);
+      last_sqs = *next_sqs_iter;
       ++next_sqs_iter;
     }
     DCHECK_LE(next_sqs_iter.index() - 1, UINT32_MAX);
@@ -408,7 +408,7 @@ TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
     while (quad->shared_quad_state_index > sqs_iter.index()) {
       ++sqs_iter;
     }
-    if (!ConvertDrawQuad(quad, &*sqs_iter, pass.get()))
+    if (!ConvertDrawQuad(quad, *sqs_iter, pass.get()))
       return scoped_ptr<cc::RenderPass>();
   }
   return pass.Pass();
