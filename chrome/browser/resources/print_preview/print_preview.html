@@ -68,11 +68,13 @@
         <include src="settings/more_settings.html">
       </div>
       <div id="link-container">
+<if expr="not chromeos">
         <div>
           <a is="action-link" id="system-dialog-link" class="navbar-link"
               i18n-content="systemDialogOption"></a>
           <div id="system-dialog-throbber" hidden class="throbber"></div>
         </div>
+</if>
 <if expr="is_macosx">
         <div>
           <a is="action-link" id="open-pdf-in-preview-link" class="navbar-link"
@@ -80,11 +82,6 @@
           <div id="open-preview-app-throbber" hidden class="throbber"></div>
         </div>
 </if>
-        <div>
-          <a is="action-link" id="cloud-print-dialog-link" class="navbar-link"
-              hidden i18n-content="cloudPrintDialogOption"></a>
-          <div id="cloud-print-dialog-throbber" hidden class="throbber"></div>
-        </div>
       </div>
     </div>
   </div>

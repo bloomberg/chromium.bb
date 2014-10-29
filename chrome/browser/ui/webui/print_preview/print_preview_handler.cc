@@ -634,9 +634,6 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("printWithCloudPrintDialog",
-      base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrintDialog,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
       base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
                  base::Unretained(this)));
@@ -1021,35 +1018,6 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type);
 }
 
-void PrintPreviewHandler::PrintWithCloudPrintDialog() {
-  // Record the number of times the user asks to print via cloud print
-  // instead of the print preview dialog.
-  ReportStats();
-
-  scoped_refptr<base::RefCountedBytes> data;
-  base::string16 title;
-  if (!GetPreviewDataAndTitle(&data, &title)) {
-    // Nothing to print, no preview available.
-    return;
-  }
-
-  gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
-      preview_web_contents()->GetNativeView());
-  print_dialog_cloud::CreatePrintDialogForBytes(
-      preview_web_contents()->GetBrowserContext(),
-      modal_parent,
-      data.get(),
-      title,
-      base::string16(),
-      std::string("application/pdf"));
-
-  // Once the cloud print dialog comes up we're no longer in a background
-  // printing situation.  Close the print preview.
-  // TODO(abodenha@chromium.org) The flow should be changed as described in
-  // http://code.google.com/p/chromium/issues/detail?id=44093
-  ClosePreviewDialog();
-}
-
 void PrintPreviewHandler::HandleManageCloudPrint(
     const base::ListValue* /*args*/) {
   ++manage_cloud_printers_dialog_request_count_;
@@ -1087,17 +1055,6 @@ void PrintPreviewHandler::HandleManagePrinters(
     const base::ListValue* /*args*/) {
   ++manage_printers_dialog_request_count_;
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
-}
-
-void PrintPreviewHandler::HandlePrintWithCloudPrintDialog(
-    const base::ListValue* args) {
-  int page_count = 0;
-  if (!args || !args->GetInteger(0, &page_count))
-    return;
-  UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
-                       page_count);
-
-  PrintWithCloudPrintDialog();
 }
 
 void PrintPreviewHandler::HandleClosePreviewDialog(

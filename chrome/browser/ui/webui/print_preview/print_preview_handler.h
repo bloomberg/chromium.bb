@@ -177,10 +177,6 @@ class PrintPreviewHandler
   // |args| is unused.
   void HandleManagePrinters(const base::ListValue* args);
 
-  // Asks the browser to show the cloud print dialog. |args| is signle int with
-  // page count.
-  void HandlePrintWithCloudPrintDialog(const base::ListValue* args);
-
   // Asks the browser for several settings that are needed before the first
   // preview is displayed.
   void HandleGetInitialSettings(const base::ListValue* args);
@@ -225,9 +221,6 @@ class PrintPreviewHandler
 
   // Handles printing to PDF.
   void PrintToPdf();
-
-  // Asks the browser to show the cloud print dialog.
-  void PrintWithCloudPrintDialog();
 
   // Gets the initiator for the print preview dialog.
   content::WebContents* GetInitiator() const;

@@ -238,11 +238,12 @@ cr.define('print_preview', function() {
     this.isInAppKioskMode_ = false;
 
     /**
-     * Whether Print with System Dialog option is available.
+     * Whether Print with System Dialog link should be hidden. Overrides the
+     * default rules for System dialog link visibility.
      * @type {boolean}
      * @private
      */
-    this.isSystemDialogAvailable_ = false;
+    this.hideSystemDialogLink_ = true;
 
     /**
      * State of the print preview UI.
@@ -275,7 +276,6 @@ cr.define('print_preview', function() {
     INITIALIZING: 'initializing',
     READY: 'ready',
     OPENING_PDF_PREVIEW: 'opening-pdf-preview',
-    OPENING_CLOUD_PRINT_DIALOG: 'opening-cloud-print-dialog',
     OPENING_NATIVE_PRINT_DIALOG: 'opening-native-print-dialog',
     PRINTING: 'printing',
     FILE_SELECTION: 'file-selection',
@@ -348,14 +348,12 @@ cr.define('print_preview', function() {
           print_preview.NativeLayer.EventType.MANIPULATE_SETTINGS_FOR_TEST,
           this.onManipulateSettingsForTest_.bind(this));
 
-      this.tracker.add(
-          getRequiredElement('system-dialog-link'),
-          'click',
-          this.openSystemPrintDialog_.bind(this));
-      this.tracker.add(
-          getRequiredElement('cloud-print-dialog-link'),
-          'click',
-          this.onCloudPrintDialogLinkClick_.bind(this));
+      if ($('system-dialog-link')) {
+        this.tracker.add(
+            $('system-dialog-link'),
+            'click',
+            this.openSystemPrintDialog_.bind(this));
+      }
       if ($('open-pdf-in-preview-link')) {
         this.tracker.add(
             $('open-pdf-in-preview-link'),
@@ -477,11 +475,10 @@ cr.define('print_preview', function() {
      * @private
      */
     setIsEnabled_: function(isEnabled) {
-      $('system-dialog-link').disabled = !isEnabled;
-      $('cloud-print-dialog-link').disabled = !isEnabled;
-      if ($('open-pdf-in-preview-link')) {
+      if ($('system-dialog-link'))
+        $('system-dialog-link').disabled = !isEnabled;
+      if ($('open-pdf-in-preview-link'))
         $('open-pdf-in-preview-link').disabled = !isEnabled;
-      }
       this.printHeader_.isEnabled = isEnabled;
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
@@ -539,7 +536,6 @@ cr.define('print_preview', function() {
           (this.uiState_ == PrintPreview.UiState_.PRINTING ||
            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW ||
            this.uiState_ == PrintPreview.UiState_.FILE_SELECTION ||
-           this.uiState_ == PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG ||
            this.isInKioskAutoPrintMode_) &&
           this.destinationStore_.selectedDestination &&
           this.destinationStore_.selectedDestination.capabilities;
@@ -551,27 +547,22 @@ cr.define('print_preview', function() {
       }
       assert(this.printTicketStore_.isTicketValid(),
           'Trying to print with invalid ticket');
-      if (this.uiState_ == PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG) {
-        this.nativeLayer_.startShowCloudPrintDialog(
-            this.printTicketStore_.pageRange.getPageNumberSet().size);
-      } else {
-        if (getIsVisible(this.moreSettings_.getElement())) {
-          new print_preview.PrintSettingsUiMetricsContext().record(
-              this.moreSettings_.isExpanded ?
-                  print_preview.Metrics.PrintSettingsUiBucket.
-                      PRINT_WITH_SETTINGS_EXPANDED :
-                  print_preview.Metrics.PrintSettingsUiBucket.
-                      PRINT_WITH_SETTINGS_COLLAPSED);
-        }
-        this.nativeLayer_.startPrint(
-            this.destinationStore_.selectedDestination,
-            this.printTicketStore_,
-            this.cloudPrintInterface_,
-            this.documentInfo_,
-            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW,
-            this.showSystemDialogBeforeNextPrint_);
-        this.showSystemDialogBeforeNextPrint_ = false;
+      if (getIsVisible(this.moreSettings_.getElement())) {
+        new print_preview.PrintSettingsUiMetricsContext().record(
+            this.moreSettings_.isExpanded ?
+                print_preview.Metrics.PrintSettingsUiBucket.
+                    PRINT_WITH_SETTINGS_EXPANDED :
+                print_preview.Metrics.PrintSettingsUiBucket.
+                    PRINT_WITH_SETTINGS_COLLAPSED);
       }
+      this.nativeLayer_.startPrint(
+          this.destinationStore_.selectedDestination,
+          this.printTicketStore_,
+          this.cloudPrintInterface_,
+          this.documentInfo_,
+          this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW,
+          this.showSystemDialogBeforeNextPrint_);
+      this.showSystemDialogBeforeNextPrint_ = false;
       return PrintPreview.PrintAttemptResult_.PRINTED;
     },
 
@@ -638,10 +629,12 @@ cr.define('print_preview', function() {
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
-      this.isSystemDialogAvailable_ = !settings.hidePrintWithSystemDialogLink &&
-                                      !settings.isInAppKioskMode;
-      setIsVisible(getRequiredElement('system-dialog-link'),
-                   this.shouldShowSystemDialogLink_());
+      this.hideSystemDialogLink_ = settings.hidePrintWithSystemDialogLink ||
+                                   settings.isInAppKioskMode;
+      if ($('system-dialog-link')) {
+        setIsVisible($('system-dialog-link'),
+                     this.shouldShowSystemDialogLink_());
+      }
     },
 
     /**
@@ -799,12 +792,8 @@ cr.define('print_preview', function() {
     onPreviewGenerationFail_: function() {
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
-      if (this.uiState_ == PrintPreview.UiState_.PRINTING) {
+      if (this.uiState_ == PrintPreview.UiState_.PRINTING)
         this.nativeLayer_.startCancelPendingPrint();
-      } else if (this.uiState_ ==
-            PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG) {
-        this.uiState_ = PrintPreview.UiState_.READY;
-      }
     },
 
     /**
@@ -1137,7 +1126,7 @@ cr.define('print_preview', function() {
      * @return {boolean} Returns true if link should be shown.
      */
     shouldShowSystemDialogLink_: function() {
-      if (!this.isSystemDialogAvailable_)
+      if (cr.isChromeOS || this.hideSystemDialogLink_)
         return false;
       if (!cr.isWindows)
         return true;
@@ -1149,34 +1138,17 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the open-cloud-print-dialog link is clicked. Opens the Google
-     * Cloud Print web dialog.
-     * @private
-     */
-    onCloudPrintDialogLinkClick_: function() {
-      assert(this.uiState_ == PrintPreview.UiState_.READY,
-             'Opening Google Cloud Print dialog when not in ready state: ' +
-                 this.uiState_);
-      setIsVisible(getRequiredElement('cloud-print-dialog-throbber'), true);
-      this.setIsEnabled_(false);
-      this.uiState_ = PrintPreview.UiState_.OPENING_CLOUD_PRINT_DIALOG;
-      this.printIfReady_();
-    },
-
-    /**
      * Called when a print destination is selected. Shows/hides the "Print with
      * Cloud Print" link in the navbar.
      * @private
      */
     onDestinationSelect_: function() {
-      var selectedDest = this.destinationStore_.selectedDestination;
-      setIsVisible(
-          getRequiredElement('cloud-print-dialog-link'),
-          !!selectedDest && !cr.isChromeOS && !selectedDest.isLocal);
-      setIsVisible(
-          getRequiredElement('system-dialog-link'),
-          this.shouldShowSystemDialogLink_());
-      if (selectedDest && this.isInKioskAutoPrintMode_) {
+      if ($('system-dialog-link')) {
+        setIsVisible($('system-dialog-link'),
+                     this.shouldShowSystemDialogLink_());
+      }
+      if (this.destinationStore_.selectedDestination &&
+          this.isInKioskAutoPrintMode_) {
         this.onPrintButtonClick_();
       }
     },

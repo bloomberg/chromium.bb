@@ -212,25 +212,13 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("printPreviewPageLabelPlural",
                              IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
-#if defined(OS_CHROMEOS)
-  source->AddString(
-      "systemDialogOption",
-      l10n_util::GetStringFUTF16(
-          IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
-          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
-          shortcut_text));
-#else
+#if !defined(OS_CHROMEOS)
   source->AddString(
       "systemDialogOption",
       l10n_util::GetStringFUTF16(
           IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
           shortcut_text));
 #endif
-  source->AddString(
-      "cloudPrintDialogOption",
-      l10n_util::GetStringFUTF16(
-          IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION_NO_SHORTCUT,
-          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #if defined(OS_MACOSX)
   source->AddLocalizedString("openPdfInPreviewOption",
                              IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP);

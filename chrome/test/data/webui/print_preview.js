@@ -282,16 +282,19 @@ function getCddTemplate(printerId) {
   };
 }
 
-// Test that disabled settings hide the disabled sections.
-TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKiosMode',
+TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKioskMode',
     function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  initialSettingsSetEvent.initialSettings.isInAppKioskMode_ = true;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  if (cr.isChromeOS) {
+    assertEquals(null, $('system-dialog-link'));
+  } else {
+    var initialSettingsSetEvent =
+        new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+    initialSettingsSetEvent.initialSettings = this.initialSettings_;
+    initialSettingsSetEvent.initialSettings.isInAppKioskMode_ = true;
+    this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  checkElementDisplayed($('system-dialog-link'), false);
+    checkElementDisplayed($('system-dialog-link'), false);
+  }
 });
 
 // Test that disabled settings hide the disabled sections.
