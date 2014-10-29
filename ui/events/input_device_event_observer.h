@@ -5,10 +5,12 @@
 #ifndef UI_EVENTS_INPUT_DEVICE_EVENT_OBSERVER_H_
 #define UI_EVENTS_INPUT_DEVICE_EVENT_OBSERVER_H_
 
+#include "ui/events/events_base_export.h"
+
 namespace ui {
 
 // DeviceDataManager observer used to announce input hotplug events.
-class InputDeviceEventObserver {
+class EVENTS_BASE_EXPORT InputDeviceEventObserver {
  public:
   virtual ~InputDeviceEventObserver() {}
 

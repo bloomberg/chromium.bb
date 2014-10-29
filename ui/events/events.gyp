@@ -56,6 +56,7 @@
         'gestures/fling_curve.h',
         'input_device.cc',
         'input_device.h',
+        'input_device_event_observer.h',
         'keyboard_device.cc',
         'keyboard_device.h',
         'keycodes/keyboard_code_conversion.cc',

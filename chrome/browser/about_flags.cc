@@ -1347,6 +1347,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
   },
+  {
+    "auto-virtual-keyboard",
+    IDS_FLAGS_AUTO_VIRTUAL_KEYBOARD_NAME,
+    IDS_FLAGS_AUTO_VIRTUAL_KEYBOARD_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(keyboard::switches::kAutoVirtualKeyboard)
+  },
 #endif
   {
     "enable-simple-cache-backend",

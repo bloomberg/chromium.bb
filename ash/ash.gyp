@@ -939,6 +939,8 @@
             # Note: sources list duplicated in GN build.
             "sticky_keys/sticky_keys_controller.cc",
             "sticky_keys/sticky_keys_controller.h",
+            'virtual_keyboard_controller.cc',
+            'virtual_keyboard_controller.h'
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
@@ -1126,6 +1128,7 @@
             'sticky_keys/sticky_keys_unittest.cc',
             'system/tray/media_security/multi_profile_media_tray_item_unittest.cc',
             'autoclick/autoclick_unittest.cc',
+            "virtual_keyboard_controller_unittest.cc"
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',

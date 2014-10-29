@@ -15,6 +15,7 @@ const char kEnableExperimentalInputViewFeatures[] =
     "enable-experimental-input-view-features";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
+const char kAutoVirtualKeyboard[] = "auto-virtual-keyboard";
 
 const char kDisableVirtualKeyboardOverscroll[] =
     "disable-virtual-keyboard-overscroll";

@@ -53,7 +53,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
@@ -136,6 +135,7 @@
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/virtual_keyboard_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -794,7 +794,9 @@ Shell::~Shell() {
   display_manager_->CreateScreenForShutdown();
   display_controller_->Shutdown();
   display_controller_.reset();
+#if defined(OS_CHROMEOS)
   virtual_keyboard_controller_.reset();
+#endif
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
@@ -886,7 +888,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_controller_->Start();
   display_controller_->CreatePrimaryHost(
       ShellInitParamsToAshWindowTreeHostInitParams(init_params));
-  virtual_keyboard_controller_.reset(new VirtualKeyboardController);
   aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 
@@ -1030,6 +1031,12 @@ void Shell::Init(const ShellInitParams& init_params) {
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
 
   display_controller_->InitDisplays();
+
+#if defined(OS_CHROMEOS)
+  // Needs to be created after InitDisplays() since it may cause the virtual
+  // keyboard to be deployed.
+  virtual_keyboard_controller_.reset(new VirtualKeyboardController);
+#endif  // defined(OS_CHROMEOS)
 
   // It needs to be created after RootWindowController has been created
   // (which calls OnWindowResized has been called, otherwise the
