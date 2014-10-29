@@ -86,7 +86,7 @@ class FlipHttpSMTest : public ::testing::Test {
                                 acceptor_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (acceptor_->listen_fd_ >= 0) {
       epoll_server_->UnregisterFD(acceptor_->listen_fd_);
       close(acceptor_->listen_fd_);
@@ -111,19 +111,19 @@ class FlipHttpSMTest : public ::testing::Test {
 class FlipHttpSMProxyTest : public FlipHttpSMTest {
  public:
   FlipHttpSMProxyTest() : FlipHttpSMTest(FLIP_HANDLER_PROXY) {}
-  virtual ~FlipHttpSMProxyTest() {}
+  ~FlipHttpSMProxyTest() override {}
 };
 
 class FlipHttpSMHttpTest : public FlipHttpSMTest {
  public:
   FlipHttpSMHttpTest() : FlipHttpSMTest(FLIP_HANDLER_HTTP_SERVER) {}
-  virtual ~FlipHttpSMHttpTest() {}
+  ~FlipHttpSMHttpTest() override {}
 };
 
 class FlipHttpSMSpdyTest : public FlipHttpSMTest {
  public:
   FlipHttpSMSpdyTest() : FlipHttpSMTest(FLIP_HANDLER_SPDY_SERVER) {}
-  virtual ~FlipHttpSMSpdyTest() {}
+  ~FlipHttpSMSpdyTest() override {}
 };
 
 TEST_F(FlipHttpSMTest, Construct) {

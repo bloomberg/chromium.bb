@@ -26,7 +26,7 @@ namespace net {
 class RingBuffer : public BufferInterface {
  public:
   explicit RingBuffer(int buffer_size);
-  virtual ~RingBuffer();
+  ~RingBuffer() override;
 
   // Resize the buffer to the size specified here.  If the buffer_size passed
   // in here is smaller than the amount of data in the buffer, then the oldest
@@ -38,32 +38,32 @@ class RingBuffer : public BufferInterface {
   // The following functions all override pure virtual functions
   // in BufferInterface. See buffer_interface.h for a description
   // of what they do if the function isn't documented here.
-  virtual int ReadableBytes() const override;
-  virtual int BufferSize() const override;
-  virtual int BytesFree() const override;
+  int ReadableBytes() const override;
+  int BufferSize() const override;
+  int BytesFree() const override;
 
-  virtual bool Empty() const override;
-  virtual bool Full() const override;
+  bool Empty() const override;
+  bool Full() const override;
 
   // returns the number of characters written.
   // appends up-to-'size' bytes to the ringbuffer.
-  virtual int Write(const char* bytes, int size) override;
+  int Write(const char* bytes, int size) override;
 
   // Stores a pointer into the ring buffer in *ptr,  and stores the number of
   // characters which are allowed to be written in *size.
   // If there are no writable bytes available, then *size will contain 0.
-  virtual void GetWritablePtr(char** ptr, int* size) const override;
+  void GetWritablePtr(char** ptr, int* size) const override;
 
   // Stores a pointer into the ring buffer in *ptr,  and stores the number of
   // characters which are allowed to be read in *size.
   // If there are no readable bytes available, then *size will contain 0.
-  virtual void GetReadablePtr(char** ptr, int* size) const override;
+  void GetReadablePtr(char** ptr, int* size) const override;
 
   // Returns the number of bytes read into 'bytes'.
-  virtual int Read(char* bytes, int size) override;
+  int Read(char* bytes, int size) override;
 
   // Removes all data from the ring buffer.
-  virtual void Clear() override;
+  void Clear() override;
 
   // Reserves contiguous writable empty space in the buffer of size bytes.
   // Since the point of this class is to have a fixed size buffer, be careful
@@ -76,15 +76,15 @@ class RingBuffer : public BufferInterface {
   // to consolidate fragmented free space. If the size requested is less than
   // or equal to BytesFree(), it is guaranteed that the buffer size will not
   // change.
-  virtual bool Reserve(int size) override;
+  bool Reserve(int size) override;
 
   // Removes the oldest 'amount_to_advance' characters.
   // If amount_to_consume > ReadableBytes(), this performs a Clear() instead.
-  virtual void AdvanceReadablePtr(int amount_to_advance) override;
+  void AdvanceReadablePtr(int amount_to_advance) override;
 
   // Moves the internal pointers around such that the  amount of data specified
   // here is expected to already be resident (as if it was Written).
-  virtual void AdvanceWritablePtr(int amount_to_advance) override;
+  void AdvanceWritablePtr(int amount_to_advance) override;
 
  protected:
   int read_idx() const { return read_idx_; }

@@ -44,7 +44,7 @@ class SMConnection : public SMConnectionInterface,
                      public EpollCallbackInterface,
                      public NotifierInterface {
  public:
-  virtual ~SMConnection();
+  ~SMConnection() override;
 
   static SMConnection* NewSMConnection(EpollServer* epoll_server,
                                        SSLState* ssl_state,
@@ -57,10 +57,10 @@ class SMConnection : public SMConnectionInterface,
   std::string server_ip_;
   std::string server_port_;
 
-  virtual EpollServer* epoll_server() override;
+  EpollServer* epoll_server() override;
   OutputList* output_list() { return &output_list_; }
   MemoryCache* memory_cache() { return memory_cache_; }
-  virtual void ReadyToSend() override;
+  void ReadyToSend() override;
   void EnqueueDataFrame(DataFrame* df);
 
   int fd() const { return fd_; }
@@ -82,16 +82,14 @@ class SMConnection : public SMConnectionInterface,
   int Send(const char* data, int len, int flags);
 
   // EpollCallbackInterface interface.
-  virtual void OnRegistration(EpollServer* eps,
-                              int fd,
-                              int event_mask) override;
-  virtual void OnModification(int fd, int event_mask) override {}
-  virtual void OnEvent(int fd, EpollEvent* event) override;
-  virtual void OnUnregistration(int fd, bool replaced) override;
-  virtual void OnShutdown(EpollServer* eps, int fd) override;
+  void OnRegistration(EpollServer* eps, int fd, int event_mask) override;
+  void OnModification(int fd, int event_mask) override {}
+  void OnEvent(int fd, EpollEvent* event) override;
+  void OnUnregistration(int fd, bool replaced) override;
+  void OnShutdown(EpollServer* eps, int fd) override;
 
   // NotifierInterface interface.
-  virtual void Notify() override {}
+  void Notify() override {}
 
   void Cleanup(const char* cleanup);
 

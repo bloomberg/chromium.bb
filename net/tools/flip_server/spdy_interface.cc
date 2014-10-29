@@ -27,7 +27,7 @@ class SpdyFrameDataFrame : public DataFrame {
     size = spdy_frame->size();
   }
 
-  virtual ~SpdyFrameDataFrame() { delete frame; }
+  ~SpdyFrameDataFrame() override { delete frame; }
 
   const SpdyFrame* frame;
 };

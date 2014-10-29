@@ -13,10 +13,9 @@ namespace {
 
 class MemoryCacheWithFakeReadToString : public MemoryCache {
  public:
-  virtual ~MemoryCacheWithFakeReadToString() {}
+  ~MemoryCacheWithFakeReadToString() override {}
 
-  virtual void ReadToString(const char* filename,
-                            std::string* output) override {
+  void ReadToString(const char* filename, std::string* output) override {
     *output = data_map_[filename];
   }
 
