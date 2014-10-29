@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -57,6 +58,12 @@ class EventRouter : public KeyedService,
                     public VolumeManagerObserver,
                     public content::NotificationObserver {
  public:
+  typedef base::Callback<void(const base::FilePath& virtual_path,
+                              const drive::FileChange* list,
+                              bool got_error,
+                              const std::vector<std::string>& extension_ids)>
+      DispatchDirectoryChangeEventImplCallback;
+
   explicit EventRouter(Profile* profile);
   virtual ~EventRouter();
 
@@ -132,6 +139,10 @@ class EventRouter : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
 
+  // Set custom dispatch directory change event implementation for testing.
+  void SetDispatchDirectoryChangeEventImplForTesting(
+      const DispatchDirectoryChangeEventImplCallback& callback);
+
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
 
@@ -148,6 +159,13 @@ class EventRouter : public KeyedService,
 
   // Sends directory change event.
   void DispatchDirectoryChangeEvent(
+      const base::FilePath& path,
+      const drive::FileChange* list,
+      bool got_error,
+      const std::vector<std::string>& extension_ids);
+
+  // Default implementation of DispatchDirectoryChangeEvent.
+  void DispatchDirectoryChangeEventImpl(
       const base::FilePath& path,
       const drive::FileChange* list,
       bool got_error,
@@ -210,9 +228,13 @@ class EventRouter : public KeyedService,
 
   scoped_ptr<DeviceEventRouter> device_event_router_;
 
+  DispatchDirectoryChangeEventImplCallback
+      dispatch_directory_change_event_impl_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<EventRouter> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
 
