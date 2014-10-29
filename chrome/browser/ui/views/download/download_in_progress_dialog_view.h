@@ -27,22 +27,21 @@ class DownloadInProgressDialogView : public views::DialogDelegate {
                                Browser::DownloadClosePreventionType dialog_type,
                                bool app_modal,
                                const base::Callback<void(bool)>& callback);
-  virtual ~DownloadInProgressDialogView();
+  ~DownloadInProgressDialogView() override;
 
   // views::DialogDelegate:
-  virtual int GetDefaultDialogButton() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
+  int GetDefaultDialogButton() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
+  bool Accept() override;
 
   // views::WidgetDelegate:
-  virtual ui::ModalType GetModalType() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
-  virtual views::View* GetContentsView() override;
+  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
+  views::View* GetContentsView() override;
 
   const bool app_modal_;
   const base::Callback<void(bool)> callback_;

@@ -41,24 +41,23 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
                             const OnDone& done);
 
   // DownloadDangerPrompt methods:
-  virtual void InvokeActionForTesting(Action action) override;
+  void InvokeActionForTesting(Action action) override;
 
   // views::DialogDelegate methods:
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void DeleteDelegate() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual bool Cancel() override;
-  virtual bool Accept() override;
-  virtual bool Close() override;
-  virtual views::View* GetInitiallyFocusedView() override;
-  virtual views::View* GetContentsView() override;
-  virtual views::Widget* GetWidget() override;
-  virtual const views::Widget* GetWidget() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  base::string16 GetWindowTitle() const override;
+  void DeleteDelegate() override;
+  ui::ModalType GetModalType() const override;
+  bool Cancel() override;
+  bool Accept() override;
+  bool Close() override;
+  views::View* GetInitiallyFocusedView() override;
+  views::View* GetContentsView() override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
   // content::DownloadItem::Observer:
-  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
+  void OnDownloadUpdated(content::DownloadItem* download) override;
 
  private:
   base::string16 GetAcceptButtonTitle() const;

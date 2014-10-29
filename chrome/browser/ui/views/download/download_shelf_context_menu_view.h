@@ -30,7 +30,7 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
  public:
   DownloadShelfContextMenuView(content::DownloadItem* download_item,
                                content::PageNavigator* navigator);
-  virtual ~DownloadShelfContextMenuView();
+  ~DownloadShelfContextMenuView() override;
 
   base::TimeTicks close_time() const { return close_time_; }
 

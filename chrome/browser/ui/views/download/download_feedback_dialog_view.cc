@@ -28,7 +28,7 @@ const void* kDialogStatusKey = &kDialogStatusKey;
 class DialogStatusData : public base::SupportsUserData::Data {
  public:
   DialogStatusData() : currently_shown_(false) {}
-  virtual ~DialogStatusData() {}
+  ~DialogStatusData() override {}
   bool currently_shown() const { return currently_shown_; }
   void set_currently_shown(bool shown) { currently_shown_ = shown; }
  private:

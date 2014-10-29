@@ -38,7 +38,7 @@ class DownloadStartedAnimationViews : public gfx::LinearAnimation,
   void Close();
 
   // Animation
-  virtual void AnimateToState(double state) override;
+  void AnimateToState(double state) override;
 
   // We use a TYPE_POPUP for the popup so that it may float above any windows in
   // our UI.

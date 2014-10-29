@@ -60,7 +60,7 @@ class DownloadItemView : public views::ButtonListener,
                          public gfx::AnimationDelegate {
  public:
   DownloadItemView(content::DownloadItem* download, DownloadShelfView* parent);
-  virtual ~DownloadItemView();
+  ~DownloadItemView() override;
 
   // Timer callback for handling animations
   void UpdateDownloadProgress();
@@ -74,46 +74,45 @@ class DownloadItemView : public views::ButtonListener,
   content::DownloadItem* download() { return model_.download(); }
 
   // DownloadItem::Observer methods
-  virtual void OnDownloadUpdated(content::DownloadItem* download) override;
-  virtual void OnDownloadOpened(content::DownloadItem* download) override;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadUpdated(content::DownloadItem* download) override;
+  void OnDownloadOpened(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(content::DownloadItem* download) override;
 
   // Overridden from views::View:
-  virtual void Layout() override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnThemeChanged() override;
+  void Layout() override;
+  gfx::Size GetPreferredSize() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnThemeChanged() override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from views::ContextMenuController.
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // gfx::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
  private:
   enum State {
