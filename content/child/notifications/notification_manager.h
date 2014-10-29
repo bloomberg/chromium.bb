@@ -50,6 +50,12 @@ class NotificationManager : public blink::WebNotificationManager,
       ThreadSafeSender* thread_safe_sender,
       NotificationDispatcher* notification_dispatcher);
 
+  // IPC message handlers.
+  void OnShow(int id);
+  void OnError(int id);
+  void OnClose(int id);
+  void OnClick(int id);
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 

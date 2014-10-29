@@ -23,6 +23,22 @@ IPC_MESSAGE_ROUTED2(PlatformNotificationMsg_PermissionRequestComplete,
                     int /* request_id */,
                     blink::WebNotificationPermission /* result */)
 
+// Informs the renderer that the browser has displayed the notification.
+IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow,
+                     int /* notification_id */)
+
+// Informs the renderer that the notification could not be displayed.
+IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidError,
+                     int /* notification_id */)
+
+// Informs the renderer that the notification has been closed.
+IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClose,
+                     int /* notification_id */)
+
+// Informs the renderer that the notification has been clicked on.
+IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClick,
+                     int /* notification_id */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests permission to display platform notifications for |origin|.

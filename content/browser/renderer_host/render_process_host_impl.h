@@ -44,6 +44,7 @@ class BrowserDemuxerAndroid;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
 class MojoApplicationHost;
+class NotificationMessageFilter;
 #if defined(ENABLE_WEBRTC)
 class P2PSocketDispatcherHost;
 #endif
@@ -240,6 +241,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return message_port_message_filter_.get();
   }
 
+  NotificationMessageFilter* notification_message_filter() const {
+    return notification_message_filter_.get();
+  }
+
   void set_is_isolated_guest_for_testing(bool is_isolated_guest) {
     is_isolated_guest_ = is_isolated_guest;
   }
@@ -360,6 +365,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The filter for MessagePort messages coming from the renderer.
   scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;
+
+  // The filter for Web Notification messages coming from the renderer. Holds a
+  // closure per notification that must be freed when the notification closes.
+  scoped_refptr<NotificationMessageFilter> notification_message_filter_;
 
   // Used in single-process mode.
   scoped_ptr<base::Thread> in_process_renderer_;
