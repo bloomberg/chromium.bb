@@ -38,8 +38,6 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_params.cc',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_params.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_prefs.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_protocol.cc',
@@ -68,6 +66,8 @@
         # Note: sources list duplicated in GN build.
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.h',
+        'data_reduction_proxy/core/common/data_reduction_proxy_params.cc',
+        'data_reduction_proxy/core/common/data_reduction_proxy_params.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_pref_names.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_switches.cc',
@@ -92,12 +92,12 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'data_reduction_proxy/core/browser/data_reduction_proxy_params_test_utils.cc',
-        'data_reduction_proxy/core/browser/data_reduction_proxy_params_test_utils.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h',
+        'data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.cc',
+        'data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h',
       ],
     },
     {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 #include <vector>
 
@@ -34,8 +34,8 @@ const char kDefaultFallbackOrigin[] = "http://compress.googlezip.net:80/";
 // The proxy listens on port 443, but uses the HTTP protocol to set up
 // the tunnel, not HTTPS.
 const char kDefaultSslOrigin[] = "http://ssl.googlezip.net:443/";
-const char kDefaultAltOrigin[] = "http://ssl.googlezip.net:80/";
-const char kDefaultAltFallbackOrigin[] = "http://ssl.googlezip.net:80/";
+const char kDefaultAltOrigin[] = "http://compress.googlezip.net:80/";
+const char kDefaultAltFallbackOrigin[] = "http://compress.googlezip.net:80/";
 const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
