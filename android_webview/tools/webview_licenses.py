@@ -48,6 +48,12 @@ class InputApi(object):
     self.os_walk = os.walk
     self.re = re
     self.ReadFile = _ReadFile
+    self.change = InputApiChange()
+
+class InputApiChange(object):
+  def __init__(self):
+    self.RepositoryRoot = lambda: REPOSITORY_ROOT
+
 
 def GetIncompatibleDirectories():
   """Gets a list of third-party directories which use licenses incompatible
@@ -119,50 +125,9 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
     ScanResult.Warnings if there are stale entries;
     ScanResult.Errors if new non-whitelisted entries found.
   """
-
-  excluded_dirs_list = [d for d in excluded_dirs_list if not 'third_party' in d]
-  # Using a common pattern for third-partyies makes the ignore regexp shorter
-  excluded_dirs_list.append('third_party')
-  # VCS dirs
-  excluded_dirs_list.append('.git')
-  excluded_dirs_list.append('.svn')
-  # Build output
-  excluded_dirs_list.append('out/Debug')
-  excluded_dirs_list.append('out/Release')
-  # 'Copyright' appears in license agreements
-  excluded_dirs_list.append('chrome/app/resources')
-  # Quickoffice js files from internal src used on buildbots. crbug.com/350472.
-  excluded_dirs_list.append('chrome/browser/resources/chromeos/quickoffice')
-  # This is a test output directory
-  excluded_dirs_list.append('chrome/tools/test/reference_build')
-  # blink style copy right headers.
-  excluded_dirs_list.append('content/shell/renderer/test_runner')
-  # blink style copy right headers.
-  excluded_dirs_list.append('content/shell/tools/plugin')
-  # This is tests directory, doesn't exist in the snapshot
-  excluded_dirs_list.append('content/test/data')
-  # This is a tests directory that doesn't exist in the shipped product.
-  excluded_dirs_list.append('gin/test')
-  # This is a test output directory
-  excluded_dirs_list.append('data/dom_perf')
-  # This is a tests directory that doesn't exist in the shipped product.
-  excluded_dirs_list.append('tools/perf/page_sets')
-  excluded_dirs_list.append('tools/perf/page_sets/tough_animation_cases')
-  # Histogram tools, doesn't exist in the snapshot
-  excluded_dirs_list.append('tools/histograms')
-  # Swarming tools, doesn't exist in the snapshot
-  excluded_dirs_list.append('tools/swarming_client')
-  # ARM sysroot, doesn't exist in the snapshot
-  excluded_dirs_list.append('chrome/installer/linux/debian_wheezy_arm-sysroot')
-  # Old location (TODO(sbc): Remove this once it no longer exists on any bots)
-  excluded_dirs_list.append('arm-sysroot')
-  # Data is not part of open source chromium, but are included on some bots.
-  excluded_dirs_list.append('data')
-  # This is not part of open source chromium, but are included on some bots.
-  excluded_dirs_list.append('skia/tools/clusterfuzz-data')
-
+  input_api = InputApi()
   files_to_scan = copyright_scanner.FindFiles(
-    InputApi(), REPOSITORY_ROOT, ['.'], excluded_dirs_list)
+    input_api, REPOSITORY_ROOT, ['.'], excluded_dirs_list)
   sharded_files_to_scan = _ShardList(files_to_scan, 2000)
   pool = multiprocessing.Pool()
   offending_files_chunks = pool.map_async(
@@ -173,22 +138,21 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   offending_files = \
     [item for sublist in offending_files_chunks for item in sublist]
 
-  unknown = set(offending_files) - set(whitelisted_files)
+  (unknown, missing, stale) = copyright_scanner.AnalyzeScanResults(
+    input_api, whitelisted_files, offending_files)
+
   if unknown:
     print 'The following files contain a third-party license but are not in ' \
           'a listed third-party directory and are not whitelisted. You must ' \
           'add the following files to the whitelist.\n%s' % \
           '\n'.join(sorted(unknown))
-
-  stale = set(whitelisted_files) - set(offending_files)
+  if missing:
+    print 'The following files are whitelisted, but do not exist.\n%s' % \
+        '\n'.join(sorted(missing))
   if stale:
     print 'The following files are whitelisted unnecessarily. You must ' \
           'remove the following files from the whitelist.\n%s' % \
           '\n'.join(sorted(stale))
-  missing = [f for f in whitelisted_files if not os.path.exists(f)]
-  if missing:
-    print 'The following files are whitelisted, but do not exist.\n%s' % \
-        '\n'.join(sorted(missing))
 
   if unknown:
     return ScanResult.Errors
@@ -278,13 +242,7 @@ def _Scan():
         all_licenses_valid = False
 
   # Second, check for non-standard license text.
-  files_data = _ReadLocalFile(os.path.join('android_webview', 'tools',
-                                           'third_party_files_whitelist.txt'))
-  whitelisted_files = []
-  for line in files_data.splitlines():
-    match = re.match(r'([^#\s]+)', line)
-    if match:
-      whitelisted_files.append(match.group(1))
+  whitelisted_files = copyright_scanner.LoadWhitelistedFilesList(InputApi())
   licenses_check = _CheckLicenseHeaders(third_party_dirs, whitelisted_files)
 
   return licenses_check if all_licenses_valid else ScanResult.Errors
