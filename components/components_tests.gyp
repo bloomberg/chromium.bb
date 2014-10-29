@@ -480,6 +480,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'dom_distiller/content/web_contents_main_frame_observer_unittest.cc',
                 'error_page/renderer/net_error_helper_core_unittest.cc',
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',
                 'password_manager/content/browser/content_credential_manager_dispatcher_unittest.cc',

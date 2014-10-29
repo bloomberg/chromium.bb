@@ -34,7 +34,7 @@ void WebContentsMainFrameObserver::DocumentLoadedInFrame(
 void WebContentsMainFrameObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (details.is_main_frame) {
+  if (details.is_navigation_to_different_page()) {
     is_document_loaded_in_main_frame_ = false;
     is_initialized_ = true;
   }
