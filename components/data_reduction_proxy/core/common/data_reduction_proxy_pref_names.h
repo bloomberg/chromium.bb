@@ -29,6 +29,7 @@ extern const char kDataReductionProxyWasEnabledBefore[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
 extern const char kStatisticsPrefsMigrated[];
+extern const char kUpdateDailyReceivedContentLengths[];
 
 }  // namespace prefs
 }  // namespace data_reduction_proxy

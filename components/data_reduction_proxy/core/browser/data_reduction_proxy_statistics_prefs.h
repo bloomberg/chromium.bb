@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 
+class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
@@ -44,6 +46,10 @@ public:
   // Loads all data_reduction_proxy::prefs into the |pref_map_| and
   // |list_pref_map_|.
   void Init();
+
+  void ShutdownOnUIThread();
+
+  void OnUpdateContentLengths();
 
   // Gets the int64 pref at |pref_path| from the |DataReductionProxyPrefMap|.
   int64 GetInt64(const char* pref_path);
@@ -92,6 +98,8 @@ private:
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
   base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
+  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyStatisticsPrefs);
 };

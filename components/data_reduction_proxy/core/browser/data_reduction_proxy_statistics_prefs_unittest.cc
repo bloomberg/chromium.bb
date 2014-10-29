@@ -7,6 +7,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -127,7 +128,6 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
-  statistics_prefs_->Init();
 
   CreatePrefList(
       data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
@@ -161,6 +161,55 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
   }
 
   task_runner_->RunPendingTasks();
+
+  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpOriginalContentLength);
+  VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpReceivedContentLength);
+  VerifyPrefListWasWritten(
+      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
+  VerifyPrefListWasWritten(
+      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+}
+
+TEST_F(DataReductionProxyStatisticsPrefsTest,
+       WritePrefsOnUpdateDailyReceivedContentLengths) {
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &simple_pref_service_,
+      task_runner_,
+      base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
+
+  CreatePrefList(
+      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
+  CreatePrefList(
+      data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+
+  const int64 kOriginalLength = 150;
+  const int64 kReceivedLength = 100;
+
+  statistics_prefs_->SetInt64(
+      data_reduction_proxy::prefs::kHttpOriginalContentLength, kOriginalLength);
+  statistics_prefs_->SetInt64(
+      data_reduction_proxy::prefs::kHttpReceivedContentLength, kReceivedLength);
+
+  base::ListValue* original_daily_content_length_list =
+      statistics_prefs_->GetList(data_reduction_proxy::prefs::
+                                 kDailyHttpOriginalContentLength);
+  base::ListValue* received_daily_content_length_list =
+      statistics_prefs_->GetList(data_reduction_proxy::prefs::
+                                 kDailyHttpReceivedContentLength);
+
+  for (size_t i = 0; i < kNumDaysInHistory; ++i) {
+    original_daily_content_length_list->Set(
+        i, new base::StringValue(base::Int64ToString(i)));
+  }
+
+  received_daily_content_length_list->Clear();
+  for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
+    received_daily_content_length_list->Set(
+        i, new base::StringValue(base::Int64ToString(i)));
+  }
+
+  simple_pref_service_.SetBoolean(
+      data_reduction_proxy::prefs::kUpdateDailyReceivedContentLengths, true);
 
   VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpOriginalContentLength);
   VerifyPrefWasWritten(data_reduction_proxy::prefs::kHttpReceivedContentLength);

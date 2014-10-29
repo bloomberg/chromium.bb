@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sequenced_task_runner.h"
@@ -24,15 +25,25 @@ DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
       task_runner_(task_runner),
       delay_(delay),
       delayed_task_posted_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      pref_change_registrar_(new PrefChangeRegistrar()) {
   DCHECK(prefs);
   DCHECK_GE(delay.InMilliseconds(), 0);
   Init();
 }
 
-DataReductionProxyStatisticsPrefs::~DataReductionProxyStatisticsPrefs() {}
+DataReductionProxyStatisticsPrefs::~DataReductionProxyStatisticsPrefs() {
+  // This object is created on UI thread, but destroyed on IO thread. So no
+  // DCHECK on thread_checker_ here.
+}
+
+void DataReductionProxyStatisticsPrefs::ShutdownOnUIThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  pref_change_registrar_->RemoveAll();
+}
 
 void DataReductionProxyStatisticsPrefs::Init() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (delay_ == base::TimeDelta())
     return;
 
@@ -61,6 +72,20 @@ void DataReductionProxyStatisticsPrefs::Init() {
                kDailyOriginalContentLengthViaDataReductionProxy);
   InitListPref(data_reduction_proxy::prefs::
                kDailyOriginalContentLengthWithDataReductionProxyEnabled);
+
+  pref_change_registrar_->Init(pref_service_);
+  pref_change_registrar_->Add(prefs::kUpdateDailyReceivedContentLengths,
+      base::Bind(&DataReductionProxyStatisticsPrefs::OnUpdateContentLengths,
+                                         weak_factory_.GetWeakPtr()));
+}
+
+void DataReductionProxyStatisticsPrefs::OnUpdateContentLengths() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!pref_service_->GetBoolean(prefs::kUpdateDailyReceivedContentLengths))
+    return;
+
+  WritePrefs();
+  pref_service_->SetBoolean(prefs::kUpdateDailyReceivedContentLengths, false);
 }
 
 void DataReductionProxyStatisticsPrefs::InitInt64Pref(const char* pref) {
@@ -103,6 +128,7 @@ base::ListValue* DataReductionProxyStatisticsPrefs::GetList(
 }
 
 void DataReductionProxyStatisticsPrefs::WritePrefs() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (delay_ == base::TimeDelta())
       return;
 

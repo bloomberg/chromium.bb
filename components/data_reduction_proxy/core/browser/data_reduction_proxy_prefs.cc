@@ -56,6 +56,9 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kStatisticsPrefsMigrated,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUpdateDailyReceivedContentLengths,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(
       prefs::kDailyHttpOriginalContentLength,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -116,6 +119,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(
       prefs::kDailyHttpReceivedContentLength);
+  registry->RegisterBooleanPref(prefs::kUpdateDailyReceivedContentLengths,
+                                false);
   registry->RegisterListPref(
       prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
   registry->RegisterListPref(

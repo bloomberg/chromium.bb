@@ -1210,6 +1210,8 @@ void ProfileIOData::ShutdownOnUIThread(
   quick_check_enabled_.Destroy();
   if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
+  if (data_reduction_proxy_statistics_prefs_.get())
+    data_reduction_proxy_statistics_prefs_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_)
