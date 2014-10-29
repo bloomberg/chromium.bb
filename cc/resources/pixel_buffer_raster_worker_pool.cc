@@ -169,7 +169,7 @@ void PixelBufferRasterWorkerPool::Shutdown() {
   CheckForCompletedRasterizerTasks();
   CheckForCompletedUploads();
 
-  check_for_completed_raster_task_notifier_.Cancel();
+  check_for_completed_raster_task_notifier_.Shutdown();
 
   for (RasterTaskState::Vector::iterator it = raster_task_states_.begin();
        it != raster_task_states_.end();

@@ -43,6 +43,15 @@ void DelayedUniqueNotifier::Cancel() {
   next_notification_time_ = base::TimeTicks();
 }
 
+void DelayedUniqueNotifier::Shutdown() {
+  // This function must destroy any weak ptrs since after being cancelled, this
+  // class may be destroyed on another thread during compositor shutdown.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  // Deliberately leaves notification_pending_ = true forever so new tasks with
+  // weak ptrs can not be created.
+  notification_pending_ = true;
+}
+
 bool DelayedUniqueNotifier::HasPendingNotification() const {
   return notification_pending_ && !next_notification_time_.is_null();
 }

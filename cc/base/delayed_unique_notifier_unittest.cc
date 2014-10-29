@@ -262,5 +262,74 @@ TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   EXPECT_FALSE(notifier.HasPendingNotification());
 }
 
+TEST_F(DelayedUniqueNotifierTest, ShutdownWithScheduledTask) {
+  base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
+  TestNotifier notifier(
+      task_runner_.get(),
+      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
+      delay);
+
+  EXPECT_EQ(0, NotificationCount());
+
+  // Schedule for |delay| seconds from now.
+  base::TimeTicks schedule_time =
+      notifier.Now() + base::TimeDelta::FromInternalValue(10);
+  notifier.SetNow(schedule_time);
+  notifier.Schedule();
+  EXPECT_TRUE(notifier.HasPendingNotification());
+
+  // Shutdown the notifier.
+  notifier.Shutdown();
+
+  // The task is still there, but...
+  std::deque<base::TestPendingTask> tasks = TakePendingTasks();
+  ASSERT_EQ(1u, tasks.size());
+
+  // Running the task after shutdown does nothing since it's cancelled.
+  tasks[0].task.Run();
+  EXPECT_EQ(0, NotificationCount());
+
+  tasks = TakePendingTasks();
+  EXPECT_EQ(0u, tasks.size());
+
+  // We are no longer able to schedule tasks.
+  notifier.Schedule();
+  tasks = TakePendingTasks();
+  ASSERT_EQ(0u, tasks.size());
+
+  // Verify after the scheduled time happens there is still no task.
+  notifier.SetNow(notifier.Now() + delay);
+  tasks = TakePendingTasks();
+  ASSERT_EQ(0u, tasks.size());
+}
+
+TEST_F(DelayedUniqueNotifierTest, ShutdownPreventsSchedule) {
+  base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
+  TestNotifier notifier(
+      task_runner_.get(),
+      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
+      delay);
+
+  EXPECT_EQ(0, NotificationCount());
+
+  // Schedule for |delay| seconds from now.
+  base::TimeTicks schedule_time =
+      notifier.Now() + base::TimeDelta::FromInternalValue(10);
+  notifier.SetNow(schedule_time);
+
+  // Shutdown the notifier.
+  notifier.Shutdown();
+
+  // Scheduling a task no longer does anything.
+  notifier.Schedule();
+  std::deque<base::TestPendingTask> tasks = TakePendingTasks();
+  ASSERT_EQ(0u, tasks.size());
+
+  // Verify after the scheduled time happens there is still no task.
+  notifier.SetNow(notifier.Now() + delay);
+  tasks = TakePendingTasks();
+  ASSERT_EQ(0u, tasks.size());
+}
+
 }  // namespace
 }  // namespace cc

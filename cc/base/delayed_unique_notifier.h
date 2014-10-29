@@ -37,6 +37,11 @@ class CC_EXPORT DelayedUniqueNotifier {
   // Cancel any previously scheduled runs.
   void Cancel();
 
+  // Cancel previously scheduled runs and prevent any new runs from starting.
+  // After calling this the DelayedUniqueNotifier will have no outstanding
+  // WeakPtrs.
+  void Shutdown();
+
   // Returns true if a notification is currently scheduled to run.
   bool HasPendingNotification() const;
 
