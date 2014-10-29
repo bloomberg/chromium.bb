@@ -290,7 +290,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + '9731cb962963bca8a05f3d0f6ea40c3a781f0537',
 
   'src/third_party/cld_2/src':
-    Var('chromium_git') + '/external/cld2.git' + '@' + 'f765c467ca5a525639ba16f006056c763a64bd98',
+    Var('chromium_git') + '/external/cld2.git' + '@' + 'fe53e1cd31db9bb3e636f9caaf7be2f432b85390', # from svn revision 171
 
   'src/chrome/browser/resources/pdf/html_office':
     Var('chromium_git') + '/chromium/html-office-public.git' + '@' + 'eeff97614f65e0578529490d44d412032c3d7359',
