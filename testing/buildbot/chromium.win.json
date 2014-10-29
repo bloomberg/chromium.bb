@@ -10,12 +10,6 @@
       },
       "app_shell_browsertests",
       "app_shell_unittests",
-      {
-        "test": "ash_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       "aura_unittests",
       {
         "test": "browser_tests",
@@ -99,7 +93,6 @@
       "accessibility_unittests",
       "app_shell_browsertests",
       "app_shell_unittests",
-      "ash_unittests",
       "aura_unittests",
       {
         "test": "base_unittests",
@@ -188,14 +181,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ]
-  },
-  "Vista Tests (2)": {
-    "gtest_tests": [
-    ]
-  },
-  "Vista Tests (3)": {
-    "gtest_tests": [
     ]
   },
   "Win7 Tests (1)": {
