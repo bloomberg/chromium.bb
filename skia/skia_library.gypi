@@ -88,10 +88,6 @@
 
   # Exclude all unused files in skia utils.gypi file
   'sources!': [
-  '../third_party/skia/src/utils/SkCondVar.cpp',
-  '../third_party/skia/src/utils/SkCondVar.h',
-  '../third_party/skia/src/utils/SkRunnable.h',
-
   '../third_party/skia/include/utils/SkBoundaryPatch.h',
   '../third_party/skia/include/utils/SkFrontBufferedStream.h',
   '../third_party/skia/include/utils/SkCamera.h',
