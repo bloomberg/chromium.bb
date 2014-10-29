@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
@@ -272,8 +273,12 @@ public class AwLegacyQuirksTest extends AwTestBase {
         ensureScaleBecomes(1.0f, awContents);
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    This test suddenly becae flaky. See: http://crbug.com/428355
+    */
+    @DisabledTest
     public void testNoUserScalableQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
