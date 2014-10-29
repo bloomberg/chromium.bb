@@ -2034,7 +2034,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         resource_provider_->best_texture_format());
 
     raster_worker_pool_ =
-        ZeroCopyRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+        ZeroCopyRasterWorkerPool::Create(task_runner,
                                          RasterWorkerPool::GetTaskGraphRunner(),
                                          resource_provider_.get());
   } else if (UseOneCopyRasterizer()) {
