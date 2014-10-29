@@ -30184,7 +30184,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="SessionRestore.AllTabsLoaded" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
-  <summary>TBD</summary>
+  <summary>
+    The time from SessionRestore start until all tabs have finished loading.
+  </summary>
 </histogram>
 
 <histogram name="SessionRestore.command_size" units="bytes">
@@ -30196,9 +30198,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SessionRestore.FirstTabPainted" units="milliseconds">
+  <obsolete>
+    Deprecated 2014-10 in favor of SessionRestore.ForegroundTabFirstPaint.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>TBD</summary>
+</histogram>
+
+<histogram name="SessionRestore.ForegroundTabFirstLoaded" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The time from SessionRestore start until a visible tab has finished loading.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.ForegroundTabFirstPaint" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The time from SessionRestore start until a visible tab's first paint.
+  </summary>
 </histogram>
 
 <histogram name="SessionRestore.last_session_file_size" units="KB">
@@ -57865,6 +57886,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="20" label="20 tabs present"/>
   <affected-histogram name="SessionRestore.AllTabsLoaded"/>
   <affected-histogram name="SessionRestore.FirstTabPainted"/>
+  <affected-histogram name="SessionRestore.ForegroundTabFirstLoaded"/>
+  <affected-histogram name="SessionRestore.ForegroundTabFirstPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">
