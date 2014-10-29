@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import ConfigParser
 import contextlib
 import datetime
 import logging
@@ -37,6 +38,23 @@ from chromite.scripts import cros_mark_chrome_as_stable
 
 
 PRE_CQ = validation_pool.PRE_CQ
+
+PRECQ_LAUNCH_TIMEOUT_MSG = (
+    'We were not able to launch a %s trybot for your change within '
+    '%s minutes.\n\n'
+    'This problem can happen if the trybot waterfall is very '
+    'busy, or if there is an infrastructure issue. Please '
+    'notify the sheriff and mark your change as ready again. If '
+    'this problem occurs multiple times in a row, please file a '
+    'bug.')
+PRECQ_INFLIGHT_TIMEOUT_MSG = (
+    'The %s trybot for your change timed out after %s minutes.'
+    '\n\n'
+    'This problem can happen if your change causes the builder '
+    'to hang, or if there is some infrastructure issue. If your '
+    'change is not at fault you may mark your change as ready '
+    'again. If this problem occurs multiple times please notify '
+    'the sheriff and file a bug.')
 
 
 class PatchChangesStage(generic_stages.BuilderStage):
@@ -912,37 +930,22 @@ class PreCQLauncherStage(SyncStage):
   def __init__(self, builder_run, **kwargs):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
-    # Mapping from launching changes to the first known time when they
-    # were launching.
-    self.launching = {}
-    # Mapping from inflight changes to the first known time when they
-    # were inflight.
-    self.inflight = {}
-    self.retried = set()
 
-    self._build_id = self._run.attrs.metadata.GetValue('build_id')
 
-  def _HasLaunchTimedOut(self, change):
-    """Check whether a given |change| has timed out on its trybot launch.
+  def _HasTimedOut(self, start, now, timeout_minutes):
+    """Check whether |timeout_minutes| has elapsed between |start| and |now|.
 
-    Assumes that the change is in the middle of being launched.
+    Args:
+      start: datetime.datetime start time.
+      now: datetime.datetime current time.
+      timeout_minutes: integer number of minutes for timeout.
 
     Returns:
-      True if the change has timed out. False otherwise.
+      True if (now-start) > timeout_minutes.
     """
-    diff = datetime.timedelta(minutes=self.LAUNCH_TIMEOUT)
-    return datetime.datetime.now() - self.launching[change] > diff
+    diff = datetime.timedelta(minutes=timeout_minutes)
+    return (now - start) > diff
 
-  def _HasInflightTimedOut(self, change):
-    """Check whether a given |change| has timed out while trybot inflight.
-
-    Assumes that the change's trybot is inflight.
-
-    Returns:
-      True if the change has timed out. False otherwise.
-    """
-    diff = datetime.timedelta(minutes=self.INFLIGHT_TIMEOUT)
-    return datetime.datetime.now() - self.inflight[change] > diff
 
   @staticmethod
   def _PrintPatchStatus(patch, status):
@@ -954,146 +957,129 @@ class PreCQLauncherStage(SyncStage):
     )
     cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
 
-  def GetPreCQStatus(self, pool, changes, status_map):
-    """Get the Pre-CQ status of a list of changes.
 
-    Side effect: reject or retry changes that have timed out.
+  @staticmethod
+  def VerificationsForChange(_change):
+    """Determine which configs to test |change| with.
 
     Args:
-      pool: The validation pool.
-      changes: Changes to examine.
-      status_map: Dict mapping changes to their CL status.
+      _change: GerritPatch instance to get configs-to-test for.
 
     Returns:
-      busy: The set of CLs that are currently being tested.
-      passed: The set of CLs that have been verified.
+      A list of configs.
     """
-    busy, passed = set(), set()
+    # TODO(akeshet): Screen CL's based on the contents of the CL rather than
+    # hard coding a single test config. crbug.com/384169
+    return [constants.PRE_CQ_GROUP_CONFIG]
 
-    for change in changes:
-      status = status_map[change]
 
-      if status != self.STATUS_LAUNCHING:
-        # The trybot is not launching, so we should remove it from our
-        # launching timeout map.
-        self.launching.pop(change, None)
+  def ScreenChangeForPreCQ(self, change):
+    """Record which pre-cq tryjobs to test |change| with.
 
-      if status != self.STATUS_INFLIGHT:
-        # The trybot is not inflight, so we should remove it from our
-        # inflight timeout map.
-        self.inflight.pop(change, None)
+    This method determines which configs to test a given |change| with, and
+    writes those as pending tryjobs to the cidb.
 
-      if status == self.STATUS_LAUNCHING:
-        # The trybot is in the process of launching.
-        busy.add(change)
-        if change not in self.launching:
-          # Record the launch time of changes.
-          self.launching[change] = datetime.datetime.now()
-        elif self._HasLaunchTimedOut(change):
-          if change in self.retried:
-            msg = ('We were not able to launch a pre-cq trybot for your change.'
-                   '\n\n'
-                   'This problem can happen if the trybot waterfall is very '
-                   'busy, or if there is an infrastructure issue. Please '
-                   'notify the sheriff and mark your change as ready again. If '
-                   'this problem occurs multiple times in a row, please file a '
-                   'bug.')
+    Args:
+      change: GerritPatch instance to screen. This change should not yet have
+              been screened.
+    """
+    actions = []
+    configs_to_test = self.VerificationsForChange(change)
+    for c in configs_to_test:
+      actions.append(clactions.CLAction.FromGerritPatchAndAction(
+          change, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+          reason=c))
+    actions.append(clactions.CLAction.FromGerritPatchAndAction(
+        change, constants.CL_ACTION_SCREENED_FOR_PRE_CQ))
 
-            pool.SendNotification(change, '%(details)s', details=msg)
-            pool.RemoveCommitReady(change)
-            pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
-            self.retried.discard(change)
-          else:
-            # Try the change again.
-            self.retried.add(change)
-            pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING)
-      elif status == self.STATUS_INFLIGHT:
-        # Once a Pre-CQ run actually starts, it'll set the status to
-        # STATUS_INFLIGHT.
-        busy.add(change)
-        if change not in self.inflight:
-          # Record the inflight start time.
-          self.inflight[change] = datetime.datetime.now()
-        elif self._HasInflightTimedOut(change):
-          msg = ('The pre-cq trybot for your change timed out after %s minutes.'
-                 '\n\n'
-                 'This problem can happen if your change causes the builder '
-                 'to hang, or if there is some infrastructure issue. If your '
-                 'change is not at fault you may mark your change as ready '
-                 'again. If this problem occurs multiple times please notify '
-                 'the sheriff and file a bug.' % self.INFLIGHT_TIMEOUT)
+    build_id, db = self._run.GetCIDBHandle()
+    db.InsertCLActions(build_id, actions)
 
-          pool.SendNotification(change, '%(details)s', details=msg)
-          pool.RemoveCommitReady(change)
-          pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
-      elif status == self.STATUS_FAILED:
-        # The Pre-CQ run failed for this change. It's possible that we got
-        # unlucky and this change was just marked as 'Not Ready' by a bot. To
-        # test this, mark the CL as 'waiting' for now. If the CL is still marked
-        # as 'Ready' next time we check, we'll know the CL is truly still ready.
-        busy.add(change)
-        pool.UpdateCLPreCQStatus(change, self.STATUS_WAITING)
-        self._PrintPatchStatus(change, status)
-      elif status == self.STATUS_PASSED:
-        passed.add(change)
-        self._PrintPatchStatus(change, status)
-      elif status == self.STATUS_READY_TO_SUBMIT:
-        passed.add(change)
-        self._PrintPatchStatus(change, 'submitting')
+  def CanSubmitChangeInPreCQ(self, change):
+    """Look up whether |change| is configured to be submitted in the pre-CQ.
 
-    return busy, passed
+    This looks up the "submit-in-pre-cq" setting inside the project in
+    COMMIT-QUEUE.ini and checks whether it is set to "yes".
 
-  def LaunchTrybot(self, pool, plan):
+    [GENERAL]
+      submit-in-pre-cq: yes
+
+    Args:
+      change: Change to examine.
+
+    Returns:
+      A list of stages to ignore for the given |change|.
+    """
+    result = None
+    try:
+      result = validation_pool.GetOptionForChange(
+          self._build_root, change, 'GENERAL', 'submit-in-pre-cq')
+    except ConfigParser.Error:
+      cros_build_lib.Error('%s has malformed config file', change,
+                           exc_info=True)
+    return result and result.lower() == 'yes'
+
+
+  def LaunchTrybot(self, plan, config):
     """Launch a Pre-CQ run with the provided list of CLs.
 
     Args:
       pool: ValidationPool corresponding to |plan|.
-      plan: The list of patches to test in the Pre-CQ run.
+      plan: The list of patches to test in the pre-cq tryjob.
+      config: The pre-cq config name to launch.
     """
-    cmd = ['cbuildbot', '--remote', constants.PRE_CQ_GROUP_CONFIG,
+    cmd = ['cbuildbot', '--remote', config,
            '--timeout', str(self.INFLIGHT_TIMEOUT * 60)]
-    if self._run.options.debug:
-      cmd.append('--debug')
     for patch in plan:
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root)
-    _, db = self._run.GetCIDBHandle()
-    action_history = db.GetActionsForChanges(plan)
-    for patch in plan:
-      if clactions.GetCLPreCQStatus(patch,
-                                    action_history) != self.STATUS_PASSED:
-        pool.UpdateCLPreCQStatus(patch, self.STATUS_LAUNCHING)
+    if self._run.options.debug:
+      logging.debug('Would have launched tryjob with %s', cmd)
+    else:
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+    build_id, db = self._run.GetCIDBHandle()
+    actions = [
+        clactions.CLAction.FromGerritPatchAndAction(
+            patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config)
+        for patch in plan]
+    db.InsertCLActions(build_id, actions)
 
-  def GetDisjointTransactionsToTest(self, pool, changes, status_map):
+
+  def GetDisjointTransactionsToTest(self, pool, progress_map):
     """Get the list of disjoint transactions to test.
 
     Side effect: reject or retry changes that have timed out.
 
     Args:
       pool: The validation pool.
-      changes: Changes to examine.
-      status_map: Dict mapping changes to their CL status.
+      progress_map: See return type of clactions.GetPreCQProgressMap.
 
     Returns:
-      A list of disjoint transactions to test. Each transaction should be sent
-      to a different Pre-CQ trybot.
+      A list of (transaction, config) tuples corresponding to different trybots
+      that should be launched.
     """
-    busy, passed = self.GetPreCQStatus(pool, changes, status_map)
+    # Get the set of busy and passed CLs.
+    busy, verified = clactions.GetPreCQCategories(progress_map)
 
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
     plans = pool.CreateDisjointTransactions(
         manifest, max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
+    screened_changes = set(progress_map)
     for plan in plans:
+      # If any of the CLs in the plan is not yet screened, wait for them to
+      # be screened.
+      #
       # If any of the CLs in the plan are currently "busy" being tested,
-      # wait until they're done before launching our trybot run. This helps
-      # avoid race conditions.
+      # wait until they're done before starting to test this plan.
       #
       # Similarly, if all of the CLs in the plan have already been validated,
       # there's no need to launch a trybot run.
       plan = set(plan)
-      if plan.issubset(passed):
+      if not plan.issubset(screened_changes):
+        logging.info('CLs waiting to be screened: %r',
+                     ' '.join(map(str, plan.difference(screened_changes))))
+      elif plan.issubset(verified):
         logging.info('CLs already verified: %r', ' '.join(map(str, plan)))
       elif plan.intersection(busy):
         logging.info('CLs currently being verified: %r',
@@ -1101,11 +1087,95 @@ class PreCQLauncherStage(SyncStage):
         if plan.difference(busy):
           logging.info('CLs waiting on verification of dependencies: %r',
               ' '.join(map(str, plan.difference(busy))))
+      # TODO(akeshet): Consider using a database time rather than gerrit
+      # approval time and local clock for launch delay.
       elif any(x.approval_timestamp + self.LAUNCH_DELAY * 60 > time.time()
                for x in plan):
         logging.info('CLs waiting on launch delay: %r', plan)
       else:
-        yield plan
+        pending_configs = clactions.GetPreCQConfigsToTest(plan, progress_map)
+        for config in pending_configs:
+          yield (plan, config)
+
+  def _ProcessRequeued(self, change, action_history):
+    """Detect if |change| was requeued by developer, and mark in cidb.
+
+    Args:
+      change: GerritPatch instance to check.
+      action_history: List of CLActions.
+
+    Returns:
+      True if the change was marked as requeued.
+    """
+    if clactions.WasChangeRequeued(change, action_history):
+      action = clactions.CLAction.FromGerritPatchAndAction(
+          change, constants.CL_ACTION_REQUEUED)
+      build_id, db = self._run.GetCIDBHandle()
+      db.InsertCLActions(build_id, [action])
+      return True
+
+  def _ProcessTimeouts(self, change, progress_map, pool, current_time):
+    """Enforce per-config launch and inflight timeouts.
+
+    Args:
+      change: GerritPatch instance to process.
+      progress_map: As returned by clactions.GetCLPreCQProgress a dict mapping
+                    each change in |changes| to a dict mapping config names
+                    to (status, timestamp) tuples for the configs under test.
+      pool: The current validation pool.
+      current_time: datetime.datetime timestamp giving current database time.
+    """
+    # TODO(akeshet) restore trybot launch retries here (there was
+    # no straightforward existing mechanism to include them in the
+    # transition to parallel pre-cq).
+    timeout_statuses = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
+                        constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
+    config_progress = progress_map[change]
+    for config, (config_status, timestamp) in config_progress.iteritems():
+      if not config_status in timeout_statuses:
+        continue
+      launched = config_status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED
+      timeout = self.LAUNCH_TIMEOUT if launched else self.INFLIGHT_TIMEOUT
+      msg = (PRECQ_LAUNCH_TIMEOUT_MSG if launched
+             else PRECQ_INFLIGHT_TIMEOUT_MSG) % (config, timeout)
+      timeout = self.LAUNCH_TIMEOUT
+
+      if self._HasTimedOut(timestamp, current_time, timeout):
+        pool.SendNotification(change, '%(details)s', details=msg)
+        pool.RemoveCommitReady(change, reason=config)
+        pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
+
+
+  def _ProcessVerified(self, change, can_submit, will_submit):
+    """Process a change that is fully pre-cq verified.
+
+    Args:
+      change: GerritPatch instance to process.
+      can_submit: set of changes that can be submitted by the pre-cq.
+      will_submit: set of changes that will be submitted by the pre-cq.
+
+    Returns:
+      A tuple of (set of changes that should be submitted by pre-cq,
+                  set of changes that should be passed by pre-cq)
+    """
+    # If this change and all its dependencies are pre-cq submittable,
+    # and none of them have yet been marked as pre-cq passed, then
+    # mark them for submission. Otherwise, mark this change as passed.
+    if change in will_submit:
+      return set(), set()
+
+    if change in can_submit:
+      logging.info('Attempting to determine if %s can be submitted.', change)
+      patch_series = validation_pool.PatchSeries(self._build_root)
+      try:
+        plan = patch_series.CreateTransaction(change, limit_to=can_submit)
+        return plan, set()
+      except cros_patch.DependencyError:
+        pass
+
+    # Changes that cannot be submitted are marked as passed.
+    return set(), set([change])
+
 
   def ProcessChanges(self, pool, changes, _non_manifest_changes):
     """Process a list of changes that were marked as Ready.
@@ -1117,31 +1187,77 @@ class PreCQLauncherStage(SyncStage):
     Non-manifest changes are just submitted here because they don't need to be
     verified by either the Pre-CQ or CQ.
     """
-    # Get change status.
-    status_map = {}
     build_id, db = self._run.GetCIDBHandle()
     action_history = db.GetActionsForChanges(changes)
+    status_map = {c: clactions.GetCLPreCQStatus(c, action_history)
+                  for c in changes}
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    _, verified = clactions.GetPreCQCategories(progress_map)
+    current_db_time = db.GetTime()
+
+    # TODO(akeshet): Once this change lands, we will no longer mark changes
+    # with pre-cq status READY_TO_SUBMIT, so simplify the status check below.
+    passed_statuses = (constants.CL_STATUS_PASSED,
+                       constants.CL_STATUS_READY_TO_SUBMIT)
+    already_passed = set(c for c in changes
+                         if status_map[c] in passed_statuses)
+    to_process = set(changes) - already_passed
+    # Changes that can be submitted, if their dependencies can be too. Only
+    # include changes that have not already been marked as passed.
+    can_submit = set(c for c in (verified and to_process) if
+                     self.CanSubmitChangeInPreCQ(c))
+    # Changes that will be submitted.
+    will_submit = set()
+    # Changes that will be passed
+    will_pass = set()
+
     for change in changes:
-      status = clactions.GetCLPreCQStatus(change, action_history)
-      status_map[change] = status
-      # Detect changes that have been re-queued by the developer, and mark
-      # them as such in cidb.
-      was_requeued = clactions.WasChangeRequeued(change, action_history)
-      if was_requeued:
-        action = clactions.CLAction.FromGerritPatchAndAction(
-            change, constants.CL_ACTION_REQUEUED)
-        db.InsertCLActions(build_id, [action])
+      self._ProcessRequeued(change, action_history)
 
-    # Launch trybots for manifest changes.
-    for plan in self.GetDisjointTransactionsToTest(pool, changes, status_map):
-      self.LaunchTrybot(pool, plan)
+    for change in to_process:
+      status = status_map[change]
 
-    # Submit changes that don't need a CQ run if we can.
+      # Detect if change is ready to be marked as passed, or ready to submit.
+      if change in verified:
+        to_submit, to_pass = self._ProcessVerified(change, can_submit,
+                                                   will_submit)
+        will_submit.update(to_submit)
+        will_pass.update(to_pass)
+        continue
+
+      # TODO(akeshet): Eliminate this block after this CL has landed and all
+      # previously inflight or launching CLs have made it through the pre-CQ.
+      legacy_statuses = (constants.CL_STATUS_LAUNCHING,
+                         constants.CL_STATUS_INFLIGHT)
+      if status in legacy_statuses:
+        continue
+
+      # Screen unscreened changes to determine which trybots to test them with.
+      if not any(a.action == constants.CL_ACTION_SCREENED_FOR_PRE_CQ
+                 for a in clactions.ActionsForPatch(change, action_history)):
+        self.ScreenChangeForPreCQ(change)
+        continue
+
+      self._ProcessTimeouts(change, progress_map, pool, current_db_time)
+
+    # Launch any necessary tryjobs
+    for plan, config in self.GetDisjointTransactionsToTest(
+        pool, progress_map):
+      self.LaunchTrybot(plan, config)
+
+    # Submit changes that are ready to submit, if we can.
     if tree_status.IsTreeOpen():
       pool.SubmitNonManifestChanges(check_tree_open=False)
-      submitting = [change for (change, status) in status_map.items()
-                    if status == self.STATUS_READY_TO_SUBMIT]
-      pool.SubmitChanges(submitting, check_tree_open=False)
+      pool.SubmitChanges(will_submit, check_tree_open=False)
+
+    # Mark passed changes as passed
+    if will_pass:
+      # TODO(akeshet) Refactor this into a general purpose method somewhere to
+      # atomically update CL statuses.
+      a = clactions.TranslatePreCQStatusToAction(constants.CL_STATUS_PASSED)
+      actions = [clactions.CLAction.FromGerritPatchAndAction(c, a)
+                 for c in will_pass]
+      db.InsertCLActions(build_id, actions)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.

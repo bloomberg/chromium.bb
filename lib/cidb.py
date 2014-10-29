@@ -291,8 +291,8 @@ class SchemaVersionedMySQLConnection(object):
       return 1
 
     self._ReflectToMetadata()
-    ins = self._meta.tables[table].insert().values(values)
-    r = self._Execute(ins)
+    ins = self._meta.tables[table].insert()
+    r = self._Execute(ins, *values)
     return r.rowcount
 
   def _GetPrimaryKey(self, table):
@@ -493,6 +493,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
                                          db_credentials_dir)
 
+  def GetTime(self):
+    """Gets the current time, according to database.
+
+    Returns:
+      datetime.datetime instance.
+    """
+    return self._Execute('SELECT NOW()').fetchall()[0][0]
+
   @minimum_schema(2)
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname,  master_build_id=None):
@@ -535,8 +543,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       return 0
 
     values = []
-    # TODO(akeshet): Refactor to use either cl action tuples out of the
-    # metadata dict (as now) OR CLActionTuple objects.
     for cl_action in cl_actions:
       change_number = cl_action.change_number
       patch_number = cl_action.patch_number

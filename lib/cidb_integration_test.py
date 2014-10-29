@@ -16,6 +16,7 @@ to the above test instance.
 
 from __future__ import print_function
 
+import datetime
 import glob
 import logging
 import os
@@ -142,6 +143,11 @@ class CIDBAPITest(CIDBIntegrationTest):
     """Tests that the minimum_schema decorator works as expected."""
     db = self._PrepareFreshDatabase(4)
     db.InsertBuildStages([])
+
+  def testGetTime(self):
+    db = self._PrepareFreshDatabase(1)
+    current_db_time = db.GetTime()
+    self.assertEqual(type(current_db_time), datetime.datetime)
 
 
 def GetTestDataSeries(test_data_path):

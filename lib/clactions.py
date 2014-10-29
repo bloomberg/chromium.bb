@@ -228,3 +228,139 @@ def GetCLActionCount(change, configs, action, action_history,
 
   return len(actions_for_change)
 
+
+def GetCLPreCQProgress(change, action_history):
+  """Gets a CL's per-config PreCQ statuses.
+
+  Args:
+    change: GerritPatch instance to get statuses for.
+    action_history: List of CLAction instances.
+
+  Returns:
+    A dict of the form {config_name: (status, timestamp)} specifying
+    all the per-config pre-cq statuses, where status is one of
+    constants.CL_PRECQ_CONFIG_STATUSES and timestampe is a datetime.datetime of
+    when this status was most recently achieved.
+  """
+  actions_for_patch = ActionsForPatch(change, action_history)
+  config_status_dict = {}
+
+  # Only configs for which the pre-cq-launcher has requested verification
+  # should be included in the per-config status.
+  for a in actions_for_patch:
+    if a.action == constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ:
+      assert a.reason, 'Validation was requested without a specified config.'
+      config_status_dict[a.reason] = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
+                                      a.timestamp)
+
+  # Loop through actions_for_patch several times, in order of status priority.
+  for a in actions_for_patch:
+    if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
+        a.reason in config_status_dict):
+      config_status_dict[a.reason] = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
+                                      a.timestamp)
+
+  for a in actions_for_patch:
+    if (a.action == constants.CL_ACTION_PICKED_UP and
+        a.build_config in config_status_dict):
+      config_status_dict[a.build_config] = (
+          constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT, a.timestamp)
+
+  for a in actions_for_patch:
+    if (a.action == constants.CL_ACTION_KICKED_OUT and
+        (a.build_config in config_status_dict or
+         a.reason in config_status_dict)):
+      config = (a.build_config if a.build_config in config_status_dict else
+                a.reason)
+      config_status_dict[config] = (constants.CL_PRECQ_CONFIG_STATUS_FAILED,
+                                    a.timestamp)
+
+  for a in actions_for_patch:
+    if (a.action == constants.CL_ACTION_VERIFIED and
+        a.build_config in config_status_dict):
+      config_status_dict[a.build_config] = (
+          constants.CL_PRECQ_CONFIG_STATUS_VERIFIED, a.timestamp)
+
+  return config_status_dict
+
+
+def GetPreCQProgressMap(changes, action_history):
+  """Gets the per-config pre-cq status for all changes.
+
+  Args:
+    changes: Set of GerritPatch changes to consider.
+    action_history: List of CLAction instances.
+
+  Returns:
+    A dict of the form {change: config_status_dict} where config_status_dict
+    is as returned by GetCLPreCQProgress. Any change that has not yet been
+    screened will be absent from the returned dict.
+  """
+  progress_map = {}
+  for change in changes:
+    config_status_dict = GetCLPreCQProgress(change, action_history)
+    if config_status_dict:
+      progress_map[change] = config_status_dict
+
+  return progress_map
+
+
+def GetPreCQCategories(progress_map):
+  """Gets the set of busy and verified CLs in the pre-cq.
+
+  Args:
+    progress_map: See return type of GetPreCQProgressMap.
+
+  Returns:
+    A (busy, verified) tuple where busy and verified are each a set of changes.
+    A change is verified if all its pending configs have verified it. A change
+    is busy if it is not verified, but all pending configs are either launched
+    or inflight or verified.
+  """
+  busy = set()
+  verified = set()
+  busy_states = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
+                 constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT,
+                 constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
+
+  for change, config_status_dict in progress_map.iteritems():
+    if all(s == constants.CL_PRECQ_CONFIG_STATUS_VERIFIED for
+           (s, t) in config_status_dict.values()):
+      verified.add(change)
+    elif all(s in busy_states for
+             (s, t) in config_status_dict.values()):
+      busy.add(change)
+
+  return busy, verified
+
+
+def GetPreCQConfigsToTest(changes, progress_map):
+  """Gets the set of configs to be tested for any change in |changes|.
+
+  Note: All |changes| must already be screened, i.e. must appear in
+  progress_map.
+
+  Args:
+    changes: A list or set of changes (GerritPatch).
+    progress_map: See return type of GetPreCQProgressMap.
+
+  Returns:
+    A set of configs that must be launched in order to make each change in
+    |changes| be considered 'busy' by the pre-cq.
+
+  Raises:
+    KeyError if any change in |changes| is not yet screened, and hence
+    does not appear in progress_map.
+  """
+  configs_to_test = set()
+  # Failed is considered a to-test state so that if a CL fails a given config
+  # and gets rejected, it will be re-tested by that config when it is re-queued.
+  to_test_states = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
+                    constants.CL_PRECQ_CONFIG_STATUS_FAILED)
+  for change in changes:
+    for config, (status, _) in progress_map[change].iteritems():
+      if status in to_test_states:
+        configs_to_test.add(config)
+  return configs_to_test
+
+

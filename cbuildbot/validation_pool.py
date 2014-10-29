@@ -223,7 +223,8 @@ def _GetOptionFromConfigFile(config_path, section, option):
     return parser.get(section, option)
 
 
-def _GetOptionForChange(build_root, change, section, option):
+# TODO(akeshet): Move this function to somewhere more sensible.
+def GetOptionForChange(build_root, change, section, option):
   """Get |option| from |section| in the config file for |change|.
 
   Args:
@@ -266,36 +267,13 @@ def GetStagesToIgnoreForChange(build_root, change):
   """
   result = None
   try:
-    result = _GetOptionForChange(build_root, change, 'GENERAL',
-                                 'ignored-stages')
+    result = GetOptionForChange(build_root, change, 'GENERAL',
+                                'ignored-stages')
   except ConfigParser.Error:
     cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
   return result.split() if result else []
 
 
-def ShouldSubmitChangeInPreCQ(build_root, change):
-  """Look up whether |change| is configured to be submitted in the pre-CQ.
-
-  This looks up the "submit-in-pre-cq" setting inside the project in
-  COMMIT-QUEUE.ini and checks whether it is set to "yes".
-
-  [GENERAL]
-    submit-in-pre-cq: yes
-
-  Args:
-    build_root: The root of the checkout.
-    change: Change to examine.
-
-  Returns:
-    A list of stages to ignore for the given |change|.
-  """
-  result = None
-  try:
-    result = _GetOptionForChange(build_root, change, 'GENERAL',
-                                 'submit-in-pre-cq')
-  except ConfigParser.Error:
-    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
-  return result and result.lower() == 'yes'
 
 
 class GerritHelperNotAvailable(gerrit.GerritException):
@@ -602,6 +580,10 @@ class PatchSeries(object):
     Returns:
       A sequence of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
+
+    Raises:
+      DependencyError: If we could not resolve a dependency.
+      GerritException or GOBError: If there is a failure in querying gerrit.
     """
     plan = []
     gerrit_deps_seen = cros_patch.PatchCache()
@@ -2021,7 +2003,7 @@ class ValidationPool(object):
 
     return was_change_submitted
 
-  def RemoveCommitReady(self, change):
+  def RemoveCommitReady(self, change, reason=None):
     """Remove the commit ready bit for the specified |change|."""
     self._helper_pool.ForChange(change).RemoveCommitReady(change,
         dryrun=self.dryrun)
@@ -2032,23 +2014,25 @@ class ValidationPool(object):
       metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
                               timestamp)
       if db:
-        self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT)
+        self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
+                                       reason)
         if self.pre_cq:
           self._InsertCLActionToDatabase(
               change, constants.CL_ACTION_PRE_CQ_FAILED)
 
-  def _InsertCLActionToDatabase(self, change, action):
+  def _InsertCLActionToDatabase(self, change, action, reason=None):
     """If cidb is set up and not None, insert given cl action to cidb.
 
     Args:
       change: A GerritPatch or GerritPatchTuple object.
       action: The action taken, should be one of constants.CL_ACTIONS
+      reason: Optional reason field for the CLAction that will be inserted.
     """
     build_id, db = self._run.GetCIDBHandle()
     if db:
       db.InsertCLActions(
           build_id,
-          [clactions.CLAction.FromGerritPatchAndAction(change, action)])
+          [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)])
 
   def SubmitNonManifestChanges(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool that aren't part of the checkout.
@@ -2260,37 +2244,22 @@ class ValidationPool(object):
         self.dryrun)
 
   def HandlePreCQSuccess(self):
-    """Handler that is called when the Pre-CQ successfully verifies a change."""
-    msg = '%(queue)s successfully verified your change in %(build_log)s .'
-    submit = all(ShouldSubmitChangeInPreCQ(self.build_root, change)
-                 for change in self.changes)
-    new_status = (constants.CL_STATUS_READY_TO_SUBMIT if submit
-                  else constants.CL_STATUS_PASSED)
-    ok_statuses = (constants.CL_STATUS_PASSED,
-                   constants.CL_STATUS_READY_TO_SUBMIT)
-
-    _, db = self._run.GetCIDBHandle()
-    action_history = db.GetActionsForChanges(self.changes)
-
+    """Handler that is called when a pre-cq tryjob verifies a change."""
+    config_name = self._run.config.name
+    msg = ('%(queue)s job with config %(config)s successfully verified your '
+           'change in %(build_log)s .')
     def ProcessChange(change):
       # Note: This function has no unit test coverage. Be careful when
       # modifying.
-      if clactions.GetCLPreCQStatus(change, action_history) not in ok_statuses:
-        self.SendNotification(change, msg)
-        if self._run:
-          metadata = self._run.attrs.metadata
-          timestamp = int(time.time())
-          # Record both a VERIFIED action for this builder, and also a pre-CQ
-          # PASSED status. In the future, not all pre-cq builders will
-          # necessarily write a PASSED status. Instead, the pre-cq-launcher will
-          # wait until the relevant builders have VERIFIED the CL, before
-          # marking it as PASSED.
-          metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
-                                  timestamp)
-          self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED)
-          self.UpdateCLPreCQStatus(change, new_status)
+      self.SendNotification(change, msg, config=config_name)
+      if self._run:
+        metadata = self._run.attrs.metadata
+        timestamp = int(time.time())
+        metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
+                                timestamp)
+        self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED)
 
-    # Set the new statuses in parallel.
+    # Process the changes in parallel.
     inputs = [[change] for change in self.changes]
     parallel.RunTasksInProcessPool(ProcessChange, inputs)
 

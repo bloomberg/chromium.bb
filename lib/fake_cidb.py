@@ -21,6 +21,21 @@ class FakeCIDBConnection(object):
   def __init__(self):
     self.buildTable = []
     self.clActionTable = []
+    self.fake_time = None
+
+
+  def SetTime(self, fake_time):
+    """Sets a fake time to be retrieved by GetTime.
+
+    Args:
+      fake_time: datetime.datetime object.
+    """
+    self.fake_time = fake_time
+
+
+  def GetTime(self):
+    """Gets the current database time."""
+    return self.fake_time or datetime.datetime.now()
 
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname,  master_build_id=None):
@@ -44,8 +59,8 @@ class FakeCIDBConnection(object):
 
     rows = []
     for cl_action in cl_actions:
-      change_number = cl_action.change_number
-      patch_number = cl_action.patch_number
+      change_number = int(cl_action.change_number)
+      patch_number = int(cl_action.patch_number)
       change_source = cl_action.change_source
       action = cl_action.action
       reason = cl_action.reason

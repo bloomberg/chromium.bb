@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import cPickle
+import datetime
 import itertools
 import os
 import sys
@@ -33,6 +34,7 @@ from chromite.lib import gerrit
 from chromite.lib import git_unittest
 from chromite.lib import gob_util
 from chromite.lib import osutils
+from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 
 
@@ -180,7 +182,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
   def PerformSync(self, committed=False, num_patches=1, tree_open=True,
                   tree_throttled=False,
                   pre_cq_status=constants.CL_STATUS_PASSED,
-                  runs=0, changes=None, **kwargs):
+                  runs=0, changes=None, patch_objects=True,
+                  **kwargs):
     """Helper to perform a basic sync for master commit queue.
 
     Args:
@@ -197,6 +200,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
       changes: Optional list of MockPatch instances that should be available
                in validation pool. If not specified, a set of |num_patches|
                patches will be created.
+      patch_objects: If your test will call PerformSync more than once, set
+                     this to false on subsequent calls to ensure that we do
+                     not re-patch already patched methods with mocks.
       **kwargs: Additional arguments to pass to MockPatch when creating patches.
 
     Returns:
@@ -216,23 +222,31 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
         self.fake_db.InsertCLActions(
             new_build_id,
             [clactions.CLAction.FromGerritPatchAndAction(change, action)])
-    self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
-                     return_value=committed, autospec=True)
-    self.PatchObject(gerrit.GerritHelper, 'Query',
-                     return_value=changes, autospec=True)
-    if tree_throttled:
-      self.PatchObject(tree_status, 'WaitForTreeStatus',
-                       return_value=constants.TREE_THROTTLED, autospec=True)
-    elif tree_open:
-      self.PatchObject(tree_status, 'WaitForTreeStatus',
-                       return_value=constants.TREE_OPEN, autospec=True)
-    else:
-      self.PatchObject(tree_status, 'WaitForTreeStatus',
-                       side_effect=timeout_util.TimeoutError())
 
-    exit_it = itertools.chain([False] * runs, itertools.repeat(True))
-    self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',
-                     side_effect=exit_it)
+    if patch_objects:
+      self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
+                       return_value=committed, autospec=True)
+      # Validation pool will mutate the return value it receives from
+      # Query, therefore return a copy of the changes list.
+      # pylint: disable-msg=W0613
+      def Query(*args, **kwargs):
+        return list(changes)
+      self.PatchObject(gerrit.GerritHelper, 'Query',
+                       side_effect=Query, autospec=True)
+      if tree_throttled:
+        self.PatchObject(tree_status, 'WaitForTreeStatus',
+                         return_value=constants.TREE_THROTTLED, autospec=True)
+      elif tree_open:
+        self.PatchObject(tree_status, 'WaitForTreeStatus',
+                         return_value=constants.TREE_OPEN, autospec=True)
+      else:
+        self.PatchObject(tree_status, 'WaitForTreeStatus',
+                         side_effect=timeout_util.TimeoutError())
+
+      exit_it = itertools.chain([False] * runs, itertools.repeat(True))
+      self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',
+                       side_effect=exit_it)
+
     self.sync_stage.PerformStage()
 
     return changes
@@ -389,25 +403,6 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
 
-  def _PrepareAutoLaunch(self):
-    """Cause CLs with launching status to be automatically launched."""
-    # Mock out UpdateCLPreCQStatus so that when a "Launching" action is
-    # recorded, automatically pretend to start a new build which records
-    # an "Inflight" action for the same change.
-    original_method = validation_pool.ValidationPool.UpdateCLPreCQStatus
-
-    def new_method(target, change, status):
-      original_method(target, change, status)
-      if (status == self.STATUS_LAUNCHING):
-        # This is going to pretend to insert the inflight action from the same
-        # build_id as the pre-cq-launcher. In reality, that action would be
-        # inserted by another builder.
-        original_method(target, change, self.STATUS_INFLIGHT)
-
-    self.PatchObject(validation_pool.ValidationPool, 'UpdateCLPreCQStatus',
-                     new_method)
-
-
   def _Prepare(self, bot_id=None, **kwargs):
     build_id = self.fake_db.InsertBuild(
         constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL, 1,
@@ -417,6 +412,156 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         bot_id, build_id=build_id, **kwargs)
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
+
+
+  def _PrepareChangesWithPendingVerifications(self, verifications=None):
+    """Prepare changes and pending verifications for them.
+
+    This helper creates changes in the validation pool, each of which
+    require its own set of verifications.
+
+    Args:
+      verifications: A list of lists of configs. Each element in the
+                     outer list corresponds to a different CL. Defaults
+                     to [[constants.PRE_CQ_GROUP_CONFIG]]
+
+    Returns:
+      A list of len(verifications) MockPatch instances.
+    """
+    verifications = verifications or [[constants.PRE_CQ_GROUP_CONFIG]]
+    changes = [MockPatch(gerrit_number=n) for n in range(len(verifications))]
+    changes_to_verifications = {c: v for c, v in zip(changes, verifications)}
+
+    def VerificationsForChange(change):
+      return changes_to_verifications.get(change) or []
+
+    self.PatchObject(sync_stages.PreCQLauncherStage,
+                     'VerificationsForChange',
+                     side_effect=VerificationsForChange)
+    return changes
+
+
+  def _PrepareSubmittableChange(self):
+    # Create a pre-cq submittable change, let it be screened,
+    # and have the trybot mark it as verified.
+    change = self._PrepareChangesWithPendingVerifications()[0]
+    self.PatchObject(sync_stages.PreCQLauncherStage,
+                     'CanSubmitChangeInPreCQ',
+                     return_value=True)
+    change[0].approval_timestamp = 0
+    self.PerformSync(pre_cq_status=None, changes=[change],
+                     runs=2)
+
+    config_name = constants.PRE_CQ_GROUP_CONFIG
+
+    build_id = self.fake_db.InsertBuild(
+        'builder name', constants.WATERFALL_TRYBOT, 2, config_name,
+        'bot hostname')
+    self.fake_db.InsertCLActions(
+      build_id,
+      [clactions.CLAction.FromGerritPatchAndAction(
+          change, constants.CL_ACTION_VERIFIED)])
+    return change
+
+  def testSubmitInPreCQ(self):
+    change = self._PrepareSubmittableChange()
+
+    # Change should be submitted by the pre-cq-launcher.
+    m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
+    self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
+    m.assert_called_with(set([change]), check_tree_open=False)
+
+
+  def testSubmitUnableInPreCQ(self):
+    change = self._PrepareSubmittableChange()
+
+    # Change should throw a DependencyError when trying to create a transaction
+    e = cros_patch.DependencyError(change, cros_patch.PatchException(change))
+    self.PatchObject(validation_pool.PatchSeries, 'CreateTransaction',
+                     side_effect=e)
+    self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
+    # Change should be marked as pre-cq passed, rather than being submitted.
+    self.assertEqual(constants.CL_STATUS_PASSED, self._GetPreCQStatus(change))
+
+
+  def testPreCQ(self):
+    changes = self._PrepareChangesWithPendingVerifications(
+        [['banana'], ['orange', 'apple']])
+    # After 2 runs, the changes should be screened but not
+    # yet launched (due to pre-launch timeout).
+    for c in changes:
+      c.approval_timestamp = time.time()
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=2)
+
+    def assertAllStatuses(progress_map, status):
+      for change in changes:
+        for config in progress_map[change]:
+          self.assertEqual(progress_map[change][config][0], status)
+
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_PENDING)
+
+    self.assertEqual(1, len(progress_map[changes[0]]))
+    self.assertEqual(2, len(progress_map[changes[1]]))
+
+    # Fake that launch delay has expired by changing change approval times.
+    for c in changes:
+      c.approval_timestamp = 0
+
+    # After 1 more Sync all configs for all changes should be launched.
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Fake all these tryjobs starting
+    build_ids = self._FakeLaunchTryjobs(progress_map)
+
+    # After 1 more Sync all configs should now be inflight.
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
+
+    # Fake INFLIGHT_TIMEOUT+1 passing with banana and orange config succeeding,
+    # and apple never launching. The first change should pass the pre-cq, the
+    # second should fail due to inflight timeout.
+    fake_time = datetime.datetime.now() + datetime.timedelta(
+        minutes=sync_stages.PreCQLauncherStage.INFLIGHT_TIMEOUT + 1)
+    self.fake_db.SetTime(fake_time)
+    self.fake_db.InsertCLActions(
+        build_ids['banana'],
+        [clactions.CLAction.FromGerritPatchAndAction(
+            changes[0], constants.CL_ACTION_VERIFIED)])
+    self.fake_db.InsertCLActions(
+        build_ids['orange'],
+        [clactions.CLAction.FromGerritPatchAndAction(
+        changes[1], constants.CL_ACTION_VERIFIED)])
+
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+    self.assertEqual(self._GetPreCQStatus(changes[0]),
+                     constants.CL_STATUS_PASSED)
+    self.assertEqual(self._GetPreCQStatus(changes[1]),
+                     constants.CL_STATUS_FAILED)
+
+
+  def _FakeLaunchTryjobs(self, progress_map):
+    """Pretend to start all launched tryjobs."""
+    build_ids_per_config = {}
+    for change, change_status_dict in progress_map.iteritems():
+      for config, (status, _) in change_status_dict.iteritems():
+        if status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
+          if not config in build_ids_per_config:
+            build_ids_per_config[config] = self.fake_db.InsertBuild(
+                config, constants.WATERFALL_TRYBOT, 1, config, config)
+          self.fake_db.InsertCLActions(
+              build_ids_per_config[config],
+              [clactions.CLAction.FromGerritPatchAndAction(
+                  change, constants.CL_ACTION_PICKED_UP)])
+    return build_ids_per_config
+
 
   def testCommitNonManifestChange(self):
     """See MasterCQSyncTestCase"""
@@ -438,89 +583,10 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Test that tree closures block commits."""
     self._testCommitNonManifestChange(tree_open=False)
 
-  def testLaunchTrybot(self):
-    """Test launching a trybot."""
-    change = self._testCommitManifestChange(pre_cq_status=None)[0]
-
-    self.assertEqual(self._GetPreCQStatus(change), self.STATUS_LAUNCHING)
-
-  def testLaunchDelay(self):
-    """Test that we don't launch trybots if we're within the launch delay."""
-    change = self._testCommitManifestChange(approval_timestamp=time.time(),
-                                            pre_cq_status=None)[0]
-
-    action_history = self.fake_db.GetActionsForChanges([change])
-    self.assertEqual(clactions.GetCLPreCQStatus(change, action_history), None)
-
-  def testLaunchTrybotWithAutolaunch(self):
-    """Test launching a trybot with auto-launch."""
-    self._PrepareAutoLaunch()
-    change = self._testCommitManifestChange(pre_cq_status=None)[0]
-
-    self.assertEqual(self._GetPreCQStatus(change), self.STATUS_INFLIGHT)
-
   def _GetPreCQStatus(self, change):
     """Helper method to get pre-cq status of a CL from fake_db."""
     action_history = self.fake_db.GetActionsForChanges([change])
     return clactions.GetCLPreCQStatus(change, action_history)
-
-  def runTrybotTest(self, launching=0, waiting=0, failed=0, runs=0,
-                    change=None):
-    """Helper function for testing PreCQLauncher.
-
-    Create a mock patch to be picked up by the PreCQ (or use |change| if it is
-    specified. Allow up to |runs|+1 calls to ProcessChanges. Assert that the
-    patch received status LAUNCHING, WAITING, and FAILED |launching|,
-    |waiting|, and |failed| times respectively.
-    """
-    changes = None
-    if change:
-      changes = [change]
-    change = self._testCommitManifestChange(changes=changes, pre_cq_status=None,
-                                            runs=runs)[0]
-    # Count the number of recorded actions corresponding to launching, watiting,
-    # and failed, and ensure they are correct.
-    expected = (launching, waiting, failed)
-    actions = (constants.CL_ACTION_PRE_CQ_LAUNCHING,
-               constants.CL_ACTION_PRE_CQ_WAITING,
-               constants.CL_ACTION_PRE_CQ_FAILED)
-
-    action_history = self.fake_db.GetActionsForChanges([change])
-
-    for exp, action in zip(expected, actions):
-      cnt = clactions.GetCLActionCount(
-          change, [constants.PRE_CQ_LAUNCHER_CONFIG], action, action_history)
-      self.assertEqual(
-          exp, cnt, '%s != %s (action=%s)' % (exp, cnt, action))
-
-  def testLaunchTrybotTimesOutOnce(self):
-    """Test what happens when a trybot launch times out."""
-    it = itertools.chain([True], itertools.repeat(False))
-    self.PatchObject(sync_stages.PreCQLauncherStage, '_HasLaunchTimedOut',
-                     side_effect=it)
-    self.runTrybotTest(launching=2, waiting=1, failed=0, runs=3)
-
-  def testLaunchTrybotTimesOutTwice(self):
-    """Test what happens when a trybot launch times out."""
-    self.PatchObject(sync_stages.PreCQLauncherStage, '_HasLaunchTimedOut',
-                     return_value=True)
-    self.runTrybotTest(launching=2, waiting=1, failed=0, runs=3)
-
-  def testInflightTrybotTimesOutOnce(self):
-    """Test what happens when an inflight trybot times out."""
-    self._PrepareAutoLaunch()
-    it = itertools.chain([True], itertools.repeat(False))
-    self.PatchObject(sync_stages.PreCQLauncherStage, '_HasInflightTimedOut',
-                     side_effect=it)
-    self.runTrybotTest(launching=1, waiting=0, failed=0, runs=1)
-
-  def testSubmit(self):
-    """Test submission of patches."""
-    self.PatchObject(clactions, 'GetCLPreCQStatus',
-                     return_value=self.STATUS_READY_TO_SUBMIT)
-    m = self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges')
-    self.runTrybotTest(runs=1)
-    m.assert_called_with([mock.ANY], check_tree_open=False)
 
   def testRequeued(self):
     """Test that a previously rejected patch gets marked as requeued."""
@@ -531,8 +597,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     action = clactions.CLAction.FromGerritPatchAndAction(
         p, constants.CL_ACTION_KICKED_OUT)
     self.fake_db.InsertCLActions(previous_build_id, [action])
-    self.runTrybotTest(launching=1, change=p)
 
+    self.PerformSync(changes=[p])
     actions_for_patch = self.fake_db.GetActionsForChanges([p])
     requeued_actions = [a for a in actions_for_patch
                         if a.action == constants.CL_ACTION_REQUEUED]
