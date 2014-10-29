@@ -1,0 +1,75 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [282, 32, 46, 16]
+      ],
+      "children": [
+        {
+          "position": [0, 48],
+          "bounds": [800, 500],
+          "drawsContent": true,
+          "repaintRects": [
+            [270, 0, 46, 16],
+            [225, 0, 46, 16],
+            [90, 0, 46, 16],
+            [52, 16, 46, 16],
+            [20, 156, 200, 72],
+            [10, 124, 139, 10],
+            [10, 70, 228, 16]
+          ],
+          "children": [
+            {
+              "bounds": [785, 485],
+              "children": [
+                {
+                  "bounds": [785, 1336],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "repaintRects": [
+                    [270, 0, 46, 16],
+                    [225, 0, 46, 16],
+                    [90, 0, 46, 16],
+                    [52, 16, 46, 16],
+                    [20, 156, 200, 72],
+                    [10, 124, 139, 10],
+                    [10, 70, 228, 16]
+                  ],
+                  "children": [
+                    {
+                      "shouldFlattenTransform": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [0, 485],
+                  "bounds": [785, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [785, 0],
+                  "bounds": [15, 485],
+                  "drawsContent": true
+                },
+                {
+                  "position": [785, 485],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

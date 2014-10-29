@@ -1,0 +1,17 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [80, 0, 550, 117],
+        [80, 0, 550, 117],
+        [30, 0, 403, 59],
+        [30, 0, 403, 59]
+      ]
+    }
+  ]
+}
+
