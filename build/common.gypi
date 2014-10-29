@@ -4157,7 +4157,8 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
-                  '-fsanitize-blacklist=<(asan_blacklist)',
+                  # TODO(earthdok): Re-enable. http://crbug.com/427202
+                  #'-fsanitize-blacklist=<(asan_blacklist)',
                 ],
                 'ldflags': [
                   '-fsanitize=address',
