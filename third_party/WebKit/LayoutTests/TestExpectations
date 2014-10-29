@@ -247,6 +247,13 @@ crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]
 crbug.com/374284 html5lib/generated/run-tests19-data.html [ Timeout Pass ]
 
+Bug(hartmanng) compositing/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces.html [ NeedsRebaseline ]
+Bug(hartmanng) compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+Bug(hartmanng) compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]

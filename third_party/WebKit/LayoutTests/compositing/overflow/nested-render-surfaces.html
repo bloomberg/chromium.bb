@@ -41,17 +41,11 @@
         width: 200px;
     }
 </style>
-<script src="resources/nested-render-surfaces.js"></script>
-<script>
-    function setup() {
-        var description = "This test ensures that render surfaces grow to "
-            + "accomodate clip children. If this test is working, you "
-            + "should see that the green box is square.";
-        runTest(description);
-    }
-    window.onload = setup;
-</script>
 </head>
+<!--
+  This test ensures that render surfaces grow to accomodate clip children.
+  If this test is working, you should see that the green box is square.
+-->
 <body>
     <div class="surface">
         <div class="box"></div>

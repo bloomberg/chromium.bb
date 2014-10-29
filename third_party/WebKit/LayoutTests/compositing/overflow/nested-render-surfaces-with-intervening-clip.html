@@ -47,18 +47,12 @@
         height: 300px;
     }
 </style>
-<script src="resources/nested-render-surfaces.js"></script>
-<script>
-    function setup() {
-        var description = "This test ensures that clip children correctly "
-            + "ignore clips established by layers between the clip parent "
-            + "and itself. If the test is working correctly, the green "
-            + "box should be a square.";
-        runTest(description);
-    }
-    window.onload = setup;
-</script>
 </head>
+<!--
+This test ensures that clip children correctly ignore clips established by
+layers between the clip parent and itself. If the test is working correctly,
+the green box should be a square.
+-->
 <body>
     <div class="clipping-layer">
         <div class="surface">

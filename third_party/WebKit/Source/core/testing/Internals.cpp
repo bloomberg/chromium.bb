@@ -1572,26 +1572,6 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
     return layer1->scrollsWithRespectTo(layer2);
 }
 
-bool Internals::isUnclippedDescendant(Element* element, ExceptionState& exceptionState)
-{
-    ASSERT(element);
-    element->document().view()->updateLayoutAndStyleForPainting();
-
-    RenderObject* renderer = element->renderer();
-    if (!renderer || !renderer->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
-        return 0;
-    }
-
-    RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        exceptionState.throwDOMException(InvalidAccessError, "No render layer can be obtained from the provided element.");
-        return 0;
-    }
-
-    return layer->isUnclippedDescendant();
-}
-
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionState& exceptionState) const
 {
     ASSERT(document);

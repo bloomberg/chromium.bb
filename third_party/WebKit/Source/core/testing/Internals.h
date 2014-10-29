@@ -218,7 +218,6 @@ public:
     String elementLayerTreeAsText(Element*, ExceptionState&) const;
 
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
-    bool isUnclippedDescendant(Element*, ExceptionState&);
 
     String scrollingStateTreeAsText(Document*) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;

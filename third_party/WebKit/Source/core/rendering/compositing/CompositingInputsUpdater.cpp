@@ -139,9 +139,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
                     properties.ancestorScrollingLayer = parentLayerOnContainingBlockChain;
 
                 if (layer->renderer()->isOutOfFlowPositioned() && !layer->subtreeIsInvisible()) {
-                    const RenderObject* lastScroller = info.lastScrollingAncestor->renderer();
                     const RenderLayer* clippingLayer = properties.clippingContainer ? properties.clippingContainer->enclosingLayer() : layer->compositor()->rootRenderLayer();
-                    properties.isUnclippedDescendant = lastScroller != containingBlock && lastScroller->isDescendantOf(containingBlock);
                     if (hasClippedStackingAncestor(layer, clippingLayer))
                         properties.clipParent = clippingLayer;
                 }

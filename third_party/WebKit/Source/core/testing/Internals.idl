@@ -169,7 +169,6 @@
     [RaisesException, TypeChecking=Interface] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 
     [RaisesException, TypeChecking=Interface] boolean scrollsWithRespectTo(Element element1, Element element2);
-    [RaisesException, TypeChecking=Interface] boolean isUnclippedDescendant(Element element);
 
     [TypeChecking=Interface] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException, TypeChecking=Interface] DOMString mainThreadScrollingReasons(Document document);
