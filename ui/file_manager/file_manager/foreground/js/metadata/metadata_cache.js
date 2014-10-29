@@ -358,8 +358,13 @@ MetadataCache.prototype.getOneInternal_ =
 
   var tryNextProvider = function() {
     if (providers.length === 0) {
+      // If not found, then mark the property as unavailable, so it's not
+      // retrieved again.
+      if (!(type in item.properties))
+        item.properties[type] = null;
+
       self.endBatchUpdates();
-      setTimeout(callback.bind(null, item.properties[type] || null), 0);
+      setTimeout(callback.bind(null, item.properties[type]), 0);
       return;
     }
 
@@ -892,22 +897,25 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
     modificationTime: new Date(data.lastModifiedTime)
   };
 
-  if (data.isPresent) {
-    // If the file is present, don't fill the thumbnail here and allow to
-    // generate it by next providers.
-    result.thumbnail = null;
-  } else if ('thumbnailUrl' in data) {
-    result.thumbnail = {
-      url: data.thumbnailUrl,
-      transform: null
-    };
-  } else {
-    // Not present in cache, so do not allow to generate it by next providers.
-    result.thumbnail = {url: '', transform: null};
+  // TODO(mtomasz): Remove all of the if logic in the new metadata cache.
+  // If the file is not present, then use the thumbnail url instead of
+  // extracting the thumbnail from contents.
+  if (data.isPresent === false) {
+    if ('thumbnailUrl' in data) {
+      result.thumbnail = {
+        url: data.thumbnailUrl,
+        transform: null
+      };
+    } else {
+      // Not present in cache, so do not allow to generate it by next providers.
+      result.thumbnail = {url: '', transform: null};
+    }
   }
 
-  // If present in cache, then allow to fetch media by next providers.
-  result.media = data.isPresent ? null : {};
+  // If not present in cache, then do not allow to fetch media by next
+  // providers.
+  if (data.isPresent === false)
+    result.media = {};
 
   return result;
 };
