@@ -68,9 +68,14 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", 7, WebCryptoAlgorithmIdAesCbc},
     {"AES-GCM", 7, WebCryptoAlgorithmIdAesGcm},
     {"AES-CTR", 7, WebCryptoAlgorithmIdAesCtr},
+    {"RSA-PSS", 7, WebCryptoAlgorithmIdRsaPss},
     {"RSA-OAEP", 8, WebCryptoAlgorithmIdRsaOaep},
     {"RSASSA-PKCS1-V1_5", 17, WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
+
+// Reminder to update the table mapping names to IDs whenever adding a new
+// algorithm ID.
+COMPILE_ASSERT(WebCryptoAlgorithmIdLast + 1 == WTF_ARRAY_LENGTH(algorithmNameMappings), UPDATE_algorithmNameMappings);
 
 #if ENABLE(ASSERT)
 
