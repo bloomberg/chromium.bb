@@ -18,7 +18,7 @@ namespace ui {
 // SCALE_FACTOR_NONE is used for density independent resources such as
 // string, html/js files or an image that can be used for any scale factors
 // (such as wallpapers).
-enum ScaleFactor {
+enum ScaleFactor : int {
   SCALE_FACTOR_NONE = 0,
   SCALE_FACTOR_100P,
   SCALE_FACTOR_125P,

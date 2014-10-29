@@ -16,7 +16,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_export.h"
 
@@ -26,6 +25,7 @@ class RefCountedStaticMemory;
 }
 
 namespace ui {
+enum ScaleFactor : int;
 
 class UI_BASE_EXPORT DataPack : public ResourceHandle {
  public:

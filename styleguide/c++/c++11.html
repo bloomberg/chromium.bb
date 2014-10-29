@@ -94,12 +94,14 @@ decltype specifier</a></td>
 </tr>
 
 <tr>
-<td>Enumerated Type Classes</td>
-<td><code>enum class <i>classname</i></code></td>
+<td>Enumerated Type Classes and Enum Bases</td>
+<td><code>enum class <i>classname</i></code><br>
+    <code>enum class <i>classname</i> : <i>base-type</i></code><br>
+    <code>enum <i>enumname</i> : <i>base-type</i></code></td>
 <td>Provide enums as full classes, with no implicit
-conversion to booleans or integers</td>
-<td><a href="http://stackoverflow.com/questions/6936030/do-we-really-need-enum-class-in-c11">
-enum-class</a></td>
+conversion to booleans or integers. Provide an explicit underlying type for
+enum classes and regular enums.</td>
+<td><a href="http://www.stroustrup.com/C++11FAQ.html#enum">enum-class</a></td>
 <td>Enum classes are still enums and follow enum naming rules
 (which means SHOUTY_CASE in the <a href="http://www.chromium.org/developers/coding-style#Naming">current style guide</a>).
 <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/Q5WmkAImanc">Discussion thread</a></td>
