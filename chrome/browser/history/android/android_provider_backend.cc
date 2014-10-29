@@ -113,11 +113,6 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
   return true;
 }
 
-void RunNotifyFaviconChanged(HistoryBackend::Delegate* delegate,
-                             scoped_ptr<std::set<GURL> > changed_favicons) {
-  delegate->NotifyFaviconChanged(*changed_favicons);
-}
-
 }  // namespace
 
 // AndroidProviderBackend::ScopedTransaction ----------------------------------
@@ -334,21 +329,20 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
   *updated_count = ids_set.size();
 
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
-  scoped_ptr<std::set<GURL> > favicon(new std::set<GURL>);
+  std::set<GURL> favicon;
 
-  for (TableIDRows::const_iterator i = ids_set.begin(); i != ids_set.end();
-       ++i) {
+  for (const auto& id : ids_set) {
     if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE) ||
         row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) ||
         row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
       URLRow url_row;
-      if (!history_db_->GetURLRow(i->url_id, &url_row))
+      if (!history_db_->GetURLRow(id.url_id, &url_row))
         return false;
       modified->changed_urls.push_back(url_row);
     }
     if (thumbnail_db_ &&
         row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON))
-      favicon->insert(i->url);
+      favicon.insert(id.url);
   }
 
   if (!modified->changed_urls.empty()) {
@@ -360,10 +354,11 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
                    base::Passed(&details)));
   }
 
-  if (!favicon->empty()) {
-    notifications->push_back(base::Bind(&RunNotifyFaviconChanged,
-                                        base::Unretained(delegate_),
-                                        base::Passed(&favicon)));
+  if (!favicon.empty()) {
+    notifications->push_back(
+        base::Bind(&HistoryBackend::Delegate::NotifyFaviconChanged,
+                   base::Unretained(delegate_),
+                   favicon));
   }
 
   return true;
@@ -395,12 +390,11 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
   modified->changed_urls.push_back(url_row);
 
-  scoped_ptr<std::set<GURL> > favicon;
+  std::set<GURL> favicon;
   // No favicon should be changed if the thumbnail_db_ is not available.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
       row.favicon_valid() && thumbnail_db_) {
-    favicon.reset(new std::set<GURL>);
-    favicon->insert(url_row.url());
+    favicon.insert(url_row.url());
   }
 
   scoped_ptr<HistoryDetails> details = modified.Pass();
@@ -410,11 +404,11 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
                  chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                  base::Passed(&details)));
 
-  if (favicon) {
-    DCHECK(!favicon->empty());
-    notifications->push_back(base::Bind(&RunNotifyFaviconChanged,
-                                        base::Unretained(delegate_),
-                                        base::Passed(&favicon)));
+  if (!favicon.empty()) {
+    notifications->push_back(
+        base::Bind(&HistoryBackend::Delegate::NotifyFaviconChanged,
+                   base::Unretained(delegate_),
+                   favicon));
   }
 
   return row.id();
@@ -987,8 +981,8 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   new_row.set_visit_count(statement->statement()->ColumnInt(2));
   new_row.set_title(statement->statement()->ColumnString16(3));
 
+  std::set<GURL> favicons;
   scoped_ptr<URLsDeletedDetails> deleted_details(new URLsDeletedDetails);
-  scoped_ptr<std::set<GURL> > favicons(new std::set<GURL>);
   scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
   URLRow old_url_row;
   if (!history_db_->GetURLRow(ids[0].url_id, &old_url_row))
@@ -1005,8 +999,8 @@ bool AndroidProviderBackend::SimulateUpdateURL(
        favicon_bitmaps[0].bitmap_data;
    if (bitmap_data.get() && bitmap_data->size())
       new_row.set_favicon(bitmap_data);
-   favicons->insert(old_url_row.url());
-   favicons->insert(row.url());
+   favicons.insert(old_url_row.url());
+   favicons.insert(row.url());
   }
   new_row.set_is_bookmark(statement->statement()->ColumnBool(5));
 
@@ -1037,7 +1031,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
     new_row.set_title(row.title());
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON)) {
     new_row.set_favicon(row.favicon());
-    favicons->insert(new_row.url());
+    favicons.insert(new_row.url());
   }
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::BOOKMARK))
     new_row.set_is_bookmark(row.is_bookmark());
@@ -1072,10 +1066,11 @@ bool AndroidProviderBackend::SimulateUpdateURL(
                  base::Unretained(delegate_),
                  chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  base::Passed(&details)));
-  if (favicons && !favicons->empty()) {
-    notifications->push_back(base::Bind(&RunNotifyFaviconChanged,
-                                        base::Unretained(delegate_),
-                                        base::Passed(&favicons)));
+  if (!favicons.empty()) {
+    notifications->push_back(
+        base::Bind(&HistoryBackend::Delegate::NotifyFaviconChanged,
+                   base::Unretained(delegate_),
+                   favicons));
   }
   scoped_ptr<HistoryDetails> other_details = modified.Pass();
   notifications->push_back(
@@ -1125,8 +1120,8 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     const TableIDRows& urls,
     bool delete_bookmarks,
     HistoryNotifications* notifications) {
+  std::set<GURL> favicon;
   scoped_ptr<URLsDeletedDetails> deleted_details(new URLsDeletedDetails);
-  scoped_ptr<std::set<GURL> > favicon(new std::set<GURL>);
   for (TableIDRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     URLRow url_row;
     if (!history_db_->GetURLRow(i->url_id, &url_row))
@@ -1134,7 +1129,7 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     deleted_details->rows.push_back(url_row);
     if (thumbnail_db_ &&
         thumbnail_db_->GetIconMappingsForPageURL(url_row.url(), NULL))
-      favicon->insert(url_row.url());
+      favicon.insert(url_row.url());
   }
 
   // Only invoke Delete on the BookmarkModelHandler if we need
@@ -1152,10 +1147,11 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
                  base::Unretained(delegate_),
                  chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  base::Passed(&details)));
-  if (favicon && !favicon->empty()) {
-    notifications->push_back(base::Bind(&RunNotifyFaviconChanged,
-                                        base::Unretained(delegate_),
-                                        base::Passed(&favicon)));
+  if (!favicon.empty()) {
+    notifications->push_back(
+        base::Bind(&HistoryBackend::Delegate::NotifyFaviconChanged,
+                   base::Unretained(delegate_),
+                   favicon));
   }
   return true;
 }
