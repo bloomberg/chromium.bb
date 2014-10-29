@@ -101,8 +101,8 @@ TEST_F(CastChannelLoggerTest, BasicLogging) {
       2, EventType::MESSAGE_ENQUEUED, "foo_namespace", "details");
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
 
-  AuthResult auth_result =
-      AuthResult::Create("No response", AuthResult::ERROR_NO_RESPONSE);
+  AuthResult auth_result = AuthResult::CreateWithParseError(
+      "No response", AuthResult::ERROR_NO_RESPONSE);
 
   logger_->LogSocketChallengeReplyEvent(2, auth_result);
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
@@ -196,7 +196,7 @@ TEST_F(CastChannelLoggerTest, LogLastErrorEvents) {
 
   // Challenge reply error set
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
-  AuthResult auth_result = AuthResult::Create(
+  AuthResult auth_result = AuthResult::CreateWithParseError(
       "Some error", AuthResult::ErrorType::ERROR_PEER_CERT_EMPTY);
 
   logger_->LogSocketChallengeReplyEvent(2, auth_result);

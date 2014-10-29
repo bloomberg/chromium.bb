@@ -12,6 +12,7 @@ namespace core_api {
 namespace cast_channel {
 
 class CastMessage;
+class DeviceAuthMessage;
 
 struct AuthResult {
  public:
@@ -34,8 +35,8 @@ struct AuthResult {
   AuthResult();
   ~AuthResult();
 
-  static AuthResult Create(const std::string& error_message,
-                           ErrorType error_type);
+  static AuthResult CreateWithParseError(const std::string& error_message,
+                                         ErrorType error_type);
   static AuthResult CreateWithNSSError(const std::string& error_message,
                                        ErrorType error_type,
                                        int nss_error_code);
@@ -57,6 +58,11 @@ struct AuthResult {
 // 2. Certficate used to sign is rooted to a trusted CA.
 AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
                                       const std::string& peer_cert);
+
+// Parses a DeviceAuthMessage payload from a challenge reply.
+// Returns an AuthResult to indicate success or failure.
+AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
+                            DeviceAuthMessage* auth_message);
 
 }  // namespace cast_channel
 }  // namespace core_api
