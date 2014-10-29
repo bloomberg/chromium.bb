@@ -224,6 +224,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // True if load timing data should be collected for request.
   IPC_STRUCT_MEMBER(bool, enable_load_timing)
 
+  // True if upload progress should be available for request.
+  IPC_STRUCT_MEMBER(bool, enable_upload_progress)
+
   // The routing id of the RenderFrame.
   IPC_STRUCT_MEMBER(int, render_frame_id)
 

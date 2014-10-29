@@ -132,6 +132,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.fetch_request_context_type = request_info.fetch_request_context_type;
   request_.fetch_frame_type = request_info.fetch_frame_type;
   request_.enable_load_timing = request_info.enable_load_timing;
+  request_.enable_upload_progress = request_info.enable_upload_progress;
 
   const RequestExtraData kEmptyData;
   const RequestExtraData* extra_data;

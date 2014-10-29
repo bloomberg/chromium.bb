@@ -93,6 +93,9 @@ struct CONTENT_EXPORT RequestInfo {
   // True if load timing data should be collected for the request.
   bool enable_load_timing;
 
+  // True if upload progress should be available.
+  bool enable_upload_progress;
+
   // Extra data associated with this request.  We do not own this pointer.
   blink::WebURLRequest::ExtraData* extra_data;
 

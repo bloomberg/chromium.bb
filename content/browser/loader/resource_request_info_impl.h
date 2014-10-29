@@ -57,6 +57,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool allow_download,
       bool has_user_gesture,
       bool enable_load_timing,
+      bool enable_upload_progress,
       blink::WebReferrerPolicy referrer_policy,
       blink::WebPageVisibilityState visibility_state,
       ResourceContext* context,
@@ -164,6 +165,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   bool is_load_timing_enabled() const { return enable_load_timing_; }
 
+  bool is_upload_progress_enabled() const { return enable_upload_progress_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -188,6 +191,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool allow_download_;
   bool has_user_gesture_;
   bool enable_load_timing_;
+  bool enable_upload_progress_;
   bool was_ignored_by_handler_;
   bool counted_as_in_flight_request_;
   ResourceType resource_type_;
