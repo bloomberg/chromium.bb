@@ -169,6 +169,7 @@ class CC_EXPORT PictureLayerImpl
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
+  void UpdatePile(scoped_refptr<PicturePileImpl> pile);
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
