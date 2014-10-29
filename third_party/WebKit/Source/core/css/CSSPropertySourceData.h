@@ -132,7 +132,6 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
         KEYFRAMES_RULE,
         VIEWPORT_RULE,
         SUPPORTS_RULE,
-        FILTER_RULE
     };
 
     static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(Type type)
