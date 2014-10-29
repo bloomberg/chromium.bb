@@ -6,6 +6,8 @@
 
 #include <time.h>
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -13,9 +15,9 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
-using base::TimeDelta;
-using base::TimeTicks;
+namespace base {
+
+namespace {
 
 // Specialized test fixture allowing time strings without timezones to be
 // tested by comparing them to a known time in the local zone.
@@ -780,3 +782,100 @@ TEST(TimeDelta, WindowsEpoch) {
   // We can't test 1601 epoch, since the system time functions on Linux
   // only compute years starting from 1900.
 }
+
+// We could define this separately for Time, TimeTicks and TimeDelta but the
+// definitions would be identical anyway.
+template <class Any>
+std::string AnyToString(Any any) {
+  std::ostringstream oss;
+  oss << any;
+  return oss.str();
+}
+
+TEST(TimeDeltaLogging, DCheckEqCompiles) {
+  DCHECK_EQ(TimeDelta(), TimeDelta());
+}
+
+TEST(TimeDeltaLogging, EmptyIsZero) {
+  TimeDelta zero;
+  EXPECT_EQ("0s", AnyToString(zero));
+}
+
+TEST(TimeDeltaLogging, FiveHundredMs) {
+  TimeDelta five_hundred_ms = TimeDelta::FromMilliseconds(500);
+  EXPECT_EQ("0.5s", AnyToString(five_hundred_ms));
+}
+
+TEST(TimeDeltaLogging, MinusTenSeconds) {
+  TimeDelta minus_ten_seconds = TimeDelta::FromSeconds(-10);
+  EXPECT_EQ("-10s", AnyToString(minus_ten_seconds));
+}
+
+TEST(TimeDeltaLogging, DoesNotMessUpFormattingFlags) {
+  std::ostringstream oss;
+  std::ios_base::fmtflags flags_before = oss.flags();
+  oss << TimeDelta();
+  EXPECT_EQ(flags_before, oss.flags());
+}
+
+TEST(TimeDeltaLogging, DoesNotMakeStreamBad) {
+  std::ostringstream oss;
+  oss << TimeDelta();
+  EXPECT_TRUE(oss.good());
+}
+
+TEST(TimeLogging, DCheckEqCompiles) {
+  DCHECK_EQ(Time(), Time());
+}
+
+TEST(TimeLogging, ChromeBirthdate) {
+  Time birthdate;
+  ASSERT_TRUE(Time::FromString("Tue, 02 Sep 2008 09:42:18 GMT", &birthdate));
+  EXPECT_EQ("2008-09-02 09:42:18.000 UTC", AnyToString(birthdate));
+}
+
+TEST(TimeLogging, DoesNotMessUpFormattingFlags) {
+  std::ostringstream oss;
+  std::ios_base::fmtflags flags_before = oss.flags();
+  oss << Time();
+  EXPECT_EQ(flags_before, oss.flags());
+}
+
+TEST(TimeLogging, DoesNotMakeStreamBad) {
+  std::ostringstream oss;
+  oss << Time();
+  EXPECT_TRUE(oss.good());
+}
+
+TEST(TimeTicksLogging, DCheckEqCompiles) {
+  DCHECK_EQ(TimeTicks(), TimeTicks());
+}
+
+TEST(TimeTicksLogging, ZeroTime) {
+  TimeTicks zero;
+  EXPECT_EQ("0 bogo-microseconds", AnyToString(zero));
+}
+
+TEST(TimeTicksLogging, FortyYearsLater) {
+  TimeTicks forty_years_later =
+      TimeTicks() + TimeDelta::FromDays(365.25 * 40);
+  EXPECT_EQ("1262304000000000 bogo-microseconds",
+            AnyToString(forty_years_later));
+}
+
+TEST(TimeTicksLogging, DoesNotMessUpFormattingFlags) {
+  std::ostringstream oss;
+  std::ios_base::fmtflags flags_before = oss.flags();
+  oss << TimeTicks();
+  EXPECT_EQ(flags_before, oss.flags());
+}
+
+TEST(TimeTicksLogging, DoesNotMakeStreamBad) {
+  std::ostringstream oss;
+  oss << TimeTicks();
+  EXPECT_TRUE(oss.good());
+}
+
+}  // namespace
+
+}  // namespace base
