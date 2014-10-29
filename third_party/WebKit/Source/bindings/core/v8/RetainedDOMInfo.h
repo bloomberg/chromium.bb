@@ -42,19 +42,35 @@ class Node;
 class RetainedDOMInfo final : public RetainedObjectInfo {
 public:
     explicit RetainedDOMInfo(Node* root);
-    virtual ~RetainedDOMInfo();
-    virtual void Dispose() override;
-    virtual bool IsEquivalent(v8::RetainedObjectInfo* other) override;
-    virtual intptr_t GetHash() override;
-    virtual const char* GetGroupLabel() override;
-    virtual const char* GetLabel() override;
-    virtual intptr_t GetElementCount() override;
-    virtual intptr_t GetEquivalenceClass() override;
+    ~RetainedDOMInfo() override;
+    void Dispose() override;
+    bool IsEquivalent(v8::RetainedObjectInfo* other) override;
+    intptr_t GetHash() override;
+    const char* GetGroupLabel() override;
+    const char* GetLabel() override;
+    intptr_t GetElementCount() override;
+    intptr_t GetEquivalenceClass() override;
 
 private:
     // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap snapshotting round, when renderer
     // doesn't get control. This allows us to use raw pointers.
     Node* m_root;
+};
+
+class ActiveDOMObjectsInfo final : public RetainedObjectInfo {
+public:
+    explicit ActiveDOMObjectsInfo(int numberOfObjectsWithPendingActivity);
+    ~ActiveDOMObjectsInfo() override;
+    void Dispose() override;
+    bool IsEquivalent(v8::RetainedObjectInfo* other) override;
+    intptr_t GetHash() override;
+    const char* GetGroupLabel() override;
+    const char* GetLabel() override;
+    intptr_t GetElementCount() override;
+    intptr_t GetEquivalenceClass() override;
+
+private:
+    int m_numberOfObjectsWithPendingActivity;
 };
 
 } // namespace blink

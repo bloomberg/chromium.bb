@@ -247,6 +247,7 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
 public:
     explicit MajorGCWrapperVisitor(v8::Isolate* isolate, bool constructRetainedObjectInfos)
         : m_isolate(isolate)
+        , m_domObjectsWithPendingActivity(0)
         , m_liveRootGroupIdSet(false)
         , m_constructRetainedObjectInfos(constructRetainedObjectInfos)
     {
@@ -269,8 +270,10 @@ public:
         const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
 
         ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(*wrapper);
-        if (activeDOMObject && activeDOMObject->hasPendingActivity())
+        if (activeDOMObject && activeDOMObject->hasPendingActivity()) {
             m_isolate->SetObjectGroupId(*value, liveRootId());
+            ++m_domObjectsWithPendingActivity;
+        }
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
@@ -302,6 +305,8 @@ public:
                 alreadyAdded = root;
             }
         }
+        if (m_liveRootGroupIdSet)
+            profiler->SetRetainedObjectInfo(liveRootId(), new ActiveDOMObjectsInfo(m_domObjectsWithPendingActivity));
     }
 
 private:
@@ -313,12 +318,14 @@ private:
         if (!m_liveRootGroupIdSet) {
             m_isolate->SetObjectGroupId(liveRoot, id);
             m_liveRootGroupIdSet = true;
+            ++m_domObjectsWithPendingActivity;
         }
         return id;
     }
 
     v8::Isolate* m_isolate;
     WillBePersistentHeapVector<RawPtrWillBeMember<Node> > m_groupsWhichNeedRetainerInfo;
+    int m_domObjectsWithPendingActivity;
     bool m_liveRootGroupIdSet;
     bool m_constructRetainedObjectInfos;
 };
