@@ -18,7 +18,7 @@ using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 class ContextTestBase : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     blink::WebGraphicsContext3D::Attributes attributes;
     bool lose_context_when_out_of_memory = false;
     typedef WebGraphicsContext3DInProcessCommandBufferImpl WGC3DIPCBI;
@@ -28,9 +28,7 @@ class ContextTestBase : public testing::Test {
     context_support_ = context_->GetContextSupport();
   }
 
-  virtual void TearDown() {
-    context_.reset(NULL);
-  }
+  void TearDown() override { context_.reset(NULL); }
 
  protected:
   scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;

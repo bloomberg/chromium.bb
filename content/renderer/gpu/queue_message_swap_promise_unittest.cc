@@ -60,7 +60,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
       : frame_swap_message_queue_(new FrameSwapMessageQueue()),
         sync_message_filter_(new TestSyncMessageFilter()) {}
 
-  virtual ~QueueMessageSwapPromiseTest() {}
+  ~QueueMessageSwapPromiseTest() override {}
 
   scoped_ptr<cc::SwapPromise> QueueMessageImpl(IPC::Message* msg,
                                                MessageDeliveryPolicy policy,

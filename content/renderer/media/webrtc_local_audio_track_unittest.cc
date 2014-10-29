@@ -168,7 +168,7 @@ class MockMediaStreamAudioSink : public PeerConnectionAudioSink {
 
 class WebRtcLocalAudioTrackTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 2, 48000, 16, 480);
     MockMediaConstraintFactory constraint_factory;
@@ -191,7 +191,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
     capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     blink_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

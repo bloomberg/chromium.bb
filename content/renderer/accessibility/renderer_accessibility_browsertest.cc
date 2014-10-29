@@ -45,7 +45,7 @@ class RendererAccessibilityTest : public RenderViewTest {
     return static_cast<RenderFrameImpl*>(view()->GetMainRenderFrame());
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewTest::SetUp();
     sink_ = &render_thread_->sink();
   }

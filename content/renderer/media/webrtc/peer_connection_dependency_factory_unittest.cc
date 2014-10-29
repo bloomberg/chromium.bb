@@ -11,7 +11,7 @@ namespace content {
 
 class PeerConnectionDependencyFactoryTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
   }
 

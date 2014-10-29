@@ -20,11 +20,11 @@ namespace content {
 class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
  public:
   SandboxBPFBasePolicy();
-  virtual ~SandboxBPFBasePolicy();
+  ~SandboxBPFBasePolicy() override;
 
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
-  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
+  sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
   // A policy can implement this hook to run code right before the policy
   // is passed to the BPF compiler and the sandbox is engaged.

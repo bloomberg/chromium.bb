@@ -17,11 +17,11 @@ class ShellMainDelegate;
 class ContentBrowserTest : public BrowserTestBase {
  protected:
   ContentBrowserTest();
-  virtual ~ContentBrowserTest();
+  ~ContentBrowserTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // BrowserTestBase:
   void RunTestOnMainThreadLoop() override;

@@ -56,7 +56,7 @@ class MediaStreamVideoSourceTest
     webkit_source_.setExtraData(mock_source_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     webkit_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

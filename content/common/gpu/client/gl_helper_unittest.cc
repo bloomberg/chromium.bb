@@ -53,7 +53,7 @@ const char* kQualityNames[] = {"best", "good", "fast", };
 
 class GLHelperTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     WebGraphicsContext3D::Attributes attributes;
     bool lose_context_when_out_of_memory = false;
     context_ =
@@ -67,7 +67,7 @@ class GLHelperTest : public testing::Test {
         context_->GetGLInterface(), helper_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     helper_scaling_.reset(NULL);
     helper_.reset(NULL);
     context_.reset(NULL);

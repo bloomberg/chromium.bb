@@ -164,11 +164,9 @@ class KeySystemsTest : public testing::Test {
     SetRendererClientForTesting(&content_renderer_client_);
   }
 
-  virtual void SetUp() override {
-    AddContainerAndCodecMasksForTest();
-  }
+  void SetUp() override { AddContainerAndCodecMasksForTest(); }
 
-  virtual ~KeySystemsTest() {
+  ~KeySystemsTest() override {
     // Clear the use of content_client_, which was set in SetUp().
     SetContentClient(NULL);
   }

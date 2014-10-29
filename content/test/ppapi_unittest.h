@@ -22,10 +22,10 @@ class PluginModule;
 class PpapiUnittest : public testing::Test {
  public:
   PpapiUnittest();
-  virtual ~PpapiUnittest();
+  ~PpapiUnittest() override;
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   PluginModule* module() const { return module_.get(); }
   PepperPluginInstanceImpl* instance() const { return instance_.get(); }

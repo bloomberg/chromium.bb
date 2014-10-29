@@ -13,7 +13,7 @@ namespace content {
 class ManifestParserTest : public testing::Test  {
  protected:
   ManifestParserTest() {}
-  virtual ~ManifestParserTest() {}
+  ~ManifestParserTest() override {}
 
   Manifest ParseManifest(const base::StringPiece& json,
                          const GURL& document_url = default_document_url,

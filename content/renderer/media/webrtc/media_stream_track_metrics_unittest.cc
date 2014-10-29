@@ -78,12 +78,12 @@ class MockMediaStreamTrackMetrics : public MediaStreamTrackMetrics {
 
 class MediaStreamTrackMetricsTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     metrics_.reset(new MockMediaStreamTrackMetrics());
     stream_ = new rtc::RefCountedObject<MockMediaStream>("stream");
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     metrics_.reset();
     stream_ = NULL;
   }

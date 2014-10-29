@@ -17,7 +17,7 @@ namespace content {
 class SiteIsolationPolicyBrowserTest : public ContentBrowserTest {
  public:
   SiteIsolationPolicyBrowserTest() {}
-  virtual ~SiteIsolationPolicyBrowserTest() {}
+  ~SiteIsolationPolicyBrowserTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     ASSERT_TRUE(test_server()->Start());

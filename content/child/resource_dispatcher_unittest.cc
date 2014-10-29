@@ -154,7 +154,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
  public:
   ResourceDispatcherTest() : dispatcher_(this) {}
 
-  virtual ~ResourceDispatcherTest() {
+  ~ResourceDispatcherTest() override {
     STLDeleteContainerPairSecondPointers(shared_memory_map_.begin(),
                                          shared_memory_map_.end());
   }

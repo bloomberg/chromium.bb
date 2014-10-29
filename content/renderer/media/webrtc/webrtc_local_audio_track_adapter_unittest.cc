@@ -45,7 +45,7 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     track_->OnSetFormat(params_);
     EXPECT_TRUE(track_->GetAudioAdapter()->enabled());
   }

@@ -148,7 +148,7 @@ class RenderViewHostTestEnabler {
 class RenderViewHostTestHarness : public testing::Test {
  public:
   RenderViewHostTestHarness();
-  virtual ~RenderViewHostTestHarness();
+  ~RenderViewHostTestHarness() override;
 
   NavigationController& controller();
 
@@ -200,8 +200,8 @@ class RenderViewHostTestHarness : public testing::Test {
 
  protected:
   // testing::Test
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Derived classes should override this method to use a custom BrowserContext.
   // It is invoked by SetUp after threads were started.

@@ -49,7 +49,7 @@ class VideoSourceHandlerTest : public ::testing::Test {
     registry_->AddVideoTrack(kTestVideoTrackId);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     registry_.reset();
     handler_.reset();
     blink::WebHeap::collectAllGarbageForTesting();

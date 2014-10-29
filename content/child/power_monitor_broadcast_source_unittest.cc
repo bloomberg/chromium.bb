@@ -18,7 +18,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
     power_monitor_.reset(new base::PowerMonitor(
         scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
-  virtual ~PowerMonitorBroadcastSourceTest() {}
+  ~PowerMonitorBroadcastSourceTest() override {}
 
   PowerMonitorBroadcastSource* source() { return power_monitor_source_; }
   base::PowerMonitor* monitor() { return power_monitor_.get(); }

@@ -52,7 +52,7 @@ class RenderViewTest : public testing::Test {
   };
 
   RenderViewTest();
-  virtual ~RenderViewTest();
+  ~RenderViewTest() override;
 
  protected:
   // Spins the message loop to process all messages that are currently pending.
@@ -132,9 +132,9 @@ class RenderViewTest : public testing::Test {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // testing::Test
-  virtual void SetUp() override;
+  void SetUp() override;
 
-  virtual void TearDown() override;
+  void TearDown() override;
 
   base::MessageLoop msg_loop_;
   scoped_ptr<MockRenderProcess> mock_process_;

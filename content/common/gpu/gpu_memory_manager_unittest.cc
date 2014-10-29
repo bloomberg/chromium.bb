@@ -148,8 +148,7 @@ class GpuMemoryManagerTest : public testing::Test {
     memmgr_.TestingDisableScheduleManage();
   }
 
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
   static int32 GenerateUniqueSurfaceId() {
     static int32 surface_id_ = 1;

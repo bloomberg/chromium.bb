@@ -281,7 +281,7 @@ class TestRenderViewHost
 class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
  public:
   RenderViewHostImplTestHarness();
-  virtual ~RenderViewHostImplTestHarness();
+  ~RenderViewHostImplTestHarness() override;
 
   // contents() is equivalent to static_cast<TestWebContents*>(web_contents())
   TestWebContents* contents();

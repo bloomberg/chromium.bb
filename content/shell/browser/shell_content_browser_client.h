@@ -64,7 +64,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual void GetAdditionalMappedFilesForChildProcess(
+  void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       FileDescriptorInfo* mappings) override;

@@ -13,9 +13,9 @@ namespace content {
 class PpapiProcessPolicy : public SandboxBPFBasePolicy {
  public:
   PpapiProcessPolicy();
-  virtual ~PpapiProcessPolicy();
+  ~PpapiProcessPolicy() override;
 
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
  private:

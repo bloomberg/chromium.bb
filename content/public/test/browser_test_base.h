@@ -29,7 +29,7 @@ namespace content {
 class BrowserTestBase : public testing::Test {
  public:
   BrowserTestBase();
-  virtual ~BrowserTestBase();
+  ~BrowserTestBase() override;
 
   // We do this so we can be used in a Task.
   void AddRef() {}
@@ -37,10 +37,10 @@ class BrowserTestBase : public testing::Test {
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Restores state configured in SetUp.
-  virtual void TearDown() override;
+  void TearDown() override;
 
   // Override this to add any custom setup code that needs to be done on the
   // main thread after the browser is created and just before calling

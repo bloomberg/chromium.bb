@@ -38,10 +38,9 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     blink_source_.setExtraData(mock_source_);
   }
 
-  virtual ~MediaStreamVideoTrackTest() {
-  }
+  ~MediaStreamVideoTrackTest() override {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     blink_source_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

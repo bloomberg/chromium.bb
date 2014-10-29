@@ -28,10 +28,10 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
   // Returns a textual description of the product type and version to include
   // in the crash report.
-  virtual void GetProductNameAndVersion(const char** product_name,
-                                        const char** version) override;
+  void GetProductNameAndVersion(const char** product_name,
+                                const char** version) override;
 
-  virtual base::FilePath GetReporterLogFilename() override;
+  base::FilePath GetReporterLogFilename() override;
 #endif
 
   // The location where minidump files should be written. Returns true if

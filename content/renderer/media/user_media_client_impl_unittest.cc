@@ -160,7 +160,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
 class UserMediaClientImplTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create our test object.
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
@@ -170,7 +170,7 @@ class UserMediaClientImplTest : public ::testing::Test {
         scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_).Pass()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     used_media_impl_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

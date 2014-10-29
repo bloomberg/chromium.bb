@@ -46,7 +46,7 @@ class RenderWidgetCompositorTest : public testing::Test {
       : render_widget_(make_scoped_refptr(new TestRenderWidget())),
         render_widget_compositor_(
             RenderWidgetCompositor::Create(render_widget_.get(), false)) {}
-  virtual ~RenderWidgetCompositorTest() {}
+  ~RenderWidgetCompositorTest() override {}
 
  protected:
   MockRenderThread render_thread_;

@@ -47,7 +47,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
                                    blink::WebAXEvent event) override;
   RendererAccessibilityType GetType() override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
-  virtual void DisableAccessibility() override;
+  void DisableAccessibility() override;
 
   void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
 

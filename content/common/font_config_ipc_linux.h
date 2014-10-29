@@ -17,15 +17,15 @@ namespace content {
 class FontConfigIPC : public SkFontConfigInterface {
  public:
   explicit FontConfigIPC(int fd);
-  virtual ~FontConfigIPC();
+  ~FontConfigIPC() override;
 
-  virtual bool matchFamilyName(const char familyName[],
-                               SkTypeface::Style requested,
-                               FontIdentity* outFontIdentifier,
-                               SkString* outFamilyName,
-                               SkTypeface::Style* outStyle) override;
+  bool matchFamilyName(const char familyName[],
+                       SkTypeface::Style requested,
+                       FontIdentity* outFontIdentifier,
+                       SkString* outFamilyName,
+                       SkTypeface::Style* outStyle) override;
 
-  virtual SkStream* openStream(const FontIdentity&) override;
+  SkStream* openStream(const FontIdentity&) override;
 
   enum Method {
     METHOD_MATCH = 0,

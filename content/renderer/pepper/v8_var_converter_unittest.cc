@@ -169,16 +169,16 @@ class V8VarConverterTest : public testing::Test {
         dummy,
         scoped_ptr<ResourceConverter>(new MockResourceConverter).Pass()));
   }
-  virtual ~V8VarConverterTest() {}
+  ~V8VarConverterTest() override {}
 
   // testing::Test implementation.
-  virtual void SetUp() {
+  void SetUp() override {
     ProxyLock::Acquire();
     v8::HandleScope handle_scope(isolate_);
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
     context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
   }
-  virtual void TearDown() {
+  void TearDown() override {
     context_.Reset();
     ASSERT_TRUE(PpapiGlobals::Get()->GetVarTracker()->GetLiveVars().empty());
     ProxyLock::Release();

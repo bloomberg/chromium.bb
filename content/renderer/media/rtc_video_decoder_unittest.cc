@@ -31,7 +31,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     memset(&codec_, 0, sizeof(codec_));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(vda_thread_.Start());
     vda_task_runner_ = vda_thread_.message_loop_proxy();
     mock_vda_ = new media::MockVideoDecodeAccelerator;
@@ -47,7 +47,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
     EXPECT_CALL(*mock_vda_, Destroy()).Times(1);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     VLOG(2) << "TearDown";
     EXPECT_TRUE(vda_thread_.IsRunning());
     RunUntilIdle();  // Wait until all callbascks complete.

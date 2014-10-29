@@ -28,14 +28,14 @@ class MockLockTarget : public MouseLockDispatcher::LockTarget {
 // fixture containing a RenderViewImpl view() and interacting to that interface.
 class MouseLockDispatcherTest : public RenderViewTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewTest::SetUp();
     route_id_ = view()->GetRoutingID();
     target_ = new MockLockTarget();
     alternate_target_ = new MockLockTarget();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     RenderViewTest::TearDown();
     delete target_;
     delete alternate_target_;

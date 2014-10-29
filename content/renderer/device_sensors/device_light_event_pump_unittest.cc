@@ -66,7 +66,7 @@ class DeviceLightEventPumpTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     const DeviceLightHardwareBuffer* null_buffer = NULL;
     listener_.reset(new MockDeviceLightListener);
     light_pump_.reset(new DeviceLightEventPumpForTesting);

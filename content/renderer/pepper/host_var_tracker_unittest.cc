@@ -70,7 +70,7 @@ class HostVarTrackerTest : public PpapiUnittest {
  public:
   HostVarTrackerTest() {}
 
-  virtual void TearDown() override {
+  void TearDown() override {
     v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(
         v8::Isolate::kFullGarbageCollection);
     EXPECT_EQ(0, g_v8objects_alive);

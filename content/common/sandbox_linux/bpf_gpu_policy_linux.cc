@@ -122,9 +122,9 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
   static sandbox::bpf_dsl::Policy* Create() {
     return new GpuBrokerProcessPolicy();
   }
-  virtual ~GpuBrokerProcessPolicy() {}
+  ~GpuBrokerProcessPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
+  ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   GpuBrokerProcessPolicy() {}

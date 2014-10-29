@@ -199,7 +199,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     child_process_.reset(new ChildProcess());
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
     mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     pc_handler_.reset(
@@ -215,7 +215,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     ASSERT_TRUE(mock_peer_connection_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     pc_handler_.reset();
     mock_tracker_.reset();
     mock_dependency_factory_.reset();

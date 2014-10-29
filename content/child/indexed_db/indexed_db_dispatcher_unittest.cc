@@ -68,9 +68,7 @@ class IndexedDBDispatcherTest : public testing::Test {
         thread_safe_sender_(new ThreadSafeSender(message_loop_proxy_.get(),
                                                  sync_message_filter_.get())) {}
 
-  virtual void TearDown() override {
-    blink::WebHeap::collectAllGarbageForTesting();
-  }
+  void TearDown() override { blink::WebHeap::collectAllGarbageForTesting(); }
 
  protected:
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

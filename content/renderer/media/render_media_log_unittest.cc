@@ -18,7 +18,7 @@ class RenderMediaLogTest : public testing::Test {
     log_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
   }
 
-  virtual ~RenderMediaLogTest() {}
+  ~RenderMediaLogTest() override {}
 
   void AddEvent(media::MediaLogEvent::Type type) {
     log_->AddEvent(log_->CreateEvent(type));

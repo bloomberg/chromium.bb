@@ -55,10 +55,10 @@ class AuraWindowRegistry : public aura::WindowObserver {
   AuraWindowRegistry()
       : next_id_(1) {
   }
-  virtual ~AuraWindowRegistry() {}
+  ~AuraWindowRegistry() override {}
 
   // WindowObserver overrides.
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     std::map<aura::Window*, int>::iterator it = window_to_id_map_.find(window);
     DCHECK(it != window_to_id_map_.end());
     id_to_window_map_.erase(it->second);

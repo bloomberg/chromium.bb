@@ -100,9 +100,9 @@ class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
   static sandbox::bpf_dsl::Policy* Create() {
     return new CrosArmGpuBrokerProcessPolicy();
   }
-  virtual ~CrosArmGpuBrokerProcessPolicy() {}
+  ~CrosArmGpuBrokerProcessPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
+  ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   CrosArmGpuBrokerProcessPolicy() : CrosArmGpuProcessPolicy(false) {}

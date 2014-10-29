@@ -21,7 +21,7 @@ class WebRtcVideoCapturerAdapterTest
     adapter_.SignalFrameCaptured.connect(
         this, &WebRtcVideoCapturerAdapterTest::OnFrameCaptured);
   }
-  virtual ~WebRtcVideoCapturerAdapterTest() {}
+  ~WebRtcVideoCapturerAdapterTest() override {}
 
   void TestSourceCropFrame(int capture_width,
                            int capture_height,

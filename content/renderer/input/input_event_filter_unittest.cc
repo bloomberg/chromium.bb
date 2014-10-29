@@ -125,7 +125,7 @@ void AddEventsToFilter(IPC::MessageFilter* message_filter,
 
 class InputEventFilterTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     filter_ = new InputEventFilter(&message_recorder_,
                                    base::MessageLoopProxy::current(),
                                    message_loop_.message_loop_proxy());

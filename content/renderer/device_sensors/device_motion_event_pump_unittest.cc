@@ -70,7 +70,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     const DeviceMotionHardwareBuffer* null_buffer = NULL;
     listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting);

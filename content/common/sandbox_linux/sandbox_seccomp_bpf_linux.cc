@@ -80,9 +80,9 @@ inline bool IsArchitectureArm() {
 class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
  public:
   BlacklistDebugAndNumaPolicy() {}
-  virtual ~BlacklistDebugAndNumaPolicy() {}
+  ~BlacklistDebugAndNumaPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
+  ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
@@ -98,9 +98,9 @@ ResultExpr BlacklistDebugAndNumaPolicy::EvaluateSyscall(int sysno) const {
 class AllowAllPolicy : public SandboxBPFBasePolicy {
  public:
   AllowAllPolicy() {}
-  virtual ~AllowAllPolicy() {}
+  ~AllowAllPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
+  ResultExpr EvaluateSyscall(int system_call_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);

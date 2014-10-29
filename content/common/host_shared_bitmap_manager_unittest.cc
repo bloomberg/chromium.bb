@@ -10,7 +10,7 @@ namespace {
 
 class HostSharedBitmapManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() { manager_.reset(new HostSharedBitmapManager()); }
+  void SetUp() override { manager_.reset(new HostSharedBitmapManager()); }
   scoped_ptr<HostSharedBitmapManager> manager_;
 };
 

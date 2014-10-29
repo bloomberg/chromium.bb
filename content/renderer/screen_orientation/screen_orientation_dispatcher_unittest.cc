@@ -66,7 +66,7 @@ class ScreenOrientationDispatcherWithSink : public ScreenOrientationDispatcher {
 
 class ScreenOrientationDispatcherTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     dispatcher_.reset(new ScreenOrientationDispatcherWithSink(&sink_));
   }
 

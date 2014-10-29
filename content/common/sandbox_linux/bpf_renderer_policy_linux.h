@@ -13,9 +13,9 @@ namespace content {
 class RendererProcessPolicy : public SandboxBPFBasePolicy {
  public:
   RendererProcessPolicy();
-  virtual ~RendererProcessPolicy();
+  ~RendererProcessPolicy() override;
 
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
  private:

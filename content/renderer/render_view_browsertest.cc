@@ -141,9 +141,9 @@ class RenderViewImplTest : public RenderViewTest {
     mock_keyboard_.reset(new MockKeyboard());
   }
 
-  virtual ~RenderViewImplTest() {}
+  ~RenderViewImplTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewTest::SetUp();
     // Enable Blink's experimental and test only features so that test code
     // does not have to bother enabling each feature.

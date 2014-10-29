@@ -19,7 +19,7 @@ namespace {
 
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
-  virtual ~RenderThreadImplBrowserTest() {}
+  ~RenderThreadImplBrowserTest() override {}
 };
 
 class DummyListener : public IPC::Listener {

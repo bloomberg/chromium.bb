@@ -20,7 +20,7 @@ namespace content {
 class WebUIResourceBrowserTest : public ContentBrowserTest {
  public:
   WebUIResourceBrowserTest() {}
-  virtual ~WebUIResourceBrowserTest() {}
+  ~WebUIResourceBrowserTest() override {}
 
   // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file) {

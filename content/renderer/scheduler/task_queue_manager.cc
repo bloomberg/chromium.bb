@@ -16,14 +16,13 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   TaskQueue(TaskQueueManager* task_queue_manager);
 
   // base::SingleThreadTaskRunner implementation.
-  virtual bool RunsTasksOnCurrentThread() const override;
-  virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               const base::Closure& task,
-                               base::TimeDelta delay) override;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) override;
+  bool RunsTasksOnCurrentThread() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override;
 
   // Adds a task at the end of the incoming task queue and schedules a call to
   // TaskQueueManager::DoWork() if the incoming queue was empty and automatic
@@ -43,7 +42,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   base::TaskQueue& work_queue() { return work_queue_; }
 
  private:
-  virtual ~TaskQueue();
+  ~TaskQueue() override;
 
   void PumpQueueLocked();
   void EnqueueTaskLocked(const base::PendingTask& pending_task);

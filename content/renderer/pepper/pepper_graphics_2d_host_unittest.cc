@@ -33,7 +33,7 @@ class PepperGraphics2DHostTest : public testing::Test {
 
   PepperGraphics2DHostTest() : renderer_ppapi_host_(NULL, 12345) {}
 
-  virtual ~PepperGraphics2DHostTest() {
+  ~PepperGraphics2DHostTest() override {
     ppapi::ProxyAutoLock proxy_lock;
     host_.reset();
   }

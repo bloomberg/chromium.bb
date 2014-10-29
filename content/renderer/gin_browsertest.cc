@@ -40,9 +40,9 @@ gin::WrapperInfo TestGinObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 class GinBrowserTest : public RenderViewTest {
  public:
   GinBrowserTest() {}
-  virtual ~GinBrowserTest() {}
+  ~GinBrowserTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kJavaScriptFlags, "--expose_gc");
 

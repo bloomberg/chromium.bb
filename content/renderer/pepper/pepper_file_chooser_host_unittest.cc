@@ -33,14 +33,14 @@ class PepperFileChooserHostTest : public RenderViewTest {
  public:
   PepperFileChooserHostTest() : pp_instance_(123456) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     SetContentClient(&client_);
     RenderViewTest::SetUp();
     ppapi::ProxyLock::DisableLockingOnThreadForTest();
 
     globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
   }
-  virtual void TearDown() {
+  void TearDown() override {
     globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
 
     RenderViewTest::TearDown();

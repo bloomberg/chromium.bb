@@ -41,7 +41,7 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
     registry_->Init(kTestStreamUrl);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     registry_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
     PpapiUnittest::TearDown();

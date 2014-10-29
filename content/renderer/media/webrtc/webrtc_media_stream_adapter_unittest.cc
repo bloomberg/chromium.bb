@@ -24,12 +24,12 @@ namespace content {
 
 class WebRtcMediaStreamAdapterTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     adapter_.reset();
     blink::WebHeap::collectAllGarbageForTesting();
   }

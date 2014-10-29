@@ -33,10 +33,10 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
 
  private:
   GpuBenchmarking();
-  virtual ~GpuBenchmarking();
+  ~GpuBenchmarking() override;
 
   // gin::Wrappable.
-  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
   // JavaScript handlers.

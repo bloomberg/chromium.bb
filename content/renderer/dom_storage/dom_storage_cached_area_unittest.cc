@@ -130,9 +130,7 @@ class DOMStorageCachedAreaTest : public testing::Test {
   const base::string16 kValue;
   const GURL kPageUrl;
 
-  virtual void SetUp() {
-    mock_proxy_ = new MockProxy();
-  }
+  void SetUp() override { mock_proxy_ = new MockProxy(); }
 
   bool IsPrimed(DOMStorageCachedArea* cached_area) {
     return cached_area->map_.get();

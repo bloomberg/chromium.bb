@@ -19,7 +19,7 @@ namespace content {
 
 class WebRtcLocalAudioSourceProviderTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          media::CHANNEL_LAYOUT_MONO, 1, 48000, 16, 480);
     sink_params_.Reset(
@@ -51,7 +51,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     source_provider_->OnSetFormat(source_params_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     source_provider_.reset();
     blink_track_.reset();
     blink::WebHeap::collectAllGarbageForTesting();

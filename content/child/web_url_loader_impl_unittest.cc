@@ -285,7 +285,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 class WebURLLoaderImplTest : public testing::Test {
  public:
   explicit WebURLLoaderImplTest() : client_(&dispatcher_) {}
-  virtual ~WebURLLoaderImplTest() {}
+  ~WebURLLoaderImplTest() override {}
 
   void DoStartAsyncRequest() {
     blink::WebURLRequest request;

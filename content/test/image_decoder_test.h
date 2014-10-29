@@ -41,7 +41,7 @@ class ImageDecoderTest : public testing::Test {
   explicit ImageDecoderTest(const std::string& format) : format_(format) { }
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Returns the vector of image files for testing.
   std::vector<base::FilePath> GetImageFiles() const;

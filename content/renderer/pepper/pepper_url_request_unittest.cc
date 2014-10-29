@@ -57,7 +57,7 @@ class URLRequestInfoTest : public RenderViewTest {
   // url_request_info_util.cc to detect that this is a test instance.
   URLRequestInfoTest() : pp_instance_(-1) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewTest::SetUp();
     ppapi::ProxyLock::DisableLockingOnThreadForTest();
 
@@ -68,7 +68,7 @@ class URLRequestInfoTest : public RenderViewTest {
         ppapi::proxy::Connection(), pp_instance_, URLRequestInfoData());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     test_globals_.GetResourceTracker()->DidDeleteInstance(pp_instance_);
     RenderViewTest::TearDown();
   }

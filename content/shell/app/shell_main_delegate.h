@@ -29,7 +29,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   int RunProcess(const std::string& process_type,
                  const MainFunctionParams& main_function_params) override;
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-  virtual void ZygoteForked() override;
+  void ZygoteForked() override;
 #endif
   ContentBrowserClient* CreateContentBrowserClient() override;
   ContentRendererClient* CreateContentRendererClient() override;

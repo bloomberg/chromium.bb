@@ -20,7 +20,7 @@ namespace content {
 class RenderWidgetUnittest : public testing::Test {
  public:
   RenderWidgetUnittest() {}
-  virtual ~RenderWidgetUnittest() {}
+  ~RenderWidgetUnittest() override {}
 
  private:
   MockRenderProcess render_process_;

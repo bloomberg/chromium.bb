@@ -13,11 +13,11 @@ namespace content {
 class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
  public:
   explicit CrosArmGpuProcessPolicy(bool allow_shmat);
-  virtual ~CrosArmGpuProcessPolicy();
+  ~CrosArmGpuProcessPolicy() override;
 
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
-  virtual bool PreSandboxHook() override;
+  bool PreSandboxHook() override;
 
  private:
   const bool allow_shmat_;  // Allow shmat(2).

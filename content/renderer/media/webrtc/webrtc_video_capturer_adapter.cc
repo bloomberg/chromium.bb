@@ -38,97 +38,97 @@ class VideoFrameWrapper : public cricket::VideoFrame {
             base::Bind(&ReleaseOriginalFrame, frame))),
         elapsed_time_(elapsed_time) {}
 
-  virtual VideoFrame* Copy() const override {
+  VideoFrame* Copy() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return new VideoFrameWrapper(frame_, elapsed_time_);
   }
 
-  virtual size_t GetWidth() const override {
+  size_t GetWidth() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return static_cast<size_t>(frame_->visible_rect().width());
   }
 
-  virtual size_t GetHeight() const override {
+  size_t GetHeight() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return static_cast<size_t>(frame_->visible_rect().height());
   }
 
-  virtual const uint8* GetYPlane() const override {
+  const uint8* GetYPlane() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kYPlane);
   }
 
-  virtual const uint8* GetUPlane() const override {
+  const uint8* GetUPlane() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kUPlane);
   }
 
-  virtual const uint8* GetVPlane() const override {
+  const uint8* GetVPlane() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kVPlane);
   }
 
-  virtual uint8* GetYPlane() override {
+  uint8* GetYPlane() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kYPlane);
   }
 
-  virtual uint8* GetUPlane() override {
+  uint8* GetUPlane() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kUPlane);
   }
 
-  virtual uint8* GetVPlane() override {
+  uint8* GetVPlane() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->visible_data(media::VideoFrame::kVPlane);
   }
 
-  virtual int32 GetYPitch() const override {
+  int32 GetYPitch() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->stride(media::VideoFrame::kYPlane);
   }
 
-  virtual int32 GetUPitch() const override {
+  int32 GetUPitch() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->stride(media::VideoFrame::kUPlane);
   }
 
-  virtual int32 GetVPitch() const override {
+  int32 GetVPitch() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->stride(media::VideoFrame::kVPlane);
   }
 
-  virtual void* GetNativeHandle() const override {
+  void* GetNativeHandle() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return NULL;
   }
 
-  virtual size_t GetPixelWidth() const override {
+  size_t GetPixelWidth() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return 1;
   }
-  virtual size_t GetPixelHeight() const override {
+  size_t GetPixelHeight() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return 1;
   }
 
-  virtual int64 GetElapsedTime() const override {
+  int64 GetElapsedTime() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return elapsed_time_;
   }
 
-  virtual int64 GetTimeStamp() const override {
+  int64 GetTimeStamp() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return frame_->timestamp().InMicroseconds() *
            base::Time::kNanosecondsPerMicrosecond;
   }
 
-  virtual void SetElapsedTime(int64 elapsed_time) override {
+  void SetElapsedTime(int64 elapsed_time) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     elapsed_time_ = elapsed_time;
   }
 
-  virtual void SetTimeStamp(int64 time_stamp) override {
+  void SetTimeStamp(int64 time_stamp) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     // Round to closest microsecond.
     frame_->set_timestamp(base::TimeDelta::FromMicroseconds(
@@ -136,16 +136,16 @@ class VideoFrameWrapper : public cricket::VideoFrame {
         base::Time::kNanosecondsPerMicrosecond));
   }
 
-  virtual int GetRotation() const override {
+  int GetRotation() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return 0;
   }
 
   // TODO(magjed): Refactor into base class.
-  virtual size_t ConvertToRgbBuffer(uint32 to_fourcc,
-                                    uint8* buffer,
-                                    size_t size,
-                                    int stride_rgb) const override {
+  size_t ConvertToRgbBuffer(uint32 to_fourcc,
+                            uint8* buffer,
+                            size_t size,
+                            int stride_rgb) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     const size_t needed = std::abs(stride_rgb) * GetHeight();
     if (size < needed) {
@@ -171,50 +171,50 @@ class VideoFrameWrapper : public cricket::VideoFrame {
   }
 
   // The rest of the public methods are NOTIMPLEMENTED.
-  virtual bool InitToBlack(int w,
-                           int h,
-                           size_t pixel_width,
-                           size_t pixel_height,
-                           int64 elapsed_time,
-                           int64 time_stamp) override {
+  bool InitToBlack(int w,
+                   int h,
+                   size_t pixel_width,
+                   size_t pixel_height,
+                   int64 elapsed_time,
+                   int64 time_stamp) override {
     NOTIMPLEMENTED();
     return false;
   }
 
-  virtual bool Reset(uint32 fourcc,
-                     int w,
-                     int h,
-                     int dw,
-                     int dh,
-                     uint8* sample,
-                     size_t sample_size,
-                     size_t pixel_width,
-                     size_t pixel_height,
-                     int64 elapsed_time,
-                     int64 time_stamp,
-                     int rotation) override {
+  bool Reset(uint32 fourcc,
+             int w,
+             int h,
+             int dw,
+             int dh,
+             uint8* sample,
+             size_t sample_size,
+             size_t pixel_width,
+             size_t pixel_height,
+             int64 elapsed_time,
+             int64 time_stamp,
+             int rotation) override {
     NOTIMPLEMENTED();
     return false;
   }
 
-  virtual bool MakeExclusive() override {
+  bool MakeExclusive() override {
     NOTIMPLEMENTED();
     return false;
   }
 
-  virtual size_t CopyToBuffer(uint8* buffer, size_t size) const override {
+  size_t CopyToBuffer(uint8* buffer, size_t size) const override {
     NOTIMPLEMENTED();
     return 0;
   }
 
  protected:
   // TODO(magjed): Refactor as a static method in WebRtcVideoFrame.
-  virtual VideoFrame* CreateEmptyFrame(int w,
-                                       int h,
-                                       size_t pixel_width,
-                                       size_t pixel_height,
-                                       int64 elapsed_time,
-                                       int64 time_stamp) const override {
+  VideoFrame* CreateEmptyFrame(int w,
+                               int h,
+                               size_t pixel_width,
+                               size_t pixel_height,
+                               int64 elapsed_time,
+                               int64 time_stamp) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     VideoFrame* frame = new cricket::WebRtcVideoFrame();
     frame->InitToBlack(
@@ -264,7 +264,7 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     return &captured_frame_;
   }
 
-  virtual cricket::VideoFrame* CreateAliasedFrame(
+  cricket::VideoFrame* CreateAliasedFrame(
       const cricket::CapturedFrame* captured_frame,
       int dst_width,
       int dst_height) const override {

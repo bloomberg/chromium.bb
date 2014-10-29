@@ -14,8 +14,8 @@ namespace content {
 class WebRtcContentBrowserTest: public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   // Executes |javascript|. The script is required to use
