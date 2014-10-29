@@ -664,6 +664,8 @@ struct weston_compositor {
 	int32_t kb_repeat_delay;
 
 	clockid_t presentation_clock;
+
+	int exit_code;
 };
 
 struct weston_buffer {
@@ -1263,6 +1265,9 @@ weston_compositor_set_presentation_clock_software(
 					struct weston_compositor *compositor);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
+void
+weston_compositor_exit_with_code(struct weston_compositor *compositor,
+				 int exit_code);
 void
 weston_output_init_zoom(struct weston_output *output);
 void

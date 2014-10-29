@@ -4152,6 +4152,14 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 }
 
 WL_EXPORT void
+weston_compositor_exit_with_code(struct weston_compositor *compositor,
+				 int exit_code)
+{
+	compositor->exit_code = exit_code;
+	wl_display_terminate(compositor->wl_display);
+}
+
+WL_EXPORT void
 weston_compositor_set_default_pointer_grab(struct weston_compositor *ec,
 			const struct weston_pointer_grab_interface *interface)
 {
@@ -4764,6 +4772,7 @@ int main(int argc, char *argv[])
 
 	ec->idle_time = idle_time;
 	ec->default_pointer_grab = NULL;
+	ec->exit_code = EXIT_SUCCESS;
 
 	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
@@ -4828,6 +4837,14 @@ int main(int argc, char *argv[])
 	weston_compositor_wake(ec);
 
 	wl_display_run(display);
+
+	/* Allow for setting return exit code after
+	 * wl_display_run returns normally. This is
+	 * useful for devs/testers and automated tests
+	 * that want to indicate failure status to
+	 * testing infrastructure above
+	 */
+	ret = ec->exit_code;
 
 out:
 	/* prevent further rendering while shutting down */
