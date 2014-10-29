@@ -763,7 +763,7 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
 void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
-  // TODO(yukawa): Implement this.
+  ime_adapter_android_.SetCharacterBounds(character_bounds);
 }
 
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
