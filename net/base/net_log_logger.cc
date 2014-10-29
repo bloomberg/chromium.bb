@@ -62,7 +62,7 @@ void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
 
 // static
 base::DictionaryValue* NetLogLogger::GetConstants() {
-  return GetNetConstants().get();
+  return GetNetConstants().release();
 }
 
 }  // namespace net
