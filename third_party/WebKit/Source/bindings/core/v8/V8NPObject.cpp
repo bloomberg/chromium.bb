@@ -136,7 +136,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, 
     }
 
     if (!retval)
-        V8ThrowException::throwGeneralError("Error calling method on NPObject.", isolate);
+        V8ThrowException::throwGeneralError(isolate, "Error calling method on NPObject.");
 
     for (int i = 0; i < numArgs; i++)
         _NPN_ReleaseVariantValue(&npArgs[i]);

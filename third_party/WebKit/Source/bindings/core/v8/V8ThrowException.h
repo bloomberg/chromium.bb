@@ -47,8 +47,8 @@ public:
 
     static v8::Handle<v8::Value> throwException(v8::Handle<v8::Value>, v8::Isolate*);
 
-    static v8::Handle<v8::Value> createGeneralError(const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> throwGeneralError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> createGeneralError(v8::Isolate*, const String&);
+    static v8::Handle<v8::Value> throwGeneralError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> createTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> createRangeError(const String&, v8::Isolate*);

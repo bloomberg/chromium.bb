@@ -52,7 +52,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
 
     if (ec == V8GeneralError)
-        return V8ThrowException::createGeneralError(sanitizedMessage, isolate);
+        return V8ThrowException::createGeneralError(isolate, sanitizedMessage);
     if (ec == V8TypeError)
         return V8ThrowException::createTypeError(sanitizedMessage, isolate);
     if (ec == V8RangeError)
@@ -88,14 +88,14 @@ v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& 
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createGeneralError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createGeneralError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::Error(v8String(isolate, message.isNull() ? "Error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwGeneralError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwGeneralError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createGeneralError(message, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createGeneralError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 

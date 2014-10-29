@@ -511,7 +511,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
     if (!npObject || !npObjectToV8NPObject(npObject)) {
         // We won't be able to find a proper scope for this exception, so just throw it.
         // This is consistent with JSC, which throws a global exception all the time.
-        V8ThrowException::throwGeneralError(message, v8::Isolate::GetCurrent());
+        V8ThrowException::throwGeneralError(v8::Isolate::GetCurrent(), message);
         return;
     }
 
@@ -523,7 +523,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
     ScriptState::Scope scope(scriptState);
     ExceptionCatcher exceptionCatcher;
 
-    V8ThrowException::throwGeneralError(message, isolate);
+    V8ThrowException::throwGeneralError(isolate, message);
 }
 
 bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint32_t* count)
