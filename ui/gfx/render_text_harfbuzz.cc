@@ -1091,6 +1091,7 @@ bool RenderTextHarfBuzz::CompareFamily(
 
 void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   const Font& primary_font = font_list().GetPrimaryFont();
+  const std::string primary_family = primary_font.GetFontName();
   run->font_size = primary_font.GetFontSize();
 
   std::string best_family;
@@ -1105,26 +1106,46 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
 
 #if defined(OS_WIN)
   Font uniscribe_font;
+  std::string uniscribe_family;
   const base::char16* run_text = &(GetLayoutText()[run->range.start()]);
   if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
-                               &uniscribe_font) &&
-      CompareFamily(run, uniscribe_font.GetFontName(),
-                    uniscribe_font.GetFontRenderParams(),
-                    &best_family, &best_render_params, &best_missing_glyphs))
-    return;
+                               &uniscribe_font)) {
+    uniscribe_family = uniscribe_font.GetFontName();
+    if (CompareFamily(run, uniscribe_family,
+                      uniscribe_font.GetFontRenderParams(),
+                      &best_family, &best_render_params, &best_missing_glyphs))
+      return;
+  }
 #endif
 
-  // Skip the first fallback font, which is |primary_font|.
   std::vector<std::string> fallback_families =
-      GetFallbackFontFamilies(primary_font.GetFontName());
-  for (size_t i = 1; i < fallback_families.size(); ++i) {
+      GetFallbackFontFamilies(primary_family);
+
+#if defined(OS_WIN)
+  // Append fonts in the fallback list of the Uniscribe font.
+  if (!uniscribe_family.empty()) {
+    std::vector<std::string> uniscribe_fallbacks =
+        GetFallbackFontFamilies(uniscribe_family);
+    fallback_families.insert(fallback_families.end(),
+        uniscribe_fallbacks.begin(), uniscribe_fallbacks.end());
+  }
+#endif
+
+  // Try shaping with the fallback fonts.
+  for (auto family : fallback_families) {
+    if (family == primary_family)
+      continue;
+#if defined(OS_WIN)
+    if (family == uniscribe_family)
+      continue;
+#endif
     FontRenderParamsQuery query(false);
-    query.families.push_back(fallback_families[i]);
+    query.families.push_back(family);
     query.pixel_size = run->font_size;
     query.style = run->font_style;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
-    if (CompareFamily(run, fallback_families[i], fallback_render_params,
-                      &best_family, &best_render_params, &best_missing_glyphs))
+    if (CompareFamily(run, family, fallback_render_params, &best_family,
+                      &best_render_params, &best_missing_glyphs))
       return;
   }
 

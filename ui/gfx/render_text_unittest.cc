@@ -20,6 +20,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/render_text_win.h"
 #endif
 
@@ -30,6 +31,7 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
+using base::WideToUTF8;
 
 namespace gfx {
 
@@ -2351,5 +2353,24 @@ TEST_F(RenderTextTest, FontListFallback) {
   EXPECT_EQ("Symbol", spans[0].first.GetFontName());
 }
 #endif  // !defined(OS_WIN)
+
+// Ensure that the fallback fonts of the Uniscribe font are tried for shaping.
+#if defined(OS_WIN)
+TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
+  RenderTextHarfBuzz render_text;
+  PlatformFontWin* font_win = new PlatformFontWin("Meiryo", 12);
+  // Japanese name for Meiryo. This name won't be found in the system's linked
+  // fonts, forcing RTHB to try the Uniscribe font and its fallbacks.
+  font_win->font_ref_->font_name_ = WideToUTF8(L"\x30e1\x30a4\x30ea\x30aa");
+  FontList font_list((Font(font_win)));
+
+  render_text.SetFontList(font_list);
+  // Korean character "han".
+  render_text.SetText(WideToUTF16(L"\xd55c"));
+  render_text.EnsureLayout();
+  ASSERT_EQ(1U, render_text.runs_.size());
+  EXPECT_EQ(0U, render_text.runs_[0]->CountMissingGlyphs());
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace gfx

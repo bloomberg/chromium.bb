@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
@@ -67,6 +68,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   virtual NativeFont GetNativeFont() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
+
   virtual ~PlatformFontWin() {}
 
   // Chrome text drawing bottoms out in the Windows GDI functions that take an
@@ -105,6 +108,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
    private:
     friend class base::RefCounted<HFontRef>;
+    FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
 
     ~HFontRef();
 
