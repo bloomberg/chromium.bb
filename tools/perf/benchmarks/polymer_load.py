@@ -14,7 +14,12 @@ class PolymerLoadPica(benchmark.Benchmark):
   page_set = page_sets.PicaPageSet
 
 
-@benchmark.Enabled('android')
+# There is something weird about this test (or a test that precedes it)
+# that causes it to fail in telemetry_perf_unittests when it is not run
+# as the first of the benchmark_smoke_unittest test cases.
+# See crbug.com/428207.
+#@benchmark.Enabled('android')
+@benchmark.Disabled
 class PolymerLoadTopeka(benchmark.Benchmark):
   """Measures time to polymer-ready for Topeka (Quiz App)."""
   test = polymer_load.PolymerLoadMeasurement
