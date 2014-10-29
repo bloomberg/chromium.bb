@@ -356,11 +356,13 @@ HWTEST_TRYBOT_POOL = 'try-bot'
 #       a non-blocking suite on canaries.
 #   CANARY:  Non-blocking suite run only against the canaries.
 #   AFDO:  Non-blocking suite run only AFDO builders.
+#   MOBLAB: Blocking Suite run only on *_moblab builders.
 HWTEST_AU_SUITE = 'au'
 HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
 HWTEST_AFDO_SUITE = 'AFDO_record'
+HWTEST_MOBLAB_SUITE = 'moblab'
 
 
 # Additional timeout to wait for autotest to abort a suite if the test takes
