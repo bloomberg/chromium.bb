@@ -40,38 +40,50 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
     profile_image_downloader_->StartForAccount(account_id_);
   }
 
+ private:
   void Shutdown() {
     profile_image_downloader_.reset();
     delete this;
   }
 
   // ProfileDownloaderDelegate implementation:
-  virtual bool NeedsProfilePicture() const override {
+  bool NeedsProfilePicture() const override {
     return desired_image_side_pixels_ > 0;
   }
 
-  virtual int GetDesiredImageSideLength() const override {
+  int GetDesiredImageSideLength() const override {
     return desired_image_side_pixels_;
   }
 
-  virtual Profile* GetBrowserProfile() override {
+  Profile* GetBrowserProfile() override {
     return profile_;
   }
 
-  virtual std::string GetCachedPictureURL() const override {
+  std::string GetCachedPictureURL() const override {
     return std::string();
   }
 
-  virtual void OnProfileDownloadSuccess(
+  void OnProfileDownloadSuccess(
       ProfileDownloader* downloader) override {
-    ProfileDownloaderAndroid::OnProfileDownloadSuccess(
-        email_,
-        downloader->GetProfileFullName(),
-        downloader->GetProfilePicture());
+
+    base::string16 full_name = downloader->GetProfileFullName();
+    base::string16 given_name = downloader->GetProfileGivenName();
+    SkBitmap bitmap = downloader->GetProfilePicture();
+    ScopedJavaLocalRef<jobject> jbitmap;
+    if (!bitmap.isNull() && bitmap.bytesPerPixel() != 0)
+      jbitmap = gfx::ConvertToJavaBitmap(&bitmap);
+
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_ProfileDownloader_onProfileDownloadSuccess(
+        env,
+        base::android::ConvertUTF8ToJavaString(env, email_).obj(),
+        base::android::ConvertUTF16ToJavaString(env, full_name).obj(),
+        base::android::ConvertUTF16ToJavaString(env, given_name).obj(),
+        jbitmap.obj());
     Shutdown();
   }
 
-  virtual void OnProfileDownloadFailure(
+  void OnProfileDownloadFailure(
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) override {
     LOG(ERROR) << "Failed to download the profile information: " << reason;
@@ -97,25 +109,9 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 }  // namespace
 
 // static
-void ProfileDownloaderAndroid::OnProfileDownloadSuccess(
-    const std::string& account_id,
-    const base::string16& full_name,
-    const SkBitmap& bitmap) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jbitmap;
-  if (!bitmap.isNull() && bitmap.bytesPerPixel() != 0)
-    jbitmap = gfx::ConvertToJavaBitmap(&bitmap);
-  Java_ProfileDownloader_onProfileDownloadSuccess(
-      env,
-      base::android::ConvertUTF8ToJavaString(env, account_id).obj(),
-      base::android::ConvertUTF16ToJavaString(env, full_name).obj(),
-      jbitmap.obj());
-}
-
-// static
-jstring GetCachedNameForPrimaryAccount(JNIEnv* env,
-                                       jclass clazz,
-                                       jobject jprofile) {
+jstring GetCachedFullNameForPrimaryAccount(JNIEnv* env,
+                                           jclass clazz,
+                                           jobject jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -124,6 +120,22 @@ jstring GetCachedNameForPrimaryAccount(JNIEnv* env,
   base::string16 name;
   if (index != std::string::npos)
     name = info.GetGAIANameOfProfileAtIndex(index);
+
+  return base::android::ConvertUTF16ToJavaString(env, name).Release();
+}
+
+// static
+jstring GetCachedGivenNameForPrimaryAccount(JNIEnv* env,
+                                            jclass clazz,
+                                            jobject jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  ProfileInfoInterface& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t index = info.GetIndexOfProfileWithPath(profile->GetPath());
+
+  base::string16 name;
+  if (index != std::string::npos)
+    name = info.GetGAIAGivenNameOfProfileAtIndex(index);
 
   return base::android::ConvertUTF16ToJavaString(env, name).Release();
 }
@@ -174,6 +186,6 @@ void StartFetchingAccountInfoFor(
 }
 
 // static
-bool ProfileDownloaderAndroid::Register(JNIEnv* env) {
+bool RegisterProfileDownloader(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

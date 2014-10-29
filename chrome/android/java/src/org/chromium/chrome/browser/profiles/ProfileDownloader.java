@@ -26,9 +26,11 @@ public class ProfileDownloader {
          * Notifies that an account data in the profile has been updated.
          * @param accountId An account ID.
          * @param fullName A full name.
+         * @param givenName A given name.
          * @param bitmap A user picture.
          */
-        void onProfileDownloaded(String accountId, String fullName, Bitmap bitmap);
+        void onProfileDownloaded(String accountId, String fullName, String givenName,
+                Bitmap bitmap);
     }
 
     /**
@@ -60,19 +62,28 @@ public class ProfileDownloader {
     }
 
     @CalledByNative
-    private static void onProfileDownloadSuccess(String accountId, String fullName, Bitmap bitmap) {
+    private static void onProfileDownloadSuccess(String accountId, String fullName,
+            String givenName, Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
         for (Observer observer : sObservers) {
-            observer.onProfileDownloaded(accountId, fullName, bitmap);
+            observer.onProfileDownloaded(accountId, fullName, givenName, bitmap);
         }
     }
 
     /**
      * @param profile Profile
-     * @return The profile name if cached, or null.
+     * @return The profile full name if cached, or null.
      */
-    public static String getCachedName(Profile profile) {
-        return nativeGetCachedNameForPrimaryAccount(profile);
+    public static String getCachedFullName(Profile profile) {
+        return nativeGetCachedFullNameForPrimaryAccount(profile);
+    }
+
+    /**
+     * @param profile Profile
+     * @return The profile given name if cached, or null.
+     */
+    public static String getCachedGivenName(Profile profile) {
+        return nativeGetCachedGivenNameForPrimaryAccount(profile);
     }
 
     /**
@@ -86,6 +97,7 @@ public class ProfileDownloader {
     // Native methods.
     private static native void nativeStartFetchingAccountInfoFor(
             Profile profile, String accountId, int imageSidePixels);
-    private static native String nativeGetCachedNameForPrimaryAccount(Profile profile);
+    private static native String nativeGetCachedFullNameForPrimaryAccount(Profile profile);
+    private static native String nativeGetCachedGivenNameForPrimaryAccount(Profile profile);
     private static native Bitmap nativeGetCachedAvatarForPrimaryAccount(Profile profile);
 }
