@@ -57,10 +57,10 @@ class CRYPTO_EXPORT SymmetricKey {
   // size for use with |algorithm|. The caller owns the returned SymmetricKey.
   static SymmetricKey* Import(Algorithm algorithm, const std::string& raw_key);
 
-#if defined(USE_OPENSSL)
-  const std::string& key() { return key_; }
-#elif defined(NACL_WIN64)
+#if defined(NACL_WIN64)
   HCRYPTKEY key() const { return key_.get(); }
+#elif defined(USE_OPENSSL)
+  const std::string& key() { return key_; }
 #elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
   PK11SymKey* key() const { return key_.get(); }
 #endif
@@ -71,10 +71,7 @@ class CRYPTO_EXPORT SymmetricKey {
   bool GetRawKey(std::string* raw_key);
 
  private:
-#if defined(USE_OPENSSL)
-  SymmetricKey() {}
-  std::string key_;
-#elif defined(NACL_WIN64)
+#if defined(NACL_WIN64)
   SymmetricKey(HCRYPTPROV provider, HCRYPTKEY key,
                const void* key_data, size_t key_size_in_bytes);
 
@@ -88,6 +85,9 @@ class CRYPTO_EXPORT SymmetricKey {
   // TODO(rsleevi): See if KP_EFFECTIVE_KEYLEN is the reason why CryptExportKey
   // fails with NTE_BAD_KEY/NTE_BAD_LEN
   std::string raw_key_;
+#elif defined(USE_OPENSSL)
+  SymmetricKey() {}
+  std::string key_;
 #elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
   explicit SymmetricKey(PK11SymKey* key);
   ScopedPK11SymKey key_;
