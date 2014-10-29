@@ -213,6 +213,10 @@ class QueryFence : public ResourceProvider::Fence {
         query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
     return !!available;
   }
+  void Wait() override {
+    unsigned result = 0;
+    gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
+  }
 
  private:
   ~QueryFence() override {}
@@ -2052,6 +2056,15 @@ void ResourceProvider::WaitSyncPointIfNeeded(ResourceId id) {
   DCHECK(gl);
   GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
   resource->mailbox.set_sync_point(0);
+}
+
+void ResourceProvider::WaitReadLockIfNeeded(ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK_EQ(resource->exported_count, 0);
+  if (!resource->read_lock_fence.get())
+    return;
+
+  resource->read_lock_fence->Wait();
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {

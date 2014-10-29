@@ -348,6 +348,7 @@ class CC_EXPORT ResourceProvider {
 
     virtual void Set() = 0;
     virtual bool HasPassed() = 0;
+    virtual void Wait() = 0;
 
    protected:
     friend class base::RefCounted<Fence>;
@@ -390,6 +391,8 @@ class CC_EXPORT ResourceProvider {
   void CopyResource(ResourceId source_id, ResourceId dest_id);
 
   void WaitSyncPointIfNeeded(ResourceId id);
+
+  void WaitReadLockIfNeeded(ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 

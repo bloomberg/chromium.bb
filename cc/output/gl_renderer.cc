@@ -64,6 +64,7 @@ class FallbackFence : public ResourceProvider::Fence {
     }
     return true;
   }
+  void Wait() override { HasPassed(); }
 
  private:
   ~FallbackFence() override {}
@@ -294,6 +295,10 @@ class GLRenderer::SyncQuery {
       query_->Set();
     }
     bool HasPassed() override { return !query_ || !query_->IsPending(); }
+    void Wait() override {
+      if (query_)
+        query_->Wait();
+    }
 
    private:
     ~Fence() override {}
