@@ -60,9 +60,11 @@ const int kCheckboxTextDistance = 4;
 const SkColor kBackgroundColor = SkColorSetRGB(245, 245, 245);
 const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
+#if !defined(OS_CHROMEOS)
 // The Finch study name and group name that enables session crashed bubble UI.
 const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
-const char kEnableBubbleUIGroupEnabled[] = "Enabled";
+const char kEnableBubbleUIGroupDisabled[] = "Disabled";
+#endif
 
 enum SessionCrashedBubbleHistogramValue {
   SESSION_CRASHED_BUBBLE_SHOWN,
@@ -83,6 +85,12 @@ void RecordBubbleHistogramValue(SessionCrashedBubbleHistogramValue value) {
 
 // Whether or not the bubble UI should be used.
 bool IsBubbleUIEnabled() {
+  // Function InitiateMetricsReportingChange (called when the user chooses to
+  // opt-in to UMA) does not support Chrome OS yet, so don't show the bubble on
+  // Chrome OS.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   const base::CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableSessionCrashedBubble))
     return false;
@@ -90,7 +98,8 @@ bool IsBubbleUIEnabled() {
     return true;
   const std::string group_name = base::FieldTrialList::FindFullName(
       kEnableBubbleUIFinchName);
-  return group_name == kEnableBubbleUIGroupEnabled;
+  return group_name != kEnableBubbleUIGroupDisabled;
+#endif
 }
 
 }  // namespace
