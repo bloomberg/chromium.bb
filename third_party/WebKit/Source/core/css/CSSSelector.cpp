@@ -460,11 +460,11 @@ void CSSSelector::extractPseudoType() const
     switch (m_pseudoType) {
     case PseudoAfter:
     case PseudoBefore:
-    case PseudoCue:
     case PseudoFirstLetter:
     case PseudoFirstLine:
         compat = true;
     case PseudoBackdrop:
+    case PseudoCue:
     case PseudoResizer:
     case PseudoScrollbar:
     case PseudoScrollbarCorner:
