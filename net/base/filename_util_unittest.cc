@@ -810,6 +810,16 @@ TEST(FilenameUtilTest, GenerateFileName) {
       L"",
       L"test.html"
     },
+    {
+      __LINE__,
+      "http://www.google.com/test",
+      "attachment; filename=test",
+      "utf-8",
+      "",
+      "image/png",
+      L"",
+      L"test"
+    },
 #if 0
     { // The filename encoding doesn't match the referrer charset, the system
       // charset, or UTF-8.
@@ -1022,7 +1032,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "",
       "text/plain",
       L"default",
-      L"-blink-Hello kitty--blink-" TXT_EXT
+      L"-blink-Hello kitty--blink-"
     },
     { // A normal avi should get .avi and not .avi.avi
       __LINE__,
@@ -1042,7 +1052,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "",
       "image/jpeg",
       L"download",
-      L"my-cat" JPEG_EXT
+      L"my-cat"
     },
     {
       __LINE__,
@@ -1052,7 +1062,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "",
       "text/plain",
       L"download",
-      L"my-cat.txt"
+      L"my-cat"
     },
     {
       __LINE__,
@@ -1062,7 +1072,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "",
       "text/html",
       L"download",
-      L"my-cat" HTML_EXT
+      L"my-cat"
     },
     { // Unknown MIME type
       __LINE__,
@@ -1286,7 +1296,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "",
       "text/plain",
       L"download",
-      L"hidden" TXT_EXT
+      L"hidden"
     },
     {
       __LINE__,
@@ -1311,9 +1321,9 @@ TEST(FilenameUtilTest, GenerateFileName) {
       "text/plain",
       L"download",
 #if defined(OS_WIN)
-      L"trailing-" TXT_EXT
+      L"trailing-"
 #else
-      L"trailing" TXT_EXT
+      L"trailing"
 #endif
     },
     {
