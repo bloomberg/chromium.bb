@@ -44,6 +44,7 @@ class CC_EXPORT ResourcePool {
   size_t acquired_resource_count() const {
     return resource_count_ - unused_resources_.size();
   }
+  size_t busy_resource_count() const { return busy_resources_.size(); }
 
   ResourceFormat resource_format() const { return format_; }
 

@@ -47,7 +47,8 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Return raster resource to pool so it can be used by another RasterBuffer
     // instance.
-    resource_pool_->ReleaseResource(raster_resource_.Pass());
+    if (raster_resource_)
+      resource_pool_->ReleaseResource(raster_resource_.Pass());
   }
 
   // Overridden from RasterBuffer:
@@ -55,22 +56,14 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& rect,
                 float scale,
                 RenderingStatsInstrumentation* stats) override {
-    gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_->GetGpuMemoryBuffer();
-    if (!gpu_memory_buffer)
-      return;
-
-    RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
-                                       raster_resource_->format(),
-                                       raster_resource_->size(),
-                                       gpu_memory_buffer->GetStride(),
-                                       raster_source,
-                                       rect,
-                                       scale,
-                                       stats);
-    gpu_memory_buffer->Unmap();
-
-    sequence_ = worker_pool_->ScheduleCopyOnWorkerThread(
-        lock_.Pass(), raster_resource_.get(), resource_);
+    sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
+        lock_.Pass(),
+        raster_resource_.Pass(),
+        resource_,
+        raster_source,
+        rect,
+        scale,
+        stats);
   }
 
  private:
@@ -88,13 +81,19 @@ class RasterBufferImpl : public RasterBuffer {
 // Flush interval when performing copy operations.
 const int kCopyFlushPeriod = 4;
 
+// Number of in-flight copy operations to allow.
+const int kMaxCopyOperations = 16;
+
+// Delay been checking for copy operations to complete.
+const int kCheckForCompletedCopyOperationsTickRateMs = 1;
+
 }  // namespace
 
 OneCopyRasterWorkerPool::CopyOperation::CopyOperation(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-    ResourceProvider::ResourceId src,
-    ResourceProvider::ResourceId dst)
-    : write_lock(write_lock.Pass()), src(src), dst(dst) {
+    scoped_ptr<ScopedResource> src,
+    const Resource* dst)
+    : write_lock(write_lock.Pass()), src(src.Pass()), dst(dst) {
 }
 
 OneCopyRasterWorkerPool::CopyOperation::~CopyOperation() {
@@ -129,13 +128,20 @@ OneCopyRasterWorkerPool::OneCopyRasterWorkerPool(
       resource_pool_(resource_pool),
       last_issued_copy_operation_(0),
       last_flushed_copy_operation_(0),
+      lock_(),
+      copy_operation_count_cv_(&lock_),
+      scheduled_copy_operation_count_(0),
+      issued_copy_operation_count_(0),
       next_copy_operation_sequence_(1),
+      check_for_completed_copy_operations_pending_(false),
+      shutdown_(false),
       weak_ptr_factory_(this),
       raster_finished_weak_ptr_factory_(this) {
   DCHECK(context_provider_);
 }
 
 OneCopyRasterWorkerPool::~OneCopyRasterWorkerPool() {
+  DCHECK_EQ(scheduled_copy_operation_count_, 0u);
 }
 
 Rasterizer* OneCopyRasterWorkerPool::AsRasterizer() {
@@ -148,6 +154,13 @@ void OneCopyRasterWorkerPool::SetClient(RasterizerClient* client) {
 
 void OneCopyRasterWorkerPool::Shutdown() {
   TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::Shutdown");
+
+  {
+    base::AutoLock lock(lock_);
+
+    shutdown_ = true;
+    copy_operation_count_cv_.Signal();
+  }
 
   TaskGraph empty;
   task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
@@ -256,19 +269,67 @@ void OneCopyRasterWorkerPool::ReleaseBufferForRaster(
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-CopySequenceNumber OneCopyRasterWorkerPool::ScheduleCopyOnWorkerThread(
+CopySequenceNumber
+OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-    const Resource* src,
-    const Resource* dst) {
+    scoped_ptr<ScopedResource> src,
+    const Resource* dst,
+    const RasterSource* raster_source,
+    const gfx::Rect& rect,
+    float scale,
+    RenderingStatsInstrumentation* stats) {
   CopySequenceNumber sequence;
 
   {
     base::AutoLock lock(lock_);
 
+    while ((scheduled_copy_operation_count_ + issued_copy_operation_count_) >=
+           kMaxCopyOperations) {
+      // Ignore limit when shutdown is set.
+      if (shutdown_)
+        break;
+
+      // Schedule a check for completed copy operations if too many operations
+      // are currently in-flight.
+      ScheduleCheckForCompletedCopyOperationsWithLockAcquired();
+
+      {
+        TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
+
+        // Wait for in-flight copy operations to drop below limit.
+        copy_operation_count_cv_.Wait();
+      }
+    }
+
+    // Increment |scheduled_copy_operation_count_| before releasing |lock_|.
+    ++scheduled_copy_operation_count_;
+
+    // There may be more work available, so wake up another worker thread.
+    copy_operation_count_cv_.Signal();
+
+    {
+      base::AutoUnlock unlock(lock_);
+
+      gfx::GpuMemoryBuffer* gpu_memory_buffer =
+          write_lock->GetGpuMemoryBuffer();
+      if (gpu_memory_buffer) {
+        RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
+                                           src->format(),
+                                           src->size(),
+                                           gpu_memory_buffer->GetStride(),
+                                           raster_source,
+                                           rect,
+                                           scale,
+                                           stats);
+        gpu_memory_buffer->Unmap();
+      }
+    }
+
+    // Acquire a sequence number for this copy operation.
     sequence = next_copy_operation_sequence_++;
 
-    pending_copy_operations_.push_back(make_scoped_ptr(
-        new CopyOperation(write_lock.Pass(), src->id(), dst->id())));
+    pending_copy_operations_.push_back(
+        make_scoped_ptr(new CopyOperation(write_lock.Pass(), src.Pass(), dst)));
   }
 
   // Post task that will advance last flushed copy operation to |sequence|
@@ -326,6 +387,10 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
 
   CopyOperation::Deque copy_operations;
 
+  // This is a good time to check for completed copy operations as
+  // |issued_copy_operation_count_| need to be updated below.
+  resource_pool_->CheckBusyResources();
+
   {
     base::AutoLock lock(lock_);
 
@@ -333,6 +398,15 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
       DCHECK(!pending_copy_operations_.empty());
       copy_operations.push_back(pending_copy_operations_.take_front());
     }
+
+    // Decrement |scheduled_copy_operation_count_| and increment
+    // |issued_copy_operation_count_| to reflect the transition of copy
+    // operations from "pending" to "issued" state.
+    DCHECK_GE(scheduled_copy_operation_count_, copy_operations.size());
+    scheduled_copy_operation_count_ -= copy_operations.size();
+
+    issued_copy_operation_count_ =
+        resource_pool_->busy_resource_count() + copy_operations.size();
   }
 
   while (!copy_operations.empty()) {
@@ -342,7 +416,63 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
     copy_operation->write_lock.reset();
 
     // Copy contents of source resource to destination resource.
-    resource_provider_->CopyResource(copy_operation->src, copy_operation->dst);
+    resource_provider_->CopyResource(copy_operation->src->id(),
+                                     copy_operation->dst->id());
+
+    // Return source resource to pool where it can be reused once copy
+    // operation has completed and resource is no longer busy.
+    resource_pool_->ReleaseResource(copy_operation->src.Pass());
+  }
+}
+
+void OneCopyRasterWorkerPool::
+    ScheduleCheckForCompletedCopyOperationsWithLockAcquired() {
+  lock_.AssertAcquired();
+
+  if (check_for_completed_copy_operations_pending_)
+    return;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  // Schedule a check for completed copy operations as soon as possible but
+  // don't allow two consecutive checks to be scheduled to run less than the
+  // tick rate apart.
+  base::TimeTicks next_check_for_completed_copy_operations_time =
+      std::max(last_check_for_completed_copy_operations_time_ +
+                   base::TimeDelta::FromMilliseconds(
+                       kCheckForCompletedCopyOperationsTickRateMs),
+               now);
+
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&OneCopyRasterWorkerPool::CheckForCompletedCopyOperations,
+                 weak_ptr_factory_.GetWeakPtr()),
+      next_check_for_completed_copy_operations_time - now);
+
+  last_check_for_completed_copy_operations_time_ =
+      next_check_for_completed_copy_operations_time;
+  check_for_completed_copy_operations_pending_ = true;
+}
+
+void OneCopyRasterWorkerPool::CheckForCompletedCopyOperations() {
+  TRACE_EVENT0("cc",
+               "OneCopyRasterWorkerPool::CheckForCompletedCopyOperations");
+
+  resource_pool_->CheckBusyResources();
+
+  {
+    base::AutoLock lock(lock_);
+
+    DCHECK(check_for_completed_copy_operations_pending_);
+    check_for_completed_copy_operations_pending_ = false;
+
+    // The number of busy resources in the pool reflects the number of issued
+    // copy operations that have not yet completed.
+    issued_copy_operation_count_ = resource_pool_->busy_resource_count();
+
+    // There may be work blocked on too many in-flight copy operations, so wake
+    // up a worker thread.
+    copy_operation_count_cv_.Signal();
   }
 }
 
@@ -361,6 +491,7 @@ OneCopyRasterWorkerPool::StateAsValue() const {
 
   return state;
 }
+
 void OneCopyRasterWorkerPool::StagingStateAsValueInto(
     base::debug::TracedValue* staging_state) const {
   staging_state->SetInteger("staging_resource_count",
