@@ -158,7 +158,7 @@ TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
     FakeScrollableArea scrollableArea;
     m_graphicsLayer->setScrollableArea(&scrollableArea, false);
 
-    WebDoublePoint scrollPosition(7.2, 9.6);
+    WebDoublePoint scrollPosition(7, 9);
     m_platformLayer->setScrollPositionDouble(scrollPosition);
     m_graphicsLayer->didScroll();
 
