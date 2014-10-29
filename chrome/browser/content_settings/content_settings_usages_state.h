@@ -12,7 +12,8 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
-class Profile;
+class HostContentSettingsMap;
+class PrefService;
 
 namespace content {
 struct LoadCommittedDetails;
@@ -23,7 +24,10 @@ struct LoadCommittedDetails;
 // the content setting usage.
 class ContentSettingsUsagesState {
  public:
-  ContentSettingsUsagesState(Profile* profile, ContentSettingsType type);
+  ContentSettingsUsagesState(
+      HostContentSettingsMap* host_content_settings_map,
+      PrefService* pref_service,
+      ContentSettingsType type);
   virtual ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
@@ -63,7 +67,8 @@ class ContentSettingsUsagesState {
  private:
   std::string GURLToFormattedHost(const GURL& url) const;
 
-  Profile* profile_;
+  HostContentSettingsMap* const host_content_settings_map_;
+  PrefService* const pref_service_;
   ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;

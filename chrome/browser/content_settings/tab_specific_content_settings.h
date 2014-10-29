@@ -26,7 +26,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 class HostContentSettingsMap;
-class Profile;
 
 namespace content {
 class RenderViewHost;
@@ -394,9 +393,6 @@ class TabSpecificContentSettings
 
   // Stores which content setting types actually were allowed.
   bool content_allowed_[CONTENT_SETTINGS_NUM_TYPES];
-
-  // The profile of the tab.
-  Profile* profile_;
 
   // Stores the blocked/allowed cookies.
   LocalSharedObjectsContainer allowed_local_shared_objects_;

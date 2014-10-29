@@ -28,7 +28,8 @@ class ContentSettingsUsagesStateTests : public testing::Test {
  protected:
   void ClearOnNewOrigin(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(&profile, type);
+    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(),
+                                     profile.GetPrefs(), type);
     GURL url_0("http://www.example.com");
 
     scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
@@ -133,7 +134,8 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 
   void ShowPortOnSameHost(ContentSettingsType type) {
     TestingProfile profile;
-    ContentSettingsUsagesState state(&profile, type);
+    ContentSettingsUsagesState state(profile.GetHostContentSettingsMap(),
+                                     profile.GetPrefs(), type);
     GURL url_0("http://www.example.com");
 
     scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());

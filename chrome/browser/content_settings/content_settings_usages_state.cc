@@ -16,9 +16,12 @@
 #include "content/public/browser/navigation_entry.h"
 #include "net/base/net_util.h"
 
-ContentSettingsUsagesState::ContentSettingsUsagesState(Profile* profile,
-                                                       ContentSettingsType type)
-    : profile_(profile),
+ContentSettingsUsagesState::ContentSettingsUsagesState(
+    HostContentSettingsMap* host_content_settings_map,
+    PrefService* pref_service,
+    ContentSettingsType type)
+    : host_content_settings_map_(host_content_settings_map),
+      pref_service_(pref_service),
       type_(type) {
 }
 
@@ -59,8 +62,7 @@ void ContentSettingsUsagesState::GetDetailedInfo(
   DCHECK(tab_state_flags);
   DCHECK(embedder_url_.is_valid());
   ContentSetting default_setting =
-      profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          type_, NULL);
+      host_content_settings_map_->GetDefaultContentSetting(type_, NULL);
   std::set<std::string> formatted_hosts;
   std::set<std::string> repeated_formatted_hosts;
 
@@ -88,8 +90,8 @@ void ContentSettingsUsagesState::GetDetailedInfo(
     }
 
     const ContentSetting saved_setting =
-        profile_->GetHostContentSettingsMap()->GetContentSetting(
-            i->first, embedder_url_, type_, std::string());
+        host_content_settings_map_->GetContentSetting(i->first, embedder_url_,
+                                                      type_, std::string());
     if (saved_setting != default_setting)
       *tab_state_flags |= TABSTATE_HAS_EXCEPTION;
     if (saved_setting != i->second)
@@ -102,7 +104,7 @@ void ContentSettingsUsagesState::GetDetailedInfo(
 std::string ContentSettingsUsagesState::GURLToFormattedHost(
     const GURL& url) const {
   base::string16 display_host;
-  net::AppendFormattedHost(url,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host);
+  net::AppendFormattedHost(
+      url, pref_service_->GetString(prefs::kAcceptLanguages), &display_host);
   return base::UTF16ToUTF8(display_host);
 }

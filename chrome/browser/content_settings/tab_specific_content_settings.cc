@@ -80,11 +80,20 @@ void TabSpecificContentSettings::SiteDataObserver::ContentSettingsDestroyed() {
 
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
-      profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
-      allowed_local_shared_objects_(profile_),
-      blocked_local_shared_objects_(profile_),
-      geolocation_usages_state_(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION),
-      midi_usages_state_(profile_, CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
+      allowed_local_shared_objects_(
+          Profile::FromBrowserContext(tab->GetBrowserContext())),
+      blocked_local_shared_objects_(
+          Profile::FromBrowserContext(tab->GetBrowserContext())),
+      geolocation_usages_state_(
+          Profile::FromBrowserContext(tab->GetBrowserContext())
+              ->GetHostContentSettingsMap(),
+          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs(),
+          CONTENT_SETTINGS_TYPE_GEOLOCATION),
+      midi_usages_state_(
+          Profile::FromBrowserContext(tab->GetBrowserContext())
+              ->GetHostContentSettingsMap(),
+          Profile::FromBrowserContext(tab->GetBrowserContext())->GetPrefs(),
+          CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
@@ -94,7 +103,8 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
 
-  observer_.Add(profile_->GetHostContentSettingsMap());
+  observer_.Add(Profile::FromBrowserContext(tab->GetBrowserContext())
+                    ->GetHostContentSettingsMap());
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
