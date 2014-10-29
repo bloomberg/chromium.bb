@@ -29,6 +29,7 @@ Display::Display(DisplayClient* client,
       manager_(manager),
       bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      device_scale_factor_(1.f),
       blocking_main_thread_task_runner_(
           BlockingTaskRunner::Create(base::MessageLoopProxy::current())),
       texture_mailbox_deleter_(
@@ -45,9 +46,12 @@ bool Display::Initialize(scoped_ptr<OutputSurface> output_surface) {
   return output_surface_->BindToClient(this);
 }
 
-void Display::Resize(SurfaceId id, const gfx::Size& size) {
+void Display::Resize(SurfaceId id,
+                     const gfx::Size& size,
+                     float device_scale_factor) {
   current_surface_id_ = id;
   current_surface_size_ = size;
+  device_scale_factor_ = device_scale_factor;
   client_->DisplayDamaged();
 }
 
@@ -115,18 +119,13 @@ bool Display::Draw() {
   benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
-  // Only reshape when we know we are going to draw. Otherwise, the reshape
-  // can leave the window at the wrong size if we never draw and the proper
-  // viewport size is never set.
-  output_surface_->Reshape(current_surface_size_, 1.f);
-  float device_scale_factor = 1.0f;
   gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
   gfx::Rect device_clip_rect = device_viewport_rect;
   bool disable_picture_quad_image_filtering = false;
 
   renderer_->DecideRenderPassAllocationsForFrame(frame_data->render_pass_list);
   renderer_->DrawFrame(&frame_data->render_pass_list,
-                       device_scale_factor,
+                       device_scale_factor_,
                        device_viewport_rect,
                        device_clip_rect,
                        disable_picture_quad_image_filtering);

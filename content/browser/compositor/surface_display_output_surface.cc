@@ -50,8 +50,9 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     surface_id_ = allocator_->GenerateId();
     factory_.Create(surface_id_, frame_size);
     display_size_ = frame_size;
-    display_client_->display()->Resize(surface_id_, frame_size);
   }
+  display_client_->display()->Resize(
+      surface_id_, frame_size, frame->metadata.device_scale_factor);
 
   scoped_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame());
   frame->AssignTo(frame_copy.get());

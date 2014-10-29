@@ -46,7 +46,12 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   ~Display() override;
 
   bool Initialize(scoped_ptr<OutputSurface> output_surface);
-  void Resize(SurfaceId id, const gfx::Size& new_size);
+
+  // device_scale_factor is used to communicate to the external window system
+  // what scale this was rendered at.
+  void Resize(SurfaceId id,
+              const gfx::Size& new_size,
+              float device_scale_factor);
   bool Draw();
 
   SurfaceId CurrentSurfaceId();
@@ -88,6 +93,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
+  float device_scale_factor_;
   LayerTreeSettings settings_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
