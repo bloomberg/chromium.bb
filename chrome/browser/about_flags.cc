@@ -1175,6 +1175,14 @@ const Experiment kExperiments[] = {
                               switches::kDisableSupervisedUserBlacklist)
   },
   {
+    "enable-supervised-user-safesites",
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME,
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSupervisedUserSafeSites,
+                              switches::kDisableSupervisedUserSafeSites)
+  },
+  {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,

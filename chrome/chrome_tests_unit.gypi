@@ -748,6 +748,7 @@
       'browser/status_icons/status_icon_menu_model_unittest.cc',
       'browser/status_icons/status_icon_unittest.cc',
       'browser/status_icons/status_tray_unittest.cc',
+      'browser/supervised_user/experimental/supervised_user_async_url_checker_unittest.cc',
       'browser/supervised_user/permission_request_creator_apiary_unittest.cc',
       'browser/supervised_user/supervised_user_pref_mapping_service_unittest.cc',
       'browser/supervised_user/supervised_user_pref_store_unittest.cc',

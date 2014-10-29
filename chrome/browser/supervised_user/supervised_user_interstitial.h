@@ -50,9 +50,11 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
 
   void OnAccessRequestAdded(bool success);
 
-  // Returns whether the blocked URL is now allowed. Called initially before the
-  // interstitial is shown (to catch race conditions), or when the URL filtering
-  // prefs change.
+  // Returns whether there is a manual exception for the blocked URL.
+  // Called initially before the interstitial is shown (to catch race
+  // conditions), or when the URL filtering prefs change. Note that this does
+  // not include the asynchronous online checks, so the return value indicates
+  // either "allow" or "don't know".
   bool ShouldProceed();
 
   void DispatchContinueRequest(bool continue_request);

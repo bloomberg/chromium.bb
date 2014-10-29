@@ -261,9 +261,6 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 }
 
 void SupervisedUserInterstitial::OnProceed() {
-  // CHECK instead of DCHECK as defense in depth in case we'd accidentally
-  // proceed on a blocked page.
-  CHECK(ShouldProceed());
   DispatchContinueRequest(true);
 }
 
@@ -289,8 +286,9 @@ bool SupervisedUserInterstitial::ShouldProceed() {
       SupervisedUserServiceFactory::GetForProfile(profile_);
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
-  return url_filter->GetFilteringBehaviorForURL(url_) !=
-         SupervisedUserURLFilter::BLOCK;
+  SupervisedUserURLFilter::FilteringBehavior behavior;
+  return (url_filter->GetManualFilteringBehaviorForURL(url_, &behavior) &&
+          behavior != SupervisedUserURLFilter::BLOCK);
 }
 
 void SupervisedUserInterstitial::DispatchContinueRequest(

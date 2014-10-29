@@ -2274,6 +2274,8 @@
       'browser/supervised_user/custodian_profile_downloader_service.h',
       'browser/supervised_user/custodian_profile_downloader_service_factory.cc',
       'browser/supervised_user/custodian_profile_downloader_service_factory.h',
+      'browser/supervised_user/experimental/supervised_user_async_url_checker.cc',
+      'browser/supervised_user/experimental/supervised_user_async_url_checker.h',
       'browser/supervised_user/experimental/supervised_user_blacklist.cc',
       'browser/supervised_user/experimental/supervised_user_blacklist.h',
       'browser/supervised_user/experimental/supervised_user_blacklist_downloader.cc',

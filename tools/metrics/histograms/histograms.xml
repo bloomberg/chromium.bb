@@ -11591,6 +11591,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ManagedUsers.SafeSitesDelay" units="milliseconds">
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The extra page load delays introduced by network requests due to the
+    supervised user SafeSites feature, measured once per page load.
+  </summary>
+</histogram>
+
+<histogram name="ManagedUsers.SafetyFilter"
+    enum="SupervisedUserSafetyFilterResult">
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The counts of results from the supervised user safety filter. Each entry
+    includes the outcome of the filter (i.e. allowed, blocked, or unknown) and
+    the page transition type (how the user got there, e.g. typed URL, clicked
+    link). This only includes URL requests that were not handled by a manual
+    exception.
+  </summary>
+</histogram>
+
 <histogram name="Manifest.FetchResult" enum="ManifestFetchResultType">
   <owner>mlamouri@chromium.org</owner>
   <summary>
@@ -46693,6 +46715,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-385337473" label="enable-fast-unload"/>
+  <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
@@ -46728,6 +46751,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="120429808" label="disable-new-profile-management"/>
+  <int value="121858954" label="enable-supervised-user-safesites"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="270267831" label="enable-scripts-require-action"/>
@@ -53221,6 +53245,144 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Empty response received from the server."/>
   <int value="1" label="Invalid response received from the server."/>
   <int value="2" label="Valid response received from the server."/>
+</enum>
+
+<enum name="SupervisedUserSafetyFilterResult" type="int">
+  <int value="100" label="LINK_ALLOWED">Link; Allowed as safe</int>
+  <int value="101" label="TYPED_ALLOWED">Typed URL; Allowed as safe</int>
+  <int value="102" label="AUTO_BOOKMARK_ALLOWED">Bookmark; Allowed as safe</int>
+  <int value="103" label="AUTO_SUBFRAME_ALLOWED">
+    Subframe navigation; Allowed as safe
+  </int>
+  <int value="104" label="MANUAL_SUBFRAME_ALLOWED">
+    Manual subframe navigation; Allowed as safe
+  </int>
+  <int value="105" label="GENERATED_ALLOWED">
+    Generated from Omnibox; Allowed as safe
+  </int>
+  <int value="106" label="AUTO_TOPLEVEL_ALLOWED">
+    Automatic toplevel navigation; Allowed as safe
+  </int>
+  <int value="107" label="FORM_SUBMIT_ALLOWED">
+    Form submission; Allowed as safe
+  </int>
+  <int value="108" label="RELOAD_ALLOWED">Reload; Allowed as safe</int>
+  <int value="109" label="KEYWORD_ALLOWED">
+    Omnibox keyword; Allowed as safe
+  </int>
+  <int value="110" label="KEYWORD_GENERATED_ALLOWED">
+    URL generated from Omnibox keyword; Allowed as safe
+  </int>
+  <int value="199" label="OTHER_ALLOWED">Other navigation; Allowed as safe</int>
+  <int value="200" label="LINK_ALLOWED_UNKNOWN">
+    Link; Allowed by default (safety state unknown)
+  </int>
+  <int value="201" label="TYPED_ALLOWED_UNKNOWN">
+    Typed URL; Allowed by default (safety state unknown)
+  </int>
+  <int value="202" label="AUTO_BOOKMARK_ALLOWED_UNKNOWN">
+    Bookmark; Allowed by default (safety state unknown)
+  </int>
+  <int value="203" label="AUTO_SUBFRAME_ALLOWED_UNKNOWN">
+    Subframe navigation; Allowed by default (safety state unknown)
+  </int>
+  <int value="204" label="MANUAL_SUBFRAME_ALLOWED_UNKNOWN">
+    Manual subframe navigation; Allowed by default (safety state unknown)
+  </int>
+  <int value="205" label="GENERATED_ALLOWED_UNKNOWN">
+    Generated from Omnibox; Allowed by default (safety state unknown)
+  </int>
+  <int value="206" label="AUTO_TOPLEVEL_ALLOWED_UNKNOWN">
+    Automatic toplevel navigation; Allowed by default (safety state unknown)
+  </int>
+  <int value="207" label="FORM_SUBMIT_ALLOWED_UNKNOWN">
+    Form submission; Allowed by default (safety state unknown)
+  </int>
+  <int value="208" label="RELOAD_ALLOWED_UNKNOWN">
+    Reload; Allowed by default (safety state unknown)
+  </int>
+  <int value="209" label="KEYWORD_ALLOWED_UNKNOWN">
+    Omnibox keyword; Allowed by default (safety state unknown)
+  </int>
+  <int value="210" label="KEYWORD_GENERATED_ALLOWED_UNKNOWN">
+    URL generated from Omnibox keyword; Allowed by default (safety state
+    unknown)
+  </int>
+  <int value="299" label="OTHER_ALLOWED_UNKNOWN">
+    Other navigation; Allowed by default (safety state unknown)
+  </int>
+  <int value="300" label="LINK_BLOCKED_BLACKLIST">
+    Link; Blocked by static blacklist
+  </int>
+  <int value="301" label="TYPED_BLOCKED_BLACKLIST">
+    Typed URL; Blocked by static blacklist
+  </int>
+  <int value="302" label="AUTO_BOOKMARK_BLOCKED_BLACKLIST">
+    Bookmark; Blocked by static blacklist
+  </int>
+  <int value="303" label="AUTO_SUBFRAME_BLOCKED_BLACKLIST">
+    Subframe navigation; Blocked by static blacklist
+  </int>
+  <int value="304" label="MANUAL_SUBFRAME_BLOCKED_BLACKLIST">
+    Manual subframe navigation; Blocked by static blacklist
+  </int>
+  <int value="305" label="GENERATED_BLOCKED_BLACKLIST">
+    Generated from Omnibox; Blocked by static blacklist
+  </int>
+  <int value="306" label="AUTO_TOPLEVEL_BLOCKED_BLACKLIST">
+    Automatic toplevel navigation; Blocked by static blacklist
+  </int>
+  <int value="307" label="FORM_SUBMIT_BLOCKED_BLACKLIST">
+    Form submission; Blocked by static blacklist
+  </int>
+  <int value="308" label="RELOAD_BLOCKED_BLACKLIST">
+    Reload; Blocked by static blacklist
+  </int>
+  <int value="309" label="KEYWORD_BLOCKED_BLACKLIST">
+    Omnibox keyword; Blocked by static blacklist
+  </int>
+  <int value="310" label="KEYWORD_GENERATED_BLOCKED_BLACKLIST">
+    URL generated from Omnibox keyword; Blocked by static blacklist
+  </int>
+  <int value="399" label="OTHER_BLOCKED_BLACKLIST">
+    Other navigation; Blocked by static blacklist
+  </int>
+  <int value="400" label="LINK_BLOCKED_SAFESITES">
+    Link; Blocked by SafeSites
+  </int>
+  <int value="401" label="TYPED_BLOCKED_SAFESITES">
+    Typed URL; Blocked by SafeSites
+  </int>
+  <int value="402" label="AUTO_BOOKMARK_BLOCKED_SAFESITES">
+    Bookmark; Blocked by SafeSites
+  </int>
+  <int value="403" label="AUTO_SUBFRAME_BLOCKED_SAFESITES">
+    Subframe navigation; Blocked by SafeSites
+  </int>
+  <int value="404" label="MANUAL_SUBFRAME_BLOCKED_SAFESITES">
+    Manual subframe navigation; Blocked by SafeSites
+  </int>
+  <int value="405" label="GENERATED_BLOCKED_SAFESITES">
+    Generated from Omnibox; Blocked by SafeSites
+  </int>
+  <int value="406" label="AUTO_TOPLEVEL_BLOCKED_SAFESITES">
+    Automatic toplevel navigation; Blocked by SafeSites
+  </int>
+  <int value="407" label="FORM_SUBMIT_BLOCKED_SAFESITES">
+    Form submission; Blocked by SafeSites
+  </int>
+  <int value="408" label="RELOAD_BLOCKED_SAFESITES">
+    Reload; Blocked by SafeSites
+  </int>
+  <int value="409" label="KEYWORD_BLOCKED_SAFESITES">
+    Omnibox keyword; Blocked by SafeSites
+  </int>
+  <int value="410" label="KEYWORD_GENERATED_BLOCKED_SAFESITES">
+    URL generated from Omnibox keyword; Blocked by SafeSites
+  </int>
+  <int value="499" label="OTHER_BLOCKED_SAFESITES">
+    Other navigation; Blocked by SafeSites
+  </int>
 </enum>
 
 <enum name="SuspendAttempt" type="int">

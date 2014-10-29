@@ -6298,6 +6298,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the supervised user host blacklist.">
         Enable the host blacklist for use by supervised users.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable the supervised user SafeSites feature.">
+        Enable the supervised user SafeSites filter
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable the supervised user SafeSites feature.">
+        Enable SafeSites filtering for supervised users.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME" desc="Name of the flag to enable synced notifications.">
         Enable Synced Notifications
       </message>

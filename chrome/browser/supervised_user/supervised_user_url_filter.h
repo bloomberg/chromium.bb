@@ -22,6 +22,13 @@
 class GURL;
 class SupervisedUserBlacklist;
 
+namespace net {
+class URLRequestContextGetter;
+}
+
+class GURL;
+class SupervisedUserAsyncURLChecker;
+
 // This class manages the filtering behavior for a given URL, i.e. it tells
 // callers if a given URL should be allowed, blocked or warned about. It uses
 // information from multiple sources:
@@ -44,6 +51,17 @@ class SupervisedUserURLFilter
     BLOCK,
     HISTOGRAM_BOUNDING_VALUE
   };
+  enum FilteringBehaviorSource {
+    DEFAULT,
+    ASYNC_CHECKER,
+    BLACKLIST,
+    MANUAL
+  };
+
+  typedef base::Callback<void(FilteringBehavior,
+                              FilteringBehaviorSource,
+                              bool /* uncertain */)>
+      FilteringBehaviorCallback;
 
   class Observer {
    public:
@@ -86,6 +104,21 @@ class SupervisedUserURLFilter
   // behavior and whether it is on a site list.
   FilteringBehavior GetFilteringBehaviorForURL(const GURL& url) const;
 
+  // Checks for a manual setting (i.e. manual exceptions and content packs)
+  // for the given URL. If there is one, returns true and writes the result
+  // into |behavior|. Otherwise returns false; in this case the value of
+  // |behavior| is unspecified.
+  bool GetManualFilteringBehaviorForURL(const GURL& url,
+                                        FilteringBehavior* behavior) const;
+
+  // Like |GetFilteringBehaviorForURL|, but also includes asynchronous checks
+  // against a remote service. If the result is already determined by the
+  // synchronous checks, then |callback| will be called synchronously.
+  // Returns true if |callback| was called synchronously.
+  bool GetFilteringBehaviorForURLWithAsyncChecks(
+      const GURL& url,
+      const FilteringBehaviorCallback& callback) const;
+
   // Sets the filtering behavior for pages not on a list (default is ALLOW).
   void SetDefaultFilteringBehavior(FilteringBehavior behavior);
 
@@ -95,6 +128,8 @@ class SupervisedUserURLFilter
 
   // Sets the static blacklist of blocked hosts.
   void SetBlacklist(SupervisedUserBlacklist* blacklist);
+  // Returns whether the static blacklist is set up.
+  bool HasBlacklist() const;
 
   // Set the list of matched patterns to the passed in list.
   // This method is only used for testing.
@@ -106,6 +141,14 @@ class SupervisedUserURLFilter
   // Sets the set of manually allowed or blocked URLs.
   void SetManualURLs(const std::map<GURL, bool>* url_map);
 
+  // Initializes the experimental asynchronous checker.
+  // |cx| is the identifier of the Custom Search Engine to use.
+  void InitAsyncURLChecker(net::URLRequestContextGetter* context,
+                           const std::string& cx,
+                           const std::string& api_key);
+  // Returns whether the asynchronous checker is set up.
+  bool HasAsyncURLChecker() const;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -114,6 +157,14 @@ class SupervisedUserURLFilter
   ~SupervisedUserURLFilter();
 
   void SetContents(scoped_ptr<Contents> url_matcher);
+
+  FilteringBehavior GetFilteringBehaviorForURL(
+      const GURL& url, bool manual_only, FilteringBehaviorSource* source) const;
+
+  void CheckCallback(const FilteringBehaviorCallback& callback,
+                     const GURL& url,
+                     FilteringBehavior behavior,
+                     bool uncertain) const;
 
   ObserverList<Observer> observers_;
 
@@ -130,6 +181,8 @@ class SupervisedUserURLFilter
 
   // Not owned.
   SupervisedUserBlacklist* blacklist_;
+
+  scoped_ptr<SupervisedUserAsyncURLChecker> async_url_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilter);
 };

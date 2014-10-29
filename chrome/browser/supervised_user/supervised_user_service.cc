@@ -78,6 +78,14 @@ GURL SupervisedUserService::Delegate::GetBlacklistURL() const {
   return GURL();
 }
 
+std::string SupervisedUserService::Delegate::GetSafeSitesCx() const {
+  return std::string();
+}
+
+std::string SupervisedUserService::Delegate::GetSafeSitesApiKey() const {
+  return std::string();
+}
+
 SupervisedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new SupervisedUserURLFilter),
       io_url_filter_(new SupervisedUserURLFilter) {}
@@ -159,6 +167,18 @@ void SupervisedUserService::URLFilterContext::OnBlacklistLoaded() {
       base::Bind(&SupervisedUserURLFilter::SetBlacklist,
                  io_url_filter_,
                  &blacklist_));
+}
+
+void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
+    net::URLRequestContextGetter* context,
+    const std::string& cx,
+    const std::string& api_key) {
+  ui_url_filter_->InitAsyncURLChecker(context, cx, api_key);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SupervisedUserURLFilter::InitAsyncURLChecker,
+                 io_url_filter_, context, cx, api_key));
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -832,6 +852,16 @@ void SupervisedUserService::SetActive(bool active) {
       base::FilePath blacklist_path = delegate_->GetBlacklistPath();
       if (!blacklist_path.empty())
         LoadBlacklist(blacklist_path, delegate_->GetBlacklistURL());
+    }
+    bool use_safesites =
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSupervisedUserSafeSites);
+    if (delegate_ && use_safesites) {
+      const std::string& cx = delegate_->GetSafeSitesCx();
+      if (!cx.empty()) {
+        url_filter_context_.InitAsyncURLChecker(
+            profile_->GetRequestContext(), cx, delegate_->GetSafeSitesApiKey());
+      }
     }
 
 #if !defined(OS_ANDROID)

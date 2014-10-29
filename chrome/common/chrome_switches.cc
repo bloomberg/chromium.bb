@@ -350,6 +350,10 @@ const char kDisableSuggestionsService[]     = "disable-suggestions-service";
 const char kDisableSupervisedUserBlacklist[] =
     "disable-supervised-user-blacklist";
 
+// Disables SafeSites filtering for supervised users.
+const char kDisableSupervisedUserSafeSites[] =
+    "disable-supervised-user-safesites";
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -608,6 +612,10 @@ const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 // Enables the supervised user host blacklist.
 const char kEnableSupervisedUserBlacklist[] =
     "enable-supervised-user-blacklist";
+
+// Enables SafeSites filtering for supervised users.
+const char kEnableSupervisedUserSafeSites[] =
+    "enable-supervised-user-safesites";
 
 // Enables synced notifications.
 const char kEnableSyncSyncedNotifications[] =

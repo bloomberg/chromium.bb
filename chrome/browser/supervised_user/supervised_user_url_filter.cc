@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_fixer/url_fixer.h"
@@ -255,7 +256,25 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
+  FilteringBehaviorSource source;
+  return GetFilteringBehaviorForURL(url, false, &source);
+}
+
+bool SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
+    const GURL& url, FilteringBehavior* behavior) const {
+  FilteringBehaviorSource source;
+  *behavior = GetFilteringBehaviorForURL(url, true, &source);
+  return source == MANUAL;
+}
+
+SupervisedUserURLFilter::FilteringBehavior
+SupervisedUserURLFilter::GetFilteringBehaviorForURL(
+    const GURL& url,
+    bool manual_only,
+    FilteringBehaviorSource* source) const {
   DCHECK(CalledOnValidThread());
+
+  *source = MANUAL;
 
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
   if (!HasFilteredScheme(url))
@@ -281,11 +300,6 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     }
   }
 
-  // If there's no blacklist and the default behavior is to allow, we don't need
-  // to check anything else.
-  if (!blacklist_ && default_behavior_ == ALLOW)
-    return ALLOW;
-
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
       contents_->url_matcher.MatchURL(url);
@@ -297,11 +311,32 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     return ALLOW;
 
   // Check the static blacklist.
-  if (blacklist_ && blacklist_->HasURL(url))
+  if (!manual_only && blacklist_ && blacklist_->HasURL(url)) {
+    *source = BLACKLIST;
     return BLOCK;
+  }
 
   // Fall back to the default behavior.
+  *source = DEFAULT;
   return default_behavior_;
+}
+
+bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
+    const GURL& url,
+    const FilteringBehaviorCallback& callback) const {
+  FilteringBehaviorSource source = DEFAULT;
+  FilteringBehavior behavior =
+      GetFilteringBehaviorForURL(url, false, &source);
+  if (source != DEFAULT || !async_url_checker_) {
+    callback.Run(behavior, source, false);
+    return true;
+  }
+
+  return async_url_checker_->CheckURL(
+      Normalize(url),
+      base::Bind(&SupervisedUserURLFilter::CheckCallback,
+                 base::Unretained(this),
+                 callback));
 }
 
 void SupervisedUserURLFilter::GetSites(
@@ -351,6 +386,10 @@ void SupervisedUserURLFilter::SetBlacklist(SupervisedUserBlacklist* blacklist) {
   blacklist_ = blacklist;
 }
 
+bool SupervisedUserURLFilter::HasBlacklist() const {
+  return !!blacklist_;
+}
+
 void SupervisedUserURLFilter::SetFromPatterns(
     const std::vector<std::string>& patterns) {
   DCHECK(CalledOnValidThread());
@@ -378,6 +417,18 @@ void SupervisedUserURLFilter::SetManualURLs(
                               url_map->size(), 1, 1000, 50);
 }
 
+void SupervisedUserURLFilter::InitAsyncURLChecker(
+    net::URLRequestContextGetter* context,
+    const std::string& cx,
+    const std::string& api_key) {
+  async_url_checker_.reset(new SupervisedUserAsyncURLChecker(
+      context, cx, api_key));
+}
+
+bool SupervisedUserURLFilter::HasAsyncURLChecker() const {
+  return !!async_url_checker_;
+}
+
 void SupervisedUserURLFilter::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -390,4 +441,17 @@ void SupervisedUserURLFilter::SetContents(scoped_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
   contents_ = contents.Pass();
   FOR_EACH_OBSERVER(Observer, observers_, OnSiteListUpdated());
+}
+
+void SupervisedUserURLFilter::CheckCallback(
+    const FilteringBehaviorCallback& callback,
+    const GURL& url,
+    FilteringBehavior behavior,
+    bool uncertain) const {
+  // If we passed the async checker, but the default is to block, fall back to
+  // the default behavior.
+  if (behavior != BLOCK && default_behavior_ == BLOCK)
+    callback.Run(default_behavior_, DEFAULT, uncertain);
+
+  callback.Run(behavior, ASYNC_CHECKER, uncertain);
 }
