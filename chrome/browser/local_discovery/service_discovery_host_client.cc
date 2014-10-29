@@ -62,37 +62,34 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
         started_(false) {
   }
 
-  virtual ~ServiceWatcherProxy() {
+  ~ServiceWatcherProxy() override {
     DVLOG(1) << "~ServiceWatcherProxy with id " << id_;
     host_->UnregisterWatcherCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyWatcher(id_));
   }
 
-  virtual void Start() override {
+  void Start() override {
     DVLOG(1) << "ServiceWatcher::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_StartWatcher(id_, service_type_));
     started_ = true;
   }
 
-  virtual void DiscoverNewServices(bool force_update) override {
+  void DiscoverNewServices(bool force_update) override {
     DVLOG(1) << "ServiceWatcher::DiscoverNewServices with id " << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_DiscoverServices(id_, force_update));
   }
 
-  virtual void SetActivelyRefreshServices(
-      bool actively_refresh_services) override {
+  void SetActivelyRefreshServices(bool actively_refresh_services) override {
     DVLOG(1) << "ServiceWatcher::SetActivelyRefreshServices with id " << id_;
     DCHECK(started_);
     host_->Send(new LocalDiscoveryMsg_SetActivelyRefreshServices(
         id_, actively_refresh_services));
   }
 
-  virtual std::string GetServiceType() const override {
-    return service_type_;
-  }
+  std::string GetServiceType() const override { return service_type_; }
 
  private:
   scoped_refptr<ServiceDiscoveryHostClient> host_;
@@ -113,23 +110,21 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
         started_(false) {
   }
 
-  virtual ~ServiceResolverProxy() {
+  ~ServiceResolverProxy() override {
     DVLOG(1) << "~ServiceResolverProxy with id " << id_;
     host_->UnregisterResolverCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyResolver(id_));
   }
 
-  virtual void StartResolving() override {
+  void StartResolving() override {
     DVLOG(1) << "ServiceResolverProxy::StartResolving with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveService(id_, service_name_));
     started_ = true;
   }
 
-  virtual std::string GetName() const override {
-    return service_name_;
-  }
+  std::string GetName() const override { return service_name_; }
 
  private:
   scoped_refptr<ServiceDiscoveryHostClient> host_;
@@ -152,14 +147,14 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
         started_(false) {
   }
 
-  virtual ~LocalDomainResolverProxy() {
+  ~LocalDomainResolverProxy() override {
     DVLOG(1) << "~LocalDomainResolverProxy with id " << id_;
     host_->UnregisterLocalDomainResolverCallback(id_);
     if (started_)
       host_->Send(new LocalDiscoveryMsg_DestroyLocalDomainResolver(id_));
   }
 
-  virtual void Start() override {
+  void Start() override {
     DVLOG(1) << "LocalDomainResolverProxy::Start with id " << id_;
     DCHECK(!started_);
     host_->Send(new LocalDiscoveryMsg_ResolveLocalDomain(id_, domain_,

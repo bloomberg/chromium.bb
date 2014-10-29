@@ -46,23 +46,23 @@ class ServiceDiscoveryHostClient
   void Shutdown();
 
   // ServiceDiscoveryClient implementation.
-  virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
-  virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
+  scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
-  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~ServiceDiscoveryHostClient();
+  ~ServiceDiscoveryHostClient() override;
 
  private:
   class ServiceWatcherProxy;

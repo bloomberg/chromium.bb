@@ -37,10 +37,10 @@ class PrivetTrafficDetector
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::IO>;
   friend class base::DeleteHelper<PrivetTrafficDetector>;
-  virtual ~PrivetTrafficDetector();
+  ~PrivetTrafficDetector() override;
 
     // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   void StartOnIOThread();

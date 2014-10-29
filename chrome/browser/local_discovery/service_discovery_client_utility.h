@@ -25,25 +25,25 @@ class ServiceDiscoveryClientUtility
   ServiceDiscoveryClientUtility();
 
   // ServiceDiscoveryClient implementation.
-  virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
-  virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
+  scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
-  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
-  virtual void OnNetworkChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
   friend class base::RefCounted<ServiceDiscoveryClientUtility>;
 
-  virtual ~ServiceDiscoveryClientUtility();
+  ~ServiceDiscoveryClientUtility() override;
   void ScheduleStartNewClient();
   void StartNewClient();
   void ReportSuccess();
