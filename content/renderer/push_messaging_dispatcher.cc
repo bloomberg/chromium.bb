@@ -55,12 +55,18 @@ void PushMessagingDispatcher::DoRegister(
   int callbacks_id = registration_callbacks_.Add(callbacks);
   int service_worker_provider_id = static_cast<WebServiceWorkerProviderImpl*>(
                                        service_worker_provider)->provider_id();
+
+  std::string sender_id = manifest.gcm_sender_id.is_null()
+      ? std::string() : base::UTF16ToUTF8(manifest.gcm_sender_id.string());
+  if (sender_id.empty()) {
+    OnRegisterError(callbacks_id, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    return;
+  }
+
   Send(new PushMessagingHostMsg_Register(
       routing_id(),
       callbacks_id,
-      manifest.gcm_sender_id.is_null()
-          ? std::string()
-          : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
+      sender_id,
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       service_worker_provider_id));
 }

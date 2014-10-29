@@ -27,6 +27,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
 
     case PUSH_REGISTRATION_STATUS_SERVICE_ERROR:
       return "Registration failed - push service error";
+
+    case PUSH_REGISTRATION_STATUS_NO_SENDER_ID:
+      return "Registration failed - no sender id provided";
   }
   NOTREACHED();
   return "";

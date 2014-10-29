@@ -55,6 +55,15 @@
           }, sendErrorToTest);
     }
 
+    function removeManifest() {
+      var element = document.querySelector('link[rel="manifest"]');
+      if (element) {
+        element.parentNode.removeChild(element);
+        sendResultToTest('manifest removed');
+      } else
+        sendResultToTest('unable to find manifest element');
+    }
+
     function registerPush() {
       navigator.serviceWorker.ready.then(function() {
         navigator.push.register().then(function(pushRegistration) {

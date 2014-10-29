@@ -28,13 +28,16 @@ enum PushRegistrationStatus {
   // Registration failed in the push service implemented by the embedder.
   PUSH_REGISTRATION_STATUS_SERVICE_ERROR = 5,
 
+  // Registration failed because no sender id was provided by the page.
+  PUSH_REGISTRATION_STATUS_NO_SENDER_ID = 6,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
   // Used for IPC message range checks.
-  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_SERVICE_ERROR
+  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_NO_SENDER_ID
 };
 
 // Push message delivery success / error codes for internal use.

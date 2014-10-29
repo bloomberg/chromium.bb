@@ -168,6 +168,22 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoPermission) {
             script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoSenderId) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  InfoBarResponder accepting_responder(browser(), true);
+
+  ASSERT_TRUE(RunScript("removeManifest()", &script_result));
+  ASSERT_EQ("manifest removed", script_result);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ("AbortError - Registration failed - no sender id provided",
+            script_result);
+}
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   std::string script_result;
 
