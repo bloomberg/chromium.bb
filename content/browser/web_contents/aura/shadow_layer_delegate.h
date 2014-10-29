@@ -24,7 +24,7 @@ namespace content {
 class ShadowLayerDelegate : public ui::LayerDelegate {
  public:
   explicit ShadowLayerDelegate(ui::Layer* shadow_for);
-  virtual ~ShadowLayerDelegate();
+  ~ShadowLayerDelegate() override;
 
   // Returns the layer for the shadow. Note that the ShadowLayerDelegate owns
   // the layer, and the layer is destroyed when the delegate is destroyed.
@@ -32,11 +32,10 @@ class ShadowLayerDelegate : public ui::LayerDelegate {
 
  private:
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override;
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  virtual base::Closure PrepareForLayerBoundsChange() override;
+  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  base::Closure PrepareForLayerBoundsChange() override;
 
   scoped_ptr<ui::Layer> layer_;
 

@@ -22,7 +22,7 @@ namespace content {
 class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
  public:
   OverscrollNavigationOverlayTest() {}
-  virtual ~OverscrollNavigationOverlayTest() {}
+  ~OverscrollNavigationOverlayTest() override {}
 
   gfx::Image CreateDummyScreenshot() {
     SkBitmap bitmap;
@@ -62,7 +62,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
  protected:
   // RenderViewHostImplTestHarness:
-  virtual void SetUp() override {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
     const GURL first("https://www.google.com");
@@ -103,7 +103,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     EXPECT_FALSE(overlay_->received_paint_update_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     overlay_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }

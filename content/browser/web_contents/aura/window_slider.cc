@@ -27,11 +27,11 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
       : closure_(closure) {
   }
 
-  virtual ~CallbackAnimationObserver() {}
+  ~CallbackAnimationObserver() override {}
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     if (!closure_.is_null())
       closure_.Run();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

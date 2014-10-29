@@ -70,7 +70,7 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
                aura::Window* event_window,
                aura::Window* owner);
 
-  virtual ~WindowSlider();
+  ~WindowSlider() override;
 
   // Changes the owner of the slider.
   void ChangeOwner(aura::Window* new_owner);
@@ -105,14 +105,14 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
                                     scoped_ptr<ShadowLayerDelegate> shadow);
 
   // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) override;
-  virtual void OnMouseEvent(ui::MouseEvent* event) override;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                              aura::Window* new_root) override;
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override;
 
   Delegate* delegate_;
 

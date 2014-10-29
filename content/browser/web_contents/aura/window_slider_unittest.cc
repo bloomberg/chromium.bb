@@ -72,11 +72,11 @@ class NoEventWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   NoEventWindowDelegate() {
   }
-  virtual ~NoEventWindowDelegate() {}
+  ~NoEventWindowDelegate() override {}
 
  private:
   // Overridden from aura::WindowDelegate:
-  virtual bool HasHitTestMask() const override { return true; }
+  bool HasHitTestMask() const override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(NoEventWindowDelegate);
 };
@@ -92,7 +92,7 @@ class WindowSliderDelegateTest : public WindowSlider::Delegate {
         slide_aborted_(false),
         slider_destroyed_(false) {
   }
-  virtual ~WindowSliderDelegateTest() {
+  ~WindowSliderDelegateTest() override {
     // Make sure slide_completed() gets called if slide_completing() was called.
     CHECK(!slide_completing_ || slide_completed_);
   }
@@ -127,35 +127,29 @@ class WindowSliderDelegateTest : public WindowSlider::Delegate {
   }
 
   // Overridden from WindowSlider::Delegate:
-  virtual ui::Layer* CreateBackLayer() override {
+  ui::Layer* CreateBackLayer() override {
     if (!can_create_layer_)
       return NULL;
     created_back_layer_ = true;
     return CreateLayerForTest();
   }
 
-  virtual ui::Layer* CreateFrontLayer() override {
+  ui::Layer* CreateFrontLayer() override {
     if (!can_create_layer_)
       return NULL;
     created_front_layer_ = true;
     return CreateLayerForTest();
   }
 
-  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
+  void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
     slide_completed_ = true;
   }
 
-  virtual void OnWindowSlideCompleting() override {
-    slide_completing_ = true;
-  }
+  void OnWindowSlideCompleting() override { slide_completing_ = true; }
 
-  virtual void OnWindowSlideAborted() override {
-    slide_aborted_ = true;
-  }
+  void OnWindowSlideAborted() override { slide_aborted_ = true; }
 
-  virtual void OnWindowSliderDestroyed() override {
-    slider_destroyed_ = true;
-  }
+  void OnWindowSliderDestroyed() override { slider_destroyed_ = true; }
 
  private:
   bool can_create_layer_;
@@ -175,11 +169,11 @@ class WindowSliderDeleteOwnerOnDestroy : public WindowSliderDelegateTest {
   explicit WindowSliderDeleteOwnerOnDestroy(aura::Window* owner)
       : owner_(owner) {
   }
-  virtual ~WindowSliderDeleteOwnerOnDestroy() {}
+  ~WindowSliderDeleteOwnerOnDestroy() override {}
 
  private:
   // Overridden from WindowSlider::Delegate:
-  virtual void OnWindowSliderDestroyed() override {
+  void OnWindowSliderDestroyed() override {
     WindowSliderDelegateTest::OnWindowSliderDestroyed();
     delete owner_;
   }
@@ -194,11 +188,11 @@ class WindowSliderDeleteOwnerOnComplete : public WindowSliderDelegateTest {
   explicit WindowSliderDeleteOwnerOnComplete(aura::Window* owner)
       : owner_(owner) {
   }
-  virtual ~WindowSliderDeleteOwnerOnComplete() {}
+  ~WindowSliderDeleteOwnerOnComplete() override {}
 
  private:
   // Overridden from WindowSlider::Delegate:
-  virtual void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
+  void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override {
     WindowSliderDelegateTest::OnWindowSlideCompleted(layer.Pass());
     delete owner_;
   }

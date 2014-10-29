@@ -252,12 +252,12 @@ class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
 
 class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
     RenderViewHostImplTestHarness::TearDown();
   }

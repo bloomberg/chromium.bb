@@ -57,7 +57,7 @@ void GiveItSomeTime() {
 class VerticalOverscrollTracker : public content::WebContentsDelegate {
  public:
   VerticalOverscrollTracker() : count_(0), completed_(false) {}
-  virtual ~VerticalOverscrollTracker() {}
+  ~VerticalOverscrollTracker() override {}
 
   int num_overscroll_updates() const {
     return count_;
@@ -73,17 +73,11 @@ class VerticalOverscrollTracker : public content::WebContentsDelegate {
   }
 
  private:
-  virtual bool CanOverscrollContent() const override {
-    return true;
-  }
+  bool CanOverscrollContent() const override { return true; }
 
-  virtual void OverscrollUpdate(float delta_y) override {
-    ++count_;
-  }
+  void OverscrollUpdate(float delta_y) override { ++count_; }
 
-  virtual void OverscrollComplete() override {
-    completed_ = true;
-  }
+  void OverscrollComplete() override { completed_ = true; }
 
   int count_;
   bool completed_;
@@ -105,8 +99,7 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
         waiting_for_screenshots_(0) {
   }
 
-  virtual ~ScreenshotTracker() {
-  }
+  ~ScreenshotTracker() override {}
 
   RenderViewHost* screenshot_taken_for() { return screenshot_taken_for_; }
 
@@ -132,14 +125,14 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
 
  private:
   // Overridden from NavigationEntryScreenshotManager:
-  virtual void TakeScreenshotImpl(RenderViewHost* host,
-                                  NavigationEntryImpl* entry) override {
+  void TakeScreenshotImpl(RenderViewHost* host,
+                          NavigationEntryImpl* entry) override {
     ++waiting_for_screenshots_;
     screenshot_taken_for_ = host;
     NavigationEntryScreenshotManager::TakeScreenshotImpl(host, entry);
   }
 
-  virtual void OnScreenshotSet(NavigationEntryImpl* entry) override {
+  void OnScreenshotSet(NavigationEntryImpl* entry) override {
     --waiting_for_screenshots_;
     screenshot_set_[entry] = true;
     NavigationEntryScreenshotManager::OnScreenshotSet(entry);
@@ -163,7 +156,7 @@ class NavigationWatcher : public WebContentsObserver {
         should_quit_loop_(false) {
   }
 
-  virtual ~NavigationWatcher() {}
+  ~NavigationWatcher() override {}
 
   void WaitUntilNavigationStarts() {
     if (navigated_)
@@ -174,7 +167,7 @@ class NavigationWatcher : public WebContentsObserver {
 
  private:
   // Overridden from WebContentsObserver:
-  virtual void AboutToNavigateRenderView(RenderViewHost* host) override {
+  void AboutToNavigateRenderView(RenderViewHost* host) override {
     navigated_ = true;
     if (should_quit_loop_)
       base::MessageLoop::current()->Quit();
@@ -203,7 +196,7 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
   InputEventAckState last_ack_state() const { return state_; }
 
  protected:
-  virtual ~InputEventMessageFilterWaitsForAcks() {}
+  ~InputEventMessageFilterWaitsForAcks() override {}
 
  private:
   void ReceivedEventAck(blink::WebInputEvent::Type type,
@@ -215,7 +208,7 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
   }
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
@@ -264,7 +257,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     controller->SetScreenshotManager(screenshot_manager_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* cmd) override {
+  void SetUpCommandLine(CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);
   }

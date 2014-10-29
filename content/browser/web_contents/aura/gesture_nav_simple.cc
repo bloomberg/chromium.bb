@@ -78,13 +78,13 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
     CHECK(!image_.IsEmpty());
   }
 
-  virtual ~ArrowLayerDelegate() {}
+  ~ArrowLayerDelegate() override {}
 
   bool left() const { return left_arrow_; }
 
  private:
   // ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     SkPaint paint;
     paint.setColor(SkColorSetARGB(0xa0, 0, 0, 0));
     paint.setStyle(SkPaint::kFill_Style);
@@ -99,12 +99,11 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
                          (kArrowHeight - image_.Height()) / 2);
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 

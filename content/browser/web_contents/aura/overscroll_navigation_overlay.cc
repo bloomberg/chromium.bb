@@ -45,7 +45,7 @@ class ImageLayerDelegate : public ui::LayerDelegate {
  public:
   ImageLayerDelegate() {}
 
-  virtual ~ImageLayerDelegate() {}
+  ~ImageLayerDelegate() override {}
 
   void SetImage(const gfx::Image& image) {
     image_ = image;
@@ -55,7 +55,7 @@ class ImageLayerDelegate : public ui::LayerDelegate {
 
  private:
   // Overridden from ui::LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     if (image_.IsEmpty()) {
       canvas->DrawColor(SK_ColorWHITE);
     } else {
@@ -68,16 +68,14 @@ class ImageLayerDelegate : public ui::LayerDelegate {
     }
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
   // Called when the layer's device scale factor has changed.
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
   // Invoked prior to the bounds changing. The returned closured is run after
   // the bounds change.
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -110,21 +108,19 @@ class OverlayDismissAnimator
   }
 
   // Overridden from ui::LayerAnimationObserver
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     delete this;
   }
 
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
     delete this;
   }
 
-  virtual void OnLayerAnimationScheduled(
+  void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
 
  private:
-  virtual ~OverlayDismissAnimator() {}
+  ~OverlayDismissAnimator() override {}
 
   scoped_ptr<ui::Layer> layer_;
 
