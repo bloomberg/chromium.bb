@@ -41,27 +41,26 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
       Browser* browser,
       const std::string& username,
       ui::ProfileSigninConfirmationDelegate* delegate);
-  virtual ~ProfileSigninConfirmationDialogViews();
+  ~ProfileSigninConfirmationDialogViews() override;
 
   // views::DialogDelegateView:
-  virtual base::string16 GetWindowTitle() const override;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const override;
-  virtual int GetDefaultDialogButton() const override;
-  virtual views::View* CreateExtraView() override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
-  virtual void OnClosed() override;
-  virtual ui::ModalType GetModalType() const override;
-  virtual void ViewHierarchyChanged(
+  base::string16 GetWindowTitle() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  int GetDefaultDialogButton() const override;
+  views::View* CreateExtraView() override;
+  bool Accept() override;
+  bool Cancel() override;
+  void OnClosed() override;
+  ui::ModalType GetModalType() const override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // views::StyledLabelListener:
-  virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                      int event_flags) override;
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button*, const ui::Event& event) override;
+  void ButtonPressed(views::Button*, const ui::Event& event) override;
 
   // Shows the dialog and releases ownership of this object. It will
   // delete itself when the dialog is closed. If |prompt_for_new_profile|

@@ -24,7 +24,7 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
         anchor_widget_(NULL) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     // Create a widget to host the anchor view.
@@ -35,7 +35,7 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
     anchor_widget_->Show();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     OneClickSigninBubbleView::Hide();
     anchor_widget_->Close();
     anchor_widget_ = NULL;
@@ -86,15 +86,13 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
         OneClickSigninBubbleViewTest* test) : test_(test) {}
 
     // OneClickSigninBubbleDelegate:
-    virtual void OnLearnMoreLinkClicked(bool is_dialog) override {
+    void OnLearnMoreLinkClicked(bool is_dialog) override {
       if (is_dialog)
         ++test_->dialog_learn_more_click_count_;
       else
         ++test_->bubble_learn_more_click_count_;
     }
-    virtual void OnAdvancedLinkClicked() override {
-      ++test_->advanced_click_count_;
-    }
+    void OnAdvancedLinkClicked() override { ++test_->advanced_click_count_; }
 
    private:
     OneClickSigninBubbleViewTest* test_;
