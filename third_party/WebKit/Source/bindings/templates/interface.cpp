@@ -580,7 +580,7 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, con
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
         if (!DOMDataStore::containsWrapper<{{set_wrapper_reference_to.v8_type}}>({{set_wrapper_reference_to.name}}, isolate))
-            wrap({{set_wrapper_reference_to.name}}, creationContext, isolate);
+            {{set_wrapper_reference_to.name}}->wrap(creationContext, isolate);
         DOMDataStore::setWrapperReference<{{set_wrapper_reference_to.v8_type}}>(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
     {% endfor %}

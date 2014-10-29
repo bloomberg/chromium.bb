@@ -32,6 +32,7 @@
 #ifndef V8Binding_h
 #define V8Binding_h
 
+#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -72,10 +73,40 @@ void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provi
 
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
-template<typename CallbackInfo, typename V>
-inline void v8SetReturnValue(const CallbackInfo& info, V v)
+template<typename CallbackInfo, typename S>
+inline void v8SetReturnValue(const CallbackInfo& info, const v8::Persistent<S>& handle)
 {
-    info.GetReturnValue().Set(v);
+    info.GetReturnValue().Set(handle);
+}
+
+template<typename CallbackInfo, typename S>
+inline void v8SetReturnValue(const CallbackInfo& info, const v8::Handle<S> handle)
+{
+    info.GetReturnValue().Set(handle);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& info, bool value)
+{
+    info.GetReturnValue().Set(value);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& info, double value)
+{
+    info.GetReturnValue().Set(value);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& info, int32_t value)
+{
+    info.GetReturnValue().Set(value);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& info, uint32_t value)
+{
+    info.GetReturnValue().Set(value);
 }
 
 template<typename CallbackInfo>
@@ -114,7 +145,7 @@ inline void v8SetReturnValueEmptyString(const CallbackInfo& info)
     info.GetReturnValue().SetEmptyString();
 }
 
-template <class CallbackInfo>
+template<typename CallbackInfo>
 inline void v8SetReturnValueString(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
 {
     if (string.isNull()) {
@@ -124,7 +155,7 @@ inline void v8SetReturnValueString(const CallbackInfo& info, const String& strin
     V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
 }
 
-template <class CallbackInfo>
+template<typename CallbackInfo>
 inline void v8SetReturnValueStringOrNull(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
 {
     if (string.isNull()) {
@@ -134,7 +165,7 @@ inline void v8SetReturnValueStringOrNull(const CallbackInfo& info, const String&
     V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
 }
 
-template <class CallbackInfo>
+template<typename CallbackInfo>
 inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
 {
     if (string.isNull()) {
@@ -142,6 +173,115 @@ inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const St
         return;
     }
     V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo, typename T>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<T> impl)
+{
+    v8SetReturnValue(callbackInfo, impl.get());
+}
+
+template<typename CallbackInfo, typename T>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, RawPtr<T> impl)
+{
+    v8SetReturnValue(callbackInfo, impl.get());
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
+{
+    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueForMainWorldNonTemplate(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo, typename T>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<T> impl)
+{
+    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
+}
+
+template<typename CallbackInfo, typename T>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, RawPtr<T> impl)
+{
+    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappable* impl, const ScriptWrappable* wrappable)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFastNonTemplate(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        return;
+    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, const ScriptWrappable* wrappable)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFastNonTemplate(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        return;
+    v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappable* impl, const ScriptWrappableBase*)
+{
+    // If the third arg is not ScriptWrappable, there is no fast path.
+    v8SetReturnValue(callbackInfo, impl);
+}
+
+template<typename CallbackInfo, typename T, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<T> impl, const Wrappable* wrappable)
+{
+    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
+}
+
+template<typename CallbackInfo, typename T, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, RawPtr<T> impl, const Wrappable* wrappable)
+{
+    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
 // Convert v8::String to a WTF::String. If the V8 string is not already
@@ -207,6 +347,46 @@ inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* s
 inline v8::Handle<v8::Value> v8Undefined()
 {
     return v8::Handle<v8::Value>();
+}
+
+inline v8::Handle<v8::Value> toV8(ScriptWrappable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (UNLIKELY(!impl))
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+
+    return impl->wrap(creationContext, isolate);
+}
+
+inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (UNLIKELY(!impl))
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+
+    return ScriptWrappable::fromNode(impl)->wrap(creationContext, isolate);
+}
+
+template<typename T>
+inline v8::Handle<v8::Value> toV8(RefPtr<T>& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl.get(), creationContext, isolate);
+}
+
+template<typename T>
+inline v8::Handle<v8::Value> toV8(PassRefPtr<T> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl.get(), creationContext, isolate);
+}
+
+template<typename T>
+inline v8::Handle<v8::Value> toV8(RawPtr<T> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return toV8(impl.get(), creationContext, isolate);
 }
 
 // Converts a DOM object to a v8 value. This function is intended to be used

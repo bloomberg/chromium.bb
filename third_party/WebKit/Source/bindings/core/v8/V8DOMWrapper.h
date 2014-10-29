@@ -112,8 +112,8 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplat
 
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplate(Node* node, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    wrapperTypeInfo->refObject(ScriptWrappable::fromObject(node)->toScriptWrappableBase());
-    setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase());
+    wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node)->toScriptWrappableBase());
+    setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node)->toScriptWrappableBase());
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapperNonTemplate(node, wrapper, isolate, wrapperTypeInfo);
     return wrapper;

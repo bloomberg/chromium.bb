@@ -158,6 +158,23 @@ public:
         return object;
     }
 
+    // Provides a way to convert Node* to ScriptWrappable* without including
+    // "core/dom/Node.h".
+    //
+    // Example:
+    //   void foo(const void*) { ... }       // [1]
+    //   void foo(ScriptWrappable*) { ... }  // [2]
+    //   class Node;
+    //   Node* node;
+    //   foo(node);  // This calls [1] because there is no definition of Node
+    //               // and compilers do not know that Node is a subclass of
+    //               // ScriptWrappable.
+    //   foo(ScriptWrappable::fromNode(node));  // This calls [2] as expected.
+    //
+    // The definition of fromNode is placed in Node.h because we'd like to
+    // inline calls to fromNode as much as possible.
+    static ScriptWrappable* fromNode(Node*);
+
     bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
     {
         returnValue.Set(m_wrapper);

@@ -862,6 +862,13 @@ inline bool isTreeScopeRoot(const Node& node)
     return node.isDocumentNode() || node.isShadowRoot();
 }
 
+// See the comment at the declaration of ScriptWrappable::fromNode in
+// bindings/core/v8/ScriptWrappable.h about why this method is defined here.
+inline ScriptWrappable* ScriptWrappable::fromNode(Node* node)
+{
+    return node;
+}
+
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
 

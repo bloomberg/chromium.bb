@@ -51,7 +51,7 @@ inline v8::Handle<v8::Value> toV8(TestInterfaceNotScriptWrappable* impl, v8::Han
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceNotScriptWrappable>(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -65,7 +65,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceNotS
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceNotScriptWrappable>(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -85,7 +85,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestI
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-template<class CallbackInfo, class Wrappable>
+template<typename CallbackInfo, class Wrappable>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfaceNotScriptWrappable* impl, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl)) {
@@ -96,29 +96,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface
         return;
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
-}
-
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfaceNotScriptWrappable> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl.get(), creationContext, isolate);
-}
-
-template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNotScriptWrappable> impl)
-{
-    v8SetReturnValue(callbackInfo, impl.get());
-}
-
-template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNotScriptWrappable> impl)
-{
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
-}
-
-template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceNotScriptWrappable> impl, Wrappable* wrappable)
-{
-    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
 } // namespace blink
