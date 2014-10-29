@@ -57,7 +57,7 @@ var test = function()
         var count = 0;
         var infos = WebInspector.debuggerWorkspaceBinding._targetToData.get(WebInspector.debuggerModel.target()).scriptDataMap.valuesArray();
         infos.forEach(function(info) {
-            count += info._locations.size();
+            count += info._locations.size;
         });
         return count;
     }
