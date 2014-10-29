@@ -1173,4 +1173,31 @@ TEST_F(PinchViewportTest, TestChangingContentSizeAffectsScrollBounds)
     EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
 }
 
+// Tests that a resize due to top controls hiding doesn't incorrectly clamp the
+// main frame's scroll offset. crbug.com/428193.
+TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), 1, 500);
+    webViewImpl()->setTopControlsLayoutHeight(500);
+    webViewImpl()->resize(IntSize(1000, 1000));
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    // Scroll the FrameView to the bottom of the page but "hide" the top
+    // controls on the compositor side so the max scroll position should account
+    // for the full viewport height.
+    webViewImpl()->applyViewportDeltas(WebSize(), WebSize(), 1, -500);
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    frameView.setScrollPosition(IntPoint(0, 10000));
+    EXPECT_EQ(500, frameView.scrollPositionDouble().y());
+
+    // Now send the resize, make sure the scroll offset doesn't change.
+    webViewImpl()->setTopControlsLayoutHeight(0);
+    webViewImpl()->resize(IntSize(1000, 1500));
+    EXPECT_EQ(500, frameView.scrollPositionDouble().y());
+}
+
+
 } // namespace

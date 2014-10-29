@@ -1686,9 +1686,6 @@ void WebViewImpl::performResize()
     if (pinchVirtualViewportEnabled())
         page()->frameHost().pinchViewport().setSize(m_size);
 
-    // In case we didn't have a size when the top controls were updated.
-    didUpdateTopControls();
-
     // When device emulation is enabled, device size values may change - they are
     // usually set equal to the view size. These values are not considered viewport-dependent
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
@@ -3954,6 +3951,9 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 
     if (m_pageScaleConstraintsSet.constraintsDirty())
         refreshPageScaleFactorAfterLayout();
+
+    // In case we didn't have a size when the top controls were updated.
+    didUpdateTopControls();
 
     m_client->didUpdateLayout();
 }
