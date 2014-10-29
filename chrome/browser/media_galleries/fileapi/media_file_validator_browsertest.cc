@@ -69,7 +69,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
  public:
   MediaFileValidatorTest() : test_file_size_(0) {}
 
-  virtual ~MediaFileValidatorTest() {}
+  ~MediaFileValidatorTest() override {}
 
   // Write |content| into |filename| in a test file system and try to move
   // it into a media file system.  The result is compared to |expected_result|.

@@ -25,16 +25,11 @@ class MediaFolderFinderTest : public testing::Test {
   MediaFolderFinderTest() {
   }
 
-  virtual ~MediaFolderFinderTest() {
-  }
+  ~MediaFolderFinderTest() override {}
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(fake_dir_.CreateUniqueTempDir()); }
 
-  virtual void TearDown() override {
-    ASSERT_EQ(NULL, media_folder_finder_.get());
-  }
+  void TearDown() override { ASSERT_EQ(NULL, media_folder_finder_.get()); }
 
  protected:
   void CreateMediaFolderFinder(

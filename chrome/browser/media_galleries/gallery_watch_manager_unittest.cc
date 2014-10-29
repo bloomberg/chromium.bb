@@ -59,9 +59,9 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
         expect_gallery_watch_dropped_(false),
         pending_loop_(NULL) {}
 
-  virtual ~GalleryWatchManagerTest() {}
+  ~GalleryWatchManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -85,7 +85,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     manager_->AddObserver(profile_.get(), this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     manager_->RemoveObserver(profile_.get());
     manager_.reset();
     storage_monitor::TestStorageMonitor::Destroy();

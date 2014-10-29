@@ -35,12 +35,12 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   MediaGalleriesPermissionsTest()
       : file_thread_(content::BrowserThread::FILE) {
   }
-  virtual ~MediaGalleriesPermissionsTest() {}
+  ~MediaGalleriesPermissionsTest() override {}
 
   // This is the same implementation as ExtensionPrefsTest::TearDown(), except
   // for also resetting the ExtensionPrefs used by |gallery_prefs_| after
   // TestExtensionPrefs reconstructs them.
-  virtual void TearDown() override {
+  void TearDown() override {
     Verify();
 
     // Reset ExtensionPrefs, and re-verify.

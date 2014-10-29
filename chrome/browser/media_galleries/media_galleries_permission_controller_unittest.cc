@@ -49,12 +49,12 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
         weak_factory_(this) {
   }
 
-  virtual ~MediaGalleriesPermissionControllerTest() {
+  ~MediaGalleriesPermissionControllerTest() override {
     EXPECT_FALSE(controller_);
     EXPECT_FALSE(dialog_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -74,9 +74,7 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
     extension_ = AddMediaGalleriesApp("read", read_permissions, profile_.get());
   }
 
-  virtual void TearDown() override {
-    TestStorageMonitor::Destroy();
-  }
+  void TearDown() override { TestStorageMonitor::Destroy(); }
 
   void StartDialog() {
     ASSERT_FALSE(controller_);

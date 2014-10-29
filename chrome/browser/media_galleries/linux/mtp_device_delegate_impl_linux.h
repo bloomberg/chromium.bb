@@ -69,29 +69,28 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   explicit MTPDeviceDelegateImplLinux(const std::string& device_location);
 
   // Destructed via CancelPendingTasksAndDeleteDelegate().
-  virtual ~MTPDeviceDelegateImplLinux();
+  ~MTPDeviceDelegateImplLinux() override;
 
   // MTPDeviceAsyncDelegate:
-  virtual void GetFileInfo(const base::FilePath& file_path,
-                           const GetFileInfoSuccessCallback& success_callback,
-                           const ErrorCallback& error_callback) override;
-  virtual void ReadDirectory(
-      const base::FilePath& root,
-      const ReadDirectorySuccessCallback& success_callback,
-      const ErrorCallback& error_callback) override;
-  virtual void CreateSnapshotFile(
+  void GetFileInfo(const base::FilePath& file_path,
+                   const GetFileInfoSuccessCallback& success_callback,
+                   const ErrorCallback& error_callback) override;
+  void ReadDirectory(const base::FilePath& root,
+                     const ReadDirectorySuccessCallback& success_callback,
+                     const ErrorCallback& error_callback) override;
+  void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
-  virtual bool IsStreaming() override;
-  virtual void ReadBytes(const base::FilePath& device_file_path,
-                         const scoped_refptr<net::IOBuffer>& buf,
-                         int64 offset,
-                         int buf_len,
-                         const ReadBytesSuccessCallback& success_callback,
-                         const ErrorCallback& error_callback) override;
-  virtual void CancelPendingTasksAndDeleteDelegate() override;
+  bool IsStreaming() override;
+  void ReadBytes(const base::FilePath& device_file_path,
+                 const scoped_refptr<net::IOBuffer>& buf,
+                 int64 offset,
+                 int buf_len,
+                 const ReadBytesSuccessCallback& success_callback,
+                 const ErrorCallback& error_callback) override;
+  void CancelPendingTasksAndDeleteDelegate() override;
 
   // The internal methods correspond to the similarly named methods above.
   // The |root_node_| cache should be filled at this point.

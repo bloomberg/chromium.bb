@@ -349,8 +349,8 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   // This makes sure that at least one default gallery exists on the file

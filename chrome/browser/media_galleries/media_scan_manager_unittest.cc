@@ -95,11 +95,11 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
         expected_gallery_count_(0),
         profile_(new TestingProfile()) {}
 
-  virtual ~MediaScanManagerTest() {
+  ~MediaScanManagerTest() override {
     EXPECT_EQ(find_folders_start_count_, find_folders_destroy_count_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -134,7 +134,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     media_scan_manager_->AddObserver(profile_.get(), this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     media_scan_manager_->RemoveObserver(profile_.get());
     media_scan_manager_.reset();
     storage_monitor::TestStorageMonitor::Destroy();

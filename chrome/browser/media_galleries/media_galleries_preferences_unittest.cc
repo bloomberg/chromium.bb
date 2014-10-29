@@ -111,10 +111,9 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         default_galleries_count_(0) {
   }
 
-  virtual ~MediaGalleriesPreferencesTest() {
-  }
+  ~MediaGalleriesPreferencesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
@@ -148,7 +147,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         AddMediaGalleriesApp("no", read_permissions, profile_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     Verify();
     TestStorageMonitor::Destroy();
   }

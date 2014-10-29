@@ -115,7 +115,7 @@ class NativeMediaFileUtilTest : public testing::Test {
       : io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateDirectory(root_path()));
 
@@ -143,7 +143,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     isolated_context()->AddReference(filesystem_id_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     isolated_context()->RemoveReference(filesystem_id_);
     file_system_context_ = NULL;
   }
