@@ -64,7 +64,7 @@ class WinVSyncProvider : public VSyncProvider {
   explicit WinVSyncProvider(gfx::AcceleratedWidget window) :
     window_(window)
   {
-    use_dwm_ = (base::win::GetVersion() >= base::win::VERSION_VISTA);
+    use_dwm_ = (base::win::GetVersion() >= base::win::VERSION_WIN7);
   }
 
   virtual ~WinVSyncProvider() {}
