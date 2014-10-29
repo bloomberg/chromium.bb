@@ -295,6 +295,7 @@ test("events_unittests") {
     "gesture_detection/gesture_provider_unittest.cc",
     "gesture_detection/motion_event_buffer_unittest.cc",
     "gesture_detection/motion_event_generic_unittest.cc",
+    "gesture_detection/snap_scroll_controller_unittest.cc",
     "gesture_detection/touch_disposition_gesture_filter_unittest.cc",
     "gesture_detection/velocity_tracker_unittest.cc",
     "gestures/fling_curve_unittest.cc",

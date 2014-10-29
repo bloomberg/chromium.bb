@@ -84,7 +84,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         client_(client),
         gesture_detector_(config.gesture_detector_config, this, this),
         scale_gesture_detector_(config.scale_gesture_detector_config, this),
-        snap_scroll_controller_(config.display),
+        snap_scroll_controller_(config.gesture_detector_config.touch_slop,
+                                config.display.size()),
         ignore_multitouch_zoom_events_(false),
         ignore_single_tap_(false),
         pinch_event_sent_(false),
@@ -94,7 +95,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   void OnTouchEvent(const MotionEvent& event) {
     const bool in_scale_gesture = IsScaleGestureDetectionInProgress();
-    snap_scroll_controller_.SetSnapScrollingMode(event, in_scale_gesture);
+    snap_scroll_controller_.SetSnapScrollMode(event, in_scale_gesture);
     if (in_scale_gesture)
       SetIgnoreSingleTap(true);
 

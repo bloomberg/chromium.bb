@@ -7,100 +7,118 @@
 #include <cmath>
 
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/gfx/display.h"
 
 namespace ui {
 namespace {
-const int kSnapBound = 16;
-const float kMinSnapChannelDistance = kSnapBound;
-const float kMaxSnapChannelDistance = kMinSnapChannelDistance * 3.f;
-const float kSnapChannelDipsPerScreenDip = kMinSnapChannelDistance / 480.f;
 
-float CalculateChannelDistance(const gfx::Display& display) {
-  if (display.bounds().IsEmpty())
-    return kMinSnapChannelDistance;
+// Minimum ratio between initial X and Y motion to allow snapping.
+const float kMinSnapRatio = 1.25f;
+
+// Size of the snap rail relative to the initial snap bound threshold.
+const float kSnapBoundToChannelMultiplier = 1.5f;
+
+float CalculateChannelDistance(float snap_bound,
+                               const gfx::SizeF& display_size) {
+  const float kMinChannelDistance = snap_bound * kSnapBoundToChannelMultiplier;
+  const float kMaxChannelDistance = kMinChannelDistance * 3.f;
+  const float kSnapChannelDipsPerScreenDip = kMinChannelDistance / 480.f;
+  if (display_size.IsEmpty())
+    return kMinChannelDistance;
 
   float screen_size =
-      std::abs(hypot(static_cast<float>(display.bounds().width()),
-                     static_cast<float>(display.bounds().height())));
+      std::abs(hypot(static_cast<float>(display_size.width()),
+                     static_cast<float>(display_size.height())));
 
   float snap_channel_distance = screen_size * kSnapChannelDipsPerScreenDip;
-  return std::max(kMinSnapChannelDistance,
-                  std::min(kMaxSnapChannelDistance, snap_channel_distance));
+  return std::max(kMinChannelDistance,
+                  std::min(kMaxChannelDistance, snap_channel_distance));
 }
 
 }  // namespace
 
-
-SnapScrollController::SnapScrollController(const gfx::Display& display)
-    : channel_distance_(CalculateChannelDistance(display)),
-      snap_scroll_mode_(SNAP_NONE),
-      first_touch_x_(-1),
-      first_touch_y_(-1),
-      distance_x_(0),
-      distance_y_(0) {}
-
-SnapScrollController::~SnapScrollController() {}
-
-void SnapScrollController::UpdateSnapScrollMode(float distance_x,
-                                                float distance_y) {
-  if (snap_scroll_mode_ == SNAP_HORIZ || snap_scroll_mode_ == SNAP_VERT) {
-    distance_x_ += std::abs(distance_x);
-    distance_y_ += std::abs(distance_y);
-    if (snap_scroll_mode_ == SNAP_HORIZ) {
-      if (distance_y_ > channel_distance_) {
-        snap_scroll_mode_ = SNAP_NONE;
-      } else if (distance_x_ > channel_distance_) {
-        distance_x_ = 0;
-        distance_y_ = 0;
-      }
-    } else {
-      if (distance_x_ > channel_distance_) {
-        snap_scroll_mode_ = SNAP_NONE;
-      } else if (distance_y_ > channel_distance_) {
-        distance_x_ = 0;
-        distance_y_ = 0;
-      }
-    }
-  }
+SnapScrollController::SnapScrollController(float snap_bound,
+                                           const gfx::SizeF& display_size)
+    : snap_bound_(snap_bound),
+      channel_distance_(CalculateChannelDistance(snap_bound, display_size)),
+      mode_(SNAP_NONE) {
 }
 
-void SnapScrollController::SetSnapScrollingMode(
+SnapScrollController::~SnapScrollController() {
+}
+
+void SnapScrollController::SetSnapScrollMode(
     const MotionEvent& event,
     bool is_scale_gesture_detection_in_progress) {
   switch (event.GetAction()) {
     case MotionEvent::ACTION_DOWN:
-      snap_scroll_mode_ = SNAP_NONE;
-      first_touch_x_ = event.GetX();
-      first_touch_y_ = event.GetY();
+      mode_ = SNAP_PENDING;
+      down_position_.set_x(event.GetX());
+      down_position_.set_y(event.GetY());
       break;
-    // Set scrolling mode to SNAP_X if scroll towards x-axis exceeds kSnapBound
-    // and movement towards y-axis is trivial.
-    // Set scrolling mode to SNAP_Y if scroll towards y-axis exceeds kSnapBound
-    // and movement towards x-axis is trivial.
-    // Scrolling mode will remain in SNAP_NONE for other conditions.
-    case MotionEvent::ACTION_MOVE:
-      if (!is_scale_gesture_detection_in_progress &&
-          snap_scroll_mode_ == SNAP_NONE) {
-        int x_diff = static_cast<int>(std::abs(event.GetX() - first_touch_x_));
-        int y_diff = static_cast<int>(std::abs(event.GetY() - first_touch_y_));
-        if (x_diff > kSnapBound && y_diff < kSnapBound) {
-          snap_scroll_mode_ = SNAP_HORIZ;
-        } else if (x_diff < kSnapBound && y_diff > kSnapBound) {
-          snap_scroll_mode_ = SNAP_VERT;
-        }
+    case MotionEvent::ACTION_MOVE: {
+      if (is_scale_gesture_detection_in_progress)
+        break;
+
+      if (mode_ != SNAP_PENDING)
+        break;
+
+      // Set scrolling mode to SNAP_X if scroll exceeds |snap_bound_| and the
+      // ratio of x movement to y movement is sufficiently large. Similarly for
+      // SNAP_Y and y movement.
+      float dx = std::abs(event.GetX() - down_position_.x());
+      float dy = std::abs(event.GetY() - down_position_.y());
+      float kMinSnapBound = snap_bound_;
+      float kMaxSnapBound = snap_bound_ * 2.f;
+      if (dx * dx + dy * dy > kMinSnapBound * kMinSnapBound) {
+        if (!dy || (dx / dy > kMinSnapRatio && dy < kMaxSnapBound))
+          mode_ = SNAP_HORIZ;
+        else if (!dx || (dy / dx > kMinSnapRatio && dx < kMaxSnapBound))
+          mode_ = SNAP_VERT;
       }
-      break;
+
+      if (mode_ == SNAP_PENDING && dx > kMaxSnapBound && dy > kMaxSnapBound)
+        mode_ = SNAP_NONE;
+    } break;
     case MotionEvent::ACTION_UP:
     case MotionEvent::ACTION_CANCEL:
-      first_touch_x_ = -1;
-      first_touch_y_ = -1;
-      distance_x_ = 0;
-      distance_y_ = 0;
+      down_position_ = gfx::PointF();
+      accumulated_distance_ = gfx::Vector2dF();
       break;
     default:
       break;
   }
+}
+
+void SnapScrollController::UpdateSnapScrollMode(float distance_x,
+                                                float distance_y) {
+  if (!IsSnappingScrolls())
+    return;
+
+  accumulated_distance_ +=
+      gfx::Vector2dF(std::abs(distance_x), std::abs(distance_y));
+  if (mode_ == SNAP_HORIZ) {
+    if (accumulated_distance_.y() > channel_distance_)
+      mode_ = SNAP_NONE;
+    else if (accumulated_distance_.x() > channel_distance_)
+      accumulated_distance_ = gfx::Vector2dF();
+  } else if (mode_ == SNAP_VERT) {
+    if (accumulated_distance_.x() > channel_distance_)
+      mode_ = SNAP_NONE;
+    else if (accumulated_distance_.y() > channel_distance_)
+      accumulated_distance_ = gfx::Vector2dF();
+  }
+}
+
+bool SnapScrollController::IsSnapVertical() const {
+  return mode_ == SNAP_VERT;
+}
+
+bool SnapScrollController::IsSnapHorizontal() const {
+  return mode_ == SNAP_HORIZ;
+}
+
+bool SnapScrollController::IsSnappingScrolls() const {
+  return IsSnapHorizontal() || IsSnapVertical();
 }
 
 }  // namespace ui
