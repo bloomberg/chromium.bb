@@ -31,6 +31,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -55,7 +56,6 @@ class EventQueue;
 class ExceptionState;
 class FloatRect;
 class FrameConsole;
-class LocalFrame;
 class MediaQueryList;
 class Page;
 class PostMessageTimer;
@@ -76,7 +76,7 @@ enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForw
 
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
-class LocalDOMWindow final : public DOMWindow, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
+class LocalDOMWindow final : public DOMWindow, public DOMWindowBase64, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
 public:
@@ -96,6 +96,7 @@ public:
 
     // DOMWindow overrides:
     void trace(Visitor*) override;
+    virtual LocalFrame* frame() const override;
     Screen* screen() const override;
     History* history() const override;
     BarProp* locationbar() const override;
@@ -294,12 +295,26 @@ protected:
     DOMWindowLifecycleNotifier& lifecycleNotifier();
 
 private:
+    // Rather than simply inheriting FrameDestructionObserver like most other
+    // classes, LocalDOMWindow hides its FrameDestructionObserver with
+    // composition. This prevents conflicting overloads between DOMWindow, which
+    // has a frame() accessor that returns Frame* for bindings code, and
+    // FrameDestructionObserver, which has a frame() accessor that returns a
+    // LocalFrame*.
+    class WindowFrameObserver final : public FrameDestructionObserver {
+    public:
+        WindowFrameObserver(LocalDOMWindow&, LocalFrame&);
+
+    private:
+        // FrameDestructionObserver overrides:
+        void willDetachFrameHost() override;
+
+        LocalDOMWindow& m_window;
+    };
+
     explicit LocalDOMWindow(LocalFrame&);
 
     Page* page();
-
-    // FrameDestructionObserver
-    virtual void willDetachFrameHost() override;
 
     void clearDocument();
     void willDestroyDocumentInFrame();
@@ -314,8 +329,10 @@ private:
         DoBroadcastListenerRemoval
     };
 
+    void willDetachFrameHost();
     void removeAllEventListenersInternal(BroadcastListenerRemoval);
 
+    WindowFrameObserver m_frameObserver;
     RefPtrWillBeMember<Document> m_document;
 
     bool m_shouldPrintWhenFinishedLoading;

@@ -15,6 +15,7 @@ class BarProp;
 class Console;
 class DOMWindowCSS;
 class Document;
+class Frame;
 class History;
 class Location;
 class Navigator;
@@ -32,6 +33,8 @@ public:
     {
         EventTargetWithInlineData::trace(visitor);
     }
+
+    virtual Frame* frame() const = 0;
 
     // DOM Level 0
     virtual Screen* screen() const = 0;
