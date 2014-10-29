@@ -42,10 +42,14 @@ def token_type(i):
                   ':': 'colon',
                   ';': 'semiColon',
                   '#': 'hash',
+                  'u': 'letterU',
+                  'U': 'letterU',
                   }
+    c = chr(i)
+    if c in codepoints:
+        return codepoints[c]
     whitespace = '\n\r\t\f '
     quotes = '"\''
-    c = chr(i)
     if c in whitespace:
         return 'whiteSpace'
     if c.isdigit():
@@ -56,7 +60,6 @@ def token_type(i):
         return 'stringStart'
     if i == 0:
         return 'endOfFile'
-    return codepoints.get(c)
 
 
 class MakeCSSTokenizerCodePointsWriter(in_generator.Writer):

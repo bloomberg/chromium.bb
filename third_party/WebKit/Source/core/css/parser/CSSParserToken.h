@@ -20,6 +20,7 @@ enum CSSParserTokenType {
     NumberToken,
     PercentageToken,
     DimensionToken,
+    UnicodeRangeToken,
     WhitespaceToken,
     ColonToken,
     SemicolonToken,
@@ -59,6 +60,7 @@ public:
 
     CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
     CSSParserToken(CSSParserTokenType, double, NumericValueType); // for NumberToken
+    CSSParserToken(CSSParserTokenType, UChar32, UChar32); // for UnicodeRangeToken
 
     CSSParserToken(HashTokenType, String);
 
@@ -77,17 +79,21 @@ public:
     HashTokenType hashTokenType() const { ASSERT(m_type == HashToken); return m_hashTokenType; }
     BlockType blockType() const { return m_blockType; }
     CSSPrimitiveValue::UnitType unitType() const { return m_unit; }
+    UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeStart; }
+    UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeEnd; }
 
 private:
     CSSParserTokenType m_type;
     String m_value;
 
-    UChar m_delimiter; // Could be rolled into m_value?
-
+    // This could be a union to save space
+    UChar m_delimiter;
     HashTokenType m_hashTokenType;
     NumericValueType m_numericValueType;
     double m_numericValue;
     CSSPrimitiveValue::UnitType m_unit;
+    UChar32 m_unicodeRangeStart;
+    UChar32 m_unicodeRangeEnd;
 
     BlockType m_blockType;
 };

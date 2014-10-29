@@ -53,6 +53,18 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
     ASSERT(type == NumberToken);
 }
 
+CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
+    : m_type(UnicodeRangeToken)
+    , m_delimiter(0)
+    , m_numericValue(0)
+    , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)
+    , m_unicodeRangeStart(start)
+    , m_unicodeRangeEnd(end)
+    , m_blockType(NotBlock)
+{
+    ASSERT_UNUSED(type, type == UnicodeRangeToken);
+}
+
 CSSParserToken::CSSParserToken(HashTokenType type, String value)
     : m_type(HashToken)
     , m_value(value)

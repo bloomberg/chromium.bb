@@ -134,6 +134,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenIterator start, 
         case UrlToken:
         case BadUrlToken:
         case PercentageToken:
+        case UnicodeRangeToken:
         case IdentToken:
         case CommaToken:
         case ColonToken:

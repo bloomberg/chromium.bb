@@ -38,6 +38,10 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
         ASSERT_EQ(expected.numericValueType(), actual.numericValueType());
         ASSERT_DOUBLE_EQ(expected.numericValue(), actual.numericValue());
         break;
+    case UnicodeRangeToken:
+        ASSERT_EQ(expected.unicodeRangeStart(), actual.unicodeRangeStart());
+        ASSERT_EQ(expected.unicodeRangeEnd(), actual.unicodeRangeEnd());
+        break;
     case HashToken:
         ASSERT_EQ(expected.value(), actual.value());
         ASSERT_EQ(expected.hashTokenType(), actual.hashTokenType());
@@ -74,6 +78,7 @@ static CSSParserToken function(const String& string) { return CSSParserToken(Fun
 static CSSParserToken url(const String& string) { return CSSParserToken(UrlToken, string); }
 static CSSParserToken hash(const String& string, HashTokenType type) { return CSSParserToken(type, string); }
 static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); }
+static CSSParserToken unicodeRange(UChar32 start, UChar32 end) { return CSSParserToken(UnicodeRangeToken, start, end); }
 
 static CSSParserToken number(NumericValueType type, double value)
 {
@@ -322,6 +327,30 @@ TEST(CSSTokenizerTest, PercentageToken)
     TEST_TOKENS("-48.99%", percentage(NumberValueType, -48.99));
     TEST_TOKENS("6e-1%", percentage(NumberValueType, 0.6));
     TEST_TOKENS("5%%", percentage(IntegerValueType, 5), delim('%'));
+}
+
+TEST(CSSTokenizerTest, UnicodeRangeToken)
+{
+    TEST_TOKENS("u+012345-123456", unicodeRange(0x012345, 0x123456));
+    TEST_TOKENS("U+1234-2345", unicodeRange(0x1234, 0x2345));
+    TEST_TOKENS("u+222-111", unicodeRange(0x222, 0x111));
+    TEST_TOKENS("U+CafE-d00D", unicodeRange(0xcafe, 0xd00d));
+    TEST_TOKENS("U+2??", unicodeRange(0x200, 0x2ff));
+    TEST_TOKENS("U+ab12??", unicodeRange(0xab1200, 0xab12ff));
+    TEST_TOKENS("u+??????", unicodeRange(0x000000, 0xffffff));
+    TEST_TOKENS("u+??", unicodeRange(0x00, 0xff));
+
+    TEST_TOKENS("u+222+111", unicodeRange(0x222, 0x222), number(IntegerValueType, 111));
+    TEST_TOKENS("u+12345678", unicodeRange(0x123456, 0x123456), number(IntegerValueType, 78));
+    TEST_TOKENS("u+123-12345678", unicodeRange(0x123, 0x123456), number(IntegerValueType, 78));
+    TEST_TOKENS("u+cake", unicodeRange(0xca, 0xca), ident("ke"));
+    TEST_TOKENS("u+1234-gggg", unicodeRange(0x1234, 0x1234), ident("-gggg"));
+    TEST_TOKENS("U+ab12???", unicodeRange(0xab1200, 0xab12ff), delim('?'));
+    TEST_TOKENS("u+a1?-123", unicodeRange(0xa10, 0xa1f), number(IntegerValueType, -123));
+    TEST_TOKENS("u+1??4", unicodeRange(0x100, 0x1ff), number(IntegerValueType, 4));
+    TEST_TOKENS("u+z", ident("u"), delim('+'), ident("z"));
+    TEST_TOKENS("u+", ident("u"), delim('+'));
+    TEST_TOKENS("u+-543", ident("u"), delim('+'), number(IntegerValueType, -543));
 }
 
 TEST(CSSTokenizerTest, CommentToken)
