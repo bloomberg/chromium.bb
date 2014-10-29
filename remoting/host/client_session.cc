@@ -228,7 +228,7 @@ void ClientSession::DeliverClientMessage(
       }
       return;
     } else {
-      if (!extension_manager_->OnExtensionMessage(message))
+      if (extension_manager_->OnExtensionMessage(message))
         return;
 
       DLOG(INFO) << "Unexpected message received: "
