@@ -14,6 +14,8 @@ function handleDOMContentLoadedEvent()
     frame = document.createElement("iframe");
     document.body.appendChild(frame);
     print("B) Exiting DOMContentLoaded event handler function.");
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 function handleLoadEvent()
 {
@@ -22,8 +24,10 @@ function handleLoadEvent()
     print("D) Exiting load event handler function.");
     print("Test passed if messages A, B, C, D were all in order and there was no crash.");
 }
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 addEventListener("load", handleLoadEvent);
 addEventListener("DOMContentLoaded", handleDOMContentLoadedEvent);
 </script>

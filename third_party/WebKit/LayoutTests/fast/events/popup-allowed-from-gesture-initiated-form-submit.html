@@ -14,10 +14,12 @@
 
                 var button = document.getElementById("button");
 
-                if (window.eventSender) {
-                    eventSender.mouseMoveTo(button.offsetLeft + button.offsetWidth / 2, button.offsetTop + button.offsetHeight / 2);
-                    eventSender.mouseDown();
-                    eventSender.mouseUp();
+                window.onload = function() {
+                    if (window.eventSender) {
+                        eventSender.mouseMoveTo(button.offsetLeft + button.offsetWidth / 2, button.offsetTop + button.offsetHeight / 2);
+                        eventSender.mouseDown();
+                        eventSender.mouseUp();
+                    }
                 }
             }
         </script> 

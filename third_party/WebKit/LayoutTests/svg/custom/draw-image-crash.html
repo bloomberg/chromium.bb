@@ -6,7 +6,7 @@ This test passes if it does not crash and 'PASS' is printed.<br/>
 if (window.testRunner)
   testRunner.waitUntilDone();
 
-setTimeout(function() {
+window.onload = function() {
   if (location.hash == '#done') {
     document.write('PASS');
     if (window.testRunner) {
@@ -17,7 +17,7 @@ setTimeout(function() {
     location.hash = 'done';
     window.location.reload();
   }
-}, 0);
+}
 </script>
 </html>
 

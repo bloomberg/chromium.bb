@@ -102,8 +102,8 @@ void ResourceLoader::releaseResources()
 {
     ASSERT(m_state != Terminated);
     ASSERT(m_notifiedLoadComplete);
-    m_requestCountTracker.clear();
-    m_host->didLoadResource(m_resource);
+    ASSERT(!m_requestCountTracker);
+    m_host->didLoadResource();
     if (m_state == Terminated)
         return;
     m_resource->clearLoader();
@@ -233,7 +233,7 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedD
 
     if (m_notifiedLoadComplete)
         return;
-    m_notifiedLoadComplete = true;
+    didComplete();
     m_host->didFinishLoading(m_resource, finishTime, encodedDataLength);
 }
 
@@ -286,7 +286,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     }
 
     if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
+        didComplete();
         m_host->didFailLoading(m_resource, nonNullError);
     }
 
@@ -423,7 +423,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     m_state = Finishing;
 
     if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
+        didComplete();
         m_host->didFailLoading(m_resource, ResourceError::cancelledError(m_request.url()));
     }
 
@@ -470,10 +470,11 @@ void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, i
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
+    m_resource->setLoadFinishTime(finishTime);
     didFinishLoadingOnePart(finishTime, encodedDataLength);
     if (m_state == Terminated)
         return;
-    m_resource->finish(finishTime);
+    m_resource->finish();
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
     // the resources a second time, they have been released by cancel.
@@ -495,7 +496,7 @@ void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& err
     m_resource->setResourceError(error);
 
     if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
+        didComplete();
         m_host->didFailLoading(m_resource, error);
     }
     if (m_state == Terminated)
@@ -547,6 +548,12 @@ void ResourceLoader::requestSynchronously()
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
+}
+
+void ResourceLoader::didComplete()
+{
+    m_notifiedLoadComplete = true;
+    m_requestCountTracker.clear();
 }
 
 ResourceRequest& ResourceLoader::applyOptions(ResourceRequest& request) const

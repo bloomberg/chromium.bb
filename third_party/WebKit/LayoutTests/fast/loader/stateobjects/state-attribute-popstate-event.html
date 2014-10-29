@@ -36,7 +36,9 @@
     }
 
     debug("Go back");
-    history.back();
+    window.onload = function() {
+        history.back();
+    };
 </script>
 </body>
 </html>

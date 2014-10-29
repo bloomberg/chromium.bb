@@ -12,7 +12,7 @@ print "\n";
 
 print "\xef\xbb\xbf<!DOCTYPE html><body>";
 print "<script>if (window.testRunner) window.testRunner.dumpAsText();</script>";
-print "<img src='404.gif' onerror='document.write(\"PASS\");'>";
+print "<img src='404.gif' onerror='document.write(\"PASS\"); document.close()'>";
 # Dump some spaces to bypass CFNetwork buffering.
 for ($count = 1; $count < 4000; $count++) {
     print "   ";

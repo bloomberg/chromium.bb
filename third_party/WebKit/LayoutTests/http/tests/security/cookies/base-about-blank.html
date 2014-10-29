@@ -18,6 +18,7 @@ function runTest() {
     log("Running test.");
     frames[1].document.open();
     log(frames[1].document.cookie);
+    frames[1].document.close();
     log("Test complete.");
 
     if (window.testRunner)

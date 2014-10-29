@@ -5328,7 +5328,7 @@ TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
     // initial empty document state of the state machine. We normally set a
     // timer to notify the client.
     newView->mainFrame()->executeScript(
-        WebScriptSource("window.opener.document.write('Modified');"));
+        WebScriptSource("window.opener.document.write('Modified'); window.opener.document.close();"));
     EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
 
     // Make sure that a modal dialog forces us to notify right away.
