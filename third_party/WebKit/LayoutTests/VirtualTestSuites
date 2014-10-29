@@ -137,5 +137,10 @@
     "prefix": "textblob",
     "base": "svg/text",
     "args": ["--enable-text-blobs"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/block",
+    "args": ["--enable-slimming-paint"]
   }
 ]
