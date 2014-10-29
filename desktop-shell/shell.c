@@ -2925,10 +2925,10 @@ shell_interface_set_fullscreen(struct shell_surface *shsurf,
 			       struct weston_output *output)
 {
 	surface_clear_next_states(shsurf);
-	set_fullscreen(shsurf, method, framerate, output);
-
 	shsurf->next_state.fullscreen = true;
 	shsurf->state_changed = true;
+
+	set_fullscreen(shsurf, method, framerate, output);
 }
 
 static int

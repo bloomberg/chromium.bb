@@ -2192,7 +2192,7 @@ send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 	struct theme *t = window->wm->theme;
 	int vborder, hborder;
 
-	if (window->decorate) {
+	if (window->decorate && !window->fullscreen) {
 		hborder = 2 * t->width;
 		vborder = t->titlebar_height + t->width;
 	} else {
