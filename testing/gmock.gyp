@@ -47,6 +47,11 @@
       'export_dependent_settings': [
         'gtest.gyp:gtest',
       ],
+      'conditions': [
+        ['OS == "ios"', {
+          'toolsets': ['host', 'target'],
+        }],
+      ],
     },
     {
       'target_name': 'gmock_main',

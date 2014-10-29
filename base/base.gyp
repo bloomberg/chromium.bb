@@ -216,7 +216,7 @@
             ],
           },
         }],
-        ['OS != "win" and OS != "ios"', {
+        ['OS != "win" and (OS != "ios" or _toolset == "host")', {
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
         },],
         ['component=="shared_library"', {
@@ -294,6 +294,9 @@
               'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC'],
             }],
           ],
+        }],
+        ['OS == "ios"', {
+          'toolsets': ['host', 'target'],
         }],
       ],
       'export_dependent_settings': [
@@ -887,6 +890,9 @@
             'base_java_unittest_support',
           ],
         }],
+        ['OS == "ios"', {
+          'toolsets': ['host', 'target'],
+        }],
       ],
       'sources': [
         'test/expectations/expectation.cc',
@@ -986,9 +992,18 @@
             # by file name rules).
             ['include', '^test/test_file_util_mac\\.cc$'],
           ],
+        }],
+        ['OS == "ios" and _toolset == "target"', {
           'sources!': [
             # iOS uses its own unit test launcher.
             'test/launcher/unit_test_launcher.cc',
+          ],
+        }],
+        ['OS == "ios" and _toolset == "host"', {
+          'sources!': [
+            'test/launcher/unit_test_launcher_ios.cc',
+            'test/test_support_ios.h',
+            'test/test_support_ios.mm',
           ],
         }],
       ],  # target_conditions
@@ -1012,6 +1027,21 @@
     },
   ],
   'conditions': [
+    ['OS=="ios" and "<(GENERATOR)"=="ninja"', {
+      'targets': [
+        {
+          'target_name': 'test_launcher',
+          'toolsets': ['host'],
+          'type': 'executable',
+          'dependencies': [
+            'test_support_base',
+          ],
+          'sources': [
+            'test/launcher/test_launcher_ios.cc',
+          ],
+        },
+      ],
+    }],
     ['OS!="ios"', {
       'targets': [
         {
