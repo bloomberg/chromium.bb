@@ -189,6 +189,10 @@ static_library("common") {
         ".", "//chrome")
   }
 
+  if (is_chromeos) {
+    sources -= [ "chrome_version_info_posix.cc" ]
+  }
+
   if (is_win) {
     deps += [ "//third_party/wtl" ]
   }

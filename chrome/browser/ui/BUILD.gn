@@ -370,6 +370,9 @@ static_library("ui") {
       sources += rebase_path(gypi_values.chrome_browser_ui_x11_sources,
                              ".", "//chrome")
       configs += [ "//build/config/linux:x11" ]
+      if (is_chromeos) {
+        sources -= [ "views/tabs/window_finder_x11.cc" ]
+      }
     }
   }
 
