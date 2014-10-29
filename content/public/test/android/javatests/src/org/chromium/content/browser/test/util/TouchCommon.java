@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.test.util;
 
+import android.app.Activity;
 import android.os.SystemClock;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
@@ -11,37 +12,80 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import org.chromium.base.ThreadUtils;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+
 /**
  * Touch-related functionality reused across test cases.
  */
 public class TouchCommon {
-    private ActivityInstrumentationTestCase2 mActivityTestCase;
+    private ActivityInstrumentationTestCase2<?> mActivityTestCase;
 
-    // TODO(leandrogracia): This method should receive and use an activity
+    // TODO(tedchoc): This method should receive and use an activity
     // instead of the ActivityInstrumentationTestCase2. However this is causing
     // problems downstream. Any fix for this should be landed downstream first.
-    public TouchCommon(ActivityInstrumentationTestCase2 activityTestCase) {
+    public TouchCommon(ActivityInstrumentationTestCase2<?> activityTestCase) {
         mActivityTestCase = activityTestCase;
+    }
+
+    /**
+     * @see #dragStart(Activity, float, float, long)
+     */
+    public void dragStart(float x, float y, long downTime) {
+        dragStart(mActivityTestCase.getActivity(), x, y, downTime);
+    }
+
+    /**
+     * @see #dragTo(Activity, float, float, float, float, int, long)
+     */
+    public void dragTo(
+            float fromX, float toX, float fromY, float toY, int stepCount, long downTime) {
+        dragTo(mActivityTestCase.getActivity(), fromX, toX, fromY, toY, stepCount, downTime);
+    }
+
+    /**
+     * @see #dragEnd(Activity, float, float, long)
+     */
+    public void dragEnd(float x, float y, long downTime) {
+        dragEnd(mActivityTestCase.getActivity(), x, y, downTime);
+    }
+
+    /**
+     * @see #singleClick(Activity, float, float)
+     */
+    public void singleClick(float x, float y) {
+        singleClick(mActivityTestCase.getActivity(), x, y);
+    }
+
+    /**
+     * @see #longPress(Activity, float, float)
+     */
+    public void longPress(float x, float y) {
+        longPress(mActivityTestCase.getActivity(), x, y);
     }
 
     /**
      * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
      *
+     * @activity activity The activity where the touch action is being performed.
      * @param x
      * @param y
      * @param downTime (in ms)
      * @see TouchUtils
      */
-    public void dragStart(float x, float y, long downTime) {
+    public static void dragStart(Activity activity, float x, float y, long downTime) {
         MotionEvent event = MotionEvent.obtain(downTime, downTime,
                 MotionEvent.ACTION_DOWN, x, y, 0);
-        dispatchTouchEvent(event);
+        dispatchTouchEvent(getRootViewForActivity(activity), event);
     }
 
     /**
      * Drags / moves (synchronously) to the specified coordinates. Normally preceeded by
      * dragStart() and followed by dragEnd()
      *
+     * @activity activity The activity where the touch action is being performed.
      * @param fromX
      * @param toX
      * @param fromY
@@ -50,8 +94,9 @@ public class TouchCommon {
      * @param downTime (in ms)
      * @see TouchUtils
      */
-    public void dragTo(float fromX, float toX, float fromY,
+    public static void dragTo(Activity activity, float fromX, float toX, float fromY,
             float toY, int stepCount, long downTime) {
+        View rootView = getRootViewForActivity(activity);
         float x = fromX;
         float y = fromY;
         float yStep = (toY - fromY) / stepCount;
@@ -62,7 +107,7 @@ public class TouchCommon {
             long eventTime = SystemClock.uptimeMillis();
             MotionEvent event = MotionEvent.obtain(downTime, eventTime,
                     MotionEvent.ACTION_MOVE, x, y, 0);
-            dispatchTouchEvent(event);
+            dispatchTouchEvent(rootView, event);
         }
     }
 
@@ -70,38 +115,29 @@ public class TouchCommon {
      * Finishes (synchronously) a drag / move at the specified coordinate.
      * Normally preceeded by dragStart() and dragTo().
      *
+     * @activity activity The activity where the touch action is being performed.
      * @param x
      * @param y
      * @param downTime (in ms)
      * @see TouchUtils
      */
-    public void dragEnd(float x, float y, long downTime) {
+    public static void dragEnd(Activity activity, float x, float y, long downTime) {
         long eventTime = SystemClock.uptimeMillis();
         MotionEvent event = MotionEvent.obtain(downTime, eventTime,
                 MotionEvent.ACTION_UP, x, y, 0);
-        dispatchTouchEvent(event);
+        dispatchTouchEvent(getRootViewForActivity(activity), event);
     }
 
     /**
      * Sends (synchronously) a single click to an absolute screen coordinates.
      *
+     * @activity activity The activity where the touch action is being performed.
      * @param x screen absolute
      * @param y screen absolute
      * @see TouchUtils
      */
-    public void singleClick(float x, float y) {
-
-        long downTime = SystemClock.uptimeMillis();
-        long eventTime = SystemClock.uptimeMillis();
-
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                                               MotionEvent.ACTION_DOWN, x, y, 0);
-        dispatchTouchEvent(event);
-
-        eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP,
-                                   x, y, 0);
-        dispatchTouchEvent(event);
+    public static void singleClick(Activity activity, float x, float y) {
+        singleClickInternal(getRootViewForActivity(activity), x, y);
     }
 
     /**
@@ -111,18 +147,32 @@ public class TouchCommon {
      * @param x Relative x location to v
      * @param y Relative y location to v
      */
-    public void singleClickView(View v, int x, int y) {
+    public static void singleClickView(View v, int x, int y) {
         int location[] = getAbsoluteLocationFromRelative(v, x, y);
         int absoluteX = location[0];
         int absoluteY = location[1];
-        singleClick(absoluteX, absoluteY);
+        singleClickInternal(v.getRootView(), absoluteX, absoluteY);
     }
 
     /**
      * Sends (synchronously) a single click to the center of the View.
      */
-    public void singleClickView(View v) {
+    public static void singleClickView(View v) {
         singleClickView(v, v.getWidth() / 2, v.getHeight() / 2);
+    }
+
+    private static void singleClickInternal(View view, float x, float y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+        dispatchTouchEvent(view, event);
+
+        eventTime = SystemClock.uptimeMillis();
+        event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+        dispatchTouchEvent(view, event);
     }
 
     /**
@@ -134,46 +184,30 @@ public class TouchCommon {
      * @param y screen absolute
      * @see TouchUtils
      */
-    public void singleClickViewRelative(View view, int x, int y) {
+    public static void singleClickViewRelative(View view, int x, int y) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
 
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                                               MotionEvent.ACTION_DOWN, x, y, 0);
+        MotionEvent event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
         dispatchTouchEvent(view, event);
 
         eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP,
-                                   x, y, 0);
+        event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
         dispatchTouchEvent(view, event);
     }
 
     /**
      * Sends (synchronously) a long press to an absolute screen coordinates.
      *
+     * @activity activity The activity where the touch action is being performed.
      * @param x screen absolute
      * @param y screen absolute
      * @see TouchUtils
      */
-    public void longPress(float x, float y) {
-
-        long downTime = SystemClock.uptimeMillis();
-        long eventTime = SystemClock.uptimeMillis();
-
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                                               MotionEvent.ACTION_DOWN, x, y, 0);
-        dispatchTouchEvent(event);
-
-        int longPressTimeout = ViewConfiguration.get(
-                mActivityTestCase.getActivity()).getLongPressTimeout();
-
-        // Long press is flaky with just longPressTimeout. Doubling the time to be safe.
-        SystemClock.sleep(longPressTimeout * 2);
-
-        eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP,
-                                   x, y, 0);
-        dispatchTouchEvent(event);
+    public static void longPress(Activity activity, float x, float y) {
+        longPressInternal(getRootViewForActivity(activity), x, y);
     }
 
     /**
@@ -183,21 +217,45 @@ public class TouchCommon {
      * @param x Relative x location to v
      * @param y Relative y location to v
      */
-    public void longPressView(View v, int x, int y) {
+    public static void longPressView(View v, int x, int y) {
         int location[] = getAbsoluteLocationFromRelative(v, x, y);
         int absoluteX = location[0];
         int absoluteY = location[1];
-        longPress(absoluteX, absoluteY);
+        longPressInternal(v.getRootView(), absoluteX, absoluteY);
     }
 
-    /**
-     * Send a MotionEvent to the root view of the activity.
-     * @param event
-     */
-    private void dispatchTouchEvent(final MotionEvent event) {
-        View view =
-                mActivityTestCase.getActivity().findViewById(android.R.id.content).getRootView();
+    private static void longPressInternal(View view, float x, float y) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        MotionEvent event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
         dispatchTouchEvent(view, event);
+
+        int longPressTimeout = ViewConfiguration.getLongPressTimeout();
+
+        // Long press is flaky with just longPressTimeout. Doubling the time to be safe.
+        SystemClock.sleep(longPressTimeout * 2);
+
+        eventTime = SystemClock.uptimeMillis();
+        event = MotionEvent.obtain(
+                downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+        dispatchTouchEvent(view, event);
+    }
+
+    private static View getRootViewForActivity(final Activity activity) {
+        try {
+            View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+                @Override
+                public View call() throws Exception {
+                    return activity.findViewById(android.R.id.content).getRootView();
+                }
+            });
+            assert view != null : "Failed to find root view for activity";
+            return view;
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Dispatching touch event failed", e);
+        }
     }
 
     /**
@@ -206,9 +264,9 @@ public class TouchCommon {
      * @param view The view that should receive the event.
      * @param event The view to be dispatched.
      */
-    private void dispatchTouchEvent(final View view, final MotionEvent event) {
+    private static void dispatchTouchEvent(final View view, final MotionEvent event) {
         try {
-            mActivityTestCase.runTestOnUiThread(new Runnable() {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
                     view.dispatchTouchEvent(event);
