@@ -79,6 +79,7 @@ void BrowserActionView::ViewHierarchyChanged(
 }
 
 void BrowserActionView::OnDragDone() {
+  views::MenuButton::OnDragDone();
   delegate_->OnBrowserActionViewDragDone();
 }
 
