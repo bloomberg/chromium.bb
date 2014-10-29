@@ -1609,3 +1609,12 @@ def PrepareRemotePatches(patches):
                                          os.path.basename(ref), remote))
 
   return patch_info
+
+
+def GetChangesAsString(changes):
+  """Gets a human readable string listing |changes| in CL:1234 form.
+
+  Args:
+    changes: A list of GerritPatch objects.
+  """
+  return ', '.join(sorted('CL:%s' % x.gerrit_number_str for x in changes))
