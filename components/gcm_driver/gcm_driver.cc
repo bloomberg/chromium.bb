@@ -24,7 +24,7 @@ bool GCMDriver::IsAllowedForAllUsers() {
   return group_name == kGCMFieldTrialEnabledGroupName;
 }
 
-GCMDriver::GCMDriver() {
+GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
 }
 
 GCMDriver::~GCMDriver() {
@@ -43,8 +43,8 @@ void GCMDriver::Register(const std::string& app_id,
     return;
   }
 
-  // If previous un/register operation is still in progress, bail out.
-  if (IsAsyncOperationPending(app_id)) {
+  // If previous register operation is still in progress, bail out.
+  if (register_callbacks_.find(app_id) != register_callbacks_.end()) {
     callback.Run(std::string(), GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
@@ -54,6 +54,28 @@ void GCMDriver::Register(const std::string& app_id,
   std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
 
   register_callbacks_[app_id] = callback;
+
+  // If previous unregister operation is still in progress, wait until it
+  // finishes. We don't want to throw ASYNC_OPERATION_PENDING when the user
+  // uninstalls an app (ungistering) and then reinstalls the app again
+  // (registering).
+  std::map<std::string, UnregisterCallback>::iterator unregister_iter =
+      unregister_callbacks_.find(app_id);
+  if (unregister_iter != unregister_callbacks_.end()) {
+    // Replace the original unregister callback with an intermediate callback
+    // that will invoke the original unregister callback and trigger the pending
+    // registration after the unregistration finishes.
+    // Note that some parameters to RegisterAfterUnregister are specified here
+    // when the callback is created (base::Bind supports the partial binding
+    // of parameters).
+    unregister_iter->second = base::Bind(
+        &GCMDriver::RegisterAfterUnregister,
+        weak_ptr_factory_.GetWeakPtr(),
+        app_id,
+        normalized_sender_ids,
+        unregister_iter->second);
+    return;
+  }
 
   RegisterImpl(app_id, normalized_sender_ids);
 }
@@ -70,7 +92,8 @@ void GCMDriver::Unregister(const std::string& app_id,
   }
 
   // If previous un/register operation is still in progress, bail out.
-  if (IsAsyncOperationPending(app_id)) {
+  if (register_callbacks_.find(app_id) != register_callbacks_.end() ||
+      unregister_callbacks_.find(app_id) != unregister_callbacks_.end()) {
     callback.Run(GCMClient::ASYNC_OPERATION_PENDING);
     return;
   }
@@ -198,9 +221,17 @@ void GCMDriver::ClearCallbacks() {
   send_callbacks_.clear();
 }
 
-bool GCMDriver::IsAsyncOperationPending(const std::string& app_id) const {
-  return register_callbacks_.find(app_id) != register_callbacks_.end() ||
-         unregister_callbacks_.find(app_id) != unregister_callbacks_.end();
+void GCMDriver::RegisterAfterUnregister(
+    const std::string& app_id,
+    const std::vector<std::string>& normalized_sender_ids,
+    const UnregisterCallback& unregister_callback,
+    GCMClient::Result result) {
+  // Invoke the original unregister callback.
+  unregister_callback.Run(result);
+
+  // Trigger the pending registration.
+  DCHECK(register_callbacks_.find(app_id) != register_callbacks_.end());
+  RegisterImpl(app_id, normalized_sender_ids);
 }
 
 }  // namespace gcm

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/gcm_driver/default_gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -172,9 +173,13 @@ class GCMDriver {
   void ClearCallbacks();
 
  private:
-  // Should be called when an app with |app_id| is trying to un/register.
-  // Checks whether another un/registration is in progress.
-  bool IsAsyncOperationPending(const std::string& app_id) const;
+  // Called after unregistration completes in order to trigger the pending
+  // registration.
+  void RegisterAfterUnregister(
+      const std::string& app_id,
+      const std::vector<std::string>& normalized_sender_ids,
+      const UnregisterCallback& unregister_callback,
+      GCMClient::Result result);
 
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;
@@ -191,6 +196,8 @@ class GCMDriver {
 
   // The default handler when no app handler can be found in the map.
   DefaultGCMAppHandler default_app_handler_;
+
+  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriver);
 };
