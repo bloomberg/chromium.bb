@@ -18,5 +18,5 @@ include_rules = [
   "+net/url_request",
 
   # invalidation_notifier depends on the xmpp part of libjingle.
-  "+talk/xmpp",
+  "+webrtc/libjingle/xmpp",
 ]

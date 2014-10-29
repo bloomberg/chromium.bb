@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "talk/xmpp/constants.h"
-#include "talk/xmpp/jid.h"
+#include "webrtc/libjingle/xmpp/constants.h"
+#include "webrtc/libjingle/xmpp/jid.h"
 
 namespace notifier {
 

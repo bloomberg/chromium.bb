@@ -10,17 +10,17 @@
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
-#include "talk/xmpp/asyncsocket.h"
-#include "talk/xmpp/prexmppauth.h"
-#include "talk/xmpp/xmppclient.h"
-#include "talk/xmpp/xmppclientsettings.h"
-#include "talk/xmpp/xmppengine.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "webrtc/base/common.h"
 #include "webrtc/base/firewallsocketserver.h"
 #include "webrtc/base/logging.h"
 #include "webrtc/base/physicalsocketserver.h"
 #include "webrtc/base/taskrunner.h"
+#include "webrtc/libjingle/xmpp/asyncsocket.h"
+#include "webrtc/libjingle/xmpp/prexmppauth.h"
+#include "webrtc/libjingle/xmpp/xmppclient.h"
+#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "webrtc/libjingle/xmpp/xmppengine.h"
 
 namespace notifier {
 

@@ -12,10 +12,10 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
-#include "third_party/libjingle/source/talk/p2p/base/stun.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/byteorder.h"
 #include "third_party/webrtc/base/messagedigest.h"
+#include "third_party/webrtc/p2p/base/stun.h"
 
 namespace {
 

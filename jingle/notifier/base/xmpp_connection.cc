@@ -15,7 +15,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
-#include "talk/xmpp/xmppclientsettings.h"
+#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

@@ -18,8 +18,8 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 #include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/libjingle/xmpp/xmppclient.h"
 
 namespace net {
 class ClientSocketFactory;
