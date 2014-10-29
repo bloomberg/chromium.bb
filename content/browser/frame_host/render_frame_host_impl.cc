@@ -1480,10 +1480,13 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
-  service_registry_.reset();
 #if defined(OS_ANDROID)
+  // The Android-specific service registry has a reference to
+  // |service_registry_| and thus must be torn down first.
   service_registry_android_.reset();
 #endif
+
+  service_registry_.reset();
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
