@@ -4,6 +4,7 @@ include_rules = [
   "+crypto",
   "+sandbox/linux/bpf_dsl",
   "+sandbox/linux/seccomp-bpf",
+  "+sandbox/linux/seccomp-bpf-helpers",
   "+sandbox/linux/services",
   "+sandbox/linux/suid",
   "+sandbox/win/src",

@@ -1410,6 +1410,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kDisableBundledPpapiFlash,
 #if !defined(DISABLE_NACL)
+      switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
       switches::kNaClDangerousNoSandboxNonSfi,
 #endif
