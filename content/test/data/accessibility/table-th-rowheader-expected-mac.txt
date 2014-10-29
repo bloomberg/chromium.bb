@@ -1,4 +1,4 @@
-AXWebArea AXTitle='Table example'
+AXWebArea AXTitle='Table example - th rowheader'
     AXTable
         AXRow AXIndex='0'
             AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}

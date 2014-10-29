@@ -1,7 +1,7 @@
 # The spec states that <bdo> should have a role of AXGroup, but that seems
 # wrong, so we assume this is correct.
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-    IA2_ROLE_SECTION READONLY
+    IA2_ROLE_SECTION
         ROLE_SYSTEM_STATICTEXT name='Some LTR text'
         ROLE_SYSTEM_STATICTEXT name='Some RTL text '
         ROLE_SYSTEM_STATICTEXT name='with some LTR text embedded'

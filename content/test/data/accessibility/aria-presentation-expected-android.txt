@@ -1,0 +1,2 @@
+android.webkit.WebView focusable focused scrollable name='aria-role presentation'
+    android.view.View clickable name='aria-role presentation'

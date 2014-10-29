@@ -1,0 +1,7 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View clickable heading name='ARIA Heading 1'
+    android.view.View clickable heading name='ARIA Heading 2'
+    android.view.View clickable heading name='ARIA Heading 3'
+    android.view.View clickable heading name='ARIA Heading 4'
+    android.view.View clickable heading name='ARIA Heading 5'
+    android.view.View clickable heading name='ARIA Heading 6'
