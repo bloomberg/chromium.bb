@@ -64,7 +64,7 @@ component("battery") {
     ]
   }
 
-  if (is_linux) {
+  if (is_desktop_linux) {
     if (use_dbus) {
       configs += [
         "//build/config/linux:dbus",
