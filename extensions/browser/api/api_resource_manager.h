@@ -14,14 +14,11 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -108,18 +105,18 @@ content::BrowserThread::ID TestThreadTraits<T>::thread_id_ =
 // ApiResourceManager<Resource>::GetFactoryInstance() {
 //   return g_factory.Pointer();
 // }
-template <class T, typename ThreadingTraits = NamedThreadTraits<T> >
+template <class T, typename ThreadingTraits = NamedThreadTraits<T>>
 class ApiResourceManager : public BrowserContextKeyedAPI,
                            public base::NonThreadSafe,
-                           public content::NotificationObserver,
-                           public ExtensionRegistryObserver {
+                           public ExtensionRegistryObserver,
+                           public ProcessManagerObserver {
  public:
   explicit ApiResourceManager(content::BrowserContext* context)
-      : data_(new ApiResourceData()), extension_registry_observer_(this) {
+      : data_(new ApiResourceData()),
+        extension_registry_observer_(this),
+        process_manager_observer_(this) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(context));
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                   content::NotificationService::AllSources());
+    process_manager_observer_.Add(ProcessManager::Get(context));
   }
   // For Testing.
   static ApiResourceManager<T, TestThreadTraits<T> >*
@@ -179,20 +176,15 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   }
 
  protected:
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
-    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
-    ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-    data_->InitiateExtensionSuspendedCleanup(host->extension_id());
+  // ProcessManagerObserver:
+  void OnBackgroundHostClose(const std::string& extension_id) override {
+    data_->InitiateExtensionSuspendedCleanup(extension_id);
   }
 
   // ExtensionRegistryObserver:
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) override {
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionInfo::Reason reason) override {
     data_->InitiateExtensionUnloadedCleanup(extension->id());
   }
 
@@ -398,6 +390,8 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+  ScopedObserver<ProcessManager, ProcessManagerObserver>
+      process_manager_observer_;
 };
 
 // With WorkerPoolThreadTraits, ApiResourceManager can be used to manage the

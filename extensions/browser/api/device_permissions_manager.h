@@ -12,13 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "device/usb/usb_device.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -91,7 +92,7 @@ class DevicePermissions {
 // Manages saved device permissions for all extensions.
 class DevicePermissionsManager : public KeyedService,
                                  public base::NonThreadSafe,
-                                 public content::NotificationObserver,
+                                 public ProcessManagerObserver,
                                  public device::UsbDevice::Observer {
  public:
   static DevicePermissionsManager* Get(content::BrowserContext* context);
@@ -124,17 +125,16 @@ class DevicePermissionsManager : public KeyedService,
   DevicePermissions* Get(const std::string& extension_id) const;
   DevicePermissions* GetOrInsert(const std::string& extension_id);
 
-  // content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProcessManagerObserver implementation
+  void OnBackgroundHostClose(const std::string& extension_id) override;
 
-  // device::UsbDevice::Observer
+  // device::UsbDevice::Observer implementation
   void OnDisconnect(scoped_refptr<device::UsbDevice> device) override;
 
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<ProcessManager, ProcessManagerObserver>
+      process_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManager);
 };
@@ -152,7 +152,7 @@ class DevicePermissionsManagerFactory
   DevicePermissionsManagerFactory();
   ~DevicePermissionsManagerFactory() override;
 
-  // BrowserContextKeyedServiceFactory
+  // BrowserContextKeyedServiceFactory implementation
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(

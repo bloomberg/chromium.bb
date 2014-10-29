@@ -9,11 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_factory.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -333,10 +334,8 @@ void DevicePermissionsManager::Clear(const std::string& extension_id) {
 
 DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
-    : context_(context) {
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::NotificationService::AllSources());
+    : context_(context), process_manager_observer_(this) {
+  process_manager_observer_.Add(ProcessManager::Get(context));
 }
 
 DevicePermissionsManager::~DevicePermissionsManager() {
@@ -367,18 +366,14 @@ DevicePermissions* DevicePermissionsManager::GetOrInsert(
   return device_permissions;
 }
 
-void DevicePermissionsManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void DevicePermissionsManager::OnBackgroundHostClose(
+    const std::string& extension_id) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED, type);
 
-  ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-  DevicePermissions* device_permissions = Get(host->extension_id());
+  DevicePermissions* device_permissions = Get(extension_id);
   if (device_permissions) {
-    // When the extension is unloaded all ephemeral device permissions are
-    // cleared.
+    // When all of the app's windows are closed and the background page is
+    // suspended all ephemeral device permissions are cleared.
     for (std::set<scoped_refptr<UsbDevice>>::iterator it =
              device_permissions->ephemeral_devices().begin();
          it != device_permissions->ephemeral_devices().end();
@@ -415,6 +410,7 @@ DevicePermissionsManagerFactory::DevicePermissionsManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "DevicePermissionsManager",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProcessManagerFactory::GetInstance());
 }
 
 DevicePermissionsManagerFactory::~DevicePermissionsManagerFactory() {

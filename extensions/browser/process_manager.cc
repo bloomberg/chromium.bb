@@ -868,11 +868,16 @@ void ProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
 }
 
 void ProcessManager::CloseBackgroundHost(ExtensionHost* host) {
+  ExtensionId extension_id = host->extension_id();
   CHECK(host->extension_host_type() ==
         VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   delete host;
   // |host| should deregister itself from our structures.
   CHECK(background_hosts_.find(host) == background_hosts_.end());
+
+  FOR_EACH_OBSERVER(ProcessManagerObserver,
+                    observer_list_,
+                    OnBackgroundHostClose(extension_id));
 }
 
 void ProcessManager::UnregisterExtension(const std::string& extension_id) {

@@ -5,29 +5,19 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/extensions_test.h"
+#include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using content::NotificationService;
 
 namespace extensions {
 
-class ApiResourceManagerUnitTest : public ExtensionsTest {
- public:
-  ApiResourceManagerUnitTest()
-      : notification_service_(NotificationService::Create()) {}
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<NotificationService> notification_service_;
-};
+class ApiResourceManagerUnitTest : public ApiUnitTest {};
 
 class FakeApiResource : public ApiResource {
  public:
@@ -38,8 +28,8 @@ class FakeApiResource : public ApiResource {
 };
 
 TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {
-  scoped_ptr<ApiResourceManager<FakeApiResource> > manager(
-      new ApiResourceManager<FakeApiResource>(NULL));
+  scoped_ptr<ApiResourceManager<FakeApiResource>> manager(
+      new ApiResourceManager<FakeApiResource>(browser_context()));
   scoped_refptr<extensions::Extension> extension_one =
       test_util::CreateEmptyExtension("one");
   scoped_refptr<extensions::Extension> extension_two =
