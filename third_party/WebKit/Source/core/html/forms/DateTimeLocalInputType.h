@@ -54,7 +54,7 @@ private:
     virtual const AtomicString& formControlType() const override;
     virtual double valueAsDate() const override;
     virtual void setValueAsDate(double, ExceptionState&) const override;
-    virtual StepRange createStepRange(AnyStepHandling) const;
+    virtual StepRange createStepRange(AnyStepHandling) const override;
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const override;
 
@@ -62,7 +62,7 @@ private:
     // BaseMultipleFieldsDateAndTimeInputType functions
     virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const override final;
     virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override final;
-    virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const;
+    virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
 #endif
 };
 

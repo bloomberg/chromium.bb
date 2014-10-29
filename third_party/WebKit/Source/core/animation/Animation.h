@@ -83,7 +83,7 @@ public:
     void cancelAnimationOnCompositor();
     void pauseAnimationForTestingOnCompositor(double pauseTime);
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 protected:
     void applyEffects();

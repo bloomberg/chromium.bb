@@ -90,7 +90,7 @@ public:
     void formRemovedFromTree(const Node& formRoot);
 
     // CanvasImageSourceImplementations
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const;
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
     virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
     virtual FloatSize sourceSize() const override;
     virtual FloatSize defaultDestinationSize() const override;

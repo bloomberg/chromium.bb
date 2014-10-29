@@ -44,7 +44,7 @@ public:
     virtual void resume() override final;
 
 private:
-    virtual void fired() = 0;
+    virtual void fired() override = 0;
 
     double m_nextFireInterval;
     double m_repeatInterval;

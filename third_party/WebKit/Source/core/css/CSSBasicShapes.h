@@ -106,7 +106,7 @@ public:
     void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 private:
     CSSBasicShapeEllipse() { }
@@ -138,7 +138,7 @@ public:
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 private:
     CSSBasicShapePolygon()
@@ -202,7 +202,7 @@ public:
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 private:
     CSSBasicShapeInset() { }

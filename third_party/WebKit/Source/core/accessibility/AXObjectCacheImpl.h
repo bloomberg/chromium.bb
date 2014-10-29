@@ -111,9 +111,9 @@ public:
     virtual void handleScrollPositionChanged(RenderObject*) override;
 
     // Called when scroll bars are added / removed (as the view resizes).
-    void handleScrollbarUpdate(FrameView*);
-    void handleLayoutComplete(RenderObject*);
-    void handleScrolledToAnchor(const Node* anchorNode);
+    void handleScrollbarUpdate(FrameView*) override;
+    void handleLayoutComplete(RenderObject*) override;
+    void handleScrolledToAnchor(const Node* anchorNode) override;
 
     // Returns the root object for the entire document.
     AXObject* rootObject();

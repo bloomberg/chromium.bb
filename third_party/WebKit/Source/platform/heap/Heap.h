@@ -745,29 +745,29 @@ class ThreadHeap : public BaseHeap {
 public:
     ThreadHeap(ThreadState*, int);
     virtual ~ThreadHeap();
-    virtual void cleanupPages();
+    virtual void cleanupPages() override;
 
-    virtual BaseHeapPage* heapPageFromAddress(Address);
+    virtual BaseHeapPage* heapPageFromAddress(Address) override;
 #if ENABLE(GC_PROFILE_MARKING)
-    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address);
+    virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) override;
 #endif
 #if ENABLE(GC_PROFILE_HEAP)
-    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
+    virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
 #endif
 
-    virtual void sweep(HeapStats*);
-    virtual void postSweepProcessing();
+    virtual void sweep(HeapStats*) override;
+    virtual void postSweepProcessing() override;
 
-    virtual void clearFreeLists();
-    virtual void clearLiveAndMarkDead();
+    virtual void clearFreeLists() override;
+    virtual void clearLiveAndMarkDead() override;
 
-    virtual void makeConsistentForSweeping();
+    virtual void makeConsistentForSweeping() override;
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping();
+    virtual bool isConsistentForSweeping() override;
 #endif
-    virtual void getStatsForTesting(HeapStats&);
+    virtual void getStatsForTesting(HeapStats&) override;
 
-    virtual void updateRemainingAllocationSize();
+    virtual void updateRemainingAllocationSize() override;
 
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
@@ -779,9 +779,9 @@ public:
         return allocationSizeFromSize(size) - sizeof(Header);
     }
 
-    virtual void prepareHeapForTermination();
+    virtual void prepareHeapForTermination() override;
 
-    virtual int normalPageCount() { return m_numberOfNormalPages; }
+    virtual int normalPageCount() override { return m_numberOfNormalPages; }
 
     virtual PassOwnPtr<BaseHeap> split(int numberOfNormalPages) override;
     virtual void merge(PassOwnPtr<BaseHeap> splitOffBase) override;

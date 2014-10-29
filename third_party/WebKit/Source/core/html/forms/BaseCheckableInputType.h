@@ -39,7 +39,7 @@ namespace blink {
 class BaseCheckableInputType : public InputType {
 protected:
     BaseCheckableInputType(HTMLInputElement& element) : InputType(element) { }
-    virtual void handleKeydownEvent(KeyboardEvent*);
+    virtual void handleKeydownEvent(KeyboardEvent*) override;
 
 private:
     virtual FormControlState saveFormControlState() const override final;

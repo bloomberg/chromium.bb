@@ -97,7 +97,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CustomElementSyncMicrotaskQueue> microtaskQueue() const;
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 private:
     HTMLImportLoader(HTMLImportsController*);
@@ -110,7 +110,7 @@ private:
     // DocumentParserClient
 
     // Called after document parse is complete after DOMContentLoaded was dispatched.
-    virtual void notifyParserStopped();
+    virtual void notifyParserStopped() override;
 
     State startWritingAndParsing(const ResourceResponse&);
     State finishWriting();

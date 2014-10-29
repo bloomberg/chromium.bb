@@ -155,7 +155,7 @@ protected:
     virtual void addChildren() override;
     virtual bool canHaveChildren() const override;
     virtual void updateChildrenIfNecessary() override;
-    virtual bool needsToUpdateChildren() const { return m_childrenDirty; }
+    virtual bool needsToUpdateChildren() const override { return m_childrenDirty; }
     virtual void setNeedsToUpdateChildren() override { m_childrenDirty = true; }
     virtual void clearChildren() override;
     virtual AXObject* observableObject() const override;

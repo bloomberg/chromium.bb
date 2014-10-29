@@ -253,7 +253,7 @@ public:
         return 0;
     }
 
-    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const override
     {
         ASSERT(category() != CalcNumber);
         m_value->accumulateLengthArray(lengthArray, multiplier);
@@ -274,7 +274,7 @@ public:
     }
 
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_value);
         CSSCalcExpressionNode::trace(visitor);
@@ -449,7 +449,7 @@ public:
         return evaluate(leftValue, rightValue);
     }
 
-    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const
+    virtual void accumulateLengthArray(CSSLengthArray& lengthArray, double multiplier) const override
     {
         switch (m_operator) {
         case CalcAdd:
@@ -540,7 +540,7 @@ public:
         return CSSPrimitiveValue::CSS_UNKNOWN;
     }
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) override
     {
         visitor->trace(m_leftSide);
         visitor->trace(m_rightSide);

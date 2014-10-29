@@ -339,7 +339,7 @@ public:
 
     // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
-    HostWindow* hostWindow() const;
+    HostWindow* hostWindow() const override;
 
     // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
     IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
@@ -566,7 +566,7 @@ protected:
 private:
     explicit FrameView(LocalFrame*);
 
-    void dispose();
+    void dispose() override;
     void reset();
     void init();
 
