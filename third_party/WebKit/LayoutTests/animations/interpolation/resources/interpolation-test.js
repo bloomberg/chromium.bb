@@ -79,11 +79,15 @@
   fragment.appendChild(style);
   fragment.appendChild(cssTests);
 
-  if (webAnimationsTest) {
-    var waTests = document.createElement('div');
-    waTests.id = 'web-animations-tests';
-    waTests.textContent = 'Web Animations API:';
-    fragment.appendChild(waTests);
+  var waTestsDiv = null;
+  function waTests() {
+    if (!waTestsDiv) {
+      waTestsDiv = document.createElement('div');
+      waTestsDiv.id = 'web-animations-tests';
+      waTestsDiv.textContent = 'Web Animations API:';
+      fragment.appendChild(waTestsDiv);
+    }
+    return waTestsDiv;
   }
 
   var updateScheduled = false;
@@ -120,7 +124,7 @@
         }
       }
       var results = document.createElement('pre');
-      results.textContent = cssResultString + (webAnimationsTest ? '\n' + waResultString : '');
+      results.textContent = cssResultString + (waTestsDiv ? '\n' + waResultString : '');
       results.id = 'results';
       document.body.appendChild(results);
     }
@@ -201,15 +205,14 @@
     var nextCaseId = 0;
     var cssTestContainer = createTestContainer(describeCSSTest(params), testId);
     cssTests.appendChild(cssTestContainer);
-    if (webAnimationsTest) {
-      var waTestContainer = createTestContainer(describeWATest(params), testId);
-      waTests.appendChild(waTestContainer);
-    }
     expectations.forEach(function(expectation) {
       cssTestContainer.appendChild(makeInterpolationTest(
           'css', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
     });
-    if (webAnimationsTest) {
+    // We don't support prefixed properties in Web Animations
+    if (webAnimationsTest && params.property[0] != '-') {
+      var waTestContainer = createTestContainer(describeWATest(params), testId);
+      waTests().appendChild(waTestContainer);
       expectations.forEach(function(expectation) {
         waTestContainer.appendChild(makeInterpolationTest(
             'web-animations', expectation.at, testId, 'case-' + ++nextCaseId, params, expectation.is));
@@ -415,10 +418,7 @@
   }
 
   function disableWebAnimationsTest() {
-    if (webAnimationsTest) {
-      fragment.querySelector('#web-animations-tests').remove();
-      webAnimationsTest = false;
-    }
+    webAnimationsTest = false;
   }
 
   window.runAsRefTest = runAsRefTest;

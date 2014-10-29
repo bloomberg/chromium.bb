@@ -17,22 +17,3 @@ PASS: -webkit-column-count from [0] to [5] was [4] at 0.75
 PASS: -webkit-column-count from [0] to [5] was [5] at 1
 PASS: -webkit-column-count from [0] to [5] was [6] at 1.25
 
-Web Animations API:
-FAIL: webkitColumnCount from [1] to [6] was [auto] at -0.4, expected [1]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at -0.2, expected [1]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 0, expected [1]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 0.2, expected [2]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 0.4, expected [3]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 0.6, expected [4]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 0.8, expected [5]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 1, expected [6]
-FAIL: webkitColumnCount from [1] to [6] was [auto] at 1.2, expected [7]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at -0.5, expected [1]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at -0.25, expected [1]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 0, expected [1]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 0.25, expected [2]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 0.5, expected [3]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 0.75, expected [4]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 1, expected [5]
-FAIL: webkitColumnCount from [0] to [5] was [auto] at 1.25, expected [6]
-

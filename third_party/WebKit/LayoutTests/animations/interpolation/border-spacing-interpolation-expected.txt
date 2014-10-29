@@ -25,16 +25,4 @@ PASS: borderSpacing from [0px] to [10px] was [3px 3px] at 0.3
 PASS: borderSpacing from [0px] to [10px] was [6px 6px] at 0.6
 PASS: borderSpacing from [0px] to [10px] was [10px 10px] at 1
 PASS: borderSpacing from [0px] to [10px] was [15px 15px] at 1.5
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at -0.3, expected [0px]
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 0, expected [0px]
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 0.3, expected [3px]
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 0.6, expected [6px]
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 1, expected [10px]
-FAIL: webkitBorderHorizontalSpacing from [0px] to [10px] was [2px] at 1.5, expected [15px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at -0.3, expected [0px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at 0, expected [0px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at 0.3, expected [3px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at 0.6, expected [6px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at 1, expected [10px]
-FAIL: webkitBorderVerticalSpacing from [0px] to [10px] was [2px] at 1.5, expected [15px]
 
