@@ -115,6 +115,9 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
             new FileElementReader(body, file_task_runner, element));
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+        // If |body| contains any filesystem URLs, the caller should have
+        // supplied a FileSystemContext.
+        DCHECK(file_system_context);
         element_readers.push_back(
             new content::UploadFileSystemFileElementReader(
                 file_system_context,

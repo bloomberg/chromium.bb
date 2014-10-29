@@ -40,12 +40,20 @@ struct SyncLoadResult : ResourceResponseHead {
 // Simple wrapper that refcounts ResourceResponseHead.
 // Inherited, rather than typedef'd, to allow forward declarations.
 struct CONTENT_EXPORT ResourceResponse
-    : public base::RefCounted<ResourceResponse> {
+    : public base::RefCountedThreadSafe<ResourceResponse> {
  public:
   ResourceResponseHead head;
 
+  // Performs a deep copy of the ResourceResponse and all fields in it, safe to
+  // pass across threads.
+  //
+  // TODO(davidben): This structure should be passed along in a scoped_ptr. It's
+  // currently reference-counted to avoid copies, but may be
+  // modified. https://crbug.com/416050
+  scoped_refptr<ResourceResponse> DeepCopy() const;
+
  private:
-  friend class base::RefCounted<ResourceResponse>;
+  friend class base::RefCountedThreadSafe<ResourceResponse>;
   ~ResourceResponse() {}
 };
 

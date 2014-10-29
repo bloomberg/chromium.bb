@@ -22,6 +22,8 @@
 
 namespace content {
 
+// Note: when modifying this structure, also update ResourceResponse::DeepCopy
+// in resource_response.cc.
 struct ResourceResponseInfo {
   CONTENT_EXPORT ResourceResponseInfo();
   CONTENT_EXPORT ~ResourceResponseInfo();

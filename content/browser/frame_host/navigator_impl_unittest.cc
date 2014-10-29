@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -14,6 +15,9 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
+#include "content/browser/loader/navigation_url_loader.h"
+#include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
@@ -26,14 +30,86 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/redirect_info.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
 namespace content {
 
+namespace {
+
+class TestNavigationURLLoader
+    : public NavigationURLLoader,
+      public base::SupportsWeakPtr<TestNavigationURLLoader> {
+ public:
+  TestNavigationURLLoader(const CommonNavigationParams& common_params,
+                          scoped_ptr<NavigationRequestInfo> request_info,
+                          NavigationURLLoaderDelegate* delegate)
+      : common_params_(common_params),
+        request_info_(request_info.Pass()),
+        delegate_(delegate),
+        redirect_count_(0) {
+  }
+
+  // NavigationURLLoader implementation.
+  void FollowRedirect() override { redirect_count_++; }
+
+  const CommonNavigationParams& common_params() const { return common_params_; }
+  NavigationRequestInfo* request_info() const { return request_info_.get(); }
+
+  void CallOnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      const scoped_refptr<ResourceResponse>& response) {
+    delegate_->OnRequestRedirected(redirect_info, response);
+  }
+
+  void CallOnResponseStarted(
+      const scoped_refptr<ResourceResponse>& response,
+      scoped_ptr<StreamHandle> body) {
+    delegate_->OnResponseStarted(response, body.Pass());
+  }
+
+  int redirect_count() { return redirect_count_; }
+
+ private:
+  CommonNavigationParams common_params_;
+  scoped_ptr<NavigationRequestInfo> request_info_;
+  NavigationURLLoaderDelegate* delegate_;
+  int redirect_count_;
+};
+
+class TestNavigationURLLoaderFactory : public NavigationURLLoaderFactory {
+ public:
+  // NavigationURLLoaderFactory implementation.
+  scoped_ptr<NavigationURLLoader> CreateLoader(
+      BrowserContext* browser_context,
+      int64 frame_tree_node_id,
+      const CommonNavigationParams& common_params,
+      scoped_ptr<NavigationRequestInfo> request_info,
+      ResourceRequestBody* request_body,
+      NavigationURLLoaderDelegate* delegate) override {
+    return scoped_ptr<NavigationURLLoader>(new TestNavigationURLLoader(
+        common_params, request_info.Pass(), delegate));
+  }
+};
+
+}  // namespace
+
 class NavigatorTest : public RenderViewHostImplTestHarness {
  public:
   NavigatorTest() : stream_registry_(new StreamRegistry) {}
+
+  void SetUp() override {
+    RenderViewHostImplTestHarness::SetUp();
+    loader_factory_.reset(new TestNavigationURLLoaderFactory);
+    NavigationURLLoader::SetFactoryForTesting(loader_factory_.get());
+  }
+
+  void TearDown() override {
+    NavigationURLLoader::SetFactoryForTesting(nullptr);
+    loader_factory_.reset();
+    RenderViewHostImplTestHarness::TearDown();
+  }
 
   NavigationRequest* GetNavigationRequestForFrameTreeNode(
       FrameTreeNode* frame_tree_node) const {
@@ -41,6 +117,11 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
         static_cast<NavigatorImpl*>(frame_tree_node->navigator());
     return navigator->navigation_request_map_.get(
             frame_tree_node->frame_tree_node_id());
+  }
+
+  TestNavigationURLLoader* GetLoaderForNavigationRequest(
+      NavigationRequest* request) const {
+    return static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
   }
 
   void EnableBrowserSideNavigation() {
@@ -83,6 +164,7 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
 
  private:
   scoped_ptr<StreamRegistry> stream_registry_;
+  scoped_ptr<TestNavigationURLLoaderFactory> loader_factory_;
 };
 
 // PlzNavigate: Test that a proper NavigationRequest is created by
@@ -112,22 +194,28 @@ TEST_F(NavigatorTest, BrowserSideNavigationBeginNavigation) {
   // handled already.
   NavigationRequest* subframe_request =
       GetNavigationRequestForFrameTreeNode(subframe_node);
+  TestNavigationURLLoader* subframe_loader =
+      GetLoaderForNavigationRequest(subframe_request);
   ASSERT_TRUE(subframe_request);
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);
+  EXPECT_EQ(kUrl2, subframe_loader->common_params().url);
   // First party for cookies url should be that of the main frame.
-  EXPECT_EQ(kUrl1, subframe_request->info_for_test()->first_party_for_cookies);
-  EXPECT_FALSE(subframe_request->info_for_test()->is_main_frame);
-  EXPECT_TRUE(subframe_request->info_for_test()->parent_is_main_frame);
+  EXPECT_EQ(kUrl1, subframe_loader->request_info()->first_party_for_cookies);
+  EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
+  EXPECT_TRUE(subframe_loader->request_info()->parent_is_main_frame);
 
   SendRequestNavigation(root, kUrl3);
   // Simulate a BeginNavigation IPC on the main frame.
   contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl3);
   NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(root);
+  TestNavigationURLLoader* main_loader =
+      GetLoaderForNavigationRequest(main_request);
   ASSERT_TRUE(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
-  EXPECT_EQ(kUrl3, main_request->info_for_test()->first_party_for_cookies);
-  EXPECT_TRUE(main_request->info_for_test()->is_main_frame);
-  EXPECT_FALSE(main_request->info_for_test()->parent_is_main_frame);
+  EXPECT_EQ(kUrl3, main_loader->common_params().url);
+  EXPECT_EQ(kUrl3, main_loader->request_info()->first_party_for_cookies);
+  EXPECT_TRUE(main_loader->request_info()->is_main_frame);
+  EXPECT_FALSE(main_loader->request_info()->parent_is_main_frame);
 }
 
 // PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
@@ -144,9 +232,11 @@ TEST_F(NavigatorTest, BrowserSideNavigationRequestNavigationNoLiveRenderer) {
   EXPECT_TRUE(main_request != NULL);
   RenderFrameHostImpl* rfh = main_test_rfh();
 
-  // Now commit the same url.
+  // Now return the response without any redirects. This will cause the
+  // navigation to commit at the same URL.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
+      response, MakeEmptyStream());
   main_request = GetNavigationRequestForFrameTreeNode(node);
 
   // The main RFH should not have been changed, and the renderer should have
@@ -181,7 +271,8 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
-  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
+      response, MakeEmptyStream());
 
   // There should be no pending RenderFrameHost; the navigation was aborted.
   EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
@@ -200,7 +291,8 @@ TEST_F(NavigatorTest, BrowserSideNavigationNoContent) {
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
-  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
+      response, MakeEmptyStream());
 
   // There should be no pending RenderFrameHost; the navigation was aborted.
   EXPECT_FALSE(GetNavigationRequestForFrameTreeNode(node));
@@ -227,7 +319,51 @@ TEST_F(NavigatorTest, BrowserSideNavigationCrossSiteNavigation) {
   ASSERT_TRUE(main_request);
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
+      response, MakeEmptyStream());
+  RenderFrameHostImpl* pending_rfh =
+      node->render_manager()->pending_frame_host();
+  ASSERT_TRUE(pending_rfh);
+  EXPECT_NE(pending_rfh, rfh);
+  EXPECT_TRUE(pending_rfh->IsRenderFrameLive());
+  EXPECT_TRUE(pending_rfh->render_view_host()->IsRenderViewLive());
+}
+
+// PlzNavigate: Test that redirects are followed.
+TEST_F(NavigatorTest, BrowserSideNavigationRedirectCrossSite) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+
+  contents()->NavigateAndCommit(kUrl1);
+  RenderFrameHostImpl* rfh = main_test_rfh();
+  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh->rfh_state());
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  EnableBrowserSideNavigation();
+
+  // Navigate to a URL on the same site.
+  SendRequestNavigation(node, kUrl1);
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl1);
+  NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(node);
+  ASSERT_TRUE(main_request);
+
+  // It then redirects to another site.
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 302;
+  redirect_info.new_method = "GET";
+  redirect_info.new_url = kUrl2;
+  redirect_info.new_first_party_for_cookies = kUrl2;
+ scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  GetLoaderForNavigationRequest(main_request)->CallOnRequestRedirected(
+      redirect_info, response);
+
+  // The redirect should have been followed.
+  EXPECT_EQ(1, GetLoaderForNavigationRequest(main_request)->redirect_count());
+
+  // Then it commits.
+  response = new ResourceResponse;
+  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
+      response, MakeEmptyStream());
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);
@@ -257,6 +393,8 @@ TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
   NavigationRequest* request1 = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(request1);
   EXPECT_EQ(kUrl1, request1->common_params().url);
+  base::WeakPtr<TestNavigationURLLoader> loader1 =
+      GetLoaderForNavigationRequest(request1)->AsWeakPtr();
 
   // Request navigation to the 2nd URL; the NavigationRequest must have been
   // replaced by a new one with a different URL.
@@ -266,9 +404,13 @@ TEST_F(NavigatorTest, BrowserSideNavigationReplacePendingNavigation) {
   ASSERT_TRUE(request2);
   EXPECT_EQ(kUrl2, request2->common_params().url);
 
-  // Confirm that the commit corresonds to the new request.
+  // Confirm that the first loader got destroyed.
+  EXPECT_FALSE(loader1);
+
+  // Confirm that the commit corresponds to the new request.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  node->navigator()->CommitNavigation(node, response.get(), MakeEmptyStream());
+  GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
+      response, MakeEmptyStream());
   RenderFrameHostImpl* pending_rfh =
       node->render_manager()->pending_frame_host();
   ASSERT_TRUE(pending_rfh);

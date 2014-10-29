@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
@@ -17,7 +18,7 @@ namespace content {
 // A struct to hold the parameters needed to start a navigation request in
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed
 // to the IO thread by a NavigationRequest object.
-struct NavigationRequestInfo {
+struct CONTENT_EXPORT NavigationRequestInfo {
   explicit NavigationRequestInfo(
       const FrameHostMsg_BeginNavigation_Params& params);
 

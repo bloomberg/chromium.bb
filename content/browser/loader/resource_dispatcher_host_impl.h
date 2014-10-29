@@ -54,6 +54,8 @@ class ShareableFileReference;
 }
 
 namespace content {
+class AppCacheService;
+class NavigationURLLoaderImplCore;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceMessageDelegate;
@@ -255,21 +257,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // elsewhere.
   void FinishedWithResourcesForRequest(net::URLRequest* request);
 
-  // PlzNavigate
-  // Called by NavigationRequest to start a navigation request in the node
-  // identified by |frame_node_id|.
-  void StartNavigationRequest(const CommonNavigationParams& common_params,
+  // PlzNavigate: Begins a request for NavigationURLLoader. |loader| is the
+  // loader to attach to the leaf resource handler.
+  void BeginNavigationRequest(ResourceContext* resource_context,
+                              int64 frame_tree_node_id,
+                              const CommonNavigationParams& common_params,
                               const NavigationRequestInfo& info,
                               scoped_refptr<ResourceRequestBody> request_body,
-                              int64 navigation_request_id,
-                              int64 frame_node_id);
-
-  // PlzNavigate
-  // Called by NavigationRequest to cancel a navigation request with the
-  // provided |navigation_request_id| in the node identified by
-  // |frame_node_id|.
-  void CancelNavigationRequest(int64 navigation_request_id,
-                               int64 frame_node_id);
+                              NavigationURLLoaderImplCore* loader);
 
  private:
   friend class ResourceDispatcherHostTest;
@@ -407,6 +402,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int process_type,
       int child_id,
       ResourceContext* resource_context);
+
+  // Wraps |handler| in the standard resource handlers for normal resource
+  // loading and navigation requests. This adds BufferedResourceHandler and
+  // ResourceThrottles.
+  scoped_ptr<ResourceHandler> AddStandardHandlers(
+      net::URLRequest* request,
+      ResourceType resource_type,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      int child_id,
+      int route_id,
+      scoped_ptr<ResourceHandler> handler);
 
   void OnDataDownloadedACK(int request_id);
   void OnUploadProgressACK(int request_id);

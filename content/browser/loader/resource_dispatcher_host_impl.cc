@@ -37,6 +37,8 @@
 #include "content/browser/loader/buffered_resource_handler.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
+#include "content/browser/loader/navigation_resource_handler.h"
+#include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -360,10 +362,10 @@ bool IsValidatedSCT(
 }
 
 storage::BlobStorageContext* GetBlobStorageContext(
-    ResourceMessageFilter* filter) {
-  if (!filter->blob_storage_context())
+    ChromeBlobStorageContext* blob_storage_context) {
+  if (!blob_storage_context)
     return NULL;
-  return filter->blob_storage_context()->context();
+  return blob_storage_context->context();
 }
 
 void AttachRequestBodyBlobDataHandles(
@@ -542,15 +544,16 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   for (LoaderList::iterator i = loaders_to_cancel.begin();
        i != loaders_to_cancel.end(); ++i) {
     // There is no strict requirement that this be the case, but currently
-    // downloads, streams, detachable requests, and transferred requests are the
-    // only requests that aren't cancelled when the associated processes go
-    // away. It may be OK for this invariant to change in the future, but if
-    // this assertion fires without the invariant changing, then it's indicative
-    // of a leak.
+    // downloads, streams, detachable requests, transferred requests, and
+    // browser-owned requests are the only requests that aren't cancelled when
+    // the associated processes go away. It may be OK for this invariant to
+    // change in the future, but if this assertion fires without the invariant
+    // changing, then it's indicative of a leak.
     DCHECK((*i)->GetRequestInfo()->IsDownload() ||
            (*i)->GetRequestInfo()->is_stream() ||
            ((*i)->GetRequestInfo()->detachable_handler() &&
             (*i)->GetRequestInfo()->detachable_handler()->is_detached()) ||
+           (*i)->GetRequestInfo()->GetProcessType() == PROCESS_TYPE_BROWSER ||
            (*i)->is_transferring());
   }
 #endif
@@ -1174,7 +1177,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   new_request->SetLoadFlags(load_flags);
 
   storage::BlobStorageContext* blob_context =
-      GetBlobStorageContext(filter_);
+      GetBlobStorageContext(filter_->blob_storage_context());
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
     // |blob_context| could be null when the request is from the plugins because
@@ -1307,21 +1310,41 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
         handler.Pass()));
   }
 
-  // Install a CrossSiteResourceHandler for all main frame requests.  This will
-  // let us check whether a transfer is required and pause for the unload
-  // handler either if so or if a cross-process navigation is already under way.
-  bool is_swappable_navigation =
-      request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME;
-  // If we are using --site-per-process, install it for subframes as well.
-  if (!is_swappable_navigation &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
-    is_swappable_navigation =
-        request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
+  // PlzNavigate: If using --enable-browser-side-navigation, the
+  // CrossSiteResourceHandler is not needed. This codepath is not used for the
+  // actual navigation request, but only the subsequent blob URL load. This does
+  // not require request transfers.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    // Install a CrossSiteResourceHandler for all main frame requests. This will
+    // check whether a transfer is required and, if so, pause for the UI thread
+    // to drive the transfer.
+    bool is_swappable_navigation =
+        request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME;
+    // If we are using --site-per-process, install it for subframes as well.
+    if (!is_swappable_navigation &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
+      is_swappable_navigation =
+          request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
+    }
+    if (is_swappable_navigation && process_type == PROCESS_TYPE_RENDERER)
+      handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
   }
-  if (is_swappable_navigation && process_type == PROCESS_TYPE_RENDERER)
-    handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
 
+  return AddStandardHandlers(request, request_data.resource_type,
+                             resource_context, filter_->appcache_service(),
+                             child_id, route_id, handler.Pass());
+}
+
+scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
+    net::URLRequest* request,
+    ResourceType resource_type,
+    ResourceContext* resource_context,
+    AppCacheService* appcache_service,
+    int child_id,
+    int route_id,
+    scoped_ptr<ResourceHandler> handler) {
   // Insert a buffered event handler before the actual one.
   handler.reset(
       new BufferedResourceHandler(handler.Pass(), this, request));
@@ -1330,8 +1353,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
   if (delegate_) {
     delegate_->RequestBeginning(request,
                                 resource_context,
-                                filter_->appcache_service(),
-                                request_data.resource_type,
+                                appcache_service,
+                                resource_type,
                                 &throttles);
   }
 
@@ -1779,19 +1802,170 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
   IncrementOutstandingRequestsCount(-1, info);
 }
 
-void ResourceDispatcherHostImpl::StartNavigationRequest(
+void ResourceDispatcherHostImpl::BeginNavigationRequest(
+    ResourceContext* resource_context,
+    int64 frame_tree_node_id,
     const CommonNavigationParams& params,
     const NavigationRequestInfo& info,
     scoped_refptr<ResourceRequestBody> request_body,
-    int64 navigation_request_id,
-    int64 frame_node_id) {
-  NOTIMPLEMENTED();
-}
+    NavigationURLLoaderImplCore* loader) {
+  // PlzNavigate: BeginNavigationRequest currently should only be used for the
+  // browser-side navigations project.
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
 
-void ResourceDispatcherHostImpl::CancelNavigationRequest(
-    int64 navigation_request_id,
-    int64 frame_node_id) {
-  NOTIMPLEMENTED();
+  ResourceType resource_type = info.is_main_frame ?
+      RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;
+
+  if (is_shutdown_ ||
+      // TODO(davidben): Check ShouldServiceRequest here. This is important; it
+      // needs to be checked relative to the child that /requested/ the
+      // navigation. It's where file upload checks, etc., come in.
+      (delegate_ && !delegate_->ShouldBeginRequest(
+          info.navigation_params.method,
+          params.url,
+          resource_type,
+          resource_context))) {
+    loader->NotifyRequestFailed(net::ERR_ABORTED);
+    return;
+  }
+
+  // Save the URL on the stack to help catch URLRequests which outlive their
+  // URLRequestContexts. See https://crbug.com/90971
+  char url_buf[128];
+  base::strlcpy(url_buf, params.url.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+  CHECK(ContainsKey(active_resource_contexts_, resource_context));
+
+  const net::URLRequestContext* request_context =
+      resource_context->GetRequestContext();
+
+  int load_flags = info.navigation_params.load_flags;
+  load_flags |= net::LOAD_VERIFY_EV_CERT;
+  if (info.is_main_frame) {
+    load_flags |= net::LOAD_MAIN_FRAME;
+  } else {
+    load_flags |= net::LOAD_SUB_FRAME;
+  }
+  // Add a flag to selectively bypass the data reduction proxy if the resource
+  // type is not an image.
+  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
+
+  // TODO(davidben): BuildLoadFlagsForRequest includes logic for
+  // CanSendCookiesForOrigin and CanReadRawCookies. Is this needed here?
+
+  // Sync loads should have maximum priority and should be the only
+  // requests that have the ignore limits flag set.
+  DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
+
+  // TODO(davidben): OverrideCookieStoreForRenderProcess handling for
+  // prerender. There may not be a renderer process yet, so we need to use the
+  // ResourceContext or something.
+  scoped_ptr<net::URLRequest> new_request;
+  new_request = request_context->CreateRequest(params.url, net::HIGHEST,
+                                               nullptr, nullptr);
+
+  new_request->set_method(info.navigation_params.method);
+  new_request->set_first_party_for_cookies(
+      info.first_party_for_cookies);
+  if (info.is_main_frame) {
+    new_request->set_first_party_url_policy(
+        net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+  }
+
+  SetReferrerForRequest(new_request.get(), params.referrer);
+
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(info.navigation_params.headers);
+  new_request->SetExtraRequestHeaders(headers);
+
+  new_request->SetLoadFlags(load_flags);
+
+  // Resolve elements from request_body and prepare upload data.
+  if (info.navigation_params.request_body.get()) {
+    storage::BlobStorageContext* blob_context = GetBlobStorageContext(
+        GetChromeBlobStorageContextForResourceContext(resource_context));
+    AttachRequestBodyBlobDataHandles(
+        info.navigation_params.request_body.get(),
+        blob_context);
+    // TODO(davidben): The FileSystemContext is null here. In the case where
+    // another renderer requested this navigation, this should be the same
+    // FileSystemContext passed into ShouldServiceRequest.
+    new_request->set_upload(UploadDataStreamBuilder::Build(
+        info.navigation_params.request_body.get(),
+        blob_context,
+        nullptr,  // file_system_context
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+            .get()));
+  }
+
+  request_id_--;
+
+  // Make extra info and read footer (contains request ID).
+  //
+  // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
+  // that IO thread -> UI thread hops will work.
+  ResourceRequestInfoImpl* extra_info =
+      new ResourceRequestInfoImpl(
+          PROCESS_TYPE_BROWSER,
+          -1,  // child_id
+          -1,  // route_id
+          -1,  // request_data.origin_pid,
+          request_id_,
+          -1,  // request_data.render_frame_id,
+          info.is_main_frame,
+          info.parent_is_main_frame,
+          -1,  // request_data.parent_render_frame_id,
+          resource_type,
+          params.transition,
+          // should_replace_current_entry. This was only maintained at layer for
+          // request transfers and isn't needed for browser-side navigations.
+          false,
+          false,  // is download
+          false,  // is stream
+          params.allow_download,
+          info.navigation_params.has_user_gesture,
+          true,   // enable_load_timing
+          false,  // enable_upload_progress
+          params.referrer.policy,
+          // TODO(davidben): This is only used for prerenders. Replace
+          // is_showing with something for that. Or maybe it just comes from the
+          // same mechanism as the cookie one.
+          blink::WebPageVisibilityStateVisible,
+          resource_context,
+          base::WeakPtr<ResourceMessageFilter>(),  // filter
+          true);
+  // Request takes ownership.
+  extra_info->AssociateWithRequest(new_request.get());
+
+  if (new_request->url().SchemeIs(url::kBlobScheme)) {
+    // Hang on to a reference to ensure the blob is not released prior
+    // to the job being started.
+    ChromeBlobStorageContext* blob_context =
+        GetChromeBlobStorageContextForResourceContext(resource_context);
+    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
+        new_request.get(),
+        blob_context->context()->GetBlobDataFromPublicURL(new_request->url()));
+  }
+
+  // TODO(davidben): Attach ServiceWorkerRequestHandler.
+
+  // TODO(davidben): Attach AppCacheInterceptor.
+
+  scoped_ptr<ResourceHandler> handler(new NavigationResourceHandler(
+      new_request.get(), loader));
+
+  // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
+  // dependency on child_id/route_id. Those are used by the ResourceScheduler;
+  // currently it's a no-op.
+  handler = AddStandardHandlers(new_request.get(), resource_type,
+                                resource_context,
+                                nullptr,  // appcache_service
+                                -1,  // child_id
+                                -1,  // route_id
+                                handler.Pass());
+
+  BeginRequestInternal(new_request.Pass(), handler.Pass());
 }
 
 // static
