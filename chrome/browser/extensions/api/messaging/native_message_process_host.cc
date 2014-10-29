@@ -52,7 +52,8 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       read_file_(-1),
 #endif
       read_pending_(false),
-      write_pending_(false) {
+      write_pending_(false),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
@@ -97,7 +98,7 @@ void NativeMessageProcessHost::LaunchHostProcess() {
   GURL origin(std::string(kExtensionScheme) + "://" + source_extension_id_);
   launcher_->Launch(origin, native_host_name_,
                     base::Bind(&NativeMessageProcessHost::OnHostProcessLaunched,
-                               base::Unretained(this)));
+                               weak_factory_.GetWeakPtr()));
 }
 
 void NativeMessageProcessHost::OnHostProcessLaunched(
@@ -176,7 +177,7 @@ void NativeMessageProcessHost::Start(Client* client) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NativeMessageProcessHost::LaunchHostProcess,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -223,10 +224,10 @@ void NativeMessageProcessHost::DoRead() {
 
   while (!closed_ && !read_pending_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
-    int result = read_stream_->Read(
-        read_buffer_.get(),
-        kReadBufferSize,
-        base::Bind(&NativeMessageProcessHost::OnRead, base::Unretained(this)));
+    int result =
+        read_stream_->Read(read_buffer_.get(), kReadBufferSize,
+                           base::Bind(&NativeMessageProcessHost::OnRead,
+                                      weak_factory_.GetWeakPtr()));
     HandleReadResult(result);
   }
 }
@@ -307,7 +308,7 @@ void NativeMessageProcessHost::DoWrite() {
         write_stream_->Write(current_write_buffer_.get(),
                              current_write_buffer_->BytesRemaining(),
                              base::Bind(&NativeMessageProcessHost::OnWritten,
-                                        base::Unretained(this)));
+                                        weak_factory_.GetWeakPtr()));
     HandleWriteResult(result);
   }
 }
