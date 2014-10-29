@@ -96,8 +96,9 @@ public class LocalBindingTestService extends Service {
 
     @Override
     public void onDestroy() {
-        checkCalledOnServiceThread();
+        if (mServer == null) return;
 
+        checkCalledOnServiceThread();
         mServer.dispose();
         mServer = null;
     }

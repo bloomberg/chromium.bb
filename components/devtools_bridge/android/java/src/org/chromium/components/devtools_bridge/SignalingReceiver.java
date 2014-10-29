@@ -37,8 +37,8 @@ public interface SignalingReceiver {
     /**
      * Passes call to the appropriate ServerSession object (if it still exists).
      */
-    public void iceExchange(
-           String sessionId,
-           List<String> clientCandidates,
-           SessionBase.IceExchangeCallback callback);
+    void iceExchange(
+            String sessionId,
+            List<String> clientCandidates,
+            SessionBase.IceExchangeCallback callback);
 }
