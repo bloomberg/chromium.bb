@@ -37,9 +37,9 @@ const char kUnregisteredAppID[] = "app_id unregistered";
 class ListChangesTaskTest : public testing::Test {
  public:
   ListChangesTaskTest() {}
-  virtual ~ListChangesTaskTest() {}
+  ~ListChangesTaskTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -74,7 +74,7 @@ class ListChangesTaskTest : public testing::Test {
     RegisterApp(kAppID);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     sync_task_manager_.reset();
     context_.reset();
     base::RunLoop().RunUntilIdle();

@@ -179,12 +179,12 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
   virtual ~MetadataDatabaseTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
   }
 
-  virtual void TearDown() override { DropDatabase(); }
+  void TearDown() override { DropDatabase(); }
 
  protected:
   std::string GenerateFileID() {

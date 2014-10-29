@@ -42,7 +42,7 @@ class SyncableFileSystemTest : public testing::Test {
                      base::ThreadTaskRunnerHandle::Get().get()),
         weak_factory_(this) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
@@ -56,7 +56,7 @@ class SyncableFileSystemTest : public testing::Test {
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
     sync_context_ = nullptr;

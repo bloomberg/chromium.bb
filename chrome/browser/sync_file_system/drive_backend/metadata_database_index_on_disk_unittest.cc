@@ -33,16 +33,16 @@ const int64 kPlaceholderTrackerID = 4;
 
 class MetadataDatabaseIndexOnDiskTest : public testing::Test {
  public:
-  virtual ~MetadataDatabaseIndexOnDiskTest() {}
+  ~MetadataDatabaseIndexOnDiskTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     db_ = InitializeLevelDB();
     index_ = MetadataDatabaseIndexOnDisk::Create(db_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     index_.reset();
     db_.reset();
     in_memory_env_.reset();

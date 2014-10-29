@@ -75,9 +75,9 @@ class DriveBackendSyncTest : public testing::Test,
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         pending_remote_changes_(0),
         pending_local_changes_(0) {}
-  virtual ~DriveBackendSyncTest() {}
+  ~DriveBackendSyncTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -136,7 +136,7 @@ class DriveBackendSyncTest : public testing::Test,
     remote_sync_service_->SetRemoteChangeProcessor(local_sync_service_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     typedef std::map<std::string, CannedSyncableFileSystem*>::iterator iterator;
     for (iterator itr = file_systems_.begin();
          itr != file_systems_.end(); ++itr) {

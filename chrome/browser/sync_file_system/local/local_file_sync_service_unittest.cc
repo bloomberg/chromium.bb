@@ -109,7 +109,7 @@ class LocalFileSyncServiceTest
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         num_changes_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -139,7 +139,7 @@ class LocalFileSyncServiceTest
         set_mock_notify_changes_duration_in_sec(0);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     local_service_->Shutdown();
     file_system_->TearDown();
     RevokeSyncableFileSystem();
@@ -591,7 +591,7 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
 class OriginChangeMapTest : public testing::Test {
  protected:
   OriginChangeMapTest() {}
-  virtual ~OriginChangeMapTest() {}
+  ~OriginChangeMapTest() override {}
 
   bool NextOriginToProcess(GURL* origin) {
     return map_.NextOriginToProcess(origin);

@@ -63,7 +63,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
         url_request_context_(file_system_.file_system_context()),
         weak_factory_(this) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
@@ -81,7 +81,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
               file_system_.CreateDirectory(URL(kParent)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
     sync_context_ = nullptr;

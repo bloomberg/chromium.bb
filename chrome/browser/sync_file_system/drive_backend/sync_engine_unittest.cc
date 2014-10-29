@@ -29,9 +29,9 @@ class SyncEngineTest : public testing::Test,
   typedef RemoteFileSyncService::OriginStatusMap RemoteOriginStatusMap;
 
   SyncEngineTest() {}
-  virtual ~SyncEngineTest() {}
+  ~SyncEngineTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
 
     scoped_ptr<drive::DriveServiceInterface>
@@ -69,7 +69,7 @@ class SyncEngineTest : public testing::Test,
     WaitForWorkerTaskRunner();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     sync_engine_.reset();
     WaitForWorkerTaskRunner();
     worker_pool_->Shutdown();

@@ -101,9 +101,9 @@ class SyncWorkerTest : public testing::Test,
                        public base::SupportsWeakPtr<SyncWorkerTest> {
  public:
   SyncWorkerTest() {}
-  virtual ~SyncWorkerTest() {}
+  ~SyncWorkerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
@@ -129,7 +129,7 @@ class SyncWorkerTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     sync_worker_.reset();
     extension_service_.reset();
     base::RunLoop().RunUntilIdle();

@@ -60,7 +60,7 @@ class LocalFileSyncContextTest : public testing::Test {
         async_modify_finished_(false),
         has_inflight_prepare_for_sync_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     RegisterSyncableFileSystem();
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
@@ -72,9 +72,7 @@ class LocalFileSyncContextTest : public testing::Test {
         BrowserThread::IO);
   }
 
-  virtual void TearDown() override {
-    RevokeSyncableFileSystem();
-  }
+  void TearDown() override { RevokeSyncableFileSystem(); }
 
   void StartPrepareForSync(FileSystemContext* file_system_context,
                            const FileSystemURL& url,

@@ -67,7 +67,7 @@ scoped_ptr<DatabaseContents> CreateTestDatabaseContents() {
 
 class MetadataDatabaseIndexTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     InitializeLevelDB();
 

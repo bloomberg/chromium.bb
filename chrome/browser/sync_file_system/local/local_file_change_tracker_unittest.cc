@@ -42,7 +42,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
                      base::ThreadTaskRunnerHandle::Get().get(),
                      base::ThreadTaskRunnerHandle::Get().get()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
@@ -56,7 +56,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (sync_context_.get())
       sync_context_->ShutdownOnUIThread();
     sync_context_ = nullptr;
