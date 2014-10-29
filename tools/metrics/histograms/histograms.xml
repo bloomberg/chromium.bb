@@ -44232,6 +44232,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="574" label="WindowPostMessage"/>
   <int value="575" label="WindowPostMessageWithLegacyTargetOriginArgument"/>
   <int value="576" label="RenderRuby"/>
+  <int value="577" label="CanvasRenderingContext2DCompositeOperationDarker"/>
+  <int value="578" label="ScriptElementWithInvalidTypeHasSrc"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
