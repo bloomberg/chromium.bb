@@ -107,6 +107,13 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
     }
 }
 
+PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot() const
+{
+    if (!m_fallbackSurface)
+        const_cast<RecordingImageBufferSurface*>(this)->fallBackToRasterCanvas();
+    return m_fallbackSurface->newImageSnapshot();
+}
+
 SkCanvas* RecordingImageBufferSurface::canvas() const
 {
     if (m_fallbackSurface)

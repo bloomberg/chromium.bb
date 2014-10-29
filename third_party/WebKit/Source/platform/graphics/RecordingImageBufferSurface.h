@@ -40,6 +40,7 @@ public:
     virtual void finalizeFrame(const FloatRect&) override;
     virtual void didClearCanvas() override;
     virtual void setImageBuffer(ImageBuffer*) override;
+    virtual PassRefPtr<SkImage> newImageSnapshot() const;
 
     // Passthroughs to fallback surface
     virtual const SkBitmap& bitmap() override;
