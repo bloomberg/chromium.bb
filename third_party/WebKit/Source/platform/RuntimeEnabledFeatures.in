@@ -83,6 +83,8 @@ MemoryInfoInWorkers status=experimental
 NavigationTransitions status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable
+// CSS parser based on the css-syntax spec. crbug.com/330389
+NewCSSParser
 Notifications status=stable
 OrientationEvent
 // Only enabled on Android, and for certain layout tests on Linux.
