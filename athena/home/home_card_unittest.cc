@@ -48,18 +48,14 @@ TEST_F(HomeCardTest, BasicTransition) {
   EXPECT_EQ(screen_height - kHomeCardMinimizedHeight,
             home_card->GetTargetBounds().y());
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
-  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
 
   WindowManager::Get()->EnterOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_EQ(screen_height - kHomeCardHeight, home_card->GetTargetBounds().y());
-  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_RECTANGULAR,
-            wm::GetShadowType(home_card));
 
   WindowManager::Get()->ExitOverview();
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
-  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
 }
 
 TEST_F(HomeCardTest, VirtualKeyboardTransition) {
@@ -79,8 +75,6 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
 
   aura::Window* home_card = GetHomeCardWindow();
   EXPECT_EQ(0, home_card->GetTargetBounds().y());
-  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_RECTANGULAR,
-            wm::GetShadowType(home_card));
 
   HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
@@ -233,7 +227,7 @@ TEST_F(HomeCardTest, Gestures) {
 
   // Swipe down to the bottom state.
   generator.GestureScrollSequence(gfx::Point(x, 10),
-                                  gfx::Point(x, bottom - 90),
+                                  gfx::Point(x, bottom - 120),
                                   base::TimeDelta::FromSeconds(1),
                                   10);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());

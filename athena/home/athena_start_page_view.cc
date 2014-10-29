@@ -174,8 +174,11 @@ AthenaStartPageView::AthenaStartPageView(
       layout_state_(0.0f),
       weak_factory_(this) {
   background_ = new views::View();
+  // Vertical gradient background for the time being.
+  // TODO(mukai): replace by the actual one.
   background_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorWHITE));
+      views::Background::CreateVerticalGradientBackground(SK_ColorLTGRAY,
+                                                          SK_ColorWHITE));
   background_->SetPaintToLayer(true);
   background_->SetFillsBoundsOpaquely(false);
   AddChildView(background_);

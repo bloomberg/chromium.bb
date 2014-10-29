@@ -88,7 +88,6 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
   HomeCardView* home_card_view_;
   scoped_ptr<AppListViewDelegate> view_delegate_;
   HomeCardLayoutManager* layout_manager_;
-  scoped_ptr<ui::LayerOwner> minimized_home_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
 };

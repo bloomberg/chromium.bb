@@ -7,7 +7,12 @@
 namespace athena {
 
 const int kHomeCardHeight = 100;
-const int kHomeCardMinimizedHeight = 6;
+const int kHomeCardDragIndicatorHeight = 2;
+const int kHomeCardDragIndicatorWidth = 48;
+const int kHomeCardDragIndicatorMarginHeight = 7;
+const int kHomeCardMinimizedHeight =
+    kHomeCardDragIndicatorMarginHeight * 2 + kHomeCardDragIndicatorHeight;
+const int kSystemUIHeight = 24;
 const int kHomeCardSearchBoxId = 1000;
 
 }  // namespace athena
