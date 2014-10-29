@@ -17,6 +17,7 @@
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -146,9 +147,13 @@ size_t StringSlicer::FindValidBoundaryBefore(size_t index) const {
 
 size_t StringSlicer::FindValidBoundaryAfter(size_t index) const {
   DCHECK_LE(index, text_.length());
-  if (index != text_.length())
-    U16_SET_CP_LIMIT(text_.data(), 0, index, text_.length());
-  return index;
+  if (index == text_.length())
+    return index;
+
+  int32_t text_index = base::checked_cast<int32_t>(index);
+  int32_t text_length = base::checked_cast<int32_t>(text_.length());
+  U16_SET_CP_LIMIT(text_.data(), 0, text_index, text_length);
+  return static_cast<size_t>(text_index);
 }
 
 base::string16 ElideFilename(const base::FilePath& filename,
