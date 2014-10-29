@@ -16,7 +16,8 @@
 
 namespace blink {
 
-class NavigatorRequestMediaKeySystemAccess final : public NoBaseWillBeGarbageCollected<NavigatorRequestMediaKeySystemAccess>, public WillBeHeapSupplement<Navigator> {
+class NavigatorRequestMediaKeySystemAccess final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorRequestMediaKeySystemAccess>, public WillBeHeapSupplement<Navigator> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorRequestMediaKeySystemAccess);
 public:
     virtual ~NavigatorRequestMediaKeySystemAccess();
 
