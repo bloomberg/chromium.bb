@@ -1118,6 +1118,10 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
     return;
   login_window_->Close();
   login_window_ = NULL;
+
+  if (!login_view_)
+    return;
+  login_view_->SetUIEnabled(true);
   login_view_ = NULL;
 }
 
