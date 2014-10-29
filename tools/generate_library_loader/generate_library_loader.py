@@ -61,7 +61,7 @@ class %(class_name)s {
 """
 
 
-HEADER_MEMBER_TEMPLATE = """  typeof(&::%(function_name)s) %(function_name)s;
+HEADER_MEMBER_TEMPLATE = """  decltype(&::%(function_name)s) %(function_name)s;
 """
 
 
@@ -119,7 +119,7 @@ void %(class_name)s::CleanUp(bool unload) {
 IMPL_MEMBER_INIT_TEMPLATE = """
 #if defined(%(unique_prefix)s_DLOPEN)
   %(function_name)s =
-      reinterpret_cast<typeof(this->%(function_name)s)>(
+      reinterpret_cast<decltype(this->%(function_name)s)>(
           dlsym(library_, "%(function_name)s"));
 #endif
 #if defined(%(unique_prefix)s_DT_NEEDED)
