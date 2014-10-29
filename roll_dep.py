@@ -324,7 +324,7 @@ def update_deps(deps_file, dep_path, dep_name, new_rev, comment):
         else:
           update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment)
           commit_msg = generate_commit_message(
-              deps_locals['deps_os'][os_name], dep_path, dep_name, new_rev)
+              deps_locals['deps_os'][os_name.s], dep_path, dep_name, new_rev)
   if commit_msg:
     print 'Pinning %s' % dep_name
     print 'to revision %s' % new_rev
