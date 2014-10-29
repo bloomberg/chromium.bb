@@ -358,6 +358,29 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(Fence);
   };
 
+  class SynchronousFence : public ResourceProvider::Fence {
+   public:
+    explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
+
+    // Overridden from Fence:
+    void Set() override;
+    bool HasPassed() override;
+    void Wait() override;
+
+    // Returns true if fence has been set but not yet synchornized.
+    bool has_synchronized() const { return has_synchronized_; }
+
+   private:
+    ~SynchronousFence() override;
+
+    void Synchronize();
+
+    gpu::gles2::GLES2Interface* gl_;
+    bool has_synchronized_;
+
+    DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
+  };
+
   // Acquire pixel buffer for resource. The pixel buffer can be used to
   // set resource pixels without performing unnecessary copying.
   void AcquirePixelBuffer(ResourceId resource);
@@ -563,6 +586,8 @@ class CC_EXPORT ResourceProvider {
   scoped_ptr<IdAllocator> buffer_id_allocator_;
 
   bool use_sync_query_;
+  // Fence used for CopyResource if CHROMIUM_sync_query is not supported.
+  scoped_refptr<SynchronousFence> synchronous_fence_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };

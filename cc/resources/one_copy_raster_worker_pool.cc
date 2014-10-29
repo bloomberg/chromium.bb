@@ -387,10 +387,6 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
 
   CopyOperation::Deque copy_operations;
 
-  // This is a good time to check for completed copy operations as
-  // |issued_copy_operation_count_| need to be updated below.
-  resource_pool_->CheckBusyResources();
-
   {
     base::AutoLock lock(lock_);
 
@@ -404,9 +400,7 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
     // operations from "pending" to "issued" state.
     DCHECK_GE(scheduled_copy_operation_count_, copy_operations.size());
     scheduled_copy_operation_count_ -= copy_operations.size();
-
-    issued_copy_operation_count_ =
-        resource_pool_->busy_resource_count() + copy_operations.size();
+    issued_copy_operation_count_ += copy_operations.size();
   }
 
   while (!copy_operations.empty()) {

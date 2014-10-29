@@ -50,36 +50,6 @@ using gpu::gles2::GLES2Interface;
 namespace cc {
 namespace {
 
-class FallbackFence : public ResourceProvider::Fence {
- public:
-  explicit FallbackFence(gpu::gles2::GLES2Interface* gl)
-      : gl_(gl), has_passed_(true) {}
-
-  // Overridden from ResourceProvider::Fence:
-  void Set() override { has_passed_ = false; }
-  bool HasPassed() override {
-    if (!has_passed_) {
-      has_passed_ = true;
-      Synchronize();
-    }
-    return true;
-  }
-  void Wait() override { HasPassed(); }
-
- private:
-  ~FallbackFence() override {}
-
-  void Synchronize() {
-    TRACE_EVENT0("cc", "FallbackFence::Synchronize");
-    gl_->Finish();
-  }
-
-  gpu::gles2::GLES2Interface* gl_;
-  bool has_passed_;
-
-  DISALLOW_COPY_AND_ASSIGN(FallbackFence);
-};
-
 bool NeedsIOSurfaceReadbackWorkaround() {
 #if defined(OS_MACOSX)
   // This isn't strictly required in DumpRenderTree-mode when Mesa is used,
@@ -500,7 +470,8 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
     read_lock_fence = current_sync_query_->Begin();
   } else {
-    read_lock_fence = make_scoped_refptr(new FallbackFence(gl_));
+    read_lock_fence =
+        make_scoped_refptr(new ResourceProvider::SynchronousFence(gl_));
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
