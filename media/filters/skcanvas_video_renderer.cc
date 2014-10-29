@@ -10,6 +10,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
@@ -28,7 +29,15 @@
 
 namespace media {
 
-static bool IsYUV(media::VideoFrame::Format format) {
+namespace {
+
+// This class keeps two temporary resources; software bitmap, hardware bitmap.
+// If both bitmap are created and then only software bitmap is updated every
+// frame, hardware bitmap outlives until the media player dies. So we delete
+// a temporary resource if it is not used for 3 sec.
+const int kTemporaryResourceDeletionDelay = 3;  // Seconds;
+
+bool IsYUV(media::VideoFrame::Format format) {
   switch (format) {
     case VideoFrame::YV12:
     case VideoFrame::YV16:
@@ -49,7 +58,7 @@ static bool IsYUV(media::VideoFrame::Format format) {
   return false;
 }
 
-static bool IsJPEGColorSpace(media::VideoFrame::Format format) {
+bool IsJPEGColorSpace(media::VideoFrame::Format format) {
   switch (format) {
     case VideoFrame::YV12J:
       return true;
@@ -70,12 +79,12 @@ static bool IsJPEGColorSpace(media::VideoFrame::Format format) {
   return false;
 }
 
-static bool IsYUVOrNative(media::VideoFrame::Format format) {
+bool IsYUVOrNative(media::VideoFrame::Format format) {
   return IsYUV(format) || format == media::VideoFrame::NATIVE_TEXTURE;
 }
 
 // Converts a |video_frame| to raw |rgb_pixels|.
-static void ConvertVideoFrameToRGBPixels(
+void ConvertVideoFrameToRGBPixels(
     const scoped_refptr<media::VideoFrame>& video_frame,
     void* rgb_pixels,
     size_t row_bytes) {
@@ -205,7 +214,9 @@ static void ConvertVideoFrameToRGBPixels(
   }
 }
 
-// Generates an RGB image from a VideoFrame.
+}  // anonymous namespace
+
+// Generates an RGB image from a VideoFrame. Convert YUV to RGB plain on GPU.
 class VideoImageGenerator : public SkImageGenerator {
  public:
   VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {
@@ -233,7 +244,7 @@ class VideoImageGenerator : public SkImageGenerator {
       return false;
     if (!pixels)
       return false;
-    // If skia couldn't do the YUV conversion, we will.
+    // If skia couldn't do the YUV conversion on GPU, we will on CPU.
     ConvertVideoFrameToRGBPixels(frame_, pixels, row_bytes);
     return true;
   }
@@ -289,7 +300,19 @@ class VideoImageGenerator : public SkImageGenerator {
 };
 
 SkCanvasVideoRenderer::SkCanvasVideoRenderer()
-    : generator_(NULL), last_frame_timestamp_(media::kNoTimestamp()) {
+    : last_frame_timestamp_(media::kNoTimestamp()),
+      frame_deleting_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
+          this,
+          &SkCanvasVideoRenderer::ResetLastFrame),
+      accelerated_generator_(NULL),
+      accelerated_last_frame_timestamp_(media::kNoTimestamp()),
+      accelerated_frame_deleting_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
+          this,
+          &SkCanvasVideoRenderer::ResetAcceleratedLastFrame) {
   last_frame_.setIsVolatile(true);
 }
 
@@ -313,27 +336,56 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
-  if (!video_frame.get() || !IsYUVOrNative(video_frame->format())) {
+  if (!video_frame.get() || video_frame->natural_size().IsEmpty() ||
+      !IsYUVOrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     canvas->flush();
     return;
   }
 
-  // Check if we should convert and update |last_frame_|.
-  if (last_frame_.isNull() ||
-      video_frame->timestamp() != last_frame_timestamp_) {
-    generator_ = new VideoImageGenerator(video_frame);
+  SkBitmap* target_frame = NULL;
+  if (canvas->getGrContext()) {
+    if (accelerated_last_frame_.isNull() ||
+        video_frame->timestamp() != accelerated_last_frame_timestamp_) {
+      accelerated_generator_ = new VideoImageGenerator(video_frame);
 
-    // Note: This takes ownership of |generator_|.
-    if (!SkInstallDiscardablePixelRef(generator_, &last_frame_)) {
-      NOTREACHED();
+      // Note: This takes ownership of |accelerated_generator_|.
+      if (!SkInstallDiscardablePixelRef(accelerated_generator_,
+                                        &accelerated_last_frame_)) {
+        NOTREACHED();
+      }
+      DCHECK(video_frame->visible_rect().width() ==
+                 accelerated_last_frame_.width() &&
+             video_frame->visible_rect().height() ==
+                 accelerated_last_frame_.height());
+
+      accelerated_last_frame_timestamp_ = video_frame->timestamp();
+    } else {
+      accelerated_generator_->set_frame(video_frame);
     }
-    DCHECK(video_frame->visible_rect().width() == last_frame_.width() &&
-           video_frame->visible_rect().height() == last_frame_.height());
-
-    last_frame_timestamp_ = video_frame->timestamp();
-  } else if (generator_) {
-    generator_->set_frame(video_frame);
+    target_frame = &accelerated_last_frame_;
+    accelerated_frame_deleting_timer_.Reset();
+  } else {
+    // Check if we should convert and update |last_frame_|.
+    if (last_frame_.isNull() ||
+        video_frame->timestamp() != last_frame_timestamp_) {
+      // Check if |bitmap| needs to be (re)allocated.
+      if (last_frame_.isNull() ||
+          last_frame_.width() != video_frame->visible_rect().width() ||
+          last_frame_.height() != video_frame->visible_rect().height()) {
+        last_frame_.allocN32Pixels(video_frame->visible_rect().width(),
+                                   video_frame->visible_rect().height());
+        last_frame_.setIsVolatile(true);
+      }
+      last_frame_.lockPixels();
+      ConvertVideoFrameToRGBPixels(
+          video_frame, last_frame_.getPixels(), last_frame_.rowBytes());
+      last_frame_.notifyPixelsChanged();
+      last_frame_.unlockPixels();
+      last_frame_timestamp_ = video_frame->timestamp();
+    }
+    target_frame = &last_frame_;
+    frame_deleting_timer_.Reset();
   }
 
   paint.setXfermodeMode(mode);
@@ -371,19 +423,19 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
           gfx::SizeF(rotated_dest_size.height(), rotated_dest_size.width());
     }
     canvas->scale(
-        SkFloatToScalar(rotated_dest_size.width() / last_frame_.width()),
-        SkFloatToScalar(rotated_dest_size.height() / last_frame_.height()));
-    canvas->translate(-SkFloatToScalar(last_frame_.width() * 0.5f),
-                      -SkFloatToScalar(last_frame_.height() * 0.5f));
+        SkFloatToScalar(rotated_dest_size.width() / target_frame->width()),
+        SkFloatToScalar(rotated_dest_size.height() / target_frame->height()));
+    canvas->translate(-SkFloatToScalar(target_frame->width() * 0.5f),
+                      -SkFloatToScalar(target_frame->height() * 0.5f));
   }
-  canvas->drawBitmap(last_frame_, 0, 0, &paint);
+  canvas->drawBitmap(*target_frame, 0, 0, &paint);
   if (need_transform)
     canvas->restore();
   canvas->flush();
   // SkCanvas::flush() causes the generator to generate SkImage, so delete
   // |video_frame| not to be outlived.
-  if (generator_)
-    generator_->set_frame(NULL);
+  if (canvas->getGrContext())
+    accelerated_generator_->set_frame(NULL);
 }
 
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
@@ -394,6 +446,17 @@ void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
         0xff,
         SkXfermode::kSrc_Mode,
         media::VIDEO_ROTATION_0);
+}
+
+void SkCanvasVideoRenderer::ResetLastFrame() {
+  last_frame_.reset();
+  last_frame_timestamp_ = media::kNoTimestamp();
+}
+
+void SkCanvasVideoRenderer::ResetAcceleratedLastFrame() {
+  accelerated_last_frame_.reset();
+  accelerated_generator_ = nullptr;
+  accelerated_last_frame_timestamp_ = media::kNoTimestamp();
 }
 
 }  // namespace media

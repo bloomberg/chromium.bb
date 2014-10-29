@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,6 +83,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   scoped_refptr<VideoFrame> cropped_frame_;
 
   SkCanvas target_canvas_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
 };
