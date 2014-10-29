@@ -202,8 +202,8 @@ public class LibraryLoader {
                                 }
                                 isLoaded = true;
                             } catch (UnsatisfiedLinkError e) {
-                                Log.w(TAG, "Failed to load native library with shared RELRO, " +
-                                      "retrying without");
+                                Log.w(TAG, "Failed to load native library with shared RELRO, "
+                                        + "retrying without");
                                 Linker.disableSharedRelros();
                                 sLoadAtFixedAddressFailed = true;
                             }
@@ -226,7 +226,7 @@ public class LibraryLoader {
                             System.loadLibrary(library);
                         } catch (UnsatisfiedLinkError e) {
                             if (context != null
-                                && LibraryLoaderHelper.tryLoadLibraryUsingWorkaround(context,
+                                    && LibraryLoaderHelper.tryLoadLibraryUsingWorkaround(context,
                                                                                      library)) {
                                 sNativeLibraryHackWasUsed = true;
                             } else {
@@ -237,10 +237,10 @@ public class LibraryLoader {
                 }
 
                 if (context != null
-                    && shouldDeleteOldWorkaroundLibraries
-                    && !sNativeLibraryHackWasUsed) {
+                        && shouldDeleteOldWorkaroundLibraries
+                        && !sNativeLibraryHackWasUsed) {
                     LibraryLoaderHelper.deleteWorkaroundLibrariesAsynchronously(
-                        context);
+                            context);
                 }
 
                 long stopTime = SystemClock.uptimeMillis();
@@ -256,8 +256,8 @@ public class LibraryLoader {
         }
         // Check that the version of the library we have loaded matches the version we expect
         Log.i(TAG, String.format(
-                "Expected native library version number \"%s\"," +
-                        "actual native library version number \"%s\"",
+                "Expected native library version number \"%s\","
+                        + "actual native library version number \"%s\"",
                 NativeLibraries.sVersionNumber,
                 nativeGetVersionNumber()));
         if (!NativeLibraries.sVersionNumber.equals(nativeGetVersionNumber())) {
@@ -352,9 +352,9 @@ public class LibraryLoader {
             return LibraryLoadFromApkStatusCodes.UNKNOWN;
         }
 
-        return Linker.checkLibraryLoadFromApkSupport(context.getApplicationInfo().sourceDir) ?
-                LibraryLoadFromApkStatusCodes.SUPPORTED :
-                LibraryLoadFromApkStatusCodes.NOT_SUPPORTED;
+        return Linker.checkLibraryLoadFromApkSupport(context.getApplicationInfo().sourceDir)
+                ? LibraryLoadFromApkStatusCodes.SUPPORTED
+                : LibraryLoadFromApkStatusCodes.NOT_SUPPORTED;
     }
 
     // Register pending Chromium linker histogram state for renderer processes. This cannot be

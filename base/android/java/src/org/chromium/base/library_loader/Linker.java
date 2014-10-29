@@ -243,8 +243,8 @@ public class Linker {
                 }
 
                 if (sMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
-                    sMemoryDeviceConfig = SysUtils.isLowEndDevice() ?
-                            MEMORY_DEVICE_CONFIG_LOW : MEMORY_DEVICE_CONFIG_NORMAL;
+                    sMemoryDeviceConfig = SysUtils.isLowEndDevice()
+                            ? MEMORY_DEVICE_CONFIG_LOW : MEMORY_DEVICE_CONFIG_NORMAL;
                 }
 
                 switch (BROWSER_SHARED_RELRO_CONFIG) {
@@ -341,8 +341,8 @@ public class Linker {
         assert NativeLibraries.sEnableLinkerTests;
         synchronized (Linker.class) {
             assert sMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT;
-            assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW ||
-                   memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL;
+            assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW
+                   || memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL;
             if (DEBUG) {
                 if (memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW)
                     Log.i(TAG, "Simulating a low-memory device");
@@ -507,8 +507,8 @@ public class Linker {
             parcel.recycle();
         }
         if (DEBUG) {
-            Log.i(TAG, "useSharedRelros() called with " + bundle +
-                    ", cloned " + clonedBundle);
+            Log.i(TAG, "useSharedRelros() called with " + bundle
+                    + ", cloned " + clonedBundle);
         }
         synchronized (Linker.class) {
             // Note that in certain cases, this can be called before
@@ -640,8 +640,7 @@ public class Linker {
         final long maxExpectedBytes = 192 * 1024 * 1024;
         final long address = nativeGetRandomBaseLoadAddress(maxExpectedBytes);
         if (DEBUG) {
-            Log.i(TAG,
-                  String.format(Locale.US, "Random native base load address: 0x%x", address));
+            Log.i(TAG, String.format(Locale.US, "Random native base load address: 0x%x", address));
         }
         return address;
     }
@@ -756,8 +755,8 @@ public class Linker {
             String sharedRelRoName = libName;
             if (zipFile != null) {
                 if (!nativeLoadLibraryInZipFile(zipFile, libName, loadAddress, libInfo)) {
-                    String errorMessage = "Unable to load library: " + libName +
-                                          ", in: " + zipFile;
+                    String errorMessage = "Unable to load library: " + libName
+                                          + ", in: " + zipFile;
                     Log.e(TAG, errorMessage);
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
@@ -836,8 +835,8 @@ public class Linker {
 
             if (DEBUG) Log.i(TAG, "checkLibraryLoadFromApkSupported: " + apkFile);
             boolean supported = nativeCheckLibraryLoadFromApkSupport(apkFile);
-            if (DEBUG) Log.i(TAG, "Loading a library directly from the APK file " +
-                    (supported ? "" : "NOT ") + "supported");
+            if (DEBUG) Log.i(TAG, "Loading a library directly from the APK file "
+                    + (supported ? "" : "NOT ") + "supported");
             return supported;
         }
     }
@@ -906,11 +905,10 @@ public class Linker {
      * of this LibInfo instance will set on success.
      * @return true for success, false otherwise.
      */
-    private static native boolean nativeLoadLibraryInZipFile(
-        String zipfileName,
-        String libraryName,
-        long loadAddress,
-        LibInfo libInfo);
+    private static native boolean nativeLoadLibraryInZipFile(String zipfileName,
+                                                             String libraryName,
+                                                             long loadAddress,
+                                                             LibInfo libInfo);
 
     /**
      * Native method used to create a shared RELRO section.
@@ -1109,5 +1107,5 @@ public class Linker {
 
     // Used to pass the shared RELRO Bundle through Binder.
     public static final String EXTRA_LINKER_SHARED_RELROS =
-        "org.chromium.base.android.linker.shared_relros";
+            "org.chromium.base.android.linker.shared_relros";
 }
