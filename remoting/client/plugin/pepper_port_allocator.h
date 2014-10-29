@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/cpp/instance_handle.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 namespace remoting {
 

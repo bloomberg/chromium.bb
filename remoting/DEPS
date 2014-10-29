@@ -17,7 +17,6 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/webrtc/base",
   "+third_party/webrtc/libjingle",
-  "+third_party/webrtc/p2p",
   "+third_party/webrtc/modules/desktop_capture",
   "+ui/base/keycodes",
 ]

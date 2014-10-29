@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "webrtc/libjingle/xmpp/xmpptask.h"
+#include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
 class XmlElement;

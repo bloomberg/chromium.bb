@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "talk/xmpp/constants.h"
+#include "talk/xmpp/saslcookiemechanism.h"
 #include "webrtc/base/socketaddress.h"
-#include "webrtc/libjingle/xmpp/constants.h"
-#include "webrtc/libjingle/xmpp/saslcookiemechanism.h"
 
 namespace notifier {
 

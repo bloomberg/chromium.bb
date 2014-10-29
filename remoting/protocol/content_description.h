@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "remoting/protocol/session_config.h"
-#include "third_party/webrtc/p2p/base/sessiondescription.h"
+#include "third_party/libjingle/source/talk/p2p/base/sessiondescription.h"
 
 namespace buzz {
 class XmlElement;

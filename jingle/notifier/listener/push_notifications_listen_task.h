@@ -14,7 +14,7 @@
 #define JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
 
 #include "base/compiler_specific.h"
-#include "webrtc/libjingle/xmpp/xmpptask.h"
+#include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
 class XmlElement;

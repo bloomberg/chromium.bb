@@ -18,10 +18,10 @@
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "talk/xmpp/prexmppauth.h"
+#include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/libjingle/xmpp/prexmppauth.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
 
 namespace buzz {
 class CaptchaChallenge;

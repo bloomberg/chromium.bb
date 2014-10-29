@@ -12,7 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
-#include "third_party/webrtc/p2p/base/pseudotcp.h"
+#include "third_party/libjingle/source/talk/p2p/base/pseudotcp.h"
 
 namespace jingle_glue {
 

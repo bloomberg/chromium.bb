@@ -268,15 +268,37 @@
     # GN version: //third_party/libjingle
     {
       'target_name': 'libjingle',
-      'type': 'none',
+      'type': 'static_library',
+      'includes': [ 'libjingle_common.gypi' ],
+      'sources!' : [
+        # Compiled as part of libjingle_p2p_constants.
+        '<(libjingle_source)/talk/p2p/base/constants.cc',
+        '<(libjingle_source)/talk/p2p/base/constants.h',
+      ],
       'dependencies': [
         '<(DEPTH)/third_party/webrtc/base/base.gyp:webrtc_base',
         '<(DEPTH)/third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
-        '<(DEPTH)/third_party/webrtc/libjingle/xmpp/xmpp.gyp:rtc_xmpp',
-        '<(DEPTH)/third_party/webrtc/p2p/p2p.gyp:rtc_p2p',
+        'libjingle_p2p_constants',
         '<@(libjingle_additional_deps)',
       ],
     },  # target libjingle
+    # This has to be is a separate project due to a bug in MSVS 2008 and the
+    # current toolset on android.  The problem is that we have two files named
+    # "constants.cc" and MSVS/android doesn't handle this properly.
+    # GYP currently has guards to catch this, so if you want to remove it,
+    # run GYP and if GYP has removed the validation check, then we can assume
+    # that the toolchains have been fixed (we currently use VS2010 and later,
+    # so VS2008 isn't a concern anymore).
+    #
+    # GN version: //third_party/libjingle:libjingle_p2p_constants
+    {
+      'target_name': 'libjingle_p2p_constants',
+      'type': 'static_library',
+      'sources': [
+        '<(libjingle_source)/talk/p2p/base/constants.cc',
+        '<(libjingle_source)/talk/p2p/base/constants.h',
+      ],
+    },  # target libjingle_p2p_constants
     # GN version: //third_party/libjingle:peerconnection_server
     {
       'target_name': 'peerconnection_server',

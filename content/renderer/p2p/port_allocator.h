@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 #define CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 
-#include "third_party/webrtc/p2p/client/basicportallocator.h"
+#include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
 namespace content {
 

@@ -6,8 +6,8 @@
 
 #include <cstddef>
 
+#include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

@@ -5,8 +5,8 @@
 #include "base/compiler_specific.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
+#include "talk/xmpp/asyncsocket.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webrtc/libjingle/xmpp/asyncsocket.h"
 
 namespace notifier {
 

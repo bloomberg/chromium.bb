@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "ppapi/cpp/instance_handle.h"
-#include "third_party/webrtc/p2p/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace remoting {
 

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/test/fake_network_dispatcher.h"
-#include "third_party/webrtc/p2p/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace remoting {
 

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "third_party/webrtc/p2p/base/packetsocketfactory.h"
+#include "third_party/libjingle/source/talk/p2p/base/packetsocketfactory.h"
 
 namespace content {
 

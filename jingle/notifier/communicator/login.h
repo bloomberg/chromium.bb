@@ -17,7 +17,7 @@
 #include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/network_change_notifier.h"
-#include "webrtc/libjingle/xmpp/xmppengine.h"
+#include "talk/xmpp/xmppengine.h"
 
 namespace buzz {
 class XmppClient;
