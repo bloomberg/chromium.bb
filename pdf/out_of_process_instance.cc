@@ -352,14 +352,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   std::string type = dict.Get(kType).AsString();
 
   if (type == kJSViewportType &&
-      dict.Get(pp::Var(kJSXOffset)).is_int() &&
-      dict.Get(pp::Var(kJSYOffset)).is_int() &&
+      dict.Get(pp::Var(kJSXOffset)).is_number() &&
+      dict.Get(pp::Var(kJSYOffset)).is_number() &&
       dict.Get(pp::Var(kJSZoom)).is_number()) {
     received_viewport_message_ = true;
     stop_scrolling_ = false;
     double zoom = dict.Get(pp::Var(kJSZoom)).AsDouble();
-    pp::Point scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsInt(),
-                            dict.Get(pp::Var(kJSYOffset)).AsInt());
+    pp::FloatPoint scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsDouble(),
+                                 dict.Get(pp::Var(kJSYOffset)).AsDouble());
 
     // Bound the input parameters.
     zoom = std::max(kMinZoom, zoom);
@@ -530,10 +530,12 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   }
 
   if (!stop_scrolling_) {
-    pp::Point scroll_offset(
-        BoundScrollOffsetToDocument(view.GetScrollOffset()));
-    engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
-    engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
+    pp::Point scroll_offset(view.GetScrollOffset());
+    pp::FloatPoint scroll_offset_float(scroll_offset.x(),
+                                       scroll_offset.y());
+    scroll_offset_float = BoundScrollOffsetToDocument(scroll_offset_float);
+    engine_->ScrolledToXPosition(scroll_offset_float.x() * device_scale_);
+    engine_->ScrolledToYPosition(scroll_offset_float.y() * device_scale_);
   }
 }
 
@@ -1357,13 +1359,13 @@ void OutOfProcessInstance::UserMetricsRecordAction(
   pp::PDF::UserMetricsRecordAction(this, pp::Var(action));
 }
 
-pp::Point OutOfProcessInstance::BoundScrollOffsetToDocument(
-    const pp::Point& scroll_offset) {
-  int max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
-  int x = std::max(std::min(scroll_offset.x(), max_x), 0);
-  int max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
-  int y = std::max(std::min(scroll_offset.y(), max_y), 0);
-  return pp::Point(x, y);
+pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
+    const pp::FloatPoint& scroll_offset) {
+  float max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
+  float x = std::max(std::min(scroll_offset.x(), max_x), 0.0f);
+  float max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
+  float y = std::max(std::min(scroll_offset.y(), max_y), 0.0f);
+  return pp::FloatPoint(x, y);
 }
 
 }  // namespace chrome_pdf

@@ -205,7 +205,8 @@ class OutOfProcessInstance : public pp::Instance,
   void LoadAvailablePreviewPage();
 
   // Bound the given scroll offset to the document.
-  pp::Point BoundScrollOffsetToDocument(const pp::Point& scroll_offset);
+  pp::FloatPoint BoundScrollOffsetToDocument(
+      const pp::FloatPoint& scroll_offset);
 
   pp::ImageData image_data_;
   // Used when the plugin is embedded in a page and we have to create the loader
