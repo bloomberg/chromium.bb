@@ -1,4 +1,4 @@
- // Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,10 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const std::string& userhash,
       const base::ListValue& network_configs_onc,
       const base::DictionaryValue& global_network_config) = 0;
+
+  // Returns true if any policy application is currently running or pending.
+  // NetworkPolicyObservers are notified about applications finishing.
+  virtual bool IsAnyPolicyApplicationRunning() const = 0;
 
   // Returns the user policy for user |userhash| or device policy, which has
   // |guid|. If |userhash| is empty, only looks for a device policy. If such

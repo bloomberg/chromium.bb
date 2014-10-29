@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -22,54 +21,65 @@ namespace chromeos {
 // entries in parallel (GetProfilePropertiesCallback), compares each entry with
 // the current policies (GetEntryCallback) and adds all missing policies
 // (~PolicyApplicator).
-class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
+class PolicyApplicator {
  public:
   class ConfigurationHandler {
-    public:
-     virtual ~ConfigurationHandler() {}
-     // Write the new configuration with the properties |shill_properties| to
-     // Shill. This configuration comes from a policy. Any conflicting or
-     // existing configuration for the same network will have been removed
-     // before.
-     virtual void CreateConfigurationFromPolicy(
-         const base::DictionaryValue& shill_properties) = 0;
+   public:
+    virtual ~ConfigurationHandler() {}
+    // Write the new configuration with the properties |shill_properties| to
+    // Shill. This configuration comes from a policy. Any conflicting or
+    // existing configuration for the same network will have been removed
+    // before.
+    virtual void CreateConfigurationFromPolicy(
+        const base::DictionaryValue& shill_properties) = 0;
 
-     virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
-         const base::DictionaryValue& existing_properties,
-         const base::DictionaryValue& new_properties) = 0;
+    virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
+        const base::DictionaryValue& existing_properties,
+        const base::DictionaryValue& new_properties) = 0;
 
-     // Called after all policies were applied. At this point, the list of
-     // networks should be updated.
-     virtual void OnPoliciesApplied() = 0;
+    // Called after all policies for |profile| were applied. At this point, the
+    // list of networks should be updated.
+    virtual void OnPoliciesApplied(const NetworkProfile& profile) = 0;
 
-    private:
-     DISALLOW_ASSIGN(ConfigurationHandler);
+   private:
+    DISALLOW_ASSIGN(ConfigurationHandler);
   };
 
   typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
 
+  // |handler| must outlive this object.
   // |modified_policies| must not be NULL and will be empty afterwards.
-  PolicyApplicator(base::WeakPtr<ConfigurationHandler> handler,
-                   const NetworkProfile& profile,
+  PolicyApplicator(const NetworkProfile& profile,
                    const GuidToPolicyMap& all_policies,
                    const base::DictionaryValue& global_network_config,
+                   ConfigurationHandler* handler,
                    std::set<std::string>* modified_policies);
+
+  ~PolicyApplicator();
 
   void Run();
 
  private:
-  friend class base::RefCounted<PolicyApplicator>;
+  // Removes |entry| from the list of pending profile entries.
+  // If all entries were processed, applies the remaining policies and notifies
+  // |handler_|.
+  void ProfileEntryFinished(const std::string& entry);
 
   // Called with the properties of the profile |profile_|. Requests the
   // properties of each entry, which are processed by GetEntryCallback.
   void GetProfilePropertiesCallback(
       const base::DictionaryValue& profile_properties);
+  void GetProfilePropertiesError(const std::string& error_name,
+                                 const std::string& error_message);
 
   // Called with the properties of the profile entry |entry|. Checks whether the
   // entry was previously managed, whether a current policy applies and then
   // either updates, deletes or not touches the entry.
   void GetEntryCallback(const std::string& entry,
                         const base::DictionaryValue& entry_properties);
+  void GetEntryError(const std::string& entry,
+                     const std::string& error_name,
+                     const std::string& error_message);
 
   // Sends Shill the command to delete profile entry |entry| from |profile_|.
   void DeleteEntry(const std::string& entry);
@@ -80,20 +90,23 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
                                   const base::DictionaryValue& policy,
                                   bool write_later);
 
-  // Called once all Profile entries are processed. Calls
-  // ApplyRemainingPolicies.
-  virtual ~PolicyApplicator();
-
   // Creates new entries for all remaining policies, i.e. for which no matching
   // Profile entry was found.
+  // This should only be called if all profile entries were processed.
   void ApplyRemainingPolicies();
 
+  // Called after all policies are applied or an error occurred. Notifies
+  // |handler_|.
+  void NotifyConfigurationHandlerAndFinish();
+
   std::set<std::string> remaining_policies_;
-  base::WeakPtr<ConfigurationHandler> handler_;
+  std::set<std::string> pending_get_entry_calls_;
+  ConfigurationHandler* handler_;
   NetworkProfile profile_;
   GuidToPolicyMap all_policies_;
   base::DictionaryValue global_network_config_;
   ScopedVector<base::DictionaryValue> new_shill_configurations_;
+  base::WeakPtrFactory<PolicyApplicator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
 };

@@ -16,13 +16,17 @@ class NetworkPolicyObserver {
   // Called when the policy for |userhash| was set (also when it was updated).
   // Note that the policy might not have been applied yet at that time.
   // An empty |userhash| designates the device policy.
-  virtual void PolicyChanged(const std::string& userhash) {};
+  virtual void PolicyChanged(const std::string& userhash) {}
 
-  // Called every time a network is create or updated because of a policy.
-  virtual void PolicyApplied(const std::string& service_path) {};
+  // Called every time a policy application for |userhash| finished. This is
+  // only called once no more policies are pending for |userhash|.
+  virtual void PoliciesApplied(const std::string& userhash) {}
+
+  // Called every time a network is created or updated because of a policy.
+  virtual void PolicyAppliedToNetwork(const std::string& service_path) {}
 
  protected:
-  virtual ~NetworkPolicyObserver() {};
+  virtual ~NetworkPolicyObserver() {}
 
  private:
   DISALLOW_ASSIGN(NetworkPolicyObserver);

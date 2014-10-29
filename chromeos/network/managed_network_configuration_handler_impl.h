@@ -6,6 +6,7 @@
 #define CHROMEOS_NETWORK_MANAGED_NETWORK_CONFIGURATION_HANDLER_IMPL_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -34,71 +35,72 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       public NetworkProfileObserver,
       public PolicyApplicator::ConfigurationHandler {
  public:
-  virtual ~ManagedNetworkConfigurationHandlerImpl();
+  ~ManagedNetworkConfigurationHandlerImpl() override;
 
   // ManagedNetworkConfigurationHandler overrides
-  virtual void AddObserver(NetworkPolicyObserver* observer) override;
-  virtual void RemoveObserver(NetworkPolicyObserver* observer) override;
+  void AddObserver(NetworkPolicyObserver* observer) override;
+  void RemoveObserver(NetworkPolicyObserver* observer) override;
 
-  virtual void GetProperties(
+  void GetProperties(
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
-  virtual void GetManagedProperties(
+  void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
-  virtual void SetProperties(
+  void SetProperties(
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
-  virtual void CreateConfiguration(
+  void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
       const network_handler::StringResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
-  virtual void RemoveConfiguration(
+  void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
-  virtual void SetPolicy(
-      onc::ONCSource onc_source,
-      const std::string& userhash,
-      const base::ListValue& network_configs_onc,
-      const base::DictionaryValue& global_network_config) override;
+  void SetPolicy(onc::ONCSource onc_source,
+                 const std::string& userhash,
+                 const base::ListValue& network_configs_onc,
+                 const base::DictionaryValue& global_network_config) override;
 
-  virtual const base::DictionaryValue* FindPolicyByGUID(
+  bool IsAnyPolicyApplicationRunning() const override;
+
+  const base::DictionaryValue* FindPolicyByGUID(
       const std::string userhash,
       const std::string& guid,
       onc::ONCSource* onc_source) const override;
 
-  virtual const base::DictionaryValue* GetGlobalConfigFromPolicy(
+  const base::DictionaryValue* GetGlobalConfigFromPolicy(
       const std::string userhash) const override;
 
-  virtual const base::DictionaryValue* FindPolicyByGuidAndProfile(
+  const base::DictionaryValue* FindPolicyByGuidAndProfile(
       const std::string& guid,
       const std::string& profile_path) const override;
 
   // NetworkProfileObserver overrides
-  virtual void OnProfileAdded(const NetworkProfile& profile) override;
-  virtual void OnProfileRemoved(const NetworkProfile& profile) override;
+  void OnProfileAdded(const NetworkProfile& profile) override;
+  void OnProfileRemoved(const NetworkProfile& profile) override;
 
   // PolicyApplicator::ConfigurationHandler overrides
-  virtual void CreateConfigurationFromPolicy(
+  void CreateConfigurationFromPolicy(
       const base::DictionaryValue& shill_properties) override;
 
-  virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
+  void UpdateExistingConfigurationWithPropertiesFromPolicy(
       const base::DictionaryValue& existing_properties,
       const base::DictionaryValue& new_properties) override;
 
-  virtual void OnPoliciesApplied() override;
+  void OnPoliciesApplied(const NetworkProfile& profile) override;
 
  private:
   friend class ClientCertResolverTest;
@@ -107,10 +109,14 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   friend class NetworkHandler;
 
   struct Policies;
-  typedef std::map<std::string, linked_ptr<Policies> > UserToPoliciesMap;
   typedef base::Callback<void(const std::string& service_path,
                               scoped_ptr<base::DictionaryValue> properties)>
       GetDevicePropertiesCallback;
+  typedef std::map<std::string, linked_ptr<Policies> > UserToPoliciesMap;
+  typedef std::map<std::string, linked_ptr<PolicyApplicator>>
+      UserToPolicyApplicatorMap;
+  typedef std::map<std::string, std::set<std::string>>
+      UserToModifiedPoliciesMap;
 
   ManagedNetworkConfigurationHandlerImpl();
 
@@ -169,6 +175,13 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& error_name,
       scoped_ptr<base::DictionaryValue> error_data);
 
+  // Applies policies for |userhash|. |modified_policies| must be not null and
+  // contain the GUIDs of the network configurations that changed since the last
+  // policy application. Returns true if policy application was started and
+  // false if it was queued or delayed.
+  bool ApplyOrQueuePolicies(const std::string& userhash,
+                            std::set<std::string>* modified_policies);
+
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;
 
@@ -177,6 +190,16 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
   NetworkDeviceHandler* network_device_handler_;
+
+  // Owns the currently running PolicyApplicators.
+  UserToPolicyApplicatorMap policy_applicators_;
+
+  // Per userhash (or empty string for device policy), contains the GUIDs of the
+  // policies that were modified.
+  // If this map contains a userhash as key, it means that a policy application
+  // for this userhash is pending even if no policies were modified and the
+  // associated set of GUIDs is empty.
+  UserToModifiedPoliciesMap queued_modified_policies_;
 
   ObserverList<NetworkPolicyObserver> observers_;
 

@@ -11,8 +11,8 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -403,24 +403,53 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   }
 
   STLDeleteValues(&old_per_network_config);
+  ApplyOrQueuePolicies(userhash, &modified_policies);
+  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_, PolicyChanged(userhash));
+}
+
+bool ManagedNetworkConfigurationHandlerImpl::IsAnyPolicyApplicationRunning()
+    const {
+  return !policy_applicators_.empty() || !queued_modified_policies_.empty();
+}
+
+bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
+    const std::string& userhash,
+    std::set<std::string>* modified_policies) {
+  DCHECK(modified_policies);
 
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(userhash);
-  if (profile) {
-    scoped_refptr<PolicyApplicator> applicator =
-        new PolicyApplicator(weak_ptr_factory_.GetWeakPtr(),
-                             *profile,
-                             policies->per_network_config,
-                             policies->global_network_config,
-                             &modified_policies);
-    applicator->Run();
-  } else {
+  if (!profile) {
     VLOG(1) << "The relevant Shill profile isn't initialized yet, postponing "
             << "policy application.";
-    // See OnProfileAdded.
+    // OnProfileAdded will apply all policies for this userhash.
+    return false;
   }
 
-  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_, PolicyChanged(userhash));
+  if (ContainsKey(policy_applicators_, userhash)) {
+    // A previous policy application is still running. Queue the modified
+    // policies.
+    // Note, even if |modified_policies| is empty, this means that a policy
+    // application will be queued.
+    queued_modified_policies_[userhash].insert(modified_policies->begin(),
+                                               modified_policies->end());
+    VLOG(1) << "Previous PolicyApplicator still running. Postponing policy "
+               "application.";
+    return false;
+  }
+
+  const Policies* policies = policies_by_user_[userhash].get();
+  DCHECK(policies);
+
+  PolicyApplicator* applicator =
+      new PolicyApplicator(*profile,
+                           policies->per_network_config,
+                           policies->global_network_config,
+                           this,
+                           modified_policies);
+  policy_applicators_[userhash] = make_linked_ptr(applicator);
+  applicator->Run();
+  return true;
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
@@ -442,13 +471,9 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
     policy_guids.insert(it->first);
   }
 
-  scoped_refptr<PolicyApplicator> applicator =
-      new PolicyApplicator(weak_ptr_factory_.GetWeakPtr(),
-                           profile,
-                           policies->per_network_config,
-                           policies->global_network_config,
-                           &policy_guids);
-  applicator->Run();
+  const bool started_policy_application =
+      ApplyOrQueuePolicies(profile.userhash, &policy_guids);
+  DCHECK(started_policy_application);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
@@ -503,7 +528,25 @@ void ManagedNetworkConfigurationHandlerImpl::
       base::Bind(&LogErrorWithDict, FROM_HERE));
 }
 
-void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied() {
+void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
+    const NetworkProfile& profile) {
+  const std::string& userhash = profile.userhash;
+  VLOG(1) << "Policy application for user '" << userhash << "' finished.";
+
+  base::MessageLoop::current()->DeleteSoon(
+      FROM_HERE, policy_applicators_[userhash].release());
+  policy_applicators_.erase(userhash);
+
+  if (ContainsKey(queued_modified_policies_, userhash)) {
+    std::set<std::string> modified_policies;
+    queued_modified_policies_[userhash].swap(modified_policies);
+    // Remove |userhash| from the queue.
+    queued_modified_policies_.erase(userhash);
+    ApplyOrQueuePolicies(userhash, &modified_policies);
+  } else {
+    FOR_EACH_OBSERVER(
+        NetworkPolicyObserver, observers_, PoliciesApplied(userhash));
+  }
 }
 
 const base::DictionaryValue*
@@ -587,7 +630,9 @@ ManagedNetworkConfigurationHandlerImpl::ManagedNetworkConfigurationHandlerImpl()
       network_profile_handler_(NULL),
       network_configuration_handler_(NULL),
       network_device_handler_(NULL),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  CHECK(base::MessageLoop::current());
+}
 
 ManagedNetworkConfigurationHandlerImpl::
     ~ManagedNetworkConfigurationHandlerImpl() {
@@ -611,7 +656,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
   if (service_path.empty())
     return;
   FOR_EACH_OBSERVER(
-      NetworkPolicyObserver, observers_, PolicyApplied(service_path));
+      NetworkPolicyObserver, observers_, PolicyAppliedToNetwork(service_path));
 }
 
 // Get{Managed}Properties helpers

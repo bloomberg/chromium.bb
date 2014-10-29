@@ -345,8 +345,9 @@ void ClientCertResolver::OnCertificatesLoaded(
   ResolveNetworks(networks);
 }
 
-void ClientCertResolver::PolicyApplied(const std::string& service_path) {
-  VLOG(2) << "PolicyApplied " << service_path;
+void ClientCertResolver::PolicyAppliedToNetwork(
+    const std::string& service_path) {
+  VLOG(2) << "PolicyAppliedToNetwork " << service_path;
   if (!ClientCertificatesLoaded())
     return;
   // Compare this network with all certificates.

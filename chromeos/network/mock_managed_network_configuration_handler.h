@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_MOCK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 #define CHROMEOS_NETWORK_MOCK_MANAGED_NETWORK_CONFIGURATION_HANDLER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
@@ -53,6 +55,7 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
                     const std::string& userhash,
                     const base::ListValue& network_configs_onc,
                     const base::DictionaryValue& global_network_config));
+  MOCK_CONST_METHOD0(IsAnyPolicyApplicationRunning, bool());
   MOCK_CONST_METHOD3(FindPolicyByGUID,
                      const base::DictionaryValue*(
                          const std::string userhash,
