@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -944,13 +943,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   static_cast<ProfileImpl*>(profile_urls)->last_session_exit_type_ =
       Profile::EXIT_CRASHED;
 
-#if !defined(OS_MACOSX)
-  // Use HistogramTester to examine the bucket value for histogram
-  // "SessionCrashed.Bubble" to make sure that one session restore bubble is
-  // shown for each profile.
-  base::HistogramTester histogram_tester;
-#endif
-
   CommandLine dummy(CommandLine::NO_PROGRAM);
   dummy.AppendSwitchASCII(switches::kTestType, "browser");
   int return_code;
@@ -978,17 +970,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  // On Mac OS X, an infobar is shown to restore the previous session, while on
-  // Windows and Linux (not including Chrome OS), a bubble is shown instead.
-#if defined(OS_MACOSX)
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(1U, infobar_service->infobar_count());
-#else
-  // Each profile should have one session restore bubble shown, so we should
-  // observe count 3 in bucket 0 (which represents bubble shown).
-  histogram_tester.ExpectBucketCount("SessionCrashed.Bubble", 0, 3);
-#endif
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
@@ -999,10 +983,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-#if defined(OS_MACOSX)
   infobar_service = InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(1U, infobar_service->infobar_count());
-#endif
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
@@ -1013,10 +995,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-#if defined(OS_MACOSX)
   infobar_service = InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(1U, infobar_service->infobar_count());
-#endif
 }
 
 class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
