@@ -482,6 +482,9 @@ class CC_EXPORT LayerTreeHostImpl
   void ResetRequiresHighResToDraw() { requires_high_res_to_draw_ = false; }
   bool RequiresHighResToDraw() const { return requires_high_res_to_draw_; }
 
+  // Only valid for synchronous (non-scheduled) single-threaded case.
+  void SynchronouslyInitializeAllTiles();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -518,7 +521,7 @@ class CC_EXPORT LayerTreeHostImpl
   void EnforceZeroBudget(bool zero_budget);
 
   bool UsePendingTreeForSync() const;
-  bool UseZeroCopyRasterizer() const;
+  bool CanUseZeroCopyRasterizer() const;
   bool UseOneCopyRasterizer() const;
 
   // Scroll by preferring to move the outer viewport first, only moving the
@@ -693,6 +696,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
+  scoped_ptr<TaskGraphRunner> single_thread_synchronous_task_graph_runner_;
 
   bool need_to_update_visible_tiles_before_draw_;
 

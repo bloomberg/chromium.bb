@@ -107,6 +107,7 @@
       'trees/layer_tree_host_pixeltest_masks.cc',
       'trees/layer_tree_host_pixeltest_on_demand_raster.cc',
       'trees/layer_tree_host_pixeltest_readback.cc',
+      'trees/layer_tree_host_pixeltest_synchronous.cc',
       'trees/layer_tree_host_unittest.cc',
       'trees/layer_tree_host_unittest_animation.cc',
       'trees/layer_tree_host_unittest_context.cc',

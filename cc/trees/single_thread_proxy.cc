@@ -467,8 +467,6 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
-  DCHECK(!layer_tree_host_impl_->settings().impl_side_painting)
-      << "Impl-side painting and synchronous compositing are not supported.";
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
   if (layer_tree_host_->output_surface_lost()) {
@@ -493,6 +491,13 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
 
   {
     DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
+    if (layer_tree_host_impl_->settings().impl_side_painting) {
+      layer_tree_host_impl_->ActivateSyncTree();
+      layer_tree_host_impl_->active_tree()->UpdateDrawProperties();
+      layer_tree_host_impl_->ManageTiles();
+      layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
+    }
+
     LayerTreeHostImpl::FrameData frame;
     DoComposite(frame_begin_time, &frame);
 

@@ -514,6 +514,13 @@ void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchCompositeImmediately,
+                 main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::WillBeginTest() {
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
@@ -627,6 +634,12 @@ void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
 
   if (layer_tree_host_)
     layer_tree_host_->SetNextCommitForcesRedraw();
+}
+
+void LayerTreeTest::DispatchCompositeImmediately() {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+  if (layer_tree_host_)
+    layer_tree_host_->Composite(gfx::FrameTime::Now());
 }
 
 void LayerTreeTest::RunTest(bool threaded,

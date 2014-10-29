@@ -126,7 +126,11 @@ class GrContext* TestInProcessContextProvider::GrContext() {
 
 ContextProvider::Capabilities
 TestInProcessContextProvider::ContextCapabilities() {
-  return ContextProvider::Capabilities();
+  ContextProvider::Capabilities capabilities;
+  capabilities.gpu.image = true;
+  capabilities.gpu.texture_rectangle = true;
+
+  return capabilities;
 }
 
 bool TestInProcessContextProvider::IsContextLost() { return false; }

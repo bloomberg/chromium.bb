@@ -1733,6 +1733,12 @@ void LayerTreeHostImpl::SetTopControlsLayoutHeight(float height) {
   SetFullRootLayerDamage();
 }
 
+void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
+  // Only valid for the single-threaded non-scheduled/synchronous case
+  // using the zero copy raster worker pool.
+  single_thread_synchronous_task_graph_runner_->RunUntilIdle();
+}
+
 void LayerTreeHostImpl::DidLoseOutputSurface() {
   if (resource_provider_)
     resource_provider_->DidLoseOutputSurface();
@@ -2003,6 +2009,12 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(task_runner);
 
   ContextProvider* context_provider = output_surface_->context_provider();
+  bool is_synchronous_single_threaded =
+      !proxy_->HasImplThread() && !settings_.single_thread_proxy_scheduler;
+  bool should_use_zero_copy_rasterizer =
+      settings_.use_zero_copy || is_synchronous_single_threaded;
+  size_t scheduled_raster_task_limit = settings_.scheduled_raster_task_limit;
+
   if (!context_provider) {
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(),
@@ -2010,7 +2022,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              resource_provider_->best_texture_format());
 
     raster_worker_pool_ =
-        BitmapRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+        BitmapRasterWorkerPool::Create(task_runner,
                                        RasterWorkerPool::GetTaskGraphRunner(),
                                        resource_provider_.get());
   } else if (use_gpu_rasterization_) {
@@ -2024,16 +2036,24 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                     context_provider,
                                     resource_provider_.get(),
                                     settings_.use_distance_field_text);
-  } else if (UseZeroCopyRasterizer()) {
+  } else if (should_use_zero_copy_rasterizer && CanUseZeroCopyRasterizer()) {
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(),
         GetMapImageTextureTarget(context_provider->ContextCapabilities()),
         resource_provider_->best_texture_format());
 
-    raster_worker_pool_ =
-        ZeroCopyRasterWorkerPool::Create(task_runner,
-                                         RasterWorkerPool::GetTaskGraphRunner(),
-                                         resource_provider_.get());
+    TaskGraphRunner* task_graph_runner;
+    if (is_synchronous_single_threaded) {
+      DCHECK(!single_thread_synchronous_task_graph_runner_);
+      single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
+      task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
+      scheduled_raster_task_limit = std::numeric_limits<size_t>::max();
+    } else {
+      task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
+    }
+
+    raster_worker_pool_ = ZeroCopyRasterWorkerPool::Create(
+        task_runner, task_graph_runner, resource_provider_.get());
   } else if (UseOneCopyRasterizer()) {
     // We need to create a staging resource pool when using copy rasterizer.
     staging_resource_pool_ = ResourcePool::Create(
@@ -2071,7 +2091,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                       resource_pool_.get(),
                                       raster_worker_pool_->AsRasterizer(),
                                       rendering_stats_instrumentation_,
-                                      settings().scheduled_raster_task_limit);
+                                      scheduled_raster_task_limit);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;
@@ -2082,6 +2102,7 @@ void LayerTreeHostImpl::DestroyTileManager() {
   resource_pool_ = nullptr;
   staging_resource_pool_ = nullptr;
   raster_worker_pool_ = nullptr;
+  single_thread_synchronous_task_graph_runner_ = nullptr;
 }
 
 bool LayerTreeHostImpl::UsePendingTreeForSync() const {
@@ -2090,8 +2111,8 @@ bool LayerTreeHostImpl::UsePendingTreeForSync() const {
   return settings_.impl_side_painting;
 }
 
-bool LayerTreeHostImpl::UseZeroCopyRasterizer() const {
-  return settings_.use_zero_copy && GetRendererCapabilities().using_image;
+bool LayerTreeHostImpl::CanUseZeroCopyRasterizer() const {
+  return GetRendererCapabilities().using_image;
 }
 
 bool LayerTreeHostImpl::UseOneCopyRasterizer() const {

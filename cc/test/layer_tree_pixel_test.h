@@ -67,6 +67,10 @@ class LayerTreePixelTest : public LayerTreeTest {
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
 
+  void RunSingleThreadedPixelTest(PixelTestType test_type,
+                                  scoped_refptr<Layer> content_root,
+                                  base::FilePath file_name);
+
   void RunPixelTestWithReadbackTarget(PixelTestType type,
                                       scoped_refptr<Layer> content_root,
                                       Layer* target,
