@@ -136,6 +136,8 @@ cr.define('extensions', function() {
       link.isShowingAll = false;
 
       var listContents = this.querySelector('.extension-error-list-contents');
+
+      // TODO(dbeam/kalman): trade all this transition voodoo for .animate()?
       listContents.addEventListener('webkitTransitionEnd', function(e) {
         if (listContents.classList.contains('deactivating'))
           listContents.classList.remove('deactivating', 'active');
