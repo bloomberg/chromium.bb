@@ -1,6 +1,9 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
+        "top_25_003.wpr": [
+            "Facebook"
+        ], 
         "top_25_001.wpr": [
             "https://plus.google.com/110031535020051778989/posts"
         ], 

@@ -208,9 +208,9 @@ class FacebookPage(Top25Page):
 
   def __init__(self, page_set):
     super(FacebookPage, self).__init__(
-        url='http://www.facebook.com/barackobama',
+        url='https://www.facebook.com/barackobama',
         page_set=page_set,
-        name='Facebook', credentials='facebook')
+        name='Facebook', credentials='facebook2')
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
