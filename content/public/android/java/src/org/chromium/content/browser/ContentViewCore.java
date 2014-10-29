@@ -676,7 +676,6 @@ public class ContentViewCore
 
         mContainerView = containerView;
         mPositionObserver = new ViewPositionObserver(mContainerView);
-        mContainerView.setWillNotDraw(false);
         mContainerView.setClickable(true);
         TraceEvent.end();
     }

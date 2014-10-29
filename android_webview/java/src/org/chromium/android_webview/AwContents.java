@@ -568,7 +568,13 @@ public class AwContents {
             AwContentsClient contentsClient, AwSettings settings,
             DependencyFactory dependencyFactory) {
         mBrowserContext = browserContext;
+
+        // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+        // container view. If this is ever not the case we should remove this, as it removes
+        // Android's gatherTransparentRegion optimization for the view.
         mContainerView = containerView;
+        mContainerView.setWillNotDraw(false);
+
         mContext = context;
         mInternalAccessAdapter = internalAccessAdapter;
         mNativeGLDelegate = nativeGLDelegate;
@@ -716,7 +722,12 @@ public class AwContents {
     }
 
     private void setContainerView(ViewGroup newContainerView) {
+        // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+        // container view. If this is ever not the case we should remove this, as it removes
+        // Android's gatherTransparentRegion optimization for the view.
         mContainerView = newContainerView;
+        mContainerView.setWillNotDraw(false);
+
         mContentViewCore.setContainerView(mContainerView);
         if (mAwPdfExporter != null) {
             mAwPdfExporter.setContainerView(mContainerView);
