@@ -362,7 +362,7 @@ class Manifest(object):
       manifest_include_dir: If given, this is where to start looking for
         include targets.
     """
-
+    self.source = source
     self.default = {}
     self.checkouts_by_path = {}
     self.checkouts_by_name = {}
@@ -423,7 +423,8 @@ class Manifest(object):
       attrs.setdefault(key, self.default.get(key))
 
     remote = attrs['remote']
-    assert remote in self.remotes
+    assert remote in self.remotes, ('%s: %s not in %s' %
+        (self.source, remote, self.remotes))
     remote_name = attrs['remote_alias'] = self.remotes[remote]['alias']
 
     # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the

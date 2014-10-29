@@ -160,6 +160,8 @@ SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
 # CrOS remotes specified in the manifests.
 EXTERNAL_REMOTE = 'cros'
 INTERNAL_REMOTE = 'cros-internal'
+# TODO(dgarrett): Reconsider when crbug.com/428215 is fixed.
+KAYLE_INTERNAL_REMOTE = 'kayle-cros-internal'
 CHROMIUM_REMOTE = 'chromium'
 CHROME_REMOTE = 'chrome'
 
@@ -168,9 +170,11 @@ GERRIT_HOSTS = {
     INTERNAL_REMOTE: INTERNAL_GERRIT_HOST,
 }
 
+# Only remotes listed in CROS_REMOTES are considered branchable.
 CROS_REMOTES = {
     EXTERNAL_REMOTE: EXTERNAL_GOB_URL,
     INTERNAL_REMOTE: INTERNAL_GOB_URL,
+    KAYLE_INTERNAL_REMOTE: INTERNAL_GOB_URL,
 }
 
 GIT_REMOTES = {
