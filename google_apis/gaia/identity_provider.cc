@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "google_apis/gaia/identity_provider.h"
 
 IdentityProvider::Observer::~Observer() {}
@@ -40,8 +40,8 @@ void IdentityProvider::RemoveObserver(Observer* observer) {
 }
 
 void IdentityProvider::OnRefreshTokenAvailable(const std::string& account_id) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 IdentityProvider::OnRefreshTokenAvailable"));
 

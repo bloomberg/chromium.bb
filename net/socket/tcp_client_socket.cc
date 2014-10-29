@@ -6,7 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -307,8 +307,8 @@ void TCPClientSocket::DidCompleteReadWrite(const CompletionCallback& callback,
   if (result > 0)
     use_history_.set_was_used_to_convey_data();
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "TCPClientSocket::DidCompleteReadWrite"));
   callback.Run(result);

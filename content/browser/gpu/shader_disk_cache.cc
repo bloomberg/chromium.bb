@@ -4,7 +4,7 @@
 
 #include "content/browser/gpu/shader_disk_cache.h"
 
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -260,8 +260,8 @@ void ShaderDiskReadHelper::LoadCache() {
 }
 
 void ShaderDiskReadHelper::OnOpComplete(int rv) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 ShaderDiskReadHelper::OnOpComplete"));
 

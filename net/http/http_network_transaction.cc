@@ -15,7 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -598,15 +598,15 @@ void HttpNetworkTransaction::DoCallback(int rv) {
 }
 
 void HttpNetworkTransaction::OnIOComplete(int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424359 is fixed.
-  tracked_objects::ScopedProfile tracking_profile1(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424359 HttpNetworkTransaction::OnIOComplete 1"));
 
   int rv = DoLoop(result);
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424359 is fixed.
-  tracked_objects::ScopedProfile tracking_profile2(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424359 HttpNetworkTransaction::OnIOComplete 2"));
 

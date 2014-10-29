@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -118,8 +118,8 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
 void TranslateScript::OnScriptFetchComplete(
     int id, bool success, const std::string& data) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateScript::OnScriptFetchComplete"));
 

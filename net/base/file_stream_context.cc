@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -150,8 +150,8 @@ void FileStream::Context::Flush(const CompletionCallback& callback) {
 
 FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
     const base::FilePath& path, int open_flags) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "423948 FileStream::Context::OpenFileImpl"));
 
@@ -202,8 +202,8 @@ void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
                                           OpenResult open_result) {
   file_ = open_result.file.Pass();
   if (file_.IsValid() && !orphaned_) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedProfile tracking_profile(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "423948 FileStream::Context::OnOpenCompleted"));
 

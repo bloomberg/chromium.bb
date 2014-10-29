@@ -10,7 +10,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -935,8 +935,8 @@ void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(
 }
 
 void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 GaiaAuthFetcher::OnURLFetchComplete"));
 

@@ -5,7 +5,7 @@
 #include "components/signin/core/browser/signin_account_id_helper.h"
 
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -137,8 +137,8 @@ void SigninAccountIdHelper::GoogleSignedOut(const std::string& account_id,
 
 void SigninAccountIdHelper::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 SigninAccountIdHelper::OnRefreshTokenAvailable"));
 

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
@@ -64,8 +64,8 @@ class ServiceProcessTerminateMonitor
 
   // base::ObjectWatcher::Delegate implementation.
   virtual void OnObjectSignaled(HANDLE object) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-    tracked_objects::ScopedProfile tracking_profile(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "ServiceProcessTerminateMonitor_OnObjectSignaled"));
 

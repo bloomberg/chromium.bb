@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -62,8 +62,8 @@ DefaultChannelIDStore::GetChannelIDTask::~GetChannelIDTask() {
 
 void DefaultChannelIDStore::GetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/425814 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/425814 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "425814 DefaultChannelIDStore::GetChannelIDTask::Run"));
 
@@ -118,8 +118,8 @@ DefaultChannelIDStore::SetChannelIDTask::~SetChannelIDTask() {
 
 void DefaultChannelIDStore::SetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/425814 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/425814 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "425814 DefaultChannelIDStore::SetChannelIDTask::Run"));
 
@@ -156,8 +156,8 @@ DefaultChannelIDStore::DeleteChannelIDTask::
 
 void DefaultChannelIDStore::DeleteChannelIDTask::Run(
     DefaultChannelIDStore* store) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/425814 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/425814 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "425814 DefaultChannelIDStore::DeleteChannelIDTask::Run"));
 
@@ -199,8 +199,8 @@ DefaultChannelIDStore::DeleteAllCreatedBetweenTask::
 
 void DefaultChannelIDStore::DeleteAllCreatedBetweenTask::Run(
     DefaultChannelIDStore* store) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/425814 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/425814 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "425814 DefaultChannelIDStore::DeleteAllCreatedBetweenTask::Run"));
 
@@ -234,8 +234,8 @@ DefaultChannelIDStore::GetAllChannelIDsTask::
 
 void DefaultChannelIDStore::GetAllChannelIDsTask::Run(
     DefaultChannelIDStore* store) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/425814 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/425814 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "425814 DefaultChannelIDStore::GetAllChannelIDsTask::Run"));
 

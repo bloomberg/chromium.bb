@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -61,8 +61,8 @@ void URLRequestSimpleJob::StartAsync() {
     return;
 
   if (ranges().size() > 1) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-    tracked_objects::ScopedProfile tracking_profile(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422489 URLRequestSimpleJob::StartAsync 1"));
 
@@ -76,9 +76,9 @@ void URLRequestSimpleJob::StartAsync() {
 
   int result;
   {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
     // Remove the block and assign 'result' in its declaration.
-    tracked_objects::ScopedProfile tracking_profile(
+    tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422489 URLRequestSimpleJob::StartAsync 2"));
 
@@ -90,8 +90,8 @@ void URLRequestSimpleJob::StartAsync() {
   }
 
   if (result != ERR_IO_PENDING) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-    tracked_objects::ScopedProfile tracking_profile(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422489 URLRequestSimpleJob::StartAsync 3"));
 
@@ -100,8 +100,8 @@ void URLRequestSimpleJob::StartAsync() {
 }
 
 void URLRequestSimpleJob::OnGetDataCompleted(int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422489 URLRequestSimpleJob::OnGetDataCompleted"));
 

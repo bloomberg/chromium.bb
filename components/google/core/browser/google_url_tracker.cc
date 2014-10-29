@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
@@ -107,8 +107,8 @@ void GoogleURLTracker::CancelGoogleURL() {
 }
 
 void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 GoogleURLTracker::OnURLFetchComplete"));
 

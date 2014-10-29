@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -126,8 +126,8 @@ void LocalFileStreamWriter::DidOpen(
     const net::CompletionCallback& error_callback,
     const base::Closure& main_operation,
     int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "423948 LocalFileStreamWriter::DidOpen"));
 

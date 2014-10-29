@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -95,8 +95,8 @@ void IntranetRedirectDetector::FinishSleep() {
 
 void IntranetRedirectDetector::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 IntranetRedirectDetector::OnURLFetchComplete"));
 

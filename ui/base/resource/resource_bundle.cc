@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -454,8 +454,8 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
 base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-  tracked_objects::ScopedProfile tracking_profile1(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422489 ResourceBundle::GetRawDataResourceForScale 1"));
 
@@ -464,8 +464,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
       delegate_->GetRawDataResource(resource_id, scale_factor, &data))
     return data;
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-  tracked_objects::ScopedProfile tracking_profile2(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422489 ResourceBundle::GetRawDataResourceForScale 2"));
 
@@ -477,8 +477,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
         return data;
     }
   }
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422489 is fixed.
-  tracked_objects::ScopedProfile tracking_profile3(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422489 ResourceBundle::GetRawDataResourceForScale 3"));
 

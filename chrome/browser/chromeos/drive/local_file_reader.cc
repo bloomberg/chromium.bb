@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -50,8 +50,8 @@ void LocalFileReader::Read(net::IOBuffer* in_buffer,
 void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
                               int64 offset,
                               int error) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 LocalFileReader::DidOpen"));
 
   if (error != net::OK)

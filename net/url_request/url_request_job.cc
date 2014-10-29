@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/base/auth.h"
@@ -300,8 +300,8 @@ void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
 }
 
 void URLRequestJob::NotifyHeadersComplete() {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "423948 URLRequestJob::NotifyHeadersComplete"));
 

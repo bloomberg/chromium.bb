@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -229,8 +229,8 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
     int id,
     bool success,
     const std::string& data) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateLanguageList::OnLanguageListFetchComplete"));
 
@@ -256,8 +256,8 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
 }
 
 void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateLanguageList::NotifyEvent"));
 
@@ -267,8 +267,8 @@ void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
 
 void TranslateLanguageList::SetSupportedLanguages(
     const std::string& language_list) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile1(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateLanguageList::SetSupportedLanguages 1"));
 
@@ -295,16 +295,16 @@ void TranslateLanguageList::SetSupportedLanguages(
       kLanguageListCallbackNameLength,
       language_list.size() - kLanguageListCallbackNameLength - 1);
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile2(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateLanguageList::SetSupportedLanguages 2"));
 
   scoped_ptr<base::Value> json_value(
       base::JSONReader::Read(languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedProfile tracking_profile3(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422577 TranslateLanguageList::SetSupportedLanguages 3"));
 

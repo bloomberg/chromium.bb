@@ -8,7 +8,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -102,8 +102,8 @@ void LocalFileStreamReader::DidVerifyForOpen(
 void LocalFileStreamReader::DidOpenFileStream(
     const net::CompletionCallback& callback,
     int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "423948 LocalFileStreamReader::DidOpenFileStream"));
 

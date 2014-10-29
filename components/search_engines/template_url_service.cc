@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -826,8 +826,8 @@ scoped_ptr<TemplateURLService::Subscription>
 void TemplateURLService::OnWebDataServiceRequestDone(
     KeywordWebDataService::Handle h,
     const WDTypedResult* result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 TemplateURLService::OnWebDataServiceRequestDone"));
 
@@ -836,8 +836,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   load_handle_ = 0;
 
   if (!result) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile1(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 1"));
 
@@ -852,8 +852,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   TemplateURLVector template_urls;
   int new_resource_keyword_version = 0;
   {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile2(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 2"));
 
@@ -871,8 +871,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   }
 
   if (client_) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile3(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 3"));
 
@@ -886,22 +886,22 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
 
   {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile4(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 4"));
 
     PatchMissingSyncGUIDs(&template_urls);
 
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile41(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile41(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 41"));
 
     SetTemplateURLs(&template_urls);
 
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile42(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile42(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 42"));
 
@@ -910,8 +910,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // This also calls NotifyObservers.
     ChangeToLoadedState();
 
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile43(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile43(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 43"));
 
@@ -920,8 +920,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
     visits_to_add_.clear();
 
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile44(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile44(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 44"));
 
@@ -930,8 +930,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   }
 
   if (default_search_provider_) {
-    // TODO(vadimt): Remove ScopedProfile below once crbug.com/422460 is fixed.
-    tracked_objects::ScopedProfile tracking_profile5(
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 TemplateURLService::OnWebDataServiceRequestDone 5"));
 

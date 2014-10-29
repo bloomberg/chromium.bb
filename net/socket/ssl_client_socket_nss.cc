@@ -71,7 +71,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_profile.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1689,8 +1689,8 @@ int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoHandshakeLoop"));
 
@@ -1730,8 +1730,8 @@ int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
 }
 
 int SSLClientSocketNSS::Core::DoReadLoop(int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoReadLoop"));
 
@@ -1794,8 +1794,8 @@ int SSLClientSocketNSS::Core::DoWriteLoop(int result) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshake() {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoHandshake"));
 
@@ -1850,8 +1850,8 @@ int SSLClientSocketNSS::Core::DoHandshake() {
 }
 
 int SSLClientSocketNSS::Core::DoGetDBCertComplete(int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoGetDBCertComplete"));
 
@@ -2039,8 +2039,8 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
 // transport socket. Return true if some I/O performed, false
 // otherwise (error or ERR_IO_PENDING).
 bool SSLClientSocketNSS::Core::DoTransportIO() {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoTransportIO"));
 
@@ -2220,8 +2220,8 @@ void SSLClientSocketNSS::Core::OnSendComplete(int result) {
 // callback. For Read() and Write(), that's what we want. But for Connect(),
 // the caller expects OK (i.e. 0) for success.
 void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoConnectCallback"));
 
@@ -2236,8 +2236,8 @@ void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
 }
 
 void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoReadCallback"));
 
@@ -2256,8 +2256,8 @@ void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
   PostOrRunCallback(
       FROM_HERE,
       base::Bind(&Core::DidNSSRead, this, rv));
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedProfile tracking_profile1(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "SSLClientSocketNSS::Core::DoReadCallback"));
   PostOrRunCallback(
@@ -2691,8 +2691,8 @@ void SSLClientSocketNSS::Core::DidNSSWrite(int result) {
 }
 
 void SSLClientSocketNSS::Core::BufferSendComplete(int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "418183 DidCompleteReadWrite => Core::BufferSendComplete"));
 
@@ -2739,8 +2739,8 @@ void SSLClientSocketNSS::Core::OnGetChannelIDComplete(int result) {
 void SSLClientSocketNSS::Core::BufferRecvComplete(
     IOBuffer* read_buffer,
     int result) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/418183 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/418183 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "418183 DidCompleteReadWrite => SSLClientSocketNSS::Core::..."));
 
