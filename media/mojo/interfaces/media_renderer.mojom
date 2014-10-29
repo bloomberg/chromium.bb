@@ -24,7 +24,7 @@ interface MediaRenderer {
 
   // Updates the current playback rate. The default playback rate should be 1.
   SetPlaybackRate(float playback_rate);
-  
+
   // Sets the output volume. The default volume should be 1.
   SetVolume(float volume);
 };

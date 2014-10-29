@@ -22,10 +22,10 @@ class ApplicationConnection;
 
 namespace media {
 
-class AudioRenderer;
 class AudioRendererSink;
+class DemuxerStreamProviderShim;
 class MojoDemuxerStreamAdapter;
-class TimeSource;
+class Renderer;
 
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
@@ -39,9 +39,9 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
-  void Initialize(mojo::DemuxerStreamPtr stream,
-                  const mojo::Callback<void()>& callback) override;
-  void Flush(const mojo::Callback<void()>& callback) override;
+  void Initialize(mojo::DemuxerStreamPtr streams,
+                  const mojo::Closure& callback) override;
+  void Flush(const mojo::Closure& callback) override;
   void StartPlayingFrom(int64_t time_delta_usec) override;
   void SetPlaybackRate(float playback_rate) override;
   void SetVolume(float volume) override;
@@ -57,15 +57,18 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
 
   // Called when the MojoDemuxerStreamAdapter is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
-  void OnStreamReady();
+  void OnStreamReady(const mojo::Closure& callback);
 
   // Called when |audio_renderer_| initialization has completed.
-  void OnAudioRendererInitializeDone(PipelineStatus status);
+  void OnRendererInitializeDone(const mojo::Closure& callback);
 
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);
 
-  void UpdateMediaTime();
+  // Periodically polls the media time from the renderer and notifies the client
+  // if the media time has changed since the last update.  If |force| is true,
+  // the client is notified even if the time is unchanged.
+  void UpdateMediaTime(bool force);
   void SchedulePeriodicMediaTimeUpdates();
 
   // Callback executed by audio renderer when buffering state changes.
@@ -73,31 +76,19 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   void OnBufferingStateChanged(BufferingState new_buffering_state);
 
   // Callback executed when a renderer has ended.
-  void OnAudioRendererEnded();
+  void OnRendererEnded();
 
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
 
-  bool WaitingForEnoughData() const;
-  void StartPlayback();
-  void PausePlayback();
-
   State state_;
 
-  scoped_ptr<MojoDemuxerStreamAdapter> stream_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
-  scoped_ptr<AudioRenderer> audio_renderer_;
-
-  TimeSource* time_source_;
-  bool time_ticking_;
-
-  BufferingState buffering_state_;
-
-  mojo::Callback<void()> init_cb_;
-
-  bool ended_;
+  scoped_ptr<Renderer> renderer_;
+  scoped_ptr<DemuxerStreamProviderShim> stream_provider_;
 
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
+  uint64_t last_media_time_usec_;
 
   base::WeakPtrFactory<MojoRendererService> weak_factory_;
   base::WeakPtr<MojoRendererService> weak_this_;
