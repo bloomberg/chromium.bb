@@ -2143,28 +2143,6 @@ TEST_F(FileUtilTest, TouchFile) {
             file_info.last_modified.ToInternalValue());
 }
 
-#if defined(OS_POSIX)
-TEST_F(FileUtilTest, WriteFileWithMode) {
-  FilePath data_dir =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("FilePathTest"));
-
-  // Create a fresh, empty copy of this directory.
-  if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
-  }
-  ASSERT_TRUE(CreateDirectory(data_dir));
-
-  FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
-  std::string data("hello");
-  mode_t mode = 0644;
-  ASSERT_TRUE(WriteFileWithMode(foobar, data.c_str(), data.length(), mode));
-
-  struct stat status;
-  ASSERT_EQ(0, stat(foobar.value().c_str(), &status));
-  ASSERT_EQ(mode, status.st_mode & 0777);
-}
-#endif
-
 TEST_F(FileUtilTest, IsDirectoryEmpty) {
   FilePath empty_dir = temp_dir_.path().Append(FILE_PATH_LITERAL("EmptyDir"));
 
