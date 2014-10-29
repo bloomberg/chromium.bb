@@ -100,6 +100,7 @@
             '<(version_py_path)',
             '-f', '<(version_path)',
             '-f', '<(branding_path)',
+            '-e', 'CHANNEL=str.upper("<(android_channel)")',
             '<(template_input_path)',
             '<(output_path)',
           ],

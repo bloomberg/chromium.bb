@@ -12,12 +12,6 @@ import org.chromium.content.app.ContentApplication;
  * chrome layer.
  */
 public abstract class ChromiumApplication extends ContentApplication {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        ChromeVersionInfo.init(this);
-    }
-
     /**
      * Opens a protected content settings page, if available.
      */

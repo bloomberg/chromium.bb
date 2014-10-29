@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
+import("channel.gni")
 
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
@@ -467,6 +468,7 @@ chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser
 process_version("chrome_version_java") {
   source = "java/ChromeVersionConstants.java.version"
   output = chrome_version_java_file
+  extra_args = ["-e", "CHANNEL=str.upper('$android_channel')"]
 }
 
 zip("chrome_version_srcjar") {

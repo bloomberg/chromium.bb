@@ -4,8 +4,15 @@
 
 package org.chromium.chrome.browser;
 
-public class ChromeVersionConstants {
-    public static final String PRODUCT_NAME = "@PRODUCT_FULLNAME@";
-    public static final String PRODUCT_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
-    public static final boolean IS_OFFICIAL_BUILD = @OFFICIAL_BUILD@ == 1;
+class ChromeVersionConstants {
+    static final String PRODUCT_NAME = "@PRODUCT_FULLNAME@";
+    static final String PRODUCT_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
+    static final boolean IS_OFFICIAL_BUILD = @OFFICIAL_BUILD@ == 1;
+
+    static final int CHANNEL_DEFAULT = 0;
+    static final int CHANNEL_CANARY = 1;
+    static final int CHANNEL_DEV = 2;
+    static final int CHANNEL_BETA = 3;
+    static final int CHANNEL_STABLE = 4;
+    static final int CHANNEL = CHANNEL_@CHANNEL@;
 }
