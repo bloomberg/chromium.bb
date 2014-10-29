@@ -266,6 +266,10 @@ crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManu
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 
+# Failing on Android bots as a result of turning on virtual viewport pinch to zoom.
+crbug.com/428189 [ Android ] fast/autoresize/turn-off-autoresize.html [ Failure ]
+crbug.com/428189 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
+
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
