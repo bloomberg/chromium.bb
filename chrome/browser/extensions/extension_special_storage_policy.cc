@@ -106,6 +106,7 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
 }
 
 bool ExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
+  base::AutoLock locker(lock_);
   return installed_apps_.Contains(origin);
 }
 
