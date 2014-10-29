@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -16,6 +17,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+
+import java.util.concurrent.Callable;
 
 /**
  * Integration tests for text selection-related behavior.
@@ -26,17 +29,16 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             + "content=\"width=device-width, initial-scale=1.1, maximum-scale=1.5\" /></head>"
             + "<body><form action=\"about:blank\">"
             + "<input id=\"empty_input_text\" type=\"text\" />"
-            + "<br/><p><span id=\"plain_text_1\">This is Plain Text One</span></p>"
-            + "<br/><p><span id=\"plain_text_2\">This is Plain Text Two</span></p>"
+            + "<br/><p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
+            + "<br/><p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
             + "<br/><input id=\"empty_input_text\" type=\"text\" />"
-            + "<br/><input id=\"input_text\" type=\"text\" value=\"Sample Text\" />"
+            + "<br/><input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
             + "<br/><textarea id=\"empty_textarea\" rows=\"2\" cols=\"20\"></textarea>"
             + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">Sample Text</textarea>"
             + "<br/><input id=\"readonly_text\" type=\"text\" readonly value=\"Sample Text\"/>"
             + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
-            + "<br/><input id=\"input_password\" type=\"password\" value=\"Sample Password\" />"
+            + "<br/><input id=\"input_password\" type=\"password\" value=\"SamplePassword\" />"
             + "</form></body></html>");
-
     private ContentViewCore mContentViewCore;
 
     @Override
@@ -220,6 +222,87 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertNotNull(mContentViewCore.getSelectActionHandler());
         assertTrue(mContentViewCore.getSelectActionHandler().isSelectionEditable());
         assertTrue(mContentViewCore.getSelectActionHandler().isSelectionPassword());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testActionBarConfiguredCorrectlyForPlainText() throws Throwable {
+        DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        assertFalse(mContentViewCore.getSelectActionHandler().isSelectionEditable());
+        assertFalse(mContentViewCore.getSelectActionHandler().isSelectionPassword());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testSelectActionBarPlainTextCopy() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarCopy();
+        assertClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testSelectActionBarInputCopy() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarCopy();
+        assertClipboardContents(mContentViewCore.getContext(), "SampleInputText");
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testSelectActionBarPasswordCopy() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "plain_text_1");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarCopy();
+        assertClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+        DOMUtils.longPressNode(this, mContentViewCore, "input_password");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarCopy();
+        // Copy option won't be there for Password, hence no change in Clipboard
+        // Validating with previous Clipboard content
+        assertClipboardContents(mContentViewCore.getContext(), "SamplePlainTextOne");
+    }
+
+    private void selectActionBarCopy() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.getSelectActionHandler().copy();
+            }
+        });
+    }
+
+    private void assertClipboardContents(final Context context, final String expectedContents)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        ClipboardManager clipboardManager =
+                                (ClipboardManager) context.getSystemService(
+                                        Context.CLIPBOARD_SERVICE);
+                        ClipData clip = clipboardManager.getPrimaryClip();
+                        return clip != null && clip.getItemCount() == 1
+                                && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
+                    }
+                });
+            }
+        }));
     }
 
     private void assertWaitForSelectActionBarVisible(
