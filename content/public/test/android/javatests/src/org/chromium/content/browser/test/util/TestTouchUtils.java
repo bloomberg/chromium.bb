@@ -4,10 +4,8 @@
 
 package org.chromium.content.browser.test.util;
 
-import android.app.Activity;
 import android.app.Instrumentation;
 import android.os.SystemClock;
-import android.test.InstrumentationTestCase;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -209,20 +207,5 @@ public class TestTouchUtils extends android.test.TouchUtils {
                 v.performClick();
             }
         });
-    }
-
-    /**
-     * Clicks on specified view in the given {@link Activity}.
-     *
-     * @param test The test case using this utility.
-     * @param activity Activity containing the view.
-     * @param id The view to be clicked.
-     * @return {@code true} if a view with the given id exists.
-     */
-    public static boolean clickById(InstrumentationTestCase test, Activity activity, int id) {
-        View v = activity.findViewById(id);
-        if (v == null) return false;
-        clickView(test, v);
-        return true;
     }
 }
