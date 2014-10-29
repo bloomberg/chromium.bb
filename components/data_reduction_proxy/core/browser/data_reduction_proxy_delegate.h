@@ -25,8 +25,11 @@ class DataReductionProxyAuthRequestHandler;
 
 class DataReductionProxyDelegate : public net::ProxyDelegate {
  public:
+  // ProxyDelegate instance is owned by io_thread. |auth_handler| and |params|
+  // outlives this class instance.
   explicit DataReductionProxyDelegate(
-      DataReductionProxyAuthRequestHandler* auth_handler);
+      DataReductionProxyAuthRequestHandler* auth_handler,
+      DataReductionProxyParams* params);
 
   ~DataReductionProxyDelegate() override;
 
@@ -44,6 +47,10 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
                              net::HttpRequestHeaders* extra_headers) override;
 
+  void OnTunnelConnectCompleted(const net::HostPortPair& endpoint,
+                                const net::HostPortPair& proxy_server,
+                                int net_error) override;
+
   void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
@@ -51,6 +58,7 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
 
  private:
   DataReductionProxyAuthRequestHandler* auth_handler_;
+  const DataReductionProxyParams* params_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDelegate);
 };

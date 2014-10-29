@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/socket/client_socket_factory.h"
@@ -130,8 +131,10 @@ void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle * handle) {
 
 void HttpProxyConnectJob::OnIOComplete(int result) {
   int rv = DoLoop(result);
-  if (rv != ERR_IO_PENDING)
+  if (rv != ERR_IO_PENDING) {
+    NotifyProxyDelegateOfCompletion(rv);
     NotifyDelegateOfCompletion(rv);  // Deletes |this|
+  }
 }
 
 int HttpProxyConnectJob::DoLoop(int result) {
@@ -362,13 +365,29 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
   return transport_socket_->Connect(callback_);
 }
 
+void HttpProxyConnectJob::NotifyProxyDelegateOfCompletion(int result) {
+  if (!params_->proxy_delegate())
+    return;
+
+  const HostPortPair& proxy_server = params_->destination().host_port_pair();
+  params_->proxy_delegate()->OnTunnelConnectCompleted(params_->endpoint(),
+                                                      proxy_server,
+                                                      result);
+}
+
 int HttpProxyConnectJob::ConnectInternal() {
   if (params_->transport_params().get()) {
     next_state_ = STATE_TCP_CONNECT;
   } else {
     next_state_ = STATE_SSL_CONNECT;
   }
-  return DoLoop(OK);
+
+  int rv = DoLoop(OK);
+  if (rv != ERR_IO_PENDING) {
+    NotifyProxyDelegateOfCompletion(rv);
+  }
+
+  return rv;
 }
 
 HttpProxyClientSocketPool::

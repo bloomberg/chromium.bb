@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 
+#include <cmath>
+#include "base/metrics/sparse_histogram.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -11,9 +14,12 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
-    DataReductionProxyAuthRequestHandler* auth_handler)
-    : auth_handler_(auth_handler) {
+    DataReductionProxyAuthRequestHandler* auth_handler,
+    DataReductionProxyParams* params)
+    : auth_handler_(auth_handler),
+      params_(params) {
   DCHECK(auth_handler);
+  DCHECK(params);
 }
 
 DataReductionProxyDelegate::~DataReductionProxyDelegate() {
@@ -24,6 +30,16 @@ void DataReductionProxyDelegate::OnResolveProxy(
     int load_flags,
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
+}
+
+void DataReductionProxyDelegate::OnTunnelConnectCompleted(
+    const net::HostPortPair& endpoint,
+    const net::HostPortPair& proxy_server,
+    int net_error) {
+  if (params_->IsDataReductionProxy(proxy_server, NULL)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.HTTPConnectCompleted",
+                                std::abs(net_error));
+  }
 }
 
 void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,

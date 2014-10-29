@@ -150,6 +150,8 @@ class HttpProxyConnectJob : public ConnectJob {
   int DoSpdyProxyCreateStream();
   int DoSpdyProxyCreateStreamComplete(int result);
 
+  void NotifyProxyDelegateOfCompletion(int result);
+
   // Begins the tcp connection and the optional Http proxy tunnel.  If the
   // request is not immediately servicable (likely), the request will return
   // ERR_IO_PENDING. An OK return from this function or the callback means

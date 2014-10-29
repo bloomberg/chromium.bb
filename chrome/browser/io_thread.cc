@@ -1156,7 +1156,8 @@ void IOThread::SetupDataReductionProxy(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   globals_->data_reduction_proxy_delegate.reset(
       new data_reduction_proxy::DataReductionProxyDelegate(
-          globals_->data_reduction_proxy_auth_request_handler.get()));
+          globals_->data_reduction_proxy_auth_request_handler.get(),
+          globals_->data_reduction_proxy_params.get()));
   // This is the same as in ProfileImplIOData except that we do not collect
   // usage stats.
   network_delegate->set_data_reduction_proxy_params(

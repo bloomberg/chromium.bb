@@ -295,6 +295,16 @@ void DataReductionProxyUsageStats::OnProxyFallback(
   }
 }
 
+void DataReductionProxyUsageStats::OnConnectComplete(
+    const net::HostPortPair& proxy_server,
+    int net_error) {
+  if (data_reduction_proxy_params_->IsDataReductionProxy(proxy_server, NULL)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "DataReductionProxy.HTTPConnectCompleted",
+      std::abs(net_error));
+  }
+}
+
 void DataReductionProxyUsageStats::RecordBypassedBytes(
     DataReductionProxyBypassType bypass_type,
     DataReductionProxyUsageStats::BypassedBytesType bypassed_bytes_type,

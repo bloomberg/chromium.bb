@@ -77,6 +77,11 @@ class DataReductionProxyUsageStats
   void OnProxyFallback(const net::ProxyServer& bypassed_proxy,
                        int net_error);
 
+  // Called by |ChromeNetworkDelegate| when an HTTP connect has been called.
+  // Used to track proxy connection failures.
+  void OnConnectComplete(const net::HostPortPair& proxy_server,
+                         int net_error);
+
  private:
   friend class DataReductionProxyUsageStatsTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyUsageStatsTest,
