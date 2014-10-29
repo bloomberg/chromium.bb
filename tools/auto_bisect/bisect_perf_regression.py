@@ -2596,6 +2596,7 @@ class BisectOptions(object):
     self.bad_revision = None
     self.use_goma = None
     self.goma_dir = None
+    self.goma_threads = 64
     self.cros_board = None
     self.cros_remote_ip = None
     self.repeat_test_count = 20
@@ -2735,6 +2736,10 @@ class BisectOptions(object):
     group.add_option('--goma_dir',
                      help='Path to goma tools (or system default if not '
                      'specified).')
+    group.add_option('--goma_threads',
+                     type='int',
+                     default='64',
+                     help='Number of threads for goma, only if using goma.')
     group.add_option('--output_buildbot_annotations',
                      action='store_true',
                      help='Add extra annotation output for buildbot.')

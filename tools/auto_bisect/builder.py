@@ -124,7 +124,7 @@ class DesktopBuilder(Builder):
 
     threads = None
     if opts.use_goma:
-      threads = 64
+      threads = opts.goma_threads
 
     build_success = False
     if opts.build_preference == 'make':
@@ -164,7 +164,7 @@ class AndroidBuilder(Builder):
     """
     threads = None
     if opts.use_goma:
-      threads = 64
+      threads = opts.goma_threads
 
     build_success = False
     if opts.build_preference == 'ninja':

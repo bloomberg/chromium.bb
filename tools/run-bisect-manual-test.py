@@ -79,6 +79,9 @@ def _RunBisectionScript(options):
   if options.target_build_type:
     cmd.extend(['--target_build_type', options.target_build_type])
 
+  if options.goma_threads:
+    cmd.extend(['--goma_threads', options.goma_threads])
+
   cmd = [str(c) for c in cmd]
 
   return_code = subprocess.call(cmd)
@@ -122,10 +125,13 @@ def main():
                     help='Path to extra source file. If this is supplied, '
                     'bisect script will use this to override default behavior.')
   parser.add_option('--target_build_type',
-                     type='choice',
-                     choices=['Release', 'Debug'],
-                     help='The target build type. Choices are "Release" '
-                     'or "Debug".')
+                    type='choice',
+                    choices=['Release', 'Debug'],
+                    help='The target build type. Choices are "Release" '
+                    'or "Debug".')
+  parser.add_option('--goma_threads',
+                    type='int',
+                    help='Number of goma threads to use.')
   options, _ = parser.parse_args()
   error_msg = ''
   if not options.good_revision:
