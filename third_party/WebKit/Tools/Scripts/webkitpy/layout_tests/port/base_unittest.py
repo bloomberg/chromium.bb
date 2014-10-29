@@ -56,10 +56,6 @@ class PortTest(unittest.TestCase):
             return TestPort(host, **kwargs)
         return Port(host, port_name or 'baseport', **kwargs)
 
-    def test_default_child_processes(self):
-        port = self.make_port()
-        self.assertIsNotNone(port.default_child_processes())
-
     def test_format_wdiff_output_as_html(self):
         output = "OUTPUT %s %s %s" % (Port._WDIFF_DEL, Port._WDIFF_ADD, Port._WDIFF_END)
         html = self.make_port()._format_wdiff_output_as_html(output)

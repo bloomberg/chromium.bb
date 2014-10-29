@@ -132,6 +132,17 @@ class PortTestCase(unittest.TestCase):
             self.assertIn('pretty patches', logs)        # And, hereere we should get warnings about both.
             self.assertIn('build requirements', logs)
 
+    def test_default_child_processes(self):
+        port = self.make_port()
+        num_workers = port.default_child_processes()
+        self.assertGreaterEqual(num_workers, 1)
+
+        # Test that we reduce the number of workers for sanitizer builds.
+        port._options.enable_sanitizer = True
+        port.host.executive.cpu_count = lambda: 8
+        num_sanitized_workers = port.default_child_processes()
+        self.assertLess(num_sanitized_workers, 8)
+
     def test_default_max_locked_shards(self):
         port = self.make_port()
         port.default_child_processes = lambda: 16
