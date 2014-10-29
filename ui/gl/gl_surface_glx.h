@@ -35,14 +35,14 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   static bool IsTextureFromPixmapSupported();
   static bool IsOMLSyncControlSupported();
 
-  virtual void* GetDisplay() override;
+  void* GetDisplay() override;
 
   // Get the FB config that the surface was created with or NULL if it is not
   // a GLX drawable.
   virtual void* GetConfig() = 0;
 
  protected:
-  virtual ~GLSurfaceGLX();
+  ~GLSurfaceGLX() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLX);
@@ -55,28 +55,28 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   explicit NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window);
 
   // Implement GLSurfaceGLX.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool Resize(const gfx::Size& size) override;
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
-  virtual gfx::Size GetSize() override;
-  virtual void* GetHandle() override;
-  virtual bool SupportsPostSubBuffer() override;
-  virtual void* GetConfig() override;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
-  virtual VSyncProvider* GetVSyncProvider() override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool Resize(const gfx::Size& size) override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  gfx::Size GetSize() override;
+  void* GetHandle() override;
+  bool SupportsPostSubBuffer() override;
+  void* GetConfig() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
+  VSyncProvider* GetVSyncProvider() override;
 
  protected:
-  virtual ~NativeViewGLSurfaceGLX();
+  ~NativeViewGLSurfaceGLX() override;
 
  private:
   // The handle for the drawable to make current or swap.
   gfx::AcceleratedWidget GetDrawableHandle() const;
 
   // PlatformEventDispatcher implementation
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   // Window passed in at creation. Always valid.
   gfx::AcceleratedWidget parent_window_;
@@ -98,16 +98,16 @@ class GL_EXPORT PbufferGLSurfaceGLX : public GLSurfaceGLX {
   explicit PbufferGLSurfaceGLX(const gfx::Size& size);
 
   // Implement GLSurfaceGLX.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
-  virtual gfx::Size GetSize() override;
-  virtual void* GetHandle() override;
-  virtual void* GetConfig() override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  gfx::Size GetSize() override;
+  void* GetHandle() override;
+  void* GetConfig() override;
 
  protected:
-  virtual ~PbufferGLSurfaceGLX();
+  ~PbufferGLSurfaceGLX() override;
 
  private:
   gfx::Size size_;

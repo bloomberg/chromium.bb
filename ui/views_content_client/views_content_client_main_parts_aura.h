@@ -20,11 +20,11 @@ class ViewsContentClientMainPartsAura : public ViewsContentClientMainParts {
   ViewsContentClientMainPartsAura(
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
-  virtual ~ViewsContentClientMainPartsAura();
+  ~ViewsContentClientMainPartsAura() override;
 
   // content::BrowserMainParts:
-  virtual void ToolkitInitialized() override;
-  virtual void PostMainMessageLoopRun() override;
+  void ToolkitInitialized() override;
+  void PostMainMessageLoopRun() override;
 
  private:
   scoped_ptr< ::wm::WMState> wm_state_;

@@ -59,20 +59,16 @@ class ColoredLayer : public Layer, public LayerDelegate {
     set_delegate(this);
   }
 
-  virtual ~ColoredLayer() { }
+  ~ColoredLayer() override {}
 
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
-    canvas->DrawColor(color_);
-  }
+  void OnPaintLayer(gfx::Canvas* canvas) override { canvas->DrawColor(color_); }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -89,10 +85,10 @@ class LayerWithRealCompositorTest : public testing::Test {
       LOG(ERROR) << "Could not open test data directory.";
     }
   }
-  virtual ~LayerWithRealCompositorTest() {}
+  ~LayerWithRealCompositorTest() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     bool enable_pixel_output = true;
     ui::ContextFactory* context_factory =
         InitializeContextFactoryForTests(enable_pixel_output);
@@ -103,7 +99,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     compositor_host_->Show();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     compositor_host_.reset();
     TerminateContextFactoryForTests();
   }
@@ -210,7 +206,7 @@ class LayerWithRealCompositorTest : public testing::Test {
 class TestLayerDelegate : public LayerDelegate {
  public:
   explicit TestLayerDelegate() { reset(); }
-  virtual ~TestLayerDelegate() {}
+  ~TestLayerDelegate() override {}
 
   void AddColor(SkColor color) {
     colors_.push_back(color);
@@ -228,7 +224,7 @@ class TestLayerDelegate : public LayerDelegate {
   }
 
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     SkISize size = canvas->sk_canvas()->getBaseLayerSize();
     paint_size_ = gfx::Size(size.width(), size.height());
     canvas->DrawColor(colors_[color_index_]);
@@ -238,14 +234,13 @@ class TestLayerDelegate : public LayerDelegate {
     scale_y_ = matrix.getScaleY();
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
     device_scale_factor_ = device_scale_factor;
   }
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -271,7 +266,7 @@ class TestLayerDelegate : public LayerDelegate {
 class DrawTreeLayerDelegate : public LayerDelegate {
  public:
   DrawTreeLayerDelegate() : painted_(false) {}
-  virtual ~DrawTreeLayerDelegate() {}
+  ~DrawTreeLayerDelegate() override {}
 
   void Reset() {
     painted_ = false;
@@ -281,15 +276,13 @@ class DrawTreeLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     painted_ = true;
     canvas->DrawColor(SK_ColorWHITE);
   }
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -302,15 +295,14 @@ class DrawTreeLayerDelegate : public LayerDelegate {
 class NullLayerDelegate : public LayerDelegate {
  public:
   NullLayerDelegate() {}
-  virtual ~NullLayerDelegate() {}
+  ~NullLayerDelegate() override {}
 
  private:
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {}
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -335,25 +327,22 @@ class TestCompositorObserver : public CompositorObserver {
   }
 
  private:
-  virtual void OnCompositingDidCommit(Compositor* compositor) override {
+  void OnCompositingDidCommit(Compositor* compositor) override {
     committed_ = true;
   }
 
-  virtual void OnCompositingStarted(Compositor* compositor,
-                                    base::TimeTicks start_time) override {
+  void OnCompositingStarted(Compositor* compositor,
+                            base::TimeTicks start_time) override {
     started_ = true;
   }
 
-  virtual void OnCompositingEnded(Compositor* compositor) override {
-    ended_ = true;
-  }
+  void OnCompositingEnded(Compositor* compositor) override { ended_ = true; }
 
-  virtual void OnCompositingAborted(Compositor* compositor) override {
+  void OnCompositingAborted(Compositor* compositor) override {
     aborted_ = true;
   }
 
-  virtual void OnCompositingLockStateChanged(Compositor* compositor) override {
-  }
+  void OnCompositingLockStateChanged(Compositor* compositor) override {}
 
   bool committed_;
   bool started_;
@@ -397,10 +386,10 @@ TEST_F(LayerWithRealCompositorTest, Hierarchy) {
 class LayerWithDelegateTest : public testing::Test {
  public:
   LayerWithDelegateTest() {}
-  virtual ~LayerWithDelegateTest() {}
+  ~LayerWithDelegateTest() override {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     bool enable_pixel_output = false;
     ui::ContextFactory* context_factory =
         InitializeContextFactoryForTests(enable_pixel_output);
@@ -411,7 +400,7 @@ class LayerWithDelegateTest : public testing::Test {
     compositor_host_->Show();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     compositor_host_.reset();
     TerminateContextFactoryForTests();
   }
@@ -606,14 +595,14 @@ TEST_F(LayerWithRealCompositorTest, HierarchyNoTexture) {
 class LayerWithNullDelegateTest : public LayerWithDelegateTest {
  public:
   LayerWithNullDelegateTest() {}
-  virtual ~LayerWithNullDelegateTest() {}
+  ~LayerWithNullDelegateTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     LayerWithDelegateTest::SetUp();
     default_layer_delegate_.reset(new NullLayerDelegate());
   }
 
-  virtual Layer* CreateLayer(LayerType type) override {
+  Layer* CreateLayer(LayerType type) override {
     Layer* layer = new Layer(type);
     layer->set_delegate(default_layer_delegate_.get());
     return layer;
@@ -631,7 +620,7 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
     return layer;
   }
 
-  virtual Layer* CreateNoTextureLayer(const gfx::Rect& bounds) override {
+  Layer* CreateNoTextureLayer(const gfx::Rect& bounds) override {
     Layer* layer = CreateLayer(LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;
@@ -1175,7 +1164,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
  public:
   SchedulePaintLayerDelegate() : paint_count_(0), layer_(NULL) {}
 
-  virtual ~SchedulePaintLayerDelegate() {}
+  ~SchedulePaintLayerDelegate() override {}
 
   void set_layer(Layer* layer) {
     layer_ = layer;
@@ -1196,7 +1185,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(gfx::Canvas* canvas) override {
     paint_count_++;
     if (!schedule_paint_rect_.IsEmpty()) {
       layer_->SchedulePaint(schedule_paint_rect_);
@@ -1207,13 +1196,11 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
       last_clip_rect_ = gfx::SkRectToRectF(sk_clip_rect);
   }
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {
-  }
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
-  virtual base::Closure PrepareForLayerBoundsChange() override {
+  base::Closure PrepareForLayerBoundsChange() override {
     return base::Closure();
   }
 
@@ -1712,8 +1699,7 @@ class FrameDamageCheckingDelegate : public TestLayerDelegate {
  public:
   FrameDamageCheckingDelegate() : delegated_frame_damage_called_(false) {}
 
-  virtual void OnDelegatedFrameDamage(
-      const gfx::Rect& damage_rect_in_dip) override {
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {
     delegated_frame_damage_called_ = true;
     delegated_frame_damage_rect_ = damage_rect_in_dip;
   }

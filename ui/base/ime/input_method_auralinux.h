@@ -19,32 +19,31 @@ class UI_BASE_EXPORT InputMethodAuraLinux
       public LinuxInputMethodContextDelegate {
  public:
   explicit InputMethodAuraLinux(internal::InputMethodDelegate* delegate);
-  virtual ~InputMethodAuraLinux();
+  ~InputMethodAuraLinux() override;
 
   // Overriden from InputMethod.
-  virtual void Init(bool focused) override;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) override;
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) override;
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) override;
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) override;
-  virtual void CancelComposition(const TextInputClient* client) override;
-  virtual void OnInputLocaleChanged() override;
-  virtual std::string GetInputLocale() override;
-  virtual bool IsActive() override;
-  virtual bool IsCandidatePopupOpen() const override;
+  void Init(bool focused) override;
+  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                NativeEventResult* result) override;
+  bool DispatchKeyEvent(const ui::KeyEvent& event) override;
+  void OnTextInputTypeChanged(const TextInputClient* client) override;
+  void OnCaretBoundsChanged(const TextInputClient* client) override;
+  void CancelComposition(const TextInputClient* client) override;
+  void OnInputLocaleChanged() override;
+  std::string GetInputLocale() override;
+  bool IsActive() override;
+  bool IsCandidatePopupOpen() const override;
 
   // Overriden from ui::LinuxInputMethodContextDelegate
-  virtual void OnCommit(const base::string16& text) override;
-  virtual void OnPreeditChanged(const CompositionText& composition_text)
-      override;
-  virtual void OnPreeditEnd() override;
-  virtual void OnPreeditStart() override;
+  void OnCommit(const base::string16& text) override;
+  void OnPreeditChanged(const CompositionText& composition_text) override;
+  void OnPreeditEnd() override;
+  void OnPreeditStart() override;
 
  protected:
   // Overridden from InputMethodBase.
-  virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused) override;
+  void OnDidChangeFocusedClient(TextInputClient* focused_before,
+                                TextInputClient* focused) override;
 
  private:
   // Allows to fire a VKEY_PROCESSKEY key event.

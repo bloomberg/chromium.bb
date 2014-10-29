@@ -149,13 +149,10 @@ class ResourceBundleTest : public testing::Test {
   ResourceBundleTest() : resource_bundle_(NULL) {
   }
 
-  virtual ~ResourceBundleTest() {
-  }
+  ~ResourceBundleTest() override {}
 
   // Overridden from testing::Test:
-  virtual void TearDown() override {
-    delete resource_bundle_;
-  }
+  void TearDown() override { delete resource_bundle_; }
 
   // Returns new ResoureBundle with the specified |delegate|. The
   // ResourceBundleTest class manages the lifetime of the returned
@@ -380,10 +377,9 @@ class ResourceBundleImageTest : public ResourceBundleTest {
  public:
   ResourceBundleImageTest() {}
 
-  virtual ~ResourceBundleImageTest() {
-  }
+  ~ResourceBundleImageTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a temporary directory to write test resource bundles to.
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
   }

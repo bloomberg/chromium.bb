@@ -150,9 +150,7 @@ class ImageSkiaTest : public testing::Test {
     supported_scales.push_back(2.0f);
     ImageSkia::SetSupportedScales(supported_scales);
   }
-  virtual ~ImageSkiaTest() {
-    ImageSkia::SetSupportedScales(old_scales_);
-  }
+  ~ImageSkiaTest() override { ImageSkia::SetSupportedScales(old_scales_); }
 
  private:
   std::vector<float> old_scales_;

@@ -21,7 +21,7 @@ class GL_EXPORT GLImageLinuxDMABuffer : public GLImageEGL {
                   int pitch);
 
  protected:
-  virtual ~GLImageLinuxDMABuffer();
+  ~GLImageLinuxDMABuffer() override;
 
  private:
   unsigned internalformat_;

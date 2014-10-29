@@ -21,7 +21,7 @@ namespace ui {
 class AXTreeSerializerTest : public testing::Test {
  public:
   AXTreeSerializerTest() {}
-  virtual ~AXTreeSerializerTest() {}
+  ~AXTreeSerializerTest() override {}
 
  protected:
   void CreateTreeSerializer();

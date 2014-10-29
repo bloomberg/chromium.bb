@@ -29,7 +29,7 @@ class GL_EXPORT GLXApiBase : public GLXApi {
 
  protected:
   GLXApiBase();
-  virtual ~GLXApiBase();
+  ~GLXApiBase() override;
   void InitializeBase(DriverGLX* driver);
 
   DriverGLX* driver_;
@@ -38,7 +38,7 @@ class GL_EXPORT GLXApiBase : public GLXApi {
 class GL_EXPORT RealGLXApi : public GLXApiBase {
  public:
   RealGLXApi();
-  virtual ~RealGLXApi();
+  ~RealGLXApi() override;
   void Initialize(DriverGLX* driver);
 };
 
@@ -46,7 +46,7 @@ class GL_EXPORT RealGLXApi : public GLXApiBase {
 class GL_EXPORT TraceGLXApi : public GLXApi {
  public:
   TraceGLXApi(GLXApi* glx_api) : glx_api_(glx_api) { }
-  virtual ~TraceGLXApi();
+  ~TraceGLXApi() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

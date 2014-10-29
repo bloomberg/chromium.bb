@@ -26,7 +26,7 @@ do { \
 class ImageFamilyTest : public testing::Test {
  public:
   // Construct an ImageFamily. Implicitly tests Add and Empty.
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_TRUE(image_family_.empty());
 
     // Aspect ratio 1:1.

@@ -21,12 +21,12 @@ class ViewsContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ViewsContentBrowserClient(
       ViewsContentClient* views_content_client);
-  virtual ~ViewsContentBrowserClient();
+  ~ViewsContentBrowserClient() override;
 
   // content::ContentBrowserClient:
-  virtual content::BrowserMainParts* CreateBrowserMainParts(
+  content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  virtual net::URLRequestContextGetter* CreateRequestContext(
+  net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;

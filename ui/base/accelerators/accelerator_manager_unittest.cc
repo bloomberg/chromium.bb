@@ -55,7 +55,7 @@ Accelerator GetAccelerator(KeyboardCode code, int mask) {
 class AcceleratorManagerTest : public testing::Test {
  public:
   AcceleratorManagerTest() {}
-  virtual ~AcceleratorManagerTest() {}
+  ~AcceleratorManagerTest() override {}
 
   AcceleratorManager manager_;
 };

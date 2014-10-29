@@ -126,16 +126,11 @@ class InputMethodBaseTest : public testing::Test {
  protected:
   InputMethodBaseTest() {
   }
-  virtual ~InputMethodBaseTest() {
-  }
+  ~InputMethodBaseTest() override {}
 
-  virtual void SetUp() {
-    message_loop_.reset(new base::MessageLoopForUI);
-  }
+  void SetUp() override { message_loop_.reset(new base::MessageLoopForUI); }
 
-  virtual void TearDown() {
-    message_loop_.reset();
-  }
+  void TearDown() override { message_loop_.reset(); }
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;

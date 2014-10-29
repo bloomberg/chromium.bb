@@ -36,8 +36,7 @@ class SelectionRequestorTest : public testing::Test {
     atom_cache_.allow_uncached_atoms();
   }
 
-  virtual ~SelectionRequestorTest() {
-  }
+  ~SelectionRequestorTest() override {}
 
   // Responds to the SelectionRequestor's XConvertSelection() request by
   // - Setting the property passed into the XConvertSelection() request to
@@ -65,7 +64,7 @@ class SelectionRequestorTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Make X11 synchronous for our display connection.
     XSynchronize(x_display_, True);
 
@@ -85,7 +84,7 @@ class SelectionRequestorTest : public testing::Test {
     requestor_.reset(new SelectionRequestor(x_display_, x_window_, NULL));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     requestor_.reset();
     event_source_.reset();
     XDestroyWindow(x_display_, x_window_);

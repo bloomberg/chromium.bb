@@ -23,12 +23,12 @@ class TestCompositorHostX11 : public TestCompositorHost {
  public:
   TestCompositorHostX11(const gfx::Rect& bounds,
                         ui::ContextFactory* context_factory);
-  virtual ~TestCompositorHostX11();
+  ~TestCompositorHostX11() override;
 
  private:
   // Overridden from TestCompositorHost:
-  virtual void Show() override;
-  virtual ui::Compositor* GetCompositor() override;
+  void Show() override;
+  ui::Compositor* GetCompositor() override;
 
   void Draw();
 

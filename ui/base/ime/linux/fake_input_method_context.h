@@ -15,11 +15,10 @@ class FakeInputMethodContext : public LinuxInputMethodContext {
   FakeInputMethodContext();
 
   // Overriden from ui::LinuxInputMethodContext
-  virtual bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
-  virtual void Reset() override;
-  virtual void OnTextInputTypeChanged(ui::TextInputType text_input_type)
-      override;
-  virtual void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
+  bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
+  void Reset() override;
+  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
+  void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeInputMethodContext);

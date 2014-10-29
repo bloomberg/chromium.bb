@@ -50,7 +50,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   };
 
   KeyboardControllerProxy();
-  virtual ~KeyboardControllerProxy();
+  ~KeyboardControllerProxy() override;
 
   // Gets the virtual keyboard window.  Ownership of the returned Window remains
   // with the proxy.
@@ -113,10 +113,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
   virtual void SetupWebContents(content::WebContents* contents);
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
  private:
   friend class TestApi;

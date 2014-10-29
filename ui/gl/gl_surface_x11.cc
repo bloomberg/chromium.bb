@@ -28,16 +28,16 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   static bool InitializeOneOff();
 
   // Implement a subset of GLSurface.
-  virtual bool Initialize() override;
-  virtual void Destroy() override;
-  virtual bool Resize(const gfx::Size& new_size) override;
-  virtual bool IsOffscreen() override;
-  virtual bool SwapBuffers() override;
-  virtual bool SupportsPostSubBuffer() override;
-  virtual bool PostSubBuffer(int x, int y, int width, int height) override;
+  bool Initialize() override;
+  void Destroy() override;
+  bool Resize(const gfx::Size& new_size) override;
+  bool IsOffscreen() override;
+  bool SwapBuffers() override;
+  bool SupportsPostSubBuffer() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
 
  protected:
-  virtual ~NativeViewGLSurfaceOSMesa();
+  ~NativeViewGLSurfaceOSMesa() override;
 
  private:
   Display* xdisplay_;

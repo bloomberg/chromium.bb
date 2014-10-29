@@ -57,12 +57,11 @@ class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
         proxy_(proxy) {
   }
 
-  virtual ~KeyboardContainerTargeter() {}
+  ~KeyboardContainerTargeter() override {}
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const override {
+  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override {
     if (proxy_ && !proxy_->HasKeyboardWindow())
       return true;
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
@@ -84,38 +83,38 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
  public:
   explicit KeyboardWindowDelegate(keyboard::KeyboardControllerProxy* proxy)
       : proxy_(proxy) {}
-  virtual ~KeyboardWindowDelegate() {}
+  ~KeyboardWindowDelegate() override {}
 
  private:
   // Overridden from aura::WindowDelegate:
-  virtual gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-  virtual gfx::Size GetMaximumSize() const override { return gfx::Size(); }
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) override {
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override {
     bounds_ = new_bounds;
   }
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) override {
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
-  virtual int GetNonClientComponent(const gfx::Point& point) const override {
+  int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;
   }
-  virtual bool ShouldDescendIntoChildForEventHandling(
+  bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) override {
     return true;
   }
-  virtual bool CanFocus() override { return false; }
-  virtual void OnCaptureLost() override {}
-  virtual void OnPaint(gfx::Canvas* canvas) override {}
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
-  virtual void OnWindowDestroying(aura::Window* window) override {}
-  virtual void OnWindowDestroyed(aura::Window* window) override { delete this; }
-  virtual void OnWindowTargetVisibilityChanged(bool visible) override {}
-  virtual bool HasHitTestMask() const override {
+  bool CanFocus() override { return false; }
+  void OnCaptureLost() override {}
+  void OnPaint(gfx::Canvas* canvas) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  void OnWindowDestroying(aura::Window* window) override {}
+  void OnWindowDestroyed(aura::Window* window) override { delete this; }
+  void OnWindowTargetVisibilityChanged(bool visible) override {}
+  bool HasHitTestMask() const override {
     return !proxy_ || proxy_->HasKeyboardWindow();
   }
-  virtual void GetHitTestMask(gfx::Path* mask) const override {
+  void GetHitTestMask(gfx::Path* mask) const override {
     if (proxy_ && !proxy_->HasKeyboardWindow())
       return;
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
@@ -167,15 +166,13 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
   CallbackAnimationObserver(ui::LayerAnimator* animator,
                             base::Callback<void(void)> callback);
-  virtual ~CallbackAnimationObserver();
+  ~CallbackAnimationObserver() override;
 
  private:
   // Overridden from ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override;
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* seq) override;
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* seq) override {}
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
   ui::LayerAnimator* animator_;
   base::Callback<void(void)> callback_;
@@ -207,10 +204,10 @@ void CallbackAnimationObserver::OnLayerAnimationAborted(
 
 class WindowBoundsChangeObserver : public aura::WindowObserver {
  public:
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
-  virtual void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroyed(aura::Window* window) override;
 
   void AddObservedWindow(aura::Window* window);
   void RemoveAllObservedWindows();

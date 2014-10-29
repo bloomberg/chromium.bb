@@ -80,11 +80,11 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
 
  private:
   // ImplicitAnimationObserver implementation
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     animations_completed_ = true;
   }
 
-  virtual bool RequiresNotificationWhenAnimatorDestroyed() const override {
+  bool RequiresNotificationWhenAnimatorDestroyed() const override {
     return notify_when_animator_destructed_;
   }
 
@@ -101,19 +101,15 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
     : animator_(animator) {
   }
 
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
     animator_->StopAnimating();
   }
 
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override {
     animator_->StopAnimating();
   }
 
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) override {
-  }
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {}
 
  private:
   LayerAnimator* animator_;
@@ -151,14 +147,14 @@ class TestLayerAnimator : public LayerAnimator {
   }
 
  protected:
-  virtual ~TestLayerAnimator() {
+  ~TestLayerAnimator() override {
     if (destruction_observer_) {
       destruction_observer_->NotifyAnimatorDeleted();
     }
   }
 
-  virtual void ProgressAnimation(LayerAnimationSequence* sequence,
-                                 base::TimeTicks now) override {
+  void ProgressAnimation(LayerAnimationSequence* sequence,
+                         base::TimeTicks now) override {
     EXPECT_TRUE(HasAnimation(sequence));
     LayerAnimator::ProgressAnimation(sequence, now);
   }
@@ -180,9 +176,7 @@ class TestLayerAnimationSequence : public LayerAnimationSequence {
     (*num_live_instances_)++;
   }
 
-  virtual ~TestLayerAnimationSequence() {
-    (*num_live_instances_)--;
-  }
+  ~TestLayerAnimationSequence() override { (*num_live_instances_)--; }
 
  private:
   int* num_live_instances_;
@@ -1948,7 +1942,7 @@ TEST(LayerAnimatorTest, CallbackDeletesAnimationInProgress) {
         max_width_(max_width) {
     }
 
-    virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) override {
+    void SetBoundsFromAnimation(const gfx::Rect& bounds) override {
       TestLayerAnimationDelegate::SetBoundsFromAnimation(bounds);
       if (bounds.width() > max_width_)
         animator_->StopAnimating();
@@ -2252,7 +2246,7 @@ public:
     animator()->AddObserver(this);
   }
 
-  virtual ~DeletingObserver() {
+  ~DeletingObserver() override {
     animator()->RemoveObserver(this);
     *was_deleted_ = true;
   }
@@ -2281,20 +2275,17 @@ public:
   }
 
   // LayerAnimationObserver implementation.
-  virtual void OnLayerAnimationEnded(
-      LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
     if (delete_on_animation_ended_)
       delete this;
   }
 
-  virtual void OnLayerAnimationAborted(
-      LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationAborted(LayerAnimationSequence* sequence) override {
     if (delete_on_animation_aborted_)
       delete this;
   }
 
-  virtual void OnLayerAnimationScheduled(
-      LayerAnimationSequence* sequence) override {
+  void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {
     if (delete_on_animation_scheduled_)
       delete this;
   }
@@ -2505,10 +2496,10 @@ TEST(LayerAnimatorTest, TestScopedCounterAnimation) {
 class CollectionLayerAnimationDelegate : public TestLayerAnimationDelegate {
  public:
   CollectionLayerAnimationDelegate() : collection(NULL) {}
-  virtual ~CollectionLayerAnimationDelegate() {}
+  ~CollectionLayerAnimationDelegate() override {}
 
   // LayerAnimationDelegate:
-  virtual LayerAnimatorCollection* GetLayerAnimatorCollection() override {
+  LayerAnimatorCollection* GetLayerAnimatorCollection() override {
     return &collection;
   }
 

@@ -74,12 +74,12 @@ class EGLSyncControlVSyncProvider
         surface_(surface) {
   }
 
-  virtual ~EGLSyncControlVSyncProvider() { }
+  ~EGLSyncControlVSyncProvider() override {}
 
  protected:
-  virtual bool GetSyncValues(int64* system_time,
-                             int64* media_stream_counter,
-                             int64* swap_buffer_counter) override {
+  bool GetSyncValues(int64* system_time,
+                     int64* media_stream_counter,
+                     int64* swap_buffer_counter) override {
     uint64 u_system_time, u_media_stream_counter, u_swap_buffer_counter;
     bool result = eglGetSyncValuesCHROMIUM(
         g_display, surface_, &u_system_time,
@@ -92,7 +92,7 @@ class EGLSyncControlVSyncProvider
     return result;
   }
 
-  virtual bool GetMscRate(int32* numerator, int32* denominator) override {
+  bool GetMscRate(int32* numerator, int32* denominator) override {
     return false;
   }
 

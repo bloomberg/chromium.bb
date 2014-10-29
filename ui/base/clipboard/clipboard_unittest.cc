@@ -50,7 +50,7 @@ class ClipboardTest : public PlatformTest {
   ClipboardTest() {}
 #endif
 
-  virtual ~ClipboardTest() {
+  ~ClipboardTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 

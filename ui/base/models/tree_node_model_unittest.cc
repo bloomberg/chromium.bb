@@ -22,7 +22,7 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
       : added_count_(0),
         removed_count_(0),
         changed_count_(0) {}
-  virtual ~TreeNodeModelTest() {}
+  ~TreeNodeModelTest() override {}
 
  protected:
   std::string GetObserverCountStateAndClear() {

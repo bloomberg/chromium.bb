@@ -23,19 +23,19 @@ namespace {
 class TestFontDelegate : public LinuxFontDelegate {
  public:
   TestFontDelegate() {}
-  virtual ~TestFontDelegate() {}
+  ~TestFontDelegate() override {}
 
   void set_params(const FontRenderParams& params) { params_ = params; }
 
-  virtual FontRenderParams GetDefaultFontRenderParams() const override {
+  FontRenderParams GetDefaultFontRenderParams() const override {
     return params_;
   }
-  virtual scoped_ptr<ScopedPangoFontDescription>
-      GetDefaultPangoFontDescription() const override {
+  scoped_ptr<ScopedPangoFontDescription> GetDefaultPangoFontDescription()
+      const override {
     NOTIMPLEMENTED();
     return scoped_ptr<ScopedPangoFontDescription>();
   }
-  virtual double GetFontDPI() const override {
+  double GetFontDPI() const override {
     NOTIMPLEMENTED();
     return 96.0;
   }
@@ -70,7 +70,7 @@ class FontRenderParamsTest : public testing::Test {
     ClearFontRenderParamsCacheForTest();
   }
 
-  virtual ~FontRenderParamsTest() {
+  ~FontRenderParamsTest() override {
     LinuxFontDelegate::SetInstance(
         const_cast<LinuxFontDelegate*>(original_font_delegate_));
     TearDownFontconfig();

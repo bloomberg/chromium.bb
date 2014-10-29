@@ -24,21 +24,21 @@ class GLContextEGL : public GLContextReal {
   explicit GLContextEGL(GLShareGroup* share_group);
 
   // Implement GLContext.
-  virtual bool Initialize(
-      GLSurface* compatible_surface, GpuPreference gpu_preference) override;
-  virtual void Destroy() override;
-  virtual bool MakeCurrent(GLSurface* surface) override;
-  virtual void ReleaseCurrent(GLSurface* surface) override;
-  virtual bool IsCurrent(GLSurface* surface) override;
-  virtual void* GetHandle() override;
-  virtual void SetSwapInterval(int interval) override;
-  virtual std::string GetExtensions() override;
-  virtual bool WasAllocatedUsingRobustnessExtension() override;
-  virtual bool GetTotalGpuMemory(size_t* bytes) override;
-  virtual void SetUnbindFboOnMakeCurrent() override;
+  bool Initialize(GLSurface* compatible_surface,
+                  GpuPreference gpu_preference) override;
+  void Destroy() override;
+  bool MakeCurrent(GLSurface* surface) override;
+  void ReleaseCurrent(GLSurface* surface) override;
+  bool IsCurrent(GLSurface* surface) override;
+  void* GetHandle() override;
+  void SetSwapInterval(int interval) override;
+  std::string GetExtensions() override;
+  bool WasAllocatedUsingRobustnessExtension() override;
+  bool GetTotalGpuMemory(size_t* bytes) override;
+  void SetUnbindFboOnMakeCurrent() override;
 
  protected:
-  virtual ~GLContextEGL();
+  ~GLContextEGL() override;
 
  private:
   EGLContext context_;

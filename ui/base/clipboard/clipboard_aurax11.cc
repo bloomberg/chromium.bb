@@ -74,11 +74,11 @@ class SelectionChangeObserver : public ui::PlatformEventObserver {
   friend struct DefaultSingletonTraits<SelectionChangeObserver>;
 
   SelectionChangeObserver();
-  virtual ~SelectionChangeObserver();
+  ~SelectionChangeObserver() override;
 
   // ui::PlatformEventObserver:
-  virtual void WillProcessEvent(const ui::PlatformEvent& event) override;
-  virtual void DidProcessEvent(const ui::PlatformEvent& event) override {}
+  void WillProcessEvent(const ui::PlatformEvent& event) override;
+  void DidProcessEvent(const ui::PlatformEvent& event) override {}
 
   int event_base_;
   Atom clipboard_atom_;
@@ -229,7 +229,7 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
  public:
   AuraX11Details();
-  virtual ~AuraX11Details();
+  ~AuraX11Details() override;
 
   X11AtomCache* atom_cache() { return &atom_cache_; }
 
@@ -290,8 +290,8 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
 
  private:
   // PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const PlatformEvent& event) override;
-  virtual uint32_t DispatchEvent(const PlatformEvent& event) override;
+  bool CanDispatchEvent(const PlatformEvent& event) override;
+  uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // Our X11 state.
   Display* x_display_;
