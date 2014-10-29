@@ -243,7 +243,7 @@ AccessibilityController::AccessibleElementById(const std::string& id) {
   if (root_element_.isNull())
     root_element_ = web_view_->accessibilityObject();
 
-  if (!root_element_.updateBackingStoreAndCheckValidity())
+  if (!root_element_.updateLayoutAndCheckValidity())
     return v8::Handle<v8::Object>();
 
   return FindAccessibleElementByIdRecursive(

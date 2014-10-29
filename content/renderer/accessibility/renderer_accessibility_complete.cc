@@ -207,7 +207,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     WebAXObject obj = document.accessibilityObjectFromID(event.id);
 
     // Make sure the object still exists.
-    if (!obj.updateBackingStoreAndCheckValidity())
+    if (!obj.updateLayoutAndCheckValidity())
       continue;
 
     // If it's ignored, find the first ancestor that's not ignored.
@@ -393,7 +393,7 @@ void RendererAccessibilityComplete::OnHitTest(gfx::Point point) {
   if (document.isNull())
     return;
   WebAXObject root_obj = document.accessibilityObject();
-  if (!root_obj.updateBackingStoreAndCheckValidity())
+  if (!root_obj.updateLayoutAndCheckValidity())
     return;
 
   WebAXObject obj = root_obj.hitTest(point);
