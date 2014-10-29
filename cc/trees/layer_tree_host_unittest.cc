@@ -4184,6 +4184,8 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
+    settings->use_zero_copy = false;
+    settings->use_one_copy = false;
   }
 
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
