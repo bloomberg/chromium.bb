@@ -1088,6 +1088,9 @@
         'mojo/services/mojo_demuxer_stream_adapter.h',
         'mojo/services/mojo_renderer_service.cc',
         'mojo/services/mojo_renderer_service.h',
+        'mojo/services/renderer_config.cc',
+        'mojo/services/renderer_config.h',
+        'mojo/services/renderer_config_default.cc',
       ],
     },
     {

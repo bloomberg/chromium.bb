@@ -63,6 +63,9 @@ shared_library("renderer_app") {
   sources = [
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
+    "renderer_config.cc",
+    "renderer_config.h",
+    "renderer_config_default.cc",
   ]
 }
 

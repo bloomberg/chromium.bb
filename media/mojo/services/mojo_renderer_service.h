@@ -10,9 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/buffering_state.h"
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
@@ -24,8 +22,8 @@ class ApplicationConnection;
 
 namespace media {
 
-class AudioManager;
 class AudioRenderer;
+class AudioRendererSink;
 class MojoDemuxerStreamAdapter;
 class TimeSource;
 
@@ -87,6 +85,7 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   State state_;
 
   scoped_ptr<MojoDemuxerStreamAdapter> stream_;
+  scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   scoped_ptr<AudioRenderer> audio_renderer_;
 
   TimeSource* time_source_;
@@ -99,12 +98,6 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   bool ended_;
 
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
-
-  // TODO(xhwang): Currently we are using a default |audio_hardware_config_|.
-  // Do we need different configs on different platforms?
-  media::FakeAudioLogFactory fake_audio_log_factory_;
-  scoped_ptr<media::AudioManager> audio_manager_;
-  media::AudioHardwareConfig audio_hardware_config_;
 
   base::WeakPtrFactory<MojoRendererService> weak_factory_;
   base::WeakPtr<MojoRendererService> weak_this_;

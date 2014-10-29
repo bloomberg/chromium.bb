@@ -7,18 +7,14 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_vector.h"
-#include "media/audio/audio_manager.h"
-#include "media/audio/audio_manager_base.h"
-#include "media/audio/null_audio_sink.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_log.h"
 #include "media/filters/audio_renderer_impl.h"
-#include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/opus_audio_decoder.h"
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
+#include "media/mojo/services/renderer_config.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
@@ -30,12 +26,10 @@ namespace media {
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
 
-#if !defined(OS_ANDROID)
 static void LogMediaSourceError(const scoped_refptr<MediaLog>& media_log,
                                 const std::string& error) {
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
 }
-#endif
 
 static base::TimeDelta TimeUpdateInterval() {
   return base::TimeDelta::FromMilliseconds(kTimeUpdateIntervalMs);
@@ -68,18 +62,6 @@ MojoRendererService::MojoRendererService(
       time_source_(NULL),
       time_ticking_(false),
       ended_(false),
-      // AudioManager() has been created by WebMediaPlayerFactory. This will
-      // be problematic when MojoRendererService really runs in a separate
-      // process.
-      // TODO(xhwang/dalecurtis): Figure out what config we should use.
-      audio_manager_(
-          media::AudioManager::Get()
-              ? media::AudioManager::Get()
-              : media::AudioManager::Create(&fake_audio_log_factory_)),
-      audio_hardware_config_(
-          audio_manager_->GetInputStreamParameters(
-              media::AudioManagerBase::kDefaultDeviceId),
-          audio_manager_->GetDefaultOutputStreamParameters()),
       weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()) {
   DVLOG(1) << __FUNCTION__;
@@ -87,26 +69,17 @@ MojoRendererService::MojoRendererService(
   scoped_refptr<base::SingleThreadTaskRunner> runner(
       base::MessageLoop::current()->task_runner());
   scoped_refptr<MediaLog> media_log(new MediaLog());
-
-  // TODO(xhwang): Provide a more general way to add new decoders.
-  ScopedVector<AudioDecoder> audio_decoders;
-
-#if !defined(OS_ANDROID)
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(
-      runner, base::Bind(&LogMediaSourceError, media_log)));
-  audio_decoders.push_back(new media::OpusAudioDecoder(runner));
-#endif
+  RendererConfig* renderer_config = RendererConfig::Get();
+  audio_renderer_sink_ = renderer_config->GetAudioRendererSink();
 
   audio_renderer_.reset(new AudioRendererImpl(
       runner,
-      // TODO(tim): We should use |connection| passed to MojoRendererService
-      // to connect to a MojoAudioRendererSink implementation that we would
-      // wrap in an AudioRendererSink and pass in here.
-      new NullAudioSink(runner),
-      audio_decoders.Pass(),
-      // TODO(tim): Not needed for now?
+      audio_renderer_sink_.get(),
+      renderer_config->GetAudioDecoders(
+                           runner, base::Bind(&LogMediaSourceError, media_log))
+          .Pass(),
       SetDecryptorReadyCB(),
-      audio_hardware_config_,
+      renderer_config->GetAudioHardwareConfig(),
       media_log));
 }
 
