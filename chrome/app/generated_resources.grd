@@ -10100,10 +10100,10 @@ Chrome ran out of memory.
           Turn off
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
-          Turn off Smart Lock
+          Turn off Chrome Smart Lock
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_DESCRIPTION" desc="The description text of the Easy unlock turn off dialog.">
-          If you turn off Smart Lock, you won’t be able to unlock your Chrome devices when your phone is with you. You will have to type in your password.
+          If you turn off Chrome Smart Lock, you won’t be able to unlock your Chrome devices when your phone is with you. You will have to type in your password.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_OFFLINE_TITLE" desc="The title text on the Easy unlock turn off dialog when Easy unlock could not be turned off because the device is offline.">
           Please connect to a network
