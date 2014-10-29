@@ -45,6 +45,9 @@ config("default_include_dirs") {
   ]
 }
 
+# TODO(GYP): is_ubsan, is_ubsan_vptr
+using_sanitizer = is_asan || is_lsan || is_tsan || is_msan
+
 # compiler ---------------------------------------------------------------------
 #
 # Base compiler configuration.
@@ -102,6 +105,22 @@ config("compiler") {
     if (!(is_chromeos && cpu_arch == "arm") && !is_mac) {
       # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
       ldflags += [ "-Wl,--fatal-warnings" ]
+    }
+
+    # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer and
+    # MemorySanitizer
+    if (using_sanitizer) {
+      cflags += [
+        "-fno-omit-frame-pointer",
+        "-gline-tables-only",
+      ]
+    }
+    if (is_asan) {
+      cflags += [ "-fsanitize=address" ]
+      if (is_mac) {
+        cflags += [ "-mllvm -asan-globals=0" ]  # http://crbug.com/352073
+        # TODO(GYP): deal with mac_bundles.
+      }
     }
   }
 
@@ -814,9 +833,9 @@ if (is_win) {
   common_optimize_on_ldflags = []
 
   if (is_android) {
-    common_optimize_on_cflags += [
-      "-fomit-frame-pointer",
-    ]
+    if (!using_sanitizer) {
+      common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
+    }
     common_optimize_on_ldflags += [
       # Warn in case of text relocations.
       "-Wl,--warn-shared-textrel",
@@ -874,10 +893,12 @@ config("no_optimize") {
     # much even when optimization is disabled to get the binary size down.
     cflags = [
       "-Os",
-      "-fomit-frame-pointer",
       "-fdata-sections",
       "-ffunction-sections",
     ]
+    if (!using_sanitizer) {
+      cflags += [ "-fomit-frame-pointer" ]
+    }
     ldflags = common_optimize_on_ldflags
   } else {
     cflags = [ "-O0" ]

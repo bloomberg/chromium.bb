@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains the dependencies needed for asan to link into executables and
+# shared_libraries. Unconditionally depend upon this target as it is empty if
+# |is_asan| is false.
+group("deps") {
+  if (is_asan) {
+    public_configs = [ ":sanitizer_options_link_helper" ]
+    deps = [ ":options_sources" ]
+  }
+}
+
+config("sanitizer_options_link_helper") {
+  ldflags = [ "-Wl,-u_sanitizer_options_link_helper", "-fsanitize=address" ]
+}
+
+source_set("options_sources") {
+  visibility = [ ":deps" ]
+  sources = [ "//build/sanitizers/sanitizer_options.cc" ]
+
+  if (is_tsan) {
+    sources += [ "//build/sanitizers/tsan_suppressions.cc" ]
+  }
+}

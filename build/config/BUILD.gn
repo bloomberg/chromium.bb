@@ -121,6 +121,13 @@ config("feature_flags") {
   if (use_allocator != "tcmalloc") {
     defines += [ "NO_TCMALLOC" ]
   }
+  if (is_asan) {
+    defines += [
+      "ADDRESS_SANITIZER",
+      "MEMORY_TOOL_REPLACES_ALLOCATOR",
+      "MEMORY_SANITIZER_INITIAL_SIZE",
+    ]
+  }
   if (enable_webrtc) {
     defines += [ "ENABLE_WEBRTC=1" ]
   }
