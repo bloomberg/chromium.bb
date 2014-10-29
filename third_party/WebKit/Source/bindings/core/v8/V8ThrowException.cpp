@@ -58,9 +58,9 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     if (ec == V8RangeError)
         return V8ThrowException::createRangeError(sanitizedMessage, isolate);
     if (ec == V8SyntaxError)
-        return V8ThrowException::createSyntaxError(sanitizedMessage, isolate);
+        return V8ThrowException::createSyntaxError(isolate, sanitizedMessage);
     if (ec == V8ReferenceError)
-        return V8ThrowException::createReferenceError(sanitizedMessage, isolate);
+        return V8ThrowException::createReferenceError(isolate, sanitizedMessage);
 
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException, creationContext, isolate);
@@ -121,25 +121,25 @@ v8::Handle<v8::Value> V8ThrowException::throwRangeError(const String& message, v
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createSyntaxError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createSyntaxError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::SyntaxError(v8String(isolate, message.isNull() ? "Syntax error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwSyntaxError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwSyntaxError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createSyntaxError(message, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createSyntaxError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createReferenceError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createReferenceError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::ReferenceError(v8String(isolate, message.isNull() ? "Reference error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwReferenceError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwReferenceError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createReferenceError(message, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createReferenceError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 

@@ -53,10 +53,10 @@ public:
     static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> createRangeError(const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwRangeError(const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> createSyntaxError(const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> throwSyntaxError(const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> createReferenceError(const String&, v8::Isolate*);
-    static v8::Handle<v8::Value> throwReferenceError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> createSyntaxError(v8::Isolate*, const String&);
+    static v8::Handle<v8::Value> throwSyntaxError(v8::Isolate*, const String&);
+    static v8::Handle<v8::Value> createReferenceError(v8::Isolate*, const String&);
+    static v8::Handle<v8::Value> throwReferenceError(v8::Isolate*, const String&);
 };
 
 } // namespace blink
