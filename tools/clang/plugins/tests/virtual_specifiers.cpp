@@ -62,6 +62,23 @@ class OverrideAndFinal : public Base {
   void F() OVERRIDE FINAL {}
 };
 
+// Also warn on pure functions.
+class CorrectPureVirtual : public Base {
+  virtual void F() = 0;
+};
+
+class Pure : public Base {
+  void F() = 0;
+};
+
+class PureOverride : public Base {
+  void F() override = 0;
+};
+
+class PureVirtualOverride : public Base {
+  virtual void F() override = 0;
+};
+
 // Finally, some simple sanity tests that overrides in the testing namespace
 // don't trigger warnings, except for testing::Test.
 namespace testing {

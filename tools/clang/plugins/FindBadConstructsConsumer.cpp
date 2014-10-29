@@ -364,7 +364,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   OverrideAttr* override_attr = method->getAttr<OverrideAttr>();
   FinalAttr* final_attr = method->getAttr<FinalAttr>();
 
-  if (method->isPure())
+  if (method->isPure() && !options_.strict_virtual_specifiers)
     return;
 
   if (IsMethodInBannedOrTestingNamespace(method))

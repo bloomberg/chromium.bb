@@ -48,11 +48,22 @@ virtual_specifiers.cpp:62:12: warning: [chromium-style] 'override' is redundant;
 virtual_specifiers.cpp:10:18: note: expanded from macro 'OVERRIDE'
 #define OVERRIDE override
                  ^
-virtual_specifiers.cpp:85:20: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+virtual_specifiers.cpp:67:19: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void F() = 0;
+                  ^
+                   override
+virtual_specifiers.cpp:71:11: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  void F() = 0;
+          ^
+           override
+virtual_specifiers.cpp:79:3: warning: [chromium-style] 'virtual' is redundant; 'override' implies 'virtual'.
+  virtual void F() override = 0;
+  ^~~~~~~~
+virtual_specifiers.cpp:102:20: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual ~MyTest();
                    ^
                     override
-virtual_specifiers.cpp:86:3: warning: [chromium-style] 'virtual' is redundant; 'override' implies 'virtual'.
+virtual_specifiers.cpp:103:3: warning: [chromium-style] 'virtual' is redundant; 'override' implies 'virtual'.
   virtual void SetUp() override;
   ^~~~~~~~
-14 warnings generated.
+17 warnings generated.
