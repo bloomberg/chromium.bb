@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/data_source.h"
 #include "media/base/media_export.h"
@@ -35,7 +36,7 @@ class MEDIA_EXPORT BufferedDataSourceHost {
   virtual void AddBufferedByteRange(int64 start, int64 end) = 0;
 
  protected:
-  virtual ~BufferedDataSourceHost() {};
+  virtual ~BufferedDataSourceHost() {}
 };
 
 // A data source capable of loading URLs and buffering the data using an

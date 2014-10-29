@@ -9,7 +9,6 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/timer/timer.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"

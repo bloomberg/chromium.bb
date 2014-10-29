@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "content/child/npapi/webplugin.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
 #include "media/base/media_export.h"
 #include "media/base/seekable_buffer.h"
 #include "media/blink/active_loader.h"

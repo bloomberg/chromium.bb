@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -25,7 +26,7 @@ namespace jingle_glue {
 class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
                                public base::RefCounted<Core> {
  public:
-  Core(net::Socket* socket);
+  explicit Core(net::Socket* socket);
 
   // Functions used to implement net::StreamSocket.
   int Read(net::IOBuffer* buffer, int buffer_size,

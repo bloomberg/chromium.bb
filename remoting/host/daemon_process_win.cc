@@ -15,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_message.h"

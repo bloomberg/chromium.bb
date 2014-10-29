@@ -7,6 +7,8 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"

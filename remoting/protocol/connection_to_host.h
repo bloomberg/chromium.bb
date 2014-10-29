@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer/timer.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/errors.h"

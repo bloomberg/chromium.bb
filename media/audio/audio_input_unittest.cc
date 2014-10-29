@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

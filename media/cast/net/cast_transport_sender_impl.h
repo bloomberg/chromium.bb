@@ -21,8 +21,8 @@
 // PacedSender and UdpTransport are shared between all RTP and RTCP
 // streams.
 
-#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
-#define MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
+#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
+#define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -31,7 +31,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "media/cast/common/transport_encryption_handler.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/simple_event_subscriber.h"
@@ -178,4 +177,4 @@ class CastTransportSenderImpl : public CastTransportSender {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
+#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_

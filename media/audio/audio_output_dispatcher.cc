@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_output_dispatcher.h"
 
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 
 namespace media {

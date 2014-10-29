@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/timer/timer.h"
 #include "ui/events/events_base_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 

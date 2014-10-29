@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"

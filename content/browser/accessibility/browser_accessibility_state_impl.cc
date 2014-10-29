@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/timer/timer.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"

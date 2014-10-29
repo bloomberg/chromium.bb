@@ -4,6 +4,7 @@
 
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/invalidation/invalidation_service_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "remoting/base/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

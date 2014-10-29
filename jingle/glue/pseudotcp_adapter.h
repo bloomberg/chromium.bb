@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer/timer.h"
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "third_party/libjingle/source/talk/p2p/base/pseudotcp.h"
@@ -26,7 +25,7 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
  public:
   // Creates an adapter for the supplied Socket.  |socket| should already
   // be ready for use, and ownership of it will be assumed by the adapter.
-  PseudoTcpAdapter(net::Socket* socket);
+  explicit PseudoTcpAdapter(net::Socket* socket);
   ~PseudoTcpAdapter() override;
 
   // net::Socket implementation.
@@ -91,4 +90,4 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
 
 }  // namespace jingle_glue
 
-#endif  // JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
+#endif  // JINGLE_GLUE_PSEUDOTCP_ADAPTER_H_

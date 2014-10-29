@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"

@@ -5,6 +5,7 @@
 #include "google_apis/gaia/oauth2_token_service_request.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

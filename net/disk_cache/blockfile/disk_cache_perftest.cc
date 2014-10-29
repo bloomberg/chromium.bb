@@ -12,7 +12,6 @@
 #include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread.h"
-#include "base/timer/timer.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

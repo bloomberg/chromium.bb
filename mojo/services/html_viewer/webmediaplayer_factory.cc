@@ -4,6 +4,7 @@
 
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
