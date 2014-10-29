@@ -34,12 +34,6 @@ IPC_MESSAGE_ROUTED2(GeolocationMsg_PermissionSet,
                     int /* bridge_id */,
                     bool /* is_allowed */)
 
-// Sent after GeolocationHostMsg_StartUpdating iff the user has granted
-// permission and we have a position available or an error occurs (such as
-// permission denied, position unavailable, etc.)
-IPC_MESSAGE_ROUTED1(GeolocationMsg_PositionUpdated,
-                    content::Geoposition /* geoposition */)
-
 // Messages sent from the renderer to the browser.
 
 // The |bridge_id| representing |host| is requesting permission to access
@@ -50,16 +44,3 @@ IPC_MESSAGE_ROUTED3(GeolocationHostMsg_RequestPermission,
                      int /* bridge_id */,
                      GURL /* origin in the frame requesting geolocation */,
                      bool /* user_gesture */)
-
-// The render view requests the Geolocation service to start updating.
-// This is an asynchronous call, and the browser process may eventually reply
-// with the updated geoposition, or an error (access denied, location
-// unavailable, etc.)
-IPC_MESSAGE_ROUTED2(GeolocationHostMsg_StartUpdating,
-                     GURL /* origin in the frame requesting geolocation */,
-                     bool /* enable_high_accuracy */)
-
-// The  render view requests Geolocation service to stop updating.
-// Note that the geolocation service may continue to fetch geolocation data
-// for other origins.
-IPC_MESSAGE_ROUTED0(GeolocationHostMsg_StopUpdating)

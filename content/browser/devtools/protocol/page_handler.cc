@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/devtools/protocol/usage_and_quota_query.h"
-#include "content/browser/geolocation/geolocation_dispatcher_host.h"
+#include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -237,8 +237,8 @@ Response PageHandler::SetGeolocationOverride(double* latitude,
   if (!web_contents)
     return Response::InternalError("No WebContents to override");
 
-  GeolocationDispatcherHost* geolocation_host =
-      web_contents->geolocation_dispatcher_host();
+  GeolocationServiceContext* geolocation_context =
+      web_contents->GetGeolocationServiceContext();
   scoped_ptr<Geoposition> geoposition(new Geoposition());
   if (latitude && longitude && accuracy) {
     geoposition->latitude = *latitude;
@@ -251,7 +251,7 @@ Response PageHandler::SetGeolocationOverride(double* latitude,
   } else {
     geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   }
-  geolocation_host->SetOverride(geoposition.Pass());
+  geolocation_context->SetOverride(geoposition.Pass());
   return Response::OK();
 }
 
@@ -264,9 +264,9 @@ Response PageHandler::ClearGeolocationOverride() {
   if (!web_contents)
     return Response::InternalError("No WebContents to override");
 
-  GeolocationDispatcherHost* geolocation_host =
-      web_contents->geolocation_dispatcher_host();
-  geolocation_host->ClearOverride();
+  GeolocationServiceContext* geolocation_context =
+      web_contents->GetGeolocationServiceContext();
+  geolocation_context->ClearOverride();
   return Response::OK();
 }
 

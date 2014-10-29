@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "content/public/common/mojo_geoposition.mojom"
+
+module content {
+
+// The Geolocation service provides updates on the device's location to its
+// client. By default, it provides updates with low accuracy, but
+// |SetHighAccuracy()| can be called to change this.
+[Client=GeolocationServiceClient]
+interface GeolocationService {
+  SetHighAccuracy(bool high_accuracy);
+};
+
+interface GeolocationServiceClient {
+  OnLocationUpdate(MojoGeoposition geoposition);
+};
+
+}

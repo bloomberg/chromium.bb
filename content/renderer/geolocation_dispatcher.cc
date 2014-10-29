@@ -25,8 +25,7 @@ namespace content {
 GeolocationDispatcher::GeolocationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
-      enable_high_accuracy_(false),
-      updating_(false) {
+      enable_high_accuracy_(false) {
 }
 
 GeolocationDispatcher::~GeolocationDispatcher() {}
@@ -35,22 +34,23 @@ bool GeolocationDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GeolocationDispatcher, message)
     IPC_MESSAGE_HANDLER(GeolocationMsg_PermissionSet, OnPermissionSet)
-    IPC_MESSAGE_HANDLER(GeolocationMsg_PositionUpdated, OnPositionUpdated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
 void GeolocationDispatcher::startUpdating() {
-  GURL url;
-  Send(new GeolocationHostMsg_StartUpdating(
-      routing_id(), url, enable_high_accuracy_));
-  updating_ = true;
+  if (!geolocation_service_.get()) {
+    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
+        &geolocation_service_);
+    geolocation_service_.set_client(this);
+  }
+  if (enable_high_accuracy_)
+    geolocation_service_->SetHighAccuracy(true);
 }
 
 void GeolocationDispatcher::stopUpdating() {
-  Send(new GeolocationHostMsg_StopUpdating(routing_id()));
-  updating_ = false;
+  geolocation_service_.reset();
 }
 
 void GeolocationDispatcher::setEnableHighAccuracy(bool enable_high_accuracy) {
@@ -61,8 +61,8 @@ void GeolocationDispatcher::setEnableHighAccuracy(bool enable_high_accuracy) {
   bool has_changed = enable_high_accuracy_ != enable_high_accuracy;
   enable_high_accuracy_ = enable_high_accuracy;
   // We have a different accuracy requirement. Request browser to update.
-  if (updating_ && has_changed)
-    startUpdating();
+  if (geolocation_service_.get() && has_changed)
+    geolocation_service_->SetHighAccuracy(enable_high_accuracy_);
 }
 
 void GeolocationDispatcher::setController(
@@ -103,32 +103,27 @@ void GeolocationDispatcher::OnPermissionSet(int bridge_id, bool is_allowed) {
   permissionRequest.setIsAllowed(is_allowed);
 }
 
-// We have an updated geolocation position or error code.
-void GeolocationDispatcher::OnPositionUpdated(
-    const Geoposition& geoposition) {
-  // It is possible for the browser process to have queued an update message
-  // before receiving the stop updating message.
-  if (!updating_)
-    return;
+void GeolocationDispatcher::OnLocationUpdate(MojoGeopositionPtr geoposition) {
+  DCHECK(geolocation_service_.get());
 
-  if (geoposition.Validate()) {
-    controller_->positionChanged(
-        WebGeolocationPosition(
-            geoposition.timestamp.ToDoubleT(),
-            geoposition.latitude, geoposition.longitude,
-            geoposition.accuracy,
-            // Lowest point on land is at approximately -400 meters.
-            geoposition.altitude > -10000.,
-            geoposition.altitude,
-            geoposition.altitude_accuracy >= 0.,
-            geoposition.altitude_accuracy,
-            geoposition.heading >= 0. && geoposition.heading <= 360.,
-            geoposition.heading,
-            geoposition.speed >= 0.,
-            geoposition.speed));
+  if (geoposition->valid) {
+    controller_->positionChanged(WebGeolocationPosition(
+        geoposition->timestamp,
+        geoposition->latitude,
+        geoposition->longitude,
+        geoposition->accuracy,
+        // Lowest point on land is at approximately -400 meters.
+            geoposition->altitude > -10000.,
+        geoposition->altitude,
+        geoposition->altitude_accuracy >= 0.,
+        geoposition->altitude_accuracy,
+        geoposition->heading >= 0. && geoposition->heading <= 360.,
+        geoposition->heading,
+        geoposition->speed >= 0.,
+        geoposition->speed));
   } else {
     WebGeolocationError::Error code;
-    switch (geoposition.error_code) {
+    switch (geoposition->error_code) {
       case Geoposition::ERROR_CODE_PERMISSION_DENIED:
         code = WebGeolocationError::ErrorPermissionDenied;
         break;
@@ -136,12 +131,11 @@ void GeolocationDispatcher::OnPositionUpdated(
         code = WebGeolocationError::ErrorPositionUnavailable;
         break;
       default:
-        NOTREACHED() << geoposition.error_code;
+        NOTREACHED() << geoposition->error_code;
         return;
     }
-    controller_->errorOccurred(
-        WebGeolocationError(
-            code, blink::WebString::fromUTF8(geoposition.error_message)));
+    controller_->errorOccurred(WebGeolocationError(
+        code, blink::WebString::fromUTF8(geoposition->error_message)));
   }
 }
 
