@@ -148,8 +148,8 @@ class BindingManagerImpl implements BindingManager {
             // When a process crashes, we can be queried about its oom status before or after the
             // connection is cleared. For the latter case, the oom status is stashed in
             // mWasOomProtected.
-            return mConnection != null ?
-                    mConnection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
+            return mConnection != null
+                    ? mConnection.isOomProtectedOrWasWhenDied() : mWasOomProtected;
         }
 
         void clearConnection() {
@@ -227,8 +227,8 @@ class BindingManagerImpl implements BindingManager {
         }
 
         if (managedConnection == null) {
-            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: " +
-                    Integer.toString(pid));
+            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: "
+                    + Integer.toString(pid));
             return;
         }
 

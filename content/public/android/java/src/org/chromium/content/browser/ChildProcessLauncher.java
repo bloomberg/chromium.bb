@@ -71,15 +71,15 @@ public class ChildProcessLauncher {
         private final boolean mInSandbox;
 
         public ChildConnectionAllocator(boolean inSandbox) {
-            int numChildServices = inSandbox ?
-                    MAX_REGISTERED_SANDBOXED_SERVICES : MAX_REGISTERED_PRIVILEGED_SERVICES;
+            int numChildServices = inSandbox
+                    ? MAX_REGISTERED_SANDBOXED_SERVICES : MAX_REGISTERED_PRIVILEGED_SERVICES;
             mChildProcessConnections = new ChildProcessConnectionImpl[numChildServices];
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
             for (int i = 0; i < numChildServices; i++) {
                 mFreeConnectionIndices.add(i);
             }
-            setServiceClass(inSandbox ?
-                    SandboxedProcessService.class : PrivilegedProcessService.class);
+            setServiceClass(inSandbox
+                    ? SandboxedProcessService.class : PrivilegedProcessService.class);
             mInSandbox = inSandbox;
         }
 
@@ -100,8 +100,8 @@ public class ChildProcessLauncher {
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
                         mInSandbox, deathCallback, mChildClass, chromiumLinkerParams);
-                Log.d(TAG, "Allocator allocated a connection, sandbox: " + mInSandbox +
-                        ", slot: " + slot);
+                Log.d(TAG, "Allocator allocated a connection, sandbox: " + mInSandbox
+                        + ", slot: " + slot);
                 return mChildProcessConnections[slot];
             }
         }
@@ -110,17 +110,17 @@ public class ChildProcessLauncher {
             synchronized (mConnectionLock) {
                 int slot = connection.getServiceNumber();
                 if (mChildProcessConnections[slot] != connection) {
-                    int occupier = mChildProcessConnections[slot] == null ?
-                            -1 : mChildProcessConnections[slot].getServiceNumber();
-                    Log.e(TAG, "Unable to find connection to free in slot: " + slot +
-                            " already occupied by service: " + occupier);
+                    int occupier = mChildProcessConnections[slot] == null
+                            ? -1 : mChildProcessConnections[slot].getServiceNumber();
+                    Log.e(TAG, "Unable to find connection to free in slot: " + slot
+                            + " already occupied by service: " + occupier);
                     assert false;
                 } else {
                     mChildProcessConnections[slot] = null;
                     assert !mFreeConnectionIndices.contains(slot);
                     mFreeConnectionIndices.add(slot);
-                    Log.d(TAG, "Allocator freed a connection, sandbox: " + mInSandbox +
-                            ", slot: " + slot);
+                    Log.d(TAG, "Allocator freed a connection, sandbox: " + mInSandbox
+                            + ", slot: " + slot);
                 }
             }
         }
@@ -154,8 +154,8 @@ public class ChildProcessLauncher {
     }
 
     private static ChildConnectionAllocator getConnectionAllocator(boolean inSandbox) {
-        return inSandbox ?
-                sSandboxedChildConnectionAllocator : sPrivilegedChildConnectionAllocator;
+        return inSandbox
+                ? sSandboxedChildConnectionAllocator : sPrivilegedChildConnectionAllocator;
     }
 
     private static ChildProcessConnection allocateConnection(Context context,
@@ -410,8 +410,8 @@ public class ChildProcessLauncher {
             }
         }
 
-        Log.d(TAG, "Setting up connection to process: slot=" +
-                allocatedConnection.getServiceNumber());
+        Log.d(TAG, "Setting up connection to process: slot="
+                + allocatedConnection.getServiceNumber());
         triggerConnectionSetup(allocatedConnection, commandLine, childProcessId, filesToBeMapped,
                 callbackType, clientContext);
         TraceEvent.end();
