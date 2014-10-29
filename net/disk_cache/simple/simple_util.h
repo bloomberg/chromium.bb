@@ -69,7 +69,14 @@ NET_EXPORT_PRIVATE int GetFileIndexFromStreamIndex(int stream_index);
 // functions in file.h, the time resolution is milliseconds.
 NET_EXPORT_PRIVATE bool GetMTime(const base::FilePath& path,
                                  base::Time* out_mtime);
-}  // namespace simple_backend
+
+// Deletes a file, insuring POSIX semantics. Provided that all open handles to
+// this file were opened with File::FLAG_SHARE_DELETE, it is possible to delete
+// an open file and continue to use that file. After deleting an open file, it
+// is possible to immediately create a new file with the same name.
+NET_EXPORT_PRIVATE bool SimpleCacheDeleteFile(const base::FilePath& path);
+
+}  // namespace simple_util
 
 }  // namespace disk_cache
 

@@ -3144,11 +3144,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
   entry->Close();
 }
 
-// The Simple Cache backend requires a few guarantees from the filesystem like
-// atomic renaming of recently open files. Those guarantees are not provided in
-// general on Windows.
-#if defined(OS_POSIX)
-
 TEST_F(DiskCacheBackendTest, SimpleCacheShutdownWithPendingCreate) {
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
@@ -3486,5 +3481,3 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
   cache_.reset();
   // This test passes if we don't leak memory.
 }
-
-#endif  // defined(OS_POSIX)

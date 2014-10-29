@@ -719,7 +719,8 @@ bool SimpleSynchronousEntry::MaybeOpenFile(
   DCHECK(out_error);
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
-  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE;
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE |
+              File::FLAG_SHARE_DELETE;
   files_[file_index].Initialize(filename, flags);
   *out_error = files_[file_index].error_details();
 
@@ -744,7 +745,8 @@ bool SimpleSynchronousEntry::MaybeCreateFile(
   }
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
-  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE;
+  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE |
+              File::FLAG_SHARE_DELETE;
   files_[file_index].Initialize(filename, flags);
   *out_error = files_[file_index].error_details();
 
@@ -1136,7 +1138,7 @@ bool SimpleSynchronousEntry::DeleteFileForEntryHash(
     const int file_index) {
   FilePath to_delete = path.AppendASCII(
       GetFilenameFromEntryHashAndFileIndex(entry_hash, file_index));
-  return base::DeleteFile(to_delete, false);
+  return simple_util::SimpleCacheDeleteFile(to_delete);
 }
 
 // static
@@ -1150,7 +1152,7 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
   }
   FilePath to_delete = path.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash));
-  base::DeleteFile(to_delete, false);
+  simple_util::SimpleCacheDeleteFile(to_delete);
   return result;
 }
 
@@ -1181,7 +1183,8 @@ bool SimpleSynchronousEntry::OpenSparseFileIfExists(
 
   FilePath filename = path_.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash_));
-  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE;
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE |
+              File::FLAG_SHARE_DELETE;
   sparse_file_.Initialize(filename, flags);
   if (sparse_file_.IsValid())
     return ScanSparseFile(out_sparse_data_size);
@@ -1194,7 +1197,8 @@ bool SimpleSynchronousEntry::CreateSparseFile() {
 
   FilePath filename = path_.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash_));
-  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE;
+  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE |
+              File::FLAG_SHARE_DELETE;
   sparse_file_.Initialize(filename, flags);
   if (!sparse_file_.IsValid())
     return false;

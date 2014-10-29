@@ -481,6 +481,8 @@
       'disk_cache/simple/simple_synchronous_entry.cc',
       'disk_cache/simple/simple_synchronous_entry.h',
       'disk_cache/simple/simple_util.cc',
+      'disk_cache/simple/simple_util_posix.cc',
+      'disk_cache/simple/simple_util_win.cc',
       'disk_cache/simple/simple_util.h',
       'disk_cache/simple/simple_version_upgrade.cc',
       'disk_cache/simple/simple_version_upgrade.h',
