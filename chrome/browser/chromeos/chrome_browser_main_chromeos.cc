@@ -40,8 +40,6 @@
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -129,6 +127,8 @@
 #endif
 
 #if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
@@ -240,8 +240,10 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+#if !defined(USE_ATHENA)
   if (KioskModeSettings::Get()->IsKioskModeEnabled())
     ShutdownKioskModeScreensaver();
+#endif
 
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
@@ -358,12 +360,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
 
+#if defined(USE_ATHENA)
+  ScreenLocker::InitClass();
+#else
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   if (KioskModeSettings::Get()->IsKioskModeEnabled())
     KioskModeIdleLogout::Initialize();
   else
     ScreenLocker::InitClass();
+#endif
 
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.

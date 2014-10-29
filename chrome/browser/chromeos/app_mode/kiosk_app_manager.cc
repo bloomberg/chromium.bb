@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -36,6 +35,10 @@
 #include "components/ownership/owner_key_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
+
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
+#endif
 
 namespace chromeos {
 
@@ -464,19 +467,23 @@ KioskAppManager::KioskAppManager()
 KioskAppManager::~KioskAppManager() {}
 
 void KioskAppManager::MonitorKioskExternalUpdate() {
+#if !defined(USE_ATHENA)
   base::FilePath cache_dir;
   GetCrxCacheDir(&cache_dir);
   base::FilePath unpack_dir;
   GetCrxUnpackDir(&unpack_dir);
   usb_stick_updater_.reset(new KioskExternalUpdater(
       GetBackgroundTaskRunner(), cache_dir, unpack_dir));
+#endif
 }
 
 void KioskAppManager::CleanUp() {
   local_accounts_subscription_.reset();
   local_account_auto_login_id_subscription_.reset();
   apps_.clear();
+#if !defined(USE_ATHENA)
   usb_stick_updater_.reset();
+#endif
   external_cache_.reset();
 }
 
