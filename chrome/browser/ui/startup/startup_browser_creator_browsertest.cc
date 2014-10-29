@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -89,6 +90,8 @@ Browser* FindOneOtherBrowser(Browser* browser) {
 
 class StartupBrowserCreatorTest : public ExtensionBrowserTest {
  protected:
+  StartupBrowserCreatorTest() {}
+
   bool SetUpUserDataDirectory() override {
     return ExtensionBrowserTest::SetUpUserDataDirectory();
   }
@@ -136,6 +139,19 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
     }
     return NULL;
   }
+
+  // A helper function that checks the session restore UI (infobar) is shown
+  // when Chrome starts up after crash.
+  void EnsureRestoreUIWasShown(content::WebContents* web_contents) {
+#if defined(OS_MACOSX)
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents);
+    EXPECT_EQ(1U, infobar_service->infobar_count());
+#endif  // defined(OS_MACOSX)
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorTest);
 };
 
 class OpenURLsPopupObserver : public chrome::BrowserListObserver {
@@ -943,6 +959,19 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   static_cast<ProfileImpl*>(profile_urls)->last_session_exit_type_ =
       Profile::EXIT_CRASHED;
 
+#if !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
+  // Use HistogramTester to make sure a bubble is shown when it's not on
+  // platform Mac OS X and it's not official Chrome build.
+  //
+  // On Mac OS X, an infobar is shown to restore the previous session, which
+  // is tested by function EnsureRestoreUIWasShown.
+  //
+  // Under a Google Chrome build, it is not tested because a task is posted to
+  // the file thread before the bubble is shown. It is difficult to make sure
+  // that the histogram check runs after all threads have finished their tasks.
+  base::HistogramTester histogram_tester;
+#endif  // !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
+
   CommandLine dummy(CommandLine::NO_PROGRAM);
   dummy.AppendSwitchASCII(switches::kTestType, "browser");
   int return_code;
@@ -970,9 +999,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EnsureRestoreUIWasShown(web_contents);
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
@@ -983,8 +1010,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  infobar_service = InfoBarService::FromWebContents(web_contents);
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EnsureRestoreUIWasShown(web_contents);
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
@@ -995,8 +1021,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  infobar_service = InfoBarService::FromWebContents(web_contents);
-  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EnsureRestoreUIWasShown(web_contents);
+
+#if !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
+  // Each profile should have one session restore bubble shown, so we should
+  // observe count 3 in bucket 0 (which represents bubble shown).
+  histogram_tester.ExpectBucketCount("SessionCrashed.Bubble", 0, 3);
+#endif  // !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
 }
 
 class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
