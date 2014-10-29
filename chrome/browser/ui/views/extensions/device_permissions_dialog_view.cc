@@ -37,7 +37,6 @@ class DevicePermissionsTableModel
   // ui::TableModel
   int RowCount() override;
   base::string16 GetText(int row, int column) override;
-  base::string16 GetTooltip(int row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
 
   // extensions::DevicePermissionsPrompt::Prompt::Observer
@@ -62,10 +61,6 @@ base::string16 DevicePermissionsTableModel::GetText(int row, int col_id) {
       NOTREACHED();
       return base::string16();
   }
-}
-
-base::string16 DevicePermissionsTableModel::GetTooltip(int row) {
-  return prompt_->GetDeviceTooltip(row);
 }
 
 void DevicePermissionsTableModel::SetObserver(

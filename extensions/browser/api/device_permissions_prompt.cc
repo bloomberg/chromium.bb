@@ -26,12 +26,14 @@ using device::UsbService;
 DevicePermissionsPrompt::Prompt::DeviceInfo::DeviceInfo(
     scoped_refptr<UsbDevice> device,
     const base::string16& name,
-    const base::string16& serial_number,
-    const base::string16& tooltip)
+    const base::string16& product_string,
+    const base::string16& manufacturer_string,
+    const base::string16& serial_number)
     : device(device),
       name(name),
-      serial_number(serial_number),
-      tooltip(tooltip) {
+      product_string(product_string),
+      manufacturer_string(manufacturer_string),
+      serial_number(serial_number) {
 }
 
 DevicePermissionsPrompt::Prompt::DeviceInfo::~DeviceInfo() {
@@ -76,9 +78,12 @@ void DevicePermissionsPrompt::Prompt::GrantDevicePermission(
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(browser_context_);
   if (permissions_manager) {
+    const DeviceInfo& device = devices_[index];
     permissions_manager->AllowUsbDevice(extension_->id(),
-                                        devices_[index].device,
-                                        devices_[index].serial_number);
+                                        device.device,
+                                        device.product_string,
+                                        device.manufacturer_string,
+                                        device.serial_number);
   }
 }
 
@@ -105,32 +110,38 @@ void DevicePermissionsPrompt::Prompt::DoDeviceQuery() {
       continue;
     }
 
-    const char* vendor_name_raw =
-        device::UsbIds::GetVendorName(device->vendor_id());
-    base::string16 vendor_name;
-    if (vendor_name_raw) {
-      vendor_name = base::UTF8ToUTF16(vendor_name_raw);
-    } else {
-      vendor_name = l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_VENDOR);
-    }
-
-    const char* product_name_raw = device::UsbIds::GetProductName(
-        device->vendor_id(), device->product_id());
-    base::string16 product_name;
-    if (product_name_raw) {
-      product_name = base::UTF8ToUTF16(product_name_raw);
-    } else {
-      product_name = l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_PRODUCT);
-    }
-
     base::string16 manufacturer_string;
-    if (!device->GetManufacturer(&manufacturer_string)) {
-      manufacturer_string = vendor_name;
+    base::string16 original_manufacturer_string;
+    if (device->GetManufacturer(&original_manufacturer_string)) {
+      manufacturer_string = original_manufacturer_string;
+    } else {
+      const char* vendor_name =
+          device::UsbIds::GetVendorName(device->vendor_id());
+      if (vendor_name) {
+        manufacturer_string = base::UTF8ToUTF16(vendor_name);
+      } else {
+        base::string16 vendor_id = base::ASCIIToUTF16(
+            base::StringPrintf("0x%04x", device->vendor_id()));
+        manufacturer_string =
+            l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_VENDOR, vendor_id);
+      }
     }
 
     base::string16 product_string;
-    if (!device->GetProduct(&product_string)) {
-      product_string = product_name;
+    base::string16 original_product_string;
+    if (device->GetProduct(&original_product_string)) {
+      product_string = original_product_string;
+    } else {
+      const char* product_name = device::UsbIds::GetProductName(
+          device->vendor_id(), device->product_id());
+      if (product_name) {
+        product_string = base::UTF8ToUTF16(product_name);
+      } else {
+        base::string16 product_id = base::ASCIIToUTF16(
+            base::StringPrintf("0x%04x", device->product_id()));
+        product_string =
+            l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_PRODUCT, product_id);
+      }
     }
 
     base::string16 serial_number;
@@ -138,22 +149,14 @@ void DevicePermissionsPrompt::Prompt::DoDeviceQuery() {
       serial_number.clear();
     }
 
-    base::string16 vendor_id =
-        base::ASCIIToUTF16(base::StringPrintf("0x%04x", device->vendor_id()));
-    base::string16 product_id =
-        base::ASCIIToUTF16(base::StringPrintf("0x%04x", device->product_id()));
-
     device_info.push_back(DeviceInfo(
         device,
-        l10n_util::GetStringFUTF16(IDS_DEVICE_PERMISSIONS_PROMPT_DEVICE_NAME,
+        l10n_util::GetStringFUTF16(IDS_DEVICE_PERMISSIONS_DEVICE_NAME,
                                    product_string,
                                    manufacturer_string),
-        serial_number,
-        l10n_util::GetStringFUTF16(IDS_DEVICE_PERMISSIONS_PROMPT_DEVICE_TOOLTIP,
-                                   vendor_name,
-                                   vendor_id,
-                                   product_name,
-                                   product_id)));
+        original_product_string,
+        original_manufacturer_string,
+        serial_number));
   }
 
   content::BrowserThread::PostTask(

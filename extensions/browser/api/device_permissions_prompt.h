@@ -37,14 +37,16 @@ class DevicePermissionsPrompt {
     struct DeviceInfo {
       DeviceInfo(scoped_refptr<device::UsbDevice> device,
                  const base::string16& name,
-                 const base::string16& serial_number,
-                 const base::string16& tooltip);
+                 const base::string16& product_string,
+                 const base::string16& manufacturer_string,
+                 const base::string16& serial_number);
       ~DeviceInfo();
 
       scoped_refptr<device::UsbDevice> device;
       base::string16 name;
+      base::string16 product_string;
+      base::string16 manufacturer_string;
       base::string16 serial_number;
-      base::string16 tooltip;
     };
 
     // Since the set of devices can change while the UI is visible an
@@ -70,10 +72,6 @@ class DevicePermissionsPrompt {
     base::string16 GetDeviceSerialNumber(size_t index) const {
       DCHECK_LT(index, devices_.size());
       return devices_[index].serial_number;
-    }
-    base::string16 GetDeviceTooltip(size_t index) const {
-      DCHECK_LT(index, devices_.size());
-      return devices_[index].tooltip;
     }
 
     // Notifies the DevicePermissionsManager for the current extension that

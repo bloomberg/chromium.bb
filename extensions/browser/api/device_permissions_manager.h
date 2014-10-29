@@ -41,7 +41,9 @@ namespace extensions {
 struct DevicePermissionEntry {
   DevicePermissionEntry(uint16_t vendor_id,
                         uint16_t product_id,
-                        const base::string16& serial_number);
+                        const base::string16& serial_number,
+                        const base::string16& manufacturer_string,
+                        const base::string16& product_string);
 
   base::Value* ToValue() const;
 
@@ -53,6 +55,12 @@ struct DevicePermissionEntry {
 
   // The serial number (possibly alphanumeric) of this device.
   base::string16 serial_number;
+
+  // The manufacturer string read from the device (optional).
+  base::string16 manufacturer_string;
+
+  // The product string read from the device (optional).
+  base::string16 product_string;
 };
 
 // Stores a copy of device permissions associated with a particular extension.
@@ -96,9 +104,14 @@ class DevicePermissionsManager : public KeyedService,
   std::vector<base::string16> GetPermissionMessageStrings(
       const std::string& extension_id);
 
+  // TODO(reillyg): AllowUsbDevice should only take the extension ID and
+  // device, with the strings read from the device. This isn't possible now as
+  // the device can not be accessed from the UI thread yet. crbug.com/427985
   void AllowUsbDevice(const std::string& extension_id,
                       scoped_refptr<device::UsbDevice> device,
-                      const base::string16& serial_number);
+                      const base::string16& serial_number,
+                      const base::string16& manufacturer_string,
+                      const base::string16& product_string);
 
   void Clear(const std::string& extension_id);
 

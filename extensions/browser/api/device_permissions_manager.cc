@@ -48,6 +48,14 @@ const char kDeviceProductId[] = "product_id";
 // The serial number of the device that the app has permission to access.
 const char kDeviceSerialNumber[] = "serial_number";
 
+// The manufacturer string read from the device that the app has permission to
+// access.
+const char kDeviceManufacturerString[] = "manufacturer_string";
+
+// The product string read from the device that the app has permission to
+// access.
+const char kDeviceProductString[] = "product_string";
+
 // Persists a DevicePermissionEntry in ExtensionPrefs.
 void SaveDevicePermissionEntry(BrowserContext* context,
                                const std::string& extension_id,
@@ -105,20 +113,38 @@ std::vector<DevicePermissionEntry> GetDevicePermissionEntries(
       continue;
     }
 
-    result.push_back(
-        DevicePermissionEntry(vendor_id, product_id, serial_number));
+    base::string16 manufacturer_string;
+    // Ignore failure as this string is optional.
+    device_entry->GetStringWithoutPathExpansion(kDeviceManufacturerString,
+                                                &manufacturer_string);
+
+    base::string16 product_string;
+    // Ignore failure as this string is optional.
+    device_entry->GetStringWithoutPathExpansion(kDeviceProductString,
+                                                &product_string);
+
+    result.push_back(DevicePermissionEntry(vendor_id,
+                                           product_id,
+                                           serial_number,
+                                           manufacturer_string,
+                                           product_string));
   }
   return result;
 }
-}
+
+}  // namespace
 
 DevicePermissionEntry::DevicePermissionEntry(
     uint16_t vendor_id,
     uint16_t product_id,
-    const base::string16& serial_number)
+    const base::string16& serial_number,
+    const base::string16& manufacturer_string,
+    const base::string16& product_string)
     : vendor_id(vendor_id),
       product_id(product_id),
-      serial_number(serial_number) {
+      serial_number(serial_number),
+      manufacturer_string(manufacturer_string),
+      product_string(product_string) {
 }
 
 base::Value* DevicePermissionEntry::ToValue() const {
@@ -129,6 +155,10 @@ base::Value* DevicePermissionEntry::ToValue() const {
                                                     product_id);
   device_entry_dict->SetStringWithoutPathExpansion(kDeviceSerialNumber,
                                                    serial_number);
+  device_entry_dict->SetStringWithoutPathExpansion(kDeviceManufacturerString,
+                                                   manufacturer_string);
+  device_entry_dict->SetStringWithoutPathExpansion(kDeviceProductString,
+                                                   product_string);
   return device_entry_dict;
 }
 
@@ -214,30 +244,38 @@ DevicePermissionsManager::GetPermissionMessageStrings(
   }
 
   for (const auto& entry : device_permissions->permission_entries()) {
-    const char* vendorName = device::UsbIds::GetVendorName(entry.vendor_id);
-    const char* productName =
-        device::UsbIds::GetProductName(entry.vendor_id, entry.product_id);
-    if (vendorName) {
-      if (productName) {
-        messages.push_back(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL,
-            base::UTF8ToUTF16(vendorName),
-            base::UTF8ToUTF16(productName),
-            entry.serial_number));
+    base::string16 manufacturer_string = entry.manufacturer_string;
+    if (manufacturer_string.empty()) {
+      const char* vendor_name = device::UsbIds::GetVendorName(entry.vendor_id);
+      if (vendor_name) {
+        manufacturer_string = base::UTF8ToUTF16(vendor_name);
       } else {
-        messages.push_back(l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PID_SERIAL,
-            base::UTF8ToUTF16(vendorName),
-            base::ASCIIToUTF16(base::StringPrintf("0x%04X", entry.product_id)),
-            entry.serial_number));
+        base::string16 vendor_id =
+            base::ASCIIToUTF16(base::StringPrintf("0x%04x", entry.vendor_id));
+        manufacturer_string =
+            l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_VENDOR, vendor_id);
       }
-    } else {
-      messages.push_back(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_VID_PID_SERIAL,
-          base::ASCIIToUTF16(base::StringPrintf("0x%04X", entry.vendor_id)),
-          base::ASCIIToUTF16(base::StringPrintf("0x%04X", entry.product_id)),
-          entry.serial_number));
     }
+
+    base::string16 product_string = entry.product_string;
+    if (product_string.empty()) {
+      const char* product_name =
+          device::UsbIds::GetProductName(entry.vendor_id, entry.product_id);
+      if (product_name) {
+        product_string = base::UTF8ToUTF16(product_name);
+      } else {
+        base::string16 product_id =
+            base::ASCIIToUTF16(base::StringPrintf("0x%04x", entry.product_id));
+        product_string =
+            l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_PRODUCT, product_id);
+      }
+    }
+
+    messages.push_back(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL,
+        product_string,
+        manufacturer_string,
+        entry.serial_number));
   }
   return messages;
 }
@@ -245,6 +283,8 @@ DevicePermissionsManager::GetPermissionMessageStrings(
 void DevicePermissionsManager::AllowUsbDevice(
     const std::string& extension_id,
     scoped_refptr<device::UsbDevice> device,
+    const base::string16& product_string,
+    const base::string16& manufacturer_string,
     const base::string16& serial_number) {
   DCHECK(CalledOnValidThread());
   DevicePermissions* device_permissions = GetOrInsert(extension_id);
@@ -262,8 +302,12 @@ void DevicePermissionsManager::AllowUsbDevice(
       }
     }
 
-    DevicePermissionEntry device_entry = DevicePermissionEntry(
-        device->vendor_id(), device->product_id(), serial_number);
+    DevicePermissionEntry device_entry =
+        DevicePermissionEntry(device->vendor_id(),
+                              device->product_id(),
+                              serial_number,
+                              manufacturer_string,
+                              product_string);
     device_permissions->permission_entries().push_back(device_entry);
     SaveDevicePermissionEntry(context_, extension_id, device_entry);
   } else {

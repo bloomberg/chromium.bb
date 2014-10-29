@@ -57,14 +57,17 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   // Gets the manufacturer string of the device, or returns false.
   // Blocking method. Must be called on FILE thread.
+  // TODO(reillyg): Make this available from the UI thread. crbug.com/427985
   virtual bool GetManufacturer(base::string16* manufacturer) = 0;
 
   // Gets the product string of the device, or returns false.
   // Blocking method. Must be called on FILE thread.
+  // TODO(reillyg): Make this available from the UI thread. crbug.com/427985
   virtual bool GetProduct(base::string16* product) = 0;
 
   // Gets the serial number string of the device, or returns false.
   // Blocking method. Must be called on FILE thread.
+  // TODO(reillyg): Make this available from the UI thread. crbug.com/427985
   virtual bool GetSerialNumber(base::string16* serial) = 0;
 
   void AddObserver(Observer* obs) { observer_list_.AddObserver(obs); }

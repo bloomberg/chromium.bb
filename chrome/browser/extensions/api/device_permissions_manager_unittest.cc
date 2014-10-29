@@ -34,8 +34,16 @@ class MockUsbDevice : public UsbDevice {
   MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
 #endif
   MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor&());
-  MOCK_METHOD1(GetManufacturer, bool(base::string16*));
-  MOCK_METHOD1(GetProduct, bool(base::string16*));
+
+  virtual bool GetManufacturer(base::string16* manufacturer) {
+    *manufacturer = base::ASCIIToUTF16("Test Manufacturer");
+    return true;
+  }
+
+  virtual bool GetProduct(base::string16* product) {
+    *product = base::ASCIIToUTF16("Test Product");
+    return true;
+  }
 
   virtual bool GetSerialNumber(base::string16* serial_number) override {
     if (serial_number_.empty()) {
@@ -53,6 +61,19 @@ class MockUsbDevice : public UsbDevice {
 
   const std::string serial_number_;
 };
+
+void AllowUsbDevice(DevicePermissionsManager* manager,
+                    const Extension* extension,
+                    scoped_refptr<UsbDevice> device) {
+  base::string16 product;
+  device->GetProduct(&product);
+  base::string16 manufacturer;
+  device->GetManufacturer(&manufacturer);
+  base::string16 serial_number;
+  device->GetSerialNumber(&serial_number);
+  manager->AllowUsbDevice(
+      extension->id(), device, product, manufacturer, serial_number);
+}
 
 }  // namespace
 
@@ -89,9 +110,8 @@ class DevicePermissionsManagerTest : public testing::Test {
 TEST_F(DevicePermissionsManagerTest, RegisterDevices) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_.profile());
-  manager->AllowUsbDevice(
-      extension_->id(), device0, base::ASCIIToUTF16("ABCDE"));
-  manager->AllowUsbDevice(extension_->id(), device1, base::string16());
+  AllowUsbDevice(manager, extension_, device0);
+  AllowUsbDevice(manager, extension_, device1);
 
   scoped_ptr<DevicePermissions> device_permissions =
       manager->GetForExtension(extension_->id());
