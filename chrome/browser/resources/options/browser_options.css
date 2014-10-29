@@ -186,6 +186,15 @@ input[type='range'] {
   -webkit-margin-start: 22px;
 }
 
+.hotword-description {
+  -webkit-margin-start: 1.8em;
+  color: gray;
+}
+
+.hotword-learn-more-link {
+  -webkit-padding-start: 8px;
+}
+
 /* Internet settings */
 
 #network-settings {

@@ -157,29 +157,51 @@
               i18n-content="defaultSearchManageEngines">
           </button>
         </div>
-      </div>
-  </section>
-  <section>
-    <h3 id="voice-section-title" i18n-content="sectionTitleVoice" hidden></h3>
-    <div id="voice-section-content">
-      <div id="hotword-always-on-search" hidden>
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input id="hotword-always-on-search-checkbox"
-                pref="hotword.always_on_search_enabled" type="checkbox">
-            <span i18n-content="hotwordAlwaysOnSearchEnable"></span>
-          </label>
+        <div id="hotword-always-on-search" hidden>
+          <div class="checkbox controlled-setting-with-label">
+            <label>
+              <input id="hotword-always-on-search-checkbox"
+                  pref="hotword.always_on_search_enabled" type="checkbox">
+              <span i18n-content="hotwordSearchEnable"></span>
+            </label>
+            <a target="_blank" class="hotword-learn-more-link"
+                i18n-content="learnMore"
+                i18n-values="href:hotwordLearnMoreURL">
+            </a>
+            <div>
+              <span class="hotword-description"
+                  i18n-content="hotwordAlwaysOnDesc">
+              </span>
+            </div>
+          </div>
+        </div>
+        <div id="hotword-no-dsp-search" hidden>
+          <div class="checkbox controlled-setting-with-label">
+            <label>
+              <input id="hotword-no-dsp-search-checkbox"
+                  pref="hotword.search_enabled_2" type="checkbox">
+              <span i18n-content="hotwordSearchEnable"></span>
+            </label>
+            <a target="_blank" class="hotword-learn-more-link"
+                i18n-content="learnMore"
+                i18n-values="href:hotwordLearnMoreURL">
+            </a>
+            <div>
+              <span class="hotword-description"
+                  i18n-content="hotwordNoDSPDesc">
+              </span>
+            </div>
+          </div>
+        </div>
+        <div id="audio-logging" hidden>
+          <div class="checkbox controlled-setting-with-label">
+            <label>
+              <input pref="hotword.audio_logging_enabled" type="checkbox">
+              <span i18n-content="hotwordAudioHistoryEnable"></span>
+            </label>
+          </div>
         </div>
       </div>
-      <div id="audio-logging" hidden>
-        <div class="checkbox controlled-setting-with-label">
-          <label>
-            <input pref="hotword.audio_logging_enabled" type="checkbox">
-            <span i18n-content="hotwordAudioHistoryEnable"></span>
-          </label>
-        </div>
-      </div>
-    </div>
   </section>
   <section id="sync-users-section" guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>

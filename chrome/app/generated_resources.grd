@@ -6794,11 +6794,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches.">
         Enable "Ok Google" to start a voice search
       </message>
+      <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
+        Say "Ok Google" in a new tab, google.com, and the App Launcher
+      </message>
+      <message name="IDS_HOTWORD_SEARCH_ALWAYS_ON_DESCRIPTION" desc="Description of the hotword-always-on search preference.">
+        Say "Ok Google" when the screen is on and unlocked
+      </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword search preference">
         When you say "Ok Google," Chrome will search for what you say next.
-      </message>
-      <message name="IDS_HOTWORD_ALWAYS_ON_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches from any screen.">
-        Enable "Ok Google" from any screen, when the screen is on and unlocked
       </message>
       <message name="IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX" desc="A checkbox on the Settings page that allows for sending audio of 'Ok, Google' plus a few seconds before back to Google to improve voice search.">
         Enable audio history
@@ -10044,9 +10047,6 @@ Chrome ran out of memory.
         </message>
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
           Search
-        </message>
-        <message name="IDS_OPTIONS_VOICE_GROUP_NAME" desc="The title of the voice group in the settings page">
-          Voice
         </message>
         <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
           Add a new search engine

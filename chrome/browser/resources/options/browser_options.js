@@ -1144,9 +1144,17 @@ cr.define('options', function() {
      * @private
      */
     showHotwordAlwaysOnSection_: function() {
-      $('voice-section-title').hidden = false;
       $('hotword-always-on-search').hidden = false;
       $('audio-logging').hidden = false;
+    },
+
+    /**
+     * Activates the Hotword section on devices with no DSP
+     * from the System settings page.
+     * @private
+     */
+    showHotwordNoDSPSection_: function() {
+      $('hotword-no-dsp-search').hidden = false;
     },
 
     /**
@@ -2046,6 +2054,7 @@ cr.define('options', function() {
     'showCreateProfileSuccess',
     'showCreateProfileWarning',
     'showHotwordAlwaysOnSection',
+    'showHotwordNoDSPSection',
     'showHotwordSection',
     'showMouseControls',
     'showSupervisedUserImportError',

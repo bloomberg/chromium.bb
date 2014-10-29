@@ -271,12 +271,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
-    { "hotwordAlwaysOnSearchEnable", IDS_HOTWORD_ALWAYS_ON_SEARCH_PREF_CHKBOX },
     { "hotwordAudioHistoryEnable", IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX },
     { "hotwordSearchEnable", IDS_HOTWORD_SEARCH_PREF_CHKBOX },
     { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
     { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
+    { "hotwordNoDSPDesc", IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION },
+    { "hotwordAlwaysOnDesc", IDS_HOTWORD_SEARCH_ALWAYS_ON_DESCRIPTION },
     { "hotwordAudioLoggingEnable", IDS_HOTWORD_AUDIO_LOGGING_ENABLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
@@ -325,7 +326,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
-    { "sectionTitleVoice", IDS_OPTIONS_VOICE_GROUP_NAME },
     { "settingsTitle", IDS_SETTINGS_TITLE },
     { "showAdvancedSettings", IDS_SETTINGS_SHOW_ADVANCED_SETTINGS },
     { "spellingConfirmMessage", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT },
@@ -1628,7 +1628,16 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     // Update the current error value.
     HotwordServiceFactory::IsServiceAvailable(profile);
     int error = HotwordServiceFactory::GetCurrentError(profile);
-    if (!error) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalHotwording)) {
+      if (HotwordServiceFactory::IsHotwordHardwareAvailable()) {
+        web_ui()->CallJavascriptFunction(
+            "BrowserOptions.showHotwordAlwaysOnSection");
+      } else {
+        web_ui()->CallJavascriptFunction(
+            "BrowserOptions.showHotwordNoDSPSection");
+      }
+    } else if (!error) {
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
                                        enabled);
     } else {
@@ -1641,11 +1650,6 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
       }
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
                                        enabled, error_message);
-    }
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalHotwording)) {
-      web_ui()->CallJavascriptFunction(
-          "BrowserOptions.showHotwordAlwaysOnSection");
     }
   }
 }
