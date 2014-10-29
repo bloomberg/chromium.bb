@@ -839,7 +839,7 @@ const char kShortDNSTimeoutTechnologiesProperty[] =
     "ShortDNSTimeoutTechnologies";
 const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
-const char kWakeOnWiFiEnabledProperty[] = "WakeOnWiFiEnabled";
+const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
 
 // Service property names.
 const char kActivationTypeProperty[] = "Cellular.ActivationType";
@@ -933,10 +933,10 @@ const char kTDLSNonexistentState[] = "Nonexistent";
 const char kTDLSUnknownState[] = "Unknown";
 
 // Wake on WiFi features.
-const char kWakeOnWiFiEnabledPacket[] = "packet";
-const char kWakeOnWiFiEnabledSSID[] = "ssid";
-const char kWakeOnWiFiEnabledPacketSSID[] = "packet_and_ssid";
-const char kWakeOnWiFiEnabledNone[] = "none";
+const char kWakeOnWiFiFeaturesEnabledPacket[] = "packet";
+const char kWakeOnWiFiFeaturesEnabledSSID[] = "ssid";
+const char kWakeOnWiFiFeaturesEnabledPacketSSID[] = "packet_and_ssid";
+const char kWakeOnWiFiFeaturesEnabledNone[] = "none";
 
 // Cellular service carriers.
 const char kCarrierGenericUMTS[] = "Generic UMTS";
