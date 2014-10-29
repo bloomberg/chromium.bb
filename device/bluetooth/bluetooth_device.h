@@ -398,7 +398,7 @@ class BluetoothDevice {
   virtual BluetoothGattService* GetGattService(
       const std::string& identifier) const;
 
-  // Returns the |address| in the canoncial format: XX:XX:XX:XX:XX:XX, where
+  // Returns the |address| in the canonical format: XX:XX:XX:XX:XX:XX, where
   // each 'X' is a hex digit.  If the input |address| is invalid, returns an
   // empty string.
   static std::string CanonicalizeAddress(const std::string& address);

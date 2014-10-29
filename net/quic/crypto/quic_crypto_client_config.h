@@ -280,7 +280,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       CachedState* cached,
       std::string* error_details);
 
-  // If the suffix of the hostname in |server_id| is in |canoncial_suffixes_|,
+  // If the suffix of the hostname in |server_id| is in |canonical_suffixes_|,
   // then populate |cached| with the canonical cached state from
   // |canonical_server_map_| for that suffix.
   void PopulateFromCanonicalConfig(const QuicServerId& server_id,
@@ -297,8 +297,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   std::map<QuicServerId, QuicServerId> canonical_server_map_;
 
   // Contains list of suffixes (for exmaple ".c.youtube.com",
-  // ".googlevideo.com") of canoncial hostnames.
-  std::vector<std::string> canoncial_suffixes_;
+  // ".googlevideo.com") of canonical hostnames.
+  std::vector<std::string> canonical_suffixes_;
 
   scoped_ptr<ProofVerifier> proof_verifier_;
   scoped_ptr<ChannelIDSource> channel_id_source_;

@@ -810,7 +810,7 @@ void QuicCryptoClientConfig::InitializeFrom(
 }
 
 void QuicCryptoClientConfig::AddCanonicalSuffix(const string& suffix) {
-  canoncial_suffixes_.push_back(suffix);
+  canonical_suffixes_.push_back(suffix);
 }
 
 void QuicCryptoClientConfig::PreferAesGcm() {
@@ -834,15 +834,15 @@ void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
     CachedState* server_state) {
   DCHECK(server_state->IsEmpty());
   size_t i = 0;
-  for (; i < canoncial_suffixes_.size(); ++i) {
-    if (EndsWith(server_id.host(), canoncial_suffixes_[i], false)) {
+  for (; i < canonical_suffixes_.size(); ++i) {
+    if (EndsWith(server_id.host(), canonical_suffixes_[i], false)) {
       break;
     }
   }
-  if (i == canoncial_suffixes_.size())
+  if (i == canonical_suffixes_.size())
     return;
 
-  QuicServerId suffix_server_id(canoncial_suffixes_[i], server_id.port(),
+  QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
                                 server_id.is_https(),
                                 server_id.privacy_mode());
   if (!ContainsKey(canonical_server_map_, suffix_server_id)) {

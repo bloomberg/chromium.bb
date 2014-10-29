@@ -26,9 +26,9 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       alternate_protocol_probability_threshold_(1),
       weak_ptr_factory_(this) {
-  canoncial_suffixes_.push_back(".c.youtube.com");
-  canoncial_suffixes_.push_back(".googlevideo.com");
-  canoncial_suffixes_.push_back(".googleusercontent.com");
+  canonical_suffixes_.push_back(".c.youtube.com");
+  canonical_suffixes_.push_back(".googlevideo.com");
+  canonical_suffixes_.push_back(".googleusercontent.com");
 }
 
 HttpServerPropertiesImpl::~HttpServerPropertiesImpl() {
@@ -69,8 +69,8 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
 
   // Attempt to find canonical servers.
   int canonical_ports[] = { 80, 443 };
-  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canoncial_suffixes_[i];
+  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canonical_suffixes_[i];
     for (size_t j = 0; j < arraysize(canonical_ports); ++j) {
       HostPortPair canonical_host(canonical_suffix, canonical_ports[j]);
       // If we already have a valid canonical server, we're done.
@@ -84,7 +84,7 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
       for (AlternateProtocolMap::const_iterator it =
                alternate_protocol_map_.begin();
            it != alternate_protocol_map_.end(); ++it) {
-        if (EndsWith(it->first.host(), canoncial_suffixes_[i], false)) {
+        if (EndsWith(it->first.host(), canonical_suffixes_[i], false)) {
           canonical_host_to_origin_map_[canonical_host] = it->first;
           break;
         }
@@ -217,9 +217,9 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
     const HostPortPair& server) {
   // If this host ends with a canonical suffix, then return the canonical
   // suffix.
-  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canoncial_suffixes_[i];
-    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canonical_suffixes_[i];
+    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
       return canonical_suffix;
     }
   }
@@ -293,9 +293,9 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
 
   // If this host ends with a canonical suffix, then set it as the
   // canonical host.
-  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canoncial_suffixes_[i];
-    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canonical_suffixes_[i];
+    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
       HostPortPair canonical_host(canonical_suffix, server.port());
       canonical_host_to_origin_map_[canonical_host] = server;
       break;
@@ -452,9 +452,9 @@ void HttpServerPropertiesImpl::SetAlternateProtocolProbabilityThreshold(
 
 HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
 HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
-  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
-    std::string canonical_suffix = canoncial_suffixes_[i];
-    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+  for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canonical_suffixes_[i];
+    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
       HostPortPair canonical_host(canonical_suffix, server.port());
       return canonical_host_to_origin_map_.find(canonical_host);
     }

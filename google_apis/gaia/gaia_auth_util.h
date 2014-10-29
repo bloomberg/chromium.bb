@@ -25,7 +25,7 @@ std::string CanonicalizeDomain(const std::string& domain);
 std::string SanitizeEmail(const std::string& email_address);
 
 // Returns true if the two specified email addresses are the same.  Both
-// addresses are first sanitized and then canoncialized before comparing.
+// addresses are first sanitized and then canonicalized before comparing.
 bool AreEmailsSame(const std::string& email1, const std::string& email2);
 
 // Extract the domain part from the canonical form of the given email.
