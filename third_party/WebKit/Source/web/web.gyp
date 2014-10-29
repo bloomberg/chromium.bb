@@ -215,6 +215,7 @@
                     'type': 'static_library',
                     'dependencies': [
                         '../config.gyp:config',
+                        '../core/core.gyp:webcore_generated',
                         '../core/core.gyp:webcore_testing',
                         '../modules/modules.gyp:modules_testing',
                         '../wtf/wtf.gyp:wtf',
