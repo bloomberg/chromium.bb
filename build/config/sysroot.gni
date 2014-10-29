@@ -5,7 +5,15 @@
 # This header file defines the "sysroot" variable which is the absolute path
 # of the sysroot. If no sysroot applies, the variable will be an empty string.
 
-if (is_android) {
+declare_args() {
+  # The absolute path of the sysroot that is applied when compiling using
+  # the target toolchain.
+  target_sysroot = ""
+}
+
+if (current_toolchain == default_toolchain && target_sysroot != "") {
+  sysroot = target_sysroot
+} else if (is_android) {
   import("//build/config/android/config.gni")
   if (!is_android_webview_build) {
     if (cpu_arch == "x86") {
