@@ -9,8 +9,12 @@
 #include "base/callback.h"
 #include "content/browser/geofencing/geofencing_service.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -21,7 +25,6 @@ struct GeofencingManager::Registration {
                const blink::WebCircularGeofencingRegion& region,
                const StatusCallback& callback,
                int64 geofencing_registration_id);
-
   int64 service_worker_registration_id;
   GURL service_worker_origin;
   std::string region_id;
@@ -47,6 +50,7 @@ GeofencingManager::Registration::Registration(
     const GeofencingManager::StatusCallback& callback,
     int64 geofencing_registration_id)
     : service_worker_registration_id(service_worker_registration_id),
+      service_worker_origin(service_worker_origin),
       region_id(region_id),
       region(region),
       geofencing_registration_id(geofencing_registration_id),
@@ -227,6 +231,16 @@ void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,
     ClearRegistration(registration);
 }
 
+void GeofencingManager::RegionEntered(int64 geofencing_registration_id) {
+  DispatchGeofencingEvent(blink::WebGeofencingEventTypeEnter,
+                          geofencing_registration_id);
+}
+
+void GeofencingManager::RegionExited(int64 geofencing_registration_id) {
+  DispatchGeofencingEvent(blink::WebGeofencingEventTypeLeave,
+                          geofencing_registration_id);
+}
+
 GeofencingManager::Registration* GeofencingManager::FindRegistration(
     int64 service_worker_registration_id,
     const std::string& region_id) {
@@ -284,6 +298,74 @@ void GeofencingManager::ClearRegistration(Registration* registration) {
   registrations_iterator->second.erase(registration->region_id);
   if (registrations_iterator->second.empty())
     registrations_.erase(registrations_iterator);
+}
+
+void GeofencingManager::DispatchGeofencingEvent(
+    blink::WebGeofencingEventType event_type,
+    int64 geofencing_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  Registration* registration = FindRegistrationById(geofencing_registration_id);
+  if (!registration ||
+      registration->service_worker_registration_id ==
+          kInvalidServiceWorkerRegistrationId) {
+    // TODO(mek): Log/track these failures.
+    return;
+  }
+
+  service_worker_context_->context()->storage()->FindRegistrationForId(
+      registration->service_worker_registration_id,
+      registration->service_worker_origin,
+      base::Bind(&GeofencingManager::DeliverGeofencingEvent,
+                 this,
+                 event_type,
+                 geofencing_registration_id));
+}
+
+void GeofencingManager::DeliverGeofencingEvent(
+    blink::WebGeofencingEventType event_type,
+    int64 geofencing_registration_id,
+    ServiceWorkerStatusCode service_worker_status,
+    const scoped_refptr<ServiceWorkerRegistration>&
+        service_worker_registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  Registration* registration = FindRegistrationById(geofencing_registration_id);
+  if (!registration) {
+    // Geofence got unregistered in the meantime, no longer need to deliver
+    // event.
+    return;
+  }
+
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    // TODO(mek): SW no longer exists, somehow handle this.
+    return;
+  }
+
+  ServiceWorkerVersion* active_version =
+      service_worker_registration->active_version();
+  if (!active_version) {
+    // TODO(mek): No active version, potentially because one is still being
+    //     installed. Handle this somehow.
+    return;
+  }
+
+  // Hold on to the service worker registration in the callback to keep it alive
+  // until the callback dies. Otherwise the registration could be released when
+  // this method returns - before the event is delivered to the service worker.
+  base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
+      base::Bind(&GeofencingManager::DeliverGeofencingEventEnd,
+                 this,
+                 service_worker_registration);
+  active_version->DispatchGeofencingEvent(dispatch_event_callback,
+                                          event_type,
+                                          registration->region_id,
+                                          registration->region);
+}
+
+void GeofencingManager::DeliverGeofencingEventEnd(
+    const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(mek): log/check result.
 }
 
 }  // namespace content

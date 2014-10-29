@@ -77,6 +77,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
@@ -223,6 +224,19 @@ void ServiceWorkerScriptContext::OnPushEvent(int request_id,
   proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
   Send(new ServiceWorkerHostMsg_PushEventFinished(
       GetRoutingID(), request_id));
+}
+
+void ServiceWorkerScriptContext::OnGeofencingEvent(
+    int request_id,
+    blink::WebGeofencingEventType event_type,
+    const std::string& region_id,
+    const blink::WebCircularGeofencingRegion& region) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnGeofencingEvent");
+  proxy_->dispatchGeofencingEvent(
+      request_id, event_type, blink::WebString::fromUTF8(region_id), region);
+  Send(new ServiceWorkerHostMsg_GeofencingEventFinished(GetRoutingID(),
+                                                        request_id));
 }
 
 void ServiceWorkerScriptContext::OnPostMessage(

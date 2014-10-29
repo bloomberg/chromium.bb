@@ -12,6 +12,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
+#include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
@@ -102,6 +104,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebServiceWorkerCacheError,
     blink::WebServiceWorkerCacheErrorLast)
 
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
+                          blink::WebGeofencingEventTypeLast)
+
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
@@ -177,6 +182,8 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SyncEventFinished,
                     int /* request_id */)
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_PushEventFinished,
+                    int /* request_id */)
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GeofencingEventFinished,
                     int /* request_id */)
 
 // Asks the browser to retrieve documents controlled by the sender
@@ -348,6 +355,11 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,
                      std::string /* data */)
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
+                     int /* request_id */,
+                     blink::WebGeofencingEventType /* event_type */,
+                     std::string /* region_id */,
+                     blink::WebCircularGeofencingRegion /* region */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,

@@ -31,6 +31,8 @@ class MockGeofencingRegistrationDelegate
  public:
   MOCK_METHOD2(RegistrationFinished,
                void(int64 geofencing_registration_id, GeofencingStatus status));
+  MOCK_METHOD1(RegionEntered, void(int64 geofencing_registration_id));
+  MOCK_METHOD1(RegionExited, void(int64 geofencing_registration_id));
 };
 
 class MockGeofencingProvider : public GeofencingProvider {

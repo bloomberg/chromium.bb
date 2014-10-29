@@ -17,11 +17,13 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
 namespace blink {
+struct WebCircularGeofencingRegion;
 class WebServiceWorkerContextProxy;
 }
 
@@ -82,6 +84,10 @@ class ServiceWorkerScriptContext {
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnSyncEvent(int request_id);
   void OnPushEvent(int request_id, const std::string& data);
+  void OnGeofencingEvent(int request_id,
+                         blink::WebGeofencingEventType event_type,
+                         const std::string& region_id,
+                         const blink::WebCircularGeofencingRegion& region);
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);

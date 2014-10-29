@@ -23,9 +23,14 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
 class GURL;
+
+namespace blink {
+struct WebCircularGeofencingRegion;
+}
 
 namespace content {
 
@@ -151,7 +156,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SendMessage(const IPC::Message& message, const StatusCallback& callback);
 
   // Sends install event to the associated embedded worker and asynchronously
-  // calls |callback| when it errors out or it gets response from the worker
+  // calls |callback| when it errors out or it gets a response from the worker
   // to notify install completion.
   // |active_version_id| must be a valid positive ID
   // if there's an activated (previous) version running.
@@ -164,7 +169,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             const StatusCallback& callback);
 
   // Sends activate event to the associated embedded worker and asynchronously
-  // calls |callback| when it errors out or it gets response from the worker
+  // calls |callback| when it errors out or it gets a response from the worker
   // to notify activation completion.
   //
   // This must be called when the status() is INSTALLED. Calling this changes
@@ -183,19 +188,30 @@ class CONTENT_EXPORT ServiceWorkerVersion
                           const FetchCallback& fetch_callback);
 
   // Sends sync event to the associated embedded worker and asynchronously calls
-  // |callback| when it errors out or it gets response from the worker to notify
-  // completion.
+  // |callback| when it errors out or it gets a response from the worker to
+  // notify completion.
   //
   // This must be called when the status() is ACTIVATED.
   void DispatchSyncEvent(const StatusCallback& callback);
 
   // Sends push event to the associated embedded worker and asynchronously calls
-  // |callback| when it errors out or it gets response from the worker to notify
-  // completion.
+  // |callback| when it errors out or it gets a response from the worker to
+  // notify completion.
   //
   // This must be called when the status() is ACTIVATED.
   void DispatchPushEvent(const StatusCallback& callback,
                          const std::string& data);
+
+  // Sends geofencing event to the associated embedded worker and asynchronously
+  // calls |callback| when it errors out or it gets a response from the worker
+  // to notify completion.
+  //
+  // This must be called when the status() is ACTIVATED.
+  void DispatchGeofencingEvent(
+      const StatusCallback& callback,
+      blink::WebGeofencingEventType event_type,
+      const std::string& region_id,
+      const blink::WebCircularGeofencingRegion& region);
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   // A potential controllee is a host having the version as its .installing
@@ -262,6 +278,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             const ServiceWorkerResponse& response);
   void OnSyncEventFinished(int request_id);
   void OnPushEventFinished(int request_id);
+  void OnGeofencingEventFinished(int request_id);
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
@@ -286,6 +303,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> sync_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
+  IDMap<StatusCallback, IDMapOwnPointer> geofencing_callbacks_;
 
   ControlleeMap controllee_map_;
   ControlleeByIDMap controllee_by_id_;

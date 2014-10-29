@@ -41,6 +41,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/WebKit/public/platform/WebGamepad.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",
+  "+third_party/WebKit/public/platform/WebGeofencingEventType.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/WebIDBTypes.h",

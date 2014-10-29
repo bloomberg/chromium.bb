@@ -19,6 +19,8 @@ class GeofencingRegistrationDelegate {
  public:
   virtual void RegistrationFinished(int64 geofencing_registration_id,
                                     GeofencingStatus status) = 0;
+  virtual void RegionEntered(int64 geofencing_registration_id) = 0;
+  virtual void RegionExited(int64 geofencing_registration_id) = 0;
 
  protected:
   virtual ~GeofencingRegistrationDelegate() {}

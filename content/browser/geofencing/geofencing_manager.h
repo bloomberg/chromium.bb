@@ -14,8 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/common/geofencing_status.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -29,6 +31,7 @@ namespace content {
 
 class GeofencingService;
 class ServiceWorkerContextWrapper;
+class ServiceWorkerRegistration;
 
 // This is the main API to the geofencing subsystem. There is one instance of
 // this class per storage partition.
@@ -38,6 +41,8 @@ class ServiceWorkerContextWrapper;
 // This class is created on the UI thread, but all its methods should only be
 // called from the IO thread.
 // TODO(mek): Implement some kind of persistence of registrations.
+// TODO(mek): Unregister a geofence when the ServiceWorkerRegistration it
+//    belongs to goes away.
 class CONTENT_EXPORT GeofencingManager
     : NON_EXPORTED_BASE(public GeofencingRegistrationDelegate),
       public base::RefCountedThreadSafe<GeofencingManager> {
@@ -102,6 +107,8 @@ class CONTENT_EXPORT GeofencingManager
   // GeofencingRegistrationDelegate implementation.
   void RegistrationFinished(int64 geofencing_registration_id,
                             GeofencingStatus status) override;
+  void RegionEntered(int64 geofencing_registration_id) override;
+  void RegionExited(int64 geofencing_registration_id) override;
 
   // Looks up a particular geofence registration. Returns nullptr if no
   // registration with the given IDs exists.
@@ -124,6 +131,29 @@ class CONTENT_EXPORT GeofencingManager
 
   // Clears a registration.
   void ClearRegistration(Registration* registration);
+
+  // Starts dispatching a particular geofencing |event_type| for the geofence
+  // registration with the given ID. This first looks up the Service Worker
+  // Registration the geofence is associated with, and then attempts to deliver
+  // the event to that service worker.
+  void DispatchGeofencingEvent(blink::WebGeofencingEventType event_type,
+                               int64 geofencing_registration_id);
+
+  // Delivers an event to the specified service worker for the given geofence.
+  // If the geofence registration id is no longer valid, this method does
+  // nothing. This assumes the |service_worker_registration| is the service
+  // worker the geofence registration is associated with.
+  void DeliverGeofencingEvent(blink::WebGeofencingEventType event_type,
+                              int64 geofencing_registration_id,
+                              ServiceWorkerStatusCode service_worker_status,
+                              const scoped_refptr<ServiceWorkerRegistration>&
+                                  service_worker_registration);
+
+  // Called when delivery of a geofence event to a service worker has finished
+  // (or failed to finish).
+  void DeliverGeofencingEventEnd(const scoped_refptr<ServiceWorkerRegistration>&
+                                     service_worker_registration,
+                                 ServiceWorkerStatusCode service_worker_status);
 
   // Map of all registered regions for a particular service worker registration.
   typedef std::map<std::string, Registration> RegionIdRegistrationMap;
