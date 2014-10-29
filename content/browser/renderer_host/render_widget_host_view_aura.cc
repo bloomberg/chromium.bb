@@ -448,7 +448,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(NULL),
-      legacy_window_destroyed_(false),
 #endif
       has_snapped_to_boundary_(false),
       touch_editing_client_(NULL),
@@ -602,16 +601,6 @@ void RenderWidgetHostViewAura::WasShown() {
   delegated_frame_host_->WasShown(browser_latency_info);
 
 #if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_) {
-    // Reparent the legacy Chrome_RenderWidgetHostHWND window to the parent
-    // window before reparenting any plugins. This ensures that the plugin
-    // windows stay on top of the child Zorder in the parent and receive
-    // mouse events, etc.
-    legacy_render_widget_host_HWND_->UpdateParent(
-        GetNativeView()->GetHost()->GetAcceleratedWidget());
-    legacy_render_widget_host_HWND_->SetBounds(
-        window_->GetBoundsInRootWindow());
-  }
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
 #endif
@@ -630,10 +619,6 @@ void RenderWidgetHostViewAura::WasHidden() {
     HWND parent = host->GetAcceleratedWidget();
     LPARAM lparam = reinterpret_cast<LPARAM>(this);
     EnumChildWindows(parent, HideWindowsCallback, lparam);
-    // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
-    // hidden window on the same lines as Windowed plugin windows.
-    if (legacy_render_widget_host_HWND_)
-      legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
   }
 #endif
 }
@@ -798,19 +783,11 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
 void RenderWidgetHostViewAura::Show() {
   window_->Show();
   WasShown();
-#if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->Show();
-#endif
 }
 
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
   WasHidden();
-#if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->Hide();
-#endif
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -1035,12 +1012,7 @@ void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
     ::ClipCursor(&window_rect);
   }
 }
-
-void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
-  legacy_render_widget_host_HWND_ = NULL;
-  legacy_window_destroyed_ = true;
-}
-#endif
+#endif  // defined(OS_WIN)
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32 output_surface_id,
@@ -1072,6 +1044,11 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
 }
 
 #if defined(OS_WIN)
+void RenderWidgetHostViewAura::SetLegacyRenderWidgetHostHWND(
+    LegacyRenderWidgetHostHWND* legacy_hwnd) {
+  legacy_render_widget_host_HWND_ = legacy_hwnd;
+}
+
 void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
@@ -1079,8 +1056,9 @@ void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
 gfx::NativeViewId RenderWidgetHostViewAura::GetParentForWindowlessPlugin()
     const {
   if (legacy_render_widget_host_HWND_) {
-    return reinterpret_cast<gfx::NativeViewId>(
-        legacy_render_widget_host_HWND_->hwnd());
+    HWND hwnd = legacy_render_widget_host_HWND_->hwnd();
+    if (::IsWindow(hwnd))
+      return reinterpret_cast<gfx::NativeViewId>(hwnd);
   }
   return NULL;
 }
@@ -1223,8 +1201,11 @@ RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
 gfx::AcceleratedWidget
 RenderWidgetHostViewAura::AccessibilityGetAcceleratedWidget() {
 #if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    return legacy_render_widget_host_HWND_->hwnd();
+  if (legacy_render_widget_host_HWND_) {
+    HWND hwnd = legacy_render_widget_host_HWND_->hwnd();
+    if (::IsWindow(hwnd))
+      return hwnd;
+  }
 #endif
   return gfx::kNullAcceleratedWidget;
 }
@@ -1747,20 +1728,7 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   }
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(parent, WindowDestroyingCallback, lparam);
-
-  // The LegacyRenderWidgetHostHWND instance is destroyed when its window is
-  // destroyed. Normally we control when that happens via the Destroy call
-  // in the dtor. However there may be cases where the window is destroyed
-  // by Windows, i.e. the parent window is destroyed before the
-  // RenderWidgetHostViewAura instance goes away etc. To avoid that we
-  // destroy the LegacyRenderWidgetHostHWND instance here.
-  if (legacy_render_widget_host_HWND_) {
-    legacy_render_widget_host_HWND_->set_host(NULL);
-    legacy_render_widget_host_HWND_->Destroy();
-    // The Destroy call above will delete the LegacyRenderWidgetHostHWND
-    // instance.
-    legacy_render_widget_host_HWND_ = NULL;
-  }
+  legacy_render_widget_host_HWND_ = NULL;
 #endif
 
   // Make sure that the input method no longer references to this object before
@@ -2268,13 +2236,6 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // Aura root window and we don't have a way to get an input method object
   // associated with the window, but just in case.
   DetachFromInputMethod();
-
-#if defined(OS_WIN)
-  // The LegacyRenderWidgetHostHWND window should have been destroyed in
-  // RenderWidgetHostViewAura::OnWindowDestroying and the pointer should
-  // be set to NULL.
-  DCHECK(!legacy_render_widget_host_HWND_);
-#endif
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
@@ -2431,34 +2392,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
       selection_focus_rect_);
   }
 #if defined(OS_WIN)
-  // Create the legacy dummy window which corresponds to the bounds of the
-  // webcontents. This will be passed as the container window for windowless
-  // plugins.
-  // Plugins like Flash assume the container window which is returned via the
-  // NPNVnetscapeWindow property corresponds to the bounds of the webpage.
-  // This is not true in Aura where we have only HWND which is the main Aura
-  // window. If we return this window to plugins like Flash then it causes the
-  // coordinate translations done by these plugins to break.
-  // Additonally the legacy dummy window is needed for accessibility and for
-  // scrolling to work in legacy drivers for trackpoints/trackpads, etc.
-  if (!legacy_window_destroyed_ && GetNativeViewId()) {
-    if (!legacy_render_widget_host_HWND_) {
-      legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(
-          reinterpret_cast<HWND>(GetNativeViewId()));
-    }
-    if (legacy_render_widget_host_HWND_) {
-      legacy_render_widget_host_HWND_->set_host(this);
-      legacy_render_widget_host_HWND_->SetBounds(
-          window_->GetBoundsInRootWindow());
-      // There are cases where the parent window is created, made visible and
-      // the associated RenderWidget is also visible before the
-      // LegacyRenderWidgetHostHWND instace is created. Ensure that it is shown
-      // here.
-      if (!host_->is_hidden())
-        legacy_render_widget_host_HWND_->Show();
-    }
-  }
-
   if (mouse_locked_)
     UpdateMouseLockRegion();
 #endif
@@ -2504,14 +2437,6 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
       input_method->SetFocusedTextInputClient(this);
   }
 
-#if defined(OS_WIN)
-  // The parent may have changed here. Ensure that the legacy window is
-  // reparented accordingly.
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->UpdateParent(
-        reinterpret_cast<HWND>(GetNativeViewId()));
-#endif
-
   delegated_frame_host_->AddedToWindow();
 }
 
@@ -2525,13 +2450,6 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   window_->GetHost()->RemoveObserver(this);
   delegated_frame_host_->RemovingFromWindow();
-
-#if defined(OS_WIN)
-  // Update the legacy window's parent temporarily to the desktop window. It
-  // will eventually get reparented to the right root.
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->UpdateParent(::GetDesktopWindow());
-#endif
 }
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {

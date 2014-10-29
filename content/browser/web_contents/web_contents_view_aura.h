@@ -18,6 +18,11 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
+#if defined(OS_WIN)
+#include "content/browser/renderer_host/legacy_render_widget_host_win.h"
+#include "content/browser/renderer_host/legacy_render_widget_host_win_delegate.h"
+#endif
+
 namespace aura {
 class Window;
 }
@@ -37,8 +42,15 @@ class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
 
+#if defined(OS_WIN)
+class LegacyRenderWidgetHostHWND;
+#endif
+
 class WebContentsViewAura
     : public WebContentsView,
+#if defined(OS_WIN)
+      public LegacyRenderWidgetHostHWNDDelegate,
+#endif
       public RenderViewHostDelegateView,
       public OverscrollControllerDelegate,
       public ui::ImplicitAnimationObserver,
@@ -190,6 +202,11 @@ class WebContentsViewAura
   // Update the web contents visiblity.
   void UpdateWebContentsVisibility(bool visible);
 
+#if defined(OS_WIN)
+  // Overridden from LegacyRenderWidgetHostHWNDDelegate:
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+#endif
+
   scoped_ptr<aura::Window> window_;
 
   // The window that shows the screenshot of the history page during an
@@ -232,6 +249,14 @@ class WebContentsViewAura
 
   scoped_ptr<TouchEditableImplAura> touch_editable_;
   scoped_ptr<GestureNavSimple> gesture_nav_simple_;
+
+#if defined(OS_WIN)
+  // The LegacyRenderWidgetHostHWND class provides a dummy HWND which is used
+  // for accessibility, as the container for windowless plugins like
+  // Flash/Silverlight, etc and for legacy drivers for trackpoints/trackpads,
+  // etc.
+  scoped_ptr<LegacyRenderWidgetHostHWND> legacy_hwnd_;
+#endif
 
   // On Windows we can run into problems if resources get released within the
   // initialization phase while the content (and its dimensions) are not known.
