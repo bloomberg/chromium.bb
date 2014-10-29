@@ -32,8 +32,8 @@ void
 surface_flush_device(cairo_surface_t *surface);
 
 void
-tile_mask(cairo_t *cr, cairo_surface_t *surface,
-	  int x, int y, int width, int height, int margin, int top_margin);
+render_shadow(cairo_t *cr, cairo_surface_t *surface,
+	      int x, int y, int width, int height, int margin, int top_margin);
 
 void
 tile_source(cairo_t *cr, cairo_surface_t *surface,

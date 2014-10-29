@@ -137,13 +137,14 @@ blur_surface(cairo_surface_t *surface, int margin)
 }
 
 void
-tile_mask(cairo_t *cr, cairo_surface_t *surface,
-	  int x, int y, int width, int height, int margin, int top_margin)
+render_shadow(cairo_t *cr, cairo_surface_t *surface,
+	      int x, int y, int width, int height, int margin, int top_margin)
 {
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
 	int i, fx, fy, vmargin;
 
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	pattern = cairo_pattern_create_for_surface (surface);
 	cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
@@ -429,10 +430,9 @@ theme_render_frame(struct theme *t,
 	if (flags & THEME_FRAME_MAXIMIZED)
 		margin = 0;
 	else {
-		cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
-		tile_mask(cr, t->shadow,
-			  2, 2, width + 8, height + 8,
-			  64, 64);
+		render_shadow(cr, t->shadow,
+			      2, 2, width + 8, height + 8,
+			      64, 64);
 		margin = t->margin;
 	}
 

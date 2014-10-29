@@ -973,9 +973,7 @@ weston_wm_window_draw_decoration(void *data)
 		cairo_set_source_rgba(cr, 0, 0, 0, 0);
 		cairo_paint(cr);
 
-		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-		cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
-		tile_mask(cr, t->shadow, 2, 2, width + 8, height + 8, 64, 64);
+		render_shadow(cr, t->shadow, 2, 2, width + 8, height + 8, 64, 64);
 	}
 
 	cairo_destroy(cr);
