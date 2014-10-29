@@ -26,6 +26,7 @@ cr.define('uber_frame', function() {
     uber.invokeMethodOnParent('navigationControlsLoaded');
 
     document.documentElement.addEventListener('mousewheel', onMouseWheel);
+    document.documentElement.addEventListener('mousedown', onMouseDown);
     cr.ui.FocusManager.disableMouseFocusOnButtons();
   }
 
@@ -143,6 +144,14 @@ cr.define('uber_frame', function() {
   function onMouseWheel(e) {
     uber.invokeMethodOnParent('mouseWheel',
         {deltaX: e.wheelDeltaX, deltaY: e.wheelDeltaY});
+  }
+
+  /**
+   * Handles mouse presses on the top level element. Forwards them to uber.js.
+   * @param {Event} e The mouse down event.
+   */
+  function onMouseDown(e) {
+    uber.invokeMethodOnParent('mouseDown');
   }
 
   /**

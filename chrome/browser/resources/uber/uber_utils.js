@@ -59,13 +59,16 @@ cr.define('uber', function() {
    */
   function handleWindowMessage(e) {
     e = /** @type {!MessageEvent.<!{method: string, params: *}>} */(e);
-    if (e.data.method === 'frameSelected')
+    if (e.data.method === 'frameSelected') {
       handleFrameSelected();
-    else if (e.data.method === 'mouseWheel')
+    } else if (e.data.method === 'mouseWheel') {
       handleMouseWheel(
           /** @type {{deltaX: number, deltaY: number}} */(e.data.params));
-    else if (e.data.method === 'popState')
+    } else if (e.data.method === 'mouseDown') {
+      handleMouseDown();
+    } else if (e.data.method === 'popState') {
       handlePopState(e.data.params.state, e.data.params.path);
+    }
   }
 
   /**
@@ -89,6 +92,16 @@ cr.define('uber', function() {
    */
   function handleMouseWheel(params) {
     window.scrollBy(-params.deltaX * 49 / 120, -params.deltaY * 49 / 120);
+  }
+
+  /**
+   * Fire a synthetic mousedown on the body to dismiss transient things like
+   * bubbles or menus that listen for mouse presses outside of their UI. We
+   * dispatch a fake mousedown rather than a 'mousepressedinnavframe' so that
+   * settings/history/extensions don't need to know about their embedder.
+   */
+  function handleMouseDown() {
+    document.body.dispatchEvent(new MouseEvent('mousedown'));
   }
 
   /**
