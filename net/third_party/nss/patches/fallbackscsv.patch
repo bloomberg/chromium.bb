@@ -44,10 +44,14 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      }
  
      /* count compression methods */
-@@ -5353,6 +5365,15 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
- 	}
- 	actual_count++;
-     }
+@@ -5389,11 +5389,21 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
+	    if (rv != SECSuccess) {
+		if (sid->u.ssl3.lock) { NSSRWLock_UnlockRead(sid->u.ssl3.lock); }
+		return rv;	/* err set by ssl3_AppendHandshake* */
+	    }
+	}
+    }
+
 +    if (fallbackSCSV) {
 +	rv = ssl3_AppendHandshakeNumber(ss, TLS_FALLBACK_SCSV,
 +					sizeof(ssl3CipherSuite));
@@ -57,9 +61,11 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
 +	}
 +	actual_count++;
 +    }
-     for (i = 0; i < ssl_V3_SUITES_IMPLEMENTED; i++) {
- 	ssl3CipherSuiteCfg *suite = &ss->cipherSuites[i];
- 	if (config_match(suite, ss->ssl3.policy, PR_TRUE, &ss->vrange)) {
++
+    /* if cards were removed or inserted between count_cipher_suites and
+     * generating our list, detect the error here rather than send it off to
+     * the server.. */
+    if (actual_count != num_suites) {
 @@ -8084,6 +8105,19 @@ ssl3_HandleClientHello(sslSocket *ss, SS
  	goto loser;		/* malformed */
      }

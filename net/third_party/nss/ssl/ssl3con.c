@@ -5373,15 +5373,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
 	}
 	actual_count++;
     }
-    if (fallbackSCSV) {
-	rv = ssl3_AppendHandshakeNumber(ss, TLS_FALLBACK_SCSV,
-					sizeof(ssl3CipherSuite));
-	if (rv != SECSuccess) {
-	    if (sid->u.ssl3.lock) { NSSRWLock_UnlockRead(sid->u.ssl3.lock); }
-	    return rv;	/* err set by ssl3_AppendHandshake* */
-	}
-	actual_count++;
-    }
+
     for (i = 0; i < ssl_V3_SUITES_IMPLEMENTED; i++) {
 	ssl3CipherSuiteCfg *suite = &ss->cipherSuites[i];
 	if (config_match(suite, ss->ssl3.policy, PR_TRUE, &ss->vrange)) {
@@ -5399,6 +5391,16 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
 		return rv;	/* err set by ssl3_AppendHandshake* */
 	    }
 	}
+    }
+
+    if (fallbackSCSV) {
+	rv = ssl3_AppendHandshakeNumber(ss, TLS_FALLBACK_SCSV,
+					sizeof(ssl3CipherSuite));
+	if (rv != SECSuccess) {
+	    if (sid->u.ssl3.lock) { NSSRWLock_UnlockRead(sid->u.ssl3.lock); }
+	    return rv;	/* err set by ssl3_AppendHandshake* */
+	}
+	actual_count++;
     }
 
     /* if cards were removed or inserted between count_cipher_suites and
