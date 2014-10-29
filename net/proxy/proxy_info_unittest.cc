@@ -32,6 +32,8 @@ TEST(ProxyInfoTest, ProxyInfoIsDirectOnly) {
   info.UsePacString("PROXY myproxy:80; DIRECT");
   EXPECT_FALSE(info.is_direct());
   EXPECT_FALSE(info.is_direct_only());
+  EXPECT_EQ(2u, info.proxy_list().size());
+  EXPECT_EQ("PROXY myproxy:80;DIRECT", info.proxy_list().ToPacString());
   // After falling back to direct, we shouldn't consider it DIRECT only.
   EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, BoundNetLog()));
   EXPECT_TRUE(info.is_direct());

@@ -131,6 +131,11 @@ class NET_EXPORT ProxyInfo {
 
   ProxyConfig::ID config_id() const { return config_id_; }
 
+  // Returns the list of proxies to use.
+  const ProxyList& proxy_list() const {
+    return proxy_list_;
+  }
+
   base::TimeTicks proxy_resolve_start_time() const {
     return proxy_resolve_start_time_;
   }

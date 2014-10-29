@@ -946,17 +946,22 @@ TEST_F(DataReductionProxyProtocolTest, OnResolveProxyHandler) {
    // afterwards.
    // Another proxy is used. It should be used afterwards.
    result.Use(direct_proxy_info);
+   net::ProxyConfig::ID prev_id = result.config_id();
    OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
                          empty_proxy_retry_info, &test_params, &result);
    EXPECT_EQ(data_reduction_proxy_info.proxy_server(), result.proxy_server());
+   // Only the proxy list should be updated, not he proxy info.
+   EXPECT_EQ(result.config_id(), prev_id);
 
    // A direct connection is used, but the data reduction proxy is on the retry
    // list. A direct connection should be used afterwards.
    result.Use(direct_proxy_info);
+   prev_id = result.config_id();
    OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
                          data_reduction_proxy_retry_info, &test_params,
                          &result);
    EXPECT_TRUE(result.proxy_server().is_direct());
+   EXPECT_EQ(result.config_id(), prev_id);
 
 
   // Without DataCompressionProxyCriticalBypass Finch trial set, should never
