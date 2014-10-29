@@ -1027,6 +1027,8 @@
         'browser/guest_view/test_guest_view_manager.h',
         'browser/mock_extension_system.cc',
         'browser/mock_extension_system.h',
+        'browser/test_extension_registry_observer.cc',
+        'browser/test_extension_registry_observer.h',
         'browser/test_extensions_browser_client.cc',
         'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',

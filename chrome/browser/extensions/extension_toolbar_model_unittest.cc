@@ -2,21 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model_factory.h"
+#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -776,11 +782,14 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
   // Give two extensions incognito access.
   // Note: We use ExtensionPrefs::SetIsIncognitoEnabled instead of
   // util::SetIsIncognitoEnabled because the latter tries to reload the
-  // extension, which can cause problems in our unittest set up (and reloading
-  // the extension is irrelevant to us).
+  // extension, which requries a filepath associated with the extension (and,
+  // for this test, reloading the extension is irrelevant to us).
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
   extension_prefs->SetIsIncognitoEnabled(browser_action_b()->id(), true);
   extension_prefs->SetIsIncognitoEnabled(browser_action_c()->id(), true);
+
+  util::SetIsIncognitoEnabled(browser_action_b()->id(), profile(), true);
+  util::SetIsIncognitoEnabled(browser_action_c()->id(), profile(), true);
 
   // Move C to the second index.
   toolbar_model()->MoveExtensionIcon(browser_action_c()->id(), 1u);
@@ -838,6 +847,96 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
   toolbar_model()->MoveExtensionIcon(browser_action_c()->id(), 2u);
   EXPECT_EQ(2u, observer()->moved_count());
   EXPECT_EQ(1u, incognito_observer.moved_count());
+}
+
+// Test that enabling extensions incognito with an active incognito profile
+// works.
+TEST_F(ExtensionToolbarModelUnitTest,
+       ExtensionToolbarIncognitoEnableExtension) {
+  Init();
+
+  const char* kManifest =
+      "{"
+      "  \"name\": \"%s\","
+      "  \"version\": \"1.0\","
+      "  \"manifest_version\": 2,"
+      "  \"browser_action\": {}"
+      "}";
+
+  // For this test, we need to have "real" extension files, because we need to
+  // be able to reload them during the incognito process. Since the toolbar
+  // needs to be notified of the reload, we need it this time (as opposed to
+  // above, where we simply set the prefs before the incognito bar was
+  // created.
+  TestExtensionDir dir1;
+  dir1.WriteManifest(base::StringPrintf(kManifest, "incognito1"));
+  TestExtensionDir dir2;
+  dir2.WriteManifest(base::StringPrintf(kManifest, "incognito2"));
+
+  TestExtensionDir* dirs[] = { &dir1, &dir2 };
+  const Extension* extensions[] = { nullptr, nullptr };
+  for (size_t i = 0; i < arraysize(dirs); ++i) {
+    // The extension id will be calculated from the file path; we need this to
+    // wait for the extension to load.
+    base::FilePath path_for_id =
+        base::MakeAbsoluteFilePath(dirs[i]->unpacked_path());
+    std::string id = crx_file::id_util::GenerateIdForPath(path_for_id);
+    TestExtensionRegistryObserver observer(registry(), id);
+    UnpackedInstaller::Create(service())->Load(dirs[i]->unpacked_path());
+    observer.WaitForExtensionLoaded();
+    extensions[i] = registry()->enabled_extensions().GetByID(id);
+    ASSERT_TRUE(extensions[i]);
+  }
+
+  // For readability, alias to A and B. Since we'll be reloading these
+  // extensions, we also can't rely on pointers.
+  std::string extension_a = extensions[0]->id();
+  std::string extension_b = extensions[1]->id();
+
+  // The first model should have both extensions visible.
+  EXPECT_EQ(2u, toolbar_model()->toolbar_items().size());
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(0)->id());
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(1)->id());
+
+  // Set the model to only show one extension, so the order is A [B].
+  toolbar_model()->SetVisibleIconCount(1u);
+
+  // Get an incognito profile and toolbar.
+  ExtensionToolbarModel* incognito_model =
+      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile());
+  ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
+
+  // Right now, no extensions are enabled in incognito mode.
+  EXPECT_EQ(0u, incognito_model->toolbar_items().size());
+
+  // Set extension b (which is overflowed) to be enabled in incognito. This
+  // results in b reloading, so wait for it.
+  {
+    TestExtensionRegistryObserver observer(registry(), extension_b);
+    util::SetIsIncognitoEnabled(extension_b, profile(), true);
+    observer.WaitForExtensionLoaded();
+  }
+
+  // Now, we should have one icon in the incognito bar. But, since B is
+  // overflowed in the main bar, it shouldn't be visible.
+  EXPECT_EQ(1u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(0u, incognito_model)->id());
+  EXPECT_EQ(0, incognito_model->GetVisibleIconCount());
+
+  // Also enable extension a for incognito (again, wait for the reload).
+  {
+    TestExtensionRegistryObserver observer(registry(), extension_a);
+    util::SetIsIncognitoEnabled(extension_a, profile(), true);
+    observer.WaitForExtensionLoaded();
+  }
+
+  // Now, both extensions should be enabled in incognito mode. In addition, the
+  // incognito toolbar should have expanded to show extension a (since it isn't
+  // overflowed in the main bar).
+  EXPECT_EQ(2u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(0u, incognito_model)->id());
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(1u, incognito_model)->id());
+  EXPECT_EQ(1, incognito_model->GetVisibleIconCount());
 }
 
 // Test that hiding actions on the toolbar results in sending them to the

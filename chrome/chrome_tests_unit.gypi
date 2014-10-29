@@ -1805,6 +1805,8 @@
             'browser/extensions/test_blacklist.h',
             'browser/extensions/test_blacklist_state_fetcher.cc',
             'browser/extensions/test_blacklist_state_fetcher.h',
+            'browser/extensions/test_extension_dir.cc',
+            'browser/extensions/test_extension_dir.h',
             'browser/extensions/test_extension_environment.cc',
             'browser/extensions/test_extension_environment.h',
             'browser/extensions/test_extension_prefs.cc',

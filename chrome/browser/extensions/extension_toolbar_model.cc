@@ -324,6 +324,28 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   if (!is_highlighting_) {
     FOR_EACH_OBSERVER(
         Observer, observers_, ToolbarExtensionAdded(extension, new_index));
+
+    // If this is an incognito profile, we also have to check to make sure the
+    // overflow matches the main bar's status.
+    if (profile_->IsOffTheRecord()) {
+      ExtensionToolbarModel* main_model =
+          ExtensionToolbarModel::Get(profile_->GetOriginalProfile());
+      // Find what the index will be in the main bar. Because Observer calls are
+      // nondeterministic, we can't just assume the main bar will have the
+      // extension and look it up.
+      int main_index = is_new_extension ?
+          main_model->toolbar_items_.size() :
+          main_model->FindNewPositionFromLastKnownGood(extension);
+      bool visible = main_index < main_model->visible_icon_count_ ||
+                     main_model->visible_icon_count_ == -1;
+      // We may need to adjust the visible count if the incognito bar isn't
+      // showing all icons and this one is visible, or if it is showing all
+      // icons and this is hidden.
+      if (visible && visible_icon_count_ != -1)
+        SetVisibleIconCount(visible_icon_count_ + 1);
+      else if (!visible && visible_icon_count_ == -1)
+        SetVisibleIconCount(toolbar_items_.size() - 1);
+    }
   }
 }
 
