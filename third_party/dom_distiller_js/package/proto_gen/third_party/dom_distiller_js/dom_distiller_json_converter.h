@@ -641,6 +641,13 @@ namespace dom_distiller {
             }
             message->set_debug_level(field_value);
           }
+          if (dict->HasKey("3")) {
+            std::string field_value;
+            if (!dict->GetString("3", &field_value)) {
+              goto error;
+            }
+            message->set_original_domain(field_value);
+          }
           return true;
 
         error:
@@ -654,6 +661,9 @@ namespace dom_distiller {
           }
           if (message.has_debug_level()) {
             dict->SetInteger("2", message.debug_level());
+          }
+          if (message.has_original_domain()) {
+            dict->SetString("3", message.original_domain());
           }
           return dict.Pass();
         }
