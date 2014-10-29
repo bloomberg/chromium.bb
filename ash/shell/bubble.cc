@@ -20,9 +20,8 @@ struct BubbleConfig {
 
 class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  public:
-  ExampleBubbleDelegateView(const BubbleConfig& config)
-      : BubbleDelegateView(config.anchor_view, config.arrow),
-        label_(config.label) {}
+  explicit ExampleBubbleDelegateView(const BubbleConfig& config);
+  ~ExampleBubbleDelegateView() override;
 
   void Init() override {
     SetLayoutManager(new views::FillLayout());
@@ -33,6 +32,14 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
  private:
   base::string16 label_;
 };
+
+ExampleBubbleDelegateView::ExampleBubbleDelegateView(const BubbleConfig& config)
+    : BubbleDelegateView(config.anchor_view, config.arrow),
+      label_(config.label) {
+}
+
+ExampleBubbleDelegateView::~ExampleBubbleDelegateView() {
+}
 
 void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;

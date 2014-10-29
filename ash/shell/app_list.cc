@@ -49,13 +49,8 @@ class WindowTypeShelfItem : public app_list::AppListItem {
     LAST_TYPE,
   };
 
-  explicit WindowTypeShelfItem(const std::string& id, Type type)
-      : app_list::AppListItem(id),
-        type_(type) {
-    std::string title(GetTitle(type));
-    SetIcon(GetIcon(type), false);
-    SetName(title);
-  }
+  WindowTypeShelfItem(const std::string& id, Type type);
+  ~WindowTypeShelfItem() override;
 
   static gfx::ImageSkia GetIcon(Type type) {
     static const SkColor kColors[] = {
@@ -145,6 +140,16 @@ class WindowTypeShelfItem : public app_list::AppListItem {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeShelfItem);
 };
+
+WindowTypeShelfItem::WindowTypeShelfItem(const std::string& id, Type type)
+    : app_list::AppListItem(id), type_(type) {
+  std::string title(GetTitle(type));
+  SetIcon(GetIcon(type), false);
+  SetName(title);
+}
+
+WindowTypeShelfItem::~WindowTypeShelfItem() {
+}
 
 // ExampleSearchResult is an app list search result. It provides what icon to
 // show, what should title and details text look like. It also carries the

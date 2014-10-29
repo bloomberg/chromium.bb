@@ -19,6 +19,9 @@ ChromeLauncherAppMenuItemV2App::ChromeLauncherAppMenuItemV2App(
       app_index_(app_index) {
 }
 
+ChromeLauncherAppMenuItemV2App::~ChromeLauncherAppMenuItemV2App() {
+}
+
 bool ChromeLauncherAppMenuItemV2App::IsEnabled() const {
   return true;
 }
