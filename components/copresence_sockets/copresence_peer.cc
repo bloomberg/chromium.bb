@@ -10,9 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "components/copresence_sockets/transports/bluetooth/copresence_socket_bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -23,17 +20,7 @@
 namespace {
 
 const char kAdapterError[] = "NOADAPTER";
-
-device::BluetoothUUID GenerateRandomUuid() {
-  // Random hex string of the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
-  return device::BluetoothUUID(base::StringPrintf(
-      "%08" PRIx64 "-%04" PRIx64 "-%04" PRIx64 "-%04" PRIx64 "-%012" PRIx64,
-      base::RandGenerator(UINT32_MAX),
-      base::RandGenerator(UINT16_MAX),
-      base::RandGenerator(UINT16_MAX),
-      base::RandGenerator(UINT16_MAX),
-      base::RandGenerator(static_cast<uint64>(UINT16_MAX) + UINT32_MAX)));
-}
+const char kSocketServiceUuid[] = "2491fb14-0077-4d4d-bd41-b18e9a570f56";
 
 // This class will confirm pairing for a device that is expecting a pairing
 // confirmation.
@@ -86,7 +73,7 @@ std::string CopresencePeer::GetLocatorData() {
     return kAdapterError;
   // TODO(rkc): Fix the "1." once we have finalized the locator format with
   // other platforms. http://crbug.com/418616
-  return "1." + adapter_->GetAddress() + "." + service_uuid_.value();
+  return "1." + adapter_->GetAddress() + "." + kSocketServiceUuid;
 }
 
 CopresencePeer::~CopresencePeer() {
@@ -101,20 +88,19 @@ CopresencePeer::~CopresencePeer() {
 void CopresencePeer::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   if (!adapter.get() || !adapter->IsPresent() || !adapter->IsPowered()) {
+    LOG(WARNING) << "Unable to use BT adapter";
     create_callback_.Run(std::string());
     return;
   }
 
   adapter_ = adapter;
-  service_uuid_ = GenerateRandomUuid();
-
   delegate_ = make_scoped_ptr(new DefaultApprovalDelegate());
-  VLOG(2) << "Creating service with UUID: " << service_uuid_.value();
+  VLOG(2) << "Got Adapter, creating service with UUID: " << kSocketServiceUuid;
   adapter_->AddPairingDelegate(
       delegate_.get(),
       device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
   adapter_->CreateRfcommService(
-      service_uuid_,
+      device::BluetoothUUID(kSocketServiceUuid),
       device::BluetoothAdapter::ServiceOptions(),
       base::Bind(&CopresencePeer::OnCreateService,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -125,10 +111,12 @@ void CopresencePeer::OnGetAdapter(
 void CopresencePeer::OnCreateService(
     scoped_refptr<device::BluetoothSocket> socket) {
   if (!socket.get()) {
+    LOG(WARNING) << "Couldn't create service!";
     create_callback_.Run(std::string());
     return;
   }
 
+  VLOG(3) << "Starting Accept Socket.";
   server_socket_ = socket;
   create_callback_.Run(GetLocatorData());
   server_socket_->Accept(
@@ -146,6 +134,7 @@ void CopresencePeer::OnAccept(const device::BluetoothDevice* device,
                               scoped_refptr<device::BluetoothSocket> socket) {
   if (!socket.get())
     return;
+  VLOG(3) << "Accepted Socket.";
   accept_callback_.Run(make_scoped_ptr(new CopresenceSocketBluetooth(socket)));
 }
 

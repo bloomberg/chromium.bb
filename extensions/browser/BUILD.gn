@@ -103,6 +103,8 @@ source_set("browser") {
       "api/cast_channel/logger_util.h",
       "api/copresence_socket/copresence_socket_api.cc",
       "api/copresence_socket/copresence_socket_api.h",
+      "api/copresence_socket/copresence_socket_resources.cc",
+      "api/copresence_socket/copresence_socket_resources.h",
       "api/declarative/declarative_api.cc",
       "api/declarative/declarative_api.h",
       "api/declarative/declarative_rule.h",

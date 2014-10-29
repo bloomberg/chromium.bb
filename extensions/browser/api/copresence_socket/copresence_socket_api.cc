@@ -4,10 +4,15 @@
 
 #include "extensions/browser/api/copresence_socket/copresence_socket_api.h"
 
+#include "base/base64.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_piece.h"
 #include "components/copresence_sockets/public/copresence_peer.h"
 #include "components/copresence_sockets/public/copresence_socket.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/copresence_socket/copresence_socket_resources.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/copresence_socket.h"
 #include "net/base/io_buffer.h"
@@ -17,62 +22,110 @@ using copresence_sockets::CopresenceSocket;
 
 namespace extensions {
 
-class CopresencePeerResource : public ApiResource {
- public:
-  // Takes ownership of peer.
-  CopresencePeerResource(const std::string& owner_extension_id,
-                         scoped_ptr<copresence_sockets::CopresencePeer> peer)
-      : ApiResource(owner_extension_id), peer_(peer.Pass()) {}
+namespace {
 
-  ~CopresencePeerResource() override {}
+const size_t kSizeBytes = 2;
+const char kToField[] = "to";
+const char kDataField[] = "data";
+const char kReplyToField[] = "replyTo";
 
-  copresence_sockets::CopresencePeer* peer() { return peer_.get(); }
+bool Base64DecodeWithoutPadding(const std::string& data, std::string* out) {
+  std::string ret = data;
+  while (ret.size() % 4)
+    ret.push_back('=');
 
-  static const content::BrowserThread::ID kThreadId =
-      content::BrowserThread::UI;
+  if (!base::Base64Decode(ret, &ret))
+    return false;
 
- private:
-  scoped_ptr<copresence_sockets::CopresencePeer> peer_;
+  out->swap(ret);
+  return true;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(CopresencePeerResource);
-};
+std::string Base64EncodeWithoutPadding(const std::string& data) {
+  std::string ret = data;
+  base::Base64Encode(ret, &ret);
+  while (*(ret.end() - 1) == '=')
+    ret.erase(ret.end() - 1);
+  return ret;
+}
 
-class CopresenceSocketResource : public ApiResource {
- public:
-  // Takes ownership of socket.
-  CopresenceSocketResource(
-      const std::string& owner_extension_id,
-      scoped_ptr<copresence_sockets::CopresenceSocket> socket)
-      : ApiResource(owner_extension_id), socket_(socket.Pass()) {}
+// Create a message to send to another peer.
+std::string CreateMessage(const std::string& data) {
+  base::DictionaryValue dict;
+  dict.SetInteger(kToField, 1);
+  dict.SetString(kDataField, Base64EncodeWithoutPadding(data));
+  // We have only one peer at the moment, always with the ID 1.
+  dict.SetInteger(kReplyToField, 1);
 
-  ~CopresenceSocketResource() override {}
+  std::string json;
+  base::JSONWriter::Write(&dict, &json);
 
-  copresence_sockets::CopresenceSocket* socket() { return socket_.get(); }
+  std::string message;
+  message.push_back(static_cast<unsigned char>(json.size() & 0xff));
+  message.push_back(static_cast<unsigned char>(json.size() >> 8));
 
-  static const content::BrowserThread::ID kThreadId =
-      content::BrowserThread::UI;
+  message.append(json);
+  return message;
+}
 
- private:
-  scoped_ptr<copresence_sockets::CopresenceSocket> socket_;
+// Parse a message received from another peer.
+bool ParseReceivedMessage(const std::string& message, std::string* data) {
+  // The format of a received message is, first two bytes = size of the
+  // message, the rest is a string with the message in JSON. Since we don't
+  // have multi-part messages yet, we'll ignore the size bytes.
+  base::StringPiece json(message.c_str() + kSizeBytes,
+                         message.size() - kSizeBytes);
+  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
 
-  DISALLOW_COPY_AND_ASSIGN(CopresenceSocketResource);
-};
+  // Check to see that we have a valid dictionary.
+  base::DictionaryValue* dict = nullptr;
+  if (!value || !value->GetAsDictionary(&dict) || !dict->HasKey(kDataField)) {
+    LOG(WARNING) << "Invalid JSON: " << json;
+    return false;
+  }
+
+  // The fields in the json string are,
+  // to: Peer Id this message is meant for (unused atm).
+  // data: Data content of the message.
+  // replyTo: Sender of this message (in the locator data format - unused atm).
+  dict->GetStringASCII(kDataField, data);
+  if (!Base64DecodeWithoutPadding(*data, data))
+    return false;
+  return true;
+}
+
+}  // namespace
+
+// CopresenceSocketFunction public methods:
 
 CopresenceSocketFunction::CopresenceSocketFunction()
     : peers_manager_(nullptr), sockets_manager_(nullptr) {
 }
 
-CopresenceSocketFunction::~CopresenceSocketFunction() {
-  delete peers_manager_;
-  delete sockets_manager_;
+void CopresenceSocketFunction::DispatchOnConnectedEvent(
+    int peer_id,
+    scoped_ptr<copresence_sockets::CopresenceSocket> socket) {
+  // Save socket's pointer since we'll lose the scoper once we pass it to
+  // AddSocket.
+  copresence_sockets::CopresenceSocket* socket_ptr = socket.get();
+  int socket_id =
+      AddSocket(new CopresenceSocketResource(extension_id(), socket.Pass()));
+
+  // Send the messages to the client app.
+  scoped_ptr<Event> event(new Event(
+      core_api::copresence_socket::OnConnected::kEventName,
+      core_api::copresence_socket::OnConnected::Create(peer_id, socket_id),
+      browser_context()));
+  EventRouter::Get(browser_context())
+      ->DispatchEventToExtension(extension_id(), event.Pass());
+  VLOG(2) << "Dispatched OnConnected event: peerId = " << peer_id
+          << " and socketId = " << socket_id;
+
+  socket_ptr->Receive(base::Bind(
+      base::Bind(&CopresenceSocketFunction::OnDataReceived, this, socket_id)));
 }
 
-void CopresenceSocketFunction::Initialize() {
-  peers_manager_ =
-      new ApiResourceManager<CopresencePeerResource>(browser_context());
-  sockets_manager_ =
-      new ApiResourceManager<CopresenceSocketResource>(browser_context());
-}
+// CopresenceSocketFunction protected methods:
 
 int CopresenceSocketFunction::AddPeer(CopresencePeerResource* peer) {
   return peers_manager_->Add(peer);
@@ -104,13 +157,52 @@ void CopresenceSocketFunction::RemoveSocket(int socket_id) {
   sockets_manager_->Remove(extension_id(), socket_id);
 }
 
-void CopresenceSocketFunction::DispatchOnReceiveEvent(
+ExtensionFunction::ResponseAction CopresenceSocketFunction::Run() {
+  Initialize();
+  return Execute();
+}
+
+// CopresenceSocketFunction private methods:
+
+CopresenceSocketFunction::~CopresenceSocketFunction() {
+}
+
+void CopresenceSocketFunction::Initialize() {
+  peers_manager_ =
+      ApiResourceManager<CopresencePeerResource>::Get(browser_context());
+  sockets_manager_ =
+      ApiResourceManager<CopresenceSocketResource>::Get(browser_context());
+}
+
+void CopresenceSocketFunction::OnDataReceived(
     int socket_id,
     const scoped_refptr<net::IOBuffer>& buffer,
     int size) {
+  CopresenceSocketResource* socket = GetSocket(socket_id);
+  if (!socket) {
+    VLOG(2) << "Receiving socket not found. ID = " << socket_id;
+    return;
+  }
+
+  socket->add_to_packet(std::string(buffer->data(), size));
+  const std::string& packet = socket->packet();
+  if (packet.size() >= kSizeBytes) {
+    int size =
+        static_cast<int>(packet[1]) << 8 | (static_cast<int>(packet[0]) & 0xff);
+    if (packet.size() >= (size + kSizeBytes)) {
+      std::string message_data;
+      if (ParseReceivedMessage(packet, &message_data))
+        DispatchOnReceiveEvent(socket_id, message_data);
+      socket->clear_packet();
+    }
+  }
+}
+
+void CopresenceSocketFunction::DispatchOnReceiveEvent(int socket_id,
+                                                      const std::string& data) {
   core_api::copresence_socket::ReceiveInfo info;
   info.socket_id = socket_id;
-  info.data = std::string(buffer->data(), size);
+  info.data = data;
   // Send the data to the client app.
   scoped_ptr<Event> event(
       new Event(core_api::copresence_socket::OnReceive::kEventName,
@@ -120,31 +212,6 @@ void CopresenceSocketFunction::DispatchOnReceiveEvent(
       ->DispatchEventToExtension(extension_id(), event.Pass());
   VLOG(2) << "Dispatched OnReceive event: socketId = " << socket_id
           << " and data = " << info.data;
-}
-
-void CopresenceSocketFunction::DispatchOnConnectedEvent(
-    int peer_id,
-    scoped_ptr<copresence_sockets::CopresenceSocket> socket) {
-  int socket_id =
-      AddSocket(new CopresenceSocketResource(extension_id(), socket.Pass()));
-
-  // Send the messages to the client app.
-  scoped_ptr<Event> event(new Event(
-      core_api::copresence_socket::OnConnected::kEventName,
-      core_api::copresence_socket::OnConnected::Create(peer_id, socket_id),
-      browser_context()));
-  EventRouter::Get(browser_context())
-      ->DispatchEventToExtension(extension_id(), event.Pass());
-  VLOG(2) << "Dispatched OnConnected event: peerId = " << peer_id
-          << " and socketId = " << socket_id;
-
-  socket->Receive(base::Bind(base::Bind(
-      &CopresenceSocketFunction::DispatchOnReceiveEvent, this, peer_id)));
-}
-
-ExtensionFunction::ResponseAction CopresenceSocketFunction::Run() {
-  Initialize();
-  return Execute();
 }
 
 // CopresenceSocketCreatePeerFunction implementation:
@@ -202,7 +269,7 @@ ExtensionFunction::ResponseAction CopresenceSocketSendFunction::Execute() {
             core_api::copresence_socket::SOCKET_STATUS_INVALID_SOCKET)));
   }
 
-  socket->socket()->Send(new net::StringIOBuffer(params->data),
+  socket->socket()->Send(new net::StringIOBuffer(CreateMessage(params->data)),
                          params->data.size());
   return RespondNow(
       ArgumentList(core_api::copresence_socket::Send::Results::Create(

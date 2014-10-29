@@ -64,7 +64,6 @@ class CopresencePeer {
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothSocket> server_socket_;
-  device::BluetoothUUID service_uuid_;
 
   CreatePeerCallback create_callback_;
   AcceptCallback accept_callback_;

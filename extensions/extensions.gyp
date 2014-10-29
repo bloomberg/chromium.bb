@@ -406,6 +406,8 @@
         'browser/api/cast_channel/logger_util.h',
         'browser/api/copresence_socket/copresence_socket_api.cc',
         'browser/api/copresence_socket/copresence_socket_api.h',
+        'browser/api/copresence_socket/copresence_socket_resources.cc',
+        'browser/api/copresence_socket/copresence_socket_resources.h',
         'browser/api/declarative/deduping_factory.h',
         'browser/api/declarative/declarative_api.cc',
         'browser/api/declarative/declarative_api.h',

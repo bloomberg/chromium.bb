@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_
+#ifndef EXTENSIONS_BROWSER_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_
+#define EXTENSIONS_BROWSER_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -37,13 +37,9 @@ class CopresenceSocketFunction : public UIThreadExtensionFunction {
   void DispatchOnConnectedEvent(
       int peer_id,
       scoped_ptr<copresence_sockets::CopresenceSocket> socket);
-  void DispatchOnReceiveEvent(int socket_id,
-                              const scoped_refptr<net::IOBuffer>& buffer,
-                              int size);
 
  protected:
-  // ExtensionFunction overrides:
-  ExtensionFunction::ResponseAction Run() override;
+  ~CopresenceSocketFunction() override;
 
   // Override this and do actual work here.
   virtual ExtensionFunction::ResponseAction Execute() = 0;
@@ -64,10 +60,16 @@ class CopresenceSocketFunction : public UIThreadExtensionFunction {
   void RemovePeer(int peer_id);
   void RemoveSocket(int socket_id);
 
-  ~CopresenceSocketFunction() override;
+  // ExtensionFunction overrides:
+  ExtensionFunction::ResponseAction Run() override;
 
  private:
   void Initialize();
+
+  void OnDataReceived(int socket_id,
+                      const scoped_refptr<net::IOBuffer>& buffer,
+                      int size);
+  void DispatchOnReceiveEvent(int socket_id, const std::string& data);
 
   ApiResourceManager<CopresencePeerResource>* peers_manager_;
   ApiResourceManager<CopresenceSocketResource>* sockets_manager_;
@@ -117,4 +119,4 @@ class CopresenceSocketDisconnectFunction : public CopresenceSocketFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_
+#endif  // EXTENSIONS_BROWSER_API_COPRESENCE_SOCKET_COPRESENCE_SOCKET_API_H_

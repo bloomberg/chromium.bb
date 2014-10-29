@@ -43,6 +43,8 @@ class CopresenceSocketBluetooth : public CopresenceSocket {
   scoped_refptr<device::BluetoothSocket> socket_;
   ReceiveCallback receive_callback_;
 
+  bool receiving_;
+
   base::WeakPtrFactory<CopresenceSocketBluetooth> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceSocketBluetooth);
