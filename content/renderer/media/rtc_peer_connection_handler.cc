@@ -16,7 +16,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
@@ -830,8 +829,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
 
   ++num_data_channels_created_;
 
-  return new RtcDataChannelHandler(base::ThreadTaskRunnerHandle::Get(),
-                                   webrtc_channel);
+  return new RtcDataChannelHandler(webrtc_channel);
 }
 
 blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
@@ -1028,8 +1026,7 @@ void RTCPeerConnectionHandler::OnDataChannel(
 
   DVLOG(1) << "RTCPeerConnectionHandler::OnDataChannel "
            << data_channel->label();
-  client_->didAddRemoteDataChannel(new RtcDataChannelHandler(
-      base::ThreadTaskRunnerHandle::Get(), data_channel));
+  client_->didAddRemoteDataChannel(new RtcDataChannelHandler(data_channel));
 }
 
 void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
