@@ -19,12 +19,19 @@ namespace internal {
 class DefaultRendererConfig : public PlatformRendererConfig {
  public:
   DefaultRendererConfig() {
+    // TODO(dalecurtis): This will not work if the process is sandboxed...
     if (!media::IsMediaLibraryInitialized()) {
       base::FilePath module_dir;
       CHECK(PathService::Get(base::DIR_EXE, &module_dir));
       CHECK(media::InitializeMediaLibrary(module_dir));
     }
 
+    // TODO(dalecurtis): We should find a single owner per process for the audio
+    // manager or make it a lazy instance.  It's not safe to call Get()/Create()
+    // across multiple threads...
+    //
+    // TODO(dalecurtis): Eventually we'll want something other than a fake audio
+    // log factory here too.  We should probably at least DVLOG() such info.
     AudioManager* audio_manager = AudioManager::Get();
     if (!audio_manager)
       audio_manager = media::AudioManager::Create(&fake_audio_log_factory_);

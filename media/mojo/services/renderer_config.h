@@ -15,21 +15,37 @@
 
 namespace media {
 
+// Interface class which clients will extend to override (at compile time) the
+// default audio or video rendering configurations for MojoRendererService.
 class PlatformRendererConfig {
  public:
   virtual ~PlatformRendererConfig() {};
 
+  // The list of audio decoders for use with the AudioRenderer.  Ownership of
+  // the decoders is passed to the caller.  The methods on each decoder will
+  // only be called on |media_task_runner|.  |media_log_cb| should be used to
+  // log errors or important status information.
   virtual ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb) = 0;
+
+  // The audio output sink used for rendering audio.
   virtual scoped_refptr<AudioRendererSink> GetAudioRendererSink() = 0;
+
+  // The platform's audio hardware configuration.  Note, this must remain
+  // constant for the lifetime of the PlatformRendererConfig.
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
+
+  // TODO(dalecurtis): Expose methods for retrieving the video decoders.
 };
 
 class RendererConfig {
  public:
+  // Returns an instance of the RenderConfig object.  Only one instance will
+  // exist per process.
   static RendererConfig* Get();
 
+  // Copy of the PlatformRendererConfig interface.
   ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb);
