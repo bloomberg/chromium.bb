@@ -51,7 +51,7 @@ class MEDIA_EXPORT AudioDeviceThread {
     virtual void MapSharedMemory() = 0;
 
     // Called whenever we receive notifications about pending data.
-    virtual void Process(int pending_data) = 0;
+    virtual void Process(uint32 pending_data) = 0;
 
    protected:
     // Protected so that derived classes can access directly.

@@ -172,14 +172,8 @@ void AudioDeviceThread::Thread::Run() {
 
     {
       base::AutoLock auto_lock(callback_lock_);
-      if (callback_) {
-        // TODO(acolwell): Update downstream code to use a uint32.
-        // Under normal operation saturation should never occur here
-        // and even if it does, it would only cause a temporary loss
-        // of A/V sync which is much better than crashing or halting
-        // playback.
-        callback_->Process(base::saturated_cast<int>(pending_data));
-      }
+      if (callback_)
+        callback_->Process(pending_data);
     }
 
     // Let the other end know which buffer we just filled.  The buffer index is
