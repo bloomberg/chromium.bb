@@ -140,10 +140,9 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
       GetPendingRequests();
 
   // Walk the requests and notify the callbacks.
-  for (std::vector<PendingRequest>::iterator it = pending_requests_.begin();
-       it != pending_requests_.end(); ++it) {
-    if (!it->request)
-      continue;
+  for (std::vector<PendingRequest>::iterator it = requests.begin();
+       it != requests.end(); ++it) {
+    DCHECK(it->request);
 
     bool scope_matches = all_scopes || it->scopes == scope;
     bool account_matches = account_id.empty() || account_id == it->account_id;
