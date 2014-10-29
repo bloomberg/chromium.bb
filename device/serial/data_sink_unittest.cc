@@ -35,7 +35,7 @@ class DataSinkTest : public testing::Test {
         seen_connection_error_(false),
         expected_event_(EVENT_NONE) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::DataSink> sink_handle;
     sink_receiver_ = mojo::WeakBindToProxy(
@@ -47,7 +47,7 @@ class DataSinkTest : public testing::Test {
     sender_.reset(new DataSender(sink_handle.Pass(), kBufferSize, kFatalError));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     read_buffer_.reset();
     message_loop_.reset();
     if (sink_receiver_.get())

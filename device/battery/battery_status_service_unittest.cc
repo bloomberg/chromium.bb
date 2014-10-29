@@ -51,12 +51,12 @@ class BatteryStatusServiceTest : public testing::Test {
           callback1_invoked_count_(0),
           callback2_invoked_count_(0) {
     }
-    virtual ~BatteryStatusServiceTest() { }
+    ~BatteryStatusServiceTest() override {}
 
  protected:
   typedef BatteryStatusService::BatteryUpdateSubscription BatterySubscription;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     callback1_ = base::Bind(&BatteryStatusServiceTest::Callback1,
                             base::Unretained(this));
     callback2_ = base::Bind(&BatteryStatusServiceTest::Callback2,
@@ -72,7 +72,7 @@ class BatteryStatusServiceTest : public testing::Test {
     battery_service_->SetBatteryManagerForTesting(battery_manager.Pass());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     base::RunLoop().RunUntilIdle();
     battery_service_->SetBatteryManagerForTesting(
         scoped_ptr<BatteryStatusManager>());

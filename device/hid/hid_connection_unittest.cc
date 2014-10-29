@@ -94,7 +94,7 @@ class TestIoCallback {
 
 class HidConnectionTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
     message_loop_.reset(new base::MessageLoopForIO());

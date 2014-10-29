@@ -62,7 +62,7 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
         receive_error_(serial::RECEIVE_ERROR_NONE),
         expected_event_(EVENT_NONE) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::SerialService> service;
     mojo::BindToProxy(

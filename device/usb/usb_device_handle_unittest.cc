@@ -17,7 +17,7 @@ namespace {
 
 class UsbDeviceHandleTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     if (!UsbTestGadget::IsTestEnabled()) {
       return;
     }
@@ -33,7 +33,7 @@ class UsbDeviceHandleTest : public ::testing::Test {
     ASSERT_TRUE(handle_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (handle_.get()) {
       handle_->Close();
     }

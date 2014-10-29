@@ -286,9 +286,9 @@ const uint8_t kLogitechUnifyingReceiver[] = {
 class HidReportDescriptorTest : public testing::Test {
 
  protected:
-  virtual void SetUp() override { descriptor_ = NULL; }
+  void SetUp() override { descriptor_ = NULL; }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (descriptor_) {
       delete descriptor_;
     }

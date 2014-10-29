@@ -70,10 +70,10 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   bool GetDeviceInfo(const std::string& id, InputDeviceInfo* info) const;
 
   // Implements base::MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
  protected:
-  virtual ~InputServiceLinux();
+  ~InputServiceLinux() override;
 
   void AddDevice(const InputDeviceInfo& info);
   void RemoveDevice(const std::string& id);

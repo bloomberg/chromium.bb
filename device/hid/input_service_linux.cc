@@ -77,14 +77,14 @@ class InputServiceLinuxImpl : public InputServiceLinux,
                               public DeviceMonitorLinux::Observer {
  public:
   // Implements DeviceMonitorLinux::Observer:
-  virtual void OnDeviceAdded(udev_device* device) override;
-  virtual void OnDeviceRemoved(udev_device* device) override;
+  void OnDeviceAdded(udev_device* device) override;
+  void OnDeviceRemoved(udev_device* device) override;
 
  private:
   friend class InputServiceLinux;
 
   InputServiceLinuxImpl();
-  virtual ~InputServiceLinuxImpl();
+  ~InputServiceLinuxImpl() override;
 
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinuxImpl);
 };

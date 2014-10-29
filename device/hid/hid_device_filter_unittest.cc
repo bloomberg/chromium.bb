@@ -12,7 +12,7 @@ namespace {
 
 class HidFilterTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     device_info_.vendor_id = 0x046d;
     device_info_.product_id = 0xc31c;
 

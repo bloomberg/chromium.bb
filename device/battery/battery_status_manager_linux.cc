@@ -111,7 +111,7 @@ class BatteryStatusNotificationThread : public base::Thread {
         callback_(callback),
         battery_proxy_(NULL) {}
 
-  virtual ~BatteryStatusNotificationThread() {
+  ~BatteryStatusNotificationThread() override {
     // Make sure to shutdown the dbus connection if it is still open in the very
     // end. It needs to happen on the BatteryStatusNotificationThread.
     message_loop()->PostTask(
@@ -269,11 +269,11 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
       const BatteryStatusService::BatteryUpdateCallback& callback)
       : callback_(callback) {}
 
-  virtual ~BatteryStatusManagerLinux() {}
+  ~BatteryStatusManagerLinux() override {}
 
  private:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
       return false;
 
     notifier_thread_->message_loop()->PostTask(
@@ -283,7 +283,7 @@ class BatteryStatusManagerLinux : public BatteryStatusManager {
     return true;
   }
 
-  virtual void StopListeningBatteryChange() override {
+  void StopListeningBatteryChange() override {
     if (!notifier_thread_)
       return;
 

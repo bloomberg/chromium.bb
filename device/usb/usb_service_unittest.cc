@@ -15,9 +15,7 @@ namespace {
 
 class UsbServiceTest : public ::testing::Test {
  public:
-  virtual void SetUp() {
-    message_loop_.reset(new base::MessageLoopForIO);
-  }
+  void SetUp() override { message_loop_.reset(new base::MessageLoopForIO); }
 
  private:
   scoped_ptr<base::MessageLoop> message_loop_;

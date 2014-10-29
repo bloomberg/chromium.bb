@@ -14,10 +14,10 @@ namespace device {
 class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator {
  public:
   SerialDeviceEnumeratorLinux();
-  virtual ~SerialDeviceEnumeratorLinux();
+  ~SerialDeviceEnumeratorLinux() override;
 
   // Implementation for SerialDeviceEnumerator.
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
+  mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   ScopedUdevPtr udev_;

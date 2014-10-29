@@ -36,8 +36,8 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void EnumerateStorages(const EnumerateStoragesCallback& callback,
-                                 const ErrorCallback& error_callback) override {
+  void EnumerateStorages(const EnumerateStoragesCallback& callback,
+                         const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kEnumerateStorages);
     proxy_->CallMethod(
@@ -49,9 +49,9 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void GetStorageInfo(const std::string& storage_name,
-                              const GetStorageInfoCallback& callback,
-                              const ErrorCallback& error_callback) override {
+  void GetStorageInfo(const std::string& storage_name,
+                      const GetStorageInfoCallback& callback,
+                      const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kGetStorageInfo);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
@@ -65,10 +65,10 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void OpenStorage(const std::string& storage_name,
-                           const std::string& mode,
-                           const OpenStorageCallback& callback,
-                           const ErrorCallback& error_callback) override {
+  void OpenStorage(const std::string& storage_name,
+                   const std::string& mode,
+                   const OpenStorageCallback& callback,
+                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kOpenStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
@@ -83,9 +83,9 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void CloseStorage(const std::string& handle,
-                            const CloseStorageCallback& callback,
-                            const ErrorCallback& error_callback) override {
+  void CloseStorage(const std::string& handle,
+                    const CloseStorageCallback& callback,
+                    const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kCloseStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -98,11 +98,10 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ReadDirectoryEntryIds(
-      const std::string& handle,
-      uint32 file_id,
-      const ReadDirectoryEntryIdsCallback& callback,
-      const ErrorCallback& error_callback) override {
+  void ReadDirectoryEntryIds(const std::string& handle,
+                             uint32 file_id,
+                             const ReadDirectoryEntryIdsCallback& callback,
+                             const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kReadDirectoryEntryIds);
     dbus::MessageWriter writer(&method_call);
@@ -116,12 +115,12 @@ class MediaTransferProtocolDaemonClientImpl
                    error_callback));
   }
 
-  virtual void GetFileInfo(const std::string& handle,
-                           const std::vector<uint32>& file_ids,
-                           size_t offset,
-                           size_t entries_to_read,
-                           const GetFileInfoCallback& callback,
-                           const ErrorCallback& error_callback) override {
+  void GetFileInfo(const std::string& handle,
+                   const std::vector<uint32>& file_ids,
+                   size_t offset,
+                   size_t entries_to_read,
+                   const GetFileInfoCallback& callback,
+                   const ErrorCallback& error_callback) override {
     if (offset >= file_ids.size()) {
       error_callback.Run();
       return;
@@ -151,12 +150,12 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ReadFileChunk(const std::string& handle,
-                             uint32 file_id,
-                             uint32 offset,
-                             uint32 bytes_to_read,
-                             const ReadFileCallback& callback,
-                             const ErrorCallback& error_callback) override {
+  void ReadFileChunk(const std::string& handle,
+                     uint32 file_id,
+                     uint32 offset,
+                     uint32 bytes_to_read,
+                     const ReadFileCallback& callback,
+                     const ErrorCallback& error_callback) override {
     DCHECK_LE(bytes_to_read, kMaxChunkSize);
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kReadFileChunk);
     dbus::MessageWriter writer(&method_call);
@@ -173,8 +172,7 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  virtual void ListenForChanges(
-      const MTPStorageEventHandler& handler) override {
+  void ListenForChanges(const MTPStorageEventHandler& handler) override {
     DCHECK(!listen_for_changes_called_);
     listen_for_changes_called_ = true;
 

@@ -19,10 +19,10 @@ class BatteryMonitorImpl : public mojo::InterfaceImpl<BatteryMonitor> {
 
  private:
   BatteryMonitorImpl();
-  virtual ~BatteryMonitorImpl();
+  ~BatteryMonitorImpl() override;
 
   // mojo::InterfaceImpl<..> methods:
-  virtual void OnConnectionEstablished() override;
+  void OnConnectionEstablished() override;
 
   void DidChange(const BatteryStatus& battery_status);
 

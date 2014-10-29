@@ -23,15 +23,15 @@ class HidServiceLinux : public HidService,
  public:
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  virtual void Connect(const HidDeviceId& device_id,
-                       const ConnectCallback& callback) override;
+  void Connect(const HidDeviceId& device_id,
+               const ConnectCallback& callback) override;
 
   // Implements DeviceMonitorLinux::Observer:
-  virtual void OnDeviceAdded(udev_device* device) override;
-  virtual void OnDeviceRemoved(udev_device* device) override;
+  void OnDeviceAdded(udev_device* device) override;
+  void OnDeviceRemoved(udev_device* device) override;
 
  private:
-  virtual ~HidServiceLinux();
+  ~HidServiceLinux() override;
 
   void FinishConnect(const HidDeviceId& device_id,
                      const std::string device_node,

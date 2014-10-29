@@ -28,7 +28,7 @@ class DataSourceTest : public testing::Test {
   DataSourceTest()
       : error_(0), seen_connection_error_(false), expected_event_(EVENT_NONE) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_.reset(new base::MessageLoop);
     mojo::InterfacePtr<serial::DataSource> source_sender_handle;
     source_sender_ = mojo::WeakBindToProxy(
@@ -39,7 +39,7 @@ class DataSourceTest : public testing::Test {
     receiver_ = new DataReceiver(source_sender_handle.Pass(), 100, kFatalError);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     write_buffer_.reset();
     buffer_.reset();
     message_loop_.reset();
