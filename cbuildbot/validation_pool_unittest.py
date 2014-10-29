@@ -55,6 +55,7 @@ _GetNumber = iter(itertools.count()).next
 KERNEL_AVAILABLE = os.path.exists(os.path.join(
     constants.SOURCE_ROOT, 'src', 'third_party', 'kernel'))
 
+
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
 
@@ -74,6 +75,7 @@ class MockManifest(object):
     self.root = path
     for key, attr in kwargs.iteritems():
       setattr(self, key, attr)
+
 
 class FakeBuilderRun(object):
   """A lightweight partial implementation of BuilderRun.
@@ -107,14 +109,13 @@ class FakeBuilderRun(object):
 
 
 # pylint: disable=W0212,R0904
-class Base(cros_test_lib.MockTestCase):
-  """Test case base class with helpers for other test suites."""
+class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
+  """Base class for other test suites with numbers mocks patched in."""
 
   def setUp(self):
-    self.manager = parallel.Manager()
-    self.patch_mock = None
-    self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
+    self.manager = parallel.Manager()
+    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
@@ -122,74 +123,6 @@ class Base(cros_test_lib.MockTestCase):
                      return_value=constants.TREE_OPEN)
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
-
-  def tearDown(self):
-    cidb.CIDBConnectionFactory.ClearMock()
-
-  def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
-                project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
-                tracking_branch='refs/heads/master', is_draft=False,
-                approvals=()):
-    """Helper function to create mock GerritPatch objects."""
-    if change_id is None:
-      change_id = self._patch_counter()
-    gerrit_number = str(change_id)
-    change_id = hex(change_id)[2:].rstrip('L').lower()
-    change_id = 'I%s' % change_id.rjust(40, '0')
-    sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
-    patch_number = (patch_number if patch_number is not None else _GetNumber())
-    fake_url = 'http://foo/bar'
-    if not approvals:
-      approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},
-                   {'type': 'CRVW', 'value': '2', 'grantedOn': 1391733002},
-                   {'type': 'COMR', 'value': '1', 'grantedOn': 1391733002},]
-
-    current_patch_set = {
-      'number': patch_number,
-      'revision': sha1,
-      'draft': is_draft,
-      'approvals': approvals,
-    }
-    patch_dict = {
-      'currentPatchSet': current_patch_set,
-      'id': change_id,
-      'number': gerrit_number,
-      'project': project,
-      'branch': tracking_branch,
-      'owner': {'email': 'elmer.fudd@chromium.org'},
-      'remote': remote,
-      'status': 'MERGED' if is_merged else 'NEW',
-      'url': '%s/%s' % (fake_url, change_id),
-    }
-
-    patch = cros_patch.GerritPatch(patch_dict, remote, fake_url)
-    patch.pass_count = 0
-    patch.fail_count = 1
-    patch.total_fail_count = 3
-    return patch
-
-  def GetPatches(self, how_many=1, always_use_list=False, **kwargs):
-    """Get a sequential list of patches.
-
-    Args:
-      how_many: How many patches to return.
-      always_use_list: Whether to use a list for a single item list.
-      **kwargs: Keyword arguments for self.MockPatch.
-    """
-    patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
-    if self.patch_mock:
-      for i, patch in enumerate(patches):
-        self.patch_mock.SetGerritDependencies(patch, patches[:i + 1])
-    if how_many == 1 and not always_use_list:
-      return patches[0]
-    return patches
-
-
-class MoxBase(Base, cros_test_lib.MoxTestCase):
-  """Base class for other test suites with numbers mocks patched in."""
-
-  def setUp(self):
-    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
@@ -197,6 +130,9 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
     self.PatchObject(gs.GSContext, 'Copy')
     self.PatchObject(gs.GSContext, 'Exists', return_value=False)
     self.PatchObject(gs.GSCounter, 'Increment')
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
 
   def MakeHelper(self, cros_internal=None, cros=None):
     # pylint: disable=W0201
@@ -212,7 +148,7 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
                                       cros=cros)
 
 
-class IgnoredStagesTest(Base):
+class IgnoredStagesTest(patch_unittest.MockPatchBase):
   """Tests for functions that calculate what stages to ignore."""
 
   def GetOption(self, path, section='GENERAL', option='ignored-stages'):
@@ -1180,7 +1116,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return ''
 
 
-class TestFindSuspects(MoxBase):
+class TestFindSuspects(patch_unittest.MockPatchBase):
   """Tests validation_pool.ValidationPool._FindSuspects"""
 
   def setUp(self):
@@ -1395,7 +1331,7 @@ class TestPrintLinks(MoxBase):
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
 
 
-class TestCreateValidationFailureMessage(Base):
+class TestCreateValidationFailureMessage(MoxBase):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
   def _AssertMessage(self, change, suspects, messages, sanity=True,
@@ -1477,7 +1413,7 @@ class TestCreateValidationFailureMessage(Base):
         infra_fail=True)
 
 
-class TestCreateDisjointTransactions(Base):
+class TestCreateDisjointTransactions(MoxBase):
   """Test the CreateDisjointTransactions function."""
 
 
@@ -1485,7 +1421,8 @@ class TestCreateDisjointTransactions(Base):
     self.patch_mock = self.StartPatcher(MockPatchSeries())
 
   def GetPatches(self, how_many, **kwargs):
-    return Base.GetPatches(self, how_many, always_use_list=True, **kwargs)
+    return super(TestCreateDisjointTransactions, self).GetPatches(
+        how_many, always_use_list=True, **kwargs)
 
   def verifyTransactions(self, txns, max_txn_length=None, circular=False):
     """Verify the specified list of transactions are processed correctly.
@@ -1610,7 +1547,7 @@ class MockValidationPool(partial_mock.PartialMock):
 
 
 
-class BaseSubmitPoolTestCase(Base):
+class BaseSubmitPoolTestCase(MoxBase):
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
