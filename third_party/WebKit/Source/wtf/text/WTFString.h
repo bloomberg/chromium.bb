@@ -50,8 +50,6 @@ WTF_EXPORT int64_t charactersToInt64Strict(const LChar*, size_t, bool* ok = 0, i
 WTF_EXPORT int64_t charactersToInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
 WTF_EXPORT uint64_t charactersToUInt64Strict(const LChar*, size_t, bool* ok = 0, int base = 10);
 WTF_EXPORT uint64_t charactersToUInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
-WTF_EXPORT intptr_t charactersToIntPtrStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
-WTF_EXPORT intptr_t charactersToIntPtrStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 
 WTF_EXPORT int charactersToInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
 WTF_EXPORT int charactersToInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
@@ -61,8 +59,6 @@ WTF_EXPORT int64_t charactersToInt64(const LChar*, size_t, bool* ok = 0); // ign
 WTF_EXPORT int64_t charactersToInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 WTF_EXPORT uint64_t charactersToUInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
 WTF_EXPORT uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
-WTF_EXPORT intptr_t charactersToIntPtr(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-WTF_EXPORT intptr_t charactersToIntPtr(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 
 // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
 // Like the non-strict functions above, these return the value when there is trailing garbage.
@@ -352,21 +348,17 @@ public:
     unsigned toUIntStrict(bool* ok = 0, int base = 10) const;
     int64_t toInt64Strict(bool* ok = 0, int base = 10) const;
     uint64_t toUInt64Strict(bool* ok = 0, int base = 10) const;
-    intptr_t toIntPtrStrict(bool* ok = 0, int base = 10) const;
 
     int toInt(bool* ok = 0) const;
     unsigned toUInt(bool* ok = 0) const;
     int64_t toInt64(bool* ok = 0) const;
     uint64_t toUInt64(bool* ok = 0) const;
-    intptr_t toIntPtr(bool* ok = 0) const;
 
     // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
     // Like the non-strict functions above, these return the value when there is trailing garbage.
     // It would be better if these were more consistent with the above functions instead.
     double toDouble(bool* ok = 0) const;
     float toFloat(bool* ok = 0) const;
-
-    bool percentage(int& percentage) const;
 
     String isolatedCopy() const;
     bool isSafeToSendToAnotherThread() const;
@@ -676,12 +668,10 @@ using WTF::charactersToIntStrict;
 using WTF::charactersToUIntStrict;
 using WTF::charactersToInt64Strict;
 using WTF::charactersToUInt64Strict;
-using WTF::charactersToIntPtrStrict;
 using WTF::charactersToInt;
 using WTF::charactersToUInt;
 using WTF::charactersToInt64;
 using WTF::charactersToUInt64;
-using WTF::charactersToIntPtr;
 using WTF::charactersToDouble;
 using WTF::charactersToFloat;
 using WTF::equal;

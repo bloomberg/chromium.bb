@@ -419,22 +419,6 @@ String String::foldCase() const
     return m_impl->foldCase();
 }
 
-bool String::percentage(int& result) const
-{
-    if (!m_impl || !m_impl->length())
-        return false;
-
-    if ((*m_impl)[m_impl->length() - 1] != '%')
-        return false;
-
-    if (m_impl->is8Bit())
-        result = charactersToIntStrict(m_impl->characters8(), m_impl->length() - 1);
-    else
-        result = charactersToIntStrict(m_impl->characters16(), m_impl->length() - 1);
-
-    return true;
-}
-
 Vector<UChar> String::charactersWithNullTermination() const
 {
     if (!m_impl)
@@ -587,16 +571,6 @@ uint64_t String::toUInt64Strict(bool* ok, int base) const
     return m_impl->toUInt64Strict(ok, base);
 }
 
-intptr_t String::toIntPtrStrict(bool* ok, int base) const
-{
-    if (!m_impl) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return m_impl->toIntPtrStrict(ok, base);
-}
-
 int String::toInt(bool* ok) const
 {
     if (!m_impl) {
@@ -635,16 +609,6 @@ uint64_t String::toUInt64(bool* ok) const
         return 0;
     }
     return m_impl->toUInt64(ok);
-}
-
-intptr_t String::toIntPtr(bool* ok) const
-{
-    if (!m_impl) {
-        if (ok)
-            *ok = false;
-        return 0;
-    }
-    return m_impl->toIntPtr(ok);
 }
 
 double String::toDouble(bool* ok) const
@@ -1100,16 +1064,6 @@ uint64_t charactersToUInt64Strict(const UChar* data, size_t length, bool* ok, in
     return toIntegralType<uint64_t, UChar>(data, length, ok, base);
 }
 
-intptr_t charactersToIntPtrStrict(const LChar* data, size_t length, bool* ok, int base)
-{
-    return toIntegralType<intptr_t, LChar>(data, length, ok, base);
-}
-
-intptr_t charactersToIntPtrStrict(const UChar* data, size_t length, bool* ok, int base)
-{
-    return toIntegralType<intptr_t, UChar>(data, length, ok, base);
-}
-
 int charactersToInt(const LChar* data, size_t length, bool* ok)
 {
     return toIntegralType<int, LChar>(data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
@@ -1148,16 +1102,6 @@ uint64_t charactersToUInt64(const LChar* data, size_t length, bool* ok)
 uint64_t charactersToUInt64(const UChar* data, size_t length, bool* ok)
 {
     return toIntegralType<uint64_t, UChar>(data, lengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
-}
-
-intptr_t charactersToIntPtr(const LChar* data, size_t length, bool* ok)
-{
-    return toIntegralType<intptr_t, LChar>(data, lengthOfCharactersAsInteger<LChar>(data, length), ok, 10);
-}
-
-intptr_t charactersToIntPtr(const UChar* data, size_t length, bool* ok)
-{
-    return toIntegralType<intptr_t, UChar>(data, lengthOfCharactersAsInteger<UChar>(data, length), ok, 10);
 }
 
 enum TrailingJunkPolicy { DisallowTrailingJunk, AllowTrailingJunk };

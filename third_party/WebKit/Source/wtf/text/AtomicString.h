@@ -121,7 +121,6 @@ public:
     int toInt(bool* ok = 0) const { return m_string.toInt(ok); }
     double toDouble(bool* ok = 0) const { return m_string.toDouble(ok); }
     float toFloat(bool* ok = 0) const { return m_string.toFloat(ok); }
-    bool percentage(int& p) const { return m_string.percentage(p); }
 
     static AtomicString number(int);
     static AtomicString number(unsigned);

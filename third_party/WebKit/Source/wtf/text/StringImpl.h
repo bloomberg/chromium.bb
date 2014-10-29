@@ -340,13 +340,11 @@ public:
     unsigned toUIntStrict(bool* ok = 0, int base = 10);
     int64_t toInt64Strict(bool* ok = 0, int base = 10);
     uint64_t toUInt64Strict(bool* ok = 0, int base = 10);
-    intptr_t toIntPtrStrict(bool* ok = 0, int base = 10);
 
     int toInt(bool* ok = 0); // ignores trailing garbage
     unsigned toUInt(bool* ok = 0); // ignores trailing garbage
     int64_t toInt64(bool* ok = 0); // ignores trailing garbage
     uint64_t toUInt64(bool* ok = 0); // ignores trailing garbage
-    intptr_t toIntPtr(bool* ok = 0); // ignores trailing garbage
 
     // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
     // Like the non-strict functions above, these return the value when there is trailing garbage.

@@ -1027,13 +1027,6 @@ uint64_t StringImpl::toUInt64Strict(bool* ok, int base)
     return charactersToUInt64Strict(characters16(), m_length, ok, base);
 }
 
-intptr_t StringImpl::toIntPtrStrict(bool* ok, int base)
-{
-    if (is8Bit())
-        return charactersToIntPtrStrict(characters8(), m_length, ok, base);
-    return charactersToIntPtrStrict(characters16(), m_length, ok, base);
-}
-
 int StringImpl::toInt(bool* ok)
 {
     if (is8Bit())
@@ -1060,13 +1053,6 @@ uint64_t StringImpl::toUInt64(bool* ok)
     if (is8Bit())
         return charactersToUInt64(characters8(), m_length, ok);
     return charactersToUInt64(characters16(), m_length, ok);
-}
-
-intptr_t StringImpl::toIntPtr(bool* ok)
-{
-    if (is8Bit())
-        return charactersToIntPtr(characters8(), m_length, ok);
-    return charactersToIntPtr(characters16(), m_length, ok);
 }
 
 double StringImpl::toDouble(bool* ok)
