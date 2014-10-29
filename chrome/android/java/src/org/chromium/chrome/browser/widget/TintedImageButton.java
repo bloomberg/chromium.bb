@@ -66,7 +66,8 @@ public class TintedImageButton extends ImageButton {
     }
 
     private void setTintInternal(ColorStateList tint) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        // TODO(aurimas): start using Build.VERSION_CODES.LOLLIPOP once all the bots are updated.
+        if (Build.VERSION.SDK_INT >= 21) {
             setImageTintList(tint);
             setImageTintMode(PorterDuff.Mode.SRC_ATOP);
         } else {
