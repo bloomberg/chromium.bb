@@ -20,12 +20,12 @@ class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
   AllowResultExprImpl() {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
  private:
-  virtual ~AllowResultExprImpl() {}
+  ~AllowResultExprImpl() override {}
 
   DISALLOW_COPY_AND_ASSIGN(AllowResultExprImpl);
 };
@@ -36,12 +36,12 @@ class ErrorResultExprImpl : public internal::ResultExprImpl {
     CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
   }
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return pc->Error(err_);
   }
 
  private:
-  virtual ~ErrorResultExprImpl() {}
+  ~ErrorResultExprImpl() override {}
 
   int err_;
 
@@ -52,12 +52,12 @@ class KillResultExprImpl : public internal::ResultExprImpl {
  public:
   explicit KillResultExprImpl(const char* msg) : msg_(msg) { DCHECK(msg_); }
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return pc->Kill(msg_);
   }
 
  private:
-  virtual ~KillResultExprImpl() {}
+  ~KillResultExprImpl() override {}
 
   const char* msg_;
 
@@ -68,12 +68,12 @@ class TraceResultExprImpl : public internal::ResultExprImpl {
  public:
   TraceResultExprImpl(uint16_t aux) : aux_(aux) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return ErrorCode(ErrorCode::ERR_TRACE + aux_);
   }
 
  private:
-  virtual ~TraceResultExprImpl() {}
+  ~TraceResultExprImpl() override {}
 
   uint16_t aux_;
 
@@ -87,12 +87,12 @@ class TrapResultExprImpl : public internal::ResultExprImpl {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return pc->Trap(func_, arg_);
   }
 
  private:
-  virtual ~TrapResultExprImpl() {}
+  ~TrapResultExprImpl() override {}
 
   TrapRegistry::TrapFnc func_;
   const void* arg_;
@@ -107,14 +107,14 @@ class UnsafeTrapResultExprImpl : public internal::ResultExprImpl {
     DCHECK(func_);
   }
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return pc->UnsafeTrap(func_, arg_);
   }
 
-  virtual bool HasUnsafeTraps() const override { return true; }
+  bool HasUnsafeTraps() const override { return true; }
 
  private:
-  virtual ~UnsafeTrapResultExprImpl() {}
+  ~UnsafeTrapResultExprImpl() override {}
 
   TrapRegistry::TrapFnc func_;
   const void* arg_;
@@ -129,17 +129,17 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
                        const ResultExpr& else_result)
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc) const override {
+  ErrorCode Compile(PolicyCompiler* pc) const override {
     return cond_->Compile(
         pc, then_result_->Compile(pc), else_result_->Compile(pc));
   }
 
-  virtual bool HasUnsafeTraps() const override {
+  bool HasUnsafeTraps() const override {
     return then_result_->HasUnsafeTraps() || else_result_->HasUnsafeTraps();
   }
 
  private:
-  virtual ~IfThenResultExprImpl() {}
+  ~IfThenResultExprImpl() override {}
 
   BoolExpr cond_;
   ResultExpr then_result_;
@@ -152,14 +152,14 @@ class ConstBoolExprImpl : public internal::BoolExprImpl {
  public:
   ConstBoolExprImpl(bool value) : value_(value) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const override {
+  ErrorCode Compile(PolicyCompiler* pc,
+                    ErrorCode true_ec,
+                    ErrorCode false_ec) const override {
     return value_ ? true_ec : false_ec;
   }
 
  private:
-  virtual ~ConstBoolExprImpl() {}
+  ~ConstBoolExprImpl() override {}
 
   bool value_;
 
@@ -174,15 +174,15 @@ class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
                         uint64_t value)
       : argno_(argno), is_32bit_(is_32bit), mask_(mask), value_(value) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const override {
+  ErrorCode Compile(PolicyCompiler* pc,
+                    ErrorCode true_ec,
+                    ErrorCode false_ec) const override {
     return pc->CondMaskedEqual(
         argno_, is_32bit_, mask_, value_, true_ec, false_ec);
   }
 
  private:
-  virtual ~PrimitiveBoolExprImpl() {}
+  ~PrimitiveBoolExprImpl() override {}
 
   int argno_;
   ErrorCode::ArgType is_32bit_;
@@ -196,14 +196,14 @@ class NegateBoolExprImpl : public internal::BoolExprImpl {
  public:
   explicit NegateBoolExprImpl(const BoolExpr& cond) : cond_(cond) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const override {
+  ErrorCode Compile(PolicyCompiler* pc,
+                    ErrorCode true_ec,
+                    ErrorCode false_ec) const override {
     return cond_->Compile(pc, false_ec, true_ec);
   }
 
  private:
-  virtual ~NegateBoolExprImpl() {}
+  ~NegateBoolExprImpl() override {}
 
   BoolExpr cond_;
 
@@ -215,14 +215,14 @@ class AndBoolExprImpl : public internal::BoolExprImpl {
   AndBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const override {
+  ErrorCode Compile(PolicyCompiler* pc,
+                    ErrorCode true_ec,
+                    ErrorCode false_ec) const override {
     return lhs_->Compile(pc, rhs_->Compile(pc, true_ec, false_ec), false_ec);
   }
 
  private:
-  virtual ~AndBoolExprImpl() {}
+  ~AndBoolExprImpl() override {}
 
   BoolExpr lhs_;
   BoolExpr rhs_;
@@ -235,14 +235,14 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
   OrBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
       : lhs_(lhs), rhs_(rhs) {}
 
-  virtual ErrorCode Compile(PolicyCompiler* pc,
-                            ErrorCode true_ec,
-                            ErrorCode false_ec) const override {
+  ErrorCode Compile(PolicyCompiler* pc,
+                    ErrorCode true_ec,
+                    ErrorCode false_ec) const override {
     return lhs_->Compile(pc, true_ec, rhs_->Compile(pc, true_ec, false_ec));
   }
 
  private:
-  virtual ~OrBoolExprImpl() {}
+  ~OrBoolExprImpl() override {}
 
   BoolExpr lhs_;
   BoolExpr rhs_;

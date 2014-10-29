@@ -113,9 +113,9 @@ class VerboseAPITestingPolicy : public Policy {
  public:
   explicit VerboseAPITestingPolicy(int* counter_ptr)
       : counter_ptr_(counter_ptr) {}
-  virtual ~VerboseAPITestingPolicy() {}
+  ~VerboseAPITestingPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
       return Trap(IncreaseCounter, counter_ptr_);
@@ -151,9 +151,9 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
 class BlacklistNanosleepPolicy : public Policy {
  public:
   BlacklistNanosleepPolicy() {}
-  virtual ~BlacklistNanosleepPolicy() {}
+  ~BlacklistNanosleepPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_nanosleep:
@@ -183,9 +183,9 @@ BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
 class WhitelistGetpidPolicy : public Policy {
  public:
   WhitelistGetpidPolicy() {}
-  virtual ~WhitelistGetpidPolicy() {}
+  ~WhitelistGetpidPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_getpid:
@@ -222,9 +222,9 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void* aux) {
 class BlacklistNanosleepTrapPolicy : public Policy {
  public:
   explicit BlacklistNanosleepTrapPolicy(int* aux) : aux_(aux) {}
-  virtual ~BlacklistNanosleepTrapPolicy() {}
+  ~BlacklistNanosleepTrapPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_nanosleep:
@@ -264,9 +264,9 @@ BPF_TEST(SandboxBPF,
 class ErrnoTestPolicy : public Policy {
  public:
   ErrnoTestPolicy() {}
-  virtual ~ErrnoTestPolicy() {}
+  ~ErrnoTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ErrnoTestPolicy);
@@ -346,9 +346,9 @@ BPF_TEST_C(SandboxBPF, ErrnoTest, ErrnoTestPolicy) {
 class StackingPolicyPartOne : public Policy {
  public:
   StackingPolicyPartOne() {}
-  virtual ~StackingPolicyPartOne() {}
+  ~StackingPolicyPartOne() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_getppid: {
@@ -367,9 +367,9 @@ class StackingPolicyPartOne : public Policy {
 class StackingPolicyPartTwo : public Policy {
  public:
   StackingPolicyPartTwo() {}
-  virtual ~StackingPolicyPartTwo() {}
+  ~StackingPolicyPartTwo() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     switch (sysno) {
       case __NR_getppid: {
@@ -425,9 +425,9 @@ int SysnoToRandomErrno(int sysno) {
 class SyntheticPolicy : public Policy {
  public:
   SyntheticPolicy() {}
-  virtual ~SyntheticPolicy() {}
+  ~SyntheticPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_exit_group || sysno == __NR_write) {
       // exit_group() is special, we really need it to work.
@@ -525,9 +525,9 @@ class GreyListedPolicy : public Policy {
     // Set the global environment for unsafe traps once.
     EnableUnsafeTraps();
   }
-  virtual ~GreyListedPolicy() {}
+  ~GreyListedPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     // Some system calls must always be allowed, if our policy wants to make
     // use of UnsafeTrap()
@@ -591,9 +591,9 @@ intptr_t PrctlHandler(const struct arch_seccomp_data& args, void*) {
 class PrctlPolicy : public Policy {
  public:
   PrctlPolicy() {}
-  virtual ~PrctlPolicy() {}
+  ~PrctlPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     setenv(kSandboxDebuggingEnv, "t", 0);
     Die::SuppressInfoMessages(true);
@@ -645,9 +645,9 @@ intptr_t AllowRedirectedSyscall(const struct arch_seccomp_data& args, void*) {
 class RedirectAllSyscallsPolicy : public Policy {
  public:
   RedirectAllSyscallsPolicy() {}
-  virtual ~RedirectAllSyscallsPolicy() {}
+  ~RedirectAllSyscallsPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RedirectAllSyscallsPolicy);
@@ -809,9 +809,9 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
 class DenyOpenPolicy : public Policy {
  public:
   explicit DenyOpenPolicy(InitializedOpenBroker* iob) : iob_(iob) {}
-  virtual ~DenyOpenPolicy() {}
+  ~DenyOpenPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
 
     switch (sysno) {
@@ -889,9 +889,9 @@ BPF_TEST(SandboxBPF,
 class SimpleCondTestPolicy : public Policy {
  public:
   SimpleCondTestPolicy() {}
-  virtual ~SimpleCondTestPolicy() {}
+  ~SimpleCondTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleCondTestPolicy);
@@ -1246,9 +1246,9 @@ class EqualityStressTest {
 class EqualityStressTestPolicy : public Policy {
  public:
   explicit EqualityStressTestPolicy(EqualityStressTest* aux) : aux_(aux) {}
-  virtual ~EqualityStressTestPolicy() {}
+  ~EqualityStressTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     return aux_->Policy(sysno);
   }
 
@@ -1268,9 +1268,9 @@ BPF_TEST(SandboxBPF,
 class EqualityArgumentWidthPolicy : public Policy {
  public:
   EqualityArgumentWidthPolicy() {}
-  virtual ~EqualityArgumentWidthPolicy() {}
+  ~EqualityArgumentWidthPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EqualityArgumentWidthPolicy);
@@ -1321,9 +1321,9 @@ BPF_DEATH_TEST_C(SandboxBPF,
 class EqualityWithNegativeArgumentsPolicy : public Policy {
  public:
   EqualityWithNegativeArgumentsPolicy() {}
-  virtual ~EqualityWithNegativeArgumentsPolicy() {}
+  ~EqualityWithNegativeArgumentsPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     if (sysno == __NR_uname) {
       // TODO(mdempsky): This currently can't be Arg<int> because then
@@ -1362,9 +1362,9 @@ BPF_DEATH_TEST_C(SandboxBPF,
 class AllBitTestPolicy : public Policy {
  public:
   AllBitTestPolicy() {}
-  virtual ~AllBitTestPolicy() {}
+  ~AllBitTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   static ResultExpr HasAllBits32(uint32_t bits);
@@ -1548,9 +1548,9 @@ BPF_TEST_C(SandboxBPF, AllBitTests, AllBitTestPolicy) {
 class AnyBitTestPolicy : public Policy {
  public:
   AnyBitTestPolicy() {}
-  virtual ~AnyBitTestPolicy() {}
+  ~AnyBitTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   static ResultExpr HasAnyBits32(uint32_t);
@@ -1712,9 +1712,9 @@ BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
 class MaskedEqualTestPolicy : public Policy {
  public:
   MaskedEqualTestPolicy() {}
-  virtual ~MaskedEqualTestPolicy() {}
+  ~MaskedEqualTestPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   static ResultExpr MaskedEqual32(uint32_t mask, uint32_t value);
@@ -1839,9 +1839,9 @@ intptr_t PthreadTrapHandler(const struct arch_seccomp_data& args, void* aux) {
 class PthreadPolicyEquality : public Policy {
  public:
   PthreadPolicyEquality() {}
-  virtual ~PthreadPolicyEquality() {}
+  ~PthreadPolicyEquality() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PthreadPolicyEquality);
@@ -1883,9 +1883,9 @@ ResultExpr PthreadPolicyEquality::EvaluateSyscall(int sysno) const {
 class PthreadPolicyBitMask : public Policy {
  public:
   PthreadPolicyBitMask() {}
-  virtual ~PthreadPolicyBitMask() {}
+  ~PthreadPolicyBitMask() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override;
+  ResultExpr EvaluateSyscall(int sysno) const override;
 
  private:
   static BoolExpr HasAnyBits(const Arg<unsigned long>& arg, unsigned long bits);
@@ -2054,9 +2054,9 @@ const uint16_t kTraceData = 0xcc;
 class TraceAllPolicy : public Policy {
  public:
   TraceAllPolicy() {}
-  virtual ~TraceAllPolicy() {}
+  ~TraceAllPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override {
+  ResultExpr EvaluateSyscall(int system_call_number) const override {
     return Trace(kTraceData);
   }
 
@@ -2200,9 +2200,9 @@ bool pread_64_was_forwarded = false;
 class TrapPread64Policy : public Policy {
  public:
   TrapPread64Policy() {}
-  virtual ~TrapPread64Policy() {}
+  ~TrapPread64Policy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override {
+  ResultExpr EvaluateSyscall(int system_call_number) const override {
     // Set the global environment for unsafe traps once.
     if (system_call_number == MIN_SYSCALL) {
       EnableUnsafeTraps();
@@ -2297,11 +2297,9 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
 class AllowAllPolicy : public Policy {
  public:
   AllowAllPolicy() {}
-  virtual ~AllowAllPolicy() {}
+  ~AllowAllPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
-    return Allow();
-  }
+  ResultExpr EvaluateSyscall(int sysno) const override { return Allow(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
@@ -2341,9 +2339,9 @@ intptr_t NoOpHandler(const struct arch_seccomp_data& args, void*) {
 class UnsafeTrapWithCondPolicy : public Policy {
  public:
   UnsafeTrapWithCondPolicy() {}
-  virtual ~UnsafeTrapWithCondPolicy() {}
+  ~UnsafeTrapWithCondPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
     setenv(kSandboxDebuggingEnv, "t", 0);
     Die::SuppressInfoMessages(true);

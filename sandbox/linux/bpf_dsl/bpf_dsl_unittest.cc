@@ -64,8 +64,8 @@ class Stubs {
 class BasicPolicy : public Policy {
  public:
   BasicPolicy() {}
-  virtual ~BasicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~BasicPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_getpgid) {
       const Arg<pid_t> pid(0);
       return If(pid == 0, Error(EPERM)).Else(Error(EINVAL));
@@ -94,8 +94,8 @@ BPF_TEST_C(BPFDSL, Basic, BasicPolicy) {
 class BooleanLogicPolicy : public Policy {
  public:
   BooleanLogicPolicy() {}
-  virtual ~BooleanLogicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~BooleanLogicPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_socketpair) {
       const Arg<int> domain(0), type(1), protocol(2);
       return If(domain == AF_UNIX &&
@@ -132,8 +132,8 @@ BPF_TEST_C(BPFDSL, BooleanLogic, BooleanLogicPolicy) {
 class MoreBooleanLogicPolicy : public Policy {
  public:
   MoreBooleanLogicPolicy() {}
-  virtual ~MoreBooleanLogicPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~MoreBooleanLogicPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setresuid) {
       const Arg<uid_t> ruid(0), euid(1), suid(2);
       return If(ruid == 0 || euid == 0 || suid == 0, Error(EPERM))
@@ -169,8 +169,8 @@ static const uintptr_t kDeadBeefAddr =
 class ArgSizePolicy : public Policy {
  public:
   ArgSizePolicy() {}
-  virtual ~ArgSizePolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~ArgSizePolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_uname) {
       const Arg<uintptr_t> addr(0);
       return If(addr == kDeadBeefAddr, Error(EPERM)).Else(Allow());
@@ -192,8 +192,8 @@ BPF_TEST_C(BPFDSL, ArgSizeTest, ArgSizePolicy) {
 class TrappingPolicy : public Policy {
  public:
   TrappingPolicy() {}
-  virtual ~TrappingPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~TrappingPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_uname) {
       return Trap(UnameTrap, &count_);
     }
@@ -222,8 +222,8 @@ BPF_TEST_C(BPFDSL, TrapTest, TrappingPolicy) {
 class MaskingPolicy : public Policy {
  public:
   MaskingPolicy() {}
-  virtual ~MaskingPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~MaskingPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setuid) {
       const Arg<uid_t> uid(0);
       return If((uid & 0xf) == 0, Error(EINVAL)).Else(Error(EACCES));
@@ -263,8 +263,8 @@ BPF_TEST_C(BPFDSL, MaskTest, MaskingPolicy) {
 class ElseIfPolicy : public Policy {
  public:
   ElseIfPolicy() {}
-  virtual ~ElseIfPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~ElseIfPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_setuid) {
       const Arg<uid_t> uid(0);
       return If((uid & 0xfff) == 0, Error(0))
@@ -295,8 +295,8 @@ BPF_TEST_C(BPFDSL, ElseIfTest, ElseIfPolicy) {
 class SwitchPolicy : public Policy {
  public:
   SwitchPolicy() {}
-  virtual ~SwitchPolicy() {}
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ~SwitchPolicy() override {}
+  ResultExpr EvaluateSyscall(int sysno) const override {
     if (sysno == __NR_fcntl) {
       const Arg<int> cmd(1);
       const Arg<unsigned long> long_arg(2);

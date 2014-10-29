@@ -42,9 +42,9 @@ using sandbox::bpf_dsl::ResultExpr;
 class RestrictClockIdPolicy : public bpf_dsl::Policy {
  public:
   RestrictClockIdPolicy() {}
-  virtual ~RestrictClockIdPolicy() {}
+  ~RestrictClockIdPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     switch (sysno) {
       case __NR_clock_gettime:
       case __NR_clock_getres:
@@ -145,9 +145,9 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
 class RestrictSchedPolicy : public bpf_dsl::Policy {
  public:
   RestrictSchedPolicy() {}
-  virtual ~RestrictSchedPolicy() {}
+  ~RestrictSchedPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int sysno) const override {
+  ResultExpr EvaluateSyscall(int sysno) const override {
     switch (sysno) {
       case __NR_sched_getparam:
         return RestrictSchedTarget(getpid(), sysno);
