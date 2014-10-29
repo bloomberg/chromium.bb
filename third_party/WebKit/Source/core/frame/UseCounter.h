@@ -546,6 +546,7 @@ public:
         WindowPostMessageWithLegacyTargetOriginArgument = 575,
         RenderRuby = 576,
         CanvasRenderingContext2DCompositeOperationDarker = 577,
+        ScriptElementWithInvalidTypeHasSrc = 578,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

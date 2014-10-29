@@ -33,6 +33,7 @@
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/Text.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -113,6 +114,9 @@ Node::InsertionNotificationRequest HTMLScriptElement::insertedInto(ContainerNode
             argv.append(fastGetAttribute(srcAttr));
             activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
         }
+
+        if (hasSourceAttribute() && !loader()->isScriptTypeSupported(ScriptLoader::DisallowLegacyTypeInTypeAttribute))
+            UseCounter::count(document(), UseCounter::ScriptElementWithInvalidTypeHasSrc);
     }
     HTMLElement::insertedInto(insertionPoint);
     return InsertionShouldCallDidNotifySubtreeInsertions;
