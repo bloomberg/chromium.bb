@@ -24,15 +24,6 @@ class KeyMobileSitesPage(page_module.Page):
     action_runner.RepaintContinuously(seconds=5)
 
 
-class Page1(KeyMobileSitesPage):
-
-  """ Why: Top news site """
-
-  def __init__(self, page_set):
-    super(Page1, self).__init__(
-      url='http://nytimes.com/', page_set=page_set, labels=['fastpath'])
-
-
 class Page2(KeyMobileSitesPage):
 
   """ Why: Typical mobile business site """
@@ -49,14 +40,6 @@ class Page2(KeyMobileSitesPage):
     action_runner.WaitForJavaScriptCondition(
         'document.body.scrollHeight > 2560')
 
-
-class Page3(KeyMobileSitesPage):
-
-  """ Why: Image-heavy site """
-
-  def __init__(self, page_set):
-    super(Page3, self).__init__(
-      url='http://cuteoverload.com', page_set=page_set, labels=['fastpath'])
 
 
 class Page4(KeyMobileSitesPage):
@@ -94,22 +77,6 @@ class Page5(KeyMobileSitesPage):
     action_runner.Wait(8)
 
 
-class Page6(KeyMobileSitesPage):
-
-  """ Why: Social; top Google property; Public profile; infinite scrolls """
-
-  def __init__(self, page_set):
-    super(Page6, self).__init__(
-      # pylint: disable=C0301
-      url='https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
-      page_set=page_set)
-
-  def RunSmoothness(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
-    action_runner.ScrollPage()
-    interaction.End()
-
 
 class Page7(KeyMobileSitesPage):
 
@@ -142,32 +109,6 @@ class Page8(KeyMobileSitesPage):
         'document.getElementById("paginatortarget") !== null')
 
 
-class Page9(KeyMobileSitesPage):
-
-  """
-  Why: #11 (Alexa global), google property; some blogger layouts have infinite
-  scroll but more interesting
-  """
-
-  def __init__(self, page_set):
-    super(Page9, self).__init__(
-      url='http://googlewebmastercentral.blogspot.com/',
-      page_set=page_set,
-      name='Blogger')
-
-
-class Page10(KeyMobileSitesPage):
-
-  """ Why: #18 (Alexa global), Picked an interesting post """
-
-  def __init__(self, page_set):
-    super(Page10, self).__init__(
-      # pylint: disable=C0301
-      url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
-      page_set=page_set,
-      name='Wordpress')
-
-
 class Page11(KeyMobileSitesPage):
 
   """ Why: #12 (Alexa global),Public profile """
@@ -183,49 +124,6 @@ class Page11(KeyMobileSitesPage):
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("profile-view-scroller") !== null')
 
-
-class Page12(KeyMobileSitesPage):
-
-  """ Why: #6 (Alexa) most visited worldwide, picked an interesting page """
-
-  def __init__(self, page_set):
-    super(Page12, self).__init__(
-      url='http://en.wikipedia.org/wiki/Wikipedia',
-      page_set=page_set,
-      name='Wikipedia (1 tab)')
-
-
-class Page13(KeyMobileSitesPage):
-
-  """ Why: #8 (Alexa global), picked an interesting page """
-
-  def __init__(self, page_set):
-    super(Page13, self).__init__(
-      url='http://twitter.com/katyperry',
-      page_set=page_set,
-      name='Twitter')
-
-
-class Page14(KeyMobileSitesPage):
-
-  """ Why: #37 (Alexa global) """
-
-  def __init__(self, page_set):
-    super(Page14, self).__init__(
-      url='http://pinterest.com',
-      page_set=page_set,
-      name='Pinterest')
-
-
-class Page15(KeyMobileSitesPage):
-
-  """ Why: #1 sports """
-
-  def __init__(self, page_set):
-    super(Page15, self).__init__(
-      url='http://espn.go.com',
-      page_set=page_set,
-      name='ESPN')
 
 
 class Page16(KeyMobileSitesPage):
@@ -275,33 +173,6 @@ class Page17(KeyMobileSitesPage):
     interaction.End()
 
 
-class Page18(KeyMobileSitesPage):
-
-  """ Why: crbug.com/169827 """
-
-  def __init__(self, page_set):
-    super(Page18, self).__init__(
-      url='http://slashdot.org/',
-      page_set=page_set, labels=['fastpath'])
-
-
-class Page19(KeyMobileSitesPage):
-
-  """ Why: #5 Alexa news """
-
-  def __init__(self, page_set):
-    super(Page19, self).__init__(
-      url='http://www.reddit.com/r/programming/comments/1g96ve',
-      page_set=page_set, labels=['fastpath'])
-
-
-class Page20(KeyMobileSitesPage):
-
-  """ Why: Problematic use of fixed position elements """
-
-  def __init__(self, page_set):
-    super(Page20, self).__init__(
-      url='http://www.boingboing.net', page_set=page_set, labels=['fastpath'])
 
 
 class Page21(KeyMobileSitesPage):
@@ -363,15 +234,6 @@ class Page22(KeyMobileSitesPage):
         use_touch=True)
     interaction.End()
 
-
-class Page23(KeyMobileSitesPage):
-
-  """ Why: crbug.com/231413 """
-
-  def __init__(self, page_set):
-    super(Page23, self).__init__(
-      url='http://forecast.io',
-      page_set=page_set)
 
 
 class Page24(KeyMobileSitesPage):
@@ -449,36 +311,95 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       archive_data_file='data/key_mobile_sites.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
-    self.AddPage(Page1(self))
+    # Why: Top news site.
+    self.AddPage(KeyMobileSitesPage(
+      url='http://nytimes.com/', page_set=self, labels=['fastpath']))
+
     self.AddPage(Page2(self))
-    self.AddPage(Page3(self))
+
+    # Why: Image-heavy site.
+    self.AddPage(KeyMobileSitesPage(
+      url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
+
     self.AddPage(Page4(self))
     self.AddPage(Page5(self))
-    self.AddPage(Page6(self))
+
+    # Why: Social; top Google property; Public profile; infinite scrolls.
+    self.AddPage(KeyMobileSitesPage(
+       # pylint: disable=C0301
+      url='https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
+      page_set=self))
+
     self.AddPage(Page7(self))
     self.AddPage(Page8(self))
-    self.AddPage(Page9(self))
-    self.AddPage(Page10(self))
+
+    # Why: #11 (Alexa global), google property; some blogger layouts
+    # have infinite scroll but more interesting.
+    self.AddPage(KeyMobileSitesPage(
+      url='http://googlewebmastercentral.blogspot.com/',
+      page_set=self, name='Blogger'))
+
+    # Why: #18 (Alexa global), Picked an interesting post """
+    self.AddPage(KeyMobileSitesPage(
+      # pylint: disable=C0301
+      url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
+      page_set=self,
+      name='Wordpress'))
+
+
     self.AddPage(Page11(self))
-    self.AddPage(Page12(self))
+
+   # Why: #6 (Alexa) most visited worldwide, picked an interesting page
+    self.AddPage(KeyMobileSitesPage(
+      url='http://en.wikipedia.org/wiki/Wikipedia',
+      page_set=self,
+      name='Wikipedia (1 tab)'))
+
+    # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
-    # self.AddPage(Page13(self))
-    self.AddPage(Page14(self))
+    # self.AddPage(KeyMobileSitesPage(
+    #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
+
+    # Why: #37 (Alexa global) """
+    self.AddPage(KeyMobileSitesPage(
+        url='http://pinterest.com',
+        page_set=self,
+        name='Pinterest'))
+
+    # Why: #1 sports.
     # Fails often; crbug.com/249722'
-    # self.AddPage(Page15(self))
+    # self.AddPage(KeyMobileSitesPage(
+    # url='http://espn.go.com', page_set=self, name='ESPN'))
+
+
     self.AddPage(Page16(self))
     self.AddPage(Page17(self))
-    self.AddPage(Page18(self))
-    self.AddPage(Page19(self))
-    self.AddPage(Page20(self))
+
+    # Why: crbug.com/169827
+    self.AddPage(KeyMobileSitesPage(
+      url='http://slashdot.org/', page_set=self, labels=['fastpath']))
+
+    # Why: #5 Alexa news """
+
+    self.AddPage(KeyMobileSitesPage(
+      url='http://www.reddit.com/r/programming/comments/1g96ve',
+      page_set=self, labels=['fastpath']))
+
+    # Why: Problematic use of fixed position elements """
+    self.AddPage(KeyMobileSitesPage(
+      url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
+
     # Page behaves non-deterministically, replaced with test version for now.
     # self.AddPage(Page21(self))
     # mean_input_event_latency cannot be tracked correctly for Page22.
     # See crbug.com/409086.
     # self.AddPage(Page22(self))
-    # self.AddPage(Page23(self))
+
+
+    # Why: crbug.com/231413
     # Doesn't scroll; crbug.com/249736
-    # self.AddPage(Page23(self))
+    # self.AddPage(KeyMobileSitesPage(url='http://forecast.io', page_set=self))
+
     self.AddPage(Page24(self))
     self.AddPage(Page25(self))
     self.AddPage(Page26(self))
