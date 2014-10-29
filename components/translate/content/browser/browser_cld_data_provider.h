@@ -38,7 +38,7 @@ class BrowserCldDataProvider : public IPC::Listener {
   // OnCldDataRequest() and returns true. In all other cases, this method does
   // nothing. This method is defined as virtual in order to force the
   // implementation to define the specific IPC message(s) that it handles.
-  virtual bool OnMessageReceived(const IPC::Message&) = 0;
+  virtual bool OnMessageReceived(const IPC::Message&) override = 0;
 
   // Called when the browser process receives an appropriate message in
   // OnMessageReceived, above. The implementation should attempt to locate

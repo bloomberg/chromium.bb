@@ -39,7 +39,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   virtual void WillDestroyCurrentMessageLoop() override;
 
   // Callback from MessageLoopForIO.
-  virtual void OnObjectSignaled(HANDLE object);
+  virtual void OnObjectSignaled(HANDLE object) override;
 
  private:
   virtual ~FilePathWatcherImpl() {}

@@ -38,8 +38,6 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   void FlushWorkerPoolForTesting();
 
-  virtual void DeviceCheckComplete(const base::FilePath& device_path);
-
   const std::vector<base::FilePath>& devices_checked() const {
       return devices_checked_;
   }
@@ -49,6 +47,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
   void ReleaseDeviceCheck();
 
   // VolumeMountWatcherWin:
+  virtual void DeviceCheckComplete(const base::FilePath& device_path) override;
   virtual GetAttachedDevicesCallbackType
       GetAttachedDevicesCallback() const override;
   virtual GetDeviceDetailsCallbackType

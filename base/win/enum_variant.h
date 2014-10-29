@@ -33,10 +33,10 @@ class BASE_EXPORT EnumVariant
   // IEnumVARIANT.
   STDMETHODIMP Next(ULONG requested_count,
                     VARIANT* out_elements,
-                    ULONG* out_elements_received);
-  STDMETHODIMP Skip(ULONG skip_count);
-  STDMETHODIMP Reset();
-  STDMETHODIMP Clone(IEnumVARIANT** out_cloned_object);
+                    ULONG* out_elements_received) override;
+  STDMETHODIMP Skip(ULONG skip_count) override;
+  STDMETHODIMP Reset() override;
+  STDMETHODIMP Clone(IEnumVARIANT** out_cloned_object) override;
 
  private:
   ~EnumVariant();

@@ -214,11 +214,11 @@ class PasswordStore : protected PasswordStoreSync,
   // base::Bind can't be used with them because it fails to cast PasswordStore
   // to PasswordStoreSync.
   virtual PasswordStoreChangeList AddLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form) override = 0;
   virtual PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form) override = 0;
   virtual PasswordStoreChangeList RemoveLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form) override = 0;
 
   // Synchronous implementation to remove the given logins.
   virtual PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(

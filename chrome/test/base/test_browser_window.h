@@ -73,7 +73,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
 #if defined(OS_WIN)
   virtual void SetMetroSnapMode(bool enable) override {}
-  virtual bool IsInMetroSnapMode() const;
+  virtual bool IsInMetroSnapMode() const override;
 #endif
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
