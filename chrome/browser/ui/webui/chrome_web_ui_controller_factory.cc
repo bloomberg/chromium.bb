@@ -139,7 +139,7 @@
 #include "chrome/browser/ui/webui/set_as_default_browser_ui.h"
 #endif
 
-#if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
+#if (defined(USE_NSS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
@@ -401,7 +401,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIMetroFlowHost)
     return &NewWebUI<SetAsDefaultBrowserUI>;
 #endif
-#if (defined(USE_NSS) || defined(USE_OPENSSL)) && defined(USE_AURA)
+#if (defined(USE_NSS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
 #if defined(OS_CHROMEOS)

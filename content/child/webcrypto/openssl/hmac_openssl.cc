@@ -44,8 +44,8 @@ Status SignHmac(const std::vector<uint8_t>& raw_key,
   // First, HMAC() needs a void* for the key data, so make one up front as a
   // cosmetic to avoid a cast. Second, OpenSSL does not like a NULL key,
   // which will result if the raw_key vector is empty; an entirely valid
-  // case. Handle this specific case by pointing to an empty array.
-  const unsigned char null_key[] = {};
+  // case. Handle this specific case by pointing to a fresh array.
+  const unsigned char null_key[] = {0};
   const void* const raw_key_voidp = raw_key.size() ? &raw_key[0] : null_key;
 
   buffer->resize(hmac_expected_length);
