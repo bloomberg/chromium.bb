@@ -332,6 +332,8 @@ if ragel_involved:
     ('bsr_bsf_proof.py', '64', '20141021.movbe', '20141027.bsr_bsf'),
     ('shld_shrd_proof.py', '32', '20141027.bsr_bsf', '20141028.shld_shrd'),
     ('shld_shrd_proof.py', '64', '20141027.bsr_bsf', '20141028.shld_shrd'),
+    ('xadd16_proof.py', '32', '20141028.shld_shrd', '20141029.xadd16'),
+    ('xadd16_proof.py', '64', '20141028.shld_shrd', '20141029.xadd16'),
   ]
   for proof_file, bitness, old, new in trie_proofs:
     trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}

@@ -99,6 +99,9 @@ def ImmOp():
   # When walking the DFA, immediates are currently returned as 0x0.
   return set([Operands(disasms=('$0x0',))])
 
+def LockPrefix():
+  """Returns the lock prefix as an operand set."""
+  return set([Operands(disasms=('lock',))])
 
 def MemoryOperandsTemplate(disp, base, index, scale, bitness):
   """Returns all the possible different memory operands using given parameters.
