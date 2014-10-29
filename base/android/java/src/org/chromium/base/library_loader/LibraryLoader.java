@@ -30,6 +30,9 @@ import org.chromium.base.TraceEvent;
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
+    // Set to true to enable debug logs.
+    private static final boolean DEBUG = false;
+
     // Guards all access to the libraries
     private static final Object sLock = new Object();
 
@@ -53,6 +56,10 @@ public class LibraryLoader {
     // One-way switch becomes true if the library was loaded from the APK file
     // directly.
     private static boolean sLibraryWasLoadedFromApk = false;
+
+    // One-way switch becomes false if the Chromium library should be loaded
+    // directly from the APK file but it was not aligned.
+    private static boolean sLibraryWasAlignedInApk = true;
 
     // One-way switch becomes true if the system library loading failed,
     // and the right native library was found and loaded by the hack.
@@ -165,9 +172,19 @@ public class LibraryLoader {
                     Linker.prepareLibraryLoad();
 
                     for (String library : NativeLibraries.LIBRARIES) {
+                        // Don't self-load the linker. This is because the build system is
+                        // not clever enough to understand that all the libraries packaged
+                        // in the final .apk don't need to be explicitly loaded.
+                        if (Linker.isChromiumLinkerLibrary(library)) {
+                            if (DEBUG) Log.i(TAG, "ignoring self-linker load");
+                            continue;
+                        }
+
                         String zipfile = null;
                         if (Linker.isInZipFile()) {
                             zipfile = context.getApplicationInfo().sourceDir;
+                            sLibraryWasAlignedInApk = Linker.checkLibraryAlignedInApk(
+                                    zipfile, System.mapLibraryName(library));
                             Log.i(TAG, "Loading " + library + " from within " + zipfile);
                         } else {
                             Log.i(TAG, "Loading: " + library);
@@ -324,6 +341,10 @@ public class LibraryLoader {
 
         if (sLibraryWasLoadedFromApk) {
             return LibraryLoadFromApkStatusCodes.SUCCESSFUL;
+        }
+
+        if (!sLibraryWasAlignedInApk) {
+            return LibraryLoadFromApkStatusCodes.NOT_ALIGNED;
         }
 
         if (context == null) {

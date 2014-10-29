@@ -4,6 +4,7 @@
 
 #include "crazy_linker_library_list.h"
 
+#include <assert.h>
 #include <dlfcn.h>
 
 #include "crazy_linker_debug.h"
@@ -18,6 +19,14 @@
 namespace crazy {
 
 namespace {
+
+// Maximum filename length of a file in a zip file.
+const size_t kMaxFilenameInZip = 256;
+
+// Page size for alignment in a zip file.
+const size_t kZipAlignmentPageSize = 4096;
+static_assert(kZipAlignmentPageSize % PAGE_SIZE == 0,
+              "kZipAlignmentPageSize must be a multiple of PAGE_SIZE");
 
 // A helper struct used when looking up symbols in libraries.
 struct SymbolLookupState {
@@ -392,15 +401,10 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
 #error "Unsupported target abi"
 #endif
 
-const size_t kMaxFilenameInZip = 256;
-const size_t kPageSize = 4096;
-
-LibraryView* LibraryList::LoadLibraryInZipFile(const char* zip_file_path,
-                                               const char* lib_name,
-                                               int dlopen_flags,
-                                               uintptr_t load_address,
-                                               SearchPathList* search_path_list,
-                                               Error* error) {
+int LibraryList::FindAlignedLibraryInZipFile(
+    const char* zip_file_path,
+    const char* lib_name,
+    Error* error) {
   String fullname;
   fullname.Reserve(kMaxFilenameInZip);
   fullname = "lib/";
@@ -411,17 +415,34 @@ LibraryView* LibraryList::LoadLibraryInZipFile(const char* zip_file_path,
   if (fullname.size() + 1 > kMaxFilenameInZip) {
     error->Format("Filename too long for a file in a zip file %s\n",
                   fullname.c_str());
-    return NULL;
+    return CRAZY_OFFSET_FAILED;
   }
 
   int offset = FindStartOffsetOfFileInZipFile(zip_file_path, fullname.c_str());
-  if (offset == -1) {
-    return NULL;
+  if (offset == CRAZY_OFFSET_FAILED) {
+    return CRAZY_OFFSET_FAILED;
   }
 
-  if ((offset & (kPageSize - 1)) != 0) {
+  static_assert((kZipAlignmentPageSize & (kZipAlignmentPageSize - 1)) == 0,
+                "kZipAlignmentPageSize must be a power of 2");
+  if ((offset & (kZipAlignmentPageSize - 1)) != 0) {
     error->Format("Library %s is not page aligned in zipfile %s\n",
                   lib_name, zip_file_path);
+    return CRAZY_OFFSET_FAILED;
+  }
+
+  assert(offset != CRAZY_OFFSET_FAILED);
+  return offset;
+}
+
+LibraryView* LibraryList::LoadLibraryInZipFile(const char* zip_file_path,
+                                               const char* lib_name,
+                                               int dlopen_flags,
+                                               uintptr_t load_address,
+                                               SearchPathList* search_path_list,
+                                               Error* error) {
+  int offset = FindAlignedLibraryInZipFile(zip_file_path, lib_name, error);
+  if (offset == CRAZY_OFFSET_FAILED) {
     return NULL;
   }
 

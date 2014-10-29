@@ -335,6 +335,11 @@ crazy_status_t crazy_library_find_from_address(
     void* address,
     crazy_library_t** library) _CRAZY_PUBLIC;
 
+// Check whether |lib_name| is page aligned in |zipfile_name|.
+crazy_status_t crazy_linker_check_library_aligned_in_zip_file(
+    const char* zipfile_name,
+    const char* lib_name) _CRAZY_PUBLIC;
+
 // Close a library. This decrements its reference count. If it reaches
 // zero, the library be unloaded from the process.
 void crazy_library_close(crazy_library_t* library) _CRAZY_PUBLIC;

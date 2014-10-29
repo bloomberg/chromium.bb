@@ -11,6 +11,7 @@
 
 #include "crazy_linker_debug.h"
 #include "crazy_linker_system.h"
+#include "crazy_linker_util.h"
 
 namespace {
 
@@ -97,7 +98,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   if (!fd.OpenReadOnly(zip_file)) {
     LOG_ERRNO("%s: open failed trying to open zip file %s\n",
               __FUNCTION__, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   // Find the length of the file.
@@ -105,13 +106,13 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   if (stat(zip_file, &stat_buf) == -1) {
     LOG_ERRNO("%s: stat failed trying to stat zip file %s\n",
               __FUNCTION__, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   if (stat_buf.st_size > kMaxZipFileLength) {
     LOG("%s: The size %ld of %s is too large to map\n",
         __FUNCTION__, stat_buf.st_size, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   // Map the file into memory.
@@ -119,7 +120,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   if (mem == MAP_FAILED) {
     LOG_ERRNO("%s: mmap failed trying to mmap zip file %s\n",
               __FUNCTION__, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
   ScopedMMap scoped_mmap(mem, stat_buf.st_size);
 
@@ -136,7 +137,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   if (off == -1) {
     LOG("%s: Failed to find end of central directory in %s\n",
         __FUNCTION__, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   // We have located the end of central directory record, now locate
@@ -150,14 +151,14 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   if (start_of_central_dir > off) {
     LOG("%s: Found out of range offset %u for start of directory in %s\n",
         __FUNCTION__, start_of_central_dir, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   uint32_t end_of_central_dir = start_of_central_dir + length_of_central_dir;
   if (end_of_central_dir > off) {
     LOG("%s: Found out of range offset %u for end of directory in %s\n",
         __FUNCTION__, end_of_central_dir, zip_file);
-    return -1;
+    return CRAZY_OFFSET_FAILED;
   }
 
   uint32_t num_entries = ReadUInt16(
@@ -173,7 +174,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
       LOG("%s: Failed to find central directory header marker in %s. "
           "Found 0x%x but expected 0x%x\n", __FUNCTION__,
           zip_file, marker, kCentralDirHeaderMarker);
-      return -1;
+      return CRAZY_OFFSET_FAILED;
     }
     uint32_t file_name_length =
         ReadUInt16(mem_bytes, off + kOffsetFilenameLengthInCentralDirectory);
@@ -198,7 +199,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
         LOG("%s: Failed to find local file header marker in %s. "
             "Found 0x%x but expected 0x%x\n", __FUNCTION__,
             zip_file, marker, kLocalHeaderMarker);
-        return -1;
+        return CRAZY_OFFSET_FAILED;
       }
 
       uint32_t file_name_length =
@@ -229,7 +230,7 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   }
 
   LOG("%s: Did not find %s in %s\n", __FUNCTION__, filename, zip_file);
-  return -1;
+  return CRAZY_OFFSET_FAILED;
 }
 
 }  // crazy namespace

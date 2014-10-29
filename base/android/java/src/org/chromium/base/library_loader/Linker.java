@@ -703,7 +703,8 @@ public class Linker {
      * Load a native shared library with the Chromium linker.
      * The shared library is uncompressed and page aligned inside the zipfile.
      * Note the crazy linker treats libraries and files as equivalent,
-     * so you can only open one library in a given zip file.
+     * so you can only open one library in a given zip file. The library must
+     * not be the Chromium linker library.
      *
      * @param zipfile The filename of the zipfile contain the library.
      * @param library The library's base name.
@@ -713,7 +714,8 @@ public class Linker {
     }
 
     /**
-     * Load a native shared library with the Chromium linker.
+     * Load a native shared library with the Chromium linker. The library must
+     * not be the Chromium linker library.
      *
      * @param library The library's base name.
      */
@@ -724,15 +726,7 @@ public class Linker {
     private static void loadLibraryMaybeInZipFile(
             @Nullable String zipFile, String library) {
         if (DEBUG) Log.i(TAG, "loadLibrary: " + library);
-
-        // Don't self-load the linker. This is because the build system is
-        // not clever enough to understand that all the libraries packaged
-        // in the final .apk don't need to be explicitly loaded.
-        // Also deal with the component build that adds a .cr suffix to the name.
-        if (library.equals(TAG) || library.equals(TAG + ".cr")) {
-            if (DEBUG) Log.i(TAG, "ignoring self-linker load");
-            return;
-        }
+        assert !isChromiumLinkerLibrary(library);
 
         synchronized (Linker.class) {
             ensureInitializedLocked();
@@ -822,6 +816,14 @@ public class Linker {
     }
 
     /**
+     * Determine whether a library is the linker library. Also deal with the
+     * component build that adds a .cr suffix to the name.
+     */
+    public static boolean isChromiumLinkerLibrary(String library) {
+        return library.equals(TAG) || library.equals(TAG + ".cr");
+    }
+
+    /**
      * Check whether the device supports loading a library directly from the APK file.
      *
      * @param apkFile Filename of the APK.
@@ -837,6 +839,25 @@ public class Linker {
             if (DEBUG) Log.i(TAG, "Loading a library directly from the APK file " +
                     (supported ? "" : "NOT ") + "supported");
             return supported;
+        }
+    }
+
+    /**
+     * Check whether a library is page aligned in the APK file.
+     *
+     * @param apkFile Filename of the APK.
+     * @param library The library's base name.
+     * @return true if page aligned.
+     */
+    public static boolean checkLibraryAlignedInApk(String apkFile, String library) {
+        synchronized (Linker.class) {
+            ensureInitializedLocked();
+
+            if (DEBUG) Log.i(TAG, "checkLibraryAlignedInApk: " + apkFile + ", " + library);
+            boolean aligned = nativeCheckLibraryAlignedInApk(apkFile, library);
+            if (DEBUG) Log.i(TAG, library + " is " + (aligned ? "" : "NOT ") +
+                    "page aligned in " + apkFile);
+            return aligned;
         }
     }
 
@@ -943,9 +964,17 @@ public class Linker {
      *
      * @param apkFile Filename of the APK.
      * @return true if supported.
-     *
      */
     private static native boolean nativeCheckLibraryLoadFromApkSupport(String apkFile);
+
+    /**
+     * Native method which checks whether a library is page aligned in the APK file.
+     *
+     * @param apkFile Filename of the APK.
+     * @param library The library's base name.
+     * @return true if page aligned.
+     */
+    private static native boolean nativeCheckLibraryAlignedInApk(String apkFile, String library);
 
     /**
      * Record information for a given library.

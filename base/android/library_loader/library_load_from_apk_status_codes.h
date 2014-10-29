@@ -21,11 +21,14 @@ enum LibraryLoadFromApkStatusCodes {
   // The device supports loading a library directly from the APK file.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUPPORTED = 2,
 
-  // A library was successfully loaded directly from the APK file.
+  // The Chromium library was successfully loaded directly from the APK file.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUCCESSFUL = 3,
 
+  // The Chromium library was not page aligned in the APK file.
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_NOT_ALIGNED = 4,
+
   // End sentinel.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX = 4,
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX = 5,
 };
 
 }  // namespace

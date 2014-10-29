@@ -20,6 +20,9 @@ namespace crazy {
 //     int CRAZY_UNUSED my_var = 0;
 #define CRAZY_UNUSED __attribute__((unused))
 
+// Offset in a file indicating a failure.
+#define CRAZY_OFFSET_FAILED (-1)
+
 // Helper scoped pointer class.
 template <class T>
 class ScopedPtr {

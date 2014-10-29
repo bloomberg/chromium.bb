@@ -372,6 +372,17 @@ crazy_status_t crazy_library_find_from_address(void* address,
   }
 }
 
+crazy_status_t crazy_linker_check_library_aligned_in_zip_file(
+    const char* zipfile_name,
+    const char* lib_name) {
+  Error error;
+  if (crazy::LibraryList::FindAlignedLibraryInZipFile(
+          zipfile_name, lib_name, &error) == CRAZY_OFFSET_FAILED)
+    return CRAZY_STATUS_FAILURE;
+
+  return CRAZY_STATUS_SUCCESS;
+}
+
 void crazy_library_close(crazy_library_t* library) {
   crazy_library_close_with_context(library, NULL);
 }

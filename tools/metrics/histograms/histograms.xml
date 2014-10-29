@@ -46475,6 +46475,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Not supported"/>
   <int value="2" label="Supported"/>
   <int value="3" label="Successful"/>
+  <int value="4" label="Not aligned"/>
 </enum>
 
 <enum name="LinkMonitorFailureType" type="int">
