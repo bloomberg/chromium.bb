@@ -123,7 +123,7 @@ var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2');
 var TEST_TARGETS = [
   [BASE_URL + 'method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheckNone]],
+   [methodIsGET, authCheck1]],
   [BASE_URL + 'method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -140,7 +140,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=same-origin&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheckNone]],
+   [methodIsGET, authCheck1]],
   [BASE_URL + 'mode=same-origin&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -159,7 +159,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=no-cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheckNone]],
+   [methodIsGET, authCheck1]],
   [BASE_URL + 'mode=no-cors&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -176,7 +176,7 @@ var TEST_TARGETS = [
 
   [BASE_URL + 'mode=cors&method=GET',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
-   [methodIsGET, authCheckNone]],
+   [methodIsGET, authCheck1]],
   [BASE_URL + 'mode=cors&method=GET&headers={}',
    [fetchResolved, hasContentLength, hasServerHeader, hasBody, typeBasic],
    [methodIsGET]],
@@ -196,7 +196,7 @@ var TEST_TARGETS = [
   // CORS test
   [OTHER_BASE_URL + 'method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheckNone]],
+   [methodIsGET, noCustomHeader, authCheck2]],
   [OTHER_BASE_URL + 'method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
    [methodIsPOST, noCustomHeader]],
@@ -212,7 +212,7 @@ var TEST_TARGETS = [
 
   [OTHER_BASE_URL + 'mode=no-cors&method=GET&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
-   [methodIsGET, noCustomHeader, authCheckNone]],
+   [methodIsGET, noCustomHeader, authCheck2]],
   [OTHER_BASE_URL + 'mode=no-cors&method=POST&headers=CUSTOM',
    [fetchResolved, noContentLength, noServerHeader, noBody, typeOpaque],
    [methodIsPOST, noCustomHeader]],
@@ -414,7 +414,7 @@ var TEST_TARGETS = [
 
   // Auth check
   [BASE_URL + 'Auth',
-   [fetchResolved, hasBody], [checkJsonpError]],
+   [fetchResolved, hasBody], [authCheck1]],
   [BASE_URL + 'Auth&credentials=omit',
    [fetchResolved, hasBody], [checkJsonpError]],
   [BASE_URL + 'Auth&credentials=include',
@@ -444,7 +444,7 @@ var TEST_TARGETS = [
    [fetchResolved, hasBody], [authCheck1]],
 
   [OTHER_BASE_URL + 'Auth',
-   [fetchResolved, noBody], [checkJsonpError]],
+   [fetchResolved, noBody], [authCheck2]],
   [OTHER_BASE_URL + 'Auth&credentials=omit',
    [fetchResolved, noBody], [checkJsonpError]],
   [OTHER_BASE_URL + 'Auth&credentials=include',

@@ -419,7 +419,10 @@ void ResourceRequest::initialize(const KURL& url)
     m_requestContext = blink::WebURLRequest::RequestContextUnspecified;
     m_frameType = blink::WebURLRequest::FrameTypeNone;
     m_fetchRequestMode = blink::WebURLRequest::FetchRequestModeNoCORS;
-    m_fetchCredentialsMode = blink::WebURLRequest::FetchCredentialsModeOmit;
+    // Contrary to the Fetch spec, we default to same-origin mode here, and deal
+    // with CORS modes in updateRequestForAccessControl if we're called in a
+    // context which requires it.
+    m_fetchCredentialsMode = blink::WebURLRequest::FetchCredentialsModeSameOrigin;
     m_referrerPolicy = ReferrerPolicyDefault;
 }
 
