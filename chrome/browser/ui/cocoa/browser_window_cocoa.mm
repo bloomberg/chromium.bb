@@ -621,7 +621,6 @@ void BrowserWindowCocoa::EnterFullscreenWithChrome() {
 }
 
 void BrowserWindowCocoa::EnterFullscreenWithoutChrome() {
-  CHECK(chrome::mac::SupportsSystemFullscreen());
   [controller_ enterPresentationMode];
 }
 
