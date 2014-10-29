@@ -9,3 +9,10 @@ per-file input_method_private.json=shuchen@chromium.org
 per-file input_method_private.json=yukishiino@chromium.org
 per-file webview*.json=fsamuel@chromium.org
 per-file webview*.json=lazyboy@chromium.org
+
+# For trivial changes only, like adding a new enum value or attribute.
+# New APIs or changes to existing APIs should be approved by an
+# extensions OWNER.
+per-file automation*.idl=aboxhall@chromium.org
+per-file automation*.idl=dmazzoni@chromium.org
+per-file automation*.idl=dtseng@chromium.org
