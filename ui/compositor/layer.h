@@ -77,7 +77,11 @@ class COMPOSITOR_EXPORT Layer
 
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
-  Compositor* GetCompositor();
+  Compositor* GetCompositor() {
+    return const_cast<Compositor*>(
+        const_cast<const Layer*>(this)->GetCompositor());
+  }
+  const Compositor* GetCompositor() const;
 
   // Called by the compositor when the Layer is set as its root Layer. This can
   // only ever be called on the root layer.

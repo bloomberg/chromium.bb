@@ -99,10 +99,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Returns the Compositor, or NULL if there isn't one associated with this
   // NativeWidget.
   virtual const ui::Compositor* GetCompositor() const = 0;
-  virtual ui::Compositor* GetCompositor() = 0;
 
   // Returns the NativeWidget's layer, if any.
-  virtual ui::Layer* GetLayer() = 0;
+  virtual const ui::Layer* GetLayer() const = 0;
 
   // Reorders the widget's child NativeViews which are associated to the view
   // tree (eg via a NativeViewHost) to match the z-order of the views in the

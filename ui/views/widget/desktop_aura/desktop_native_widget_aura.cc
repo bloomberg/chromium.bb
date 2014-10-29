@@ -579,12 +579,7 @@ const ui::Compositor* DesktopNativeWidgetAura::GetCompositor() const {
   return content_window_ ? content_window_->layer()->GetCompositor() : NULL;
 }
 
-ui::Compositor* DesktopNativeWidgetAura::GetCompositor() {
-  return const_cast<ui::Compositor*>(
-      const_cast<const DesktopNativeWidgetAura*>(this)->GetCompositor());
-}
-
-ui::Layer* DesktopNativeWidgetAura::GetLayer() {
+const ui::Layer* DesktopNativeWidgetAura::GetLayer() const {
   return content_window_ ? content_window_->layer() : NULL;
 }
 

@@ -62,8 +62,7 @@ class VIEWS_EXPORT NativeWidgetAura
   gfx::NativeWindow GetNativeWindow() const override;
   Widget* GetTopLevelWidget() override;
   const ui::Compositor* GetCompositor() const override;
-  ui::Compositor* GetCompositor() override;
-  ui::Layer* GetLayer() override;
+  const ui::Layer* GetLayer() const override;
   void ReorderNativeViews() override;
   void ViewRemoved(View* view) override;
   void SetNativeWindowProperty(const char* name, void* value) override;

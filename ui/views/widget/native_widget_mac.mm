@@ -181,12 +181,7 @@ const ui::Compositor* NativeWidgetMac::GetCompositor() const {
   return NULL;
 }
 
-ui::Compositor* NativeWidgetMac::GetCompositor() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-ui::Layer* NativeWidgetMac::GetLayer() {
+const ui::Layer* NativeWidgetMac::GetLayer() const {
   NOTIMPLEMENTED();
   return NULL;
 }

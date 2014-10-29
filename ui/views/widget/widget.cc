@@ -901,11 +901,7 @@ const ui::Compositor* Widget::GetCompositor() const {
   return native_widget_->GetCompositor();
 }
 
-ui::Compositor* Widget::GetCompositor() {
-  return native_widget_->GetCompositor();
-}
-
-ui::Layer* Widget::GetLayer() {
+const ui::Layer* Widget::GetLayer() const {
   return native_widget_->GetLayer();
 }
 

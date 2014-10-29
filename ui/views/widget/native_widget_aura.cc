@@ -226,11 +226,7 @@ const ui::Compositor* NativeWidgetAura::GetCompositor() const {
   return window_ ? window_->layer()->GetCompositor() : NULL;
 }
 
-ui::Compositor* NativeWidgetAura::GetCompositor() {
-  return window_ ? window_->layer()->GetCompositor() : NULL;
-}
-
-ui::Layer* NativeWidgetAura::GetLayer() {
+const ui::Layer* NativeWidgetAura::GetLayer() const {
   return window_ ? window_->layer() : NULL;
 }
 

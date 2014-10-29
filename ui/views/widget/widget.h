@@ -656,11 +656,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return non_client_view_ ? non_client_view_->client_view() : NULL;
   }
 
+  ui::Compositor* GetCompositor() {
+    return const_cast<ui::Compositor*>(
+        const_cast<const Widget*>(this)->GetCompositor());
+  }
   const ui::Compositor* GetCompositor() const;
-  ui::Compositor* GetCompositor();
 
   // Returns the widget's layer, if any.
-  ui::Layer* GetLayer();
+  ui::Layer* GetLayer() {
+    return const_cast<ui::Layer*>(
+        const_cast<const Widget*>(this)->GetLayer());
+  }
+  const ui::Layer* GetLayer() const;
 
   // Reorders the widget's child NativeViews which are associated to the view
   // tree (eg via a NativeViewHost) to match the z-order of the views in the

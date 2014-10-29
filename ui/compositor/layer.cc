@@ -130,7 +130,7 @@ bool Layer::UsingPictureLayer() {
   return g_ui_impl_side_painting_status.Get().enabled;
 }
 
-Compositor* Layer::GetCompositor() {
+const Compositor* Layer::GetCompositor() const {
   return GetRoot(this)->compositor_;
 }
 
