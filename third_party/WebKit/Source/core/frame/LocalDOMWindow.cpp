@@ -117,16 +117,32 @@ using std::max;
 
 namespace blink {
 
-LocalDOMWindow::WindowFrameObserver::WindowFrameObserver(
-    LocalDOMWindow& window, LocalFrame& frame)
+LocalDOMWindow::WindowFrameObserver::WindowFrameObserver(LocalDOMWindow* window, LocalFrame& frame)
     : FrameDestructionObserver(&frame)
     , m_window(window)
 {
 }
 
+PassOwnPtrWillBeRawPtr<LocalDOMWindow::WindowFrameObserver> LocalDOMWindow::WindowFrameObserver::create(LocalDOMWindow* window, LocalFrame& frame)
+{
+    return adoptPtrWillBeNoop(new WindowFrameObserver(window, frame));
+}
+
+#if !ENABLE(OILPAN)
+LocalDOMWindow::WindowFrameObserver::~WindowFrameObserver()
+{
+}
+#endif
+
+void LocalDOMWindow::WindowFrameObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_window);
+    FrameDestructionObserver::trace(visitor);
+}
+
 void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
 {
-    m_window.willDetachFrameHost();
+    m_window->willDetachFrameHost();
 }
 
 class PostMessageTimer final : public SuspendableTimer {
@@ -349,7 +365,7 @@ bool LocalDOMWindow::canShowModalDialogNow(const LocalFrame* frame)
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
-    : m_frameObserver(*this, frame)
+    : m_frameObserver(WindowFrameObserver::create(this, frame))
     , m_shouldPrintWhenFinishedLoading(false)
 #if ENABLE(ASSERT)
     , m_hasBeenReset(false)
@@ -1910,6 +1926,7 @@ PassOwnPtr<LifecycleNotifier<LocalDOMWindow> > LocalDOMWindow::createLifecycleNo
 void LocalDOMWindow::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_frameObserver);
     visitor->trace(m_document);
     visitor->trace(m_properties);
     visitor->trace(m_screen);
@@ -1932,14 +1949,13 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_eventQueue);
     HeapSupplementable<LocalDOMWindow>::trace(visitor);
 #endif
-    visitor->trace(m_frameObserver);
     DOMWindow::trace(visitor);
     LifecycleContext<LocalDOMWindow>::trace(visitor);
 }
 
 LocalFrame* LocalDOMWindow::frame() const
 {
-    return m_frameObserver.frame();
+    return m_frameObserver->frame();
 }
 
 v8::Handle<v8::Object> LocalDOMWindow::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

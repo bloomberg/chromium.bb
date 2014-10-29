@@ -301,16 +301,24 @@ private:
     // has a frame() accessor that returns Frame* for bindings code, and
     // FrameDestructionObserver, which has a frame() accessor that returns a
     // LocalFrame*.
-    class WindowFrameObserver final : public FrameDestructionObserver {
+    class WindowFrameObserver final : public NoBaseWillBeGarbageCollected<WindowFrameObserver>, public FrameDestructionObserver {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
+        DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WindowFrameObserver);
     public:
-        WindowFrameObserver(LocalDOMWindow&, LocalFrame&);
+        static PassOwnPtrWillBeRawPtr<WindowFrameObserver> create(LocalDOMWindow*, LocalFrame&);
+
+        virtual void trace(Visitor*) override;
 
     private:
+        WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
+
         // FrameDestructionObserver overrides:
         void willDetachFrameHost() override;
 
-        LocalDOMWindow& m_window;
+        RawPtrWillBeMember<LocalDOMWindow> m_window;
     };
+    friend WTF::OwnedPtrDeleter<WindowFrameObserver>;
 
     explicit LocalDOMWindow(LocalFrame&);
 
@@ -332,7 +340,7 @@ private:
     void willDetachFrameHost();
     void removeAllEventListenersInternal(BroadcastListenerRemoval);
 
-    WindowFrameObserver m_frameObserver;
+    OwnPtrWillBeMember<WindowFrameObserver> m_frameObserver;
     RefPtrWillBeMember<Document> m_document;
 
     bool m_shouldPrintWhenFinishedLoading;
