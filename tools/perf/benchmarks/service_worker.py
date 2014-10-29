@@ -7,7 +7,9 @@ import page_sets
 import re
 
 from measurements import timeline_controller
+from metrics import speedindex
 from telemetry import benchmark
+from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.timeline import async_slice as async_slice_module
 from telemetry.timeline import slice as slice_module
@@ -78,10 +80,13 @@ class _ServiceWorkerTimelineMetric(object):
     results.AddValue(scalar.ScalarValue(
         results.current_page, full_name + '_avg', 'ms', total / len(times)))
 
+
 class _ServiceWorkerMeasurement(page_test.PageTest):
   def __init__(self, *args, **kwargs):
     super(_ServiceWorkerMeasurement, self).__init__(*args, **kwargs)
     self._timeline_controller = timeline_controller.TimelineController()
+    self._speed_index = speedindex.SpeedIndexMetric()
+    self._page_open_times = collections.defaultdict(int)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -91,13 +96,16 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
   def WillNavigateToPage(self, page, tab):
     self._timeline_controller.SetUp(page, tab)
     self._timeline_controller.Start(tab)
+    self._speed_index.Start(page, tab)
 
-  def ValidateAndMeasurePage(self, _, tab, results):
-    tab.WaitForJavaScriptExpression('window.done', 40)
+  def ValidateAndMeasurePage(self, page, tab, results):
+    tab.WaitForJavaScriptExpression(
+        '(window.done == null) ? ' +
+        '(document.readyState == "complete") : window.done', 40)
     self._timeline_controller.Stop(tab)
 
     # Measure JavaScript-land
-    json = tab.EvaluateJavaScript('window.results')
+    json = tab.EvaluateJavaScript('window.results || {}')
     for key, value in json.iteritems():
       results.AddValue(scalar.ScalarValue(
           results.current_page, key, value['units'], value['value']))
@@ -109,12 +117,29 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
                   'UnregisterServiceWorker|'\
                   'ProcessAllocate|'\
                   'FindRegistrationForDocument|'\
-                  'PrepareForMainResource|'\
                   'DispatchFetchEvent)'
     timeline_metric.AddResultsOfEvents(
         browser_process, 'IOThread', filter_text , results)
 
+    # Record Speed Index
+    def SpeedIndexIsFinished():
+      return self._speed_index.IsFinished(tab)
+    util.WaitFor(SpeedIndexIsFinished, 60)
+    self._speed_index.Stop(page, tab)
+    # Distinguish the first and second load from the subsequent loads
+    url = str(page)
+    chart_prefix = 'page_load'
+    self._page_open_times[url] += 1
+    if self._page_open_times[url] == 1:
+      chart_prefix += '_1st'
+    elif self._page_open_times[url] == 2:
+      chart_prefix += '_2nd'
+    else:
+      chart_prefix += '_later'
+    self._speed_index.AddResults(tab, results, chart_prefix)
+
 @benchmark.Disabled
 class ServiceWorkerPerfTest(benchmark.Benchmark):
+  """Performance test on pages controlled by ServiceWorker"""
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet

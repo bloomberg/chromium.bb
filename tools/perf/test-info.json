@@ -176,6 +176,12 @@
       "chrome/src/tools/perf/benchmark/scirra.py"
     ]
   },
+  "service_worker.service_worker":{
+    "description":"This test measures the performance of pages using ServiceWorker. As a page set, two benchamrk page(many registration, many concurrent fetching) and one application (Trained-to-thrill: https://jakearchibald.github.io/trained-to-thrill/) are included. Execution time of these pages will be shown as Speed Index, and TRACE_EVENTs are subsidiary information to know more detail performance regression.",
+    "code":[
+      "chrome/src/tools/perf/benchmarks/service_worker.py"
+    ]
+  },
   "sizes":{
     "description":"Tracks binary sizes and number of static initializers.",
     "code":[
