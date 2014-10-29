@@ -6480,21 +6480,22 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     if (attrib_info &&
         attrib->CanAccess(max_accessed) &&
         attrib->type() == GL_FIXED) {
-      int num_elements = attrib->size() * kSizeOfFloat;
-      int size = num_elements * num_vertices;
-      scoped_ptr<float[]> data(new float[size]);
+      int num_elements = attrib->size() * num_vertices;
+      const int src_size = num_elements * sizeof(int32);
+      const int dst_size = num_elements * sizeof(float);
+      scoped_ptr<float[]> data(new float[num_elements]);
       const int32* src = reinterpret_cast<const int32 *>(
-          attrib->buffer()->GetRange(attrib->offset(), size));
+          attrib->buffer()->GetRange(attrib->offset(), src_size));
       const int32* end = src + num_elements;
       float* dst = data.get();
       while (src != end) {
         *dst++ = static_cast<float>(*src++) / 65536.0f;
       }
-      glBufferSubData(GL_ARRAY_BUFFER, offset, size, data.get());
+      glBufferSubData(GL_ARRAY_BUFFER, offset, dst_size, data.get());
       glVertexAttribPointer(
           attrib->index(), attrib->size(), GL_FLOAT, false, 0,
           reinterpret_cast<GLvoid*>(offset));
-      offset += size;
+      offset += dst_size;
     }
   }
   *simulated = true;
