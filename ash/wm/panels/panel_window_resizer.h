@@ -21,7 +21,7 @@ namespace ash {
 // launcher.
 class ASH_EXPORT PanelWindowResizer : public WindowResizer {
  public:
-  virtual ~PanelWindowResizer();
+  ~PanelWindowResizer() override;
 
   // Creates a new PanelWindowResizer. The caller takes ownership of the
   // returned object. The ownership of |next_window_resizer| is taken by the
@@ -30,9 +30,9 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
                                     wm::WindowState* window_state);
 
   // WindowResizer:
-  virtual void Drag(const gfx::Point& location, int event_flags) override;
-  virtual void CompleteDrag() override;
-  virtual void RevertDrag() override;
+  void Drag(const gfx::Point& location, int event_flags) override;
+  void CompleteDrag() override;
+  void RevertDrag() override;
 
  private:
   // Creates PanelWindowResizer that adds the ability to attach / detach panel

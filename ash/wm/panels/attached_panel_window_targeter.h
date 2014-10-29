@@ -22,11 +22,11 @@ class AttachedPanelWindowTargeter : public ::wm::EasyResizeWindowTargeter,
                               const gfx::Insets& default_mouse_extend,
                               const gfx::Insets& default_touch_extend,
                               PanelLayoutManager* panel_layout_manager);
-  virtual ~AttachedPanelWindowTargeter();
+  ~AttachedPanelWindowTargeter() override;
 
   // ShellObserver:
-  virtual void OnShelfCreatedForRootWindow(aura::Window* root_window) override;
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfCreatedForRootWindow(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
  private:
   void UpdateTouchExtend(aura::Window* root_window);

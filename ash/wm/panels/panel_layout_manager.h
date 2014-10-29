@@ -62,7 +62,7 @@ class ASH_EXPORT PanelLayoutManager
       public ShelfLayoutManagerObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
-  virtual ~PanelLayoutManager();
+  ~PanelLayoutManager() override;
 
   // Call Shutdown() before deleting children of panel_container.
   void Shutdown();
@@ -82,41 +82,39 @@ class ASH_EXPORT PanelLayoutManager
   void SetShelf(Shelf* shelf);
 
   // Overridden from aura::LayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void OnWindowAddedToLayout(aura::Window* child) override;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) override;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void OnWindowAddedToLayout(aura::Window* child) override;
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
+  void OnWindowRemovedFromLayout(aura::Window* child) override;
+  void OnChildWindowVisibilityChanged(aura::Window* child,
+                                      bool visibile) override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
   // Overridden from ShelfIconObserver
-  virtual void OnShelfIconPositionsChanged() override;
+  void OnShelfIconPositionsChanged() override;
 
   // Overridden from ShellObserver
-  virtual void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // Overridden from aura::WindowObserver
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // Overridden from ash::wm::WindowStateObserver
-  virtual void OnPostWindowStateTypeChange(
-      wm::WindowState* window_state,
-      wm::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   wm::WindowStateType old_type) override;
 
   // Overridden from aura::client::ActivationChangeObserver
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from DisplayController::Observer
-  virtual void OnDisplayConfigurationChanged() override;
+  void OnDisplayConfigurationChanged() override;
 
   // Overridden from ShelfLayoutManagerObserver
-  virtual void WillChangeVisibilityState(
-      ShelfVisibilityState new_state) override;
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
 
  private:
   friend class PanelLayoutManagerTest;
@@ -164,8 +162,7 @@ class ASH_EXPORT PanelLayoutManager
   void UpdateCallouts();
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(
-      const gfx::Rect& keyboard_bounds) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;

@@ -63,7 +63,7 @@ class CalloutWidgetBackground : public views::Background {
   CalloutWidgetBackground() : alignment_(SHELF_ALIGNMENT_BOTTOM) {
   }
 
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override {
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
     SkPath path;
     switch (alignment_) {
       case SHELF_ALIGNMENT_BOTTOM:
