@@ -152,7 +152,7 @@ class SystemTrayTest : public AshTestBase {
   ~SystemTrayTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();
   }

@@ -78,7 +78,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 }
 
 bool IsDraggingTrayEnabled() {
-  static bool dragging_tray_allowed = CommandLine::ForCurrentProcess()->
+  static bool dragging_tray_allowed = base::CommandLine::ForCurrentProcess()->
       HasSwitch(ash::switches::kAshEnableTrayDragging);
   return dragging_tray_allowed;
 }

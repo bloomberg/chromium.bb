@@ -422,7 +422,7 @@ void RootWindowController::UpdateAfterLoginStatusChange(
 
 void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
 #if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshAnimateFromBootSplashScreen) &&
       boot_splash_screen_.get()) {
     // Make the splash screen fade out so it doesn't obscure the desktop
@@ -722,7 +722,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
   }
 
 #if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode)) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
@@ -800,7 +800,7 @@ void RootWindowController::InitLayoutManagers() {
 }
 
 void RootWindowController::InitTouchHuds() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
     set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
   if (Shell::GetInstance()->is_touch_hud_projection_enabled())
@@ -821,9 +821,9 @@ void RootWindowController::CreateSystemBackground(
   // Make a copy of the system's boot splash screen so we can composite it
   // onscreen until the desktop background is ready.
   if (is_first_run_after_boot &&
-      (CommandLine::ForCurrentProcess()->HasSwitch(
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshCopyHostBackgroundAtBoot) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshAnimateFromBootSplashScreen)))
     boot_splash_screen_.reset(new BootSplashScreen(GetHost()));
 #endif
@@ -945,7 +945,7 @@ void RootWindowController::CreateContainersInRootWindow(
       "LockScreenContainer",
       lock_screen_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(lock_container);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableLockLayoutManager)) {
     lock_container->SetLayoutManager(
             new WorkspaceLayoutManager(lock_container));

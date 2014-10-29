@@ -44,7 +44,7 @@ AppListControllerTest::~AppListControllerTest() {
 void AppListControllerTest::SetUp() {
   AshTestBase::SetUp();
   if (IsCentered()) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(app_list::switches::kEnableCenteredAppList);
   }
 }

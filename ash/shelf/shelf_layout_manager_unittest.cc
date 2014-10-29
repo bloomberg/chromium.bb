@@ -366,7 +366,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
 
   // Overridden from AshTestBase:
   virtual void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableTrayDragging);
     test::AshTestBase::SetUp();
   }

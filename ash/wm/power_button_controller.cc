@@ -27,9 +27,9 @@ PowerButtonController::PowerButtonController(
       brightness_is_zero_(false),
       internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
-      enable_quick_lock_(CommandLine::ForCurrentProcess()->HasSwitch(
+      enable_quick_lock_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnablePowerButtonQuickLock)),
       controller_(controller) {
 #if defined(OS_CHROMEOS)

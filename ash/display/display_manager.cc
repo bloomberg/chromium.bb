@@ -106,7 +106,7 @@ gfx::Display& GetInvalidDisplay() {
 }
 
 void MaybeInitInternalDisplay(int64 id) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
     gfx::Display::SetInternalDisplayId(id);
 }
@@ -241,7 +241,7 @@ float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
 
 bool DisplayManager::InitFromCommandLine() {
   DisplayInfoList info_list;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshHostWindowBounds))
     return false;
   const string size_str =

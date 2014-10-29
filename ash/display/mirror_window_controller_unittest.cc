@@ -34,9 +34,9 @@ class MirrorOnBootTest : public test::AshTestBase {
   ~MirrorOnBootTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshHostWindowBounds, "1+1-300x300,1+301-300x300");
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableSoftwareMirroring);
     test::AshTestBase::SetUp();
   }

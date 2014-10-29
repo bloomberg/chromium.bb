@@ -114,7 +114,7 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop))
     return new AshRemoteWindowTreeHostWin(init_params.remote_hwnd);
 

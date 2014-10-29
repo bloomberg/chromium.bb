@@ -95,7 +95,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
   ~WebNotificationTrayTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     test::AshTestBase::SetUp();
   }

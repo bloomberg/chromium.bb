@@ -19,7 +19,8 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 

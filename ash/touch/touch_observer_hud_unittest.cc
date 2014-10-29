@@ -217,7 +217,7 @@ class TouchHudDebugTest : public TouchHudTestBase {
   void SetUp() override {
     // Add ash-touch-hud flag to enable debug touch HUD. This flag should be set
     // before Ash environment is set up, i.e., before TouchHudTestBase::SetUp().
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshTouchHud);
 
     TouchHudTestBase::SetUp();

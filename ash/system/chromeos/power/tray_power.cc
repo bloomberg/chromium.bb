@@ -236,7 +236,7 @@ void TrayPower::OnPowerStatusChanged() {
     notification_view_->UpdateStatus();
 
   // Factory testing may place the battery into unusual states.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshHideNotificationsForFactory))
     return;
 

@@ -83,7 +83,7 @@ void TrayRotationLockTest::SetUp() {
   // The Display used for testing is not an internal display. This flag
   // allows for DisplayManager to treat it as one. TrayRotationLock is only
   // visible on internal primary displays.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshUseFirstDisplayAsInternal);
   test::AshTestBase::SetUp();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());

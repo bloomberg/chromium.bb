@@ -746,7 +746,7 @@ AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
 
 #if defined(OS_CHROMEOS)
   static bool force_constrain_pointer_to_root =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshConstrainPointerToRoot);
   if (base::SysInfo::IsRunningOnChromeOS() || force_constrain_pointer_to_root)
     ash_host->ConfineCursorToRootWindow();

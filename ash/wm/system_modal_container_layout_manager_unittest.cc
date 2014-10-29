@@ -143,7 +143,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
  public:
   void SetUp() override {
     // Allow a virtual keyboard (and initialize it per default).
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(

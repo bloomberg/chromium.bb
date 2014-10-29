@@ -579,7 +579,7 @@ bool HandleToggleSpokenFeedback() {
 
 bool HandleToggleTouchViewTesting() {
   // TODO(skuhne): This is only temporary! Remove this!
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableTouchViewTesting)) {
     MaximizeModeController* controller = Shell::GetInstance()->
         maximize_mode_controller();

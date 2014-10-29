@@ -13,7 +13,7 @@
 namespace ash {
 
 DisplayLayoutStore::DisplayLayoutStore() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
     std::string value = command_line->GetSwitchValueASCII(
         switches::kAshSecondaryDisplayLayout);
@@ -37,7 +37,7 @@ DisplayLayoutStore::~DisplayLayoutStore() {
 }
 
 void DisplayLayoutStore::SetDefaultDisplayLayout(const DisplayLayout& layout) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout))
     default_display_layout_ = layout;
 }

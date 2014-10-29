@@ -296,7 +296,7 @@ class ShelfViewTest : public AshTestBase {
   virtual ~ShelfViewTest() {}
 
   virtual void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     AshTestBase::SetUp();
     test::ShellTestApi test_api(Shell::GetInstance());

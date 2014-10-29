@@ -19,7 +19,7 @@ bool magnifier_key_scroller_enabled = false;
 bool MagnifierKeyScroller::IsEnabled() {
   bool has_switch = false;
 #if defined(OS_CHROMEOS)
-  has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
+  has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableMagnifierKeyScroller);
 #endif
 

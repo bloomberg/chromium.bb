@@ -94,7 +94,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
 }
 
 bool AshTouchExplorationManager::VolumeAdjustSoundEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableVolumeAdjustSound);
 }
 

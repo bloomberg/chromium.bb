@@ -857,7 +857,7 @@ TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
   scoped_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
@@ -918,7 +918,7 @@ TEST_F(DragDropControllerTest, TouchDragDropInMultipleWindows) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
@@ -944,7 +944,7 @@ TEST_F(DragDropControllerTest, TouchDragDropCancelsOnLongTap) {
 }
 
 TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;

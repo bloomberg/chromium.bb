@@ -117,7 +117,7 @@ void AshTestBase::SetUp() {
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kAshHostWindowBounds)) {
     command_line->AppendSwitchASCII(
         switches::kAshHostWindowBounds, "1+1-800x600");
@@ -165,7 +165,7 @@ void AshTestBase::TearDown() {
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
     // Check that our viewer connection is still established.
     CHECK(!metro_viewer_host_->closed_unexpectedly());

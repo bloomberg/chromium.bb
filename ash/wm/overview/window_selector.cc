@@ -471,7 +471,7 @@ void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,
                                      const base::string16& new_contents) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshDisableTextFilteringInOverviewMode)) {
     return;
   }

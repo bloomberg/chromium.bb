@@ -167,7 +167,7 @@ bool MaximizeModeController::CanEnterMaximizeMode() {
   // The --enable-touch-view-testing switch can also mean that we may enter
   // maximize mode.
   return have_seen_accelerometer_data_ ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kAshEnableTouchViewTesting);
 }
 
@@ -309,7 +309,7 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   if (lid_open_past_180_ && is_angle_stable &&
       lid_angle <= kExitMaximizeModeAngle) {
     lid_open_past_180_ = false;
-    if (!CommandLine::ForCurrentProcess()->
+    if (!base::CommandLine::ForCurrentProcess()->
             HasSwitch(switches::kAshEnableTouchViewTesting)) {
       LeaveMaximizeMode();
     }
@@ -318,7 +318,7 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
              lid_angle >= kEnterMaximizeModeAngle &&
              (is_angle_stable || !WasLidOpenedRecently())) {
     lid_open_past_180_ = true;
-    if (!CommandLine::ForCurrentProcess()->
+    if (!base::CommandLine::ForCurrentProcess()->
             HasSwitch(switches::kAshEnableTouchViewTesting)) {
       EnterMaximizeMode();
     }

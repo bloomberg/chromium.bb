@@ -135,7 +135,7 @@ void PrintUIHierarchies() {
 }
 
 bool DebugAcceleratorsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshDebugShortcuts);
 }
 

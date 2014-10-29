@@ -37,7 +37,7 @@ void AuraShellTestSuite::Initialize() {
   // Although Ash officially is only supported for users on Win7+, we still run
   // ash_unittests on Vista builders, so we still need to initialize COM.
   if (version >= base::win::VERSION_VISTA &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();

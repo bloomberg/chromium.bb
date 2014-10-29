@@ -18,7 +18,7 @@ bool PlaySystemSoundAlways(media::SoundsManager::SoundKey key) {
 }
 
 bool PlaySystemSoundIfSpokenFeedback(SoundsManager::SoundKey key) {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kAshEnableSystemSounds))
     return SoundsManager::Get()->Play(key);
 

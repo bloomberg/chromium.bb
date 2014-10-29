@@ -186,7 +186,7 @@ void WindowGrid::PositionWindows(bool animate) {
 
   // If the text filtering feature is enabled, reserve space at the top for the
   // text filtering textbox to appear.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTextFilteringInOverviewMode)) {
     total_bounds.Inset(
         0,

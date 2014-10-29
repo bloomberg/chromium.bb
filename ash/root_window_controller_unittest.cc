@@ -612,7 +612,7 @@ class VirtualKeyboardRootWindowControllerTest
   ~VirtualKeyboardRootWindowControllerTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     Shell::GetPrimaryRootWindowController()->ActivateKeyboard(

@@ -622,7 +622,7 @@ class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
   ~MaximizeModeControllerSwitchesTest() override {}
 
   void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTouchViewTesting);
     MaximizeModeControllerTest::SetUp();
   }
