@@ -41,30 +41,17 @@ def path_to_source_root():
   return candidate
 
 
-def guess_configuration():
-  """Default to the configuration with either a newer build.ninja or a newer
-  protoc."""
-  root = os.path.join(path_to_source_root(), 'out')
-  def is_release_15s_newer(test_path):
-    try:
-      debug_mtime = os.path.getmtime(os.path.join(root, 'Debug', test_path))
-    except os.error:
-      debug_mtime = 0
-    try:
-      rel_mtime = os.path.getmtime(os.path.join(root, 'Release',  test_path))
-    except os.error:
-      rel_mtime = 0
-    return rel_mtime - debug_mtime >= 15
-  configuration = 'Debug'
-  if is_release_15s_newer('build.ninja') or is_release_15s_newer('protoc'):
-    configuration = 'Release'
-  return configuration
+def path_to_build_dir(configuration):
+  """Returns <chrome_root>/<output_dir>/(Release|Debug)."""
 
+  chrome_root = path_to_source_root()
+  sys.path.append(os.path.join(chrome_root, 'tools', 'vim'))
+  from ninja_output import GetNinjaOutputDirectory
+  return GetNinjaOutputDirectory(chrome_root, configuration)
 
 def compute_ninja_command_for_current_buffer(configuration=None):
   """Returns the shell command to compile the file in the current buffer."""
-  if not configuration: configuration = guess_configuration()
-  build_dir = os.path.join(path_to_source_root(), 'out', configuration)
+  build_dir = path_to_build_dir(configuration)
 
   # ninja needs filepaths for the ^ syntax to be relative to the
   # build directory.
@@ -79,9 +66,8 @@ def compute_ninja_command_for_current_buffer(configuration=None):
 
 
 def compute_ninja_command_for_targets(targets='', configuration=None):
-  if not configuration: configuration = guess_configuration()
-  build_dir = os.path.join(path_to_source_root(), 'out', configuration)
-  build_cmd = ' '.join(['ninja', '-C', build_dir, targets])
+  build_cmd = ' '.join(['ninja', '-C', path_to_build_dir(configuration),
+                        targets])
   vim.command('return "%s"' % build_cmd)
 endpython
 

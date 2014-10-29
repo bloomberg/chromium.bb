@@ -40,6 +40,7 @@
 import os
 import os.path
 import subprocess
+import sys
 
 
 # Flags from YCM's default config.
@@ -75,40 +76,6 @@ def FindChromeSrcFromFilename(filename):
       return None
     curdir = nextdir
   return os.path.join(curdir, 'src')
-
-
-# Largely copied from ninja-build.vim (guess_configuration)
-def GetNinjaOutputDirectory(chrome_root):
-  """Returns <chrome_root>/<output_dir>/(Release|Debug).
-
-  The configuration chosen is the one most recently generated/built. Detects
-  a custom output_dir specified by GYP_GENERATOR_FLAGS."""
-
-  output_dir = 'out'
-  generator_flags = os.getenv('GYP_GENERATOR_FLAGS', '').split(' ')
-  for flag in generator_flags:
-    name_value = flag.split('=', 1)
-    if len(name_value) == 2 and name_value[0] == 'output_dir':
-      output_dir = name_value[1]
-
-  root = os.path.join(chrome_root, output_dir)
-  debug_path = os.path.join(root, 'Debug')
-  release_path = os.path.join(root, 'Release')
-
-  def is_release_15s_newer(test_path):
-    try:
-      debug_mtime = os.path.getmtime(os.path.join(debug_path, test_path))
-    except os.error:
-      debug_mtime = 0
-    try:
-      rel_mtime = os.path.getmtime(os.path.join(release_path, test_path))
-    except os.error:
-      rel_mtime = 0
-    return rel_mtime - debug_mtime >= 15
-
-  if is_release_15s_newer('build.ninja') or is_release_15s_newer('protoc'):
-    return release_path
-  return debug_path
 
 
 def GetClangCommandFromNinjaForFilename(chrome_root, filename):
@@ -166,6 +133,8 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         # try to use the default flags.
         return chrome_flags
 
+  sys.path.append(os.path.join(chrome_root, 'tools', 'vim'))
+  from ninja_output import GetNinjaOutputDirectory
   out_dir = os.path.realpath(GetNinjaOutputDirectory(chrome_root))
 
   # Ninja needs the path to the source file relative to the output build
