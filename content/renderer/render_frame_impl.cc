@@ -3414,13 +3414,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
       // Reset the zoom levels for plugins.
       render_view_->webview()->setZoomLevel(0);
     } else {
-      if (host_zoom != render_view_->host_zoom_levels_.end()) {
+      // If the zoom level is not found, then do nothing. In-page navigation
+      // relies on not changing the zoom level in this case.
+      if (host_zoom != render_view_->host_zoom_levels_.end())
         render_view_->webview()->setZoomLevel(host_zoom->second);
-      } else {
-        // If the url was not found, we need to reset in case we are re-using
-        // an existing RenderViewImpl, e.g. to show a network error page.
-        render_view_->webview()->setZoomLevel(0);
-      }
     }
 
     if (host_zoom != render_view_->host_zoom_levels_.end()) {
