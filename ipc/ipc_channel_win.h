@@ -61,7 +61,7 @@ class ChannelWin : public Channel,
   // MessageLoop::IOHandler implementation.
   virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_transfered,
-                             DWORD error);
+                             DWORD error) override;
 
  private:
   struct State {

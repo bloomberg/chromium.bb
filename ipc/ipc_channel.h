@@ -173,11 +173,12 @@ class IPC_EXPORT Channel : public Sender {
   // Get its own process id. This value is told to the peer.
   virtual base::ProcessId GetSelfPID() const = 0;
 
+  // Overridden from ipc::Sender.
   // Send a message over the Channel to the listener on the other end.
   //
   // |message| must be allocated using operator new.  This object will be
   // deleted once the contents of the Message have been sent.
-  virtual bool Send(Message* message) = 0;
+  virtual bool Send(Message* message) override = 0;
 
   // NaCl in Non-SFI mode runs on Linux directly, and the following functions
   // compiled on Linux are also needed. Please see also comments in
