@@ -2780,15 +2780,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.directoryModel_.dispose();
     if (this.volumeManager_)
       this.volumeManager_.dispose();
-    for (var i = 0;
-         i < this.fileTransferController_.pendingTaskIds.length;
-         i++) {
-      var taskId = this.fileTransferController_.pendingTaskIds[i];
-      var item =
-          this.backgroundPage_.background.progressCenter.getItemById(taskId);
-      item.message = '';
-      item.state = ProgressItemState.CANCELED;
-      this.backgroundPage_.background.progressCenter.updateItem(item);
+    if (this.fileTransferController_) {
+      for (var i = 0;
+           i < this.fileTransferController_.pendingTaskIds.length;
+           i++) {
+        var taskId = this.fileTransferController_.pendingTaskIds[i];
+        var item =
+            this.backgroundPage_.background.progressCenter.getItemById(taskId);
+        item.message = '';
+        item.state = ProgressItemState.CANCELED;
+        this.backgroundPage_.background.progressCenter.updateItem(item);
+      }
     }
     if (this.progressCenterPanel_) {
       this.backgroundPage_.background.progressCenter.removePanel(

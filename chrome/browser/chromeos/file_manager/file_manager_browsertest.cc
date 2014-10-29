@@ -1051,7 +1051,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_INCOGNITO,
                                     "openFileDialogOnDownloads"),
                       TestParameter(IN_INCOGNITO,
-                                    "openFileDialogOnDrive")));
+                                    "openFileDialogOnDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "unloadFileDialog")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)

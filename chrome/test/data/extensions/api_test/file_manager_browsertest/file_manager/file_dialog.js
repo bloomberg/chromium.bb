@@ -131,3 +131,17 @@ testcase.openFileDialogOnDownloads = function() {
 testcase.openFileDialogOnDrive = function() {
   testPromise(openFileDialog('drive', BASIC_DRIVE_ENTRY_SET));
 };
+
+testcase.unloadFileDialog = function() {
+  chrome.fileSystem.chooseEntry({type: 'openFile'}, function(entry) {});
+
+  testPromise(remoteCall.waitForWindow('dialog#').then(function(windowId) {
+    return remoteCall.callRemoteTestUtil('unload', windowId, []).
+        then(function() {
+          return remoteCall.callRemoteTestUtil('getErrorCount', windowId, []);
+        }).
+        then(function(num) {
+          chrome.test.assertEq(0, num);
+        });
+  }));
+};

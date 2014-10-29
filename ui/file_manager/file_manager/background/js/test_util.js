@@ -664,6 +664,14 @@ test.util.sync.runVisitDesktopMenu = function(contentWindow, profileId) {
 };
 
 /**
+ * Calls the unload handler for the window.
+ * @param {Window} contentWindow Window to be tested.
+ */
+test.util.sync.unload = function(contentWindow) {
+  contentWindow.fileManager.onUnload_();
+};
+
+/**
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {
