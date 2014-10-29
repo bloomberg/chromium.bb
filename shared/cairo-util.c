@@ -142,7 +142,7 @@ render_shadow(cairo_t *cr, cairo_surface_t *surface,
 {
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
-	int i, fx, fy, vmargin;
+	int i, fx, fy, shadow_height, shadow_width;
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -150,6 +150,14 @@ render_shadow(cairo_t *cr, cairo_surface_t *surface,
 	cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
 
 	for (i = 0; i < 4; i++) {
+		/* when fy is set, then we are working with lower corners,
+		 * when fx is set, then we are working with right corners
+		 *
+		 *  00 ------- 01
+		 *   |         |
+		 *   |         |
+		 *  10 ------- 11
+		 */
 		fx = i & 1;
 		fy = i >> 1;
 
@@ -158,63 +166,92 @@ render_shadow(cairo_t *cr, cairo_surface_t *surface,
 					    -y + fy * (128 - height));
 		cairo_pattern_set_matrix(pattern, &matrix);
 
-		if (fy)
-			vmargin = margin;
-		else
-			vmargin = top_margin;
+		shadow_width = margin;
+		shadow_height = fy ? margin : top_margin;
+
+		/* if the shadows together are greater than the surface, we need
+		 * to fix it - set the shadow size to the half of
+		 * the size of surface. Also handle the case when the size is
+		 * not divisible by 2. In that case we need one part of the
+		 * shadow to be one pixel greater. !fy or !fx, respectively,
+		 * will do the work.
+		 */
+		if (height < 2 * shadow_height)
+			shadow_height = (height + !fy) / 2;
+
+		if (width < 2 * shadow_width)
+			shadow_width = (width + !fx) / 2;
 
 		cairo_reset_clip(cr);
 		cairo_rectangle(cr,
-				x + fx * (width - margin),
-				y + fy * (height - vmargin),
-				margin, vmargin);
+				x + fx * (width - shadow_width),
+				y + fy * (height - shadow_height),
+				shadow_width, shadow_height);
 		cairo_clip (cr);
 		cairo_mask(cr, pattern);
 	}
 
-	/* Top stretch */
-	cairo_matrix_init_translate(&matrix, 60, 0);
-	cairo_matrix_scale(&matrix, 8.0 / width, 1);
-	cairo_matrix_translate(&matrix, -x - width / 2, -y);
-	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
 
-	cairo_reset_clip(cr);
-	cairo_rectangle(cr,
-			x + margin,
-			y,
-			width - 2 * margin, margin);
-	cairo_clip (cr);
-	cairo_mask(cr, pattern);
+	shadow_width = width - 2 * margin;
+	shadow_height = top_margin;
+	if (height < 2 * shadow_height)
+		shadow_height = height / 2;
 
-	/* Bottom stretch */
-	cairo_matrix_translate(&matrix, 0, -height + 128);
-	cairo_pattern_set_matrix(pattern, &matrix);
+	if (shadow_width > 0 && shadow_height) {
+		/* Top stretch */
+		cairo_matrix_init_translate(&matrix, 60, 0);
+		cairo_matrix_scale(&matrix, 8.0 / width, 1);
+		cairo_matrix_translate(&matrix, -x - width / 2, -y);
+		cairo_pattern_set_matrix(pattern, &matrix);
+		cairo_rectangle(cr, x + margin, y, shadow_width, shadow_height);
 
-	cairo_reset_clip(cr);
-	cairo_rectangle(cr, x + margin, y + height - margin,
-			width - 2 * margin, margin);
-	cairo_clip (cr);
-	cairo_mask(cr, pattern);
+		cairo_reset_clip(cr);
+		cairo_rectangle(cr,
+				x + margin, y,
+				shadow_width, shadow_height);
+		cairo_clip (cr);
+		cairo_mask(cr, pattern);
 
-	/* Left stretch */
-	cairo_matrix_init_translate(&matrix, 0, 60);
-	cairo_matrix_scale(&matrix, 1, 8.0 / height);
-	cairo_matrix_translate(&matrix, -x, -y - height / 2);
-	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_reset_clip(cr);
-	cairo_rectangle(cr, x, y + margin, margin, height - 2 * margin);
-	cairo_clip (cr);
-	cairo_mask(cr, pattern);
+		/* Bottom stretch */
+		cairo_matrix_translate(&matrix, 0, -height + 128);
+		cairo_pattern_set_matrix(pattern, &matrix);
 
-	/* Right stretch */
-	cairo_matrix_translate(&matrix, -width + 128, 0);
-	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_rectangle(cr, x + width - margin, y + margin,
-			margin, height - 2 * margin);
-	cairo_reset_clip(cr);
-	cairo_clip (cr);
-	cairo_mask(cr, pattern);
+		cairo_reset_clip(cr);
+		cairo_rectangle(cr, x + margin, y + height - margin,
+				shadow_width, margin);
+		cairo_clip (cr);
+		cairo_mask(cr, pattern);
+	}
+
+	shadow_width = margin;
+	if (width < 2 * shadow_width)
+		shadow_width = width / 2;
+
+	shadow_height = height - margin - top_margin;
+
+	/* if height is smaller than sum of margins,
+	 * then the shadow is already done by the corners */
+	if (shadow_height > 0 && shadow_width) {
+		/* Left stretch */
+		cairo_matrix_init_translate(&matrix, 0, 60);
+		cairo_matrix_scale(&matrix, 1, 8.0 / height);
+		cairo_matrix_translate(&matrix, -x, -y - height / 2);
+		cairo_pattern_set_matrix(pattern, &matrix);
+		cairo_reset_clip(cr);
+		cairo_rectangle(cr, x, y + top_margin,
+				shadow_width, shadow_height);
+		cairo_clip (cr);
+		cairo_mask(cr, pattern);
+
+		/* Right stretch */
+		cairo_matrix_translate(&matrix, -width + 128, 0);
+		cairo_pattern_set_matrix(pattern, &matrix);
+		cairo_rectangle(cr, x + width - shadow_width, y + top_margin,
+				shadow_width, shadow_height);
+		cairo_reset_clip(cr);
+		cairo_clip (cr);
+		cairo_mask(cr, pattern);
+	}
 
 	cairo_pattern_destroy(pattern);
 	cairo_reset_clip(cr);
