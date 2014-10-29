@@ -31,7 +31,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
   AutocompletePopupWidget() {}
-  virtual ~AutocompletePopupWidget() {}
+  ~AutocompletePopupWidget() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);

@@ -53,7 +53,7 @@ class OmniboxViewViews
                    bool popup_window_mode,
                    LocationBarView* location_bar,
                    const gfx::FontList& font_list);
-  virtual ~OmniboxViewViews();
+  ~OmniboxViewViews() override;
 
   // Initialize, create the underlying views, etc.
   void Init();
@@ -66,28 +66,27 @@ class OmniboxViewViews
 #endif
 
   // OmniboxView:
-  virtual void SaveStateToTab(content::WebContents* tab) override;
-  virtual void OnTabChanged(const content::WebContents* web_contents) override;
-  virtual void Update() override;
-  virtual void UpdatePlaceholderText() override;
-  virtual base::string16 GetText() const override;
-  virtual void SetUserText(const base::string16& text,
-                           const base::string16& display_text,
-                           bool update_popup) override;
-  virtual void SetForcedQuery() override;
-  virtual void GetSelectionBounds(
-      base::string16::size_type* start,
-      base::string16::size_type* end) const override;
-  virtual void SelectAll(bool reversed) override;
-  virtual void RevertAll() override;
-  virtual void SetFocus() override;
-  virtual int GetTextWidth() const override;
-  virtual bool IsImeComposing() const override;
+  void SaveStateToTab(content::WebContents* tab) override;
+  void OnTabChanged(const content::WebContents* web_contents) override;
+  void Update() override;
+  void UpdatePlaceholderText() override;
+  base::string16 GetText() const override;
+  void SetUserText(const base::string16& text,
+                   const base::string16& display_text,
+                   bool update_popup) override;
+  void SetForcedQuery() override;
+  void GetSelectionBounds(base::string16::size_type* start,
+                          base::string16::size_type* end) const override;
+  void SelectAll(bool reversed) override;
+  void RevertAll() override;
+  void SetFocus() override;
+  int GetTextWidth() const override;
+  bool IsImeComposing() const override;
 
   // views::Textfield:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  gfx::Size GetMinimumSize() const override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
@@ -116,54 +115,52 @@ class OmniboxViewViews
   void AccessibilitySetValue(const base::string16& new_value);
 
   // OmniboxView:
-  virtual void SetWindowTextAndCaretPos(const base::string16& text,
-                                        size_t caret_pos,
-                                        bool update_popup,
-                                        bool notify_text_changed) override;
-  virtual bool IsSelectAll() const override;
-  virtual bool DeleteAtEndPressed() override;
-  virtual void UpdatePopup() override;
-  virtual void ApplyCaretVisibility() override;
-  virtual void OnTemporaryTextMaybeChanged(
-      const base::string16& display_text,
-      bool save_original_selection,
-      bool notify_text_changed) override;
-  virtual bool OnInlineAutocompleteTextMaybeChanged(
-      const base::string16& display_text, size_t user_text_length) override;
-  virtual void OnInlineAutocompleteTextCleared() override;
-  virtual void OnRevertTemporaryText() override;
-  virtual void OnBeforePossibleChange() override;
-  virtual bool OnAfterPossibleChange() override;
-  virtual gfx::NativeView GetNativeView() const override;
-  virtual gfx::NativeView GetRelativeWindowForPopup() const override;
-  virtual void SetGrayTextAutocompletion(const base::string16& input) override;
-  virtual base::string16 GetGrayTextAutocompletion() const override;
-  virtual int GetWidth() const override;
-  virtual bool IsImeShowingPopup() const override;
-  virtual void ShowImeIfNeeded() override;
-  virtual void OnMatchOpened(const AutocompleteMatch& match,
-                             content::WebContents* web_contents) override;
-  virtual int GetOmniboxTextLength() const override;
-  virtual void EmphasizeURLComponents() override;
+  void SetWindowTextAndCaretPos(const base::string16& text,
+                                size_t caret_pos,
+                                bool update_popup,
+                                bool notify_text_changed) override;
+  bool IsSelectAll() const override;
+  bool DeleteAtEndPressed() override;
+  void UpdatePopup() override;
+  void ApplyCaretVisibility() override;
+  void OnTemporaryTextMaybeChanged(const base::string16& display_text,
+                                   bool save_original_selection,
+                                   bool notify_text_changed) override;
+  bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
+                                            size_t user_text_length) override;
+  void OnInlineAutocompleteTextCleared() override;
+  void OnRevertTemporaryText() override;
+  void OnBeforePossibleChange() override;
+  bool OnAfterPossibleChange() override;
+  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetRelativeWindowForPopup() const override;
+  void SetGrayTextAutocompletion(const base::string16& input) override;
+  base::string16 GetGrayTextAutocompletion() const override;
+  int GetWidth() const override;
+  bool IsImeShowingPopup() const override;
+  void ShowImeIfNeeded() override;
+  void OnMatchOpened(const AutocompleteMatch& match,
+                     content::WebContents* web_contents) override;
+  int GetOmniboxTextLength() const override;
+  void EmphasizeURLComponents() override;
 
   // views::Textfield:
-  virtual bool OnKeyReleased(const ui::KeyEvent& event) override;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const override;
-  virtual base::string16 GetLabelForCommandId(int command_id) const override;
-  virtual const char* GetClassName() const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
-  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  virtual bool SkipDefaultKeyEventProcessing(
-      const ui::KeyEvent& event) override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual base::string16 GetSelectionClipboardText() const override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  const char* GetClassName() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  base::string16 GetSelectionClipboardText() const override;
 
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
@@ -174,20 +171,20 @@ class OmniboxViewViews
 #endif
 
   // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const base::string16& new_contents) override;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const ui::KeyEvent& key_event) override;
-  virtual void OnBeforeUserAction(views::Textfield* sender) override;
-  virtual void OnAfterUserAction(views::Textfield* sender) override;
-  virtual void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) override;
-  virtual void OnWriteDragData(ui::OSExchangeData* data) override;
-  virtual void OnGetDragOperationsForTextfield(int* drag_operations) override;
-  virtual void AppendDropFormats(
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+  void OnBeforeUserAction(views::Textfield* sender) override;
+  void OnAfterUserAction(views::Textfield* sender) override;
+  void OnAfterCutOrCopy(ui::ClipboardType clipboard_type) override;
+  void OnWriteDragData(ui::OSExchangeData* data) override;
+  void OnGetDragOperationsForTextfield(int* drag_operations) override;
+  void AppendDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) override;
-  virtual int OnDrop(const ui::OSExchangeData& data) override;
-  virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
+  int OnDrop(const ui::OSExchangeData& data) override;
+  void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

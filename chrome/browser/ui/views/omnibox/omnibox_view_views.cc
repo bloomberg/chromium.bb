@@ -74,7 +74,7 @@ struct OmniboxState : public base::SupportsUserData::Data {
   OmniboxState(const OmniboxEditModel::State& model_state,
                const gfx::Range& selection,
                const gfx::Range& saved_selection_for_focus_change);
-  virtual ~OmniboxState();
+  ~OmniboxState() override;
 
   const OmniboxEditModel::State model_state;
 

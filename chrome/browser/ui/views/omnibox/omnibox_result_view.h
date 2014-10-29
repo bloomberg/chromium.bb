@@ -50,7 +50,7 @@ class OmniboxResultView : public views::View,
                     int model_index,
                     LocationBarView* location_bar_view,
                     const gfx::FontList& font_list);
-  virtual ~OmniboxResultView();
+  ~OmniboxResultView() override;
 
   SkColor GetColor(ResultViewState state, ColorKind kind) const;
 
@@ -64,7 +64,7 @@ class OmniboxResultView : public views::View,
   void Invalidate();
 
   // views::View:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   ResultViewState GetState() const;
 
@@ -134,12 +134,12 @@ class OmniboxResultView : public views::View,
   void InitContentsRenderTextIfNecessary() const;
 
   // views::View:
-  virtual void Layout() override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Returns the offset at which the contents of the |match| should be displayed
   // within the text bounds. The directionality of UI and match contents is used

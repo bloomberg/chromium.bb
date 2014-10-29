@@ -41,30 +41,29 @@ class OmniboxPopupContentsView : public views::View,
   virtual void LayoutChildren();
 
   // Overridden from OmniboxPopupView:
-  virtual bool IsOpen() const override;
-  virtual void InvalidateLine(size_t line) override;
-  virtual void UpdatePopupAppearance() override;
-  virtual gfx::Rect GetTargetBounds() override;
-  virtual void PaintUpdatesNow() override;
-  virtual void OnDragCanceled() override;
+  bool IsOpen() const override;
+  void InvalidateLine(size_t line) override;
+  void UpdatePopupAppearance() override;
+  gfx::Rect GetTargetBounds() override;
+  void PaintUpdatesNow() override;
+  void OnDragCanceled() override;
 
   // Overridden from gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Overridden from views::View:
-  virtual void Layout() override;
-  virtual views::View* GetTooltipHandlerForPoint(
-      const gfx::Point& point) override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnMouseCaptureLost() override;
-  virtual void OnMouseMoved(const ui::MouseEvent& event) override;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  void Layout() override;
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool IsSelectedIndex(size_t index) const;
   bool IsHoveredIndex(size_t index) const;
@@ -80,7 +79,7 @@ class OmniboxPopupContentsView : public views::View,
                            OmniboxView* omnibox_view,
                            OmniboxEditModel* edit_model,
                            LocationBarView* location_bar_view);
-  virtual ~OmniboxPopupContentsView();
+  ~OmniboxPopupContentsView() override;
 
   LocationBarView* location_bar_view() { return location_bar_view_; }
 
@@ -92,13 +91,13 @@ class OmniboxPopupContentsView : public views::View,
                                               const gfx::FontList& font_list);
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   // This method should not be triggered directly as we paint our children
   // in an un-conventional way inside OnPaint. We use a separate canvas to
   // paint the children. Hence we override this method to a no-op so that
   // the view hierarchy does not "accidentally" trigger this.
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) override;
+  void PaintChildren(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) override;
 
   scoped_ptr<OmniboxPopupModel> model_;
 
@@ -106,8 +105,7 @@ class OmniboxPopupContentsView : public views::View,
   class AutocompletePopupWidget;
 
   // views::ViewTargeterDelegate:
-  virtual views::View* TargetForRect(views::View* root,
-                                     const gfx::Rect& rect) override;
+  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   // Call immediately after construction.
   void Init();
