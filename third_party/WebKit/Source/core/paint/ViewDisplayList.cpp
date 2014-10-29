@@ -63,10 +63,11 @@ ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsCo
         graphicsContext->save();
         graphicsContext->clip(snappedClipRect);
     } else {
-        m_clipDisplayItem = adoptPtr(new ClipDisplayItem);
+        m_clipDisplayItem = new ClipDisplayItem;
         m_clipDisplayItem->layer = renderLayer;
         m_clipDisplayItem->clipType = clipType;
         m_clipDisplayItem->clipRect = snappedClipRect;
+        m_renderLayer->renderer()->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
     }
 }
 

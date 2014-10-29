@@ -92,7 +92,7 @@ public:
     ~ClipRecorder();
 
 private:
-    OwnPtr<ClipDisplayItem> m_clipDisplayItem;
+    ClipDisplayItem* m_clipDisplayItem;
     GraphicsContext* m_graphicsContext;
     RenderLayer* m_renderLayer;
 };
