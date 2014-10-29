@@ -17,9 +17,7 @@ namespace test {
 
 class DragDropTrackerTest : public test::AshTestBase {
  public:
-  virtual void SetUp() override {
-    AshTestBase::SetUp();
-  }
+  void SetUp() override { AshTestBase::SetUp(); }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     static int window_id = 0;

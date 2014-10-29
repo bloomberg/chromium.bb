@@ -23,12 +23,10 @@ class CaptureWindowActivationDelegate
     : public aura::client::ActivationDelegate {
  public:
   CaptureWindowActivationDelegate() {}
-  virtual ~CaptureWindowActivationDelegate() {}
+  ~CaptureWindowActivationDelegate() override {}
 
   // aura::client::ActivationDelegate overrides:
-  virtual bool ShouldActivate() const override {
-    return false;
-  }
+  bool ShouldActivate() const override { return false; }
 
  private:
 

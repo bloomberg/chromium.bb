@@ -71,12 +71,11 @@ class DragTestView : public views::View {
 
  private:
   // View overrides:
-  virtual int GetDragOperations(const gfx::Point& press_pt) override {
+  int GetDragOperations(const gfx::Point& press_pt) override {
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  virtual void WriteDragData(const gfx::Point& p,
-                             OSExchangeData* data) override {
+  void WriteDragData(const gfx::Point& p, OSExchangeData* data) override {
     data->SetString(base::UTF8ToUTF16("I am being dragged"));
     gfx::ImageSkiaRep image_rep(gfx::Size(10, 20), 1.0f);
     gfx::ImageSkia image_skia(image_rep);
@@ -84,48 +83,40 @@ class DragTestView : public views::View {
     drag_utils::SetDragImageOnDataObject(image_skia, gfx::Vector2d(), data);
   }
 
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override {
-    return true;
-  }
+  bool OnMousePressed(const ui::MouseEvent& event) override { return true; }
 
-  virtual void OnGestureEvent(ui::GestureEvent* event) override {
+  void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_LONG_TAP)
       long_tap_received_ = true;
     return;
   }
 
-  virtual bool GetDropFormats(
+  bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
 
-  virtual bool CanDrop(const OSExchangeData& data) override {
-    return true;
-  }
+  bool CanDrop(const OSExchangeData& data) override { return true; }
 
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) override {
+  void OnDragEntered(const ui::DropTargetEvent& event) override {
     num_drag_enters_++;
   }
 
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override {
+  int OnDragUpdated(const ui::DropTargetEvent& event) override {
     num_drag_updates_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  virtual void OnDragExited() override {
-    num_drag_exits_++;
-  }
+  void OnDragExited() override { num_drag_exits_++; }
 
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event) override {
     num_drops_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  virtual void OnDragDone() override {
-    drag_done_received_ = true;
-  }
+  void OnDragDone() override { drag_done_received_ = true; }
 
   DISALLOW_COPY_AND_ASSIGN(DragTestView);
 };
@@ -159,44 +150,42 @@ class TestDragDropController : public DragDropController {
     drag_string_.clear();
   }
 
-  virtual int StartDragAndDrop(
-      const ui::OSExchangeData& data,
-      aura::Window* root_window,
-      aura::Window* source_window,
-      const gfx::Point& location,
-      int operation,
-      ui::DragDropTypes::DragEventSource source) override {
+  int StartDragAndDrop(const ui::OSExchangeData& data,
+                       aura::Window* root_window,
+                       aura::Window* source_window,
+                       const gfx::Point& location,
+                       int operation,
+                       ui::DragDropTypes::DragEventSource source) override {
     drag_start_received_ = true;
     data.GetString(&drag_string_);
     return DragDropController::StartDragAndDrop(
         data, root_window, source_window, location, operation, source);
   }
 
-  virtual void DragUpdate(aura::Window* target,
-                          const ui::LocatedEvent& event) override {
+  void DragUpdate(aura::Window* target,
+                  const ui::LocatedEvent& event) override {
     DragDropController::DragUpdate(target, event);
     num_drag_updates_++;
   }
 
-  virtual void Drop(aura::Window* target,
-                    const ui::LocatedEvent& event) override {
+  void Drop(aura::Window* target, const ui::LocatedEvent& event) override {
     DragDropController::Drop(target, event);
     drop_received_ = true;
   }
 
-  virtual void DragCancel() override {
+  void DragCancel() override {
     DragDropController::DragCancel();
     drag_canceled_ = true;
   }
 
-  virtual gfx::LinearAnimation* CreateCancelAnimation(
+  gfx::LinearAnimation* CreateCancelAnimation(
       int duration,
       int frame_rate,
       gfx::AnimationDelegate* delegate) override {
     return new CompletableLinearAnimation(duration, frame_rate, delegate);
   }
 
-  virtual void DoDragCancel(int animation_duration_ms) override {
+  void DoDragCancel(int animation_duration_ms) override {
     DragDropController::DoDragCancel(animation_duration_ms);
     drag_canceled_ = true;
   }
@@ -222,7 +211,7 @@ class TestNativeWidgetAura : public views::NativeWidgetAura {
     check_if_capture_lost_ = value;
   }
 
-  virtual void OnCaptureLost() override {
+  void OnCaptureLost() override {
     DCHECK(!check_if_capture_lost_);
     views::NativeWidgetAura::OnCaptureLost();
   }
@@ -290,9 +279,9 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
 class DragDropControllerTest : public AshTestBase {
  public:
   DragDropControllerTest() : AshTestBase() {}
-  virtual ~DragDropControllerTest() {}
+  ~DragDropControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
@@ -300,7 +289,7 @@ class DragDropControllerTest : public AshTestBase {
                                     drag_drop_controller_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(), NULL);
     drag_drop_controller_.reset();
     AshTestBase::TearDown();
@@ -970,7 +959,7 @@ namespace {
 
 class DragImageWindowObserver : public aura::WindowObserver {
  public:
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     window_location_on_destroying_ = window->GetBoundsInScreen().origin();
   }
 

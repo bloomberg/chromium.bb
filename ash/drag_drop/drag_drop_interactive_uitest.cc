@@ -25,14 +25,14 @@ namespace {
 class DraggableView : public views::View {
  public:
   DraggableView() {}
-  virtual ~DraggableView() {}
+  ~DraggableView() override {}
 
   // views::View overrides:
-  virtual int GetDragOperations(const gfx::Point& press_pt) override {
+  int GetDragOperations(const gfx::Point& press_pt) override {
     return ui::DragDropTypes::DRAG_MOVE;
   }
-  virtual void WriteDragData(const gfx::Point& press_pt,
-                             OSExchangeData* data)override {
+  void WriteDragData(const gfx::Point& press_pt,
+                     OSExchangeData* data) override {
     data->SetString(base::UTF8ToUTF16("test"));
   }
 
@@ -43,25 +43,21 @@ class DraggableView : public views::View {
 class TargetView : public views::View {
  public:
   TargetView() : dropped_(false) {}
-  virtual ~TargetView() {}
+  ~TargetView() override {}
 
   // views::View overrides:
-  virtual bool GetDropFormats(
+  bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
-  virtual bool AreDropTypesRequired() override {
-    return false;
-  }
-  virtual bool CanDrop(const OSExchangeData& data) override {
-    return true;
-  }
-  virtual int OnDragUpdated(const ui::DropTargetEvent& event) override {
+  bool AreDropTypesRequired() override { return false; }
+  bool CanDrop(const OSExchangeData& data) override { return true; }
+  int OnDragUpdated(const ui::DropTargetEvent& event) override {
     return ui::DragDropTypes::DRAG_MOVE;
   }
-  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event) override {
     dropped_ = true;
     return ui::DragDropTypes::DRAG_MOVE;
   }
@@ -124,9 +120,9 @@ void DragDropAcrossMultiDisplay_Step1() {
 class DragDropTest : public test::AshTestBase {
  public:
   DragDropTest() {}
-  virtual ~DragDropTest() {}
+  ~DragDropTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
 
     ui::RegisterPathProvider();

@@ -27,7 +27,7 @@ class DragImageView : public views::ImageView {
   // whether to show drag operation hint on top of the image.
   DragImageView(gfx::NativeView context,
                 ui::DragDropTypes::DragEventSource source);
-  virtual ~DragImageView();
+  ~DragImageView() override;
 
   // Sets the bounds of the native widget in screen
   // coordinates.
@@ -59,7 +59,7 @@ class DragImageView : public views::ImageView {
 
  private:
   // Overridden from views::ImageView.
-  virtual void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   scoped_ptr<views::Widget> widget_;
   gfx::Size widget_size_;
