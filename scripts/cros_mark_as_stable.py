@@ -17,6 +17,8 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 
+# Commit message subject for uprevving Portage packages.
+GIT_COMMIT_SUBJECT = 'Marking set of ebuilds as stable'
 
 # Commit message for uprevving Portage packages.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s as stable.'
@@ -162,7 +164,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   description = git.RunGit(cwd,
       ['log', '--format=format:%s%n%n%b', '%s..%s' % (
        push_branch, stable_branch)]).output
-  description = 'Marking set of ebuilds as stable\n\n%s' % description
+  description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
   cros_build_lib.Info('For %s, using description %s', cwd, description)
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
