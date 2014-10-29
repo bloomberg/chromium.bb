@@ -64,7 +64,7 @@ const char kValidPassphrase[] = "passphrase!";
 class TwoClientBookmarksSyncTest : public SyncTest {
  public:
   TwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientBookmarksSyncTest() {}
+  ~TwoClientBookmarksSyncTest() override {}
 
   void TearDownInProcessBrowserTestFixture() override {
     SyncTest::TearDownInProcessBrowserTestFixture();
@@ -82,7 +82,7 @@ class TwoClientBookmarksSyncTest : public SyncTest {
 class LegacyTwoClientBookmarksSyncTest : public SyncTest {
  public:
   LegacyTwoClientBookmarksSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
-  virtual ~LegacyTwoClientBookmarksSyncTest() {}
+  ~LegacyTwoClientBookmarksSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LegacyTwoClientBookmarksSyncTest);

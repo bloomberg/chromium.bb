@@ -23,7 +23,7 @@ using themes_helper::UsingSystemTheme;
 class TwoClientThemesSyncTest : public SyncTest {
  public:
   TwoClientThemesSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientThemesSyncTest() {}
+  ~TwoClientThemesSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

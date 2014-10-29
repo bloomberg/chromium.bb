@@ -62,7 +62,7 @@ class SyncUIModelWorkerTest : public testing::Test {
   SyncUIModelWorkerTest() : faux_syncer_thread_("FauxSyncerThread"),
                             faux_core_thread_("FauxCoreThread") { }
 
-  virtual void SetUp() {
+  void SetUp() override {
     faux_syncer_thread_.Start();
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &faux_ui_loop_));

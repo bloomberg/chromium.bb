@@ -21,7 +21,7 @@ using themes_helper::UsingSystemTheme;
 class SingleClientThemesSyncTest : public SyncTest {
  public:
   SingleClientThemesSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientThemesSyncTest() {}
+  ~SingleClientThemesSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientThemesSyncTest);

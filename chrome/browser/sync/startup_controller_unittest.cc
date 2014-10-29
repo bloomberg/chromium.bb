@@ -50,7 +50,7 @@ class StartupControllerTest : public testing::Test {
  public:
   StartupControllerTest() : started_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
@@ -69,7 +69,7 @@ class StartupControllerTest : public testing::Test {
         base::TimeDelta::FromSeconds(0));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_.reset();
     signin_.reset();
     token_service_->Shutdown();

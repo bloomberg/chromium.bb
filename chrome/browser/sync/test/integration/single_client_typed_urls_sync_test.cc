@@ -22,7 +22,7 @@ const std::string kSanityHistoryUrl = "http://www.sanity-history.google.com";
 class SingleClientTypedUrlsSyncTest : public SyncTest {
  public:
   SingleClientTypedUrlsSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientTypedUrlsSyncTest() {}
+  ~SingleClientTypedUrlsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientTypedUrlsSyncTest);

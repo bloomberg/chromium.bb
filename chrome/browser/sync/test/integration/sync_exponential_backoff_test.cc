@@ -21,7 +21,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class SyncExponentialBackoffTest : public SyncTest {
  public:
   SyncExponentialBackoffTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SyncExponentialBackoffTest() {}
+  ~SyncExponentialBackoffTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncExponentialBackoffTest);

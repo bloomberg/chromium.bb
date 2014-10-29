@@ -17,7 +17,7 @@ namespace {
 class EnableDisableSingleClientTest : public SyncTest {
  public:
   EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~EnableDisableSingleClientTest() {}
+  ~EnableDisableSingleClientTest() override {}
 
   // Don't use self-notifications as they can trigger additional sync cycles.
   bool TestUsesSelfNotifications() override { return false; }

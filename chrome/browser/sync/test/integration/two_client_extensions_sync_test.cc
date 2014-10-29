@@ -22,7 +22,7 @@ class TwoClientExtensionsSyncTest : public SyncTest {
  public:
   TwoClientExtensionsSyncTest() : SyncTest(TWO_CLIENT) {}
 
-  virtual ~TwoClientExtensionsSyncTest() {}
+  ~TwoClientExtensionsSyncTest() override {}
   bool TestUsesSelfNotifications() override { return false; }
 
  private:

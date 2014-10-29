@@ -33,7 +33,7 @@ static const char* kAnotherValidPassphrase = "Mot de passe!";
 class MultipleClientPasswordsSyncTest : public SyncTest {
  public:
   MultipleClientPasswordsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
-  virtual ~MultipleClientPasswordsSyncTest() {}
+  ~MultipleClientPasswordsSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

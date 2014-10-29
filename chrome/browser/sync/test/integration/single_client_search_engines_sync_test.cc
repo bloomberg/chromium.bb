@@ -13,7 +13,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class SingleClientSearchEnginesSyncTest : public SyncTest {
  public:
   SingleClientSearchEnginesSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientSearchEnginesSyncTest() {}
+  ~SingleClientSearchEnginesSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientSearchEnginesSyncTest);

@@ -20,9 +20,9 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
  public:
   ProfileSyncAuthProviderTest() {}
 
-  virtual ~ProfileSyncAuthProviderTest() {}
+  ~ProfileSyncAuthProviderTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);

@@ -30,7 +30,7 @@ class SingleClientAppListSyncTest : public SyncTest {
  public:
   SingleClientAppListSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
-  virtual ~SingleClientAppListSyncTest() {}
+  ~SingleClientAppListSyncTest() override {}
 
   // SyncTest
   void SetUpCommandLine(CommandLine* command_line) override {

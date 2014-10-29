@@ -173,9 +173,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
   ProfileSyncServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  virtual ~ProfileSyncServiceTest() {}
+  ~ProfileSyncServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSyncDeferredStartupTimeoutSeconds, "0");
 
@@ -196,7 +196,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         testing_facotries);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Kill the service before the profile.
     if (service_)
       service_->Shutdown();

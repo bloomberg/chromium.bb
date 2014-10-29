@@ -447,8 +447,7 @@ class ProfileSyncServiceAutofillTest
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
         debug_ptr_factory_(this) {
   }
-  virtual ~ProfileSyncServiceAutofillTest() {
-  }
+  ~ProfileSyncServiceAutofillTest() override {}
 
   AutofillProfileFactory profile_factory_;
   AutofillEntryFactory entry_factory_;
@@ -464,7 +463,7 @@ class ProfileSyncServiceAutofillTest
     }
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AbstractProfileSyncServiceTest::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
     TestingProfile::TestingFactories testing_factories;
@@ -510,7 +509,7 @@ class ProfileSyncServiceAutofillTest
         .WillRepeatedly(Return(true));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Note: The tear down order is important.
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
     web_data_service_->ShutdownOnUIThread();

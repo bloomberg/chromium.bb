@@ -56,9 +56,9 @@ KeyedService* BuildMockLoginUIService(content::BrowserContext* profile) {
 class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
  public:
   SyncGlobalErrorTest() {}
-  virtual ~SyncGlobalErrorTest() {}
+  ~SyncGlobalErrorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
 
     BrowserWithTestWindowTest::SetUp();

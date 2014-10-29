@@ -19,7 +19,7 @@ using sessions_helper::SyncedSessionVector;
 class MultipleClientSessionsSyncTest : public SyncTest {
  public:
   MultipleClientSessionsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
-  virtual ~MultipleClientSessionsSyncTest() {}
+  ~MultipleClientSessionsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientSessionsSyncTest);

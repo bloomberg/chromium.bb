@@ -12,7 +12,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class SingleClientDictionarySyncTest : public SyncTest {
  public:
   SingleClientDictionarySyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientDictionarySyncTest() {}
+  ~SingleClientDictionarySyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientDictionarySyncTest);

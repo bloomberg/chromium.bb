@@ -33,7 +33,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
  public:
   SyncSearchEngineDataTypeControllerTest() : test_util_(&profile_) { }
 
-  virtual void SetUp() {
+  void SetUp() override {
     service_.reset(new ProfileSyncServiceMock(&profile_));
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     // Feed the DTC the profile so it is reused later.
@@ -42,7 +42,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
         profile_sync_factory_.get(), &profile_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Must be done before we pump the loop.
     syncable_service_.StopSyncing(syncer::SEARCH_ENGINES);
     search_engine_dtc_ = NULL;

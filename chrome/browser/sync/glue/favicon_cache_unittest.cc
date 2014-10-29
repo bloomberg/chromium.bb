@@ -259,7 +259,7 @@ int GetFaviconId(const syncer::SyncChange change) {
 class SyncFaviconCacheTest : public testing::Test {
  public:
   SyncFaviconCacheTest();
-  virtual ~SyncFaviconCacheTest() {}
+  ~SyncFaviconCacheTest() override {}
 
   void SetUpInitialSync(const syncer::SyncDataList& initial_image_data,
                         const syncer::SyncDataList& initial_tracking_data);

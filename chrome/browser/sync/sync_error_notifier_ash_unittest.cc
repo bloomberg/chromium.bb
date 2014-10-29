@@ -64,23 +64,21 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
 class FakeLoginUIService: public LoginUIService {
  public:
   FakeLoginUIService() : LoginUIService(NULL) {}
-  virtual ~FakeLoginUIService() {}
+  ~FakeLoginUIService() override {}
 };
 
 class FakeLoginUI : public LoginUIService::LoginUI {
  public:
   FakeLoginUI() : focus_ui_call_count_(0) {}
 
-  virtual ~FakeLoginUI() {}
+  ~FakeLoginUI() override {}
 
   int focus_ui_call_count() const { return focus_ui_call_count_; }
 
  private:
   // LoginUIService::LoginUI:
-  virtual void FocusUI() override {
-    ++focus_ui_call_count_;
-  }
-  virtual void CloseUI() override {}
+  void FocusUI() override { ++focus_ui_call_count_; }
+  void CloseUI() override {}
 
   int focus_ui_call_count_;
 };
@@ -93,9 +91,9 @@ KeyedService* BuildMockLoginUIService(
 class SyncErrorNotifierTest : public AshTestBase  {
  public:
   SyncErrorNotifierTest() {}
-  virtual ~SyncErrorNotifierTest() {}
+  ~SyncErrorNotifierTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -127,7 +125,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     error_notifier_->Shutdown();
     service_.reset();
 #if defined(OS_WIN)

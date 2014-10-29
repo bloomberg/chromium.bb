@@ -72,9 +72,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
-    worker_ = new DatabaseModelWorker(NULL);
-  }
+  void SetUp() override { worker_ = new DatabaseModelWorker(NULL); }
 
   virtual void Teardown() {
     worker_ = NULL;

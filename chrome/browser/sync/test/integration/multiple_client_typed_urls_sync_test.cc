@@ -18,7 +18,7 @@ using typed_urls_helper::GetTypedUrlsFromClient;
 class MultipleClientTypedUrlsSyncTest : public SyncTest {
  public:
   MultipleClientTypedUrlsSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
-  virtual ~MultipleClientTypedUrlsSyncTest() {}
+  ~MultipleClientTypedUrlsSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

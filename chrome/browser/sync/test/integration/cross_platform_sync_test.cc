@@ -19,7 +19,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class CrossPlatformSyncTest : public SyncTest {
  public:
   CrossPlatformSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~CrossPlatformSyncTest() {}
+  ~CrossPlatformSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrossPlatformSyncTest);

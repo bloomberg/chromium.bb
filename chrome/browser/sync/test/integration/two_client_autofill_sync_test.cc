@@ -47,7 +47,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class TwoClientAutofillSyncTest : public SyncTest {
  public:
   TwoClientAutofillSyncTest() : SyncTest(TWO_CLIENT) { count = 0; }
-  virtual ~TwoClientAutofillSyncTest() {}
+  ~TwoClientAutofillSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

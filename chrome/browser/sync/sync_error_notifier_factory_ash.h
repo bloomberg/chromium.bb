@@ -27,10 +27,10 @@ class SyncErrorNotifierFactory : public BrowserContextKeyedServiceFactory {
   friend struct DefaultSingletonTraits<SyncErrorNotifierFactory>;
 
   SyncErrorNotifierFactory();
-  virtual ~SyncErrorNotifierFactory();
+  ~SyncErrorNotifierFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierFactory);

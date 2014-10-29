@@ -60,7 +60,7 @@ void MutateSomeSettings(
 class TwoClientExtensionSettingsAndAppSettingsSyncTest : public SyncTest {
  public:
   TwoClientExtensionSettingsAndAppSettingsSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientExtensionSettingsAndAppSettingsSyncTest() {}
+  ~TwoClientExtensionSettingsAndAppSettingsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionSettingsAndAppSettingsSyncTest);

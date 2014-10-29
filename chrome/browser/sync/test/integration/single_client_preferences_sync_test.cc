@@ -15,7 +15,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class SingleClientPreferencesSyncTest : public SyncTest {
  public:
   SingleClientPreferencesSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientPreferencesSyncTest() {}
+  ~SingleClientPreferencesSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientPreferencesSyncTest);

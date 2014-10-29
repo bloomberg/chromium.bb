@@ -97,7 +97,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     history_service_ = static_cast<HistoryMock*>(

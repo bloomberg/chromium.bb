@@ -12,7 +12,7 @@
 class DictionarySyncPerfTest : public SyncTest {
  public:
   DictionarySyncPerfTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~DictionarySyncPerfTest() {}
+  ~DictionarySyncPerfTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DictionarySyncPerfTest);

@@ -16,7 +16,7 @@ class SingleClientExtensionsSyncTest : public SyncTest {
  public:
   SingleClientExtensionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
-  virtual ~SingleClientExtensionsSyncTest() {}
+  ~SingleClientExtensionsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientExtensionsSyncTest);

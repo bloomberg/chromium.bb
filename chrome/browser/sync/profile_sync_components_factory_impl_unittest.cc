@@ -31,7 +31,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   ProfileSyncComponentsFactoryImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     base::FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
     command_line_.reset(new CommandLine(program_path));

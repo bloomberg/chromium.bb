@@ -83,7 +83,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     dtc_mock_ = new StrictMock<FrontendDataTypeControllerMock>();
     frontend_dtc_ =

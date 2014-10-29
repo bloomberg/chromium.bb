@@ -14,11 +14,9 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class TwoClientDictionarySyncTest : public SyncTest {
  public:
   TwoClientDictionarySyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientDictionarySyncTest() {}
+  ~TwoClientDictionarySyncTest() override {}
 
-  virtual bool TestUsesSelfNotifications() override {
-    return false;
-  }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientDictionarySyncTest);

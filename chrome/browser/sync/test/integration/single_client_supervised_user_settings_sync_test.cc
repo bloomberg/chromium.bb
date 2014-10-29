@@ -22,7 +22,7 @@ class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
  public:
   SingleClientSupervisedUserSettingsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
-  virtual ~SingleClientSupervisedUserSettingsSyncTest() {}
+  ~SingleClientSupervisedUserSettingsSyncTest() override {}
 
   // SyncTest overrides:
   void SetUpCommandLine(CommandLine* command_line) override {

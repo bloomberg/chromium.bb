@@ -31,7 +31,7 @@ using typed_urls_helper::RemoveVisitsFromClient;
 class TwoClientTypedUrlsSyncTest : public SyncTest {
  public:
   TwoClientTypedUrlsSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientTypedUrlsSyncTest() {}
+  ~TwoClientTypedUrlsSyncTest() override {}
 
   ::testing::AssertionResult CheckClientsEqual() {
     history::URLRows urls = GetTypedUrlsFromClient(0);

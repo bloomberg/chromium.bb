@@ -17,7 +17,7 @@ class SingleClientAppsSyncTest : public SyncTest {
  public:
   SingleClientAppsSyncTest() : SyncTest(SINGLE_CLIENT) {}
 
-  virtual ~SingleClientAppsSyncTest() {}
+  ~SingleClientAppsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientAppsSyncTest);

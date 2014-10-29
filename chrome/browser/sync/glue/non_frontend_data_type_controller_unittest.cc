@@ -111,7 +111,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
         model_associator_(NULL),
         change_processor_(NULL) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     db_thread_.Start();
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
 
@@ -124,7 +124,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
                                               dtc_mock_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (non_frontend_dtc_->state() !=
         NonFrontendDataTypeController::NOT_RUNNING) {
       non_frontend_dtc_->Stop();

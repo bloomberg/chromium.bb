@@ -104,10 +104,10 @@ namespace {
 class DictionaryMatchStatusChecker : public MultiClientStatusChangeChecker {
  public:
   DictionaryMatchStatusChecker();
-  virtual ~DictionaryMatchStatusChecker();
+  ~DictionaryMatchStatusChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
 };
 
 DictionaryMatchStatusChecker::DictionaryMatchStatusChecker()
@@ -129,10 +129,11 @@ class NumDictionaryEntriesStatusChecker
     : public SingleClientStatusChangeChecker {
  public:
   NumDictionaryEntriesStatusChecker(int index, size_t num_words);
-  virtual ~NumDictionaryEntriesStatusChecker();
+  ~NumDictionaryEntriesStatusChecker() override;
 
-  virtual bool IsExitConditionSatisfied() override;
-  virtual std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
  private:
   int index_;
   size_t num_words_;

@@ -14,9 +14,9 @@ using chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS;
 class MultipleClientDictionarySyncTest : public SyncTest {
  public:
   MultipleClientDictionarySyncTest() : SyncTest(MULTIPLE_CLIENT) {}
-  virtual ~MultipleClientDictionarySyncTest() {}
+  ~MultipleClientDictionarySyncTest() override {}
 
-  virtual bool TestUsesSelfNotifications() override { return false; }
+  bool TestUsesSelfNotifications() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultipleClientDictionarySyncTest);

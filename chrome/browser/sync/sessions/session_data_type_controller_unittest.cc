@@ -85,9 +85,9 @@ class SessionDataTypeControllerTest
         thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         weak_ptr_factory_(this),
         last_type_(syncer::UNSPECIFIED) {}
-  virtual ~SessionDataTypeControllerTest() {}
+  ~SessionDataTypeControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     synced_window_delegate_.reset(new MockSyncedWindowDelegate(&profile_));
     synced_window_getter_.reset(new MockSyncedWindowDelegatesGetter());
     synced_window_getter_->Add(synced_window_delegate_.get());
@@ -111,7 +111,7 @@ class SessionDataTypeControllerTest
     last_error_ = syncer::SyncError();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_ = NULL;
     local_device_.reset();
     synced_window_getter_.reset();

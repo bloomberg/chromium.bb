@@ -231,7 +231,7 @@ class SessionsSyncManagerTest
         "device_id"));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     browser_sync::NotificationServiceSessionsRouter* router(
         new browser_sync::NotificationServiceSessionsRouter(
@@ -240,7 +240,7 @@ class SessionsSyncManagerTest
       scoped_ptr<LocalSessionEventRouter>(router)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     test_processor_ = NULL;
     helper()->Reset();
     manager_.reset();

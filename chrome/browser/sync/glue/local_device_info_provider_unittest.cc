@@ -22,13 +22,11 @@ class LocalDeviceInfoProviderTest : public testing::Test {
  public:
   LocalDeviceInfoProviderTest()
     : called_back_(false) {}
-  virtual ~LocalDeviceInfoProviderTest() {}
+  ~LocalDeviceInfoProviderTest() override {}
 
-  virtual void SetUp() override {
-    provider_.reset(new LocalDeviceInfoProviderImpl());
-  }
+  void SetUp() override { provider_.reset(new LocalDeviceInfoProviderImpl()); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     provider_.reset();
     called_back_ = false;
   }

@@ -57,7 +57,7 @@ class TwoClientAppsSyncTest : public SyncTest {
  public:
   TwoClientAppsSyncTest() : SyncTest(TWO_CLIENT) {}
 
-  virtual ~TwoClientAppsSyncTest() {}
+  ~TwoClientAppsSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

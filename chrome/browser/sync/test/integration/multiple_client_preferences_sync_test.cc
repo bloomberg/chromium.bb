@@ -14,7 +14,7 @@ using preferences_helper::AwaitListPrefMatches;
 class MultipleClientPreferencesSyncTest : public SyncTest {
  public:
   MultipleClientPreferencesSyncTest() : SyncTest(MULTIPLE_CLIENT) {}
-  virtual ~MultipleClientPreferencesSyncTest() {}
+  ~MultipleClientPreferencesSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

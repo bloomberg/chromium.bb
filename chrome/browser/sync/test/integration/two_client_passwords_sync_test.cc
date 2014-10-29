@@ -35,7 +35,7 @@ static const char* kValidPassphrase = "passphrase!";
 class TwoClientPasswordsSyncTest : public SyncTest {
  public:
   TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientPasswordsSyncTest() {}
+  ~TwoClientPasswordsSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 

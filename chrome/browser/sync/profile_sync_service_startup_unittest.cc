@@ -87,10 +87,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         sync_(NULL) {}
 
-  virtual ~ProfileSyncServiceStartupTest() {
-  }
+  ~ProfileSyncServiceStartupTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     CHECK(profile_manager_.SetUp());
 
     TestingProfile::TestingFactories testing_facotries;
@@ -110,9 +109,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         testing_facotries);
   }
 
-  virtual void TearDown() {
-    sync_->RemoveObserver(&observer_);
-  }
+  void TearDown() override { sync_->RemoveObserver(&observer_); }
 
   static KeyedService* BuildService(content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
@@ -196,7 +193,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ProfileSyncServiceStartupTest::SetUp();
     sync_ = static_cast<ProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(

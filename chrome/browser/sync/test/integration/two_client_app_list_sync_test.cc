@@ -81,7 +81,7 @@ class TwoClientAppListSyncTest : public SyncTest {
  public:
   TwoClientAppListSyncTest() : SyncTest(TWO_CLIENT_LEGACY) {}
 
-  virtual ~TwoClientAppListSyncTest() {}
+  ~TwoClientAppListSyncTest() override {}
 
   // SyncTest
   void SetUpCommandLine(CommandLine* command_line) override {
@@ -518,13 +518,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
 class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
  public:
   TwoClientAppListSyncFolderTest() {}
-  virtual ~TwoClientAppListSyncFolderTest() {}
+  ~TwoClientAppListSyncFolderTest() override {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     TwoClientAppListSyncTest::SetUpCommandLine(command_line);
   }
 
-  virtual bool SetupClients() override {
+  bool SetupClients() override {
     bool res = TwoClientAppListSyncTest::SetupClients();
     app_list::AppListSyncableService* verifier_service =
         app_list::AppListSyncableServiceFactory::GetForProfile(verifier());

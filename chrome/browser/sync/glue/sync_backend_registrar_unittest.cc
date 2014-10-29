@@ -65,16 +65,16 @@ class SyncBackendRegistrarTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
-  virtual ~SyncBackendRegistrarTest() {}
+  ~SyncBackendRegistrarTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     test_user_share_.SetUp();
     registrar_.reset(new SyncBackendRegistrar("test", &profile_,
                                               scoped_ptr<base::Thread>()));
     sync_thread_ = registrar_->sync_thread();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     registrar_->RequestWorkerStopOnUIThread();
     test_user_share_.TearDown();
     sync_thread_->message_loop()->PostTask(
@@ -277,7 +277,7 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
     quit_closure_ = run_loop_.QuitClosure();
   }
 
-  virtual ~SyncBackendRegistrarShutdownTest() {}
+  ~SyncBackendRegistrarShutdownTest() override {}
 
   void PostQuitOnUIMessageLoop() {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure_);

@@ -38,7 +38,7 @@ const char kUrl3[] = "http://plus.google.com";
 class SingleClientBackupRollbackTest : public SyncTest {
  public:
   SingleClientBackupRollbackTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientBackupRollbackTest() {}
+  ~SingleClientBackupRollbackTest() override {}
 
   void DisableBackup() {
     CommandLine::ForCurrentProcess()->AppendSwitch(

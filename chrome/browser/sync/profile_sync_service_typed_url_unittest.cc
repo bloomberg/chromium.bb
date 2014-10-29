@@ -222,7 +222,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     history_thread_.reset(new Thread("history"));
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     AbstractProfileSyncServiceTest::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
     TestingProfile::TestingFactories testing_factories;
@@ -247,7 +247,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     history_service_->set_backend(history_backend_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_CALL((*history_service_), Shutdown())
         .WillOnce(ShutdownHistoryService(history_thread_.release(),
                                          history_service_));

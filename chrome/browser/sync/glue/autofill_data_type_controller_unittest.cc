@@ -138,9 +138,9 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
         last_start_result_(sync_driver::DataTypeController::OK),
         weak_ptr_factory_(this) {}
 
-  virtual ~SyncAutofillDataTypeControllerTest() {}
+  ~SyncAutofillDataTypeControllerTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     EXPECT_CALL(profile_sync_factory_,
                 GetSyncableServiceForType(_)).
         WillRepeatedly(Return(base::WeakPtr<syncer::SyncableService>()));
@@ -166,9 +166,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     EXPECT_EQ(type, syncer::AUTOFILL);
   }
 
-  virtual void TearDown() {
-    autofill_dtc_ = NULL;
-  }
+  void TearDown() override { autofill_dtc_ = NULL; }
 
   void BlockForDBThread() {
     base::RunLoop run_loop;

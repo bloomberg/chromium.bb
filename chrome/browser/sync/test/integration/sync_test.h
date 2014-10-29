@@ -97,14 +97,14 @@ class SyncTest : public InProcessBrowserTest {
   // A SyncTest must be associated with a particular test type.
   explicit SyncTest(TestType test_type);
 
-  virtual ~SyncTest();
+  ~SyncTest() override;
 
   // Validates command line parameters and creates a local python test server if
   // specified.
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Brings down local python test server if one was created.
-  virtual void TearDown() override;
+  void TearDown() override;
 
   // Sets up command line flags required for sync tests.
   void SetUpCommandLine(base::CommandLine* cl) override;

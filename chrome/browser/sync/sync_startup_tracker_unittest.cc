@@ -29,7 +29,7 @@ class SyncStartupTrackerTest : public testing::Test {
   SyncStartupTrackerTest() :
       no_error_(GoogleServiceAuthError::NONE) {
   }
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -47,9 +47,7 @@ class SyncStartupTrackerTest : public testing::Test {
     mock_pss_->Initialize();
   }
 
-  virtual void TearDown() override {
-    profile_.reset();
-  }
+  void TearDown() override { profile_.reset(); }
 
   void SetupNonInitializedPSS() {
     EXPECT_CALL(*mock_pss_, GetAuthError())

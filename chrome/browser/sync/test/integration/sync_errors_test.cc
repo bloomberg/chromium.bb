@@ -66,7 +66,7 @@ bool AwaitTypeDisabled(ProfileSyncService* service,
 class SyncErrorTest : public SyncTest {
  public:
   SyncErrorTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SyncErrorTest() {}
+  ~SyncErrorTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncErrorTest);

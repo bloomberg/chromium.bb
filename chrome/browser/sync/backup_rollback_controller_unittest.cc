@@ -51,7 +51,7 @@ class BackupRollbackControllerTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     backup_started_ = false;
     rollback_started_ = false;
 

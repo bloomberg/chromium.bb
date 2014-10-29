@@ -32,7 +32,7 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 class SingleClientBookmarksSyncTest : public SyncTest {
  public:
   SingleClientBookmarksSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientBookmarksSyncTest() {}
+  ~SingleClientBookmarksSyncTest() override {}
 
   // Verify that the local bookmark model (for the Profile corresponding to
   // |index|) matches the data on the FakeServer. It is assumed that FakeServer

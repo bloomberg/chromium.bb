@@ -27,7 +27,7 @@ using typed_urls_helper::GetUrlFromClient;
 class SingleClientSessionsSyncTest : public SyncTest {
  public:
   SingleClientSessionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
-  virtual ~SingleClientSessionsSyncTest() {}
+  ~SingleClientSessionsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);

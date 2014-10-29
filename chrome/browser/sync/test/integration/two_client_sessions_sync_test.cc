@@ -24,7 +24,7 @@ using sessions_helper::WindowsMatch;
 class TwoClientSessionsSyncTest : public SyncTest {
  public:
   TwoClientSessionsSyncTest() : SyncTest(TWO_CLIENT) {}
-  virtual ~TwoClientSessionsSyncTest() {}
+  ~TwoClientSessionsSyncTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientSessionsSyncTest);
