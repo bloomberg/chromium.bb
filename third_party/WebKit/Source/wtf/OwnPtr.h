@@ -38,7 +38,6 @@ namespace WTF {
         // public so OwnPtr cannot be marked noncopyable. See note below.
         WTF_MAKE_NONCOPYABLE(OwnPtr);
 #endif
-        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(OwnPtr);
     public:
         typedef typename RemoveExtent<T>::Type ValueType;
         typedef ValueType* PtrType;

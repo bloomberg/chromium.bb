@@ -47,8 +47,6 @@ namespace WTF {
 
 template<typename T>
 class RawPtr {
-    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(RawPtr);
-    WTF_DISALLOW_ZERO_ASSIGNMENT(RawPtr);
 public:
     RawPtr()
     {

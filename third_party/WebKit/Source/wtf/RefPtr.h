@@ -33,8 +33,6 @@ namespace WTF {
     template<typename T> class PassRefPtr;
 
     template<typename T> class RefPtr {
-        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(RefPtr);
-        WTF_DISALLOW_ZERO_ASSIGNMENT(RefPtr);
     public:
         ALWAYS_INLINE RefPtr() : m_ptr(0) { }
         ALWAYS_INLINE RefPtr(std::nullptr_t) : m_ptr(0) { }

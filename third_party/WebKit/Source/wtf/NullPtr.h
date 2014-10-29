@@ -37,21 +37,4 @@ namespace std {
 typedef decltype(nullptr) nullptr_t;
 }
 #endif
-
-#if COMPILER_SUPPORTS(CXX_DELETED_FUNCTIONS)
-#define WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(ClassName) \
-    private: \
-        ClassName(int) = delete
-#define WTF_DISALLOW_ZERO_ASSIGNMENT(ClassName) \
-    private: \
-        ClassName& operator=(int) = delete
-#else
-#define WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(ClassName) \
-    private: \
-        ClassName(int)
-#define WTF_DISALLOW_ZERO_ASSIGNMENT(ClassName) \
-    private: \
-        ClassName& operator=(int)
-#endif
-
 #endif

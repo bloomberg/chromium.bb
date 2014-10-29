@@ -306,8 +306,6 @@ class CrossThreadPersistent;
 // the same thread.
 template<typename T, typename RootsAccessor /* = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > */ >
 class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor> > {
-    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Persistent);
-    WTF_DISALLOW_ZERO_ASSIGNMENT(Persistent);
 public:
     Persistent() : m_raw(0) { }
 
@@ -442,8 +440,6 @@ private:
 // different from the construction thread.
 template<typename T>
 class CrossThreadPersistent : public Persistent<T, GlobalPersistents> {
-    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(CrossThreadPersistent);
-    WTF_DISALLOW_ZERO_ASSIGNMENT(CrossThreadPersistent);
 public:
     CrossThreadPersistent(T* raw) : Persistent<T, GlobalPersistents>(raw) { }
 
@@ -534,8 +530,6 @@ public:
 // all Member fields of a live object will be traced marked as live as well.
 template<typename T>
 class Member {
-    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Member);
-    WTF_DISALLOW_ZERO_ASSIGNMENT(Member);
 public:
     Member() : m_raw(0)
     {
@@ -726,8 +720,6 @@ public:
 // time of GC the weak pointers will automatically be set to null.
 template<typename T>
 class WeakMember : public Member<T> {
-    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(WeakMember);
-    WTF_DISALLOW_ZERO_ASSIGNMENT(WeakMember);
 public:
     WeakMember() : Member<T>() { }
 

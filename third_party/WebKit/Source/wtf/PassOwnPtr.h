@@ -38,7 +38,6 @@ namespace WTF {
     template<typename T> PassOwnPtr<T[]> adoptArrayPtr(T*);
 
     template<typename T> class PassOwnPtr {
-        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(PassOwnPtr);
     public:
         typedef typename RemoveExtent<T>::Type ValueType;
         typedef ValueType* PtrType;

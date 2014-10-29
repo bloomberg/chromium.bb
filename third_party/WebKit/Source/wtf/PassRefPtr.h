@@ -58,7 +58,6 @@ namespace WTF {
     }
 
     template<typename T> class PassRefPtr {
-        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(PassRefPtr);
     public:
         PassRefPtr() : m_ptr(0) { }
         PassRefPtr(std::nullptr_t) : m_ptr(0) { }
