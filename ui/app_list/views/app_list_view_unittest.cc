@@ -23,6 +23,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
+#include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
@@ -44,15 +45,28 @@ enum TestType {
   TEST_TYPE_END,
 };
 
-size_t GetVisibleTileItemViews(const std::vector<TileItemView*>& tiles) {
+template <class T>
+size_t GetVisibleViews(const std::vector<T*>& tiles) {
   size_t count = 0;
-  for (std::vector<TileItemView*>::const_iterator it = tiles.begin();
-       it != tiles.end();
-       ++it) {
-    if ((*it)->visible())
+  for (const auto& tile : tiles) {
+    if (tile->visible())
       count++;
   }
   return count;
+}
+
+void SimulateClick(views::View* view) {
+  gfx::Point center = view->GetLocalBounds().CenterPoint();
+  view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
+                                      center,
+                                      center,
+                                      ui::EF_LEFT_MOUSE_BUTTON,
+                                      ui::EF_LEFT_MOUSE_BUTTON));
+  view->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED,
+                                       center,
+                                       center,
+                                       ui::EF_LEFT_MOUSE_BUTTON,
+                                       ui::EF_LEFT_MOUSE_BUTTON));
 }
 
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.
@@ -114,6 +128,9 @@ class AppListViewTestContext {
   // Switches the active launcher page in the contents view and lays out to
   // ensure all launcher pages are in the correct position.
   void ShowContentsViewPageAndVerify(AppListModel::State state);
+
+  // Tests that the app list is in |state|.
+  void VerifyPageActive(AppListModel::State state);
 
   // Shows the app list and waits until a paint occurs.
   void Show();
@@ -204,6 +221,12 @@ void AppListViewTestContext::ShowContentsViewPageAndVerify(
   int index = contents_view->GetPageIndexForState(state);
   contents_view->SetActivePage(index);
   contents_view->Layout();
+  VerifyPageActive(state);
+}
+
+void AppListViewTestContext::VerifyPageActive(AppListModel::State state) {
+  ContentsView* contents_view = view_->app_list_main_view()->contents_view();
+  int index = contents_view->GetPageIndexForState(state);
   for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
     EXPECT_EQ(i == index,
               contents_view->GetDefaultContentsBounds() ==
@@ -346,9 +369,13 @@ void AppListViewTestContext::RunStartPageTest() {
     // Show the start page view.
     ShowContentsViewPageAndVerify(AppListModel::STATE_START);
     EXPECT_FALSE(main_view->search_box_view()->visible());
-
     gfx::Size view_size(view_->GetPreferredSize());
-    ShowContentsViewPageAndVerify(AppListModel::STATE_APPS);
+
+    // Simulate clicking the "All apps" button. Check that we navigate to the
+    // apps grid view.
+    SimulateClick(start_page_view->all_apps_button());
+    main_view->contents_view()->Layout();
+    VerifyPageActive(AppListModel::STATE_APPS);
     EXPECT_TRUE(main_view->search_box_view()->visible());
 
     // Hiding and showing the search box should not affect the app list's
@@ -358,10 +385,10 @@ void AppListViewTestContext::RunStartPageTest() {
     // Check tiles hide and show on deletion and addition.
     model->results()->Add(new TestTileSearchResult());
     start_page_view->UpdateForTesting();
-    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
     model->results()->DeleteAll();
     start_page_view->UpdateForTesting();
-    EXPECT_EQ(0u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
   } else {
     EXPECT_EQ(NULL, start_page_view);
   }
@@ -455,7 +482,7 @@ void AppListViewTestContext::RunProfileChangeTest() {
   delegate_->GetTestModel()->results()->Add(new TestTileSearchResult());
   if (test_type_ == EXPERIMENTAL) {
     start_page_view->UpdateForTesting();
-    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   }
 
   // Old model updates should be ignored.
@@ -463,7 +490,7 @@ void AppListViewTestContext::RunProfileChangeTest() {
   original_test_model->results()->Add(new TestTileSearchResult());
   if (test_type_ == EXPERIMENTAL) {
     start_page_view->UpdateForTesting();
-    EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
+    EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   }
 
   Close();

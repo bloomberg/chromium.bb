@@ -4,16 +4,8 @@
 
 #include "ui/app_list/views/tile_item_view.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/search_result.h"
 #include "ui/app_list/views/app_list_main_view.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -30,7 +22,6 @@ namespace app_list {
 
 TileItemView::TileItemView()
     : views::CustomButton(this),
-      item_(NULL),
       icon_(new views::ImageView),
       title_(new views::Label) {
   views::BoxLayout* layout_manager = new views::BoxLayout(
@@ -58,51 +49,18 @@ TileItemView::TileItemView()
 }
 
 TileItemView::~TileItemView() {
-  if (item_)
-    item_->RemoveObserver(this);
 }
 
-void TileItemView::SetSearchResult(SearchResult* item) {
-  SetVisible(item != NULL);
+void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
+  icon_->SetImage(icon);
+}
 
-  SearchResult* old_item = item_;
-  if (old_item)
-    old_item->RemoveObserver(this);
-
-  item_ = item;
-
-  if (!item)
-    return;
-
-  item_->AddObserver(this);
-
-  title_->SetText(item_->title());
-
-  // Only refresh the icon if it's different from the old one. This prevents
-  // flickering.
-  if (old_item == NULL ||
-      !item->icon().BackedBySameObjectAs(old_item->icon())) {
-    OnIconChanged();
-  }
+void TileItemView::SetTitle(const base::string16& title) {
+  title_->SetText(title);
 }
 
 gfx::Size TileItemView::GetPreferredSize() const {
   return gfx::Size(kTileSize, kTileSize);
-}
-
-void TileItemView::ButtonPressed(views::Button* sender,
-                                 const ui::Event& event) {
-  item_->Open(event.flags());
-}
-
-void TileItemView::OnIconChanged() {
-  icon_->SetImage(item_->icon());
-}
-
-void TileItemView::OnResultDestroying() {
-  if (item_)
-    item_->RemoveObserver(this);
-  item_ = NULL;
 }
 
 }  // namespace app_list

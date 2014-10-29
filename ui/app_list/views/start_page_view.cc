@@ -10,9 +10,11 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
+#include "ui/app_list/views/all_apps_tile_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
+#include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -39,7 +41,8 @@ const int kWebViewHeight = 105;
 const int kDummySearchBoxWidth = 480;
 
 // Tile container constants.
-const size_t kNumStartPageTiles = 5;
+const size_t kNumStartPageTiles = 4;
+const size_t kNumSearchResultTiles = 5;
 const int kTileSpacing = 10;
 
 // A placeholder search box which is sized to fit within the start page view.
@@ -131,11 +134,19 @@ void StartPageView::InitTilesContainer() {
   tiles_layout_manager->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   tiles_container_->SetLayoutManager(tiles_layout_manager);
-  for (size_t i = 0; i < kNumStartPageTiles; ++i) {
-    TileItemView* tile_item = new TileItemView();
+
+  // Add SearchResultTileItemViews to the container.
+  for (size_t i = 0; i < std::max(kNumStartPageTiles, kNumSearchResultTiles);
+       ++i) {
+    SearchResultTileItemView* tile_item = new SearchResultTileItemView();
     tiles_container_->AddChildView(tile_item);
-    tile_views_.push_back(tile_item);
+    search_result_tile_views_.push_back(tile_item);
   }
+
+  // Also add a special "all apps" button to the end of the container.
+  all_apps_button_ =
+      new AllAppsTileItemView(app_list_main_view_->contents_view());
+  tiles_container_->AddChildView(all_apps_button_);
 }
 
 void StartPageView::SetModel(AppListModel* model) {
@@ -188,6 +199,10 @@ void StartPageView::UpdateForTesting() {
   Update();
 }
 
+TileItemView* StartPageView::all_apps_button() const {
+  return all_apps_button_;
+}
+
 bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (show_state_ == SHOW_SEARCH_RESULTS)
     return results_view_->OnKeyPressed(event);
@@ -209,16 +224,23 @@ void StartPageView::Layout() {
 }
 
 void StartPageView::Update() {
+  size_t max_tiles = show_state_ == SHOW_START_PAGE ? kNumStartPageTiles
+                                                    : kNumSearchResultTiles;
   std::vector<SearchResult*> display_results =
-      AppListModel::FilterSearchResultsByDisplayType(search_results_model_,
-                                                     SearchResult::DISPLAY_TILE,
-                                                     kNumStartPageTiles);
-  for (size_t i = 0; i < kNumStartPageTiles; ++i) {
+      AppListModel::FilterSearchResultsByDisplayType(
+          search_results_model_, SearchResult::DISPLAY_TILE, max_tiles);
+
+  // Update the tile item results.
+  for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {
     SearchResult* item = NULL;
     if (i < display_results.size())
       item = display_results[i];
-    tile_views_[i]->SetSearchResult(item);
+    search_result_tile_views_[i]->SetSearchResult(item);
   }
+
+  // Show or hide the all apps button (depending on the current show state).
+  all_apps_button_->SetVisible(show_state_ == SHOW_START_PAGE);
+
   tiles_container_->Layout();
   Layout();
   update_factory_.InvalidateWeakPtrs();
