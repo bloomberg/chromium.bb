@@ -211,6 +211,8 @@ namespace blink {
 
         virtual bool isControlledByServiceWorker(DocumentLoader&) = 0;
 
+        virtual int64_t serviceWorkerID(DocumentLoader&) = 0;
+
         virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 
         virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) = 0;

@@ -162,6 +162,7 @@ public:
 
     virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
     virtual bool isControlledByServiceWorker(DocumentLoader&) override;
+    virtual int64_t serviceWorkerID(DocumentLoader&) override;
     virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
 
     virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;

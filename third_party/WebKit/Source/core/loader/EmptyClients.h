@@ -248,6 +248,7 @@ public:
 
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() override;
     virtual bool isControlledByServiceWorker(DocumentLoader&) override { return false; }
+    virtual int64_t serviceWorkerID(DocumentLoader&) override { return -1; }
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) override;
 };
 

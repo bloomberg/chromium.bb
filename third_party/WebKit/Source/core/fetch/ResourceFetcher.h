@@ -160,6 +160,8 @@ public:
     virtual void derefResourceLoaderHost() override;
 #endif
 
+    int64_t serviceWorkerID() const;
+
     enum ResourceLoadStartType {
         ResourceLoadingFromNetwork,
         ResourceLoadingFromCache

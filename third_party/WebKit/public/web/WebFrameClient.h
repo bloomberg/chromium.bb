@@ -566,6 +566,10 @@ public:
     // ServiceWorker.
     virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
 
+    // Returns an identifier of the service worker controlling the document
+    // associated with the WebDataSource.
+    virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
+
 protected:
     virtual ~WebFrameClient() { }
 };

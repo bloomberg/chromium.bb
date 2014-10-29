@@ -628,6 +628,20 @@ bool ResourceFetcher::isControlledByServiceWorker() const
     return localFrame->loader().client()->isControlledByServiceWorker(*localFrame->loader().documentLoader());
 }
 
+int64_t ResourceFetcher::serviceWorkerID() const
+{
+    LocalFrame* localFrame = frame();
+    if (!localFrame)
+        return -1;
+    ASSERT(m_documentLoader || localFrame->loader().documentLoader());
+    if (m_documentLoader)
+        return localFrame->loader().client()->serviceWorkerID(*m_documentLoader);
+    // m_documentLoader is null while loading resources from the imported HTML.
+    // In such cases a service worker ID could be retrieved from the document
+    // loader of the frame.
+    return localFrame->loader().client()->serviceWorkerID(*localFrame->loader().documentLoader());
+}
+
 bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const
 {
     if (!frame())

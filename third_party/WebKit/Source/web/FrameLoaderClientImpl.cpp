@@ -835,6 +835,13 @@ bool FrameLoaderClientImpl::isControlledByServiceWorker(DocumentLoader& loader)
     return m_webFrame->client() && m_webFrame->client()->isControlledByServiceWorker(*WebDataSourceImpl::fromDocumentLoader(&loader));
 }
 
+int64_t FrameLoaderClientImpl::serviceWorkerID(DocumentLoader& loader)
+{
+    if (!m_webFrame->client())
+        return -1;
+    return m_webFrame->client()->serviceWorkerID(*WebDataSourceImpl::fromDocumentLoader(&loader));
+}
+
 SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClient()
 {
     return m_webFrame->sharedWorkerRepositoryClient();
