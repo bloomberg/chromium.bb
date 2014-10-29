@@ -9,7 +9,7 @@ description('Tests the Push API surface.');
 
 shouldBeTrue('!!navigator.push');
 shouldBeTrue('!!navigator.push.register');
-shouldBe('navigator.push.register("senderId").constructor', 'Promise');
+shouldBe('navigator.push.register().constructor', 'Promise');
 </script>
 </body>
 </html>

@@ -18,7 +18,7 @@ function processMessage(event) {
         win.close();
         win = null;
     } else if (event.data == 'closed') {
-        nav.push.register('senderId').then(function successCallback() {
+        nav.push.register().then(function successCallback() {
             testFailed('Success callback invoked unexpectedly.');
             finishJSTest();
         }, function(e) {

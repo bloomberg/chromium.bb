@@ -14,7 +14,7 @@ window.jsTestIsAsync = true;
 
 function testPushRegistrationError() {
     window.testRunner.setMockPushClientError('message');
-    navigator.push.register('senderId').then(function() {
+    navigator.push.register().then(function() {
         testFailed('Success callback invoked unexpectedly.');
         testPushRegistrationSuccess();
     }, function(e) {
@@ -27,7 +27,7 @@ testPushRegistrationError();
 
 function testPushRegistrationSuccess() {
     window.testRunner.setMockPushClientSuccess('endpoint', 'registrationId');
-    navigator.push.register('senderId').then(function(reg) {
+    navigator.push.register().then(function(reg) {
         registration = reg;
         shouldBeEqualToString('registration.pushEndpoint', 'endpoint');
         shouldBeEqualToString('registration.pushRegistrationId', 'registrationId');
