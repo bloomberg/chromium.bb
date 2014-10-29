@@ -71,7 +71,9 @@
                     test.done();
                 }
 
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
 
                     waitForEventAndRunStep('encrypted', video, onEncrypted, test);
                     waitForEventAndRunStep('playing', video, onPlaying, test);

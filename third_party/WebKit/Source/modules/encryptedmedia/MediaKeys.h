@@ -47,9 +47,11 @@ class WebContentDecryptionModule;
 class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ScriptPromise create(ScriptState*, const String& keySystem);
+    MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule>);
     virtual ~MediaKeys();
 
+    // FIXME: This should be removed after crbug.com/425186 is fully
+    // implemented.
     const String& keySystem() const { return m_keySystem; }
 
     MediaKeySession* createSession(ScriptState*, const String& sessionType);
@@ -57,6 +59,7 @@ public:
     ScriptPromise setServerCertificate(ScriptState*, DOMArrayBuffer* serverCertificate);
     ScriptPromise setServerCertificate(ScriptState*, DOMArrayBufferView* serverCertificate);
 
+    // FIXME: Remove this method since it's not in the spec anymore.
     static bool isTypeSupported(const String& keySystem, const String& contentType);
 
     blink::WebContentDecryptionModule* contentDecryptionModule();
@@ -68,8 +71,6 @@ public:
 
 private:
     class PendingAction;
-    friend class MediaKeysInitializer;
-    MediaKeys(ExecutionContext*, const String& keySystem, PassOwnPtr<blink::WebContentDecryptionModule>);
 
     ScriptPromise setServerCertificateInternal(ScriptState*, PassRefPtr<ArrayBuffer> initData);
 

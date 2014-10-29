@@ -31,9 +31,12 @@
                     return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
                 }
 
-                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    assert_equals(access.keySystem, 'org.w3.clearkey');
+                    return access.createMediaKeys();
+                }).then(function(result) {
                     mediaKeys = result;
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
 
                     // Verify MediaKeys are not an ActiveDOMObject.
                     assert_equals(numActiveDOMObjectsCreated(), 0, 'MediaKeys.create()');

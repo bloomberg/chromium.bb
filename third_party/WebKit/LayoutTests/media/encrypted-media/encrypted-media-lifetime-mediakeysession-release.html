@@ -30,7 +30,9 @@
                 }
 
                 // Create 2 sessions.
-                MediaKeys.create('org.w3.clearkey').then(function(result) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(result) {
                     mediaKeys = result;
 
                     // Verify MediaKeys are not an ActiveDOMObject.

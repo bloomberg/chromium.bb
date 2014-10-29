@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#mediakeysystemoptions-dictionary
+
+enum MediaKeysRequirement {
+    "required",
+    "optional",
+    "disallowed"
+};
+
+[
+    RuntimeEnabled=EncryptedMedia
+] dictionary MediaKeySystemOptions {
+    DOMString            initDataType = "";
+    DOMString            audioType = "";
+    DOMString            audioCapability = "";
+    DOMString            videoType = "";
+    DOMString            videoCapability = "";
+    MediaKeysRequirement uniqueidentifier = "optional";
+    MediaKeysRequirement stateful = "optional";
+};

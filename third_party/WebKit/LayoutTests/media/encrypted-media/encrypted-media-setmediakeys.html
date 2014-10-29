@@ -35,11 +35,14 @@
                     assert_equals(error.name, 'TypeError');
 
                     // Create a MediaKeys object and assign it to video.
-                    return MediaKeys.create('org.w3.clearkey');
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey');
+                }).then(function(access) {
+                    assert_equals(access.keySystem, 'org.w3.clearkey');
+                    return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;
                     assert_not_equals(mediaKeys, null);
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
                     return video.setMediaKeys(mediaKeys);
                 }).then(function(result) {
                     assert_not_equals(video.mediaKeys, null);
@@ -52,14 +55,17 @@
                     assert_true(video.mediaKeys === mediaKeys);
 
                     // Create a second MediaKeys.
-                    return MediaKeys.create('org.w3.clearkey');
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey');
+                }).then(function(access) {
+                    assert_equals(access.keySystem, 'org.w3.clearkey');
+                    return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys2 = result;
                     assert_not_equals(mediaKeys, null);
                     assert_not_equals(mediaKeys2, null);
                     assert_not_equals(mediaKeys, mediaKeys2);
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
-                    assert_equals(mediaKeys2.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
+                    assert_equals(typeof mediaKeys2.createSession, 'function');
 
                     // Assign the second MediaKeys to video.
                     return video.setMediaKeys(mediaKeys2);

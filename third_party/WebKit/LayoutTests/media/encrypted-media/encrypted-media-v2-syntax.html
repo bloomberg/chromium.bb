@@ -9,6 +9,12 @@
     <body>
         <div id="log"></div>
         <script>
+            // Since promises catch any exception and convert it into a
+            // rejected Promise, there is no current way to have the W3C
+            // test framework report a failed test. For now, simply force
+            // a timeout to indicate failure.
+            // FIXME: Once W3C test framework handles Promises, fix this.
+
             // This function checks that calling |testCase.func| returns a
             // rejected Promise with the error.name equal to
             // |testCase.exception|.
@@ -41,79 +47,96 @@
                 }
             }
 
-            var kCreateMediaKeysExceptionsTestCases = [
+            var kRequestMediaKeySystemAccessExceptionsTestCases = [
                 // Too few parameters.
                 {
                     exception: 'TypeError',
-                    func: function() { return MediaKeys.create(); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(); }
                 },
                 // Invalid parameters.
                 {
                     exception: 'InvalidAccessError',
-                    func: function() { return MediaKeys.create(''); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(''); }
                 },
-                // Invalid key systems.
+                // Invalid key systems. Note that JavaScript converts all these
+                // values into strings by calling toString(), so they fail due
+                // to the key system not being supported, not due to the type.
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create(null); }
-                },
-                {
-                    exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create(undefined); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(null); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create(1); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(undefined); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create(new Uint8Array(0)); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(1); }
                 },
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create('unsupported'); }
+                    func: function() { return navigator.requestMediaKeySystemAccess(new Uint8Array(0)); }
+                },
+                {
+                    exception: 'NotSupportedError',
+                    func: function() { return navigator.requestMediaKeySystemAccess('unsupported'); }
                 },
                 // Non-ASCII names.
                 {
                     exception: 'NotSupportedError',
-                    func: function() { return MediaKeys.create('org.w3\u263A.clearkey'); }
+                    func: function() { return navigator.requestMediaKeySystemAccess('org.w3\u263A.clearkey'); }
                 }
             ];
 
             async_test(function(test)
             {
-                // Since promises catch any exception and convert it into a
-                // rejected Promise, there is no current way to have the W3C
-                // test framework report a failed test. For now, simply force
-                // a timeout to indicate failure.
-                // FIXME: Once W3C test framework handles Promises, fix this.
-
-                var createPromises = kCreateMediaKeysExceptionsTestCases.map(function(testCase) {
+                var createPromises = kRequestMediaKeySystemAccessExceptionsTestCases.map(function(testCase) {
                     return test_exception(testCase);
                 });
 
                 Promise.all(createPromises).then(function(result) {
                     test.done();
                 }).catch(function(error) {
-                    forceTestFailureFromPromise(test, error, 'create() tests failed');
+                    forceTestFailureFromPromise(test, error, 'requestMediaKeySystemAccess() tests failed');
                 });
-            }, 'Test MediaKeys create() exceptions.');
+            }, 'Test Navigator.requestMediaKeySystemAccess() exceptions.');
 
             async_test(function(test)
             {
-                assert_equals(typeof window.MediaKeys, 'function');
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
-                    assert_not_equals(mediaKeys, null);
+                assert_equals(typeof navigator.requestMediaKeySystemAccess, 'function');
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    assert_not_equals(access, null);
+                    assert_equals(typeof access, 'object');
+                    assert_equals(access.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof access.createMediaKeys, 'function');
+                    test.done();
+                }).catch(function(error) {
+                    forceTestFailureFromPromise(test, error, 'requestMediaKeySystemAccess() tests failed');
+                });
+            }, 'Test Navigator.requestMediaKeySystemAccess().');
 
-                    // Test creation of a second MediaKeys.
-                    // The extra parameter is ignored.
-                    return MediaKeys.create('org.w3.clearkey', 'extra');
+            async_test(function(test)
+            {
+                var access;
+
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(result) {
+                    access = result;
+                    assert_equals(access.keySystem, 'org.w3.clearkey');
+                    return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     assert_not_equals(mediaKeys, null);
                     assert_equals(typeof mediaKeys, 'object');
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
                     assert_equals(typeof mediaKeys.createSession, 'function');
-                    assert_equals(typeof mediaKeys.addEventListener, 'undefined');
+                    assert_equals(typeof mediaKeys.setServerCertificate, 'function');
+
+                    // Test creation of a second MediaKeys.
+                    // The extra parameter is ignored.
+                    return access.createMediaKeys('extra');
+                }).then(function(mediaKeys) {
+                    assert_not_equals(mediaKeys, null);
+                    assert_equals(typeof mediaKeys, 'object');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
+                    assert_equals(typeof mediaKeys.setServerCertificate, 'function');
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error, 'create() tests failed');
@@ -159,7 +182,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
                         return test_exception(testCase, mediaKeys);
                     });
@@ -289,7 +314,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
                     // http://crbug.com/405731.
                     var initData = stringToUint8Array('init data');
@@ -401,7 +428,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
                     // http://crbug.com/405731.
                     var initData = stringToUint8Array('init data');
@@ -486,7 +515,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     kCreateSessionTestCases.map(function(testCase) {
                         test_createSession(testCase, mediaKeys);
                     });
@@ -515,7 +546,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var sessionPromises = [];
 
                     // Test that WebM sessions generate the expected error, if
@@ -580,7 +613,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -629,7 +664,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                   var promises = [];
 
                   if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -663,7 +700,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -699,7 +738,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -756,7 +797,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -794,7 +837,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
@@ -856,7 +901,9 @@
 
             async_test(function(test)
             {
-                MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
+                navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
                     var promises = kSetServerCertificateExceptionsTestCases.map(function(testCase) {
                         return test_exception(testCase, mediaKeys);
                     });

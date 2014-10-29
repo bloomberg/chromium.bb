@@ -44,7 +44,9 @@
                 // MediaKeySession object.
                 function createMediaKeyWithMediaKeySession()
                 {
-                    return MediaKeys.create('org.w3.clearkey').then(function(result) {
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey').then(function(access) {
+                        return access.createMediaKeys();
+                    }).then(function(result) {
                         mediaKeys = result;
                         var mediaKeySession = mediaKeys.createSession();
                         return mediaKeySession.generateRequest(initDataType, initData).then(function() {
@@ -105,7 +107,7 @@
                 }).then(function(result) {
                     // Should be 1 MediaKeySession, the session for |mediaKeys|.
                     assert_equals(numActiveDOMObjectsCreated(), 1);
-                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    assert_equals(typeof mediaKeys.createSession, 'function');
 
                     // Release the last MediaKeys object created.
                     mediaKeys = null;
