@@ -37,7 +37,9 @@ DistillerFactoryImpl::DistillerFactoryImpl(
 
 DistillerFactoryImpl::~DistillerFactoryImpl() {}
 
-scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
+scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistillerForUrl(
+    const GURL& unused) {
+  // This default implementation has the same behavior for all URLs.
   scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
       *distiller_url_fetcher_factory_, dom_distiller_options_));
   return distiller.Pass();

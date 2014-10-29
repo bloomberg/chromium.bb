@@ -22,7 +22,8 @@ class MockDistillerFactory : public DistillerFactory {
   MockDistillerFactory();
   virtual ~MockDistillerFactory();
   MOCK_METHOD0(CreateDistillerImpl, Distiller*());
-  virtual scoped_ptr<Distiller> CreateDistiller() override {
+  virtual scoped_ptr<Distiller> CreateDistillerForUrl(
+      const GURL& unused) override {
     return scoped_ptr<Distiller>(CreateDistillerImpl());
   }
 };

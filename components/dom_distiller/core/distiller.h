@@ -48,7 +48,7 @@ class Distiller {
 
 class DistillerFactory {
  public:
-  virtual scoped_ptr<Distiller> CreateDistiller() = 0;
+  virtual scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& url) = 0;
   virtual ~DistillerFactory() {}
 };
 
@@ -59,7 +59,7 @@ class DistillerFactoryImpl : public DistillerFactory {
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
       const dom_distiller::proto::DomDistillerOptions& dom_distiller_options);
   ~DistillerFactoryImpl() override;
-  scoped_ptr<Distiller> CreateDistiller() override;
+  scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& url) override;
 
  private:
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;

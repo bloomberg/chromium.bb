@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/id_map.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -39,6 +40,43 @@ namespace dom_distiller {
 
 namespace {
 
+typedef base::hash_map<std::string, std::string> UrlToDomainMap;
+
+}
+
+// Factory for creating a Distiller that creates different DomDistillerOptions
+// for different URLs, i.e. a specific kOriginalDomain option for each URL.
+class TestDistillerFactoryImpl : public DistillerFactory {
+ public:
+  TestDistillerFactoryImpl(
+      scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
+      const dom_distiller::proto::DomDistillerOptions& dom_distiller_options,
+      const UrlToDomainMap& url_to_domain_map)
+      : distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()),
+        dom_distiller_options_(dom_distiller_options),
+        url_to_domain_map_(url_to_domain_map) {
+  }
+
+  ~TestDistillerFactoryImpl() override {}
+
+  scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& url) override {
+    dom_distiller::proto::DomDistillerOptions options;
+    options = dom_distiller_options_;
+    UrlToDomainMap::const_iterator it = url_to_domain_map_.find(url.spec());
+    if (it != url_to_domain_map_.end()) options.set_original_domain(it->second);
+    scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
+        *distiller_url_fetcher_factory_, options));
+    return distiller.Pass();
+  }
+
+ private:
+  scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
+  dom_distiller::proto::DomDistillerOptions dom_distiller_options_;
+  UrlToDomainMap url_to_domain_map_;
+};
+
+namespace {
+
 // The url to distill.
 const char* kUrlSwitch = "url";
 
@@ -61,12 +99,20 @@ const char* kExtractTextOnly = "extract-text-only";
 // Indicates to include debug output.
 const char* kDebugLevel = "debug-level";
 
+// The original domain of the page if |kUrlSwitch| is a file.
+const char* kOriginalDomain = "original-domain";
+
+// A semi-colon-separated (i.e. ';') list of original domains corresponding to
+// "kUrlsSwitch".
+const char* kOriginalDomains = "original-domains";
+
 // Maximum number of concurrent started extractor requests.
 const int kMaxExtractorTasks = 8;
 
 scoped_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
-    const base::FilePath& db_path) {
+    const base::FilePath& db_path,
+    const UrlToDomainMap& url_to_domain_map) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
@@ -97,7 +143,9 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
     options.set_debug_level(debug_level);
   }
   scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
+      new TestDistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
+                                   options,
+                                   url_to_domain_map));
 
   // Setting up PrefService for DistilledPagePrefs.
   user_prefs::TestingPrefServiceSyncable* pref_service =
@@ -177,7 +225,8 @@ class ContentExtractionRequest : public ViewRequestDelegate {
   }
 
   static ScopedVector<ContentExtractionRequest> CreateForCommandLine(
-      const CommandLine& command_line) {
+      const CommandLine& command_line,
+      UrlToDomainMap* url_to_domain_map) {
     ScopedVector<ContentExtractionRequest> requests;
     if (command_line.HasSwitch(kUrlSwitch)) {
       GURL url;
@@ -185,15 +234,32 @@ class ContentExtractionRequest : public ViewRequestDelegate {
       url = GURL(url_string);
       if (url.is_valid()) {
         requests.push_back(new ContentExtractionRequest(url));
+        if (command_line.HasSwitch(kOriginalDomain)) {
+          (*url_to_domain_map)[url.spec()] =
+              command_line.GetSwitchValueASCII(kOriginalDomain);
+        }
       }
     } else if (command_line.HasSwitch(kUrlsSwitch)) {
       std::string urls_string = command_line.GetSwitchValueASCII(kUrlsSwitch);
       std::vector<std::string> urls;
       base::SplitString(urls_string, ' ', &urls);
+      // Check for original-domains switch, which must exactly pair up with
+      // |kUrlsSwitch| i.e. number of domains must be same as that of urls.
+      std::vector<std::string> domains;
+      if (command_line.HasSwitch(kOriginalDomains)) {
+        std::string domains_string =
+            command_line.GetSwitchValueASCII( kOriginalDomains);
+        base::SplitString(domains_string, ';', &domains);
+        if (domains.size() != urls.size()) domains.clear();
+      }
       for (size_t i = 0; i < urls.size(); ++i) {
         GURL url(urls[i]);
         if (url.is_valid()) {
           requests.push_back(new ContentExtractionRequest(url));
+          // Only regard non-empty domain.
+          if (!domains.empty() && !domains[i].empty()) {
+              (*url_to_domain_map)[url.spec()] = domains[i];
+          }
         } else {
           ADD_FAILURE() << "Bad url";
         }
@@ -251,12 +317,15 @@ class ContentExtractor : public ContentBrowserTest {
   // Creates the DomDistillerService and creates and starts the extraction
   // request.
   void Start() {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    UrlToDomainMap url_to_domain_map;
+    requests_ = ContentExtractionRequest::CreateForCommandLine(
+        command_line, &url_to_domain_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
     service_ = CreateDomDistillerService(context,
-                                         db_dir_.path());
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    requests_ = ContentExtractionRequest::CreateForCommandLine(command_line);
+                                         db_dir_.path(),
+                                         url_to_domain_map);
     PumpQueue();
   }
 

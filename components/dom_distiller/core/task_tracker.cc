@@ -49,7 +49,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory,
   GURL url(entry_.pages(0).url());
   DCHECK(url.is_valid());
 
-  distiller_ = factory->CreateDistiller();
+  distiller_ = factory->CreateDistillerForUrl(url);
   distiller_->DistillPage(url,
                           distiller_page.Pass(),
                           base::Bind(&TaskTracker::OnDistillerFinished,
