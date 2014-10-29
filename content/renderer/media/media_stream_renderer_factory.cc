@@ -76,6 +76,7 @@ scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
   }
 
   return new WebRtcAudioRenderer(
+      GetPeerConnectionDependencyFactory()->GetWebRtcSignalingThread(),
       stream, routing_id, render_frame_id,  session_id,
       sample_rate, buffer_size);
 }

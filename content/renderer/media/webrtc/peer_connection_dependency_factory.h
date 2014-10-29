@@ -129,6 +129,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       bool is_local_track);
 
   scoped_refptr<base::MessageLoopProxy> GetWebRtcWorkerThread() const;
+  scoped_refptr<base::MessageLoopProxy> GetWebRtcSignalingThread() const;
 
   // AecDumpMessageFilter::AecDumpDelegate implementation.
   // TODO(xians): Remove when option to disable audio track processing is

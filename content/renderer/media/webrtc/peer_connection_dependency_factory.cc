@@ -622,6 +622,12 @@ PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
   return chrome_worker_thread_.message_loop_proxy();
 }
 
+scoped_refptr<base::MessageLoopProxy>
+PeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
+  DCHECK(CalledOnValidThread());
+  return RenderThreadImpl::current()->GetMessageLoop()->message_loop_proxy();
+}
+
 void PeerConnectionDependencyFactory::OnAecDumpFile(
     const IPC::PlatformFileForTransit& file_handle) {
   DCHECK(CalledOnValidThread());

@@ -74,6 +74,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   static int GetOptimalBufferSize(int sample_rate, int hardware_buffer_size);
 
   WebRtcAudioRenderer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
       int source_render_view_id,
       int source_render_frame_id,
@@ -188,6 +189,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   const int source_render_view_id_;
   const int source_render_frame_id_;
   const int session_id_;
+
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;
