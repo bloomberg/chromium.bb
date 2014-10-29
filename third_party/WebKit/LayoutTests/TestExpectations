@@ -261,7 +261,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 # Failing on Android bots as a result of turning on virtual viewport pinch to zoom.
 crbug.com/428189 [ Android ] fast/autoresize/turn-off-autoresize.html [ Failure ]
-crbug.com/428189 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
+crbug.com/428189 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ImageOnlyFailure ]
 
 # Untriaged Mavericks failures
 
