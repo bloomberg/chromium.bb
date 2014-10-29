@@ -138,7 +138,7 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
       chart_prefix += '_later'
     self._speed_index.AddResults(tab, results, chart_prefix)
 
-@benchmark.Disabled
+@benchmark.Enabled('android')
 class ServiceWorkerPerfTest(benchmark.Benchmark):
   """Performance test on pages controlled by ServiceWorker"""
   test = _ServiceWorkerMeasurement
