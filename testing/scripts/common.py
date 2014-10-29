@@ -7,6 +7,7 @@ import contextlib
 import json
 import os
 import subprocess
+import sys
 import tempfile
 
 
@@ -53,6 +54,21 @@ def run_command(argv):
   rc = subprocess.call(argv)
   print 'Command %r returned exit code %d' % (argv, rc)
   return rc
+
+
+def run_runtest(cmd_args, runtest_args):
+  return run_command([
+      sys.executable,
+      os.path.join(cmd_args.paths['build'], 'scripts', 'tools', 'runit.py'),
+      '--show-path',
+      sys.executable,
+      os.path.join(cmd_args.paths['build'], 'scripts', 'slave', 'runtest.py'),
+      '--target', cmd_args.build_config_fs,
+      '--xvfb',
+      '--builder-name', cmd_args.properties['buildername'],
+      '--slave-name', cmd_args.properties['slavename'],
+      '--build-number', str(cmd_args.properties['buildnumber']),
+  ] + runtest_args)
 
 
 @contextlib.contextmanager
