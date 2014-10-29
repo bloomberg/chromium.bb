@@ -5,11 +5,13 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
@@ -101,6 +103,11 @@ CastRtpPayloadParams DefaultH264Payload() {
 }
 
 bool IsHardwareVP8EncodingSupported() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    return false;
+  }
+
   // Query for hardware VP8 encoder support.
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
       content::GetSupportedVideoEncodeAcceleratorProfiles();
@@ -114,6 +121,11 @@ bool IsHardwareVP8EncodingSupported() {
 }
 
 bool IsHardwareH264EncodingSupported() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    return false;
+  }
+
   // Query for hardware H.264 encoder support.
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
       content::GetSupportedVideoEncodeAcceleratorProfiles();

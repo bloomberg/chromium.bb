@@ -225,6 +225,10 @@ const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 // Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
+// Disable hardware encoding support for Cast Streaming.
+const char kDisableCastStreamingHWEncoding[] =
+    "disable-cast-streaming-hw-encoding";
+
 // Disables the client-side phishing detection feature. Note that even if
 // client-side phishing detection is enabled, it will only be active if the
 // user has opted in to UMA stats and SafeBrowsing is enabled in the
