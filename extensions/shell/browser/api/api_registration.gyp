@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      # GN version: //extensions/shell/browser/api
+      # GN version: //extensions/shell/common/api:api_registration
       'target_name': 'shell_api_registration',
       'type': 'static_library',
       # TODO(jschuh): http://crbug.com/167187 size_t -> int

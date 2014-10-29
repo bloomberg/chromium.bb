@@ -410,6 +410,8 @@ source_set("browser") {
       "mojo/service_registration_manager.h",
       "mojo/stash_backend.cc",
       "mojo/stash_backend.h",
+      "null_app_sorting.cc",
+      "null_app_sorting.h",
       "pref_names.cc",
       "pref_names.h",
       "process_manager.cc",

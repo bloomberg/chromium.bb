@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //extensions/shell/common/api
       'target_name': 'shell_api',
       'type': 'static_library',
       # TODO(jschuh): http://crbug.com/167187 size_t -> int
