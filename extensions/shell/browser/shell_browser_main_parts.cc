@@ -55,7 +55,10 @@
 
 using base::CommandLine;
 using content::BrowserContext;
+
+#if !defined(DISABLE_NACL)
 using content::BrowserThread;
+#endif
 
 namespace extensions {
 
