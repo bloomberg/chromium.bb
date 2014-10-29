@@ -340,7 +340,10 @@ source_set("browser") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos:power_manager_proto" ]
+    deps += [
+      "//chromeos",
+      "//chromeos:power_manager_proto",
+    ]
   }
 
   if (use_aura) {
