@@ -2,15 +2,15 @@ This is a testharness.js-based test.
 PASS Service Worker: Cache.put 
 PASS Cache.put called with simple Request and Response 
 PASS Cache.put called with Request and Response from fetch() 
-FAIL Cache.put with Request containing a body assert_equals: Cache.put should store response body.: Response.url expected "" but got "https://example.com/foo"
-FAIL Cache.put with a Response containing an empty URL assert_equals: Cache.put should update the cache with new Request and Response.: Response.url expected "" but got "https://example.com/foo"
+PASS Cache.put with Request containing a body 
+PASS Cache.put with a Response containing an empty URL 
 PASS Cache.put with an empty response body 
 PASS Cache.put with HTTP 500 response 
 FAIL Cache.put called twice with same Request and different Responses Entry already exists.
 PASS Cache.put with an string request 
 PASS Cache.put with an invalid response 
 PASS Cache.put with a non-HTTP/HTTPS request 
-FAIL Cache.put with a relative URL assert_equals: Cache.put should accept a relative URL as the request.: Response.url expected "" but got "http://127.0.0.1:8000/serviceworker/resources/relative-url"
+PASS Cache.put with a relative URL 
 PASS Cache.put with a non-GET request 
 PASS Cache.put with an empty response 
 Harness: the test ran to completion.

@@ -338,7 +338,7 @@ cache_test(function(cache) {
       .then(function(result) {
           assert_object_equals(
             result, response,
-            'Cache.match should reutrn a Response object that has the same ' +
+            'Cache.match should return a Response object that has the same ' +
             'properties as the stored response.');
         })
       .then(function() {

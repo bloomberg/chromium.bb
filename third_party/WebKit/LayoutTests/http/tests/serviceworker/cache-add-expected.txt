@@ -1,18 +1,32 @@
 This is a testharness.js-based test.
 PASS Service Worker: Cache.add and Cache.addAll 
-PASS Cache.add called with no arguments 
-FAIL Cache.add called with relative URL specified as a string Cache is not implemented
-FAIL Cache.add called with non-HTTP/HTTPS URL assert_throws: Cache.add should throw a NetworkError for non-HTTP/HTTPS URLs. function "function () { throw e; }" threw object "NotSupportedError: Cache is not implemented" that is not a DOMException NetworkError: property "code" is equal to 9, expected 19
-FAIL Cache.add called with Request object Cache is not implemented
-FAIL Cache.add called with Request object with a used body assert_throws: Cache.add with a Request object with a used body should reject with a TypeError. function "function () { throw e; }" threw object "NotSupportedError: Cache is not implemented" ("NotSupportedError") expected object "TypeError" ("TypeError")
-FAIL Cache.add called twice with the same Request object Cache is not implemented
-FAIL Cache.add with request that results in a status of 404 Cache is not implemented
-FAIL Cache.add with request that results in a status of 500 Cache is not implemented
-PASS Cache.addAll with no arguments 
-PASS Cache.addAll with a mix of valid and undefined arguments 
-FAIL Cache.addAll with string URL arguments Cache is not implemented
-FAIL Cache.addAll with Request arguments Cache is not implemented
-FAIL Cache.addAll with a mix of succeeding and failing requests Cache is not implemented
-FAIL Cache.addAll called with the same Request object specified twice assert_throws: Cache.addAll should throw TypeError if the same request is added twice. function "function () { throw e; }" threw object "NotSupportedError: Cache is not implemented" ("NotSupportedError") expected object "TypeError" ("TypeError")
+FAIL Cache.add called with no arguments undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:6:13)
+FAIL Cache.add called with relative URL specified as a string undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:12:18)
+FAIL Cache.add called with non-HTTP/HTTPS URL undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:21:13)
+FAIL Cache.add called with Request object undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:28:18)
+FAIL Cache.add called with Request object with a used body undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:43:19)
+FAIL Cache.add called twice with the same Request object undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:52:18)
+FAIL Cache.add with request that results in a status of 404 undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:66:18)
+FAIL Cache.add with request that results in a status of 500 undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:74:18)
+FAIL Cache.addAll with no arguments undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:83:13)
+FAIL Cache.addAll with a mix of valid and undefined arguments undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:93:13)
+FAIL Cache.addAll with string URL arguments undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:102:18)
+FAIL Cache.addAll with Request arguments undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:116:18)
+FAIL Cache.addAll with a mix of succeeding and failing requests undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:131:18)
+FAIL Cache.addAll called with the same Request object specified twice undefined is not a function(stack: TypeError: undefined is not a function
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:142:13)
 Harness: the test ran to completion.
 

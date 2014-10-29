@@ -3,6 +3,6 @@ PASS Interfaces and attributes of ServiceWorkerContainer
 PASS Interfaces and attributes of ServiceWorker 
 PASS Interfaces and attributes in ServiceWorkerGlobalScope 
 FAIL Interfaces and attributes in ServiceWorkerGlobalScope assert_true: match should be an attribute of CacheStorage expected true got false
-PASS Cache 
+FAIL Cache assert_true: matchAll should be an attribute of Cache expected true got false
 Harness: the test ran to completion.
 
