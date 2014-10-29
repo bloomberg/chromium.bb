@@ -44229,6 +44229,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="571" label="QuotedAnimationName"/>
   <int value="572" label="QuotedKeyframesRule"/>
   <int value="573" label="SrcsetDroppedCandidate"/>
+  <int value="574" label="WindowPostMessage"/>
+  <int value="575" label="WindowPostMessageWithLegacyTargetOriginArgument"/>
+  <int value="576" label="RenderRuby"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
