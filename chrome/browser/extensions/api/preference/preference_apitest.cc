@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,7 +44,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableHyperlinkAuditing));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableReferrers));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kEnableTranslate));
-    EXPECT_TRUE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+    EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_DEFAULT,
+              prefs->GetInteger(prefs::kNetworkPredictionOptions));
     EXPECT_TRUE(prefs->GetBoolean(
         password_manager::prefs::kPasswordManagerSavingEnabled));
     EXPECT_TRUE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
@@ -62,7 +64,8 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableHyperlinkAuditing));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableReferrers));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kEnableTranslate));
-    EXPECT_FALSE(prefs->GetBoolean(prefs::kNetworkPredictionEnabled));
+    EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_NEVER,
+              prefs->GetInteger(prefs::kNetworkPredictionOptions));
     EXPECT_FALSE(prefs->GetBoolean(
         password_manager::prefs::kPasswordManagerSavingEnabled));
     EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingEnabled));
@@ -109,7 +112,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   prefs->SetBoolean(prefs::kEnableHyperlinkAuditing, false);
   prefs->SetBoolean(prefs::kEnableReferrers, false);
   prefs->SetBoolean(prefs::kEnableTranslate, false);
-  prefs->SetBoolean(prefs::kNetworkPredictionEnabled, false);
+  prefs->SetInteger(prefs::kNetworkPredictionOptions,
+                    chrome_browser_net::NETWORK_PREDICTION_NEVER);
   prefs->SetBoolean(password_manager::prefs::kPasswordManagerSavingEnabled,
                     false);
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
