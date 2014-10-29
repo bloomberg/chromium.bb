@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
+#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/extension.h"
@@ -28,14 +29,14 @@ public:
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
-  ExtensionInstallPrompt::ShowParams show_params(tab);
+  ExtensionInstallPromptShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(show_params,
+      new ExtensionInstallDialogController(&show_params,
                                            &delegate,
                                            prompt);
 
@@ -53,14 +54,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest,
                        DISABLED_Permissions) {
   content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
-  ExtensionInstallPrompt::ShowParams show_params(tab);
+  ExtensionInstallPromptShowParams show_params(tab);
 
   chrome::MockExtensionInstallPromptDelegate delegate;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt =
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get());
 
   ExtensionInstallDialogController* controller =
-      new ExtensionInstallDialogController(show_params,
+      new ExtensionInstallDialogController(&show_params,
                                            &delegate,
                                            prompt);
 

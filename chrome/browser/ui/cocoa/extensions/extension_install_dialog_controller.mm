@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
+#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -23,11 +24,11 @@ using extensions::ExperienceSamplingEvent;
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt) {
   // These objects will delete themselves when the dialog closes.
-  if (!show_params.parent_web_contents) {
+  if (!show_params->GetParentWebContents()) {
     new WindowedInstallDialogController(show_params, delegate, prompt);
     return;
   }
@@ -38,13 +39,13 @@ void ShowExtensionInstallDialogImpl(
 }  // namespace
 
 ExtensionInstallDialogController::ExtensionInstallDialogController(
-    const ExtensionInstallPrompt::ShowParams& show_params,
+    ExtensionInstallPromptShowParams* show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> prompt)
     : delegate_(delegate) {
   view_controller_.reset([[ExtensionInstallViewController alloc]
-      initWithProfile:show_params.profile
-            navigator:show_params.parent_web_contents
+      initWithProfile:show_params->profile()
+            navigator:show_params->GetParentWebContents()
              delegate:this
                prompt:prompt]);
 
@@ -55,7 +56,7 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac(
-      this, show_params.parent_web_contents, sheet));
+      this, show_params->GetParentWebContents(), sheet));
 
   std::string event_name = ExperienceSamplingEvent::kExtensionInstallDialog;
   event_name.append(ExtensionInstallPrompt::PromptTypeToString(prompt->type()));

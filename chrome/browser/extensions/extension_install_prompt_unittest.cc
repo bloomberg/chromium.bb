@@ -6,6 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -24,7 +25,7 @@ void VerifyPromptPermissionsCallback(
     const base::Closure& quit_closure,
     size_t regular_permissions_count,
     size_t withheld_permissions_count,
-    const ExtensionInstallPrompt::ShowParams& params,
+    ExtensionInstallPromptShowParams* params,
     ExtensionInstallPrompt::Delegate* delegate,
     scoped_refptr<ExtensionInstallPrompt::Prompt> install_prompt) {
   ASSERT_TRUE(install_prompt.get());
