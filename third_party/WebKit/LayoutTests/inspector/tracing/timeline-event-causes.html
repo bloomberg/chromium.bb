@@ -34,7 +34,7 @@ function test()
                 WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Timer installed: setTimeoutFunction @ setTimeoutFunction.js:");
+                checkStringContains(causes, "Timer installedsetTimeoutFunction @ setTimeoutFunction.js:");
                 next();
             }
         },
@@ -60,7 +60,7 @@ function test()
                 WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Animation frame requested: requestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
+                checkStringContains(causes, "Animation frame requestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
                 next();
             }
         },
@@ -88,7 +88,7 @@ function test()
                 WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Stack when first invalidated: styleRecalcFunction @ styleRecalcFunction.js:");
+                checkStringContains(causes, "First invalidatedstyleRecalcFunction @ styleRecalcFunction.js:");
                 next();
             }
         },
@@ -117,8 +117,8 @@ function test()
                 WebInspector.TracingTimelineUIUtils._generateCauses(record.traceEvent(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Stack when layout was forced: layoutFunction @ layoutFunction.js:");
-                checkStringContains(causes, "First layout invalidation: layoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "Layout forcedlayoutFunction @ layoutFunction.js:");
+                checkStringContains(causes, "First layout invalidationlayoutFunction @ layoutFunction.js:");
                 next();
             }
         }
