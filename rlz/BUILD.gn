@@ -59,6 +59,8 @@ source_set("rlz_lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
+    "//third_party/zlib",
+    "//url",
   ]
 
   if (is_ios) {
