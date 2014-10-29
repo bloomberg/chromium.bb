@@ -70,7 +70,8 @@ ServiceWorkerBatchOperation::ServiceWorkerBatchOperation() {}
 
 ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
     : handle_id(kInvalidServiceWorkerHandleId),
-      state(blink::WebServiceWorkerStateUnknown) {}
+      state(blink::WebServiceWorkerStateUnknown),
+      version_id(kInvalidServiceWorkerVersionId) {}
 
 ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
     : handle_id(kInvalidServiceWorkerRegistrationHandleId),

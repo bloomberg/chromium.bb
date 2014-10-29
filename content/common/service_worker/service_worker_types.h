@@ -150,6 +150,7 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   GURL scope;
   GURL url;
   blink::WebServiceWorkerState state;
+  int64 version_id;
 };
 
 struct ServiceWorkerRegistrationObjectInfo {

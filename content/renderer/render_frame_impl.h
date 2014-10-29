@@ -457,7 +457,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didLoseWebGLContext(blink::WebLocalFrame* frame,
                                    int arb_robustness_status_code);
   virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
-  virtual bool isControlledByServiceWorker(blink::WebDataSource&);
+  virtual bool isControlledByServiceWorker(blink::WebDataSource& data_source);
+  virtual int64_t serviceWorkerID(blink::WebDataSource& data_source);
   virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
                                       blink::WebAXEvent event);
   virtual void didChangeManifest(blink::WebLocalFrame*);

@@ -109,6 +109,7 @@ ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
   info.scope = registration_->pattern();
   info.url = version_->script_url();
   info.state = GetWebServiceWorkerState(version_.get());
+  info.version_id = version_->version_id();
   return info;
 }
 

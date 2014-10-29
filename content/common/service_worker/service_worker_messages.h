@@ -83,6 +83,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(scope)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(state)
+  IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerRegistrationObjectInfo)

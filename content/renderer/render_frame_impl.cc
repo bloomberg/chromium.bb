@@ -23,6 +23,7 @@
 #include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
@@ -3265,6 +3266,16 @@ bool RenderFrameImpl::isControlledByServiceWorker(WebDataSource& data_source) {
           DocumentState::FromDataSource(&data_source));
   return provider->context()->controller_handle_id() !=
       kInvalidServiceWorkerHandleId;
+}
+
+int64_t RenderFrameImpl::serviceWorkerID(WebDataSource& data_source) {
+  ServiceWorkerNetworkProvider* provider =
+      ServiceWorkerNetworkProvider::FromDocumentState(
+          DocumentState::FromDataSource(&data_source));
+
+  if (provider->context()->controller())
+    return provider->context()->controller()->version_id();
+  return kInvalidServiceWorkerVersionId;
 }
 
 void RenderFrameImpl::postAccessibilityEvent(const blink::WebAXObject& obj,
