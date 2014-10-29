@@ -739,7 +739,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
     headers_stream->WriteHeaders(stream_id, headers, true, nullptr);
     stream_id += 2;
   }
-  // Write one more to ensure that the headers stream has buffered data. The
+  // Write once more to ensure that the headers stream has buffered data. The
   // random headers may have exactly filled the flow control window.
   headers_stream->WriteHeaders(stream_id, headers, true, nullptr);
   EXPECT_TRUE(headers_stream->HasBufferedData());

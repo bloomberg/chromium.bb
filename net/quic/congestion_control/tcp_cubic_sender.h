@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   TcpCubicSender(const QuicClock* clock,
                  const RttStats* rtt_stats,
                  bool reno,
-                 QuicTcpCongestionWindow max_tcp_congestion_window,
+                 QuicPacketCount max_tcp_congestion_window,
                  QuicConnectionStats* stats);
   ~TcpCubicSender() override;
 
@@ -98,12 +98,15 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   const bool reno_;
 
   // Number of connections to simulate.
-  int num_connections_;
+  uint32 num_connections_;
 
   // ACK counter for the Reno implementation.
-  int64 congestion_window_count_;
+  uint64 congestion_window_count_;
 
   // Receiver side advertised window.
+  // TODO (jri): Change this variable name to receive_window_bytes_, to avoid
+  // confusion in operations with QuicPacketCount variables
+  // (eg., congestion_window_).
   QuicByteCount receive_window_;
 
   // Bytes sent and acked since the last loss event.  Used for PRR.
@@ -124,23 +127,23 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   QuicPacketSequenceNumber largest_sent_at_last_cutback_;
 
   // Congestion window in packets.
-  QuicTcpCongestionWindow congestion_window_;
+  QuicPacketCount congestion_window_;
 
   // Congestion window before the last loss event or RTO.
   QuicByteCount previous_congestion_window_;
 
   // Slow start congestion window in packets, aka ssthresh.
-  QuicTcpCongestionWindow slowstart_threshold_;
+  QuicPacketCount slowstart_threshold_;
 
   // Slow start threshold before the last loss event or RTO.
-  QuicTcpCongestionWindow previous_slowstart_threshold_;
+  QuicPacketCount previous_slowstart_threshold_;
 
   // Whether the last loss event caused us to exit slowstart.
   // Used for stats collection of slowstart_packets_lost
   bool last_cutback_exited_slowstart_;
 
   // Maximum number of outstanding packets for tcp.
-  QuicTcpCongestionWindow max_tcp_congestion_window_;
+  QuicPacketCount max_tcp_congestion_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
 };

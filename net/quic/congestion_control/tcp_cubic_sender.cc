@@ -19,7 +19,7 @@ namespace {
 // Constants based on TCP defaults.
 // The minimum cwnd based on RFC 3782 (TCP NewReno) for cwnd reductions on a
 // fast retransmission.  The cwnd after a timeout is still 1.
-const QuicTcpCongestionWindow kMinimumCongestionWindow = 2;
+const QuicPacketCount kMinimumCongestionWindow = 2;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
@@ -29,7 +29,7 @@ TcpCubicSender::TcpCubicSender(
     const QuicClock* clock,
     const RttStats* rtt_stats,
     bool reno,
-    QuicTcpCongestionWindow max_tcp_congestion_window,
+    QuicPacketCount max_tcp_congestion_window,
     QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
       cubic_(clock, stats),

@@ -708,29 +708,16 @@ TransmissionInfo::TransmissionInfo()
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
-    QuicSequenceNumberLength sequence_number_length)
-    : retransmittable_frames(retransmittable_frames),
-      sequence_number_length(sequence_number_length),
-      sent_time(QuicTime::Zero()),
-      bytes_sent(0),
-      nack_count(0),
-      transmission_type(NOT_RETRANSMISSION),
-      all_transmissions(nullptr),
-      in_flight(false),
-      is_unackable(false) {}
-
-TransmissionInfo::TransmissionInfo(
-    RetransmittableFrames* retransmittable_frames,
     QuicSequenceNumberLength sequence_number_length,
     TransmissionType transmission_type,
-    SequenceNumberList* all_transmissions)
+    QuicTime sent_time)
     : retransmittable_frames(retransmittable_frames),
       sequence_number_length(sequence_number_length),
-      sent_time(QuicTime::Zero()),
+      sent_time(sent_time),
       bytes_sent(0),
       nack_count(0),
       transmission_type(transmission_type),
-      all_transmissions(all_transmissions),
+      all_transmissions(nullptr),
       in_flight(false),
       is_unackable(false) {}
 

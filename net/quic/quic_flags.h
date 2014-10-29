@@ -18,7 +18,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_bbr_congestion_control;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_more_open_streams;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_timeouts_only_from_alarms;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_unified_timeouts;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_store_cached_network_params_from_chlo;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_drop_junk_packets;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_bbr;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

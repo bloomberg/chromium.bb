@@ -34,6 +34,27 @@ TEST_F(RttStatsTest, DefaultsBeforeUpdate) {
             rtt_stats_.SmoothedRtt());
 }
 
+TEST_F(RttStatsTest, SmoothedRtt) {
+  // Verify that ack_delay is corrected for in Smoothed RTT.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Delta::FromMilliseconds(100),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.SmoothedRtt());
+  // Verify that effective RTT of zero does not change Smoothed RTT.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
+                       QuicTime::Delta::FromMilliseconds(200),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.SmoothedRtt());
+  // Verify that large erroneous ack_delay does not change Smoothed RTT.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
+                       QuicTime::Delta::FromMilliseconds(300),
+                       QuicTime::Zero());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.latest_rtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(200), rtt_stats_.SmoothedRtt());
+}
+
 TEST_F(RttStatsTest, MinRtt) {
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(200),
                        QuicTime::Delta::Zero(),
@@ -65,6 +86,13 @@ TEST_F(RttStatsTest, MinRtt) {
                            QuicTime::Delta::FromMilliseconds(40)));
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.MinRtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10), rtt_stats_.recent_min_rtt());
+  // Verify that ack_delay does not go into recording of min_rtt_.
+  rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(7),
+                       QuicTime::Delta::FromMilliseconds(2),
+                       QuicTime::Zero().Add(
+                           QuicTime::Delta::FromMilliseconds(50)));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(7), rtt_stats_.MinRtt());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(7), rtt_stats_.recent_min_rtt());
 }
 
 TEST_F(RttStatsTest, RecentMinRtt) {

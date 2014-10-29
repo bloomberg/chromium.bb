@@ -78,12 +78,11 @@ void Cubic::Reset() {
   last_target_congestion_window_ = 0;
 }
 
-void Cubic::UpdateCongestionControlStats(
-    QuicTcpCongestionWindow new_cubic_mode_cwnd,
-    QuicTcpCongestionWindow new_reno_mode_cwnd) {
+void Cubic::UpdateCongestionControlStats(QuicPacketCount new_cubic_mode_cwnd,
+                                         QuicPacketCount new_reno_mode_cwnd) {
 
-  QuicTcpCongestionWindow highest_new_cwnd = max(new_cubic_mode_cwnd,
-                                                 new_reno_mode_cwnd);
+  QuicPacketCount highest_new_cwnd = max(new_cubic_mode_cwnd,
+                                         new_reno_mode_cwnd);
   if (last_congestion_window_ < highest_new_cwnd) {
     // cwnd will increase to highest_new_cwnd.
     stats_->cwnd_increase_congestion_avoidance +=
@@ -96,8 +95,8 @@ void Cubic::UpdateCongestionControlStats(
   }
 }
 
-QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
-    QuicTcpCongestionWindow current_congestion_window) {
+QuicPacketCount Cubic::CongestionWindowAfterPacketLoss(
+    QuicPacketCount current_congestion_window) {
   if (current_congestion_window < last_max_congestion_window_) {
     // We never reached the old max, so assume we are competing with another
     // flow. Use our extra back off factor to allow the other flow to go up.
@@ -110,8 +109,8 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
   return static_cast<int>(current_congestion_window * Beta());
 }
 
-QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
-    QuicTcpCongestionWindow current_congestion_window,
+QuicPacketCount Cubic::CongestionWindowAfterAck(
+    QuicPacketCount current_congestion_window,
     QuicTime::Delta delay_min) {
   acked_packets_count_ += 1;  // Packets acked.
   QuicTime current_time = clock_->ApproximateNow();
@@ -150,10 +149,10 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
       base::Time::kMicrosecondsPerSecond;
 
   int64 offset = time_to_origin_point_ - elapsed_time;
-  QuicTcpCongestionWindow delta_congestion_window = (kCubeCongestionWindowScale
+  QuicPacketCount delta_congestion_window = (kCubeCongestionWindowScale
       * offset * offset * offset) >> kCubeScale;
 
-  QuicTcpCongestionWindow target_congestion_window =
+  QuicPacketCount target_congestion_window =
       origin_point_congestion_window_ - delta_congestion_window;
 
   DCHECK_LT(0u, estimated_tcp_congestion_window_);

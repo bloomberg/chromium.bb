@@ -13,6 +13,7 @@
 namespace net {
 
 typedef uint64 QuicByteCount;
+typedef uint64 QuicPacketCount;
 
 class NET_EXPORT_PRIVATE QuicBandwidth {
  public:

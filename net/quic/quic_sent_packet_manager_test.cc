@@ -1201,7 +1201,9 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
 
   // Wait 2RTTs from now for the RTO, since it's the max of the RTO time
   // and the TLP time.  In production, there would always be two TLP's first.
-  expected_time = clock_.Now().Add(QuicTime::Delta::FromMilliseconds(200));
+  // Since retransmission was spurious, smoothed_rtt_ is expired, and replaced
+  // by the latest RTT sample of 500ms.
+  expected_time = clock_.Now().Add(QuicTime::Delta::FromMilliseconds(1000));
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 }
 
@@ -1306,6 +1308,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_bbr, true);
   QuicConfig config;
   QuicTagVector options;
 

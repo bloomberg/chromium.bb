@@ -25,22 +25,22 @@ const int64 kInitialCongestionWindow = 10;
 const uint32 kDefaultWindowTCP = kInitialCongestionWindow * kDefaultTCPMSS;
 
 // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
-const QuicTcpCongestionWindow kDefaultMaxCongestionWindowTCP = 10000;
+const QuicPacketCount kDefaultMaxCongestionWindowTCP = 10000;
 
 class TcpCubicSenderPeer : public TcpCubicSender {
  public:
   TcpCubicSenderPeer(const QuicClock* clock,
                      bool reno,
-                     QuicTcpCongestionWindow max_tcp_congestion_window)
+                     QuicPacketCount max_tcp_congestion_window)
       : TcpCubicSender(
             clock, &rtt_stats_, reno, max_tcp_congestion_window, &stats_) {
   }
 
-  QuicTcpCongestionWindow congestion_window() {
+  QuicPacketCount congestion_window() {
     return congestion_window_;
   }
 
-  QuicTcpCongestionWindow slowstart_threshold() {
+  QuicPacketCount slowstart_threshold() {
     return slowstart_threshold_;
   }
 
@@ -489,7 +489,7 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
-  const QuicTcpCongestionWindow kMaxCongestionWindowTCP = 50;
+  const QuicPacketCount kMaxCongestionWindowTCP = 50;
   const int kNumberOfAcks = 100;
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, false, kMaxCongestionWindowTCP));
@@ -505,7 +505,7 @@ TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
 }
 
 TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
-  const QuicTcpCongestionWindow kMaxCongestionWindowTCP = 50;
+  const QuicPacketCount kMaxCongestionWindowTCP = 50;
   const int kNumberOfAcks = 1000;
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, true, kMaxCongestionWindowTCP));
@@ -527,7 +527,7 @@ TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
 }
 
 TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
-  const QuicTcpCongestionWindow kMaxCongestionWindowTCP = 50;
+  const QuicPacketCount kMaxCongestionWindowTCP = 50;
   // Set to 10000 to compensate for small cubic alpha.
   const int kNumberOfAcks = 10000;
 
@@ -579,7 +579,7 @@ TEST_F(TcpCubicSenderTest, DontTrackAckPackets) {
 }
 
 TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
-  QuicTcpCongestionWindow congestion_window = sender_->congestion_window();
+  QuicPacketCount congestion_window = sender_->congestion_window();
   QuicConfig config;
   QuicConfigPeer::SetReceivedInitialWindow(&config, 2 * congestion_window);
 

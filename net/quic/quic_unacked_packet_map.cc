@@ -42,28 +42,28 @@ void QuicUnackedPacketMap::AddSentPacket(
     QuicByteCount bytes_sent,
     bool set_in_flight) {
   QuicPacketSequenceNumber sequence_number = packet.sequence_number;
-  DCHECK_LT(largest_sent_packet_, sequence_number);
+  LOG_IF(DFATAL, largest_sent_packet_ > sequence_number);
   DCHECK_GE(sequence_number, least_unacked_ + unacked_packets_.size());
   while (least_unacked_ + unacked_packets_.size() < sequence_number) {
     unacked_packets_.push_back(TransmissionInfo());
     unacked_packets_.back().is_unackable = true;
   }
 
-  TransmissionInfo info;
+  TransmissionInfo info(packet.retransmittable_frames,
+                        packet.sequence_number_length,
+                        transmission_type,
+                        sent_time);
   if (old_sequence_number == 0) {
     if (packet.retransmittable_frames != nullptr &&
         packet.retransmittable_frames->HasCryptoHandshake() == IS_HANDSHAKE) {
       ++pending_crypto_packet_count_;
     }
-    info = TransmissionInfo(packet.retransmittable_frames,
-                            packet.sequence_number_length);
   } else {
-    info = OnRetransmittedPacket(
-        old_sequence_number, sequence_number, transmission_type);
+    TransferRetransmissionInfo(
+        old_sequence_number, sequence_number, transmission_type, &info);
   }
-  info.sent_time = sent_time;
 
-  largest_sent_packet_ = max(sequence_number, largest_sent_packet_);
+  largest_sent_packet_ = sequence_number;
   if (set_in_flight) {
     bytes_in_flight_ += bytes_sent;
     info.bytes_sent = bytes_sent;
@@ -82,10 +82,11 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
   }
 }
 
-TransmissionInfo QuicUnackedPacketMap::OnRetransmittedPacket(
+void QuicUnackedPacketMap::TransferRetransmissionInfo(
     QuicPacketSequenceNumber old_sequence_number,
     QuicPacketSequenceNumber new_sequence_number,
-    TransmissionType transmission_type) {
+    TransmissionType transmission_type,
+    TransmissionInfo* info) {
   DCHECK_GE(old_sequence_number, least_unacked_);
   DCHECK_LT(old_sequence_number, least_unacked_ + unacked_packets_.size());
   DCHECK_GE(new_sequence_number, least_unacked_ + unacked_packets_.size());
@@ -130,14 +131,10 @@ TransmissionInfo QuicUnackedPacketMap::OnRetransmittedPacket(
     }
     transmission_info->all_transmissions->push_back(new_sequence_number);
   }
-  TransmissionInfo info =
-      TransmissionInfo(frames,
-                       transmission_info->sequence_number_length,
-                       transmission_type,
-                       transmission_info->all_transmissions);
+  info->retransmittable_frames = frames;
+  info->all_transmissions = transmission_info->all_transmissions;
   // Proactively remove obsolete packets so the least unacked can be raised.
   RemoveObsoletePackets();
-  return info;
 }
 
 void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {

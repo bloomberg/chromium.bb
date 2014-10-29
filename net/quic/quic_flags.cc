@@ -47,10 +47,10 @@ bool FLAGS_quic_timeouts_only_from_alarms = true;
 // single method.
 bool FLAGS_quic_unified_timeouts = true;
 
-// If true, store any CachedNetworkParams that are provided in the STK from the
-// CHLO.
-bool FLAGS_quic_store_cached_network_params_from_chlo = false;
-
 // If true, QUIC will be more resilliant to junk packets with valid connection
 // IDs.
 bool FLAGS_quic_drop_junk_packets = true;
+
+// If true, QUIC BBR congestion control may be enabled via Finch and/or via QUIC
+// connection options.
+bool FLAGS_quic_allow_bbr = false;

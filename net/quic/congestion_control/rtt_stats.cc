@@ -53,30 +53,29 @@ void RttStats::ExpireSmoothedMetrics() {
 void RttStats::UpdateRtt(QuicTime::Delta send_delta,
                          QuicTime::Delta ack_delay,
                          QuicTime now) {
-  QuicTime::Delta rtt_sample(QuicTime::Delta::Zero());
-  if (send_delta > ack_delay) {
-    rtt_sample = send_delta.Subtract(ack_delay);
-  } else if (!HasUpdates()) {
-    // Even though we received information from the peer suggesting
-    // an invalid (negative) RTT, we can use the send delta as an
-    // approximation until we get a better estimate.
-    rtt_sample = send_delta;
-  }
-
-  if (rtt_sample.IsInfinite() || rtt_sample.IsZero()) {
-    DVLOG(1) << "Ignoring rtt, because it's "
-             << (rtt_sample.IsZero() ? "Zero" : "Infinite");
+  if (send_delta.IsInfinite() || send_delta.IsZero()) {
+    DVLOG(1) << "Ignoring measured send_delta, because it's "
+             << (send_delta.IsZero() ? "Zero" : "Infinite");
     return;
   }
-  // RTT can't be non-positive.
-  DCHECK_LT(0, rtt_sample.ToMicroseconds());
 
-  latest_rtt_ = rtt_sample;
-  // First time call or link delay decreases.
-  if (min_rtt_.IsZero() || min_rtt_ > rtt_sample) {
-    min_rtt_ = rtt_sample;
+  // Update min_rtt_ first. min_rtt_ does not use an rtt_sample corrected for
+  // ack_delay but the raw observed send_delta, since poor clock granularity at
+  // the client may cause a high ack_delay to result in underestimation of the
+  // min_rtt_.
+  if (min_rtt_.IsZero() || min_rtt_ > send_delta) {
+    min_rtt_ = send_delta;
   }
-  UpdateRecentMinRtt(rtt_sample, now);
+  UpdateRecentMinRtt(send_delta, now);
+
+  // Correct for ack_delay if information received from the peer results in a
+  // positive RTT sample. Otherwise, we use the send_delta as a reasonable
+  // measure for smoothed_rtt.
+  QuicTime::Delta rtt_sample(send_delta);
+  if (rtt_sample > ack_delay) {
+    rtt_sample = rtt_sample.Subtract(ack_delay);
+  }
+  latest_rtt_ = rtt_sample;
   // First time call.
   if (!HasUpdates()) {
     smoothed_rtt_ = rtt_sample;

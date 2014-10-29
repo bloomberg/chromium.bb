@@ -1461,8 +1461,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     return SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE;
   }
 
-  if (FLAGS_quic_store_cached_network_params_from_chlo &&
-      source_address_token.has_cached_network_parameters()) {
+  if (source_address_token.has_cached_network_parameters()) {
     *cached_network_params = source_address_token.cached_network_parameters();
   }
 

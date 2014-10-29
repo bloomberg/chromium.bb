@@ -1063,14 +1063,9 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Constructs a Transmission with a new all_tranmissions set
   // containing |sequence_number|.
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
-                   QuicSequenceNumberLength sequence_number_length);
-
-  // Constructs a Transmission with the specified |all_tranmissions| set
-  // and inserts |sequence_number| into it.
-  TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                    QuicSequenceNumberLength sequence_number_length,
                    TransmissionType transmission_type,
-                   SequenceNumberList* all_transmissions);
+                   QuicTime sent_time);
 
   RetransmittableFrames* retransmittable_frames;
   QuicSequenceNumberLength sequence_number_length;

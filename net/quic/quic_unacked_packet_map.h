@@ -132,12 +132,12 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
  private:
   // Called when a packet is retransmitted with a new sequence number.
   // |old_sequence_number| will remain unacked, but will have no
-  // retransmittable data associated with it. A transmission info will be
-  // created for |new_sequence_number| and returned.
-  TransmissionInfo OnRetransmittedPacket(
-      QuicPacketSequenceNumber old_sequence_number,
-      QuicPacketSequenceNumber new_sequence_number,
-      TransmissionType transmission_type);
+  // retransmittable data associated with it. Retransmittable frames will be
+  // transferred to |info| and all_transmissions will be populated.
+  void TransferRetransmissionInfo(QuicPacketSequenceNumber old_sequence_number,
+                                  QuicPacketSequenceNumber new_sequence_number,
+                                  TransmissionType transmission_type,
+                                  TransmissionInfo* info);
 
   void MaybeRemoveRetransmittableFrames(TransmissionInfo* transmission_info);
 

@@ -103,7 +103,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
             config.GetInitialRoundTripTimeUsToSend()));
   }
   // TODO(ianswett): BBR is currently a server only feature.
-  if (config.HasReceivedConnectionOptions() &&
+  if (FLAGS_quic_allow_bbr &&
+      config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
     if (FLAGS_quic_recent_min_rtt_window_s > 0) {
       rtt_stats_.set_recent_min_rtt_window(

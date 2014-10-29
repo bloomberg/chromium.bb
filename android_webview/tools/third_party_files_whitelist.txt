@@ -74,8 +74,10 @@ google_update/google_update_idl.idl
 # Native client not used in Android. Contains the word "Copyright"
 native_client_sdk/doc_generated/rest-devsite-examples.html
 # String '(c)' used in certificates organization names
-net/quic/crypto/common_cert_set_1_50.inc
-net/quic/crypto/common_cert_set_51_100.inc
+net/quic/crypto/common_cert_set_0a.inc
+net/quic/crypto/common_cert_set_0b.inc
+net/quic/crypto/common_cert_set_1a.inc
+net/quic/crypto/common_cert_set_1b.inc
 # String '(c)' used in certificates organization names
 net/test/test_certificate_data.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
