@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
+#include "net/base/net_log_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -32,7 +33,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
   // Create and destroy a logger.
   FILE* file = base::OpenFile(log_path_, "w");
   ASSERT_TRUE(file);
-  scoped_ptr<base::Value> constants(NetLogLogger::GetConstants());
+  scoped_ptr<base::Value> constants(GetNetConstants());
   scoped_ptr<NetLogLogger> logger(new NetLogLogger(file, *constants));
   logger.reset();
 
@@ -54,7 +55,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONForNoEvents) {
 TEST_F(NetLogLoggerTest, LogLevel) {
   FILE* file = base::OpenFile(log_path_, "w");
   ASSERT_TRUE(file);
-  scoped_ptr<base::Value> constants(NetLogLogger::GetConstants());
+  scoped_ptr<base::Value> constants(GetNetConstants());
   NetLogLogger logger(file, *constants);
 
   NetLog net_log;
@@ -73,7 +74,7 @@ TEST_F(NetLogLoggerTest, LogLevel) {
 TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
   FILE* file = base::OpenFile(log_path_, "w");
   ASSERT_TRUE(file);
-  scoped_ptr<base::Value> constants(NetLogLogger::GetConstants());
+  scoped_ptr<base::Value> constants(GetNetConstants());
   scoped_ptr<NetLogLogger> logger(new NetLogLogger(file, *constants));
 
   const int kDummyId = 1;
@@ -104,7 +105,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
 TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
   FILE* file = base::OpenFile(log_path_, "w");
   ASSERT_TRUE(file);
-  scoped_ptr<base::Value> constants(NetLogLogger::GetConstants());
+  scoped_ptr<base::Value> constants(GetNetConstants());
   scoped_ptr<NetLogLogger> logger(new NetLogLogger(file, *constants));
 
   const int kDummyId = 1;

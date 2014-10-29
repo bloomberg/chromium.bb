@@ -12,6 +12,7 @@
 #include "net/base/net_log.h"
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 class Value;
 }
@@ -45,6 +46,9 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
 
   // Create a dictionary containing legend for net/ constants.  Caller takes
   // ownership of returned value.
+  // TODO(mmenke):  Get rid of this, and have embedders use GetNetConstants
+  // directly.  Also maybe call that function by default, so only embedders
+  // that need more constants need to worry about it.
   static base::DictionaryValue* GetConstants();
 
  private:
