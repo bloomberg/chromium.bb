@@ -7,8 +7,8 @@ UNKNOWN_TYPE | GiftCardsAndCertificatesInformation.UseGiftCardsOrCertificates | 
 UNKNOWN_TYPE | CreditCardInformation.BillingCreditCardEntry.CardTypes_Selected | Card Type* | CreditCard | MyWalletInformation.UseMyWalletFunds_1-default
 UNKNOWN_TYPE | CreditCardInformation.BillingCreditCardEntry.CardTypes_Selected | Alaska Airlines Commercial Account | AS | MyWalletInformation.UseMyWalletFunds_1-default
 CREDIT_CARD_NUMBER | CreditCardInformation.BillingCreditCardEntry.CardNumber | Card Number |  | MyWalletInformation.UseMyWalletFunds_1-cc
-UNKNOWN_TYPE | CreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-default
-UNKNOWN_TYPE | CreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-default
+CREDIT_CARD_EXP_MONTH | CreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | MyWalletInformation.UseMyWalletFunds_1-cc
 CREDIT_CARD_NAME | CreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | MyWalletInformation.UseMyWalletFunds_1-cc
 ADDRESS_HOME_COUNTRY | CreditCardInformation.BillingAddressEntry.Countries_Selected | Country | US | MyWalletInformation.UseMyWalletFunds_1-default
 ADDRESS_HOME_LINE1 | CreditCardInformation.BillingAddressEntry.Address1 | Address |  | MyWalletInformation.UseMyWalletFunds_1-default
@@ -24,8 +24,8 @@ PHONE_HOME_WHOLE_NUMBER | CreditCardInformation.BillingPhoneNumberEntry.Number |
 UNKNOWN_TYPE | TripInsurance.QuoteID | Reimburses non-refundable, prepaid expenses up to the cost of your ticket(s) if you cancel your tripCovers emergency medical / dental and emergency medical transportation while travelingHelps with trip interruption, lost or damaged baggage, baggage delay, and additional travel delay costs Terms, conditions and exclusions apply, learn more. | 657566350481481886 | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 UNKNOWN_TYPE | TripInsurance.QuoteID | Yes, add trip protection for a total of $21.00. No, I choose not to protect my purchase. | 657566350481481887 | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-default
 CREDIT_CARD_NUMBER | AncillaryCreditCardInformation.BillingCreditCardEntry.CardNumber | Card Number |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
-CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
-CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
+CREDIT_CARD_EXP_MONTH | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationMonths_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | AncillaryCreditCardInformation.BillingCreditCardEntry.ExpirationYears_Selected | Expiration* |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
 CREDIT_CARD_NAME | AncillaryCreditCardInformation.BillingCreditCardEntry.CardPersonName | Name on Card |  | CreditCardInformation.BillingPhoneNumberEntry.CountryCode_Selected_1-cc
 ADDRESS_HOME_COUNTRY | AncillaryCreditCardInformation.BillingAddressEntry.Countries_Selected | Country | US | AncillaryCreditCardInformation.BillingAddressEntry.Countries_Selected_1-default
 ADDRESS_HOME_LINE1 | AncillaryCreditCardInformation.BillingAddressEntry.Address1 | Address |  | AncillaryCreditCardInformation.BillingAddressEntry.Countries_Selected_1-default
