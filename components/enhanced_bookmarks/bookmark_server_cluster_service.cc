@@ -93,8 +93,16 @@ const std::vector<std::string> BookmarkServerClusterService::GetClusters()
     const {
   std::vector<std::string> cluster_names;
 
-  for (auto& pair : cluster_data_)
-    cluster_names.push_back(pair.first);
+  for (auto& pair : cluster_data_) {
+    for (auto& star_id : pair.second) {
+      const BookmarkNode* bookmark = BookmarkForRemoteId(star_id);
+      if (bookmark) {
+        // Only add clusters that have children.
+        cluster_names.push_back(pair.first);
+        break;
+      }
+    }
+  }
 
   return cluster_names;
 }
