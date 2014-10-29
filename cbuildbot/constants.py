@@ -171,6 +171,7 @@ GERRIT_HOSTS = {
 }
 
 # Only remotes listed in CROS_REMOTES are considered branchable.
+# CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
 CROS_REMOTES = {
     EXTERNAL_REMOTE: EXTERNAL_GOB_URL,
     INTERNAL_REMOTE: INTERNAL_GOB_URL,
@@ -205,6 +206,7 @@ EXTERNAL_REMOTES = (EXTERNAL_REMOTE, CHROMIUM_REMOTE)
 BRANCHABLE_PROJECTS = {
     EXTERNAL_REMOTE: r'chromiumos/(.+)',
     INTERNAL_REMOTE: r'chromeos/(.+)',
+    KAYLE_INTERNAL_REMOTE: r'chromeos/(.+)',
 }
 
 # TODO(sosa): Move to manifest-versions-external once its created
