@@ -49,16 +49,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // Sets a preferred size for the native view attached to this View.
   void SetPreferredSize(const gfx::Size& size);
 
-  // A NativeViewHost has an associated focus View so that the focus of the
-  // native control and of the View are kept in sync. In simple cases where the
-  // NativeViewHost directly wraps a native window as is, the associated view
-  // is this View. In other cases where the NativeViewHost is part of another
-  // view (such as TextField), the actual View is not the NativeViewHost and
-  // this method must be called to set that.
-  // This method must be called before Attach().
-  void set_focus_view(View* view) { focus_view_ = view; }
-  View* focus_view() { return focus_view_; }
-
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this
@@ -122,9 +112,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // Value of |fast_resize_| during the last call to Layout.
   bool fast_resize_at_last_layout_;
-
-  // The view that should be given focus when this NativeViewHost is focused.
-  View* focus_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

@@ -23,8 +23,7 @@ const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 NativeViewHost::NativeViewHost()
     : native_view_(NULL),
       fast_resize_(false),
-      fast_resize_at_last_layout_(false),
-      focus_view_(NULL) {
+      fast_resize_at_last_layout_(false) {
 }
 
 NativeViewHost::~NativeViewHost() {
@@ -34,10 +33,6 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(native_view);
   DCHECK(!native_view_);
   native_view_ = native_view;
-  // If set_focus_view() has not been invoked, this view is the one that should
-  // be seen as focused when the native view receives focus.
-  if (!focus_view_)
-    focus_view_ = this;
   native_wrapper_->AttachNativeView();
   Layout();
 
