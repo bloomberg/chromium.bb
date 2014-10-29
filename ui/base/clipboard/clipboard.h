@@ -71,7 +71,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     std::string Serialize() const;
     static FormatType Deserialize(const std::string& serialization);
 
-#if defined(USE_AURA)
+#if defined(TOOLKIT_VIEWS)
     // FormatType can be used in a set on some platforms.
     bool operator<(const FormatType& other) const;
 #endif

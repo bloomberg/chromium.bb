@@ -89,6 +89,12 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
   return FormatType(base::SysUTF8ToNSString(serialization));
 }
 
+#if defined(TOOLKIT_VIEWS)
+bool Clipboard::FormatType::operator<(const FormatType& other) const {
+  return [data_ compare:other.data_] == NSOrderedAscending;
+}
+#endif
+
 // Various predefined FormatTypes.
 // static
 Clipboard::FormatType Clipboard::GetFormatType(
