@@ -26,9 +26,9 @@ class PnaclTranslationCacheTest : public testing::Test {
  protected:
   PnaclTranslationCacheTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  virtual ~PnaclTranslationCacheTest() {}
-  virtual void SetUp() { cache_.reset(new PnaclTranslationCache()); }
-  virtual void TearDown() {
+  ~PnaclTranslationCacheTest() override {}
+  void SetUp() override { cache_.reset(new PnaclTranslationCache()); }
+  void TearDown() override {
     // The destructor of PnaclTranslationCacheWriteEntry posts a task to the IO
     // thread to close the backend cache entry. We want to make sure the entries
     // are closed before we delete the backend (and in particular the destructor

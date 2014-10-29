@@ -17,7 +17,7 @@ static const char kOtherTestUsername[] = "otheruser@test.com";
 
 class SigninErrorControllerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     error_controller_.reset(new SigninErrorController());
   }
 

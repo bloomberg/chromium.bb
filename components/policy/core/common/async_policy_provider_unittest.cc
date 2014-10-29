@@ -78,10 +78,10 @@ scoped_ptr<PolicyBundle> MockPolicyLoader::Load() {
 class AsyncPolicyProviderTest : public testing::Test {
  protected:
   AsyncPolicyProviderTest();
-  virtual ~AsyncPolicyProviderTest();
+  ~AsyncPolicyProviderTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   base::MessageLoop loop_;
   SchemaRegistry schema_registry_;

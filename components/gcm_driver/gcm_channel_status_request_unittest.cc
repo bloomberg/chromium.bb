@@ -15,7 +15,7 @@ namespace gcm {
 class GCMChannelStatusRequestTest : public testing::Test {
  public:
   GCMChannelStatusRequestTest();
-  virtual ~GCMChannelStatusRequestTest();
+  ~GCMChannelStatusRequestTest() override;
 
  protected:
   enum GCMStatus {

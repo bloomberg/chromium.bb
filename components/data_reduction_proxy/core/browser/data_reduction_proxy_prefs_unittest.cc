@@ -16,7 +16,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyPrefsTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     RegisterPrefs(local_state_prefs_.registry());
     PrefRegistrySimple* profile_registry = profile_prefs_.registry();
     RegisterPrefs(profile_registry);

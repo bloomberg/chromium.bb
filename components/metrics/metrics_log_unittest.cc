@@ -93,8 +93,7 @@ class MetricsLogTest : public testing::Test {
     MetricsStateManager::RegisterPrefs(prefs_.registry());
   }
 
-  virtual ~MetricsLogTest() {
-  }
+  ~MetricsLogTest() override {}
 
  protected:
   // Check that the values in |system_values| correspond to the test data

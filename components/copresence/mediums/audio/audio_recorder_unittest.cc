@@ -78,7 +78,7 @@ class AudioRecorderTest : public testing::Test {
       media::AudioManager::CreateForTesting();
   }
 
-  virtual ~AudioRecorderTest() {
+  ~AudioRecorderTest() override {
     DeleteRecorder();
     for (size_t i = 0; i < channel_data_.size(); ++i)
       base::AlignedFree(channel_data_[i]);

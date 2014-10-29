@@ -42,9 +42,9 @@ class TestTickClock : public base::TickClock {
 
 class NetworkTimeTrackerTest : public testing::Test {
  public:
-  virtual ~NetworkTimeTrackerTest() {}
+  ~NetworkTimeTrackerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
 
     now_ = base::Time::NowFromSystemTime();

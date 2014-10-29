@@ -26,11 +26,11 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
  public:
   AutocompleteHistoryManager(AutofillDriver* driver,
                              AutofillClient* autofill_client);
-  virtual ~AutocompleteHistoryManager() override;
+  ~AutocompleteHistoryManager() override;
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(
-      WebDataServiceBase::Handle h, const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
+                                   const WDTypedResult* result) override;
 
   // Pass-through functions that are called by AutofillManager, after it has
   // dispatched a message.

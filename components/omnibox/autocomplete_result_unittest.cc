@@ -88,7 +88,7 @@ class AutocompleteResultTest : public testing::Test  {
     variations::testing::ClearAllVariationParams();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     template_url_service_.reset(new TemplateURLService(NULL, 0));
     template_url_service_->Load();
   }

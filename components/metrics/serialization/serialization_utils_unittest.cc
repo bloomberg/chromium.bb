@@ -25,9 +25,7 @@ class SerializationUtilsTest : public testing::Test {
     }
   }
 
-  virtual void SetUp() override {
-    base::DeleteFile(filepath, false);
-  }
+  void SetUp() override { base::DeleteFile(filepath, false); }
 
   void TestSerialization(MetricSample* sample) {
     std::string serialized(sample->ToString());

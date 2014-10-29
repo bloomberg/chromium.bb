@@ -38,10 +38,10 @@ class NaClBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
  public:
   NaClBPFSandboxPolicy()
       : baseline_policy_(content::GetBPFSandboxBaselinePolicy()) {}
-  virtual ~NaClBPFSandboxPolicy() {}
+  ~NaClBPFSandboxPolicy() override {}
 
-  virtual ResultExpr EvaluateSyscall(int system_call_number) const override;
-  virtual ResultExpr InvalidSyscall() const override {
+  ResultExpr EvaluateSyscall(int system_call_number) const override;
+  ResultExpr InvalidSyscall() const override {
     return baseline_policy_->InvalidSyscall();
   }
 

@@ -45,8 +45,8 @@ class TestStorageMonitor : public StorageMonitor {
 #endif
 
 #if defined(OS_LINUX)
-  virtual device::MediaTransferProtocolManager*
-      media_transfer_protocol_manager() override;
+  device::MediaTransferProtocolManager* media_transfer_protocol_manager()
+      override;
 #endif
 
   Receiver* receiver() const override;

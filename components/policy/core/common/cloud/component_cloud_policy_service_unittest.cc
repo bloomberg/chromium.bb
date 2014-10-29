@@ -111,7 +111,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
               &store_,
               loop_.message_loop_proxy()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     cache_ = new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy());
@@ -144,7 +144,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
                          NULL);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // The service cleans up its backend on the background thread.
     service_.reset();
     RunUntilIdle();

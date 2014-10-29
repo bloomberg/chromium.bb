@@ -37,7 +37,7 @@ class MutableProfileOAuth2TokenServiceTest
         start_batch_changes_(0),
         end_batch_changes_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
 #if defined(OS_MACOSX)
     OSCrypt::UseMockKeychain(true);
 #endif
@@ -52,7 +52,7 @@ class MutableProfileOAuth2TokenServiceTest
     oauth2_service_.AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     oauth2_service_.RemoveObserver(this);
     oauth2_service_.Shutdown();
   }

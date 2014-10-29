@@ -83,13 +83,13 @@ void ExpectEntryPointersEquals(EntryMap expected,
 
 class ProtoDatabaseImplTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     main_loop_.reset(new MessageLoop());
     db_.reset(
         new ProtoDatabaseImpl<TestProto>(main_loop_->message_loop_proxy()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     db_.reset();
     base::RunLoop().RunUntilIdle();
     main_loop_.reset();

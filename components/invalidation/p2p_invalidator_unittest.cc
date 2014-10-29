@@ -93,7 +93,7 @@ class P2PInvalidatorTest : public testing::Test {
     delegate_.GetInvalidator()->RegisterHandler(&fake_handler_);
   }
 
-  virtual ~P2PInvalidatorTest() {
+  ~P2PInvalidatorTest() override {
     delegate_.GetInvalidator()->UnregisterHandler(&fake_handler_);
   }
 

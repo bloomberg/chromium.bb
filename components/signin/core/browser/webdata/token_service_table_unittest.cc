@@ -15,10 +15,10 @@ using base::Time;
 class TokenServiceTableTest : public testing::Test {
  public:
   TokenServiceTableTest() {}
-  virtual ~TokenServiceTableTest() {}
+  ~TokenServiceTableTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 

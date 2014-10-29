@@ -35,7 +35,7 @@ std::string GetHostFromTemplateURLData(const TemplateURLData& data) {
 
 class TemplateURLPrepopulateDataTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     TemplateURLPrepopulateData::RegisterProfilePrefs(prefs_.registry());
   }
 

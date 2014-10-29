@@ -101,7 +101,7 @@ class NaClValidationQueryTest : public ::testing::Test {
   scoped_ptr<TestQuery> query1;
   scoped_ptr<TestQuery> query2;
 
-  virtual void SetUp() {
+  void SetUp() override {
     query1.reset(new TestQuery(kKey, kVersion));
     query2.reset(new TestQuery(kKey, kVersion));
   }

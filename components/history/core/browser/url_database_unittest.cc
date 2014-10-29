@@ -45,7 +45,7 @@ class URLDatabaseTest : public testing::Test,
 
  private:
   // Test setup.
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath db_file = temp_dir_.path().AppendASCII("URLTest.db");
 
@@ -57,9 +57,7 @@ class URLDatabaseTest : public testing::Test,
     InitKeywordSearchTermsTable();
     CreateKeywordSearchTermsIndices();
   }
-  virtual void TearDown() {
-    db_.Close();
-  }
+  void TearDown() override { db_.Close(); }
 
   base::ScopedTempDir temp_dir_;
   sql::Connection db_;

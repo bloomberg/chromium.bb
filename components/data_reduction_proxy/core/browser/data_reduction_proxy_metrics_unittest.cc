@@ -40,7 +40,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
  protected:
   ChromeNetworkDataSavingMetricsTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
         &pref_service_,
         scoped_refptr<base::TestSimpleTaskRunner>(
@@ -136,7 +136,7 @@ class ChromeNetworkDailyDataSavingMetricsTest
     base::Time::FromString(kLastUpdateTime, &now_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeNetworkDataSavingMetricsTest::SetUp();
 
     // Only create two lists in Setup to test that adding new lists is fine.

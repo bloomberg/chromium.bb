@@ -19,10 +19,10 @@ namespace {
 class PrecacheURLTableTest : public testing::Test {
  public:
   PrecacheURLTableTest() {}
-  virtual ~PrecacheURLTableTest() {}
+  ~PrecacheURLTableTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     precache_url_table_.reset(new PrecacheURLTable());
     db_.reset(new sql::Connection());
     ASSERT_TRUE(db_->OpenInMemory());

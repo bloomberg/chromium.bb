@@ -99,11 +99,11 @@ class GCMDriverTest : public testing::Test {
   };
 
   GCMDriverTest();
-  virtual ~GCMDriverTest();
+  ~GCMDriverTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   GCMDriverDesktop* driver() { return driver_.get(); }
   FakeGCMAppHandler* gcm_app_handler() { return gcm_app_handler_.get(); }
@@ -681,10 +681,10 @@ TEST_F(GCMDriverTest, GCMClientNotReadyBeforeSending) {
 class GCMDriverFunctionalTest : public GCMDriverTest {
  public:
   GCMDriverFunctionalTest();
-  virtual ~GCMDriverFunctionalTest();
+  ~GCMDriverFunctionalTest() override;
 
   // GCMDriverTest:
-  virtual void SetUp() override;
+  void SetUp() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCMDriverFunctionalTest);
@@ -989,10 +989,10 @@ TEST_F(GCMDriverFunctionalTest, MessagesDeleted) {
 class GCMChannelStatusSyncerTest : public GCMDriverTest {
  public:
   GCMChannelStatusSyncerTest();
-  virtual ~GCMChannelStatusSyncerTest();
+  ~GCMChannelStatusSyncerTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void CompleteGCMChannelStatusRequest(bool enabled, int poll_interval_seconds);
   bool CompareDelaySeconds(bool expected_delay_seconds,

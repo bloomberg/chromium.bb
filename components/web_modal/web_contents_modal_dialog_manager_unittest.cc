@@ -91,7 +91,7 @@ class WebContentsModalDialogManagerTest
         manager(NULL) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
     delegate.reset(new TestWebContentsModalDialogManagerDelegate);
@@ -101,7 +101,7 @@ class WebContentsModalDialogManagerTest
     test_api.reset(new WebContentsModalDialogManager::TestApi(manager));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     test_api.reset();
     content::RenderViewHostTestHarness::TearDown();
   }

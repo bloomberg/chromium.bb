@@ -75,9 +75,7 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
 
 class DomDistillerViewerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    service_.reset(new TestDomDistillerService());
-  }
+  void SetUp() override { service_.reset(new TestDomDistillerService()); }
 
  protected:
   scoped_ptr<ViewerHandle> CreateViewRequest(

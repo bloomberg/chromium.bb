@@ -757,10 +757,10 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
             kCrashDumpSignal)) {
   }
 
-  virtual ~NonBrowserCrashHandler() {}
+  ~NonBrowserCrashHandler() override {}
 
-  virtual bool RequestDump(const void* crash_context,
-                           size_t crash_context_size) override {
+  bool RequestDump(const void* crash_context,
+                   size_t crash_context_size) override {
     int fds[2] = { -1, -1 };
     if (sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
       static const char msg[] = "Failed to create socket for crash dumping.\n";

@@ -264,7 +264,7 @@ class SyncInvalidationListenerTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(fake_push_client_)))),
         fake_delegate_(&listener_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     StartClient();
 
     registered_ids_.insert(kBookmarksId_);
@@ -272,9 +272,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     listener_.UpdateRegisteredIds(registered_ids_);
   }
 
-  virtual void TearDown() {
-    StopClient();
-  }
+  void TearDown() override { StopClient(); }
 
   // Restart client without re-registering IDs.
   void RestartClient() {
@@ -1062,7 +1060,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
 class SyncInvalidationListenerTest_WithInitialState
     : public SyncInvalidationListenerTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     UnackedInvalidationSet bm_state(kBookmarksId_);
     UnackedInvalidationSet ext_state(kExtensionsId_);
 

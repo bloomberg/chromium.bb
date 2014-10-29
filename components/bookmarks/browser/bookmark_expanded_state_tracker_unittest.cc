@@ -36,12 +36,12 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
 class BookmarkExpandedStateTrackerTest : public testing::Test {
  public:
   BookmarkExpandedStateTrackerTest();
-  virtual ~BookmarkExpandedStateTrackerTest();
+  ~BookmarkExpandedStateTrackerTest() override;
 
  protected:
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   base::MessageLoop message_loop_;
   TestBookmarkClient client_;

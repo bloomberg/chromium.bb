@@ -35,7 +35,7 @@ class HttpPostTest : public testing::Test {
     proto_.set_client("test_client");
     proto_.set_version_code(123);
   }
-  virtual ~HttpPostTest() {}
+  ~HttpPostTest() override {}
 
   // Record the response sent back to the client for verification.
   void TestResponseCallback(int response_code,

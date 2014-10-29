@@ -42,7 +42,7 @@ class TestGPUMetricsProvider : public GPUMetricsProvider {
 class GPUMetricsProviderTest : public testing::Test {
  public:
   GPUMetricsProviderTest() {}
-  virtual ~GPUMetricsProviderTest() {}
+  ~GPUMetricsProviderTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUMetricsProviderTest);

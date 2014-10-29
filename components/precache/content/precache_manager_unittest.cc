@@ -140,7 +140,7 @@ class PrecacheManagerTest : public testing::Test {
                                   base::Unretained(&url_callback_))) {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     base::StatisticsRecorder::Initialize();
 
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(

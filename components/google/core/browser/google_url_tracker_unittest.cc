@@ -207,11 +207,11 @@ int TestInfoBarManager::GetActiveEntryID() {
 class GoogleURLTrackerTest : public testing::Test {
  protected:
   GoogleURLTrackerTest();
-  virtual ~GoogleURLTrackerTest();
+  ~GoogleURLTrackerTest() override;
 
   // testing::Test
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   net::TestURLFetcher* GetFetcher();
   void MockSearchDomainCheckResponse(const std::string& domain);

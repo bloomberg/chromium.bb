@@ -257,11 +257,10 @@ class SyncDataTypeManagerImplTest : public testing::Test {
  public:
   SyncDataTypeManagerImplTest() {}
 
-  virtual ~SyncDataTypeManagerImplTest() {
-  }
+  ~SyncDataTypeManagerImplTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
    dtm_.reset(
        new TestDataTypeManager(
            syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(),

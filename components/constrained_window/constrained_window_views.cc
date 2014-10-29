@@ -43,7 +43,7 @@ class WidgetModalDialogHostObserverViews
     target_widget_->AddObserver(this);
   }
 
-  virtual ~WidgetModalDialogHostObserverViews() {
+  ~WidgetModalDialogHostObserverViews() override {
     if (host_)
       host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
@@ -51,16 +51,14 @@ class WidgetModalDialogHostObserverViews
   }
 
   // WidgetObserver overrides
-  virtual void OnWidgetClosing(views::Widget* widget) override {
-    delete this;
-  }
+  void OnWidgetClosing(views::Widget* widget) override { delete this; }
 
   // WebContentsModalDialogHostObserver overrides
-  virtual void OnPositionRequiresUpdate() override {
+  void OnPositionRequiresUpdate() override {
     UpdateWidgetModalDialogPosition(target_widget_, host_);
   }
 
-  virtual void OnHostDestroying() override {
+  void OnHostDestroying() override {
     host_->RemoveObserver(this);
     host_ = NULL;
   }

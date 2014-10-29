@@ -126,10 +126,10 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
         new TestMediaTransferProtocolManagerLinux());
     SetGetDeviceInfoCallbackForTest(base::Bind(&GetDeviceInfo));
   }
-  virtual ~TestStorageMonitorLinux() {}
+  ~TestStorageMonitorLinux() override {}
 
  private:
-  virtual void UpdateMtab(
+  void UpdateMtab(
       const MtabWatcherLinux::MountPointDeviceMap& new_mtab) override {
     StorageMonitorLinux::UpdateMtab(new_mtab);
     base::MessageLoopProxy::current()->PostTask(
@@ -157,10 +157,10 @@ class StorageMonitorLinuxTest : public testing::Test {
 
   StorageMonitorLinuxTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  virtual ~StorageMonitorLinuxTest() {}
+  ~StorageMonitorLinuxTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create and set up a temp dir with files for the test.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
@@ -182,7 +182,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     base::RunLoop().RunUntilIdle();
     monitor_->RemoveObserver(mock_storage_observer_.get());
     base::RunLoop().RunUntilIdle();

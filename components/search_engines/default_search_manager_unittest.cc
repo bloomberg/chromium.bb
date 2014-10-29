@@ -141,7 +141,7 @@ class DefaultSearchManagerTest : public testing::Test {
  public:
   DefaultSearchManagerTest() {};
 
-  virtual void SetUp() override {
+  void SetUp() override {
     pref_service_.reset(new user_prefs::TestingPrefServiceSyncable);
     DefaultSearchManager::RegisterProfilePrefs(pref_service_->registry());
     TemplateURLPrepopulateData::RegisterProfilePrefs(pref_service_->registry());

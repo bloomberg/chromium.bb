@@ -29,14 +29,14 @@ namespace nonsfi {
 class NonSfiListener : public IPC::Listener {
  public:
   NonSfiListener();
-  virtual ~NonSfiListener();
+  ~NonSfiListener() override;
 
   // Listen for a request to launch a non-SFI NaCl module.
   void Listen();
   bool Send(IPC::Message* msg);
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
   void OnStart(const nacl::NaClStartParams& params);
 
   base::Thread io_thread_;

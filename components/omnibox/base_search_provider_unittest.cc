@@ -93,10 +93,10 @@ class TestBaseSearchProvider : public BaseSearchProvider {
 
 class BaseSearchProviderTest : public testing::Test {
  public:
-  virtual ~BaseSearchProviderTest() {}
+  ~BaseSearchProviderTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     service_.reset(
         new TemplateURLService(NULL,
                                scoped_ptr<SearchTermsData>(new SearchTermsData),

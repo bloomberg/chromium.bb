@@ -148,7 +148,7 @@ class RegistrationManagerTest : public testing::Test {
   RegistrationManagerTest()
       : fake_registration_manager_(&fake_invalidation_client_) {}
 
-  virtual ~RegistrationManagerTest() {}
+  ~RegistrationManagerTest() override {}
 
   void LoseRegistrations(const ObjectIdSet& oids) {
     for (ObjectIdSet::const_iterator it = oids.begin(); it != oids.end();

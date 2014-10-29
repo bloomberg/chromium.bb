@@ -31,7 +31,7 @@ void EncodeToken(const std::string&,
 class AudioManagerStub final : public AudioManager {
  public:
   AudioManagerStub() {}
-  virtual ~AudioManagerStub() {}
+  ~AudioManagerStub() override {}
 
   // AudioManager overrides:
   void Initialize(const DecodeSamplesCallback& decode_cb,
@@ -63,7 +63,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
     directive_handler_->Initialize(base::Bind(&DecodeSamples),
                                    base::Bind(&EncodeToken));
   }
-  virtual ~AudioDirectiveHandlerTest() {}
+  ~AudioDirectiveHandlerTest() override {}
 
   void DirectiveAdded() {}
 

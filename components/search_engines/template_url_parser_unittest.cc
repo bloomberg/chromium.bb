@@ -52,9 +52,9 @@ bool ParamFilterImpl::KeepParameter(const std::string& key,
 class TemplateURLParserTest : public testing::Test {
  protected:
   TemplateURLParserTest();
-  virtual ~TemplateURLParserTest();
+  ~TemplateURLParserTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   bool is_disabled() const;
 

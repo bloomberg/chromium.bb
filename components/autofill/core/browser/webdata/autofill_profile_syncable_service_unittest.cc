@@ -227,9 +227,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
  public:
   AutofillProfileSyncableServiceTest() {}
 
-  virtual void SetUp() override {
-    sync_processor_.reset(new MockSyncChangeProcessor);
-  }
+  void SetUp() override { sync_processor_.reset(new MockSyncChangeProcessor); }
 
   // Wrapper around AutofillProfileSyncableService::MergeDataAndStartSyncing()
   // that also verifies expectations.

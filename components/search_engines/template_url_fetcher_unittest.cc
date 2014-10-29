@@ -26,7 +26,7 @@ class TemplateURLFetcherTest : public testing::Test {
  public:
   TemplateURLFetcherTest();
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile* profile = test_util_.profile();
     ASSERT_TRUE(profile->GetRequestContext());
     template_url_fetcher_.reset(new TemplateURLFetcher(
@@ -35,7 +35,7 @@ class TemplateURLFetcherTest : public testing::Test {
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ASSERT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
   }
 

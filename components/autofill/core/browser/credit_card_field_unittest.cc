@@ -18,7 +18,7 @@ namespace autofill {
 class CreditCardFieldTest : public testing::Test {
  public:
   CreditCardFieldTest() {}
-  virtual ~CreditCardFieldTest() {}
+  ~CreditCardFieldTest() override {}
 
  protected:
   ScopedVector<AutofillField> list_;

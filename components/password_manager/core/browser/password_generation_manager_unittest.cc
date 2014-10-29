@@ -111,7 +111,7 @@ class TestAutofillMetrics : public autofill::AutofillMetrics {
 
 class PasswordGenerationManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Construct a PrefService and register all necessary prefs before handing
     // it off to |client_|, as the initialization flow of |client_| will
     // indirectly cause those prefs to be immediately accessed.
@@ -121,7 +121,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     client_.reset(new TestPasswordManagerClient(prefs.Pass()));
   }
 
-  virtual void TearDown() override { client_.reset(); }
+  void TearDown() override { client_.reset(); }
 
   PasswordGenerationManager* GetGenerationManager() {
     return client_->GetDriver()->GetPasswordGenerationManager();

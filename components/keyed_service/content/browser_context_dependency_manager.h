@@ -87,11 +87,11 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
                                       bool is_testing_context);
 
   BrowserContextDependencyManager();
-  virtual ~BrowserContextDependencyManager();
+  ~BrowserContextDependencyManager() override;
 
 #ifndef NDEBUG
   // DependencyManager:
-  virtual void DumpContextDependencies(
+  void DumpContextDependencies(
       const base::SupportsUserData* context) const final;
 #endif  // NDEBUG
 

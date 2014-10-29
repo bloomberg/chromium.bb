@@ -24,8 +24,8 @@ class ConfigurationPolicyPrefStore;
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
  protected:
   ConfigurationPolicyPrefStoreTest();
-  virtual ~ConfigurationPolicyPrefStoreTest();
-  virtual void TearDown() override;
+  ~ConfigurationPolicyPrefStoreTest() override;
+  void TearDown() override;
   void UpdateProviderPolicy(const PolicyMap& policy);
 
   // A unit test can override this method to populate the policy handler

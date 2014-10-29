@@ -176,7 +176,7 @@ class CloudPolicyManagerTest : public testing::Test {
   CloudPolicyManagerTest()
       : policy_ns_key_(dm_protocol::kChromeUserPolicyType, std::string()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key",
                     POLICY_LEVEL_MANDATORY,
@@ -197,7 +197,7 @@ class CloudPolicyManagerTest : public testing::Test {
     manager_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     manager_->RemoveObserver(&observer_);
     manager_->Shutdown();
   }

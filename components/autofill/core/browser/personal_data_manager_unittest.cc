@@ -95,7 +95,7 @@ class PersonalDataManagerTest : public testing::Test {
  protected:
   PersonalDataManagerTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");

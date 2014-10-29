@@ -35,9 +35,7 @@ class CloudPolicyCoreTest : public testing::Test,
     core_.AddObserver(this);
   }
 
-  virtual ~CloudPolicyCoreTest() {
-    core_.RemoveObserver(this);
-  }
+  ~CloudPolicyCoreTest() override { core_.RemoveObserver(this); }
 
   void OnCoreConnected(CloudPolicyCore* core) override {
     // Make sure core is connected at callback time.

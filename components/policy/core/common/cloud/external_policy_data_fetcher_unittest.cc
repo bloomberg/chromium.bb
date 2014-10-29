@@ -35,10 +35,10 @@ const char* kExternalPolicyDataPayload = "External policy data";
 class ExternalPolicyDataFetcherTest : public testing::Test {
  protected:
   ExternalPolicyDataFetcherTest();
-  virtual ~ExternalPolicyDataFetcherTest();
+  ~ExternalPolicyDataFetcherTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void StartJob(int index);
   void CancelJob(int index);

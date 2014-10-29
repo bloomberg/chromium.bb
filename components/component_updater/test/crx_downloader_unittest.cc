@@ -40,11 +40,11 @@ base::FilePath MakeTestFilePath(const char* file) {
 class CrxDownloaderTest : public testing::Test {
  public:
   CrxDownloaderTest();
-  virtual ~CrxDownloaderTest();
+  ~CrxDownloaderTest() override;
 
   // Overrides from testing::Test.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void Quit();
   void RunThreads();

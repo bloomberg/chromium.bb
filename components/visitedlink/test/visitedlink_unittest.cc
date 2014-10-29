@@ -205,7 +205,7 @@ class VisitedLinkTest : public testing::Test {
   }
 
   // testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     history_dir_ = temp_dir_.path().AppendASCII("VisitedLinkTest");
@@ -214,9 +214,7 @@ class VisitedLinkTest : public testing::Test {
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));
   }
 
-  virtual void TearDown() {
-    ClearDB();
-  }
+  void TearDown() override { ClearDB(); }
 
   base::ScopedTempDir temp_dir_;
 
@@ -589,7 +587,7 @@ class VisitedLinkRenderProcessHostFactory
 
 class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     SetRenderProcessHostFactory(&vc_rph_factory_);
     content::RenderViewHostTestHarness::SetUp();
   }

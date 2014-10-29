@@ -77,7 +77,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner()) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     std::string error;
     chrome_schema_ = Schema::Parse(kTestChromeSchema, &error);
     ASSERT_TRUE(chrome_schema_.valid()) << error;

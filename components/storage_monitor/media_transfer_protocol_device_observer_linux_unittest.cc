@@ -96,10 +96,10 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
   MediaTransferProtocolDeviceObserverLinuxTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual ~MediaTransferProtocolDeviceObserverLinuxTest() {}
+  ~MediaTransferProtocolDeviceObserverLinuxTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
     TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
     mtp_device_observer_.reset(
@@ -108,7 +108,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
     monitor->AddObserver(mock_storage_observer_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     StorageMonitor* monitor = StorageMonitor::GetInstance();
     monitor->RemoveObserver(mock_storage_observer_.get());
     mtp_device_observer_.reset();

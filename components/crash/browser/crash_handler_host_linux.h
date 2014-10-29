@@ -36,7 +36,7 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   CrashHandlerHostLinux(const std::string& process_type,
                         const base::FilePath& dumps_path,
                         bool upload);
-  virtual ~CrashHandlerHostLinux();
+  ~CrashHandlerHostLinux() override;
 
   // Starts the uploader thread. Must be called immediately after creating the
   // class.
@@ -49,11 +49,11 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   }
 
   // MessagePumbLibevent::Watcher impl:
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
 
   // MessageLoop::DestructionObserver impl:
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // Whether we are shutting down or not.
   bool IsShuttingDown() const;

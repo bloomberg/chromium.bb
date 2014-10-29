@@ -28,10 +28,9 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
       : entry_point_(entry_point) {
   }
 
-  virtual ~PluginMainDelegate() {
-  }
+  ~PluginMainDelegate() override {}
 
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     base::PlatformThread::SetName("NaClMainThread");
 
     // This will only happen once per process, so we give the permission to

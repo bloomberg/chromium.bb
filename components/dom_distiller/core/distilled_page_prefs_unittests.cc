@@ -40,7 +40,7 @@ class TestingObserver : public DistilledPagePrefs::Observer {
 
 class DistilledPagePrefsTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     pref_service_.reset(new user_prefs::TestingPrefServiceSyncable());
     DistilledPagePrefs::RegisterProfilePrefs(pref_service_->registry());
     distilled_page_prefs_.reset(new DistilledPagePrefs(pref_service_.get()));

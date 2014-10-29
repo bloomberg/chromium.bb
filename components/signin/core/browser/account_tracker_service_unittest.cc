@@ -192,9 +192,9 @@ class AccountTrackerServiceTest : public testing::Test {
  public:
   AccountTrackerServiceTest() {}
 
-  virtual ~AccountTrackerServiceTest() {}
+  ~AccountTrackerServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
 
     pref_service_.registry()->RegisterListPref(
@@ -211,7 +211,7 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     account_tracker_->RemoveObserver(&observer_);
     account_tracker_->Shutdown();
   }

@@ -97,7 +97,7 @@ class MockAutofillManager : public AutofillManager {
 
 class AutofillExternalDelegateUnitTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     autofill_driver_.reset(new MockAutofillDriver());
     autofill_manager_.reset(
         new MockAutofillManager(autofill_driver_.get(), &autofill_client_));
@@ -106,7 +106,7 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
             autofill_manager_.get(), autofill_driver_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_manager_.reset();

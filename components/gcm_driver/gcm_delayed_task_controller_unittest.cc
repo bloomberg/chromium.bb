@@ -12,7 +12,7 @@ namespace gcm {
 class GCMDelayedTaskControllerTest : public testing::Test {
  public:
   GCMDelayedTaskControllerTest();
-  virtual ~GCMDelayedTaskControllerTest();
+  ~GCMDelayedTaskControllerTest() override;
 
   void TestTask();
 

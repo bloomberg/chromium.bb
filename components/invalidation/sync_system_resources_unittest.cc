@@ -54,7 +54,7 @@ class SyncSystemResourcesTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient())),
         sync_system_resources_(&push_client_channel_, &mock_state_writer_) {}
 
-  virtual ~SyncSystemResourcesTest() {}
+  ~SyncSystemResourcesTest() override {}
 
   void ScheduleShouldNotRun() {
     {
@@ -212,9 +212,7 @@ class SyncNetworkChannelTest
             this, &SyncNetworkChannelTest::OnNetworkStatusChange));
   }
 
-  virtual ~SyncNetworkChannelTest() {
-    network_channel_.RemoveObserver(this);
-  }
+  ~SyncNetworkChannelTest() override { network_channel_.RemoveObserver(this); }
 
   void OnNetworkChannelStateChanged(
       InvalidatorState invalidator_state) override {

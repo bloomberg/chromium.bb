@@ -18,7 +18,7 @@ const GURL bookmark_url("http://example.com/index.html");
 class EnhancedBookmarkUtilsTest : public testing::Test {
  public:
   EnhancedBookmarkUtilsTest() {}
-  virtual ~EnhancedBookmarkUtilsTest() {}
+  ~EnhancedBookmarkUtilsTest() override {}
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarkUtilsTest);

@@ -43,7 +43,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
  protected:
   BrowserContextKeyedBaseFactory(const char* name,
                                  BrowserContextDependencyManager* manager);
-  virtual ~BrowserContextKeyedBaseFactory();
+  ~BrowserContextKeyedBaseFactory() override;
 
   // Interface for people building a concrete FooServiceFactory: --------------
 
@@ -61,7 +61,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   // TestingBrowserContext is NULL. (This is just a shortcut around
   // SetTestingFactory() to make sure our contexts don't directly refer to the
   // services they use.)
-  virtual bool ServiceIsNULLWhileTesting() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   // Interface for people building a type of BrowserContextKeyedFactory: -------
 
@@ -102,17 +102,17 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;
 
   // KeyedServiceBaseFactory:
-  virtual user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
+  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
       base::SupportsUserData* context) const final;
-  virtual base::SupportsUserData* GetContextToUse(
+  base::SupportsUserData* GetContextToUse(
       base::SupportsUserData* context) const final;
-  virtual bool ServiceIsCreatedWithContext() const final;
-  virtual void ContextShutdown(base::SupportsUserData* context) final;
-  virtual void ContextDestroyed(base::SupportsUserData* context) final;
-  virtual void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
-  virtual void SetEmptyTestingFactory(base::SupportsUserData* context) final;
-  virtual bool HasTestingFactory(base::SupportsUserData* context) final;
-  virtual void CreateServiceNow(base::SupportsUserData* context) final;
+  bool ServiceIsCreatedWithContext() const final;
+  void ContextShutdown(base::SupportsUserData* context) final;
+  void ContextDestroyed(base::SupportsUserData* context) final;
+  void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
+  void SetEmptyTestingFactory(base::SupportsUserData* context) final;
+  bool HasTestingFactory(base::SupportsUserData* context) final;
+  void CreateServiceNow(base::SupportsUserData* context) final;
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_

@@ -39,7 +39,7 @@ namespace policy {
 // Test cases for list-valued policy settings.
 class ConfigurationPolicyPrefStoreListTest
     : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     handler_list_.AddHandler(
         make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_LIST)));
@@ -67,7 +67,7 @@ TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest
     : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     handler_list_.AddHandler(
         make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
@@ -95,7 +95,7 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
     : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     handler_list_.AddHandler(
         make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_BOOLEAN)));
@@ -139,7 +139,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
 // Test cases for integer-valued policy settings.
 class ConfigurationPolicyPrefStoreIntegerTest
     : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     handler_list_.AddHandler(
         make_scoped_ptr<ConfigurationPolicyHandler>(new SimplePolicyHandler(
             kTestPolicy, kTestPref, base::Value::TYPE_INTEGER)));
@@ -167,7 +167,7 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
 class ConfigurationPolicyPrefStoreRefreshTest
     : public ConfigurationPolicyPrefStoreTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ConfigurationPolicyPrefStoreTest::SetUp();
     store_->AddObserver(&observer_);
     handler_list_.AddHandler(
@@ -175,7 +175,7 @@ class ConfigurationPolicyPrefStoreRefreshTest
             kTestPolicy, kTestPref, base::Value::TYPE_STRING)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     store_->RemoveObserver(&observer_);
     ConfigurationPolicyPrefStoreTest::TearDown();
   }

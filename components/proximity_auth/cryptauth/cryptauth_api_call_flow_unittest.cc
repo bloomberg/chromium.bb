@@ -28,7 +28,7 @@ class ProximityAuthCryptAuthApiCallFlowTest
             new base::TestSimpleTaskRunner())),
         flow_(GURL(kRequestUrl)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // The TestURLFetcherFactory will override the global URLFetcherFactory for
     // the entire test.
     url_fetcher_factory_.reset(new net::TestURLFetcherFactory());

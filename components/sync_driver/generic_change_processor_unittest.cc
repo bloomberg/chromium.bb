@@ -111,14 +111,14 @@ class SyncGenericChangeProcessorTest : public testing::Test {
       : syncable_service_ptr_factory_(&fake_syncable_service_),
         mock_attachment_service_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Use kType by default, but allow test cases to re-initialize with whatever
     // type they choose.  Therefore, it's important that all type dependent
     // initialization occurs in InitializeForType.
     InitializeForType(kType);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     mock_attachment_service_ = NULL;
     if (test_user_share_) {
       test_user_share_->TearDown();

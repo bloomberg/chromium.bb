@@ -54,7 +54,7 @@ class AudioRecorderImpl final
   }
 
  protected:
-  virtual ~AudioRecorderImpl();
+  ~AudioRecorderImpl() override;
   void set_is_recording(bool is_recording) { is_recording_ = is_recording; }
 
  private:

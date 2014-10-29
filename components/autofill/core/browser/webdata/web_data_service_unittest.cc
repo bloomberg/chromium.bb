@@ -96,7 +96,7 @@ class WebDataServiceTest : public testing::Test {
   WebDataServiceTest() : db_thread_("DBThread") {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     db_thread_.Start();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -116,7 +116,7 @@ class WebDataServiceTest : public testing::Test {
     wds_->Init();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
     wds_ = NULL;

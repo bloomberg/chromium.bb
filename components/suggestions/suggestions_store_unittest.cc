@@ -74,7 +74,7 @@ class SuggestionsStoreTest : public testing::Test {
   SuggestionsStoreTest()
     : pref_service_(new user_prefs::TestingPrefServiceSyncable) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     SuggestionsStore::RegisterProfilePrefs(pref_service_->registry());
     suggestions_store_.reset(new SuggestionsStore(pref_service_.get()));
   }

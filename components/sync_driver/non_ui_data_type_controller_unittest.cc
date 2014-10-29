@@ -180,7 +180,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
   SyncNonUIDataTypeControllerTest()
       : backend_thread_("dbthread") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     backend_thread_.Start();
     change_processor_ = new SharedChangeProcessorMock();
     // All of these are refcounted, so don't need to be released.
@@ -192,9 +192,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
                                         backend_thread_.message_loop_proxy());
   }
 
-  virtual void TearDown() override {
-    backend_thread_.Stop();
-  }
+  void TearDown() override { backend_thread_.Stop(); }
 
   void WaitForDTC() {
     WaitableEvent done(true, false);

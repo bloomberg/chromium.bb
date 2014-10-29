@@ -78,7 +78,7 @@ class AudioPlayerTest : public testing::Test,
       media::AudioManager::CreateForTesting();
   }
 
-  virtual ~AudioPlayerTest() { DeletePlayer(); }
+  ~AudioPlayerTest() override { DeletePlayer(); }
 
   void CreatePlayer() {
     DeletePlayer();

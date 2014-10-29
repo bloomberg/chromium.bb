@@ -23,9 +23,9 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
       : load_finished_(false),
         weak_ptr_factory_(this),
         last_type_(syncer::UNSPECIFIED) {}
-  virtual ~DeviceInfoDataTypeControllerTest() {}
+  ~DeviceInfoDataTypeControllerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     local_device_.reset(new LocalDeviceInfoProviderMock(
         "cache_guid",
         "Wayne Gretzky's Hacking Box",
@@ -45,7 +45,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test,
     last_error_ = syncer::SyncError();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     controller_ = NULL;
     local_device_.reset();
   }

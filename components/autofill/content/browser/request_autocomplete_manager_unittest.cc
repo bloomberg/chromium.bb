@@ -95,7 +95,7 @@ class RequestAutocompleteManagerTest :
  public:
   RequestAutocompleteManagerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
     driver_.reset(
@@ -104,7 +104,7 @@ class RequestAutocompleteManagerTest :
         new RequestAutocompleteManager(driver_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Reset the driver now to cause all pref observers to be removed and avoid
     // crashes that otherwise occur in the destructor.
     driver_.reset();

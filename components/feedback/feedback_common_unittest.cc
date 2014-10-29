@@ -28,7 +28,7 @@ class FeedbackCommonTest : public testing::Test {
     feedback = scoped_refptr<FeedbackCommon>(new FeedbackCommon());
   }
 
-  virtual ~FeedbackCommonTest() {}
+  ~FeedbackCommonTest() override {}
 
   scoped_refptr<FeedbackCommon> feedback;
   userfeedback::ExtensionSubmit report;

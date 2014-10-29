@@ -38,11 +38,11 @@ base::FilePath test_file(const char* file) {
 class UpdateCheckerTest : public testing::Test {
  public:
   UpdateCheckerTest();
-  virtual ~UpdateCheckerTest();
+  ~UpdateCheckerTest() override;
 
   // Overrides from testing::Test.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void UpdateCheckComplete(const GURL& original_url,
                            int error,

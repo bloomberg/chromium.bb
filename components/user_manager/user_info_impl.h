@@ -18,14 +18,14 @@ namespace user_manager {
 class USER_MANAGER_EXPORT UserInfoImpl : public UserInfo {
  public:
   UserInfoImpl();
-  virtual ~UserInfoImpl();
+  ~UserInfoImpl() override;
 
   // UserInfo:
-  virtual base::string16 GetDisplayName() const override;
-  virtual base::string16 GetGivenName() const override;
-  virtual std::string GetEmail() const override;
-  virtual std::string GetUserID() const override;
-  virtual const gfx::ImageSkia& GetImage() const override;
+  base::string16 GetDisplayName() const override;
+  base::string16 GetGivenName() const override;
+  std::string GetEmail() const override;
+  std::string GetUserID() const override;
+  const gfx::ImageSkia& GetImage() const override;
 
  private:
   gfx::ImageSkia user_image_;

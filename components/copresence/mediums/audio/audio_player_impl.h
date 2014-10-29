@@ -46,7 +46,7 @@ class AudioPlayerImpl final
   FRIEND_TEST_ALL_PREFIXES(AudioPlayerTest, BasicPlayAndStop);
   FRIEND_TEST_ALL_PREFIXES(AudioPlayerTest, OutOfOrderPlayAndStopMultiple);
 
-  virtual ~AudioPlayerImpl();
+  ~AudioPlayerImpl() override;
 
   // Methods to do our various operations; all of these need to be run on the
   // audio thread.

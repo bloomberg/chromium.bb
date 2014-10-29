@@ -110,11 +110,11 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                                      bool fallback_allowed,
                                      bool alt_allowed,
                                      bool promo_allowed);
-  virtual ~DataReductionProxySettingsTestBase();
+  ~DataReductionProxySettingsTestBase() override;
 
   void AddProxyToCommandLine();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   template <class C> void ResetSettings(bool allowed,
                                         bool fallback_allowed,

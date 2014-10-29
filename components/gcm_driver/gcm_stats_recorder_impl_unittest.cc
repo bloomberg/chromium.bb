@@ -100,8 +100,8 @@ static const char kIncomingSendErrorDetails[] = "";
 class GCMStatsRecorderImplTest : public testing::Test {
  public:
   GCMStatsRecorderImplTest();
-  virtual ~GCMStatsRecorderImplTest();
-  virtual void SetUp() override;
+  ~GCMStatsRecorderImplTest() override;
+  void SetUp() override;
 
   void VerifyRecordedCheckinCount(int expected_count) {
     EXPECT_EQ(expected_count,

@@ -35,7 +35,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
       : task_runner_(new base::TestSimpleTaskRunner()),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     client_.SetDMToken("token");
 
     // Set up the protobuf timestamp to be one minute in the past. Since the
@@ -314,7 +314,7 @@ class CloudPolicyRefreshSchedulerSteadyStateTest
  protected:
   CloudPolicyRefreshSchedulerSteadyStateTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     refresh_scheduler_.reset(CreateRefreshScheduler());
     refresh_scheduler_->SetRefreshDelay(kPolicyRefreshRate);
     CloudPolicyRefreshSchedulerTest::SetUp();

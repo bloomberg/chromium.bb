@@ -122,14 +122,14 @@ class MockDistillerObserver : public DomDistillerObserver {
 
 class DomDistillerStoreTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     db_model_.clear();
     sync_model_.clear();
     store_model_.clear();
     next_sync_id_ = 1;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     store_.reset();
     fake_db_ = NULL;
     fake_sync_processor_ = NULL;

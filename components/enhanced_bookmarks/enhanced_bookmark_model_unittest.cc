@@ -40,9 +40,9 @@ class EnhancedBookmarkModelTest
         last_added_(NULL),
         last_removed_(NULL),
         last_remote_id_node_(NULL) {}
-  virtual ~EnhancedBookmarkModelTest() {}
+  ~EnhancedBookmarkModelTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
     bookmark_client_.reset(new bookmarks::TestBookmarkClient());
     bookmark_model_.reset(bookmark_client_->CreateModel().release());
@@ -50,7 +50,7 @@ class EnhancedBookmarkModelTest
     model_->AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (model_)
       model_->Shutdown();
     model_.reset();

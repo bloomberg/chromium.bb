@@ -47,10 +47,10 @@ class KeywordProviderTest : public testing::Test {
   };
 
   KeywordProviderTest() : kw_provider_(NULL) { }
-  virtual ~KeywordProviderTest() { }
+  ~KeywordProviderTest() override {}
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   template<class ResultType>
   void RunTest(TestData<ResultType>* keyword_cases,

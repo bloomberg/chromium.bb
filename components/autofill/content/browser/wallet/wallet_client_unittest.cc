@@ -750,16 +750,14 @@ class WalletClientTest : public testing::Test {
   WalletClientTest()
       : request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())) {}
-  virtual ~WalletClientTest() {}
+  ~WalletClientTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     wallet_client_.reset(new WalletClient(
         request_context_.get(), &delegate_, GURL(kMerchantUrl)));
   }
 
-  virtual void TearDown() override {
-    wallet_client_.reset();
-  }
+  void TearDown() override { wallet_client_.reset(); }
 
   void VerifyAndFinishRequest(net::HttpStatusCode response_code,
                               const std::string& request_body,

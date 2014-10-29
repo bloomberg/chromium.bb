@@ -170,11 +170,9 @@ std::string RemoveQuotes(const std::string& has_quotes) {
 class WebDatabaseMigrationTest : public testing::Test {
  public:
   WebDatabaseMigrationTest() {}
-  virtual ~WebDatabaseMigrationTest() {}
+  ~WebDatabaseMigrationTest() override {}
 
-  virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   // Load the database via the WebDatabase class and migrate the database to
   // the current version.

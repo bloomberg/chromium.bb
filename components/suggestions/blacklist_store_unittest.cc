@@ -55,7 +55,7 @@ class BlacklistStoreTest : public testing::Test {
   BlacklistStoreTest()
     : pref_service_(new user_prefs::TestingPrefServiceSyncable) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BlacklistStore::RegisterProfilePrefs(pref_service()->registry());
   }
 

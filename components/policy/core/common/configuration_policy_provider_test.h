@@ -41,11 +41,11 @@ extern const char kKeyDictionary[];
 class PolicyTestBase : public testing::Test {
  public:
   PolicyTestBase();
-  virtual ~PolicyTestBase();
+  ~PolicyTestBase() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   bool RegisterSchema(const PolicyNamespace& ns,
@@ -120,8 +120,8 @@ class ConfigurationPolicyProviderTest
   ConfigurationPolicyProviderTest();
   virtual ~ConfigurationPolicyProviderTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Installs a valid policy and checks whether the provider returns the
   // |expected_value|.

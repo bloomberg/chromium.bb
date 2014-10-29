@@ -95,7 +95,7 @@ void ShortenFile(base::FilePath path) {
 
 class LogoCacheTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(cache_parent_dir_.CreateUniqueTempDir());
     InitCache();
   }

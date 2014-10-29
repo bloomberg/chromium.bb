@@ -79,7 +79,7 @@ scoped_ptr<DistilledArticleProto> CreateDefaultArticle() {
 
 class DomDistillerServiceTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     main_loop_.reset(new base::MessageLoop());
     FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(&db_model_);
     FakeDB<ArticleEntry>::EntryMap store_model;
@@ -96,7 +96,7 @@ class DomDistillerServiceTest : public testing::Test {
     fake_db->LoadCallback(true);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     base::RunLoop().RunUntilIdle();
     store_ = NULL;
     distiller_factory_ = NULL;

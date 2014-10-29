@@ -57,7 +57,7 @@ class FeedbackUploaderTest : public testing::Test {
         kRetryDelayForTest);
   }
 
-  virtual ~FeedbackUploaderTest() {
+  ~FeedbackUploaderTest() override {
     FeedbackUploaderFactory::GetInstance()->SetTestingFactory(
         context_.get(), NULL);
   }

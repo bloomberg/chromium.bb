@@ -159,14 +159,12 @@ class NetErrorHelperCoreTest : public testing::Test,
     SetUpCore(false, false, true);
   }
 
-  virtual ~NetErrorHelperCoreTest() {
+  ~NetErrorHelperCoreTest() override {
     // No test finishes while an error page is being fetched.
     EXPECT_FALSE(is_url_being_fetched());
   }
 
-  virtual void SetUp() override {
-    base::StatisticsRecorder::Initialize();
-  }
+  void SetUp() override { base::StatisticsRecorder::Initialize(); }
 
   void SetUpCore(bool auto_reload_enabled,
                  bool auto_reload_visible_only,
@@ -1939,7 +1937,7 @@ TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {
 
 class NetErrorHelperCoreAutoReloadTest : public NetErrorHelperCoreTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
     SetUpCore(true, false, true);
   }
@@ -2243,9 +2241,7 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
 class NetErrorHelperCoreHistogramTest
     : public NetErrorHelperCoreAutoReloadTest {
  public:
-  virtual void SetUp() override {
-    NetErrorHelperCoreAutoReloadTest::SetUp();
-  }
+  void SetUp() override { NetErrorHelperCoreAutoReloadTest::SetUp(); }
 
   static const char kCountAtStop[];
   static const char kErrorAtStop[];

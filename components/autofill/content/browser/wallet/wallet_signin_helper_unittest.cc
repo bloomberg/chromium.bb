@@ -52,16 +52,14 @@ class WalletSigninHelperTest : public testing::Test {
   WalletSigninHelperTest()
       : request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())) {}
-  virtual ~WalletSigninHelperTest() {}
+  ~WalletSigninHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     signin_helper_.reset(
         new WalletSigninHelper(&mock_delegate_, request_context_.get()));
   }
 
-  virtual void TearDown() override {
-    signin_helper_.reset();
-  }
+  void TearDown() override { signin_helper_.reset(); }
 
   // Sets up a response for the mock URLFetcher and completes the request.
   void SetUpFetcherResponseAndCompleteRequest(

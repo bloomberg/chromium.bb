@@ -55,7 +55,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
  public:
   UserCloudPolicyStoreTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(
         new UserCloudPolicyStore(policy_file(),
@@ -77,7 +77,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     policy_.Build();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     store_->RemoveObserver(&observer_);
     external_data_manager_.reset();
     store_.reset();

@@ -91,7 +91,7 @@ class TestPasswordManager : public PasswordManager {
 
 class PasswordManagerTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
 
@@ -120,7 +120,7 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(false));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     store_->Shutdown();
     store_ = NULL;
   }

@@ -42,7 +42,7 @@ std::vector<base::string16> DeserializeVector(const Pickle& pickle);
 
 class LoginDatabaseTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestMetadataStoreMacDatabase");
 

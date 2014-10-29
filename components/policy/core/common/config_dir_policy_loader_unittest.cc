@@ -173,7 +173,7 @@ INSTANTIATE_TEST_CASE_P(
 // Some tests that exercise special functionality in ConfigDirPolicyLoader.
 class ConfigDirPolicyLoaderTest : public PolicyTestBase {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     PolicyTestBase::SetUp();
     harness_.SetUp();
   }

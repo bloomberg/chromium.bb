@@ -49,9 +49,9 @@ const uint8 kTestKeyData[] = {
 class OwnerKeyUtilImplTest : public testing::Test {
  protected:
   OwnerKeyUtilImplTest() {}
-  virtual ~OwnerKeyUtilImplTest() {}
+  ~OwnerKeyUtilImplTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(tmpdir_.CreateUniqueTempDir());
     key_file_ = tmpdir_.path().Append(FILE_PATH_LITERAL("key"));
     util_ = new OwnerKeyUtilImpl(key_file_);

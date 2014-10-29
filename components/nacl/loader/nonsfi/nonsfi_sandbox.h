@@ -18,11 +18,10 @@ namespace nonsfi {
 class NaClNonSfiBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
  public:
   explicit NaClNonSfiBPFSandboxPolicy() {}
-  virtual ~NaClNonSfiBPFSandboxPolicy() {}
+  ~NaClNonSfiBPFSandboxPolicy() override {}
 
-  virtual sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int sysno) const override;
-  virtual sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(int sysno) const override;
+  sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClNonSfiBPFSandboxPolicy);

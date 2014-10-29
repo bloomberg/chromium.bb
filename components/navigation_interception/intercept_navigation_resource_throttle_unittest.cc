@@ -184,11 +184,9 @@ class InterceptNavigationResourceThrottleTest
         io_thread_state_(NULL) {
   }
 
-  virtual void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
-  }
+  void SetUp() override { RenderViewHostTestHarness::SetUp(); }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (web_contents())
       web_contents()->SetDelegate(NULL);
 

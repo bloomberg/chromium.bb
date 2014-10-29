@@ -43,7 +43,7 @@ class ForwardingPolicyProviderTest : public testing::Test {
     forwarding_provider_.AddObserver(&observer_);
   }
 
-  virtual ~ForwardingPolicyProviderTest() {
+  ~ForwardingPolicyProviderTest() override {
     forwarding_provider_.RemoveObserver(&observer_);
     forwarding_provider_.Shutdown();
     mock_provider_.Shutdown();

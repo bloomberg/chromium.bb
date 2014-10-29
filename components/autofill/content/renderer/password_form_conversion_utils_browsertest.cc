@@ -105,7 +105,7 @@ class PasswordFormBuilder {
 class PasswordFormConversionUtilsTest : public content::RenderViewTest {
  public:
   PasswordFormConversionUtilsTest() : content::RenderViewTest() {}
-  virtual ~PasswordFormConversionUtilsTest() {}
+  ~PasswordFormConversionUtilsTest() override {}
 
  protected:
   // Loads the given |html|, retrieves the sole WebFormElement from it, and then

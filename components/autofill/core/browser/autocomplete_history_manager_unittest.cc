@@ -67,7 +67,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
  protected:
   AutocompleteHistoryManagerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     web_data_service_ = new MockWebDataService();
     autofill_client_.reset(new MockAutofillClient(web_data_service_));
     autofill_driver_.reset(new TestAutofillDriver());
@@ -75,9 +75,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
         autofill_driver_.get(), autofill_client_.get()));
   }
 
-  virtual void TearDown() override {
-    autocomplete_manager_.reset();
-  }
+  void TearDown() override { autocomplete_manager_.reset(); }
 
   base::MessageLoop message_loop_;
   scoped_refptr<MockWebDataService> web_data_service_;

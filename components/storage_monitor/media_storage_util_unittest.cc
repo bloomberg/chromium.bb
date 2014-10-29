@@ -31,7 +31,7 @@ class MediaStorageUtilTest : public testing::Test {
  public:
   MediaStorageUtilTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD) {}
-  virtual ~MediaStorageUtilTest() {}
+  ~MediaStorageUtilTest() override {}
 
   // Verify mounted device type.
   void CheckDCIMDeviceType(const base::FilePath& mount_point) {
@@ -60,12 +60,12 @@ class MediaStorageUtilTest : public testing::Test {
     return scoped_temp_dir_.path();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     monitor_ = TestStorageMonitor::CreateAndInstall();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     WaitForFileThread();
     TestStorageMonitor::Destroy();
   }

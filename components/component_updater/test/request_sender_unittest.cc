@@ -27,11 +27,11 @@ const char kUrlPath2[] = "path2";
 class RequestSenderTest : public testing::Test {
  public:
   RequestSenderTest();
-  virtual ~RequestSenderTest();
+  ~RequestSenderTest() override;
 
   // Overrides from testing::Test.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void RequestSenderComplete(const net::URLFetcher* source);
 

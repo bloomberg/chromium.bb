@@ -65,7 +65,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
 
 class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
     test_autofill_client_.reset(new TestAutofillClient());
@@ -73,7 +73,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
                                                 test_autofill_client_.get()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Reset the driver now to cause all pref observers to be removed and avoid
     // crashes that otherwise occur in the destructor.
     driver_.reset();

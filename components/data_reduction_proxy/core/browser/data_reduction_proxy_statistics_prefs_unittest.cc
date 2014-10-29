@@ -39,9 +39,7 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
       : task_runner_(scoped_refptr<base::TestSimpleTaskRunner>(
             new base::TestSimpleTaskRunner())) {}
 
-  virtual void SetUp() override {
-    RegisterPrefs(simple_pref_service_.registry());
-  }
+  void SetUp() override { RegisterPrefs(simple_pref_service_.registry()); }
 
   // Create daily pref list of |kNumDaysInHistory| zero values.
   void CreatePrefList(const char* pref) {

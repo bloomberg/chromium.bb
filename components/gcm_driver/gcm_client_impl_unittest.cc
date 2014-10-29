@@ -236,9 +236,9 @@ class GCMClientImplTest : public testing::Test,
                           public GCMClient::Delegate {
  public:
   GCMClientImplTest();
-  virtual ~GCMClientImplTest();
+  ~GCMClientImplTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void SetUpUrlFetcherFactory();
 
@@ -786,9 +786,9 @@ TEST_F(GCMClientImplTest, SendMessageAcknowledged) {
 class GCMClientImplCheckinTest : public GCMClientImplTest {
  public:
   GCMClientImplCheckinTest();
-  virtual ~GCMClientImplCheckinTest();
+  ~GCMClientImplCheckinTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 };
 
 GCMClientImplCheckinTest::GCMClientImplCheckinTest() {
@@ -1015,9 +1015,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
 class GCMClientImplStartAndStopTest : public GCMClientImplTest {
 public:
   GCMClientImplStartAndStopTest();
-  virtual ~GCMClientImplStartAndStopTest();
+  ~GCMClientImplStartAndStopTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void DefaultCompleteCheckin();
 };

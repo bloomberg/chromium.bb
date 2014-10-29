@@ -26,7 +26,7 @@ class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     event_source_ = ui::PlatformEventSource::CreateDefault();
     model_ = client_.CreateModel();
     test::WaitForBookmarkModelToLoad(model_.get());
@@ -34,7 +34,7 @@ class BookmarkNodeDataTest : public testing::Test {
     ASSERT_TRUE(success);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     model_.reset();
     event_source_.reset();
     bool success = profile_dir_.Delete();

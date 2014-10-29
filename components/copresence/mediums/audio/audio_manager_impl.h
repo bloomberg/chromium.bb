@@ -28,7 +28,7 @@ class AudioRecorder;
 class AudioManagerImpl final : public AudioManager {
  public:
   AudioManagerImpl();
-  ~AudioManagerImpl();
+  ~AudioManagerImpl() override;
 
   // AudioManager overrides:
   void Initialize(const DecodeSamplesCallback& decode_cb,

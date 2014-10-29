@@ -19,7 +19,7 @@ namespace copresence {
 class AudioPlayerStub final : public AudioPlayer {
  public:
   AudioPlayerStub() : is_playing_(false) {}
-  virtual ~AudioPlayerStub() {}
+  ~AudioPlayerStub() override {}
 
   // AudioPlayer overrides:
   void Initialize() override {}
@@ -38,7 +38,7 @@ class AudioPlayerStub final : public AudioPlayer {
 class AudioRecorderStub final : public AudioRecorder {
  public:
   AudioRecorderStub() : is_recording_(false) {}
-  virtual ~AudioRecorderStub() {}
+  ~AudioRecorderStub() override {}
 
   // AudioRecorder overrides:
   void Initialize(const RecordedSamplesCallback& cb) override { cb_ = cb; }
@@ -74,7 +74,7 @@ class AudioManagerTest : public testing::Test {
         base::Bind(&AudioManagerTest::DecodeSamples, base::Unretained(this)),
         base::Bind(&AudioManagerTest::EncodeToken, base::Unretained(this)));
   }
-  virtual ~AudioManagerTest() {}
+  ~AudioManagerTest() override {}
 
  protected:
   void EncodeToken(const std::string& token,

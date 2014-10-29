@@ -32,15 +32,15 @@ namespace policy {
 class ManagedBookmarksTrackerTest : public testing::Test {
  public:
   ManagedBookmarksTrackerTest() : managed_node_(NULL) {}
-  virtual ~ManagedBookmarksTrackerTest() {}
+  ~ManagedBookmarksTrackerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     prefs_.registry()->RegisterListPref(bookmarks::prefs::kManagedBookmarks);
     prefs_.registry()->RegisterListPref(
         bookmarks::prefs::kBookmarkEditorExpandedNodes);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (model_)
       model_->RemoveObserver(&observer_);
   }

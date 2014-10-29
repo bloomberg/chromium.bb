@@ -35,14 +35,14 @@ class FileHostTestNaClBrowserDelegate : public TestNaClBrowserDelegate {
 class NaClFileHostTest : public testing::Test {
  protected:
   NaClFileHostTest();
-  virtual ~NaClFileHostTest();
+  ~NaClFileHostTest() override;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     nacl_browser_delegate_ = new FileHostTestNaClBrowserDelegate;
     nacl::NaClBrowser::SetDelegate(nacl_browser_delegate_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // This deletes nacl_browser_delegate_.
     nacl::NaClBrowser::SetDelegate(NULL);
   }

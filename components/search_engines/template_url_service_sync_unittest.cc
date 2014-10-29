@@ -153,8 +153,8 @@ class TemplateURLServiceSyncTest : public testing::Test {
 
   TemplateURLServiceSyncTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   TemplateURLService* model() { return test_util_a_->model(); }
   // For readability, we redefine an accessor for Model A for use in tests that

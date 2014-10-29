@@ -31,7 +31,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
  protected:
   UserCloudPolicyManagerTest() : store_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key",
                     POLICY_LEVEL_MANDATORY,
@@ -42,7 +42,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
         .CopyFrom(policy_map_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (manager_) {
       manager_->RemoveObserver(&observer_);
       manager_->Shutdown();

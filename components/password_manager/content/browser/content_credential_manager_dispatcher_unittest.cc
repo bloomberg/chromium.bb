@@ -79,7 +79,7 @@ class ContentCredentialManagerDispatcherTest
  public:
   ContentCredentialManagerDispatcherTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
     client_.reset(new TestPasswordManagerClient(store_.get()));
@@ -99,7 +99,7 @@ class ContentCredentialManagerDispatcherTest
     EXPECT_TRUE(store_->IsEmpty());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     store_->Shutdown();
     content::RenderViewHostTestHarness::TearDown();
   }

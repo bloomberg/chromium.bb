@@ -18,13 +18,13 @@ namespace component_updater {
 class ComponentUpdaterPingManagerTest : public testing::Test {
  public:
   ComponentUpdaterPingManagerTest();
-  virtual ~ComponentUpdaterPingManagerTest() {}
+  ~ComponentUpdaterPingManagerTest() override {}
 
   void RunThreadsUntilIdle();
 
   // Overrides from testing::Test.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<TestConfigurator> config_;

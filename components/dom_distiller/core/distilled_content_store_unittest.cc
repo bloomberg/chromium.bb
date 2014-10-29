@@ -59,7 +59,7 @@ class InMemoryContentStoreTest : public testing::Test {
 
  protected:
   // testing::Test implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     store_.reset(new InMemoryContentStore(kDefaultMaxNumCachedEntries));
     save_success_ = false;
     load_success_ = false;

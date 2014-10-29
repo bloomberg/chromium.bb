@@ -28,7 +28,7 @@ class DistillerURLFetcherTest : public testing::Test {
 
  protected:
   // testing::Test implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     url_fetcher_.reset(new dom_distiller::DistillerURLFetcher(NULL));
     factory_.reset(new net::FakeURLFetcherFactory(NULL));
     factory_->SetFakeResponse(

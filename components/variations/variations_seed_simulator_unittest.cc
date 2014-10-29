@@ -85,7 +85,7 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
   VariationsSeedSimulatorTest() : field_trial_list_(NULL) {
   }
 
-  virtual ~VariationsSeedSimulatorTest() {
+  ~VariationsSeedSimulatorTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
     testing::ClearAllVariationIDs();

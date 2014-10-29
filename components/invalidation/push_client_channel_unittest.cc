@@ -29,7 +29,7 @@ class PushClientChannelTest
     push_client_channel_.SetSystemResources(NULL);
   }
 
-  virtual ~PushClientChannelTest() {
+  ~PushClientChannelTest() override {
     push_client_channel_.RemoveObserver(this);
   }
 

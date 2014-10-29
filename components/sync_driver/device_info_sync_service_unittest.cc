@@ -77,9 +77,9 @@ class DeviceInfoSyncServiceTest : public testing::Test,
                                   public DeviceInfoTracker::Observer {
  public:
   DeviceInfoSyncServiceTest() : num_device_info_changed_callbacks_(0) {}
-  virtual ~DeviceInfoSyncServiceTest() {}
+  ~DeviceInfoSyncServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     local_device_.reset(new LocalDeviceInfoProviderMock(
         "guid_1",
         "client_1",
@@ -93,9 +93,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
     sync_service_->AddObserver(this);
   }
 
-  virtual void TearDown() override {
-    sync_service_->RemoveObserver(this);
-  }
+  void TearDown() override { sync_service_->RemoveObserver(this); }
 
   void OnDeviceInfoChange() override { num_device_info_changed_callbacks_++; }
 

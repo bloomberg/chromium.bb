@@ -20,15 +20,15 @@ class CredentialManagerClientTest : public content::RenderViewTest {
  public:
   CredentialManagerClientTest()
       : callback_errored_(false), callback_succeeded_(false) {}
-  virtual ~CredentialManagerClientTest() {}
+  ~CredentialManagerClientTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     content::RenderViewTest::SetUp();
     credential_.reset(new blink::WebLocalCredential("", "", GURL(), ""));
     client_.reset(new CredentialManagerClient(view_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     credential_.reset();
     content::RenderViewTest::TearDown();
   }

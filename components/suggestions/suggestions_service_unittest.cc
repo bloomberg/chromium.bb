@@ -163,9 +163,9 @@ class SuggestionsServiceTest : public testing::Test {
         mock_suggestions_store_(NULL),
         mock_thumbnail_manager_(NULL) {}
 
-  virtual ~SuggestionsServiceTest() {}
+  ~SuggestionsServiceTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     request_context_ = new net::TestURLRequestContextGetter(
         io_message_loop_.message_loop_proxy());
   }

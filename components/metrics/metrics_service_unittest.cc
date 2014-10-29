@@ -99,7 +99,7 @@ class MetricsServiceTest : public testing::Test {
         base::Bind(&ReturnNoBackup));
   }
 
-  virtual ~MetricsServiceTest() {
+  ~MetricsServiceTest() override {
     MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE,
                                       GetLocalState());
   }

@@ -133,10 +133,10 @@ class AutofillMergeTest : public testing::Test,
                           public DataDrivenTest {
  protected:
   AutofillMergeTest();
-  virtual ~AutofillMergeTest();
+  ~AutofillMergeTest() override;
 
   // testing::Test:
-  virtual void SetUp();
+  void SetUp() override;
 
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;

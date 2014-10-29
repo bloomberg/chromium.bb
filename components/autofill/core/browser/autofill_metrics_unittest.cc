@@ -231,10 +231,10 @@ class TestAutofillManager : public AutofillManager {
 
 class AutofillMetricsTest : public testing::Test {
  public:
-  virtual ~AutofillMetricsTest();
+  ~AutofillMetricsTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   base::MessageLoop message_loop_;

@@ -239,7 +239,7 @@ void CustomFakeGCMDriver::SetLastMessageAction(const std::string& message_id,
 class GCMAccountMapperTest : public testing::Test {
  public:
   GCMAccountMapperTest();
-  virtual ~GCMAccountMapperTest();
+  ~GCMAccountMapperTest() override;
 
   void Restart();
 

@@ -14,11 +14,11 @@ namespace login {
 class ScreenContextTest : public testing::Test {
  public:
   ScreenContextTest() {}
-  virtual ~ScreenContextTest() {}
+  ~ScreenContextTest() override {}
 
-  virtual void SetUp() { context_.reset(new ScreenContext()); }
+  void SetUp() override { context_.reset(new ScreenContext()); }
 
-  virtual void TearDown() {}
+  void TearDown() override {}
 
  protected:
   ScreenContext& context() { return *context_.get(); }

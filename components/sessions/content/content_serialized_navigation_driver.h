@@ -18,17 +18,17 @@ namespace sessions {
 class SESSIONS_EXPORT_PRIVATE ContentSerializedNavigationDriver
     : public SerializedNavigationDriver {
  public:
-  virtual ~ContentSerializedNavigationDriver();
+  ~ContentSerializedNavigationDriver() override;
 
   // Returns the singleton ContentSerializedNavigationDriver.  Almost all
   // callers should use SerializedNavigationDriver::Get() instead.
   static ContentSerializedNavigationDriver* GetInstance();
 
   // SerializedNavigationDriver implementation.
-  virtual int GetDefaultReferrerPolicy() const override;
-  virtual std::string GetSanitizedPageStateForPickle(
+  int GetDefaultReferrerPolicy() const override;
+  std::string GetSanitizedPageStateForPickle(
       const SerializedNavigationEntry* navigation) const override;
-  virtual void Sanitize(SerializedNavigationEntry* navigation) const override;
+  void Sanitize(SerializedNavigationEntry* navigation) const override;
 
  private:
   ContentSerializedNavigationDriver();

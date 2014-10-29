@@ -128,7 +128,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
         mock_context_proxy_(&mock_sync_context_, model_thread_, sync_thread_),
         auto_run_tasks_(true) {}
 
-  virtual ~NonBlockingDataTypeControllerTest() {}
+  ~NonBlockingDataTypeControllerTest() override {}
 
   // Connects the sync type proxy to the NonBlockingDataTypeController.
   void InitTypeSyncProxy() {

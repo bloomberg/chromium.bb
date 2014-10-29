@@ -263,7 +263,7 @@ class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 
 class DistillerTest : public testing::Test {
  public:
-  virtual ~DistillerTest() {}
+  ~DistillerTest() override {}
 
   void OnDistillArticleDone(scoped_ptr<DistilledArticleProto> proto) {
     article_proto_ = proto.Pass();

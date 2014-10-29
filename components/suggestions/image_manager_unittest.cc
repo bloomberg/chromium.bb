@@ -54,12 +54,12 @@ class ImageManagerTest : public testing::Test {
         num_callback_null_called_(0),
         num_callback_valid_called_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_db_ = new FakeDB<ImageData>(&db_model_);
     image_manager_.reset(CreateImageManager(fake_db_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     fake_db_ = NULL;
     db_model_.clear();
     image_manager_.reset();

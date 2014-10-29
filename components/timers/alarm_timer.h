@@ -59,7 +59,7 @@ class AlarmTimer : public base::Timer,
              const base::Closure& user_task,
              bool is_repeating);
 
-  virtual ~AlarmTimer();
+  ~AlarmTimer() override;
 
   // Timer overrides.
   void Stop() override;

@@ -15,7 +15,7 @@ class AudioDirectiveListTest : public testing::Test {
  public:
   AudioDirectiveListTest() : directive_list_(new AudioDirectiveList()) {}
 
-  virtual ~AudioDirectiveListTest() {}
+  ~AudioDirectiveListTest() override {}
 
  protected:
   base::MessageLoop message_loop_;

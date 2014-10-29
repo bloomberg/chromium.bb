@@ -16,7 +16,7 @@ class SearchHostToURLsMapTest : public testing::Test {
  public:
   SearchHostToURLsMapTest() {}
 
-  virtual void SetUp();
+  void SetUp() override;
 
  protected:
   scoped_ptr<SearchHostToURLsMap> provider_map_;

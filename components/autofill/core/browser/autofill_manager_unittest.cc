@@ -591,7 +591,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
 class AutofillManagerTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     personal_data_.set_database(autofill_client_.GetDatabase());
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
@@ -605,7 +605,7 @@ class AutofillManagerTest : public testing::Test {
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
     autofill_manager_.reset();

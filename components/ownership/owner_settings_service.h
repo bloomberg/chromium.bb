@@ -59,7 +59,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
 
   explicit OwnerSettingsService(
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
-  virtual ~OwnerSettingsService();
+  ~OwnerSettingsService() override;
 
   base::WeakPtr<OwnerSettingsService> as_weak_ptr() {
     return weak_factory_.GetWeakPtr();

@@ -23,15 +23,13 @@ class TranslateScriptTest : public testing::Test {
   TranslateScriptTest() : testing::Test() {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     script_.reset(new TranslateScript);
     DCHECK(script_.get());
     TranslateDownloadManager::GetInstance()->set_application_locale("en");
   }
 
-  virtual void TearDown() {
-    script_.reset();
-  }
+  void TearDown() override { script_.reset(); }
 
   void Request() {
     script_->Request(

@@ -14,31 +14,31 @@ class TestMediaTransferProtocolManagerLinux
     : public device::MediaTransferProtocolManager {
  public:
   TestMediaTransferProtocolManagerLinux();
-  virtual ~TestMediaTransferProtocolManagerLinux();
+  ~TestMediaTransferProtocolManagerLinux() override;
 
  private:
   // device::MediaTransferProtocolManager implementation.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
-  virtual const std::vector<std::string> GetStorages() const override;
-  virtual const MtpStorageInfo* GetStorageInfo(
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  const std::vector<std::string> GetStorages() const override;
+  const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const override;
-  virtual void OpenStorage(const std::string& storage_name,
-                           const std::string& mode,
-                           const OpenStorageCallback& callback) override;
-  virtual void CloseStorage(const std::string& storage_handle,
-                            const CloseStorageCallback& callback) override;
-  virtual void ReadDirectory(const std::string& storage_handle,
-                             uint32 file_id,
-                             const ReadDirectoryCallback& callback) override;
-  virtual void ReadFileChunk(const std::string& storage_handle,
-                             uint32 file_id,
-                             uint32 offset,
-                             uint32 count,
-                             const ReadFileCallback& callback) override;
-  virtual void GetFileInfo(const std::string& storage_handle,
-                           uint32 file_id,
-                           const GetFileInfoCallback& callback) override;
+  void OpenStorage(const std::string& storage_name,
+                   const std::string& mode,
+                   const OpenStorageCallback& callback) override;
+  void CloseStorage(const std::string& storage_handle,
+                    const CloseStorageCallback& callback) override;
+  void ReadDirectory(const std::string& storage_handle,
+                     uint32 file_id,
+                     const ReadDirectoryCallback& callback) override;
+  void ReadFileChunk(const std::string& storage_handle,
+                     uint32 file_id,
+                     uint32 offset,
+                     uint32 count,
+                     const ReadFileCallback& callback) override;
+  void GetFileInfo(const std::string& storage_handle,
+                   uint32 file_id,
+                   const GetFileInfoCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };

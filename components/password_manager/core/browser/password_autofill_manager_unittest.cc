@@ -72,7 +72,7 @@ class PasswordAutofillManagerTest : public testing::Test {
       : test_username_(base::ASCIIToUTF16(kAliceUsername)),
         test_password_(base::ASCIIToUTF16(kAlicePassword)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Add a preferred login and an additional login to the FillData.
     username_field_.name = base::ASCIIToUTF16(kUsernameName);
     username_field_.value = test_username_;

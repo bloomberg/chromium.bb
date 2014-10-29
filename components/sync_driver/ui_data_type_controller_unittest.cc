@@ -33,7 +33,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
       : type_(syncer::PREFERENCES),
         change_processor_(NULL) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     preference_dtc_ =
         new UIDataTypeController(
             base::MessageLoopProxy::current(),
@@ -43,7 +43,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
     SetStartExpectations();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Must be done before we pump the loop.
     syncable_service_.StopSyncing(type_);
     preference_dtc_ = NULL;

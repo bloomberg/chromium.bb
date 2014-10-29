@@ -15,7 +15,7 @@ namespace metrics {
 class MetricsReportingSchedulerTest : public testing::Test {
  public:
   MetricsReportingSchedulerTest() : callback_call_count_(0) {}
-  virtual ~MetricsReportingSchedulerTest() {}
+  ~MetricsReportingSchedulerTest() override {}
 
   base::Closure GetCallback() {
     return base::Bind(&MetricsReportingSchedulerTest::SchedulerCallback,

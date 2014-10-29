@@ -125,10 +125,9 @@ class GCMNetworkChannelTest
         url_fetchers_created_count_(0),
         last_invalidator_state_(TRANSIENT_INVALIDATION_ERROR) {}
 
-  virtual ~GCMNetworkChannelTest() {
-  }
+  ~GCMNetworkChannelTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
     // Ownership of delegate goes to GCNMentworkChannel but test needs pointer
@@ -147,9 +146,7 @@ class GCMNetworkChannelTest
             base::Unretained(this))));
   }
 
-  virtual void TearDown() {
-    gcm_network_channel_->RemoveObserver(this);
-  }
+  void TearDown() override { gcm_network_channel_->RemoveObserver(this); }
 
   // Helper functions to call private methods from test
   GURL BuildUrl(const std::string& registration_id) {

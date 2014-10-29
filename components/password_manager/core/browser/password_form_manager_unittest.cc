@@ -153,7 +153,7 @@ class PasswordFormManagerTest : public testing::Test {
   // SimulateMatchingPhase.
   enum ResultOfSimulatedMatching { RESULT_MATCH_FOUND, RESULT_NO_MATCH };
 
-  virtual void SetUp() {
+  void SetUp() override {
     observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("http://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
@@ -174,7 +174,7 @@ class PasswordFormManagerTest : public testing::Test {
     client_.reset(new TestPasswordManagerClient(mock_store_.get()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (mock_store_.get())
       mock_store_->Shutdown();
   }

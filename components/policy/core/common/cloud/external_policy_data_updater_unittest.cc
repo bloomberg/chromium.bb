@@ -59,7 +59,7 @@ ExternalPolicyDataUpdater::FetchSuccessCallback
 
 class ExternalPolicyDataUpdaterTest : public testing::Test {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void CreateUpdater(size_t max_parallel_fetches);
   ExternalPolicyDataUpdater::Request CreateRequest(

@@ -22,15 +22,15 @@ class PolicyHeaderIOHelperTest : public testing::Test {
   PolicyHeaderIOHelperTest() {
     task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner());
   }
-  virtual ~PolicyHeaderIOHelperTest() {}
+  ~PolicyHeaderIOHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     helper_ = make_scoped_ptr(new PolicyHeaderIOHelper(kDMServerURL,
                                                        kInitialPolicyHeader,
                                                        task_runner_));
     task_runner_->RunUntilIdle();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     task_runner_->RunUntilIdle();
     helper_.reset();
   }

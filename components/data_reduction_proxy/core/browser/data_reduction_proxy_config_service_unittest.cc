@@ -78,7 +78,7 @@ class MockObserver : public net::ProxyConfigService::Observer {
 
 class DataReductionProxyConfigServiceTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     observer_.reset(new MockObserver());
     base_service_ = new TestProxyConfigService();
     scoped_ptr<net::ProxyConfigService> base_service(base_service_);

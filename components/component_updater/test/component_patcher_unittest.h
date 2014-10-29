@@ -24,7 +24,7 @@ const char binary_output_hash[] =
 class ComponentPatcherOperationTest : public testing::Test {
  public:
   explicit ComponentPatcherOperationTest();
-  virtual ~ComponentPatcherOperationTest();
+  ~ComponentPatcherOperationTest() override;
 
  protected:
   base::ScopedTempDir input_dir_;

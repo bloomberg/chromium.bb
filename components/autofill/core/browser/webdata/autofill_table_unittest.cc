@@ -115,10 +115,10 @@ int GetAutofillEntryCount(const base::string16& name,
 class AutofillTableTest : public testing::Test {
  public:
   AutofillTableTest() {}
-  virtual ~AutofillTableTest() {}
+  ~AutofillTableTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
 #if defined(OS_MACOSX)
     OSCrypt::UseMockKeychain(true);
 #endif
