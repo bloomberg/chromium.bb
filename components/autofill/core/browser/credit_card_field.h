@@ -48,7 +48,6 @@ class CreditCardField : public FormField {
   // middle names or suffixes.)
   AutofillField* cardholder_last_;
 
-  // TODO(jhawkins): Parse the select control.
   AutofillField* type_;                  // Optional.
   std::vector<AutofillField*> numbers_;  // Required.
 

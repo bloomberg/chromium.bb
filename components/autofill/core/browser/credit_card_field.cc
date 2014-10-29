@@ -44,7 +44,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     // we search for "name" only when we've already parsed at least one other
     // credit card field and haven't yet parsed the expiration date (which
     // usually appears at the end).
-    if (credit_card_field->cardholder_ == NULL) {
+    if (!credit_card_field->cardholder_) {
       base::string16 name_pattern;
       if (fields == 0 || credit_card_field->expiration_month_) {
         // at beginning or end
@@ -55,21 +55,6 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
 
       if (ParseField(scanner, name_pattern, &credit_card_field->cardholder_))
         continue;
-
-      // As a hard-coded hack for Expedia's billing pages (expedia_checkout.html
-      // and ExpediaBilling.html in our test suite), recognize separate fields
-      // for the cardholder's first and last name if they have the labels "cfnm"
-      // and "clnm".
-      scanner->SaveCursor();
-      AutofillField* first;
-      if (ParseField(scanner, base::ASCIIToUTF16("^cfnm"), &first) &&
-          ParseField(scanner,
-                     base::ASCIIToUTF16("^clnm"),
-                     &credit_card_field->cardholder_last_)) {
-        credit_card_field->cardholder_ = first;
-        continue;
-      }
-      scanner->Rewind();
     }
 
     // Check for a credit card type (Visa, MasterCard, etc.) field.
