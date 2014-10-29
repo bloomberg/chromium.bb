@@ -471,6 +471,9 @@ static ResourceProvider::ResourceId WaitOnResourceSyncPoints(
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
+  if (frame->device_viewport_rect.IsEmpty())
+    return;
+
   TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
 
   scoped_refptr<ResourceProvider::Fence> read_lock_fence;
@@ -500,9 +503,6 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
     read_lock_fence = make_scoped_refptr(new FallbackFence(gl_));
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
-
-  if (frame->device_viewport_rect.IsEmpty())
-    return;
 
   // Insert WaitSyncPointCHROMIUM on quad resources prior to drawing the frame,
   // so that drawing can proceed without GL context switching interruptions.
