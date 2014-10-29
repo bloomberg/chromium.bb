@@ -320,7 +320,11 @@ void PrintSupportedDevices() {
 #if defined(IOSSIM_USE_XCODE_6)
     // With iOS 8 simulators on Xcode 6, the app output is relative to the
     // simulator's data directory.
-    if ([session.sessionConfig.simulatedSystemRoot.sdkVersion isEqual:@"8.0"]) {
+    NSString* versionString =
+        [[[session sessionConfig] simulatedSystemRoot] sdkVersion];
+    NSInteger majorVersion = [[[versionString componentsSeparatedByString:@"."]
+        objectAtIndex:0] intValue];
+    if (majorVersion >= 8) {
       NSString* dataPath = session.sessionConfig.device.dataPath;
       NSString* appOutput =
           [dataPath stringByAppendingPathComponent:stdioPath_];
