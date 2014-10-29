@@ -94,8 +94,9 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
   void OnRasterFinished(TaskSet task_set);
   void AdvanceLastFlushedCopyTo(CopySequenceNumber sequence);
   void IssueCopyOperations(int64 count);
-  void ScheduleCheckForCompletedCopyOperationsWithLockAcquired();
-  void CheckForCompletedCopyOperations();
+  void ScheduleCheckForCompletedCopyOperationsWithLockAcquired(
+      bool wait_if_needed);
+  void CheckForCompletedCopyOperations(bool wait_if_needed);
   scoped_refptr<base::debug::ConvertableToTraceFormat> StateAsValue() const;
   void StagingStateAsValueInto(base::debug::TracedValue* staging_state) const;
 

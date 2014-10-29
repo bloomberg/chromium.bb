@@ -105,11 +105,14 @@ bool ResourcePool::ResourceUsageTooHigh() {
   return false;
 }
 
-void ResourcePool::CheckBusyResources() {
+void ResourcePool::CheckBusyResources(bool wait_if_needed) {
   ResourceList::iterator it = busy_resources_.begin();
 
   while (it != busy_resources_.end()) {
     ScopedResource* resource = *it;
+
+    if (wait_if_needed)
+      resource_provider_->WaitReadLockIfNeeded(resource->id());
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
       DidFinishUsingResource(resource);

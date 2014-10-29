@@ -1232,7 +1232,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
       100);
 
   DCHECK(resource_pool_);
-  resource_pool_->CheckBusyResources();
+  resource_pool_->CheckBusyResources(false);
   // Soft limit is used for resource pool such that memory returns to soft
   // limit after going over.
   resource_pool_->SetResourceUsageLimits(
@@ -1242,7 +1242,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 
   // Release all staging resources when invisible.
   if (staging_resource_pool_) {
-    staging_resource_pool_->CheckBusyResources();
+    staging_resource_pool_->CheckBusyResources(false);
     staging_resource_pool_->SetResourceUsageLimits(
         std::numeric_limits<size_t>::max(),
         std::numeric_limits<size_t>::max(),
@@ -1454,7 +1454,7 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   if (tile_manager_) {
     DCHECK(resource_pool_);
 
-    resource_pool_->CheckBusyResources();
+    resource_pool_->CheckBusyResources(false);
     resource_pool_->ReduceResourceUsage();
   }
   // If we're not visible, we likely released resources, so we want to

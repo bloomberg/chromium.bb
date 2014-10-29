@@ -87,6 +87,10 @@ const int kMaxCopyOperations = 16;
 // Delay been checking for copy operations to complete.
 const int kCheckForCompletedCopyOperationsTickRateMs = 1;
 
+// Number of failed attempts to allow before we perform a check that will
+// wait for copy operations to complete if needed.
+const int kFailedAttemptsBeforeWaitIfNeeded = 256;
+
 }  // namespace
 
 OneCopyRasterWorkerPool::CopyOperation::CopyOperation(
@@ -195,7 +199,7 @@ void OneCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
                    task_set));
   }
 
-  resource_pool_->CheckBusyResources();
+  resource_pool_->CheckBusyResources(false);
 
   for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
        it != queue->items.end();
@@ -283,15 +287,22 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   {
     base::AutoLock lock(lock_);
 
+    int failed_attempts = 0;
     while ((scheduled_copy_operation_count_ + issued_copy_operation_count_) >=
            kMaxCopyOperations) {
       // Ignore limit when shutdown is set.
       if (shutdown_)
         break;
 
+      ++failed_attempts;
+
+      // Schedule a check that will also wait for operations to complete
+      // after too many failed attempts.
+      bool wait_if_needed = failed_attempts > kFailedAttemptsBeforeWaitIfNeeded;
+
       // Schedule a check for completed copy operations if too many operations
       // are currently in-flight.
-      ScheduleCheckForCompletedCopyOperationsWithLockAcquired();
+      ScheduleCheckForCompletedCopyOperationsWithLockAcquired(wait_if_needed);
 
       {
         TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
@@ -420,7 +431,8 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
 }
 
 void OneCopyRasterWorkerPool::
-    ScheduleCheckForCompletedCopyOperationsWithLockAcquired() {
+    ScheduleCheckForCompletedCopyOperationsWithLockAcquired(
+        bool wait_if_needed) {
   lock_.AssertAcquired();
 
   if (check_for_completed_copy_operations_pending_)
@@ -440,7 +452,8 @@ void OneCopyRasterWorkerPool::
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&OneCopyRasterWorkerPool::CheckForCompletedCopyOperations,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr(),
+                 wait_if_needed),
       next_check_for_completed_copy_operations_time - now);
 
   last_check_for_completed_copy_operations_time_ =
@@ -448,11 +461,14 @@ void OneCopyRasterWorkerPool::
   check_for_completed_copy_operations_pending_ = true;
 }
 
-void OneCopyRasterWorkerPool::CheckForCompletedCopyOperations() {
-  TRACE_EVENT0("cc",
-               "OneCopyRasterWorkerPool::CheckForCompletedCopyOperations");
+void OneCopyRasterWorkerPool::CheckForCompletedCopyOperations(
+    bool wait_if_needed) {
+  TRACE_EVENT1("cc",
+               "OneCopyRasterWorkerPool::CheckForCompletedCopyOperations",
+               "wait_if_needed",
+               wait_if_needed);
 
-  resource_pool_->CheckBusyResources();
+  resource_pool_->CheckBusyResources(wait_if_needed);
 
   {
     base::AutoLock lock(lock_);
