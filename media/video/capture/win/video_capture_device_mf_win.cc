@@ -58,8 +58,9 @@ static bool FillFormat(IMFMediaType* type, VideoCaptureFormat* format) {
   return true;
 }
 
-HRESULT FillCapabilities(IMFSourceReader* source,
-                         CapabilityList* capabilities) {
+HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
+    IMFSourceReader* source,
+    CapabilityList* capabilities) {
   DWORD stream_index = 0;
   ScopedComPtr<IMFMediaType> type;
   HRESULT hr;

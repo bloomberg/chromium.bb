@@ -62,6 +62,9 @@ class VideoCaptureDeviceWin
                                               REFGUID major_type);
   static VideoPixelFormat TranslateMediaSubtypeToPixelFormat(
       const GUID& sub_type);
+  static bool CreateCapabilityMap(IPin* output_capture_pin,
+                                  IBaseFilter* capture_filter,
+                                  CapabilityList* capabilities);
 
   explicit VideoCaptureDeviceWin(const Name& device_name);
   virtual ~VideoCaptureDeviceWin();
@@ -85,7 +88,6 @@ class VideoCaptureDeviceWin
   // Implements SinkFilterObserver.
   virtual void FrameReceived(const uint8* buffer, int length);
 
-  bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter();
   HRESULT InstantiateWDMFiltersAndPins();
   HRESULT AddWDMCrossbarFilterToGraphAndConnect();

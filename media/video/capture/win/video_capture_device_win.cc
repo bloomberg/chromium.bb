@@ -306,7 +306,8 @@ bool VideoCaptureDeviceWin::Init() {
     return false;
   }
 
-  return CreateCapabilityMap();
+  return CreateCapabilityMap(
+      output_capture_pin_, capture_filter_, &capabilities_);
 }
 
 void VideoCaptureDeviceWin::AllocateAndStart(
@@ -473,11 +474,12 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
       buffer, length, capture_format_, 0, base::TimeTicks::Now());
 }
 
-bool VideoCaptureDeviceWin::CreateCapabilityMap() {
-  DCHECK(CalledOnValidThread());
+bool VideoCaptureDeviceWin::CreateCapabilityMap(IPin* output_capture_pin,
+                                                IBaseFilter* capture_filter,
+                                                CapabilityList* capabilities) {
   ScopedComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
-  if (FAILED(hr)) {
+  HRESULT hr = output_capture_pin->QueryInterface(stream_config.Receive());
+  if (FAILED(hr) || !stream_config) {
     DPLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
                     "capture device: " << logging::SystemErrorCodeToString(hr);
     return false;
@@ -485,9 +487,10 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 
   // Get interface used for getting the frame rate.
   ScopedComPtr<IAMVideoControl> video_control;
-  hr = capture_filter_.QueryInterface(video_control.Receive());
-  DLOG_IF(WARNING, FAILED(hr)) << "IAMVideoControl Interface NOT SUPPORTED: "
-                               << logging::SystemErrorCodeToString(hr);
+  hr = capture_filter->QueryInterface(video_control.Receive());
+  DLOG_IF(WARNING, FAILED(hr) || !video_control)
+      << "IAMVideoControl Interface NOT SUPPORTED: "
+      << logging::SystemErrorCodeToString(hr);
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
@@ -504,7 +507,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         stream_index, media_type.Receive(), caps.get());
     // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
     // macros here since they'll trigger incorrectly.
-    if (hr != S_OK) {
+    if (hr != S_OK || !media_type.get()) {
       DLOG(ERROR) << "Failed to GetStreamCaps: "
                   << logging::SystemErrorCodeToString(hr);
       return false;
@@ -520,6 +523,10 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+      if (!h) {
+        DLOG(ERROR) << "VIDEOINFOHEADER is NULL";
+        continue;
+      }
       format.frame_size.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
 
       // Try to get a better |time_per_frame| from IAMVideoControl. If not, use
@@ -531,7 +538,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
         const SIZE size = {format.frame_size.width(),
                            format.frame_size.height()};
         hr = video_control->GetFrameRateList(
-            output_capture_pin_, stream_index, size, &list_size, &max_fps);
+            output_capture_pin, stream_index, size, &list_size, &max_fps);
         // Can't assume the first value will return the max fps.
         // Sometimes |list_size| will be > 0, but max_fps will be NULL. Some
         // drivers may return an HRESULT of S_FALSE which SUCCEEDED() translates
@@ -547,11 +554,11 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
               ? (kSecondsToReferenceTime / static_cast<float>(time_per_frame))
               : 0.0;
 
-      capabilities_.emplace_back(stream_index, format);
+      capabilities->emplace_back(stream_index, format);
     }
   }
 
-  return !capabilities_.empty();
+  return !capabilities->empty();
 }
 
 // Set the power line frequency removal in |capture_filter_| if available.
