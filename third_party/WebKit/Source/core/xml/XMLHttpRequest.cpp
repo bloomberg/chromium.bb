@@ -851,6 +851,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
     ResourceRequest request(m_url);
     request.setHTTPMethod(m_method);
     request.setRequestContext(blink::WebURLRequest::RequestContextXMLHttpRequest);
+    request.setFetchCredentialsMode(m_includeCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeSameOrigin);
 
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 

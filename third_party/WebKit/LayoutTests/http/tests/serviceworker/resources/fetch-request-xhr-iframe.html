@@ -120,22 +120,26 @@ function form_data_test() {
       });
 }
 
-function mode_test() {
+function mode_credentials_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', false)
     .then(function(response){
         assert_equals(response.mode, 'cors');
+        assert_equals(response.credentials, 'same-origin');
         return xhr_send(host_info['HTTP_ORIGIN'], 'GET', '', true);
       })
     .then(function(response){
         assert_equals(response.mode, 'cors');
+        assert_equals(response.credentials, 'include');
         return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', false);
       })
     .then(function(response){
         assert_equals(response.mode, 'cors');
+        assert_equals(response.credentials, 'same-origin');
         return xhr_send(host_info['HTTP_REMOTE_ORIGIN'], 'GET', '', true);
       })
     .then(function(response){
         assert_equals(response.mode, 'cors');
+        assert_equals(response.credentials, 'include');
       });
 }
 
@@ -145,7 +149,7 @@ window.addEventListener('message', function(evt) {
       .then(blob_test)
       .then(custom_method_test)
       .then(form_data_test)
-      .then(mode_test)
+      .then(mode_credentials_test)
       .then(function() { port.postMessage({results: 'finish'}); })
       .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
   });
