@@ -22,7 +22,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   int id() const { return id_; }
 
-  const base::FilePath& path() { return path_; }
+  const base::FilePath& path() const { return path_; }
 
   // Start reading events.
   void Start();

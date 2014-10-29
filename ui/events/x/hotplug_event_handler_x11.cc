@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "ui/events/device_hotplug_event_observer.h"
+#include "ui/events/device_util_linux.h"
 #include "ui/events/input_device.h"
 #include "ui/events/keyboard_device.h"
 #include "ui/events/touchscreen_device.h"
@@ -64,9 +64,6 @@ bool IsTestKeyboard(const std::string& name) {
 // node eventXXX. Then we search all the dev input nodes registered
 // by I2C devices to see if we can find eventXXX.
 bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
-  using base::FileEnumerator;
-  using base::FilePath;
-
 #if !defined(CHROMEOS)
   return false;
 #else
@@ -107,32 +104,7 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
   XFree(data);
   XCloseDevice(dpy, dev);
 
-  std::string event_node = dev_node_path.BaseName().value();
-  if (event_node.empty() || !StartsWithASCII(event_node, "event", false))
-    return false;
-
-  // Extract id "XXX" from "eventXXX"
-  std::string event_node_id = event_node.substr(5);
-
-  // I2C input device registers its dev input node at
-  // /sys/bus/i2c/devices/*/input/inputXXX/eventXXX
-  FileEnumerator i2c_enum(FilePath(FILE_PATH_LITERAL("/sys/bus/i2c/devices/")),
-                          false,
-                          base::FileEnumerator::DIRECTORIES);
-  for (FilePath i2c_name = i2c_enum.Next(); !i2c_name.empty();
-       i2c_name = i2c_enum.Next()) {
-    FileEnumerator input_enum(i2c_name.Append(FILE_PATH_LITERAL("input")),
-                              false,
-                              base::FileEnumerator::DIRECTORIES,
-                              FILE_PATH_LITERAL("input*"));
-    for (base::FilePath input = input_enum.Next(); !input.empty();
-         input = input_enum.Next()) {
-      if (input.BaseName().value().substr(5) == event_node_id)
-        return true;
-    }
-  }
-
-  return false;
+  return ui::IsTouchscreenInternal(dev_node_path);
 }
 
 }  // namespace

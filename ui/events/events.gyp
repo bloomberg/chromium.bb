@@ -43,6 +43,8 @@
         'device_data_manager.cc',
         'device_data_manager.h',
         'device_hotplug_event_observer.h',
+        'device_util_linux.cc',
+        'device_util_linux.h',
         'event_constants.h',
         'event_switches.cc',
         'event_switches.h',
