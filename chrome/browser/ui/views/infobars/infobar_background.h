@@ -12,13 +12,13 @@
 class InfoBarBackground : public views::Background {
  public:
   explicit InfoBarBackground(infobars::InfoBarDelegate::Type infobar_type);
-  virtual ~InfoBarBackground();
+  ~InfoBarBackground() override;
 
   void set_separator_color(SkColor color) { separator_color_ = color; }
 
  private:
   // views::Background:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const override;
+  void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
   SkColor separator_color_;
   SkColor top_color_;
