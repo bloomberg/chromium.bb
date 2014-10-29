@@ -5,8 +5,8 @@
 // A simple custom NSView for the bookmark bar used to prevent clicking and
 // dragging from moving the browser window.
 
-#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
-#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
+#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -58,4 +58,4 @@
 }
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
+#endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_VIEW_COCOA_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
+#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

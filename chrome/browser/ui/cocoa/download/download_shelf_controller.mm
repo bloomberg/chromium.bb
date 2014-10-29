@@ -18,7 +18,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #include "chrome/browser/ui/cocoa/download/download_shelf_mac.h"
-#import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
+#import "chrome/browser/ui/cocoa/download/download_shelf_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
