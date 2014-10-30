@@ -22,10 +22,6 @@ class MockNotificationDelegate : public NotificationDelegate {
   explicit MockNotificationDelegate(const std::string& id);
 
   // NotificationDelegate interface.
-  void Display() override {}
-  void Error() override {}
-  void Close(bool by_user) override {}
-  void Click() override {}
   std::string id() const override;
 
  private:

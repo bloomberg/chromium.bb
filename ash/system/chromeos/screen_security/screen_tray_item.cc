@@ -116,18 +116,6 @@ ScreenNotificationDelegate::ScreenNotificationDelegate(
 ScreenNotificationDelegate::~ScreenNotificationDelegate() {
 }
 
-void ScreenNotificationDelegate::Display() {
-}
-
-void ScreenNotificationDelegate::Error() {
-}
-
-void ScreenNotificationDelegate::Close(bool by_user) {
-}
-
-void ScreenNotificationDelegate::Click() {
-}
-
 void ScreenNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
   screen_tray_->Stop();

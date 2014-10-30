@@ -205,12 +205,6 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     explicit TestNotificationDelegate(const std::string& id) : id_(id) {}
 
     // Overridden from NotificationDelegate:
-    void Display() override {}
-    void Error() override {}
-    void Close(bool by_user) override {}
-    void Click() override {}
-    void ButtonClick(int index) override {}
-
     std::string id() const override { return id_; }
 
    private:

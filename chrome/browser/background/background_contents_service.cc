@@ -104,12 +104,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
         extension_id_(extension->id()) {
   }
 
-  void Display() override {}
-
-  void Error() override {}
-
-  void Close(bool by_user) override {}
-
   void Click() override {
     // http://crbug.com/247790 involves a crash notification balloon being
     // clicked while the extension isn't in the TERMINATED state. In that case,

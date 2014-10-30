@@ -75,11 +75,7 @@ class DesktopNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate:
   virtual std::string id() const override;
-  virtual void Display() override;
   virtual void ButtonClick(int button_index) override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual void Click() override;
 
  private:
   virtual ~DesktopNotificationDelegate();
@@ -103,20 +99,8 @@ std::string DesktopNotificationDelegate::id() const {
   return id_;
 }
 
-void DesktopNotificationDelegate::Display() {
-}
-
 void DesktopNotificationDelegate::ButtonClick(int button_index) {
   button_click_callback_.Run();
-}
-
-void DesktopNotificationDelegate::Error() {
-}
-
-void DesktopNotificationDelegate::Close(bool by_user) {
-}
-
-void DesktopNotificationDelegate::Click() {
 }
 
 }  // namespace

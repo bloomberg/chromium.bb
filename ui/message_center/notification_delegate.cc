@@ -8,7 +8,15 @@ namespace message_center {
 
 // NotificationDelegate:
 
+void NotificationDelegate::Display() {}
+
+void NotificationDelegate::Error() {}
+
+void NotificationDelegate::Close(bool by_user) {}
+
 bool NotificationDelegate::HasClickedListener() { return false; }
+
+void NotificationDelegate::Click() {}
 
 void NotificationDelegate::ButtonClick(int button_index) {}
 
@@ -19,17 +27,7 @@ HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(
     : closure_(closure) {
 }
 
-HandleNotificationClickedDelegate::~HandleNotificationClickedDelegate() {
-}
-
-void HandleNotificationClickedDelegate::Display() {
-}
-
-void HandleNotificationClickedDelegate::Error() {
-}
-
-void HandleNotificationClickedDelegate::Close(bool by_user) {
-}
+HandleNotificationClickedDelegate::~HandleNotificationClickedDelegate() {}
 
 bool HandleNotificationClickedDelegate::HasClickedListener() {
   return !closure_.is_null();
@@ -40,9 +38,6 @@ void HandleNotificationClickedDelegate::Click() {
     closure_.Run();
 }
 
-void HandleNotificationClickedDelegate::ButtonClick(int button_index) {
-}
-
 // HandleNotificationButtonClickDelegate:
 
 HandleNotificationButtonClickDelegate::HandleNotificationButtonClickDelegate(
@@ -51,20 +46,7 @@ HandleNotificationButtonClickDelegate::HandleNotificationButtonClickDelegate(
 }
 
 HandleNotificationButtonClickDelegate::
-    ~HandleNotificationButtonClickDelegate() {
-}
-
-void HandleNotificationButtonClickDelegate::Display() {
-}
-
-void HandleNotificationButtonClickDelegate::Error() {
-}
-
-void HandleNotificationButtonClickDelegate::Close(bool by_user) {
-}
-
-void HandleNotificationButtonClickDelegate::Click() {
-}
+    ~HandleNotificationButtonClickDelegate() {}
 
 void HandleNotificationButtonClickDelegate::ButtonClick(int button_index) {
   if (!button_callback_.is_null())

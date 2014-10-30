@@ -40,8 +40,6 @@ class ResolutionChangeNotificationDelegate
 
  private:
   // message_center::NotificationDelegate overrides:
-  virtual void Display() override;
-  virtual void Error() override;
   virtual void Close(bool by_user) override;
   virtual void Click() override;
   virtual bool HasClickedListener() override;
@@ -62,12 +60,6 @@ ResolutionChangeNotificationDelegate::ResolutionChangeNotificationDelegate(
 }
 
 ResolutionChangeNotificationDelegate::~ResolutionChangeNotificationDelegate() {
-}
-
-void ResolutionChangeNotificationDelegate::Display() {
-}
-
-void ResolutionChangeNotificationDelegate::Error() {
 }
 
 void ResolutionChangeNotificationDelegate::Close(bool by_user) {

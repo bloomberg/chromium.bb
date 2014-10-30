@@ -85,10 +85,6 @@ class DriveOfflineNotificationDelegate
       : profile_(profile) {}
 
   // message_center::NotificationDelegate overrides:
-  virtual void Display() override {}
-  virtual void Error() override {}
-  virtual void Close(bool by_user) override {}
-  virtual void Click() override {}
   virtual void ButtonClick(int button_index) override;
 
  protected:

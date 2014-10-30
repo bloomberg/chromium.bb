@@ -127,9 +127,6 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
   }
 
   // Overridden from NotificationDelegate:
-  void Display() override {}
-  void Error() override {}
-  void Close(bool by_user) override {}
   void Click() override {
     if (!success_)
       return;

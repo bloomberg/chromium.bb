@@ -32,8 +32,6 @@ class LocaleNotificationDelegate : public message_center::NotificationDelegate {
   ~LocaleNotificationDelegate() override;
 
   // message_center::NotificationDelegate overrides:
-  void Display() override;
-  void Error() override;
   void Close(bool by_user) override;
   bool HasClickedListener() override;
   void Click() override;
@@ -52,12 +50,6 @@ LocaleNotificationDelegate::LocaleNotificationDelegate(
 }
 
 LocaleNotificationDelegate::~LocaleNotificationDelegate() {
-}
-
-void LocaleNotificationDelegate::Display() {
-}
-
-void LocaleNotificationDelegate::Error() {
 }
 
 void LocaleNotificationDelegate::Close(bool by_user) {

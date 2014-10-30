@@ -47,10 +47,6 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   class TestNotificationDelegate : public ::NotificationDelegate {
    public:
     explicit TestNotificationDelegate(std::string id) : id_(id) {}
-    void Display() override {}
-    void Error() override {}
-    void Close(bool by_user) override {}
-    void Click() override {}
     std::string id() const override { return id_; }
 
    private:

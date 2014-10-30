@@ -74,10 +74,6 @@ class PeripheralBatteryNotificationDelegate : public NotificationDelegate {
       : id_(id) {}
 
   // Overridden from NotificationDelegate:
-  virtual void Display() override {}
-  virtual void Error() override {}
-  virtual void Close(bool by_user) override {}
-  virtual void Click() override {}
   virtual std::string id() const override { return id_; }
 
  private:

@@ -85,10 +85,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
     DCHECK(api_function_.get());
   }
 
-  void Display() override {}
-
-  void Error() override {}
-
   void Close(bool by_user) override {
     EventRouter::UserGestureState gesture =
         by_user ? EventRouter::USER_GESTURE_ENABLED

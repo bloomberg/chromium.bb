@@ -50,10 +50,6 @@ class SigninNotificationDelegate : public NotificationDelegate {
                              Profile* profile);
 
   // NotificationDelegate:
-  void Display() override;
-  void Error() override;
-  void Close(bool by_user) override;
-  bool HasClickedListener() override;
   void Click() override;
   void ButtonClick(int button_index) override;
   std::string id() const override;
@@ -80,19 +76,6 @@ SigninNotificationDelegate::SigninNotificationDelegate(
 }
 
 SigninNotificationDelegate::~SigninNotificationDelegate() {
-}
-
-void SigninNotificationDelegate::Display() {
-}
-
-void SigninNotificationDelegate::Error() {
-}
-
-void SigninNotificationDelegate::Close(bool by_user) {
-}
-
-bool SigninNotificationDelegate::HasClickedListener() {
-  return false;
 }
 
 void SigninNotificationDelegate::Click() {

@@ -47,9 +47,6 @@ class NotificationCallbacks
   }
 
   // Overridden from NotificationDelegate:
-  void Display() override {}
-  void Error() override {}
-
   void Close(bool by_user) override {
     if (by_user) {
       // Setting the preference here may cause the notification erasing
@@ -60,7 +57,6 @@ class NotificationCallbacks
     }
   }
 
-  void Click() override {}
   void ButtonClick(int index) override {
     if (index == 0) {
       OpenNotificationLearnMoreTab();

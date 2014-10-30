@@ -45,9 +45,6 @@ class DummyNotificationDelegate : public NotificationDelegate {
             &CloseBalloon, id(), NotificationUIManager::GetProfileID(profile_)),
         base::TimeDelta::FromSeconds(kTimeoutSeconds));
   }
-  void Error() override {}
-  void Close(bool by_user) override {}
-  void Click() override {}
   std::string id() const override { return id_; }
 
  private:

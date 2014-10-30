@@ -24,25 +24,23 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
     : public base::RefCountedThreadSafe<NotificationDelegate> {
  public:
   // To be called when the desktop notification is actually shown.
-  virtual void Display() = 0;
+  virtual void Display();
 
   // To be called when the desktop notification cannot be shown due to an
   // error.
-  virtual void Error() = 0;
+  virtual void Error();
 
   // To be called when the desktop notification is closed.  If closed by a
   // user explicitly (as opposed to timeout/script), |by_user| should be true.
-  virtual void Close(bool by_user) = 0;
+  virtual void Close(bool by_user);
 
   // Returns true if the delegate can handle click event.
   virtual bool HasClickedListener();
 
   // To be called when a desktop notification is clicked.
-  virtual void Click() = 0;
+  virtual void Click();
 
-  // To be called when the user clicks a button in a notification. TODO(miket):
-  // consider providing default implementations of the pure virtuals of this
-  // interface, to avoid pinging so many OWNERs each time we enhance it.
+  // To be called when the user clicks a button in a notification.
   virtual void ButtonClick(int button_index);
 
  protected:
@@ -59,12 +57,8 @@ class MESSAGE_CENTER_EXPORT HandleNotificationClickedDelegate
   explicit HandleNotificationClickedDelegate(const base::Closure& closure);
 
   // message_center::NotificationDelegate overrides:
-  void Display() override;
-  void Error() override;
-  void Close(bool by_user) override;
-  bool HasClickedListener() override;
   void Click() override;
-  void ButtonClick(int button_index) override;
+  bool HasClickedListener() override;
 
  protected:
   ~HandleNotificationClickedDelegate() override;
@@ -87,10 +81,6 @@ class MESSAGE_CENTER_EXPORT HandleNotificationButtonClickDelegate
       const ButtonClickCallback& button_callback);
 
   // message_center::NotificationDelegate overrides:
-  void Display() override;
-  void Error() override;
-  void Close(bool by_user) override;
-  void Click() override;
   void ButtonClick(int button_index) override;
 
  protected:

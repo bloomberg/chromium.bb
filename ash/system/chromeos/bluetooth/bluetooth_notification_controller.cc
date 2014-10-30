@@ -58,12 +58,8 @@ class BluetoothPairingNotificationDelegate
   virtual ~BluetoothPairingNotificationDelegate();
 
   // message_center::NotificationDelegate overrides.
-  virtual void Display() override;
-  virtual void Error() override;
-  virtual void Close(bool by_user) override;
-  virtual bool HasClickedListener() override;
-  virtual void Click() override;
-  virtual void ButtonClick(int button_index) override;
+  void Close(bool by_user) override;
+  void ButtonClick(int button_index) override;
 
  private:
   // Buttons that appear in notifications.
@@ -93,12 +89,6 @@ BluetoothPairingNotificationDelegate::BluetoothPairingNotificationDelegate(
 BluetoothPairingNotificationDelegate::~BluetoothPairingNotificationDelegate() {
 }
 
-void BluetoothPairingNotificationDelegate::Display() {
-}
-
-void BluetoothPairingNotificationDelegate::Error() {
-}
-
 void BluetoothPairingNotificationDelegate::Close(bool by_user) {
   VLOG(1) << "Pairing notification closed. by_user = " << by_user;
   // Ignore notification closes generated as a result of pairing completion.
@@ -109,13 +99,6 @@ void BluetoothPairingNotificationDelegate::Close(bool by_user) {
   BluetoothDevice* device = adapter_->GetDevice(address_);
   if (device)
     device->CancelPairing();
-}
-
-bool BluetoothPairingNotificationDelegate::HasClickedListener() {
-  return false;
-}
-
-void BluetoothPairingNotificationDelegate::Click() {
 }
 
 void BluetoothPairingNotificationDelegate::ButtonClick(int button_index) {

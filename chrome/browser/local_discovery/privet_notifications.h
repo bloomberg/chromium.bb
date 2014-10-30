@@ -134,10 +134,7 @@ class PrivetNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate implementation.
   std::string id() const override;
-  void Display() override;
   void Error() override;
-  void Close(bool by_user) override;
-  void Click() override;
   void ButtonClick(int button_index) override;
 
  private:
