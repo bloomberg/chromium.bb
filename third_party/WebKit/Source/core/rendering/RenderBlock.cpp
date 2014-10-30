@@ -3634,6 +3634,9 @@ static inline unsigned firstLetterLength(const String& text)
     unsigned length = 0;
     unsigned textLength = text.length();
 
+    if (textLength == 0)
+        return length;
+
     // Account for leading spaces first.
     while (length < textLength && isSpaceForFirstLetter(text[length]))
         length++;
@@ -3643,7 +3646,7 @@ static inline unsigned firstLetterLength(const String& text)
         length++;
 
     // Bail if we didn't find a letter before the end of the text or before a space.
-    if (isSpaceForFirstLetter(text[length]) || (textLength && length == textLength))
+    if (isSpaceForFirstLetter(text[length]) || length == textLength)
         return 0;
 
     // Account the next character for first letter.
@@ -3658,8 +3661,6 @@ static inline unsigned firstLetterLength(const String& text)
 
         length = scanLength + 1;
     }
-
-    // FIXME: If textLength is 0, length may still be 1!
     return length;
 }
 
@@ -3710,6 +3711,13 @@ void RenderBlock::createFirstLetterRenderer(RenderObject* firstLetterBlock, Rend
     currentChild.destroy();
 }
 
+// Once we see any of these renderers we can stop looking for first-letter as
+// they signal the end of the first line of text.
+bool RenderBlock::isInvalidFirstLetterRenderer(RenderObject* obj) const
+{
+    return (obj->isBR() || (obj->isText() && toRenderText(obj)->isWordBreak()));
+}
+
 void RenderBlock::updateFirstLetter()
 {
     if (!document().styleEngine()->usesFirstLetterRules())
@@ -3732,7 +3740,7 @@ void RenderBlock::updateFirstLetter()
             // FIXME: If there is leading punctuation in a different RenderText than
             // the first letter, we'll not apply the correct style to it.
             length = firstLetterLength(toRenderText(currChild)->originalText());
-            if (length)
+            if (length || isInvalidFirstLetterRenderer(currChild))
                 break;
             currChild = currChild->nextSibling();
         } else if (currChild->isListMarker()) {
@@ -3766,7 +3774,7 @@ void RenderBlock::updateFirstLetter()
 
     // FIXME: This black-list of disallowed RenderText subclasses is fragile.
     // Should counter be on this list? What about RenderTextFragment?
-    if (!currChild->isText() || currChild->isBR() || toRenderText(currChild)->isWordBreak())
+    if (!currChild->isText() || isInvalidFirstLetterRenderer(currChild))
         return;
 
     createFirstLetterRenderer(firstLetterBlock, toRenderText(*currChild), length);

@@ -365,6 +365,7 @@ private:
 
     void createFirstLetterRenderer(RenderObject* firstLetterBlock, RenderText& currentChild, unsigned length);
     void updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderObject* firstLetterContainer);
+    bool isInvalidFirstLetterRenderer(RenderObject*) const;
 
     Node* nodeForHitTest() const;
 
