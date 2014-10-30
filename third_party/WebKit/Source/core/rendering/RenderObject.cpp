@@ -1173,13 +1173,13 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     }
 
     if (paintInvalidationContainer->isRenderView()) {
-        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
+        toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason, *this);
         return;
     }
 
     if (paintInvalidationContainer->view()->usesCompositing()) {
         ASSERT(paintInvalidationContainer->isPaintInvalidationContainer());
-        paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
+        paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r, invalidationReason, *this);
     }
 }
 

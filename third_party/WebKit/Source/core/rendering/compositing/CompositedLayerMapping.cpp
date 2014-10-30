@@ -1356,8 +1356,9 @@ enum ApplyToGraphicsLayersModeFlags {
     ApplyToScrollbarLayers = (1 << 2),
     ApplyToBackgroundLayer = (1 << 3),
     ApplyToMaskLayers = (1 << 4),
-    ApplyToContentLayers = (1 << 5),
-    ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers)
+    ApplyToContentLayers = (1 << 5), // This doesn't include scrollingContentsLayer.
+    ApplyToScrollingContentsLayer = (1 << 6),
+    ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers | ApplyToScrollingContentsLayer)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
 
@@ -1376,7 +1377,7 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
         f(mapping->scrollingLayer());
     if ((mode & ApplyToLayersAffectedByPreserve3D) && mapping->scrollingBlockSelectionLayer())
         f(mapping->scrollingBlockSelectionLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->scrollingContentsLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToScrollingContentsLayer)) && mapping->scrollingContentsLayer())
         f(mapping->scrollingContentsLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
         f(mapping->foregroundLayer());
@@ -2056,6 +2057,25 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
         invalidationReason
     };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
+}
+
+void CompositedLayerMapping::setScrollingContentsNeedDisplay()
+{
+    ASSERT(!paintsIntoCompositedAncestor());
+    ApplyToGraphicsLayers(this, SetContentsNeedsDisplayFunctor(), ApplyToScrollingContentsLayer);
+}
+
+// FIXME: Temporarily r is in the coordinate space of the scrolling container layer.
+// Will make it in the coordinate space of the scrolling contents layer. crbug.com/416539.
+void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
+{
+    ASSERT(!paintsIntoCompositedAncestor());
+
+    SetContentsNeedsDisplayInRectFunctor functor = {
+        pixelSnappedIntRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size()),
+        invalidationReason
+    };
+    ApplyToGraphicsLayers(this, functor, ApplyToScrollingContentsLayer);
 }
 
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex)

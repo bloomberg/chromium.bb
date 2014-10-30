@@ -7,20 +7,21 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 61],
-          "bounds": [200, 200],
+          "position": [8, 108],
+          "bounds": [210, 210],
           "drawsContent": true,
+          "repaintRects": [
+            [0, 0, 210, 210]
+          ],
           "children": [
             {
+              "position": [5, 5],
               "bounds": [185, 185],
               "children": [
                 {
-                  "bounds": [185, 656],
+                  "bounds": [400, 400],
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
-                  "repaintRects": [
-                    [0, 0, 48, 656]
-                  ],
                   "children": [
                     {
                       "shouldFlattenTransform": false
@@ -32,17 +33,17 @@
             {
               "children": [
                 {
-                  "position": [0, 185],
+                  "position": [5, 190],
                   "bounds": [185, 15],
                   "drawsContent": true
                 },
                 {
-                  "position": [185, 0],
+                  "position": [190, 5],
                   "bounds": [15, 185],
                   "drawsContent": true
                 },
                 {
-                  "position": [185, 185],
+                  "position": [190, 190],
                   "bounds": [15, 15],
                   "drawsContent": true
                 }

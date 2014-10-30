@@ -7,7 +7,7 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [8, 61],
+          "position": [8, 108],
           "bounds": [200, 200],
           "drawsContent": true,
           "children": [
@@ -15,11 +15,23 @@
               "bounds": [185, 185],
               "children": [
                 {
-                  "bounds": [185, 656],
+                  "bounds": [185, 260],
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 0, 48, 656]
+                    [0, 240, 74, 19],
+                    [0, 220, 74, 19],
+                    [0, 200, 74, 19],
+                    [0, 180, 74, 19],
+                    [0, 160, 74, 19],
+                    [0, 140, 74, 19],
+                    [0, 120, 74, 19],
+                    [0, 100, 74, 19],
+                    [0, 80, 74, 19],
+                    [0, 60, 74, 19],
+                    [0, 40, 74, 19],
+                    [0, 20, 74, 19],
+                    [0, 0, 74, 19]
                   ],
                   "children": [
                     {

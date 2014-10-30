@@ -336,7 +336,7 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason) const
+void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason, const RenderObject& forRenderer) const
 {
     ASSERT(!paintInvalidationRect.isEmpty());
 
@@ -346,7 +346,7 @@ void RenderView::invalidatePaintForRectangle(const LayoutRect& paintInvalidation
     ASSERT(layer()->compositingState() == PaintsIntoOwnBacking || !frame()->ownerRenderer());
 
     if (layer()->compositingState() == PaintsIntoOwnBacking) {
-        setBackingNeedsPaintInvalidationInRect(paintInvalidationRect, invalidationReason);
+        setBackingNeedsPaintInvalidationInRect(paintInvalidationRect, invalidationReason, forRenderer);
     } else {
         m_frameView->contentRectangleForPaintInvalidation(pixelSnappedIntRect(paintInvalidationRect));
     }

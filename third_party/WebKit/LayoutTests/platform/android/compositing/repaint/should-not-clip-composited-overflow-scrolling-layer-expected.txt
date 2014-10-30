@@ -10,10 +10,6 @@
           "position": [8, 8],
           "bounds": [500, 500],
           "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 500, 500],
-            [0, 0, 500, 500]
-          ],
           "children": [
             {
               "bounds": [485, 485],
