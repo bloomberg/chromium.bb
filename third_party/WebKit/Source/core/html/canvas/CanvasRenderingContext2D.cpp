@@ -1566,6 +1566,9 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
+    if (imageSource->isVideoElement())
+        canvas()->buffer()->willDrawVideo();
+
     CompositeOperator op = state().m_globalComposite;
     if (rectContainsTransformedRect(dstRect, clipBounds)) {
         drawImageOnContext(c, imageSource, image.get(), srcRect, dstRect);

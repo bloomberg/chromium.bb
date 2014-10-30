@@ -35,6 +35,7 @@ public:
     // Implementation of ImageBufferSurface interfaces
     virtual SkCanvas* canvas() const override;
     virtual PassRefPtr<SkPicture> getPicture() override;
+    virtual void willDrawVideo() override;
     virtual bool isValid() const override { return true; }
     virtual void willAccessPixels() override;
     virtual void finalizeFrame(const FloatRect&) override;

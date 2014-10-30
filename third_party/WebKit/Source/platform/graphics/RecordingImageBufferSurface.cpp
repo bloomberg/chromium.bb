@@ -225,6 +225,13 @@ void RecordingImageBufferSurface::setCurrentState(SkCanvas* dstCanvas, StateStac
     dstCanvas->setMatrix(stateStack->peek().m_ctm);
 }
 
+void RecordingImageBufferSurface::willDrawVideo()
+{
+    // Video draws need to be synchronous
+    if (!m_fallbackSurface)
+        fallBackToRasterCanvas();
+}
+
 // Fallback passthroughs
 
 const SkBitmap& RecordingImageBufferSurface::bitmap()

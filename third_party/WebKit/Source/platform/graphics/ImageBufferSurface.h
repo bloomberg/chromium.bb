@@ -77,7 +77,7 @@ public:
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void didClearCanvas() { }
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
-
+    virtual void willDrawVideo() { }
     virtual PassRefPtr<SkImage> newImageSnapshot() const;
 
     OpacityMode opacityMode() const { return m_opacityMode; }
