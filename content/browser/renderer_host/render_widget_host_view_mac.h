@@ -377,11 +377,43 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;
 
+  // The state of |delegated_frame_host_| and |browser_compositor_view_| to
+  // manage being visible, hidden, or occluded.
+  enum BrowserCompositorViewState {
+    // Effects:
+    // - |browser_compositor_view_| exists and |delegated_frame_host_| is
+    //    visible.
+    // Happens when:
+    // - |render_widet_host_| is in the visible state (this includes when
+    //   the tab isn't visible, but tab capture is enabled).
+    BrowserCompositorActive,
+    // Effects:
+    // - |browser_compositor_view_| exists, but |delegated_frame_host_| has
+    //   been hidden.
+    // Happens when:
+    // - The |render_widget_host_| is hidden, but |cocoa_view_| is still in the
+    //   NSWindow hierarchy.
+    // - This happens when |cocoa_view_| is hidden (minimized, on another
+    //   occluded by other windows, etc). The |browser_compositor_view_| and
+    //   its CALayers are kept around so that we will have content to show when
+    //   we are un-occluded.
+    BrowserCompositorSuspended,
+    // Effects:
+    // - |browser_compositor_view_| has been destroyed and
+    //   |delegated_frame_host_| has been hidden.
+    // Happens when:
+    // - The |render_widget_host_| is hidden or dead, and |cocoa_view_| is not
+    //   attached to a NSWindow.
+    // - This happens for backgrounded tabs.
+    BrowserCompositorDestroyed,
+  };
+  BrowserCompositorViewState browser_compositor_state_;
+
   // Delegated frame management and compositior.
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
   scoped_ptr<ui::Layer> root_layer_;
 
-  // Container for the NSView drawn by the browser compositor.
+  // Container for the CALayer tree drawn by the browser compositor.
   scoped_ptr<BrowserCompositorViewMac> browser_compositor_view_;
 
   // Placeholder that is allocated while browser_compositor_view_ is NULL,
@@ -429,6 +461,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BrowserCompositorViewFrameSwapped(
       const std::vector<ui::LatencyInfo>& latency_info) override;
 
+  // Transition from being in the Suspended state to being in the Destroyed
+  // state, if appropriate (see BrowserCompositorViewState for details).
+  void DestroySuspendedBrowserCompositorViewIfNeeded();
+
  private:
   friend class RenderWidgetHostViewMacTest;
 
@@ -443,7 +479,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // ensure no dangling references.
   void ShutdownBrowserCompositor();
 
+  // The state of the the browser compositor and delegated frame host. See
+  // BrowserCompositorViewState for details.
   void EnsureBrowserCompositorView();
+  void SuspendBrowserCompositorView();
   void DestroyBrowserCompositorView();
 
   // IPC message handlers.

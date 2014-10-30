@@ -8,7 +8,9 @@
 
 #include <string>
 
+#import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
@@ -592,6 +594,47 @@ void WebContentsViewMac::CloseTab() {
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
   for (NSView* subview in self.subviews)
     [subview setFrame:self.bounds];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  NSWindow* oldWindow = [self window];
+
+  NSNotificationCenter* notificationCenter =
+      [NSNotificationCenter defaultCenter];
+
+  // Occlusion notification APIs are new in Mavericks.
+  bool supportsOcclusionAPIs = base::mac::IsOSMavericksOrLater();
+
+  if (supportsOcclusionAPIs) {
+    if (oldWindow) {
+      [notificationCenter
+          removeObserver:self
+                    name:NSWindowDidChangeOcclusionStateNotification
+                  object:oldWindow];
+    }
+    if (newWindow) {
+      [notificationCenter
+          addObserver:self
+             selector:@selector(windowChangedOcclusionState:)
+                 name:NSWindowDidChangeOcclusionStateNotification
+               object:newWindow];
+    }
+  }
+}
+
+- (void)windowChangedOcclusionState:(NSNotification*)notification {
+  DCHECK(base::mac::IsOSMavericksOrLater());
+  NSWindow* window = [notification object];
+  WebContentsImpl* webContents = [self webContents];
+  if (window && webContents) {
+    if ([window occlusionState] & NSWindowOcclusionStateVisible) {
+      if (!webContents->should_normally_be_visible())
+        webContents->WasShown();
+    } else {
+      if (webContents->should_normally_be_visible())
+        webContents->WasHidden();
+    }
+  }
 }
 
 @end

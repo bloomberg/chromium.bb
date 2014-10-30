@@ -116,15 +116,6 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
 - (BOOL)isSpeaking;
 @end
 
-// Declare things that are part of the 10.7 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-static NSString* const NSWindowDidChangeBackingPropertiesNotification =
-    @"NSWindowDidChangeBackingPropertiesNotification";
-
-#endif  // 10.7
-
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.
 // Used to prevent a crash when building with the 10.7 SDK and accessing the
@@ -404,7 +395,9 @@ namespace content {
 // DelegatedFrameHost, public:
 
 ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
-  if (browser_compositor_view_)
+  // When |browser_compositor_view_| is suspended or destroyed, the connection
+  // between its ui::Compositor and |delegated_frame_host_| has been severed.
+  if (browser_compositor_state_ == BrowserCompositorActive)
     return browser_compositor_view_->GetCompositor();
   return NULL;
 }
@@ -519,6 +512,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     : render_widget_host_(RenderWidgetHostImpl::From(widget)),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
+      browser_compositor_state_(BrowserCompositorDestroyed),
       browser_compositor_view_placeholder_(
           new BrowserCompositorViewPlaceholderMac),
       is_loading_(false),
@@ -588,29 +582,66 @@ void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
 
 void RenderWidgetHostViewMac::EnsureBrowserCompositorView() {
-  if (browser_compositor_view_)
-    return;
-
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::EnsureBrowserCompositorView");
 
-  browser_compositor_view_.reset(
-      new BrowserCompositorViewMac(this, cocoa_view_, root_layer_.get()));
-  delegated_frame_host_->AddedToWindow();
-  delegated_frame_host_->WasShown(ui::LatencyInfo());
+  // Create the view, to transition from Destroyed -> Suspended.
+  if (browser_compositor_state_ == BrowserCompositorDestroyed) {
+    browser_compositor_view_.reset(
+        new BrowserCompositorViewMac(this, cocoa_view_, root_layer_.get()));
+    browser_compositor_state_ = BrowserCompositorSuspended;
+  }
+
+  // Show the DelegatedFrameHost to transition from Suspended -> Active.
+  if (browser_compositor_state_ == BrowserCompositorSuspended) {
+    delegated_frame_host_->AddedToWindow();
+    delegated_frame_host_->WasShown(ui::LatencyInfo());
+    browser_compositor_state_ = BrowserCompositorActive;
+  }
+}
+
+void RenderWidgetHostViewMac::SuspendBrowserCompositorView() {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewMac::SuspendBrowserCompositorView");
+
+  // Hide the DelegatedFrameHost to transition from Active -> Suspended.
+  if (browser_compositor_state_ == BrowserCompositorActive) {
+    // Marking the DelegatedFrameHost as removed from the window hierarchy is
+    // necessary to remove all connections to its old ui::Compositor.
+    delegated_frame_host_->WasHidden();
+    delegated_frame_host_->RemovingFromWindow();
+    browser_compositor_state_ = BrowserCompositorSuspended;
+  }
 }
 
 void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
   TRACE_EVENT0("browser",
                "RenderWidgetHostViewMac::DestroyBrowserCompositorView");
-  if (!browser_compositor_view_)
+
+  // Transition from Active -> Suspended if need be.
+  SuspendBrowserCompositorView();
+
+  // Destroy the BrowserCompositorView to transition Suspended -> Destroyed.
+  if (browser_compositor_state_ == BrowserCompositorSuspended) {
+    browser_compositor_view_.reset();
+    browser_compositor_state_ = BrowserCompositorDestroyed;
+  }
+}
+
+void RenderWidgetHostViewMac::DestroySuspendedBrowserCompositorViewIfNeeded() {
+  if (browser_compositor_state_ != BrowserCompositorSuspended)
     return;
 
-  // Marking the DelegatedFrameHost as removed from the window hierarchy is
-  // necessary to remove all connections to its old ui::Compositor.
-  delegated_frame_host_->WasHidden();
-  delegated_frame_host_->RemovingFromWindow();
-  browser_compositor_view_.reset();
+  // If this view is in a window that is visible, keep around the suspended
+  // BrowserCompositorView in case |cocoa_view_| is suddenly revealed (so that
+  // we don't flash white).
+  NSWindow* window = [cocoa_view_ window];
+  if (window)
+    return;
+
+  // This should only be reached if |render_widget_host_| is hidden, destroyed,
+  // or in the process of being destroyed.
+  DestroyBrowserCompositorView();
 }
 
 bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
@@ -796,11 +827,12 @@ void RenderWidgetHostViewMac::WasHidden() {
   if (render_widget_host_->is_hidden())
     return;
 
-  DestroyBrowserCompositorView();
-
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
+
+  SuspendBrowserCompositorView();
+  DestroySuspendedBrowserCompositorViewIfNeeded();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
@@ -3053,8 +3085,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
-  if ([self window])
+  if ([self window]) {
     [self updateScreenProperties];
+  } else {
+    // If the RenderWidgetHostViewCocoa is being removed from its window, tear
+    // down its browser compositor resources, if needed.
+    renderWidgetHostView_->DestroySuspendedBrowserCompositorViewIfNeeded();
+  }
 
   if (canBeKeyView_) {
     NSWindow* newWindow = [self window];
