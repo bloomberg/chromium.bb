@@ -785,15 +785,11 @@ class ChromeSDKCommand(cros.CrosCommand):
     if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
       cros_build_lib.Die('Already in an SDK shell.')
 
-    if not self.options.chrome_src:
-      checkout = commandline.DetermineCheckout(os.getcwd())
-      self.options.chrome_src = checkout.chrome_src_dir
-    else:
-      checkout = commandline.DetermineCheckout(self.options.chrome_src)
-      if not checkout.chrome_src_dir:
-        cros_build_lib.Die('Chrome checkout not found at %s',
-                           self.options.chrome_src)
-      self.options.chrome_src = checkout.chrome_src_dir
+    src_path = self.options.chrome_src or os.getcwd()
+    checkout = commandline.DetermineCheckout(src_path)
+    if not checkout.chrome_src_dir:
+      cros_build_lib.Die('Chrome checkout not found at %s', src_path)
+    self.options.chrome_src = checkout.chrome_src_dir
 
     if self.options.clang and not self.options.chrome_src:
       cros_build_lib.Die('--clang requires --chrome-src to be set.')
