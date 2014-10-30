@@ -11,6 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
@@ -27,7 +28,7 @@ class DateTimeChooserAndroid {
   // DateTimeChooser implementation:
   // Shows the dialog. |dialog_value| is the date/time value converted to a
   // number as defined in HTML. (See blink::InputType::parseToNumber())
-  void ShowDialog(ContentViewCore* content,
+  void ShowDialog(gfx::NativeWindow native_window,
                   RenderViewHost* host,
                   ui::TextInputType dialog_type,
                   double dialog_value,

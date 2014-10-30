@@ -105,11 +105,9 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#include "content/public/browser/android/content_view_core.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -2878,7 +2876,7 @@ void WebContentsImpl::OnFindMatchRectsReply(
 
 void WebContentsImpl::OnOpenDateTimeDialog(
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
-  date_time_chooser_->ShowDialog(ContentViewCore::FromWebContents(this),
+  date_time_chooser_->ShowDialog(GetTopLevelNativeWindow(),
                                  GetRenderViewHost(),
                                  value.dialog_type,
                                  value.dialog_value,

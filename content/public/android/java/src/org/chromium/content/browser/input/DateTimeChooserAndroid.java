@@ -4,11 +4,12 @@
 
 package org.chromium.content.browser.input;
 
+import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.picker.DateTimeSuggestion;
 import org.chromium.ui.picker.InputDialogContainer;
 
@@ -47,15 +48,15 @@ class DateTimeChooserAndroid {
 
     @CalledByNative
     private static DateTimeChooserAndroid createDateTimeChooser(
-            ContentViewCore contentViewCore,
+            WindowAndroid windowAndroid,
             long nativeDateTimeChooserAndroid,
             int dialogType, double dialogValue,
             double min, double max, double step,
             DateTimeSuggestion[] suggestions) {
+        Activity windowAndroidActivity = windowAndroid.getActivity().get();
+        if (windowAndroidActivity == null) return null;
         DateTimeChooserAndroid chooser =
-                new DateTimeChooserAndroid(
-                        contentViewCore.getContext(),
-                        nativeDateTimeChooserAndroid);
+                new DateTimeChooserAndroid(windowAndroidActivity, nativeDateTimeChooserAndroid);
         chooser.showDialog(dialogType, dialogValue, min, max, step, suggestions);
         return chooser;
     }

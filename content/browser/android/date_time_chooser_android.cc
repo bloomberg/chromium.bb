@@ -9,11 +9,11 @@
 #include "base/i18n/char_iterator.h"
 #include "content/common/date_time_suggestion.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_view_host.h"
 #include "jni/DateTimeChooserAndroid_jni.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
+#include "ui/base/android/window_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -73,7 +73,7 @@ void DateTimeChooserAndroid::CancelDialog(JNIEnv* env, jobject) {
 }
 
 void DateTimeChooserAndroid::ShowDialog(
-    ContentViewCore* content,
+    gfx::NativeWindow native_window,
     RenderViewHost* host,
     ui::TextInputType dialog_type,
     double dialog_value,
@@ -104,7 +104,7 @@ void DateTimeChooserAndroid::ShowDialog(
 
   j_date_time_chooser_.Reset(Java_DateTimeChooserAndroid_createDateTimeChooser(
       env,
-      content->GetJavaObject().obj(),
+      native_window->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this),
       dialog_type,
       dialog_value,
@@ -112,6 +112,8 @@ void DateTimeChooserAndroid::ShowDialog(
       max,
       step,
       suggestions_array.obj()));
+  if (j_date_time_chooser_.is_null())
+    ReplaceDateTime(env, j_date_time_chooser_.obj(), dialog_value);
 }
 
 // ----------------------------------------------------------------------------
