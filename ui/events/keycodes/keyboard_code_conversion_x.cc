@@ -459,6 +459,32 @@ KeyboardCode FindVK(const T_MAP& key, const T_MAP* map, size_t size) {
   return VKEY_UNKNOWN;
 }
 
+// Check for TTY function keys or space key which should always be mapped
+// based on KeySym, and never fall back to MAP0~MAP3, since some layouts
+// generate them by applying the Control/AltGr modifier to some other key.
+// e.g. in de(neo), AltGr+V generates XK_Enter.
+bool IsTtyFunctionOrSpaceKey(KeySym keysym) {
+  KeySym keysyms[] = {
+    XK_BackSpace,
+    XK_Tab,
+    XK_Linefeed,
+    XK_Clear,
+    XK_Return,
+    XK_Pause,
+    XK_Scroll_Lock,
+    XK_Sys_Req,
+    XK_Escape,
+    XK_Delete,
+    XK_space
+  };
+
+  for (size_t i = 0; i < arraysize(keysyms); ++i) {
+    if (keysyms[i] == keysym)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // Get an ui::KeyboardCode from an X keyevent
@@ -492,7 +518,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   XLookupString(xkey, NULL, 0, &keysym, NULL);
   if (IsKeypadKey(keysym) || IsPrivateKeypadKey(keysym) ||
       IsCursorKey(keysym) || IsPFKey(keysym) || IsFunctionKey(keysym) ||
-      IsModifierKey(keysym)) {
+      IsModifierKey(keysym) || IsTtyFunctionOrSpaceKey(keysym)) {
     return KeyboardCodeFromXKeysym(keysym);
   }
 
