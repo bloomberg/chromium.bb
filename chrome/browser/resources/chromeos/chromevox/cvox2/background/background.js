@@ -12,6 +12,7 @@ goog.provide('global');
 
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
+goog.require('Output');
 goog.require('cursors.Cursor');
 goog.require('cvox.TabsApiHandler');
 
@@ -57,6 +58,12 @@ Background = function() {
    * @private
    */
   this.active_ = false;
+
+  /**
+   * @type {!Output}
+   * @private
+   */
+  this.output_ = new Output();
 
   // Only needed with unmerged ChromeVox classic loaded before.
   global.accessibility.setAccessibilityEnabled(false);
@@ -144,6 +151,18 @@ Background.prototype = {
         dir = Dir.BACKWARD;
         pred = AutomationPredicate.heading;
         break;
+      case 'nextCharacter':
+        current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
+        break;
+      case 'previousCharacter':
+        current = current.move(cursors.Unit.CHARACTER, Dir.BACKWARD);
+        break;
+      case 'nextWord':
+        current = current.move(cursors.Unit.WORD, Dir.FORWARD);
+        break;
+      case 'previousWord':
+        current = current.move(cursors.Unit.WORD, Dir.BACKWARD);
+        break;
       case 'nextLine':
         current = current.move(cursors.Unit.LINE, Dir.FORWARD);
         break;
@@ -194,7 +213,7 @@ Background.prototype = {
       current.getStart().getNode().focus();
 
       this.currentRange_ = current;
-      this.handleOutput(this.currentRange_);
+      this.output_.output(this.currentRange_);
     }
   },
 
@@ -208,7 +227,7 @@ Background.prototype = {
       return;
 
     this.currentRange_ = cursors.Range.fromNode(node);
-    this.handleOutput(this.currentRange_);
+    this.output_.output(this.currentRange_);
   },
 
   /**
@@ -226,7 +245,7 @@ Background.prototype = {
       this.currentRange_ = cursors.Range.fromNode(node);
 
     if (this.currentRange_)
-      this.handleOutput(this.currentRange_);
+      this.output_.output(this.currentRange_);
   },
 
   /**

@@ -59,6 +59,15 @@ AutomationPredicate.leaf = function(node) {
 };
 
 /**
+ * @param {chrome.automation.AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.leafWithText = function(node) {
+  return AutomationPredicate.leaf(node) &&
+      !!(node.attributes.name || node.attributes.value);
+};
+
+/**
  * @param {chrome.automation.AutomationNode} first
  * @param {chrome.automation.AutomationNode} second
  * @return {boolean}

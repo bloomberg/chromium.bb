@@ -191,9 +191,9 @@ TEST_F('CursorsTest', 'LineCursor', function() {
     // Line (DIRECTIONAL).
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
-    [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
-    [LINE, DIRECTIONAL, BACKWARD, {value: 'start '}],
-    [LINE, BOUND, FORWARD, {value: 'same line'}],
+    [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
+    [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
+    [LINE, BOUND, BACKWARD, {value: 'start '}],
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}]]);
 });
 
@@ -257,14 +257,14 @@ TEST_F('CursorsTest', 'WordRange', function() {
      
 TEST_F('CursorsTest', 'LineRange', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [
-      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 2}],
-      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 2}],
+      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
+      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
 
       [LINE, BACKWARD,
-          {value: 'start ', index: 0}, {value: 'same line', index: 8}],
+          {value: 'start ', index: 0}, {value: 'same line', index: 9}],
 
       [LINE, BACKWARD,
-          {value: 'start ', index: 0}, {value: 'same line', index: 8}],
+          {value: 'start ', index: 0}, {value: 'same line', index: 9}],
   ], this.RANGE);
 });
       

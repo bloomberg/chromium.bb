@@ -21,7 +21,31 @@ BackgroundTest.prototype = {
   setUp: function() {
     this.mockTts = new MockTts();
     cvox.ChromeVox.tts = this.mockTts;
-  }
+  },
+
+  /**
+   * Create a function which perform the command |cmd|.
+   * @param {string} cmd
+   * @return {function() : void}
+   */
+  doCmd: function(cmd) {
+    return function() {
+      global.backgroundObj.onGotCommand(cmd);
+    };
+  },
+
+  linksAndHeadingsDoc: function() {/*!
+    <p>start</p>
+    <a href='#a'>alpha</a>
+    <a href='#b'>beta</a>
+    <p>
+      <h1>charlie</h1>
+      <a href='foo'>delta</a>
+    </p>
+    <a href='#bar'>echo</a>
+    <h2>foxtraut</h2>
+    <p>end<span>of test</span></p>
+  */}
 };
 
 /** Tests that ChromeVox classic is in this context. */
@@ -74,50 +98,64 @@ TEST_F('BackgroundTest', 'InitialFeedback', function() {
 
 /** Tests consistency of navigating forward and backward. */
 TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
-  this.runWithDocument(function() {/*!
-    <p>start</p>
-    <a href='#a'>alpha</a>
-    <a href='#b'>beta</a>
-    <p>
-      <h1>charlie</h1>
-      <a href='foo'>delta</a>
-    </p>
-    <a href='#bar'>echo</a>
-    <h2>foxtraut</h2>
-    <p>end<span>of test</span></p>
-  */},
-  function() {
-    var doCmd = function(cmd) {
-      return function() {
-        global.backgroundObj.onGotCommand(cmd);
-      };
-    };
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+      var doCmd = this.doCmd.bind(this);
+      var expectAfter =
+          cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-    var expectAfter =
-        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
+      cvox.ChromeVox.tts.expectSpeech('start');
+      expectAfter('alpha', doCmd('nextLink'));
+      expectAfter('beta', doCmd('nextLink'));
+      expectAfter('delta', doCmd('nextLink'));
+      expectAfter('beta', doCmd('previousLink'));
 
-    cvox.ChromeVox.tts.expectSpeech('start');
-    expectAfter('alpha', doCmd('nextLink'));
-    expectAfter('beta', doCmd('nextLink'));
-    expectAfter('delta', doCmd('nextLink'));
-    expectAfter('beta', doCmd('previousLink'));
+      expectAfter('charlie', doCmd('nextHeading'));
+      expectAfter('foxtraut', doCmd('nextHeading'));
+      expectAfter('charlie', doCmd('previousHeading'));
 
-    expectAfter('charlie', doCmd('nextHeading'));
-    expectAfter('foxtraut', doCmd('nextHeading'));
-    expectAfter('charlie', doCmd('previousHeading'));
+      expectAfter('delta', doCmd('nextElement'));
+      expectAfter('echo', doCmd('nextElement'));
+      expectAfter('foxtraut', doCmd('nextElement'));
+      expectAfter('end', doCmd('nextElement'));
+      expectAfter('foxtraut', doCmd('previousElement'));
 
-    expectAfter('delta', doCmd('nextElement'));
-    expectAfter('echo', doCmd('nextElement'));
-    expectAfter('foxtraut', doCmd('nextElement'));
-    expectAfter('end', doCmd('nextElement'));
-    expectAfter('foxtraut', doCmd('previousElement'));
+      // TODO(dtseng): cleanup these utterances.
+      expectAfter(', end, paragraph, of test, paragraph', doCmd('nextLine'));
 
-    // TODO(dtseng): cleanup these utterances.
-    expectAfter(', end, paragraph, of test, paragraph', doCmd('nextLine'));
+      expectAfter('start', doCmd('goToBeginning'));
+      expectAfter('of test', doCmd('goToEnd'));
 
-    expectAfter('start', doCmd('goToBeginning'));
-    expectAfter('of test', doCmd('goToEnd'));
+      cvox.ChromeVox.tts.finishExpectations();
+    }.bind(this)
+  );
+});
 
-    cvox.ChromeVox.tts.finishExpectations();
+TEST_F('BackgroundTest', 'CaretNavigation', function() {
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
+      var doCmd = this.doCmd.bind(this);
+      var expectAfter =
+          cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
+
+      cvox.ChromeVox.tts.expectSpeech('start');
+      expectAfter('t', doCmd('nextCharacter'), true);
+      expectAfter('a', doCmd('nextCharacter'), true);
+      expectAfter('alpha', doCmd('nextWord'), true);
+      expectAfter('beta', doCmd('nextWord'), true);
+      expectAfter('charlie', doCmd('nextWord'), true);
+      expectAfter('delta', doCmd('nextLine'), true);
+      expectAfter('echo', doCmd('nextLine'), true);
+      expectAfter('foxtraut', doCmd('nextLine'), true);
+      expectAfter(
+          ', end, paragraph, of test, paragraph', doCmd('nextLine'), true);
+      expectAfter('n', doCmd('nextCharacter'), true);
+      expectAfter('e', doCmd('previousCharacter'), true);
+      expectAfter('t', doCmd('previousCharacter'), true);
+      expectAfter('foxtraut', doCmd('previousWord'), true);
+      expectAfter('echo', doCmd('previousWord'), true);
+      expectAfter('a', doCmd('previousCharacter'), true);
+      expectAfter('t', doCmd('previousCharacter'), true);
+      expectAfter('echo', doCmd('nextWord'), true);
+
+      cvox.ChromeVox.tts.finishExpectations();
   }.bind(this));
 });

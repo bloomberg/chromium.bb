@@ -9,6 +9,7 @@
 
 goog.provide('cursors.Cursor');
 goog.provide('cursors.Movement');
+goog.provide('cursors.Range');
 goog.provide('cursors.Unit');
 
 goog.require('AutomationUtil');
@@ -130,38 +131,38 @@ cursors.Cursor.prototype = {
    * @return {!cursors.Cursor} The moved cursor.
    */
   move: function(unit, movement, dir) {
-    var newNode, newIndex;
+    var newNode = this.node_;
+    var newIndex = this.index_;
+
+    if (unit != Unit.NODE && newIndex === cursors.NODE_INDEX)
+      newIndex = 0;
+
     switch (unit) {
       case Unit.CHARACTER:
         // BOUND and DIRECTIONAL are the same for characters.
-        var node = this.node_;
-        var nextIndex = dir == Dir.FORWARD ? this.index_ + 1 : this.index_ - 1;
-        if (nextIndex < 0 || nextIndex >= this.getText().length) {
-          node = AutomationUtil.findNextNode(
-              node, dir, AutomationPredicate.leaf);
-          if (node) {
-            nextIndex =
-                dir == Dir.FORWARD ? 0 : this.getText(node).length - 1;
+        newIndex = dir == Dir.FORWARD ? newIndex + 1 : newIndex - 1;
+        if (newIndex < 0 || newIndex >= this.getText().length) {
+          newNode = AutomationUtil.findNextNode(
+              newNode, dir, AutomationPredicate.leafWithText);
+          if (newNode) {
+            newIndex =
+                dir == Dir.FORWARD ? 0 : this.getText(newNode).length - 1;
+            newIndex = newIndex == -1 ? 0 : newIndex;
           } else {
-            node = this.node_;
-            nextIndex = this.index_;
+            newIndex = this.index_;
           }
         }
-        newNode = node;
-        newIndex = nextIndex;
         break;
       case Unit.WORD:
         switch (movement) {
           case Movement.BOUND:
-            if (this.node_.role == Role.inlineTextBox) {
+            if (newNode.role == Role.inlineTextBox) {
               var start, end;
-              for (var i = 0;
-                   i < this.node_.attributes.wordStarts.length;
-                   i++) {
-                if (this.index_ >= this.node_.attributes.wordStarts[i] &&
-                    this.index_ <= this.node_.attributes.wordEnds[i]) {
-                  start = this.node_.attributes.wordStarts[i];
-                  end = this.node_.attributes.wordEnds[i];
+              for (var i = 0; i < newNode.attributes.wordStarts.length; i++) {
+                if (newIndex >= newNode.attributes.wordStarts[i] &&
+                    newIndex <= newNode.attributes.wordEnds[i]) {
+                  start = newNode.attributes.wordStarts[i];
+                  end = newNode.attributes.wordEnds[i];
                   break;
                 }
               }
@@ -172,16 +173,14 @@ cursors.Cursor.prototype = {
             }
             break;
           case Movement.DIRECTIONAL:
-            if (this.node_.role == Role.inlineTextBox) {
+            if (newNode.role == Role.inlineTextBox) {
               var start, end;
-              for (var i = 0;
-                   i < this.node_.attributes.wordStarts.length;
-                   i++) {
-                if (this.index_ >= this.node_.attributes.wordStarts[i] &&
-                    this.index_ <= this.node_.attributes.wordEnds[i]) {
+              for (var i = 0; i < newNode.attributes.wordStarts.length; i++) {
+                if (newIndex >= newNode.attributes.wordStarts[i] &&
+                    newIndex <= newNode.attributes.wordEnds[i]) {
                   var nextIndex = dir == Dir.FORWARD ? i + 1 : i - 1;
-                  start = this.node_.attributes.wordStarts[nextIndex];
-                  end = this.node_.attributes.wordEnds[nextIndex];
+                  start = newNode.attributes.wordStarts[nextIndex];
+                  end = newNode.attributes.wordEnds[nextIndex];
                   break;
                 }
               }
@@ -189,17 +188,16 @@ cursors.Cursor.prototype = {
                 newIndex = start;
               } else {
                 // The backward case is special at the beginning of nodes.
-                if (dir == Dir.BACKWARD && this.index_ != 0) {
-                  this.index_ = 0;
+                if (dir == Dir.BACKWARD && newIndex != 0) {
+                  newIndex = 0;
                 } else {
-                  var node = AutomationUtil.findNextNode(this.node_, dir,
+                  newNode = AutomationUtil.findNextNode(newNode, dir,
                       AutomationPredicate.leaf);
-                  if (node) {
-                    newNode = node;
+                  if (newNode) {
                     newIndex = 0;
                     if (dir == Dir.BACKWARD &&
-                        node.role == Role.inlineTextBox) {
-                      var starts = node.attributes.wordStarts;
+                        newNode.role == Role.inlineTextBox) {
+                      var starts = newNode.attributes.wordStarts;
                       newIndex = starts[starts.length - 1] || 0;
                     } else {
                       // TODO(dtseng): Figure out what to do for general nodes.
@@ -219,7 +217,7 @@ cursors.Cursor.prototype = {
             break;
           case Movement.DIRECTIONAL:
             newNode = AutomationUtil.findNextNode(
-                this.node_, dir, AutomationPredicate.leaf) || this.node_;
+                newNode, dir, AutomationPredicate.leaf) || this.node_;
             newIndex = cursors.NODE_INDEX;
             break;
         }
@@ -228,21 +226,15 @@ cursors.Cursor.prototype = {
         newIndex = 0;
         switch (movement) {
           case Movement.BOUND:
-            newNode = AutomationUtil.findNodeUntil(this.node_, dir,
+            newNode = AutomationUtil.findNodeUntil(newNode, dir,
                 AutomationPredicate.linebreak, {before: true});
             newNode = newNode || this.node_;
             newIndex =
-                dir == Dir.FORWARD ? this.getText(newNode).length - 1 : 0;
+                dir == Dir.FORWARD ? this.getText(newNode).length : 0;
             break;
           case Movement.DIRECTIONAL:
             newNode = AutomationUtil.findNodeUntil(
-                this.node_, dir, AutomationPredicate.linebreak);
-
-            // We stick to the beginning of lines out of convention.
-            if (newNode && dir == Dir.BACKWARD) {
-              newNode = AutomationUtil.findNodeUntil(newNode, dir,
-                  AutomationPredicate.linebreak, {before: true}) || node;
-            }
+                newNode, dir, AutomationPredicate.linebreak);
             break;
           }
       break;
@@ -316,6 +308,16 @@ cursors.Range.prototype = {
   },
 
   /**
+   * Returns whether true if this range covers less than a node.
+   * @return {boolean}
+   */
+  isSubNode: function() {
+    return this.getStart().getNode() === this.getEnd().getNode() &&
+        this.getStart().getIndex() > -1 &&
+        this.getEnd().getIndex() > -1;
+  },
+
+  /**
    * Makes a Range which has been moved from this range by the given unit and
    * direction.
    * @param {Unit} unit
@@ -335,10 +337,13 @@ cursors.Range.prototype = {
         break;
       case Unit.WORD:
       case Unit.LINE:
+        newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
+        newStart = newStart.move(unit, Movement.BOUND, Dir.BACKWARD);
+        newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
+        break;
       case Unit.NODE:
-        newEnd = newEnd.move(unit, Movement.DIRECTIONAL, dir);
-        newStart = newEnd;
-        newEnd = newEnd.move(unit, Movement.BOUND, Dir.FORWARD);
+        newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
+        newEnd = newStart;
         break;
     }
     return new cursors.Range(newStart, newEnd);

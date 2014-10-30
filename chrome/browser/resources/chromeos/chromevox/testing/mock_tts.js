@@ -49,14 +49,15 @@ MockTts.prototype = {
    * executes.
    * @param {string} expectedText
    * @param {function() : void=} opt_callback
+   * @param {boolean=} opt_exact Expect an exact match; defaults to false.
    */
-  expectSpeechAfter: function(expectedText, opt_callback) {
+  expectSpeechAfter: function(expectedText, opt_callback, opt_exact) {
     var expectation = {};
     if (this.expectations_.length == 0 && opt_callback)
       opt_callback();
     else
       expectation.startCallback = opt_callback;
-    this.addExpectation_(expectedText, expectation);
+    this.addExpectation_(expectedText, expectation, opt_exact);
   },
 
   /**
@@ -71,11 +72,14 @@ MockTts.prototype = {
    * @param {string} expectedText Text expected spoken.
    * @param {{startCallback: function() : void,
    *     endCallback: function() : void}=} opt_expectation
+   * @param {boolean=} opt_exact Expects an exact match.
    */
-  addExpectation_: function(expectedText, opt_expectation) {
+  addExpectation_: function(expectedText, opt_expectation, opt_exact) {
     var expectation = opt_expectation ? opt_expectation : {};
 
     expectation.predicate = function(actualText) {
+      if (opt_exact)
+        return actualText === expectedText;
       return actualText.indexOf(expectedText) != -1;
     };
 

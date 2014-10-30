@@ -122,10 +122,9 @@ AutomationUtil.findNextNode = function(cur, dir, pred) {
  * @param {AutomationPredicate.Binary} pred
  * @param {{filter: (AutomationPredicate.Unary|undefined),
  *      before: boolean?}=} opt_options
- *     filter - Filters which candidate nodes to
- *         consider. Defaults to leaf nodes only.
- *     before - True to return a_(i -
- *     1); a_i otherwise. Defaults to false.
+ *     filter - Filters which candidate nodes to consider. Defaults to leaf
+ *         only.
+ *     before - True to return a_(i - 1); a_i otherwise. Defaults to false.
  * @return {AutomationNode}
  */
 AutomationUtil.findNodeUntil = function(cur, dir, pred, opt_options) {
