@@ -42,7 +42,7 @@ def IsInternalRepoCheckout(root):
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
-                 mirror=False, depth=None):
+                 mirror=False, depth=None, branch=None, single_branch=False):
   """Clone given git repo
 
   Args:
@@ -56,6 +56,8 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
     depth: If given, do a shallow clone limiting the objects pulled to just
       that # of revs of history.  This option is mutually exclusive to
       reference.
+    branch: If given, clone the given branch from the parent repository.
+    single_branch: Clone only one the requested branch.
   """
   osutils.SafeMakedirs(working_dir)
   cmd = ['clone', repo_url, working_dir]
@@ -70,6 +72,10 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
     cmd += ['--mirror']
   if depth:
     cmd += ['--depth', str(int(depth))]
+  if branch:
+    cmd += ['--branch', branch]
+  if single_branch:
+    cmd += ['--single-branch']
   git.RunGit(working_dir, cmd)
 
 
