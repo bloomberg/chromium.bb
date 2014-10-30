@@ -109,6 +109,74 @@ class NormalizeRefTest(cros_test_lib.TestCase):
     self._TestNormalize(functor, tests)
 
 
+class GitWrappersTest(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests for small git wrappers"""
+
+  CHANGE_ID = 'I0da12ef6d2c670305f0281641bc53db22faf5c1a'
+  COMMIT_LOG = '''
+  foo: Change to foo.
+
+  Change-Id: %s
+  ''' % CHANGE_ID
+
+  PUSH_REMOTE = 'fake_remote'
+  PUSH_BRANCH = 'fake_branch'
+  PUSH_LOCAL = 'fake_local_branch'
+
+  def setUp(self):
+    self.fake_git_dir = '/foo/bar'
+    self.fake_file = 'baz'
+    self.fake_path = os.path.join(self.fake_git_dir, self.fake_file)
+
+  def testAddPath(self):
+    git.AddPath(self.fake_path)
+    self.assertCommandContains(['add'])
+    self.assertCommandContains([self.fake_file])
+
+  def testRmPath(self):
+    git.RmPath(self.fake_path)
+    self.assertCommandContains(['rm'])
+    self.assertCommandContains([self.fake_file])
+
+  def testGetObjectAtRev(self):
+    git.GetObjectAtRev(self.fake_git_dir, '.', '1234')
+    self.assertCommandContains(['show'])
+
+  def testRevertPath(self):
+    git.RevertPath(self.fake_git_dir, self.fake_file, '1234')
+    self.assertCommandContains(['checkout'])
+    self.assertCommandContains([self.fake_file])
+
+  def testCommit(self):
+    self.rc.AddCmdResult(partial_mock.In('log'), output=self.COMMIT_LOG)
+    git.Commit(self.fake_git_dir, 'bar')
+    self.assertCommandContains(['--amend'], expected=False)
+    cid = git.Commit(self.fake_git_dir, 'bar', amend=True)
+    self.assertCommandContains(['--amend'])
+    self.assertEqual(cid, self.CHANGE_ID)
+
+  def testUploadCLNormal(self):
+    git.UploadCL(self.fake_git_dir, self.PUSH_REMOTE, self.PUSH_BRANCH,
+                 local_branch=self.PUSH_LOCAL)
+    self.assertCommandContains(['%s:refs/for/%s' % (self.PUSH_LOCAL,
+                                                    self.PUSH_BRANCH)],
+                               capture_output=False)
+
+  def testUploadCLDraft(self):
+    git.UploadCL(self.fake_git_dir, self.PUSH_REMOTE, self.PUSH_BRANCH,
+                 local_branch=self.PUSH_LOCAL, draft=True)
+    self.assertCommandContains(['%s:refs/drafts/%s' % (self.PUSH_LOCAL,
+                                                       self.PUSH_BRANCH)],
+                               capture_output=False)
+
+  def testUploadCLCaptured(self):
+    git.UploadCL(self.fake_git_dir, self.PUSH_REMOTE, self.PUSH_BRANCH,
+                 local_branch=self.PUSH_LOCAL, draft=True, capture_output=True)
+    self.assertCommandContains(['%s:refs/drafts/%s' % (self.PUSH_LOCAL,
+                                                       self.PUSH_BRANCH)],
+                               capture_output=True)
+
+
 class ProjectCheckoutTest(cros_test_lib.TestCase):
   """Tests for git.ProjectCheckout"""
 

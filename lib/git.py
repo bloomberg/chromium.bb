@@ -997,7 +997,97 @@ def CreateBranch(git_repo, branch, branch_point='HEAD', track=False):
   RunGit(git_repo, cmd)
 
 
-def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
+def AddPath(path):
+  """Use 'git add' on a path.
+
+  Args:
+    path: Path to the git repository and the path to add.
+  """
+  dirname, filename = os.path.split(path)
+  RunGit(dirname, ['add', '--', filename])
+
+
+def RmPath(path):
+  """Use 'git rm' on a file.
+
+  Args:
+    path: Path to the git repository and the path to rm.
+  """
+  dirname, filename = os.path.split(path)
+  RunGit(dirname, ['rm', '--', filename])
+
+
+def GetObjectAtRev(git_repo, obj, rev):
+  """Return the contents of a git object at a particular revision.
+
+  This could be used to look at an old version of a file or directory, for
+  instance, without modifying the working directory.
+
+  Args:
+    git_repo: Path to a directory in the git repository to query.
+    obj: The name of the object to read.
+    rev: The revision to retrieve.
+
+  Returns:
+    The content of the object.
+  """
+  rev_obj = '%s:%s' % (rev, obj)
+  return RunGit(git_repo, ['show', rev_obj]).output
+
+
+def RevertPath(git_repo, filename, rev):
+  """Revert a single file back to a particular revision and 'add' it with git.
+
+  Args:
+    git_repo: Path to the directory holding the file.
+    filename: Name of the file to revert.
+    rev: Revision to revert the file to.
+  """
+  RunGit(git_repo, ['checkout', rev, '--', filename])
+
+
+def Commit(git_repo, message, amend=False):
+  """Commit with git.
+
+  Args:
+    git_repo: Path to the git repository to commit in.
+    message: Commit message to use.
+    amend: Whether to 'amend' the CL, default False
+
+  Returns:
+    The Gerrit Change-ID assigned to the CL if it exists.
+  """
+  cmd = ['commit', '-m', message]
+  if amend:
+    cmd.append('--amend')
+  RunGit(git_repo, cmd)
+
+  log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
+  match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
+  return match.group('ID') if match else None
+
+
+def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
+             **kwargs):
+  """Upload a CL to gerrit. The CL should be checked out currently.
+
+  Args:
+    git_repo: Path to the git repository with the CL to upload checked out.
+    remote: The remote to upload the CL to.
+    branch: Branch to upload to.
+    local_branch: Branch to upload.
+    draft: Whether to upload as a draft.
+    kwargs: Extra options for GitPush. capture_output defaults to False so
+      that the URL for new or updated CLs is shown to the user.
+  """
+  ref = ('refs/drafts/%s' if draft else 'refs/for/%s') % branch
+  remote_ref = RemoteRef(remote, ref)
+  kwargs.setdefault('capture_output', False)
+  GitPush(git_repo, local_branch, remote_ref, **kwargs)
+
+
+def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True,
+            capture_output=True):
   """Wrapper for pushing to a branch.
 
   Args:
@@ -1008,6 +1098,7 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
       built into git.
     force: Whether to bypass non-fastforward checks.
     retry: Retry a push in case of transient errors.
+    capture_output: Whether to capture output for this command.
   """
   cmd = ['push', push_to.remote, '%s:%s' % (refspec, push_to.ref)]
 
@@ -1018,7 +1109,7 @@ def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
   if force:
     cmd.append('--force')
 
-  RunGit(git_repo, cmd, retry=retry)
+  RunGit(git_repo, cmd, retry=retry, capture_output=capture_output)
 
 
 # TODO(build): Switch callers of this function to use CreateBranch instead.
