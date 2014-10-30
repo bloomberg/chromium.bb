@@ -120,7 +120,6 @@
         '<(_sanitizer_type)-pango1.0',
         '<(_sanitizer_type)-libcap2',
         '<(_sanitizer_type)-udev',
-        '<(_sanitizer_type)-libtasn1-3',
         '<(_sanitizer_type)-libgnome-keyring0',
         '<(_sanitizer_type)-libgtk2.0-0',
         '<(_sanitizer_type)-libgdk-pixbuf2.0-0',
@@ -136,6 +135,15 @@
         '<(_sanitizer_type)-libpixman-1-0',
       ],
       'conditions': [
+        ['"<(_ubuntu_release)"=="precise"', {
+          'dependencies': [
+            '<(_sanitizer_type)-libtasn1-3',
+          ],
+        }, {
+          'dependencies': [
+            '<(_sanitizer_type)-libtasn1-6',
+          ],
+        }],
         ['msan==1', {
           'dependencies': [
             '<(_sanitizer_type)-libcups2',
@@ -489,6 +497,19 @@
     {
       'package_name': 'libtasn1-3',
       'dependencies=': [],
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--enable-ld-version-script',
+      ],
+      'includes': ['standard_instrumented_package_target.gypi'],
+    },
+    {
+      'package_name': 'libtasn1-6',
+      'dependencies=': [],
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--enable-ld-version-script',
+      ],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
