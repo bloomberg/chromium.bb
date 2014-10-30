@@ -2283,7 +2283,7 @@ LayoutRect RenderLayer::fragmentsBoundingBox(const RenderLayer* ancestorLayer) c
 
 LayoutRect RenderLayer::boundingBoxForCompositingOverlapTest() const
 {
-    return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : flippedLogicalBoundingBox(logicalBoundingBox(), renderer());
+    return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : fragmentsBoundingBox(this);
 }
 
 static void expandRectForReflectionAndStackingChildren(const RenderLayer* ancestorLayer, RenderLayer::CalculateBoundsOptions options, LayoutRect& result)
