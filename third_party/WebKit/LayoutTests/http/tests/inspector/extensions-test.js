@@ -62,6 +62,7 @@ InspectorTest.runExtensionTests = function()
             pageURL.replace(/\/inspector\/extensions\/[^/]*$/, "/http/tests")) +
             "/inspector/resources/extension-main.html";
         WebInspector.addExtensions([{ startPage: extensionURL, name: "test extension", exposeWebInspectorNamespace: true }]);
+        WebInspector.extensionServer.initializeExtensions();
     });
 }
 
