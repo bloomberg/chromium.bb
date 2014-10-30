@@ -827,6 +827,17 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/015.html [
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/016.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/018.html [ NeedsManualRebaseline ]
 
+# These need to be rebaselined after https://codereview.chromium.org/685333003/ lands.
+# They are affected by Blink letting Skia control (possibly fractional) scaling.
+crbug.com/391051 css3/masking/mask-repeat-space-padding.html [ NeedsRebaseline ]
+crbug.com/391051 fast/backgrounds/size/backgroundSize18.html [ NeedsRebaseline ]
+crbug.com/391051 fast/backgrounds/size/backgroundSize21.html [ NeedsRebaseline ]
+crbug.com/391051 fast/borders/border-image-repeat-round.html [ NeedsRebaseline ]
+crbug.com/391051 fast/borders/border-image-scale-transform.html [ NeedsRebaseline ]
+crbug.com/391051 fast/borders/border-image-scaled.html [ NeedsRebaseline ]
+crbug.com/391051 fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
+crbug.com/391051 fast/borders/scaled-border-image.html [ NeedsRebaseline ]
+
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
