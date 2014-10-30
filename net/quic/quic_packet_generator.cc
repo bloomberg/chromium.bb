@@ -384,6 +384,19 @@ void QuicPacketGenerator::UpdateSequenceNumberLength(
       least_packet_awaited_by_peer, congestion_window);
 }
 
+void QuicPacketGenerator::SetConnectionIdLength(uint32 length) {
+  if (length == 0) {
+    packet_creator_.set_connection_id_length(PACKET_0BYTE_CONNECTION_ID);
+  } else if (length == 1) {
+    packet_creator_.set_connection_id_length(PACKET_1BYTE_CONNECTION_ID);
+  } else if (length <= 4) {
+    packet_creator_.set_connection_id_length(PACKET_4BYTE_CONNECTION_ID);
+  } else {
+    packet_creator_.set_connection_id_length(PACKET_8BYTE_CONNECTION_ID);
+  }
+}
+
+
 void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
   packet_creator_.set_encryption_level(level);
 }

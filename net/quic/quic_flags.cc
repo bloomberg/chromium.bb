@@ -29,9 +29,6 @@ bool FLAGS_send_quic_crypto_reject_reason = false;
 // must also request FEC protection for the server to use FEC.
 bool FLAGS_enable_quic_fec = false;
 
-// If true, a QUIC connection with too many unfinished streams will be closed.
-bool FLAGS_close_quic_connection_unfinished_streams_2 = false;
-
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
 
@@ -54,3 +51,10 @@ bool FLAGS_quic_drop_junk_packets = true;
 // If true, QUIC BBR congestion control may be enabled via Finch and/or via QUIC
 // connection options.
 bool FLAGS_quic_allow_bbr = false;
+
+// If true, truncate QUIC connection IDs if the client requests it.
+bool FLAGS_allow_truncated_connection_ids_for_quic = false;
+
+// If true, close the connection when there are too many outstanding QUIC
+// packets in the sent or received packet managers.
+bool FLAGS_quic_too_many_outstanding_packets = false;

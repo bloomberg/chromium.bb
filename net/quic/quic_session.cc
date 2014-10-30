@@ -756,8 +756,7 @@ void QuicSession::PostProcessAfterData() {
   STLDeleteElements(&closed_streams_);
   closed_streams_.clear();
 
-  if (FLAGS_close_quic_connection_unfinished_streams_2 &&
-      connection()->connected() &&
+  if (connection()->connected() &&
       locally_closed_streams_highest_offset_.size() > max_open_streams_) {
     // A buggy client may fail to send FIN/RSTs. Don't tolerate this.
     connection_->SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS);

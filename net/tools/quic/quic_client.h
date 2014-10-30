@@ -170,6 +170,8 @@ class QuicClient : public EpollCallbackInterface,
     response_listener_.reset(listener);
   }
 
+  QuicConfig* config() { return &config_; }
+
  protected:
   virtual QuicConnectionId GenerateConnectionId();
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
@@ -181,7 +183,6 @@ class QuicClient : public EpollCallbackInterface,
                          IPAddressNumber* client_ip);
 
   EpollServer* epoll_server() { return epoll_server_; }
-  QuicConfig* config() { return &config_; }
 
  private:
   friend class net::tools::test::QuicClientPeer;

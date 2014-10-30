@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/congestion_control/cubic.h"
 #include "net/quic/congestion_control/hybrid_slow_start.h"
+#include "net/quic/congestion_control/prr_sender.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_connection_stats.h"
@@ -40,9 +41,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config, bool is_server) override;
   void SetNumEmulatedConnections(int num_connections) override;
-  void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time) override;
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount bytes_in_flight,
                          const CongestionVector& acked_packets,
@@ -79,18 +77,13 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   void OnPacketLost(QuicPacketSequenceNumber largest_loss,
                     QuicByteCount bytes_in_flight);
 
-  QuicByteCount SendWindow() const;
   void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number,
                          QuicByteCount bytes_in_flight);
   bool IsCwndLimited(QuicByteCount bytes_in_flight) const;
-  // Methods for isolating PRR from the rest of TCP Cubic.
-  void PrrOnPacketLost(QuicByteCount bytes_in_flight);
-  void PrrOnPacketAcked(QuicByteCount acked_bytes);
-  QuicTime::Delta PrrTimeUntilSend(QuicByteCount bytes_in_flight) const;
-
 
   HybridSlowStart hybrid_slow_start_;
   Cubic cubic_;
+  PrrSender prr_;
   const RttStats* rtt_stats_;
   QuicConnectionStats* stats_;
 
@@ -102,20 +95,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // ACK counter for the Reno implementation.
   uint64 congestion_window_count_;
-
-  // Receiver side advertised window.
-  // TODO (jri): Change this variable name to receive_window_bytes_, to avoid
-  // confusion in operations with QuicPacketCount variables
-  // (eg., congestion_window_).
-  QuicByteCount receive_window_;
-
-  // Bytes sent and acked since the last loss event.  Used for PRR.
-  QuicByteCount prr_out_;
-  QuicByteCount prr_delivered_;
-  size_t ack_count_since_loss_;
-
-  // The congestion window before the last loss event.
-  QuicByteCount bytes_in_flight_before_loss_;
 
   // Track the largest packet that has been sent.
   QuicPacketSequenceNumber largest_sent_sequence_number_;

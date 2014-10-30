@@ -242,5 +242,11 @@ void QuicConnectionPeer::SetSupportedVersions(QuicConnection* connection,
   connection->framer_.SetSupportedVersions(versions);
 }
 
+// static
+QuicPacketHeader* QuicConnectionPeer::GetLastHeader(
+    QuicConnection* connection) {
+  return &connection->last_header_;
+}
+
 }  // namespace test
 }  // namespace net

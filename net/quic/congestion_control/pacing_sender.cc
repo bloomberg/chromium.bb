@@ -28,13 +28,6 @@ void PacingSender::SetNumEmulatedConnections(int num_connections) {
   sender_->SetNumEmulatedConnections(num_connections);
 }
 
-void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time) {
-  sender_->OnIncomingQuicCongestionFeedbackFrame(
-      feedback, feedback_receive_time);
-}
-
 void PacingSender::OnCongestionEvent(bool rtt_updated,
                                      QuicByteCount bytes_in_flight,
                                      const CongestionVector& acked_packets,

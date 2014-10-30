@@ -284,10 +284,14 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
              peer_least_packet_awaiting_ack_);
 }
 
-bool QuicReceivedPacketManager::HasNewMissingPackets() {
+bool QuicReceivedPacketManager::HasNewMissingPackets() const {
   return !ack_frame_.missing_packets.empty() &&
       (ack_frame_.largest_observed -
        *ack_frame_.missing_packets.rbegin()) <= kMaxPacketsAfterNewMissing;
+}
+
+size_t QuicReceivedPacketManager::NumTrackedPackets() const {
+  return entropy_tracker_.size();
 }
 
 }  // namespace net

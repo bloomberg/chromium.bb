@@ -902,7 +902,7 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
   }
 
   EXPECT_EQ(expected_congestion_control_type,
-            QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+            QuicSentPacketManagerPeer::GetSendAlgorithm(
                 *GetSentPacketManagerFromFirstServerSession())
             ->GetCongestionControlType());
 }

@@ -346,6 +346,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;
 
+  // Receiver side buffer in bytes.
+  QuicByteCount receive_buffer_bytes_;
+
   // Least sequence number which the peer is still waiting for.
   QuicPacketSequenceNumber least_packet_awaited_by_peer_;
 

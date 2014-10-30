@@ -70,8 +70,11 @@ const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 // algorithms.
 const size_t kMaxTcpCongestionWindow = 200;
 
-// Size of the socket receive buffer in bytes.
+// Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
+// Minimum size of the socket receive buffer in bytes.
+// Smaller values are ignored.
+const QuicByteCount kMinSocketReceiveBuffer = 16 * 1024;
 
 // Don't allow a client to suggest an RTT longer than 15 seconds.
 const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
@@ -313,7 +316,6 @@ enum QuicVersion {
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_23,
                                                      QUIC_VERSION_22,
-                                                     QUIC_VERSION_21,
                                                      QUIC_VERSION_19};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
@@ -500,6 +502,10 @@ enum QuicErrorCode {
   QUIC_FLOW_CONTROL_INVALID_WINDOW = 64,
   // The connection has been IP pooled into an existing connection.
   QUIC_CONNECTION_IP_POOLED = 62,
+  // The connection has too many outstanding sent packets.
+  QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS = 68,
+  // The connection has too many outstanding received packets.
+  QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS = 69,
 
   // Crypto errors.
 
@@ -557,7 +563,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 68,
+  QUIC_LAST_ERROR = 70,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

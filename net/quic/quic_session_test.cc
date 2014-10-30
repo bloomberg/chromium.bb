@@ -998,9 +998,6 @@ TEST_P(QuicSessionTest, WindowUpdateUnblocksHeadersStream) {
 TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
   // If a buggy/malicious peer creates too many streams that are not ended with
   // a FIN or RST then we send a connection close.
-  ValueRestore<bool> old_flag(&FLAGS_close_quic_connection_unfinished_streams_2,
-                              true);
-
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(1);
 

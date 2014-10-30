@@ -221,6 +221,11 @@ void QuicTestClient::Initialize(bool secure) {
   proof_verifier_ = nullptr;
   ClearPerRequestState();
   ExpectCertificates(secure_);
+  // As chrome will generally do this, we want it to be the default when it's
+  // not overridden.
+  if (!client_->config()->HasSetBytesForConnectionIdToSend()) {
+    client_->config()->SetBytesForConnectionIdToSend(0);
+  }
 }
 
 void QuicTestClient::ExpectCertificates(bool on) {

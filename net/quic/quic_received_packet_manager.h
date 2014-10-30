@@ -59,6 +59,8 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
     void SetCumulativeEntropyUpTo(QuicPacketSequenceNumber sequence_number,
                                   QuicPacketEntropyHash entropy_hash);
 
+    size_t size() const { return packets_entropy_.size(); }
+
    private:
     friend class test::EntropyTrackerPeer;
 
@@ -137,7 +139,10 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
 
   // Returns true when there are new missing packets to be reported within 3
   // packets of the largest observed.
-  bool HasNewMissingPackets();
+  bool HasNewMissingPackets() const;
+
+  // Returns the number of packets being tracked in the EntropyTracker.
+  size_t NumTrackedPackets() const;
 
   QuicPacketSequenceNumber peer_least_packet_awaiting_ack() {
     return peer_least_packet_awaiting_ack_;

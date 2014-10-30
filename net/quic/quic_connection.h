@@ -494,6 +494,11 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool is_server() const { return is_server_; }
 
+  // Allow easy overriding of truncated connection IDs.
+  void set_can_truncate_connection_ids(bool can) {
+    can_truncate_connection_ids_ = can;
+  }
+
   // Returns the underlying sent packet manager.
   const QuicSentPacketManager& sent_packet_manager() const {
     return sent_packet_manager_;
@@ -557,6 +562,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
 
   QuicPacketWriter* writer() { return writer_; }
+  const QuicPacketWriter* writer() const { return writer_; }
 
   bool peer_port_changed() const { return peer_port_changed_; }
 
@@ -595,6 +601,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();
+
+  // Closes the connection if the sent or received packet manager are tracking
+  // too many outstanding packets.
+  void MaybeCloseIfTooManyOutstandingPackets();
 
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
@@ -810,6 +820,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Set to true if the UDP packet headers are addressed to a different port.
   // We do not support connection migration when the self port changed.
   bool self_port_changed_;
+
+  // Set to false if the connection should not send truncated connection IDs to
+  // the peer, even if the peer supports it.
+  bool can_truncate_connection_ids_;
 
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.

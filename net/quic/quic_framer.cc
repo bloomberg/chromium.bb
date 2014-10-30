@@ -883,7 +883,8 @@ bool QuicFramer::ProcessPublicHeader(
         set_detailed_error("Unable to read ConnectionId.");
         return false;
       }
-      if ((public_header->connection_id & k4ByteConnectionIdMask) !=
+      if (last_serialized_connection_id_ &&
+          (public_header->connection_id & k4ByteConnectionIdMask) !=
           (last_serialized_connection_id_ & k4ByteConnectionIdMask)) {
         set_detailed_error("Truncated 4 byte ConnectionId does not match "
                            "previous connection_id.");
@@ -898,7 +899,8 @@ bool QuicFramer::ProcessPublicHeader(
         set_detailed_error("Unable to read ConnectionId.");
         return false;
       }
-      if ((public_header->connection_id & k1ByteConnectionIdMask) !=
+      if (last_serialized_connection_id_ &&
+          (public_header->connection_id & k1ByteConnectionIdMask) !=
           (last_serialized_connection_id_ & k1ByteConnectionIdMask)) {
         set_detailed_error("Truncated 1 byte ConnectionId does not match "
                            "previous connection_id.");

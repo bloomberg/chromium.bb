@@ -42,11 +42,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // particularly for congestion avoidance.  Can be set any time.
   virtual void SetNumEmulatedConnections(int num_connections) = 0;
 
-  // Called when we receive congestion feedback from remote peer.
-  virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time) = 0;
-
   // Indicates an update to the congestion state, caused either by an incoming
   // ack or loss event timeout.  |rtt_updated| indicates whether a new
   // latest_rtt sample has been taken, |byte_in_flight| the bytes in flight
@@ -82,6 +77,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
       QuicByteCount bytes_in_flight,
       HasRetransmittableData has_retransmittable_data) const = 0;
 
+  // The pacing rate of the send algorithm.  May be zero if the rate is unknown.
   virtual QuicBandwidth PacingRate() const = 0;
 
   // What's the current estimated bandwidth in bytes per second.

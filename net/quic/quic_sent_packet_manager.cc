@@ -78,6 +78,7 @@ QuicSentPacketManager::QuicSentPacketManager(
                                                      congestion_control_type,
                                                      stats)),
       loss_algorithm_(LossDetectionInterface::Create(loss_type)),
+      receive_buffer_bytes_(kDefaultSocketReceiveBuffer),
       least_packet_awaited_by_peer_(1),
       first_rto_transmission_(0),
       consecutive_rto_count_(0),
@@ -124,9 +125,17 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (HasClientSentConnectionOption(config, k1CON)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
+  if (HasClientSentConnectionOption(config, kNTLP)) {
+    max_tail_loss_probes_ = 0;
+  }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTIME)) {
     loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
+  }
+  if (config.HasReceivedSocketReceiveBuffer()) {
+    receive_buffer_bytes_ =
+        max(kMinSocketReceiveBuffer,
+            static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
   }
   send_algorithm_->SetFromConfig(config, is_server_);
 
@@ -665,8 +674,9 @@ QuicSentPacketManager::RetransmissionTimeoutMode
 void QuicSentPacketManager::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame,
     const QuicTime& feedback_receive_time) {
-  send_algorithm_->OnIncomingQuicCongestionFeedbackFrame(
-      frame, feedback_receive_time);
+  if (frame.type == kTCP) {
+    receive_buffer_bytes_ = frame.tcp.receive_window;
+  }
 }
 
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
@@ -730,6 +740,9 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
   // send algorithm does not need to be consulted.
   if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
+  }
+  if (unacked_packets_.bytes_in_flight() >= receive_buffer_bytes_) {
+    return QuicTime::Delta::Infinite();
   }
   return send_algorithm_->TimeUntilSend(
       now, unacked_packets_.bytes_in_flight(), retransmittable);

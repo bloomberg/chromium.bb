@@ -68,6 +68,9 @@ class NET_EXPORT_PRIVATE QuicNegotiableValue : public QuicConfigValue {
   }
 
  protected:
+  void set_negotiated(bool negotiated) { negotiated_ = negotiated; }
+
+ private:
   bool negotiated_;
 };
 
@@ -307,6 +310,15 @@ class NET_EXPORT_PRIVATE QuicConfig {
     return max_undecryptable_packets_;
   }
 
+  bool HasSetBytesForConnectionIdToSend() const;
+
+  // Sets the peer's connection id length, in bytes.
+  void SetBytesForConnectionIdToSend(uint32 bytes);
+
+  bool HasReceivedBytesForConnectionId() const;
+
+  uint32 ReceivedBytesForConnectionId() const;
+
   // Sets the peer's default initial congestion window in packets.
   void SetInitialCongestionWindowToSend(size_t initial_window);
 
@@ -399,6 +411,8 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableUint32 keepalive_timeout_seconds_;
   // Maximum number of streams that the connection can support.
   QuicNegotiableUint32 max_streams_per_connection_;
+  // The number of bytes required for the connection ID.
+  QuicFixedUint32 bytes_for_connection_id_;
   // Initial congestion window in packets.
   QuicFixedUint32 initial_congestion_window_;
   // Initial round trip time estimate in microseconds.

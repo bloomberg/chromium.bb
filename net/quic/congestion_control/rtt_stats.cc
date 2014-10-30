@@ -53,9 +53,10 @@ void RttStats::ExpireSmoothedMetrics() {
 void RttStats::UpdateRtt(QuicTime::Delta send_delta,
                          QuicTime::Delta ack_delay,
                          QuicTime now) {
-  if (send_delta.IsInfinite() || send_delta.IsZero()) {
-    DVLOG(1) << "Ignoring measured send_delta, because it's "
-             << (send_delta.IsZero() ? "Zero" : "Infinite");
+  if (send_delta.IsInfinite() || send_delta <= QuicTime::Delta::Zero()) {
+    LOG(WARNING) << "Ignoring measured send_delta, because it's is "
+                 << "either infinite, zero, or negative.  send_delta = "
+                 << send_delta.ToMicroseconds();
     return;
   }
 

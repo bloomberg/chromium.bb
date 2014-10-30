@@ -10,14 +10,9 @@
 namespace net {
 
 namespace {
-
-// TCP retransmits after 3 nacks.
-static const size_t kNumberOfNacksBeforeRetransmission = 3;
-
 // How many RTTs the algorithm waits before determining a packet is lost due
 // to early retransmission.
 static const double kEarlyRetransmitLossDelayMultiplier = 1.25;
-
 }
 
 TCPLossAlgorithm::TCPLossAlgorithm()

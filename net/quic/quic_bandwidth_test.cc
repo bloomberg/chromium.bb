@@ -81,6 +81,7 @@ TEST_F(QuicBandwidthTest, BytesPerPeriod) {
 TEST_F(QuicBandwidthTest, TransferTime) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(1),
             QuicBandwidth::FromKBytesPerSecond(1).TransferTime(1000));
+  EXPECT_EQ(QuicTime::Delta::Zero(), QuicBandwidth::Zero().TransferTime(1000));
 }
 
 }  // namespace test

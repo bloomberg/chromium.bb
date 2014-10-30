@@ -37,9 +37,6 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   // SendAlgorithmInterface methods.
   void SetFromConfig(const QuicConfig& config, bool is_server) override;
   void SetNumEmulatedConnections(int num_connections) override;
-  void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& feedback,
-      QuicTime feedback_receive_time) override;
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount bytes_in_flight,
                          const CongestionVector& acked_packets,

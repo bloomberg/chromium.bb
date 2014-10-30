@@ -4,8 +4,17 @@
 
 #include "net/quic/congestion_control/rtt_stats.h"
 
+#include <vector>
+
 #include "base/logging.h"
+#include "net/test/scoped_mock_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using logging::LOG_WARNING;
+using std::vector;
+using testing::HasSubstr;
+using testing::Message;
+using testing::_;
 
 namespace net {
 namespace test {
@@ -215,6 +224,35 @@ TEST_F(RttStatsTest, ExpireSmoothedMetrics) {
   rtt_stats_.UpdateRtt(half_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
   EXPECT_GT(doubled_rtt, rtt_stats_.SmoothedRtt());
   EXPECT_LT(initial_rtt, rtt_stats_.mean_deviation());
+}
+
+TEST_F(RttStatsTest, UpdateRttWithBadSendDeltas) {
+  // Make sure we ignore bad RTTs.
+  ScopedMockLog log;
+
+  QuicTime::Delta initial_rtt = QuicTime::Delta::FromMilliseconds(10);
+  rtt_stats_.UpdateRtt(initial_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
+  EXPECT_EQ(initial_rtt, rtt_stats_.MinRtt());
+  EXPECT_EQ(initial_rtt, rtt_stats_.recent_min_rtt());
+  EXPECT_EQ(initial_rtt, rtt_stats_.SmoothedRtt());
+
+  vector<QuicTime::Delta> bad_send_deltas;
+  bad_send_deltas.push_back(QuicTime::Delta::Zero());
+  bad_send_deltas.push_back(QuicTime::Delta::Infinite());
+  bad_send_deltas.push_back(QuicTime::Delta::FromMicroseconds(-1000));
+  log.StartCapturingLogs();
+
+  for (QuicTime::Delta bad_send_delta : bad_send_deltas) {
+    SCOPED_TRACE(Message() << "bad_send_delta = "
+                 << bad_send_delta.ToMicroseconds());
+    EXPECT_CALL(log, Log(LOG_WARNING, _,  _, _, HasSubstr("Ignoring")));
+    rtt_stats_.UpdateRtt(bad_send_delta,
+                         QuicTime::Delta::Zero(),
+                         QuicTime::Zero());
+    EXPECT_EQ(initial_rtt, rtt_stats_.MinRtt());
+    EXPECT_EQ(initial_rtt, rtt_stats_.recent_min_rtt());
+    EXPECT_EQ(initial_rtt, rtt_stats_.SmoothedRtt());
+  }
 }
 
 }  // namespace test

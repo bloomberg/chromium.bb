@@ -953,5 +953,28 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   CheckPacketContains(contents2, packet2_);
 }
 
+TEST_F(QuicPacketGeneratorTest, TestConnectionIdLength) {
+  generator_.SetConnectionIdLength(0);
+  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(1);
+  EXPECT_EQ(PACKET_1BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(2);
+  EXPECT_EQ(PACKET_4BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(3);
+  EXPECT_EQ(PACKET_4BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(4);
+  EXPECT_EQ(PACKET_4BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(5);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(6);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(7);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(8);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, creator_->connection_id_length());
+  generator_.SetConnectionIdLength(9);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, creator_->connection_id_length());
+}
+
 }  // namespace test
 }  // namespace net

@@ -14,16 +14,21 @@ namespace net {
 namespace test {
 
 // static
+size_t QuicSentPacketManagerPeer::GetMaxTailLossProbes(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->max_tail_loss_probes_;
+}
+
+// static
 void QuicSentPacketManagerPeer::SetMaxTailLossProbes(
     QuicSentPacketManager* sent_packet_manager, size_t max_tail_loss_probes) {
   sent_packet_manager->max_tail_loss_probes_ = max_tail_loss_probes;
 }
 
 // static
-void QuicSentPacketManagerPeer::SetSendAlgorithm(
-    QuicSentPacketManager* sent_packet_manager,
-    SendAlgorithmInterface* send_algorithm) {
-  sent_packet_manager->send_algorithm_.reset(send_algorithm);
+QuicByteCount QuicSentPacketManagerPeer::GetReceiveWindow(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->receive_buffer_bytes_;
 }
 
 // static
@@ -34,16 +39,23 @@ void QuicSentPacketManagerPeer::SetIsServer(
 }
 
 // static
-const LossDetectionInterface* QuicSentPacketManagerPeer::GetLossAlgorithm(
-    QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->loss_algorithm_.get();
+const SendAlgorithmInterface*
+    QuicSentPacketManagerPeer::GetSendAlgorithm(
+    const QuicSentPacketManager& sent_packet_manager) {
+  return sent_packet_manager.send_algorithm_.get();
 }
 
 // static
-const SendAlgorithmInterface*
-    QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
-    const QuicSentPacketManager& sent_packet_manager) {
-  return sent_packet_manager.send_algorithm_.get();
+void QuicSentPacketManagerPeer::SetSendAlgorithm(
+    QuicSentPacketManager* sent_packet_manager,
+    SendAlgorithmInterface* send_algorithm) {
+  sent_packet_manager->send_algorithm_.reset(send_algorithm);
+}
+
+// static
+const LossDetectionInterface* QuicSentPacketManagerPeer::GetLossAlgorithm(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->loss_algorithm_.get();
 }
 
 // static

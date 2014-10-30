@@ -1316,7 +1316,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
   manager_.SetFromConfig(config);
-  EXPECT_EQ(kReno, QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+  EXPECT_EQ(kReno, QuicSentPacketManagerPeer::GetSendAlgorithm(
       manager_)->GetCongestionControlType());
 
   // TODO(rtenneti): Enable the following code after BBR code is checked in.
@@ -1326,7 +1326,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
   manager_.SetFromConfig(config);
-  EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetCongestionControlAlgorithm(
+  EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetSendAlgorithm(
       manager_)->GetCongestionControlType());
 #endif
 }
@@ -1355,6 +1355,35 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {
   manager_.SetFromConfig(client_config);
 }
 
+TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtServer) {
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kNTLP);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtClient) {
+  QuicConfig client_config;
+  QuicTagVector options;
+
+  options.push_back(kNTLP);
+  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  client_config.SetConnectionOptionsToSend(options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(client_config);
+  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
+}
+
 TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   EXPECT_FALSE(manager_.using_pacing());
 
@@ -1369,6 +1398,39 @@ TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   manager_.SetFromConfig(config);
 
   EXPECT_TRUE(manager_.using_pacing());
+}
+
+TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
+  EXPECT_EQ(kDefaultSocketReceiveBuffer,
+            QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
+
+  // Try to set a size below the minimum and ensure it gets set to the min.
+  QuicConfig client_config;
+  QuicConfigPeer::SetReceivedSocketReceiveBuffer(&client_config, 1024);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
+  manager_.SetFromConfig(client_config);
+
+  EXPECT_EQ(kMinSocketReceiveBuffer,
+            QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
+
+  // Ensure the smaller send window only allows 16 packets to be sent.
+  for (QuicPacketSequenceNumber i = 1; i <= 16; ++i) {
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
+        QuicTime::Delta::Zero()));
+    EXPECT_EQ(QuicTime::Delta::Zero(),
+              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i,
+                                               1024, HAS_RETRANSMITTABLE_DATA))
+        .WillOnce(Return(true));
+    SerializedPacket packet(CreatePacket(i, true));
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024,
+                          NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
+  }
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
 }
 
 TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {

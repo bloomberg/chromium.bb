@@ -167,6 +167,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
       QuicPacketSequenceNumber least_packet_awaited_by_peer,
       QuicByteCount congestion_window);
 
+  // Set the minimum number of bytes for the connection id length;
+  void SetConnectionIdLength(uint32 length);
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
 

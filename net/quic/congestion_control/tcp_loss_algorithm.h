@@ -20,6 +20,9 @@ namespace net {
 // been received for a packet.  Also implements TCP's early retransmit(RFC5827).
 class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
  public:
+  // TCP retransmits after 3 nacks.
+  static const size_t kNumberOfNacksBeforeRetransmission = 3;
+
   TCPLossAlgorithm();
   ~TCPLossAlgorithm() override {}
 

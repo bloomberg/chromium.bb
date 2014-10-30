@@ -50,8 +50,6 @@ class TcpCubicSenderPeer : public TcpCubicSender {
 
   RttStats rtt_stats_;
   QuicConnectionStats stats_;
-
-  using TcpCubicSender::SendWindow;
 };
 
 class TcpCubicSenderTest : public ::testing::Test {
@@ -172,7 +170,7 @@ TEST_F(TcpCubicSenderTest, ApplicationLimitedSlowStart) {
   for (int i = 0; i < kNumberOfAcks; ++i) {
     AckNPackets(2);
   }
-  QuicByteCount bytes_to_send = sender_->SendWindow();
+  QuicByteCount bytes_to_send = sender_->GetCongestionWindow();
   // It's expected 2 acks will arrive when the bytes_in_flight are greater than
   // half the CWND.
   EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * 2,
@@ -195,7 +193,7 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
     SendAvailableSendWindow();
     AckNPackets(2);
   }
-  QuicByteCount bytes_to_send = sender_->SendWindow();
+  QuicByteCount bytes_to_send = sender_->GetCongestionWindow();
   EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * kNumberOfAcks,
             bytes_to_send);
 }
@@ -428,28 +426,28 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
 }
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
-  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   EXPECT_EQ(10000u, sender_->slowstart_threshold());
 
   // Expect the window to decrease to the minimum once the RTO fires
   // and slow start threshold to be set to 1/2 of the CWND.
   sender_->OnRetransmissionTimeout(true);
-  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->SendWindow());
+  EXPECT_EQ(2 * kDefaultTCPMSS, sender_->GetCongestionWindow());
   EXPECT_EQ(5u, sender_->slowstart_threshold());
 
   // Now repair the RTO and ensure the slowstart threshold reverts.
   sender_->RevertRetransmissionTimeout();
-  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   EXPECT_EQ(10000u, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
-  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 
   // Expect the window to remain unchanged if the RTO fires but no
   // packets are retransmitted.
   sender_->OnRetransmissionTimeout(false);
-  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
 }
 
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {

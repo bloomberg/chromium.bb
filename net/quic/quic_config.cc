@@ -76,7 +76,7 @@ void QuicNegotiableUint32::set(uint32 max, uint32 default_value) {
 }
 
 uint32 QuicNegotiableUint32::GetUint32() const {
-  if (negotiated_) {
+  if (negotiated()) {
     return negotiated_value_;
   }
   return default_value_;
@@ -84,7 +84,7 @@ uint32 QuicNegotiableUint32::GetUint32() const {
 
 void QuicNegotiableUint32::ToHandshakeMessage(
     CryptoHandshakeMessage* out) const {
-  if (negotiated_) {
+  if (negotiated()) {
     out->SetValue(tag_, negotiated_value_);
   } else {
     out->SetValue(tag_, max_value_);
@@ -95,7 +95,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(!negotiated_);
+  DCHECK(!negotiated());
   DCHECK(error_details != nullptr);
   uint32 value;
   QuicErrorCode error = ReadUint32(peer_hello,
@@ -113,7 +113,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
     return QUIC_INVALID_NEGOTIATED_VALUE;
   }
 
-  negotiated_ = true;
+  set_negotiated(true);
   negotiated_value_ = min(value, max_value_);
   return QUIC_NO_ERROR;
 }
@@ -134,14 +134,14 @@ void QuicNegotiableTag::set(const QuicTagVector& possible,
 }
 
 QuicTag QuicNegotiableTag::GetTag() const {
-  if (negotiated_) {
+  if (negotiated()) {
     return negotiated_tag_;
   }
   return default_value_;
 }
 
 void QuicNegotiableTag::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
-  if (negotiated_) {
+  if (negotiated()) {
     // Because of the way we serialize and parse handshake messages we can
     // serialize this as value and still parse it as a vector.
     out->SetValue(tag_, negotiated_tag_);
@@ -180,7 +180,7 @@ QuicErrorCode QuicNegotiableTag::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     string* error_details) {
-  DCHECK(!negotiated_);
+  DCHECK(!negotiated());
   DCHECK(error_details != nullptr);
   const QuicTag* received_tags;
   size_t received_tags_length;
@@ -211,7 +211,7 @@ QuicErrorCode QuicNegotiableTag::ProcessPeerHello(
     negotiated_tag_ = negotiated_tag;
   }
 
-  negotiated_ = true;
+  set_negotiated(true);
   return QUIC_NO_ERROR;
 }
 
@@ -433,6 +433,7 @@ QuicConfig::QuicConfig()
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
       keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_REQUIRED),
+      bytes_for_connection_id_(kTCID, PRESENCE_OPTIONAL),
       initial_congestion_window_(kSWND, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
       // TODO(rjshade): Remove this when retiring QUIC_VERSION_19.
@@ -505,6 +506,22 @@ void QuicConfig::SetMaxStreamsPerConnection(size_t max_streams,
 
 uint32 QuicConfig::MaxStreamsPerConnection() const {
   return max_streams_per_connection_.GetUint32();
+}
+
+bool QuicConfig::HasSetBytesForConnectionIdToSend() const {
+  return bytes_for_connection_id_.HasSendValue();
+}
+
+void QuicConfig::SetBytesForConnectionIdToSend(uint32 bytes) {
+  bytes_for_connection_id_.SetSendValue(bytes);
+}
+
+bool QuicConfig::HasReceivedBytesForConnectionId() const {
+  return bytes_for_connection_id_.HasReceivedValue();
+}
+
+uint32 QuicConfig::ReceivedBytesForConnectionId() const {
+  return bytes_for_connection_id_.GetReceivedValue();
 }
 
 void QuicConfig::SetInitialCongestionWindowToSend(size_t initial_window) {
@@ -657,6 +674,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   idle_connection_state_lifetime_seconds_.ToHandshakeMessage(out);
   keepalive_timeout_seconds_.ToHandshakeMessage(out);
   max_streams_per_connection_.ToHandshakeMessage(out);
+  bytes_for_connection_id_.ToHandshakeMessage(out);
   initial_congestion_window_.ToHandshakeMessage(out);
   initial_round_trip_time_us_.ToHandshakeMessage(out);
   initial_flow_control_window_bytes_.ToHandshakeMessage(out);
@@ -687,6 +705,10 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = max_streams_per_connection_.ProcessPeerHello(
+        peer_hello, hello_type, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = bytes_for_connection_id_.ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {

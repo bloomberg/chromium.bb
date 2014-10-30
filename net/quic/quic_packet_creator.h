@@ -200,6 +200,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
     return connection_id_length_;
   }
 
+  void set_connection_id_length(QuicConnectionIdLength length) {
+    connection_id_length_ = length;
+  }
+
   QuicSequenceNumberLength next_sequence_number_length() const {
     return next_sequence_number_length_;
   }

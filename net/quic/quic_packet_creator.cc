@@ -231,7 +231,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             bool fin,
                                             QuicFrame* frame) {
   DCHECK_GT(max_packet_length_, StreamFramePacketOverhead(
-                PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
+                connection_id_length_, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, offset, IN_FEC_GROUP));
 
   InFecGroup is_in_fec_group = MaybeUpdateLengthsAndStartFec();
@@ -450,6 +450,7 @@ void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
                                          bool fec_flag,
                                          QuicPacketHeader* header) {
   header->public_header.connection_id = connection_id_;
+  header->public_header.connection_id_length = connection_id_length_;
   header->public_header.reset_flag = false;
   header->public_header.version_flag = send_version_in_packet_;
   header->fec_flag = fec_flag;

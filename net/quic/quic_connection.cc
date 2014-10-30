@@ -17,6 +17,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -28,6 +29,7 @@
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
+using base::StringPrintf;
 using base::hash_map;
 using base::hash_set;
 using std::list;
@@ -56,6 +58,9 @@ const size_t kMaxFecGroups = 2;
 
 // Maximum number of acks received before sending an ack in response.
 const size_t kMaxPacketsReceivedBeforeAckSend = 20;
+
+// Maximum number of tracked packets.
+const size_t kMaxTrackedPackets = 5 * kMaxTcpCongestionWindow;;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
@@ -232,7 +237,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       peer_ip_changed_(false),
       peer_port_changed_(false),
       self_ip_changed_(false),
-      self_port_changed_(false) {
+      self_port_changed_(false),
+      can_truncate_connection_ids_(true) {
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
   if (!FLAGS_quic_unified_timeouts) {
@@ -270,6 +276,12 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     SetIdleNetworkTimeout(config.IdleConnectionStateLifetime());
   }
   sent_packet_manager_.SetFromConfig(config);
+  if (FLAGS_allow_truncated_connection_ids_for_quic &&
+      config.HasReceivedBytesForConnectionId() &&
+      can_truncate_connection_ids_) {
+    packet_generator_.SetConnectionIdLength(
+        config.ReceivedBytesForConnectionId());
+  }
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 }
 
@@ -875,8 +887,8 @@ void QuicConnection::OnPacketComplete() {
   }
 
   UpdateStopWaitingCount();
-
   ClearLastFrames();
+  MaybeCloseIfTooManyOutstandingPackets();
 }
 
 void QuicConnection::MaybeQueueAck() {
@@ -915,6 +927,27 @@ void QuicConnection::ClearLastFrames() {
   last_blocked_frames_.clear();
   last_ping_frames_.clear();
   last_close_frames_.clear();
+}
+
+void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
+  if (!FLAGS_quic_too_many_outstanding_packets) {
+    return;
+  }
+  // This occurs if we don't discard old packets we've sent fast enough.
+  // It's possible largest observed is less than least unacked.
+  if (sent_packet_manager_.largest_observed() >
+          (sent_packet_manager_.GetLeastUnacked() + kMaxTrackedPackets)) {
+    SendConnectionCloseWithDetails(
+        QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
+        StringPrintf("More than %zu outstanding.", kMaxTrackedPackets));
+  }
+  // This occurs if there are received packet gaps and the peer does not raise
+  // the least unacked fast enough.
+  if (received_packet_manager_.NumTrackedPackets() > kMaxTrackedPackets) {
+    SendConnectionCloseWithDetails(
+        QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS,
+        StringPrintf("More than %zu outstanding.", kMaxTrackedPackets));
+  }
 }
 
 QuicAckFrame* QuicConnection::CreateAckFrame() {

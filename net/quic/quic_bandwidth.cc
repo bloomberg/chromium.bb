@@ -100,6 +100,9 @@ QuicBandwidth QuicBandwidth::Scale(float scale_factor) const {
 }
 
 QuicTime::Delta QuicBandwidth::TransferTime(QuicByteCount bytes) const {
+  if (bits_per_second_ == 0) {
+    return QuicTime::Delta::Zero();
+  }
   return QuicTime::Delta::FromMicroseconds(
       bytes * 8 * base::Time::kMicrosecondsPerSecond / bits_per_second_);
 }
