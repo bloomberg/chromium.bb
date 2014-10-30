@@ -5,14 +5,10 @@
 """Generates test runner factory and tests for GTests."""
 # pylint: disable=W0212
 
-import fnmatch
-import glob
 import logging
 import os
-import shutil
 import sys
 
-from pylib import cmd_helper
 from pylib import constants
 from pylib import valgrind_tools
 
@@ -22,6 +18,7 @@ from pylib.device import device_utils
 from pylib.gtest import test_package_apk
 from pylib.gtest import test_package_exe
 from pylib.gtest import test_runner
+from pylib.utils import isolator
 
 sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
@@ -71,9 +68,6 @@ _DEPS_EXCLUSION_LIST = [
     'webkit/data/ico_decoder',
 ]
 
-_ISOLATE_SCRIPT = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'tools', 'swarming_client', 'isolate.py')
-
 
 def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
   """Generate the dependency dir for the test suite using isolate.
@@ -83,9 +77,6 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
     isolate_file_path: .isolate file path to use. If there is a default .isolate
                        file path for the suite_name, this will override it.
   """
-  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
-    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
-
   if isolate_file_path:
     if os.path.isabs(isolate_file_path):
       isolate_abs_path = isolate_file_path
@@ -102,85 +93,17 @@ def _GenerateDepsDirUsingIsolate(suite_name, isolate_file_path=None):
   isolated_abs_path = os.path.join(
       constants.GetOutDirectory(), '%s.isolated' % suite_name)
   assert os.path.exists(isolate_abs_path), 'Cannot find %s' % isolate_abs_path
-  # This needs to be kept in sync with the cmd line options for isolate.py
-  # in src/build/isolate.gypi.
-  isolate_cmd = [
-      'python', _ISOLATE_SCRIPT,
-      'remap',
-      '--isolate', isolate_abs_path,
-      '--isolated', isolated_abs_path,
-      '--outdir', constants.ISOLATE_DEPS_DIR,
 
-      '--path-variable', 'DEPTH', constants.DIR_SOURCE_ROOT,
-      '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
-
-      '--config-variable', 'OS', 'android',
-      '--config-variable', 'CONFIGURATION_NAME', constants.GetBuildType(),
-      '--config-variable', 'asan', '0',
-      '--config-variable', 'chromeos', '0',
-      '--config-variable', 'component', 'static_library',
-      '--config-variable', 'fastbuild', '0',
-      '--config-variable', 'icu_use_data_file_flag', '1',
-      '--config-variable', 'libpeer_target_type', 'static_library',
-      '--config-variable', 'v8_use_external_startup_data', '0',
-      '--config-variable', 'lsan', '0',
-      # TODO(maruel): This may not be always true.
-      '--config-variable', 'target_arch', 'arm',
-      '--config-variable', 'use_openssl', '0',
-      '--config-variable', 'use_ozone', '0',
-  ]
-  assert not cmd_helper.RunCmd(isolate_cmd)
-
+  i = isolator.Isolator(constants.ISOLATE_DEPS_DIR)
+  i.Clear()
+  i.Remap(isolate_abs_path, isolated_abs_path)
   # We're relying on the fact that timestamps are preserved
   # by the remap command (hardlinked). Otherwise, all the data
   # will be pushed to the device once we move to using time diff
   # instead of md5sum. Perform a sanity check here.
-  for root, _, filenames in os.walk(constants.ISOLATE_DEPS_DIR):
-    if filenames:
-      linked_file = os.path.join(root, filenames[0])
-      orig_file = os.path.join(
-          constants.DIR_SOURCE_ROOT,
-          os.path.relpath(linked_file, constants.ISOLATE_DEPS_DIR))
-      if os.stat(linked_file).st_ino == os.stat(orig_file).st_ino:
-        break
-      else:
-        raise Exception('isolate remap command did not use hardlinks.')
-
-  # Delete excluded files as defined by _DEPS_EXCLUSION_LIST.
-  old_cwd = os.getcwd()
-  try:
-    os.chdir(constants.ISOLATE_DEPS_DIR)
-    excluded_paths = [x for y in _DEPS_EXCLUSION_LIST for x in glob.glob(y)]
-    if excluded_paths:
-      logging.info('Excluding the following from dependency list: %s',
-                   excluded_paths)
-    for p in excluded_paths:
-      if os.path.isdir(p):
-        shutil.rmtree(p)
-      else:
-        os.remove(p)
-  finally:
-    os.chdir(old_cwd)
-
-  # On Android, all pak files need to be in the top-level 'paks' directory.
-  paks_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'paks')
-  os.mkdir(paks_dir)
-
-  deps_out_dir = os.path.join(
-      constants.ISOLATE_DEPS_DIR,
-      os.path.relpath(os.path.join(constants.GetOutDirectory(), os.pardir),
-                      constants.DIR_SOURCE_ROOT))
-  for root, _, filenames in os.walk(deps_out_dir):
-    for filename in fnmatch.filter(filenames, '*.pak'):
-      shutil.move(os.path.join(root, filename), paks_dir)
-
-  # Move everything in PRODUCT_DIR to top level.
-  deps_product_dir = os.path.join(deps_out_dir, constants.GetBuildType())
-  if os.path.isdir(deps_product_dir):
-    for p in os.listdir(deps_product_dir):
-      shutil.move(os.path.join(deps_product_dir, p), constants.ISOLATE_DEPS_DIR)
-    os.rmdir(deps_product_dir)
-    os.rmdir(deps_out_dir)
+  i.VerifyHardlinks()
+  i.PurgeExcluded(_DEPS_EXCLUSION_LIST)
+  i.MoveOutputDeps()
 
 
 def _GetDisabledTestsFilterFromFile(suite_name):
