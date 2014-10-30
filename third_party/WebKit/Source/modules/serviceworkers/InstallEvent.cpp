@@ -54,15 +54,6 @@ void InstallEvent::replace()
     notImplemented();
 }
 
-ScriptPromise InstallEvent::reloadAll(ScriptState* scriptState)
-{
-    // FIXME: implement.
-    notImplemented();
-
-    // For now this just returns a promise which is already rejected.
-    return ScriptPromise::reject(scriptState, v8::Null(scriptState->isolate()));
-}
-
 const AtomicString& InstallEvent::interfaceName() const
 {
     return EventNames::InstallEvent;

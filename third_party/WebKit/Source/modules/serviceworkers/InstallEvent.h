@@ -45,8 +45,6 @@ public:
 
     void replace();
 
-    ScriptPromise reloadAll(ScriptState*);
-
     virtual const AtomicString& interfaceName() const override;
 
     virtual void trace(Visitor*) override;
