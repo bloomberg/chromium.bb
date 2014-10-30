@@ -42,6 +42,15 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void WarpCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location);
 
+ protected:
+  // DeviceEventObserver overrides:
+  //
+  // Callback for device add (on UI thread).
+  virtual void OnDeviceEvent(const DeviceEvent& event) override;
+
+  // PlatformEventSource:
+  virtual void OnDispatcherListChanged() override;
+
  private:
   // Post a task to dispatch an event.
   void PostUiEvent(scoped_ptr<Event> event);
@@ -58,14 +67,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void NotifyHotplugEventObserver(const EventConverterEvdev& converter);
 
   int NextDeviceId();
-
-  // DeviceEventObserver overrides:
-  //
-  // Callback for device add (on UI thread).
-  virtual void OnDeviceEvent(const DeviceEvent& event) override;
-
-  // PlatformEventSource:
-  virtual void OnDispatcherListChanged() override;
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
