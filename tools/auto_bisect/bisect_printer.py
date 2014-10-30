@@ -37,7 +37,7 @@ Date    : %(cl_date)s"""
 RESULTS_THANKYOU = """
 | O O | Visit http://www.chromium.org/developers/core-principles for Chrome's
 |  X  | policy on perf regressions. Contact chrome-perf-dashboard-team with any
-| / \ | questions or suggestions about bisecting. THANK YOU."""
+| / \\ | questions or suggestions about bisecting. THANK YOU."""
 
 REPRO_STEPS_LOCAL = """
 ==== INSTRUCTIONS TO REPRODUCE ====

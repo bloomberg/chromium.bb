@@ -89,7 +89,7 @@ def _RunPyLint(input_api, output_api):
   telemetry_path = os.path.join(
       input_api.PresubmitLocalPath(), os.path.pardir, 'telemetry')
   mock_path = os.path.join(
-      input_api.PresubmitLocalPath(),os.path.pardir, os.path.pardir,
+      input_api.PresubmitLocalPath(), os.path.pardir, os.path.pardir,
       'third_party', 'pymock')
   tests = input_api.canned_checks.GetPylint(
       input_api, output_api, extra_paths_list=[telemetry_path, mock_path])

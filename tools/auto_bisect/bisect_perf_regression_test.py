@@ -417,6 +417,7 @@ class DepotDirectoryRegistryTest(unittest.TestCase):
 # The tests below test private functions (W0212).
 # pylint: disable=W0212
 class GitTryJobTestCases(unittest.TestCase):
+
   """Test case for bisect try job."""
   def setUp(self):
     bisect_utils_patcher = mock.patch('bisect_perf_regression.bisect_utils')
@@ -434,10 +435,10 @@ class GitTryJobTestCases(unittest.TestCase):
   def _AssertRunGitExceptions(self, git_cmds, func, *args):
     """Setup RunGit mock and tests RunGitException.
 
-      Args:
-        git_cmds: List of tuples with git command and expected output.
-        func: Callback function to be executed.
-        args: List of arguments to be passed to the function.
+    Args:
+      git_cmds: List of tuples with git command and expected output.
+      func: Callback function to be executed.
+      args: List of arguments to be passed to the function.
     """
     self._SetupRunGitMock(git_cmds)
     self.assertRaises(bisect_perf_regression.RunGitError,
@@ -457,7 +458,8 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     cmds = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (new_branch, 0)),
-        (['checkout', '-f', parent_branch], ('Checkout Failed', 1))]
+        (['checkout', '-f', parent_branch], ('Checkout Failed', 1)),
+    ]
     self._AssertRunGitExceptions(cmds,
                                  bisect_perf_regression._PrepareBisectBranch,
                                  parent_branch, new_branch)
@@ -467,9 +469,9 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     cmds = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
-        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
-        (['branch', '-D', new_branch], ('Failed to delete branch', 128))
-        ]
+        (['branch', '--list'], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '-D', new_branch], ('Failed to delete branch', 128)),
+    ]
     self._AssertRunGitExceptions(cmds,
                                  bisect_perf_regression._PrepareBisectBranch,
                                  parent_branch, new_branch)
@@ -479,13 +481,12 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     cmds = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
-        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '--list'], ('bisect-tryjob\n*master\nsomebranch', 0)),
         (['branch', '-D', new_branch], ('None', 0)),
         (['update-index', '--refresh', '-q'], (None, 0)),
         (['diff-index', 'HEAD'], (None, 0)),
-        (['checkout', '-b', new_branch], ('Failed to create branch', 128))
-        ]
-
+        (['checkout', '-b', new_branch], ('Failed to create branch', 128)),
+    ]
     self._AssertRunGitExceptions(cmds,
                                  bisect_perf_regression._PrepareBisectBranch,
                                  parent_branch, new_branch)
@@ -495,17 +496,18 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     cmds = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
-        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '--list'], ('bisect-tryjob\n*master\nsomebranch', 0)),
         (['branch', '-D', new_branch], ('None', 0)),
         (['update-index', '--refresh', '-q'], (None, 0)),
         (['diff-index', 'HEAD'], (None, 0)),
         (['checkout', '-b', new_branch], ('None', 0)),
         (['branch', '--set-upstream-to', parent_branch],
-         ('Setuptream fails', 1))
-        ]
+         ('Setuptream fails', 1)),
+    ]
     self._AssertRunGitExceptions(cmds,
                                  bisect_perf_regression._PrepareBisectBranch,
                                  parent_branch, new_branch)
+
   def testBuilderTryJobForException(self):
     git_revision = 'ac4a9f31fe2610bd146857bbd55d7a260003a888'
     bot_name = 'linux_perf_bisect_builder'
@@ -516,7 +518,7 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     try_cmd = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
-        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '--list'], ('bisect-tryjob\n*master\nsomebranch', 0)),
         (['branch', '-D', new_branch], ('None', 0)),
         (['update-index', '--refresh', '-q'], (None, 0)),
         (['diff-index', 'HEAD'], (None, 0)),
@@ -529,8 +531,8 @@ class GitTryJobTestCases(unittest.TestCase):
           '-n', bisect_job_name,
           '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
           '--diff=%s' % patch_content
-          ], (None, 1))
-        ]
+         ], (None, 1)),
+    ]
     self._AssertRunGitExceptions(try_cmd,
                                  bisect_perf_regression._BuilderTryjob,
                                  git_revision, bot_name, bisect_job_name, patch)
@@ -545,7 +547,7 @@ class GitTryJobTestCases(unittest.TestCase):
     parent_branch = bisect_perf_regression.BISECT_MASTER_BRANCH
     try_cmd = [
         (['rev-parse', '--abbrev-ref', 'HEAD'], (parent_branch, 0)),
-        (['branch', '--list' ], ('bisect-tryjob\n*master\nsomebranch', 0)),
+        (['branch', '--list'], ('bisect-tryjob\n*master\nsomebranch', 0)),
         (['branch', '-D', new_branch], ('None', 0)),
         (['update-index', '--refresh', '-q'], (None, 0)),
         (['diff-index', 'HEAD'], (None, 0)),
@@ -558,8 +560,8 @@ class GitTryJobTestCases(unittest.TestCase):
           '-n', bisect_job_name,
           '--svn_repo=%s' % bisect_perf_regression.SVN_REPO_URL,
           '--diff=%s' % patch_content
-          ], (None, 0))
-        ]
+         ], (None, 0)),
+    ]
     self._SetupRunGitMock(try_cmd)
     bisect_perf_regression._BuilderTryjob(
         git_revision, bot_name, bisect_job_name, patch)
@@ -567,3 +569,4 @@ class GitTryJobTestCases(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
+

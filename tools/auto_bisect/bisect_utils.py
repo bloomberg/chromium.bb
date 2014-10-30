@@ -258,7 +258,7 @@ def LoadExtraSrc(path_to_file):
 
 def IsTelemetryCommand(command):
   """Attempts to discern whether or not a given command is running telemetry."""
-  return ('tools/perf/run_' in command or 'tools\\perf\\run_' in command)
+  return 'tools/perf/run_' in command or 'tools\\perf\\run_' in command
 
 
 def _CreateAndChangeToSourceDirectory(working_directory):

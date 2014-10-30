@@ -152,7 +152,7 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   if not build_revision:
     return base_name
   if patch_sha:
-    build_revision = '%s_%s' % (build_revision , patch_sha)
+    build_revision = '%s_%s' % (build_revision, patch_sha)
   return '%s_%s.zip' % (base_name, build_revision)
 
 
@@ -273,7 +273,7 @@ def WriteStringToFile(text, file_name):
     with open(file_name, 'wb') as f:
       f.write(text)
   except IOError:
-    raise RuntimeError('Error writing to file [%s]' % file_name )
+    raise RuntimeError('Error writing to file [%s]' % file_name)
 
 
 def ReadStringFromFile(file_name):
@@ -282,7 +282,7 @@ def ReadStringFromFile(file_name):
     with open(file_name) as f:
       return f.read()
   except IOError:
-    raise RuntimeError('Error reading file [%s]' % file_name )
+    raise RuntimeError('Error reading file [%s]' % file_name)
 
 
 def ChangeBackslashToSlashInPatch(diff_text):
@@ -317,7 +317,7 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
   # the DEPS file with the following format:
   # 'depot_name': 'revision',
   vars_body = re_results.group('vars_body')
-  rxp = re.compile("'(?P<depot_body>[\w_-]+)':[\s]+'(?P<rev_body>[\w@]+)'",
+  rxp = re.compile(r"'(?P<depot_body>[\w_-]+)':[\s]+'(?P<rev_body>[\w@]+)'",
                    re.MULTILINE)
   re_results = rxp.findall(vars_body)
 
@@ -503,18 +503,18 @@ def _TryParseResultValuesFromOutput(metric, text):
   # The log will be parsed looking for format:
   # <*>RESULT <graph_name>: <trace_name>= <value>
   single_result_re = re.compile(
-      metric_re + '\s*(?P<VALUE>[-]?\d*(\.\d*)?)')
+      metric_re + r'\s*(?P<VALUE>[-]?\d*(\.\d*)?)')
 
   # The log will be parsed looking for format:
   # <*>RESULT <graph_name>: <trace_name>= [<value>,value,value,...]
   multi_results_re = re.compile(
-      metric_re + '\s*\[\s*(?P<VALUES>[-]?[\d\., ]+)\s*\]')
+      metric_re + r'\s*\[\s*(?P<VALUES>[-]?[\d\., ]+)\s*\]')
 
   # The log will be parsed looking for format:
   # <*>RESULT <graph_name>: <trace_name>= {<mean>, <std deviation>}
   mean_stddev_re = re.compile(
       metric_re +
-      '\s*\{\s*(?P<MEAN>[-]?\d*(\.\d*)?),\s*(?P<STDDEV>\d+(\.\d*)?)\s*\}')
+      r'\s*\{\s*(?P<MEAN>[-]?\d*(\.\d*)?),\s*(?P<STDDEV>\d+(\.\d*)?)\s*\}')
 
   text_lines = text.split('\n')
   values_list = []
@@ -703,7 +703,7 @@ def _PrepareBisectBranch(parent_branch, new_branch):
       raise RunGitError('Failed to checkout branch: %s.' % output)
 
   # Delete new branch if exists.
-  output, returncode = bisect_utils.RunGit(['branch', '--list' ])
+  output, returncode = bisect_utils.RunGit(['branch', '--list'])
   if new_branch in output:
     output, returncode = bisect_utils.RunGit(['branch', '-D', new_branch])
     if returncode:
@@ -870,7 +870,7 @@ class BisectPerformanceMetrics(object):
             depot_data.get('platform') != os.name):
           continue
 
-        if (depot_data.get('recurse') and depot in depot_data.get('from')):
+        if depot_data.get('recurse') and depot in depot_data.get('from'):
           depot_data_src = depot_data.get('src') or depot_data.get('src_old')
           src_dir = deps_data.get(depot_data_src)
           if src_dir:
@@ -1413,7 +1413,7 @@ class BisectPerformanceMetrics(object):
                                                          cwd=self.src_cwd)
       if not commit_position:
         return command_to_run
-      cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
+      cmd_re = re.compile(r'--browser=(?P<browser_type>\S+)')
       matches = cmd_re.search(command_to_run)
       if bisect_utils.IsStringInt(commit_position) and matches:
         cmd_browser = matches.group('browser_type')
@@ -1502,8 +1502,8 @@ class BisectPerformanceMetrics(object):
             current_args, cwd=self.src_cwd)
       except OSError, e:
         if e.errno == errno.ENOENT:
-          err_text  = ('Something went wrong running the performance test. '
-                       'Please review the command line:\n\n')
+          err_text = ('Something went wrong running the performance test. '
+                      'Please review the command line:\n\n')
           if 'src/' in ' '.join(args):
             err_text += ('Check that you haven\'t accidentally specified a '
                          'path with src/ in the command.\n\n')
@@ -1619,7 +1619,7 @@ class BisectPerformanceMetrics(object):
 
       self.depot_registry.ChangeToDepotDir(depot)
 
-      if not ((num_resolved - 1) == num_needed):
+      if not (num_resolved - 1) == num_needed:
         return None
 
     return revisions_to_sync

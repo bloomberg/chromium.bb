@@ -129,7 +129,7 @@ class BuildArchive(object):
     """
     base_name = 'full-build-%s' % self._PlatformName()
     if deps_patch_sha:
-      revision = '%s_%s' % (revision , deps_patch_sha)
+      revision = '%s_%s' % (revision, deps_patch_sha)
     return '%s_%s.zip' % (base_name, revision)
 
   def _PlatformName(self):
@@ -264,7 +264,7 @@ def Unzip(filename, output_dir, verbose=True):
   # Python zipfile module. If 7z is not installed, then this may fail if the
   # zip file is larger than 512MB.
   sevenzip_path = r'C:\Program Files\7-Zip\7z.exe'
-  if (bisect_utils.IsWindowsHost() and os.path.exists(sevenzip_path)):
+  if bisect_utils.IsWindowsHost() and os.path.exists(sevenzip_path):
     unzip_command = [sevenzip_path, 'x', '-y']
     _UnzipUsingCommand(unzip_command, filename, output_dir)
     return
