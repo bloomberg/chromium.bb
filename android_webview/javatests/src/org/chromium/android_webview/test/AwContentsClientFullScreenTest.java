@@ -251,8 +251,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             // html5 controls are shadow html elements without any ids. In fullscreen we can still
             // tap the play button because this is rendered in the center of the custom view.
             // In embedded mode we don't have an easy way of retrieving its location.
-            TouchCommon touchCommon = new TouchCommon(AwContentsClientFullScreenTest.this);
-            touchCommon.singleClickView(mContentsClient.getCustomView());
+            TouchCommon.singleClickView(mContentsClient.getCustomView());
         } else {
             fail("Unable to tap standard html5 play control in embedded mode");
         }

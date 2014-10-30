@@ -159,8 +159,7 @@ public class DOMUtils {
             final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
-        TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        TouchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -170,8 +169,7 @@ public class DOMUtils {
             final ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
         int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
-        TouchCommon touchCommon = new TouchCommon(activityTestCase);
-        touchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        TouchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
     }
 
     /**

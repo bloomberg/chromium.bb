@@ -181,8 +181,7 @@ public class AutofillPopupTest extends ChromeShellTestBase {
 
         waitForAutofillPopopShow(popup);
 
-        TouchCommon touchCommon = new TouchCommon(this);
-        touchCommon.singleClickViewRelative(popup.getListView(), 10, 10);
+        TouchCommon.singleClickViewRelative(popup.getListView(), 10, 10);
 
         waitForInputFieldFill(webContents);
     }

@@ -59,9 +59,9 @@ public class InfoBarTest extends ChromeShellTestBase {
 
         List<InfoBar> infoBars = getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
-        assertTrue(InfoBarUtil.hasPrimaryButton(this, infoBars.get(0)));
-        assertFalse(InfoBarUtil.hasSecondaryButton(this, infoBars.get(0)));
-        InfoBarUtil.clickPrimaryButton(this, infoBars.get(0));
+        assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
+        assertFalse(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
+        InfoBarUtil.clickPrimaryButton(infoBars.get(0));
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
         assertEquals("Wrong infobar count", 0, infoBars.size());
 
@@ -83,8 +83,8 @@ public class InfoBarTest extends ChromeShellTestBase {
         // Make sure it has OK/Cancel buttons.
         List<InfoBar> infoBars = getActivity().getActiveTab().getInfoBarContainer().getInfoBars();
         assertEquals("Wrong infobar count", 1, infoBars.size());
-        assertTrue(InfoBarUtil.hasPrimaryButton(this, infoBars.get(0)));
-        assertTrue(InfoBarUtil.hasSecondaryButton(this, infoBars.get(0)));
+        assertTrue(InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
+        assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
         loadUrlWithSanitization(HELLO_WORLD_URL);
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());

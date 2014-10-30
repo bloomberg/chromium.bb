@@ -6,7 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import android.app.Activity;
 import android.os.SystemClock;
-import android.test.ActivityInstrumentationTestCase2;
 import android.test.TouchUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,49 +20,8 @@ import java.util.concurrent.ExecutionException;
  * Touch-related functionality reused across test cases.
  */
 public class TouchCommon {
-    private ActivityInstrumentationTestCase2<?> mActivityTestCase;
-
-    // TODO(tedchoc): This method should receive and use an activity
-    // instead of the ActivityInstrumentationTestCase2. However this is causing
-    // problems downstream. Any fix for this should be landed downstream first.
-    public TouchCommon(ActivityInstrumentationTestCase2<?> activityTestCase) {
-        mActivityTestCase = activityTestCase;
-    }
-
-    /**
-     * @see #dragStart(Activity, float, float, long)
-     */
-    public void dragStart(float x, float y, long downTime) {
-        dragStart(mActivityTestCase.getActivity(), x, y, downTime);
-    }
-
-    /**
-     * @see #dragTo(Activity, float, float, float, float, int, long)
-     */
-    public void dragTo(
-            float fromX, float toX, float fromY, float toY, int stepCount, long downTime) {
-        dragTo(mActivityTestCase.getActivity(), fromX, toX, fromY, toY, stepCount, downTime);
-    }
-
-    /**
-     * @see #dragEnd(Activity, float, float, long)
-     */
-    public void dragEnd(float x, float y, long downTime) {
-        dragEnd(mActivityTestCase.getActivity(), x, y, downTime);
-    }
-
-    /**
-     * @see #singleClick(Activity, float, float)
-     */
-    public void singleClick(float x, float y) {
-        singleClick(mActivityTestCase.getActivity(), x, y);
-    }
-
-    /**
-     * @see #longPress(Activity, float, float)
-     */
-    public void longPress(float x, float y) {
-        longPress(mActivityTestCase.getActivity(), x, y);
+    // Prevent instantiation.
+    private TouchCommon() {
     }
 
     /**
