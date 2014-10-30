@@ -708,7 +708,7 @@ void TextIterator::handleTextBox()
         unsigned runEnd = std::min(textBoxEnd, end);
 
         // Determine what the next text box will be, but don't advance yet
-        InlineTextBox* nextTextBox = 0;
+        InlineTextBox* nextTextBox = nullptr;
         if (renderer->containsReversedText()) {
             if (m_sortedTextBoxesPosition + 1 < m_sortedTextBoxes.size())
                 nextTextBox = m_sortedTextBoxes[m_sortedTextBoxesPosition + 1];

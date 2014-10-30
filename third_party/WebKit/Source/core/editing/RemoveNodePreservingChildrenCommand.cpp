@@ -45,9 +45,8 @@ void RemoveNodePreservingChildrenCommand::doApply()
         NodeVector children;
         getChildNodes(toContainerNode(*m_node), children);
 
-        size_t size = children.size();
-        for (size_t i = 0; i < size; ++i) {
-            RefPtrWillBeRawPtr<Node> child = children[i].release();
+        for (auto& currentChild : children) {
+            RefPtrWillBeRawPtr<Node> child = currentChild.release();
             removeNode(child, m_shouldAssumeContentIsAlwaysEditable);
             insertNodeBefore(child.release(), m_node, m_shouldAssumeContentIsAlwaysEditable);
         }

@@ -540,9 +540,9 @@ void checkTextOfParagraph(TextCheckerClient& client, const String& text, TextChe
     if (checkingTypes & TextCheckingTypeGrammar) {
         // Only checks grammartical error before the first misspellings
         int grammarCheckLength = length;
-        for (size_t i = 0; i < spellingResult.size(); ++i) {
-            if (spellingResult[i].location < grammarCheckLength)
-                grammarCheckLength = spellingResult[i].location;
+        for (const auto& spelling : spellingResult) {
+            if (spelling.location < grammarCheckLength)
+                grammarCheckLength = spelling.location;
         }
 
         findBadGrammars(client, characters.data(), 0, grammarCheckLength, grammarResult);

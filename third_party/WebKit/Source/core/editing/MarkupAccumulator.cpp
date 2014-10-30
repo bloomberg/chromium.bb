@@ -97,7 +97,7 @@ void MarkupAccumulator::appendCharactersReplacingEntities(StringBuilder& result,
         appendCharactersReplacingEntitiesInternal(result, source.characters16() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
 }
 
-MarkupAccumulator::MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node> >* nodes, EAbsoluteURLs resolveUrlsMethod, const Range* range, SerializationType serializationType)
+MarkupAccumulator::MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs resolveUrlsMethod, const Range* range, SerializationType serializationType)
     : m_nodes(nodes)
     , m_range(range)
     , m_resolveURLsMethod(resolveUrlsMethod)
@@ -111,7 +111,7 @@ MarkupAccumulator::~MarkupAccumulator()
 
 String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
 {
-    Namespaces* namespaces = 0;
+    Namespaces* namespaces = nullptr;
     Namespaces namespaceHash;
     if (!serializeAsHTMLDocument(targetNode)) {
         // Add pre-bound namespaces for XML fragments.
@@ -126,8 +126,8 @@ String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childre
 void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces, Vector<QualifiedName>* tagNamesToSkip)
 {
     if (tagNamesToSkip && targetNode.isElementNode()) {
-        for (size_t i = 0; i < tagNamesToSkip->size(); ++i) {
-            if (toElement(targetNode).hasTagName(tagNamesToSkip->at(i)))
+        for (const auto& tag : *tagNamesToSkip) {
+            if (toElement(targetNode).hasTagName(tag))
                 return;
         }
     }
@@ -186,8 +186,8 @@ void MarkupAccumulator::appendEndTag(const Element& element)
 size_t MarkupAccumulator::totalLength(const Vector<String>& strings)
 {
     size_t length = 0;
-    for (size_t i = 0; i < strings.size(); ++i)
-        length += strings[i].length();
+    for (const auto& string : strings)
+        length += string.length();
     return length;
 }
 
@@ -290,7 +290,7 @@ EntityMask MarkupAccumulator::entityMaskForText(const Text& text) const
     if (!serializeAsHTMLDocument(text))
         return EntityMaskInPCDATA;
 
-    const QualifiedName* parentName = 0;
+    const QualifiedName* parentName = nullptr;
     if (text.parentElement())
         parentName = &(text.parentElement())->tagQName();
 
@@ -386,9 +386,8 @@ void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, N
     appendOpenTag(result, element, namespaces);
 
     AttributeCollection attributes = element.attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it)
-        appendAttribute(result, element, *it, namespaces);
+    for (const auto& attribute : attributes)
+        appendAttribute(result, element, attribute, namespaces);
 
     // Give an opportunity to subclasses to add their own attributes.
     appendCustomAttributes(result, element, namespaces);

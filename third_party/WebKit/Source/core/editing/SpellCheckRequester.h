@@ -130,7 +130,7 @@ private:
 
     RefPtrWillBeMember<SpellCheckRequest> m_processingRequest;
 
-    typedef WillBeHeapDeque<RefPtrWillBeMember<SpellCheckRequest> > RequestQueue;
+    typedef WillBeHeapDeque<RefPtrWillBeMember<SpellCheckRequest>> RequestQueue;
     RequestQueue m_requestQueue;
 };
 

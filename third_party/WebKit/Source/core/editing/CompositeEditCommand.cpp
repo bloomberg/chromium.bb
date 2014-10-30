@@ -132,9 +132,8 @@ void EditCommandComposition::reapply()
     m_document->updateLayoutIgnorePendingStylesheets();
 
     {
-        size_t size = m_commands.size();
-        for (size_t i = 0; i != size; ++i)
-            m_commands[i]->doReapply();
+        for (const auto& command : m_commands)
+            command->doReapply();
     }
 
     frame->editor().reappliedEditing(this);
@@ -367,7 +366,7 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
 
 void CompositeEditCommand::removeChildrenInRange(PassRefPtrWillBeRawPtr<Node> node, unsigned from, unsigned to)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> children;
     Node* child = NodeTraversal::childAt(*node, from);
     for (unsigned i = from; child && i < to; i++, child = child->nextSibling())
         children.append(child);
@@ -508,9 +507,9 @@ static void copyMarkerTypesAndDescriptions(const DocumentMarkerVector& markerPoi
     size_t arraySize = markerPointers.size();
     types.reserveCapacity(arraySize);
     descriptions.reserveCapacity(arraySize);
-    for (size_t i = 0; i < arraySize; ++i) {
-        types.append(markerPointers[i]->type());
-        descriptions.append(markerPointers[i]->description());
+    for (const auto& markerPointer : markerPointers) {
+        types.append(markerPointer->type());
+        descriptions.append(markerPointer->description());
     }
 }
 
@@ -756,7 +755,7 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
         return;
 
     unsigned removed = 0;
-    InlineTextBox* prevBox = 0;
+    InlineTextBox* prevBox = nullptr;
     String str;
 
     // This loop structure works to process all gaps preceding a box,
@@ -810,7 +809,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
     if (comparePositions(start, end) >= 0)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Text> > nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Text>> nodes;
     for (Node& node : NodeTraversal::startsAt(start.deprecatedNode())) {
         if (node.isTextNode())
             nodes.append(toText(&node));
@@ -818,8 +817,8 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
             break;
     }
 
-    for (size_t i = 0; i < nodes.size(); ++i) {
-        Text* textNode = nodes[i].get();
+    for (const auto& node : nodes) {
+        Text* textNode = node.get();
         int startOffset = textNode == start.deprecatedNode() ? start.deprecatedEditingOffset() : 0;
         int endOffset = textNode == end.deprecatedNode() ? end.deprecatedEditingOffset() : static_cast<int>(textNode->length());
         deleteInsignificantText(textNode, startOffset, endOffset);
@@ -1004,7 +1003,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
     }
 
     if (start.anchorNode() != outerNode && lastNode->isElementNode() && start.anchorNode()->isDescendantOf(outerNode.get())) {
-        WillBeHeapVector<RefPtrWillBeMember<Node> > ancestors;
+        WillBeHeapVector<RefPtrWillBeMember<Node>> ancestors;
 
         // Insert each node from innerNode to outerNode (excluded) in a list.
         for (Node* n = start.deprecatedNode(); n && n != outerNode; n = n->parentNode())

@@ -42,7 +42,7 @@ SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document, Node* firstNode
 void SimplifyMarkupCommand::doApply()
 {
     ContainerNode* rootNode = m_firstNode->parentNode();
-    WillBeHeapVector<RefPtrWillBeMember<ContainerNode> > nodesToRemove;
+    WillBeHeapVector<RefPtrWillBeMember<ContainerNode>> nodesToRemove;
 
     // Walk through the inserted nodes, to see if there are elements that could be removed
     // without affecting the style. The goal is to produce leaner markup even when starting
@@ -59,7 +59,7 @@ void SimplifyMarkupCommand::doApply()
         if (!startingStyle)
             continue;
         ContainerNode* currentNode = startingNode;
-        ContainerNode* topNodeWithStartingStyle = 0;
+        ContainerNode* topNodeWithStartingStyle = nullptr;
         while (currentNode != rootNode) {
             if (currentNode->parentNode() != rootNode && isRemovableBlock(currentNode))
                 nodesToRemove.append(currentNode);
@@ -97,7 +97,7 @@ void SimplifyMarkupCommand::doApply()
     }
 }
 
-int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode> >& nodesToRemove, size_t startNodeIndex)
+int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode>>& nodesToRemove, size_t startNodeIndex)
 {
     size_t pastLastNodeToRemove = startNodeIndex + 1;
     for (; pastLastNodeToRemove < nodesToRemove.size(); ++pastLastNodeToRemove) {

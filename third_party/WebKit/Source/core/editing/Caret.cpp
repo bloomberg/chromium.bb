@@ -70,7 +70,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
         invalidateCaretRect(node);
     m_position = position;
     setCaretRectNeedsUpdate();
-    Document* document = 0;
+    Document* document = nullptr;
     if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
         invalidateCaretRect(node);
         document = &node->document();

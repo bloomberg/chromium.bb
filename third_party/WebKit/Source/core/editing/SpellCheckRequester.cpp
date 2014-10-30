@@ -139,8 +139,8 @@ SpellCheckRequester::~SpellCheckRequester()
 #if !ENABLE(OILPAN)
     if (m_processingRequest)
         m_processingRequest->requesterDestroyed();
-    for (RequestQueue::iterator i = m_requestQueue.begin(); i != m_requestQueue.end(); ++i)
-        (*i)->requesterDestroyed();
+    for (const auto& requestQueue : m_requestQueue)
+        requestQueue->requesterDestroyed();
 #endif
 }
 
@@ -225,11 +225,11 @@ void SpellCheckRequester::enqueueRequest(PassRefPtrWillBeRawPtr<SpellCheckReques
 
     // Spellcheck requests for chunks of text in the same element should not overwrite each other.
     if (!continuation) {
-        for (RequestQueue::iterator it = m_requestQueue.begin(); it != m_requestQueue.end(); ++it) {
-            if (request->rootEditableElement() != (*it)->rootEditableElement())
+        for (auto& requestQueue : m_requestQueue) {
+            if (request->rootEditableElement() != requestQueue->rootEditableElement())
                 continue;
 
-            *it = request;
+            requestQueue = request;
             return;
         }
     }

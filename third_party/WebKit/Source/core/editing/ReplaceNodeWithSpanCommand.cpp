@@ -57,8 +57,8 @@ static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, H
 
     NodeVector children;
     getChildNodes(elementToReplace, children);
-    for (size_t i = 0; i < children.size(); ++i)
-        newElement->appendChild(children[i]);
+    for (const auto& child : children)
+        newElement->appendChild(child);
 
     // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
     newElement->cloneDataFromElement(elementToReplace);

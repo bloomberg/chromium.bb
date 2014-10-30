@@ -49,7 +49,7 @@ void SplitElementCommand::executeApply()
     if (m_atChild->parentNode() != m_element2)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> children;
     for (Node* node = m_element2->firstChild(); node != m_atChild; node = node->nextSibling())
         children.append(node);
 
@@ -65,9 +65,8 @@ void SplitElementCommand::executeApply()
     // Delete id attribute from the second element because the same id cannot be used for more than one element
     m_element2->removeAttribute(HTMLNames::idAttr);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i], exceptionState);
+    for (const auto& child : children)
+        m_element1->appendChild(child, exceptionState);
 }
 
 void SplitElementCommand::doApply()
@@ -87,9 +86,8 @@ void SplitElementCommand::doUnapply()
 
     RefPtrWillBeRawPtr<Node> refChild = m_element2->firstChild();
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].get(), refChild.get(), IGNORE_EXCEPTION);
+    for (const auto& child : children)
+        m_element2->insertBefore(child.get(), refChild.get(), IGNORE_EXCEPTION);
 
     // Recover the id attribute of the original element.
     const AtomicString& id = m_element1->getAttribute(HTMLNames::idAttr);

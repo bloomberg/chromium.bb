@@ -186,8 +186,8 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
     if (!keyEvent)
         return "";
 
-    static HashMap<int, const char*>* keyDownCommandsMap = 0;
-    static HashMap<int, const char*>* keyPressCommandsMap = 0;
+    static HashMap<int, const char*>* keyDownCommandsMap = nullptr;
+    static HashMap<int, const char*>* keyPressCommandsMap = nullptr;
 
     if (!keyDownCommandsMap) {
         keyDownCommandsMap = new HashMap<int, const char*>;

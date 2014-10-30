@@ -52,9 +52,8 @@ void MergeIdenticalElementsCommand::doApply()
     NodeVector children;
     getChildNodes(*m_element1, children);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_element2->insertBefore(children[i].release(), m_atChild.get(), IGNORE_EXCEPTION);
+    for (auto& child : children)
+        m_element2->insertBefore(child.release(), m_atChild.get(), IGNORE_EXCEPTION);
 
     m_element1->remove(IGNORE_EXCEPTION);
 }
@@ -76,13 +75,12 @@ void MergeIdenticalElementsCommand::doUnapply()
     if (exceptionState.hadException())
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > children;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> children;
     for (Node* child = m_element2->firstChild(); child && child != atChild; child = child->nextSibling())
         children.append(child);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_element1->appendChild(children[i].release(), exceptionState);
+    for (auto& child : children)
+        m_element1->appendChild(child.release(), exceptionState);
 }
 
 void MergeIdenticalElementsCommand::trace(Visitor* visitor)

@@ -612,8 +612,8 @@ Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), 
 
 Node* highestEnclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule, Node* stayWithin)
 {
-    Node* highest = 0;
-    ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : 0;
+    Node* highest = nullptr;
+    ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : nullptr;
     for (Node* n = p.containerNode(); n && n != stayWithin; n = n->parentNode()) {
         if (root && !n->hasEditableStyle())
             continue;
@@ -642,8 +642,8 @@ static bool hasARenderedDescendant(Node* node, Node* excludedNode)
 
 Node* highestNodeToRemoveInPruning(Node* node, Node* excludeNode)
 {
-    Node* previousNode = 0;
-    Element* rootEditableElement = node ? node->rootEditableElement() : 0;
+    Node* previousNode = nullptr;
+    Element* rootEditableElement = node ? node->rootEditableElement() : nullptr;
     for (; node; node = node->parentNode()) {
         if (RenderObject* renderer = node->renderer()) {
             if (!renderer->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)

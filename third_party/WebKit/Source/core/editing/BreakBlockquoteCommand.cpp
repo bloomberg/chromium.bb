@@ -130,7 +130,7 @@ void BreakBlockquoteCommand::doApply()
     }
 
     // Build up list of ancestors in between the start node and the top blockquote.
-    WillBeHeapVector<RefPtrWillBeMember<Element> > ancestors;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> ancestors;
     for (Element* node = startNode->parentElement(); node && node != topBlockquote; node = node->parentElement())
         ancestors.append(node);
 

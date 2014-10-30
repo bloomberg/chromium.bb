@@ -115,7 +115,7 @@ public:
     {
         return conflictsWithInlineStyleOfElement(element, extractedStyle, &conflictingProperties);
     }
-    bool conflictsWithImplicitStyleOfElement(HTMLElement*, EditingStyle* extractedStyle = 0, ShouldExtractMatchingStyle = DoNotExtractMatchingStyle) const;
+    bool conflictsWithImplicitStyleOfElement(HTMLElement*, EditingStyle* extractedStyle = nullptr, ShouldExtractMatchingStyle = DoNotExtractMatchingStyle) const;
     bool conflictsWithImplicitStyleOfAttributes(HTMLElement*) const;
     bool extractConflictingImplicitStyleOfAttributes(HTMLElement*, ShouldPreserveWritingDirection, EditingStyle* extractedStyle,
             Vector<QualifiedName>& conflictingAttributes, ShouldExtractMatchingStyle) const;

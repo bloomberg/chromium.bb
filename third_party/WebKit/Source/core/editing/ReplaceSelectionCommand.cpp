@@ -283,16 +283,15 @@ void ReplacementFragment::restoreAndRemoveTestRenderingNodesToFragment(Element* 
 
 void ReplacementFragment::removeUnrenderedNodes(ContainerNode* holder)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node> > unrendered;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> unrendered;
 
     for (Node& node : NodeTraversal::descendantsOf(*holder)) {
         if (!isNodeRendered(&node) && !isTableStructureNode(&node))
             unrendered.append(&node);
     }
 
-    size_t n = unrendered.size();
-    for (size_t i = 0; i < n; ++i)
-        removeNode(unrendered[i]);
+    for (auto& node : unrendered)
+        removeNode(node);
 }
 
 void ReplacementFragment::removeInterchangeNodes(ContainerNode* container)
@@ -723,7 +722,7 @@ VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent() cons
 
 static void removeHeadContents(ReplacementFragment& fragment)
 {
-    Node* next = 0;
+    Node* next = nullptr;
     for (Node* node = fragment.firstChild(); node; node = next) {
         if (isHTMLBaseElement(*node)
             || isHTMLLinkElement(*node)
@@ -777,7 +776,7 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
 // or at copy time.
 void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
 {
-    HTMLSpanElement* wrappingStyleSpan = 0;
+    HTMLSpanElement* wrappingStyleSpan = nullptr;
     // The style span that contains the source document's default style should be at
     // the top of the fragment, but Mail sometimes adds a wrapper (for Paste As Quotation),
     // so search for the top level style span instead of assuming it's at the top.

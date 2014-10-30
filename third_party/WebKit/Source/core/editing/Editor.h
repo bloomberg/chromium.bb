@@ -127,14 +127,14 @@ public:
         Command();
         Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtrWillBeRawPtr<LocalFrame>);
 
-        bool execute(const String& parameter = String(), Event* triggeringEvent = 0) const;
+        bool execute(const String& parameter = String(), Event* triggeringEvent = nullptr) const;
         bool execute(Event* triggeringEvent) const;
 
         bool isSupported() const;
-        bool isEnabled(Event* triggeringEvent = 0) const;
+        bool isEnabled(Event* triggeringEvent = nullptr) const;
 
-        TriState state(Event* triggeringEvent = 0) const;
-        String value(Event* triggeringEvent = 0) const;
+        TriState state(Event* triggeringEvent = nullptr) const;
+        String value(Event* triggeringEvent = nullptr) const;
 
         bool isTextInsertion() const;
 

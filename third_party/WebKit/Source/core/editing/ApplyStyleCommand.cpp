@@ -384,9 +384,9 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
     }
 
     // These spans were added by us. If empty after font size changes, they can be removed.
-    WillBeHeapVector<RefPtrWillBeMember<HTMLElement> > unstyledSpans;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLElement>> unstyledSpans;
 
-    Node* lastStyledNode = 0;
+    Node* lastStyledNode = nullptr;
     for (Node* node = startNode; node != beyondEnd; node = NodeTraversal::next(*node)) {
         ASSERT(node);
         RefPtrWillBeRawPtr<HTMLElement> element = nullptr;
@@ -426,9 +426,8 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         }
     }
 
-    size_t size = unstyledSpans.size();
-    for (size_t i = 0; i < size; ++i)
-        removeNodePreservingChildren(unstyledSpans[i].get());
+    for (const auto& unstyledSpan : unstyledSpans)
+        removeNodePreservingChildren(unstyledSpan.get());
 }
 
 static ContainerNode* dummySpanAncestorForNode(const Node* node)
@@ -464,8 +463,8 @@ HTMLElement* ApplyStyleCommand::splitAncestorsWithUnicodeBidi(Node* node, bool b
     if (!block)
         return 0;
 
-    ContainerNode* highestAncestorWithUnicodeBidi = 0;
-    ContainerNode* nextHighestAncestorWithUnicodeBidi = 0;
+    ContainerNode* highestAncestorWithUnicodeBidi = nullptr;
+    ContainerNode* nextHighestAncestorWithUnicodeBidi = nullptr;
     int highestAncestorUnicodeBidi = 0;
     for (ContainerNode* n = node->parentNode(); n != block; n = n->parentNode()) {
         int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(n).get(), CSSPropertyUnicodeBidi);
@@ -837,21 +836,20 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         runs.append(InlineRunToApplyStyle(runStart, runEnd, pastEndNode));
     }
 
-    for (size_t i = 0; i < runs.size(); i++) {
-        removeConflictingInlineStyleFromRun(style, runs[i].start, runs[i].end, runs[i].pastEndNode);
-        if (runs[i].startAndEndAreStillInDocument())
-            runs[i].positionForStyleComputation = positionToComputeInlineStyleChange(runs[i].start, runs[i].dummyElement);
+    for (auto& run : runs) {
+        removeConflictingInlineStyleFromRun(style, run.start, run.end, run.pastEndNode);
+        if (run.startAndEndAreStillInDocument())
+            run.positionForStyleComputation = positionToComputeInlineStyleChange(run.start, run.dummyElement);
     }
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    for (size_t i = 0; i < runs.size(); i++) {
-        if (runs[i].positionForStyleComputation.isNotNull())
-            runs[i].change = StyleChange(style, runs[i].positionForStyleComputation);
+    for (auto& run : runs) {
+        if (run.positionForStyleComputation.isNotNull())
+            run.change = StyleChange(style, run.positionForStyleComputation);
     }
 
-    for (size_t i = 0; i < runs.size(); i++) {
-        InlineRunToApplyStyle run = runs[i];
+    for (auto& run : runs) {
         if (run.dummyElement)
             removeNode(run.dummyElement);
         if (run.startAndEndAreStillInDocument())
@@ -969,8 +967,8 @@ bool ApplyStyleCommand::removeImplicitlyStyledElement(EditingStyle* style, HTMLE
         extractedStyle, attributes, mode == RemoveAlways ? EditingStyle::ExtractMatchingStyle : EditingStyle::DoNotExtractMatchingStyle))
         return false;
 
-    for (size_t i = 0; i < attributes.size(); i++)
-        removeElementAttribute(element, attributes[i]);
+    for (const auto& attribute : attributes)
+        removeElementAttribute(element, attribute);
 
     if (isEmptyFontTag(element) || isSpanWithoutAttributesOrUnstyledStyleSpan(element))
         removeNodePreservingChildren(element);
@@ -991,8 +989,8 @@ bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style, HTMLElement* element
         return false;
 
     // FIXME: We should use a mass-removal function here but we don't have an undoable one yet.
-    for (size_t i = 0; i < properties.size(); i++)
-        removeCSSProperty(element, properties[i]);
+    for (const auto& property : properties)
+        removeCSSProperty(element, property);
 
     if (isSpanWithoutAttributesOrUnstyledStyleSpan(element))
         removeNodePreservingChildren(element);
@@ -1005,7 +1003,7 @@ HTMLElement* ApplyStyleCommand::highestAncestorWithConflictingInlineStyle(Editin
     if (!node)
         return 0;
 
-    HTMLElement* result = 0;
+    HTMLElement* result = nullptr;
     Node* unsplittableElement = unsplittableElementForPosition(firstPositionInOrBeforeNode(node));
 
     for (Node *n = node; n; n = n->parentNode()) {
@@ -1061,7 +1059,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
     RefPtrWillBeRawPtr<Node> current = highestAncestor;
     // Along the way, styled elements that contain targetNode are removed and accumulated into elementsToPushDown.
     // Each child of the removed element, exclusing ancestors of targetNode, is then wrapped by clones of elements in elementsToPushDown.
-    WillBeHeapVector<RefPtrWillBeMember<Element> > elementsToPushDown;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> elementsToPushDown;
     while (current && current != targetNode && current->contains(targetNode)) {
         NodeVector currentChildren;
         getChildNodes(toContainerNode(*current), currentChildren);
@@ -1077,13 +1075,13 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
 
         // The inner loop will go through children on each level
         // FIXME: we should aggregate inline child elements together so that we don't wrap each child separately.
-        for (size_t i = 0; i < currentChildren.size(); ++i) {
-            Node* child = currentChildren[i].get();
+        for (const auto& currentChild : currentChildren) {
+            Node* child = currentChild.get();
             if (!child->parentNode())
                 continue;
             if (!child->contains(targetNode) && elementsToPushDown.size()) {
-                for (size_t i = 0; i < elementsToPushDown.size(); i++) {
-                    RefPtrWillBeRawPtr<Element> wrapper = elementsToPushDown[i]->cloneElementWithoutChildren();
+                for (const auto& element : elementsToPushDown) {
+                    RefPtrWillBeRawPtr<Element> wrapper = element->cloneElementWithoutChildren();
                     wrapper->removeAttribute(styleAttr);
                     surroundNodeRangeWithElement(child, child, wrapper);
                 }
@@ -1444,8 +1442,8 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
     ASSERT(endNode->inDocument());
 
     // Find appropriate font and span elements top-down.
-    HTMLFontElement* fontContainer = 0;
-    HTMLElement* styleContainer = 0;
+    HTMLFontElement* fontContainer = nullptr;
+    HTMLElement* styleContainer = nullptr;
     for (Node* container = startNode.get(); container && startNode == endNode; container = container->firstChild()) {
         if (isHTMLFontElement(*container))
             fontContainer = toHTMLFontElement(container);
@@ -1547,7 +1545,7 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& 
     Position newStart = start;
     Position newEnd = end;
 
-    WillBeHeapVector<RefPtrWillBeMember<Text> > textNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Text>> textNodes;
     for (Node* curr = node->firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->isTextNode())
             continue;
@@ -1555,8 +1553,8 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& 
         textNodes.append(toText(curr));
     }
 
-    for (size_t i = 0; i < textNodes.size(); ++i) {
-        Text* childText = textNodes[i].get();
+    for (const auto& textNode : textNodes) {
+        Text* childText = textNode.get();
         Node* next = childText->nextSibling();
         if (!next || !next->isTextNode())
             continue;

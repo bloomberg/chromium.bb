@@ -44,9 +44,8 @@ void WrapContentsInDummySpanCommand::executeApply()
     NodeVector children;
     getChildNodes(*m_element, children);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_dummySpan->appendChild(children[i].release(), IGNORE_EXCEPTION);
+    for (auto& child : children)
+        m_dummySpan->appendChild(child.release(), IGNORE_EXCEPTION);
 
     m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION);
 }
@@ -68,9 +67,8 @@ void WrapContentsInDummySpanCommand::doUnapply()
     NodeVector children;
     getChildNodes(*m_dummySpan, children);
 
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i)
-        m_element->appendChild(children[i].release(), IGNORE_EXCEPTION);
+    for (auto& child : children)
+        m_element->appendChild(child.release(), IGNORE_EXCEPTION);
 
     m_dummySpan->remove(IGNORE_EXCEPTION);
 }

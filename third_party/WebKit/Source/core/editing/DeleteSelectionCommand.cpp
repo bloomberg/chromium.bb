@@ -102,8 +102,8 @@ DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection
 
 void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 {
-    HTMLElement* startSpecialContainer = 0;
-    HTMLElement* endSpecialContainer = 0;
+    HTMLElement* startSpecialContainer = nullptr;
+    HTMLElement* endSpecialContainer = nullptr;
 
     start = m_selectionToDelete.start();
     end = m_selectionToDelete.end();

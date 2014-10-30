@@ -95,8 +95,8 @@ private:
 };
 
 inline RenderedPosition::RenderedPosition()
-    : m_renderer(0)
-    , m_inlineBox(0)
+    : m_renderer(nullptr)
+    , m_inlineBox(nullptr)
     , m_offset(0)
     , m_prevLeafChild(uncachedInlineBox())
     , m_nextLeafChild(uncachedInlineBox())

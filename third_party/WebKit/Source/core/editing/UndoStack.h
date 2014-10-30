@@ -58,7 +58,7 @@ public:
 private:
     UndoStack();
 
-    typedef WillBeHeapDeque<RefPtrWillBeMember<UndoStep> > UndoStepStack;
+    typedef WillBeHeapDeque<RefPtrWillBeMember<UndoStep>> UndoStepStack;
 
     void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
 
