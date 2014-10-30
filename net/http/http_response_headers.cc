@@ -966,15 +966,15 @@ ValidationType HttpResponseHeaders::RequiresValidation(
     const Time& response_time,
     const Time& current_time) const {
   FreshnessLifetimes lifetimes = GetFreshnessLifetimes(response_time);
-  if (lifetimes.fresh == TimeDelta() && lifetimes.stale == TimeDelta())
+  if (lifetimes.freshness == TimeDelta() && lifetimes.staleness == TimeDelta())
     return VALIDATION_SYNCHRONOUS;
 
   TimeDelta age = GetCurrentAge(request_time, response_time, current_time);
 
-  if (lifetimes.fresh > age)
+  if (lifetimes.freshness > age)
     return VALIDATION_NONE;
 
-  if (lifetimes.fresh + lifetimes.stale > age)
+  if (lifetimes.freshness + lifetimes.staleness > age)
     return VALIDATION_ASYNCHRONOUS;
 
   return VALIDATION_SYNCHRONOUS;
@@ -1001,7 +1001,7 @@ ValidationType HttpResponseHeaders::RequiresValidation(
 //   freshness_lifetime = (date_value - last_modified_value) * 0.10
 //
 // If the stale-while-revalidate directive is present, then it is used to set
-// the |stale| time, unless it overridden by another directive.
+// the |staleness| time, unless it overridden by another directive.
 //
 HttpResponseHeaders::FreshnessLifetimes
 HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
@@ -1020,14 +1020,15 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   // Cache-Control directive must_revalidate overrides stale-while-revalidate.
   bool must_revalidate = HasHeaderValue("cache-control", "must-revalidate");
 
-  if (must_revalidate || !GetStaleWhileRevalidateValue(&lifetimes.stale))
-    DCHECK(lifetimes.stale == TimeDelta());
+  if (must_revalidate || !GetStaleWhileRevalidateValue(&lifetimes.staleness)) {
+    DCHECK(lifetimes.staleness == TimeDelta());
+  }
 
   // NOTE: "Cache-Control: max-age" overrides Expires, so we only check the
   // Expires header after checking for max-age in GetFreshnessLifetimes.  This
   // is important since "Expires: <date in the past>" means not fresh, but
   // it should not trump a max-age value.
-  if (GetMaxAgeValue(&lifetimes.fresh))
+  if (GetMaxAgeValue(&lifetimes.freshness))
     return lifetimes;
 
   // If there is no Date header, then assume that the server response was
@@ -1040,11 +1041,11 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   if (GetExpiresValue(&expires_value)) {
     // The expires value can be a date in the past!
     if (expires_value > date_value) {
-      lifetimes.fresh = expires_value - date_value;
+      lifetimes.freshness = expires_value - date_value;
       return lifetimes;
     }
 
-    DCHECK(lifetimes.fresh == TimeDelta());
+    DCHECK(lifetimes.freshness == TimeDelta());
     return lifetimes;
   }
 
@@ -1079,7 +1080,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
     if (GetLastModifiedValue(&last_modified_value)) {
       // The last-modified value can be a date in the future!
       if (last_modified_value <= date_value) {
-        lifetimes.fresh = (date_value - last_modified_value) / 10;
+        lifetimes.freshness = (date_value - last_modified_value) / 10;
         return lifetimes;
       }
     }
@@ -1088,15 +1089,15 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   // These responses are implicitly fresh (unless otherwise overruled):
   if (response_code_ == 300 || response_code_ == 301 || response_code_ == 308 ||
       response_code_ == 410) {
-    lifetimes.fresh = TimeDelta::Max();
-    lifetimes.stale = TimeDelta();  // It should never be stale.
+    lifetimes.freshness = TimeDelta::Max();
+    lifetimes.staleness = TimeDelta();  // It should never be stale.
     return lifetimes;
   }
 
   // Our heuristic freshness estimate for this resource is 0 seconds, in
   // accordance with common browser behaviour. However, stale-while-revalidate
   // may still apply.
-  DCHECK(lifetimes.fresh == TimeDelta());
+  DCHECK(lifetimes.freshness == TimeDelta());
   return lifetimes;
 }
 

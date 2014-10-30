@@ -2407,9 +2407,9 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
   if (!use_if_range) {
     // stale-while-revalidate is not useful when we only have a partial response
     // cached, so don't set the header in that case.
-    HttpResponseHeaders::FreshnessLifetimes lifetime =
+    HttpResponseHeaders::FreshnessLifetimes lifetimes =
         response_.headers->GetFreshnessLifetimes(response_.response_time);
-    if (lifetime.stale > TimeDelta()) {
+    if (lifetimes.staleness > TimeDelta()) {
       TimeDelta current_age = response_.headers->GetCurrentAge(
           response_.request_time, response_.response_time, Time::Now());
 
@@ -2417,8 +2417,8 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
           kFreshnessHeader,
           base::StringPrintf("max-age=%" PRId64
                              ",stale-while-revalidate=%" PRId64 ",age=%" PRId64,
-                             lifetime.fresh.InSeconds(),
-                             lifetime.stale.InSeconds(),
+                             lifetimes.freshness.InSeconds(),
+                             lifetimes.staleness.InSeconds(),
                              current_age.InSeconds()));
     }
   }

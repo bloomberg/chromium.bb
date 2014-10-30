@@ -29,7 +29,7 @@ namespace net {
 class HttpByteRange;
 
 enum ValidationType {
-  VALIDATION_NONE = 0,      // The resource is fresh.
+  VALIDATION_NONE,          // The resource is fresh.
   VALIDATION_ASYNCHRONOUS,  // The resource requires async revalidation.
   VALIDATION_SYNCHRONOUS    // The resource requires sync revalidation.
 };
@@ -51,10 +51,10 @@ class NET_EXPORT HttpResponseHeaders
 
   struct FreshnessLifetimes {
     // How long the resource will be fresh for.
-    base::TimeDelta fresh;
+    base::TimeDelta freshness;
     // How long after becoming not fresh that the resource will be stale but
     // usable (if async revalidation is enabled).
-    base::TimeDelta stale;
+    base::TimeDelta staleness;
   };
 
   static const char kContentRange[];
@@ -229,12 +229,10 @@ class NET_EXPORT HttpResponseHeaders
 
   // Calculates the amount of time the server claims the response is fresh from
   // the time the response was generated.  See section 13.2.4 of RFC 2616.  See
-  // RequiresValidation for a description of the response_time parameter.  Sets
-  // |FreshnessLifetimes.fresh| to the length of time the response may be used
-  // without revalidation, and |FreshnessLifetimes.stale| to the length of time
-  // the response may be used stale with asynchronous revalidation if
-  // stale-while-revalidate support is enabled.  See RFC 5861 section 3 for the
-  // definition of stale-while-revalidate.
+  // RequiresValidation for a description of the response_time parameter.  See
+  // the definition of FreshnessLifetimes above for the meaning of the return
+  // value.  See RFC 5861 section 3 for the definition of
+  // stale-while-revalidate.
   FreshnessLifetimes GetFreshnessLifetimes(
       const base::Time& response_time) const;
 

@@ -311,6 +311,15 @@ const std::string& GetVariationParam(
   return it->second;
 }
 
+// Return true if stale-while-revalidate support should be enabled.
+bool IsStaleWhileRevalidateEnabled(const base::CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kEnableStaleWhileRevalidate))
+    return true;
+  const std::string group_name =
+      base::FieldTrialList::FindFullName(kStaleWhileRevalidateFieldTrialName);
+  return group_name == "Enabled";
+}
+
 }  // namespace
 
 class IOThread::LoggingNetworkChangeObserver
@@ -660,11 +669,8 @@ void IOThread::InitAsync() {
     globals_->enable_ssl_connect_job_waiting = true;
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
-  if (command_line.HasSwitch(switches::kEnableStaleWhileRevalidate))
-    globals_->use_stale_while_revalidate = true;
-  if (base::FieldTrialList::FindFullName(kStaleWhileRevalidateFieldTrialName) ==
-      "Enabled")
-    globals_->use_stale_while_revalidate = true;
+  globals_->use_stale_while_revalidate =
+      IsStaleWhileRevalidateEnabled(command_line);
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     globals_->testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
