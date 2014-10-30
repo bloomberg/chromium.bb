@@ -722,7 +722,7 @@ base::ProcessHandle StartSandboxedProcess(
   if (delegate)
     delegate->PostSpawnTarget(target.process_handle());
 
-  ResumeThread(target.thread_handle());
+  CHECK(ResumeThread(target.thread_handle()) != -1);
   TRACE_EVENT_END_ETW("StartProcessWithAccess", 0, type_str);
   return target.TakeProcessHandle();
 }
