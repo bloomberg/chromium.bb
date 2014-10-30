@@ -15,23 +15,27 @@ namespace policy {
 // codes received from the involved components.
 class EnrollmentStatus {
  public:
-  // Enrollment status codes.
+  // Enrollment status codes.  Do not change the order or the meaning of the
+  // existing codes to preserve the interpretability of old logfiles.
   enum Status {
-    STATUS_SUCCESS,                     // Enrollment succeeded.
-    STATUS_NO_STATE_KEYS,               // Server-backed state keys unavailable.
-    STATUS_REGISTRATION_FAILED,         // DM registration failed.
-    STATUS_REGISTRATION_BAD_MODE,       // Bad device mode.
-    STATUS_ROBOT_AUTH_FETCH_FAILED,     // API OAuth2 auth code failure.
-    STATUS_ROBOT_REFRESH_FETCH_FAILED,  // API OAuth2 refresh token failure.
-    STATUS_ROBOT_REFRESH_STORE_FAILED,  // Failed to store API OAuth2 token.
-    STATUS_POLICY_FETCH_FAILED,         // DM policy fetch failed.
-    STATUS_VALIDATION_FAILED,           // Policy validation failed.
-    STATUS_LOCK_ERROR,                  // Cryptohome failed to lock the device.
-    STATUS_LOCK_TIMEOUT,                // Timeout while waiting for the lock.
-    STATUS_LOCK_WRONG_USER,             // Locked to different domain.
-    STATUS_STORE_ERROR,                 // Failed to store the policy.
-    STATUS_STORE_TOKEN_AND_ID_FAILED,   // Failed to store DM token and device
-                                        // ID.
+    STATUS_SUCCESS = 0,                     // Enrollment succeeded.
+    STATUS_NO_STATE_KEYS = 1,               // Server-backed state keys
+                                            // unavailable.
+    STATUS_REGISTRATION_FAILED = 2,         // DM registration failed.
+    STATUS_REGISTRATION_BAD_MODE = 3,       // Bad device mode.
+    STATUS_ROBOT_AUTH_FETCH_FAILED = 4,     // API OAuth2 auth code failure.
+    STATUS_ROBOT_REFRESH_FETCH_FAILED = 5,  // API OAuth2 refresh token failure.
+    STATUS_ROBOT_REFRESH_STORE_FAILED = 6,  // Failed to store API OAuth2 token.
+    STATUS_POLICY_FETCH_FAILED = 7,         // DM policy fetch failed.
+    STATUS_VALIDATION_FAILED = 8,           // Policy validation failed.
+    STATUS_LOCK_ERROR = 9,                  // Cryptohome failed to lock the
+                                            // device.
+    STATUS_LOCK_TIMEOUT = 10,               // Timeout while waiting for the
+                                            // lock.
+    STATUS_LOCK_WRONG_USER = 11,            // Locked to different domain.
+    STATUS_STORE_ERROR = 12,                // Failed to store the policy.
+    STATUS_STORE_TOKEN_AND_ID_FAILED = 13,  // Failed to store DM token and
+                                            // device ID.
   };
 
   // Helpers for constructing errors for relevant cases.
