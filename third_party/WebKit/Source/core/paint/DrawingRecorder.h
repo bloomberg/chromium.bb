@@ -1,0 +1,43 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef DrawingRecorder_h
+#define DrawingRecorder_h
+
+#include "core/paint/ViewDisplayList.h"
+#include "platform/graphics/DisplayList.h"
+
+namespace blink {
+
+class DrawingDisplayItem : public DisplayItem {
+public:
+    DrawingDisplayItem(PassRefPtr<SkPicture> picture, const FloatPoint& location, PaintPhase phase, RenderObject* renderer)
+        : DisplayItem(renderer, (Type)phase), m_picture(picture), m_location(location) { }
+
+    PassRefPtr<SkPicture> picture() const { return m_picture; }
+    const FloatPoint& location() const { return m_location; }
+
+private:
+    RefPtr<SkPicture> m_picture;
+    FloatPoint m_location;
+
+    virtual void replay(GraphicsContext*);
+};
+
+
+class DrawingRecorder {
+public:
+    explicit DrawingRecorder(GraphicsContext*, RenderObject*, PaintPhase, const FloatRect&);
+    ~DrawingRecorder();
+
+private:
+    GraphicsContext* m_context;
+    RenderObject* m_renderer;
+    PaintPhase m_phase;
+    FloatRect m_bounds;
+};
+
+} // namespace blink
+
+#endif // DrawingRecorder_h

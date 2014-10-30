@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
-#include "core/paint/ViewDisplayList.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTheme.h"

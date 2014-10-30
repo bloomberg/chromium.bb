@@ -5,86 +5,10 @@
 #include "config.h"
 #include "core/paint/ViewDisplayList.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderView.h"
 #include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/DisplayList.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
-
-void DrawingDisplayItem::replay(GraphicsContext* context)
-{
-    context->drawPicture(m_picture.get(), m_bounds.location());
-}
-
-void ClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->save();
-    context->clip(m_clipRect);
-    for (RoundedRect roundedRect : m_roundedRectClips)
-        context->clipRoundedRect(roundedRect);
-}
-
-void EndClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->restore();
-}
-
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
-    : m_context(context)
-    , m_renderer(renderer)
-    , m_phase(phase)
-{
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_context->beginRecording(clip);
-}
-
-DrawingRecorder::~DrawingRecorder()
-{
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return;
-
-    RefPtr<DisplayList> displayList = m_context->endRecording();
-    OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(displayList->picture(), displayList->bounds(), m_phase, m_renderer));
-    ASSERT(m_renderer->view());
-    m_renderer->view()->viewDisplayList().add(drawingItem.release());
-}
-
-ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect)
-    : m_graphicsContext(graphicsContext)
-    , m_renderLayer(renderLayer)
-{
-    IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        graphicsContext->save();
-        graphicsContext->clip(snappedClipRect);
-    } else {
-        m_clipDisplayItem = new ClipDisplayItem(0, renderLayer, clipType, snappedClipRect);
-        m_renderLayer->renderer()->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
-    }
-}
-
-void ClipRecorder::addRoundedRectClip(const RoundedRect& roundedRect)
-{
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_clipDisplayItem->roundedRectClips().append(roundedRect);
-    else
-        m_graphicsContext->clipRoundedRect(roundedRect);
-}
-
-ClipRecorder::~ClipRecorder()
-{
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem());
-        m_renderLayer->renderer()->view()->viewDisplayList().add(endClip.release());
-    } else {
-        m_graphicsContext->restore();
-    }
-}
 
 const PaintList& ViewDisplayList::paintList()
 {

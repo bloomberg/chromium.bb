@@ -6,15 +6,12 @@
 #define ViewDisplayList_h
 
 #include "core/rendering/PaintPhase.h"
-#include "platform/geometry/RoundedRect.h"
-#include "platform/graphics/DisplayList.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class ClipRect;
 class GraphicsContext;
 class RenderObject;
 class RenderLayer;
@@ -73,64 +70,6 @@ private:
         RenderObject* renderer;
         Type type;
     } m_id;
-};
-
-class ClipDisplayItem : public DisplayItem {
-public:
-    ClipDisplayItem(RenderObject* renderer, RenderLayer*, Type type, IntRect clipRect)
-        : DisplayItem(renderer, type), m_clipRect(clipRect) { }
-
-    Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
-
-private:
-    virtual void replay(GraphicsContext*) override;
-
-    IntRect m_clipRect;
-    Vector<RoundedRect> m_roundedRectClips;
-};
-
-class EndClipDisplayItem : public DisplayItem {
-public:
-    EndClipDisplayItem() : DisplayItem(0, EndClip) { }
-
-private:
-    virtual void replay(GraphicsContext*) override;
-};
-
-class DrawingDisplayItem : public DisplayItem {
-public:
-    DrawingDisplayItem(PassRefPtr<SkPicture> picture, const FloatRect& bounds, PaintPhase phase, RenderObject* renderer)
-        : DisplayItem(renderer, (Type)phase), m_picture(picture), m_bounds(bounds) { }
-
-private:
-    virtual void replay(GraphicsContext*) override;
-
-    RefPtr<SkPicture> m_picture;
-    FloatRect m_bounds;
-};
-
-class DrawingRecorder {
-public:
-    explicit DrawingRecorder(GraphicsContext*, RenderObject*, PaintPhase, const FloatRect&);
-    ~DrawingRecorder();
-
-private:
-    GraphicsContext* m_context;
-    RenderObject* m_renderer;
-    PaintPhase m_phase;
-};
-
-class ClipRecorder {
-public:
-    explicit ClipRecorder(RenderLayer*, GraphicsContext*, DisplayItem::Type, const ClipRect&);
-    void addRoundedRectClip(const RoundedRect&);
-
-    ~ClipRecorder();
-
-private:
-    ClipDisplayItem* m_clipDisplayItem;
-    GraphicsContext* m_graphicsContext;
-    RenderLayer* m_renderLayer;
 };
 
 typedef Vector<OwnPtr<DisplayItem> > PaintList;

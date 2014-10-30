@@ -5,7 +5,7 @@
 #ifndef LayerPainter_h
 #define LayerPainter_h
 
-#include "core/paint/ViewDisplayList.h"
+#include "core/paint/ClipRecorder.h"
 #include "core/rendering/LayerFragment.h"
 #include "core/rendering/LayerPaintingInfo.h"
 

@@ -6,7 +6,7 @@
 #include "core/paint/TablePainter.h"
 
 #include "core/paint/BoxPainter.h"
-#include "core/paint/ViewDisplayList.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxClipper.h"

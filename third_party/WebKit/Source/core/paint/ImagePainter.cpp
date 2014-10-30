@@ -14,7 +14,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/ViewDisplayList.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderReplaced.h"

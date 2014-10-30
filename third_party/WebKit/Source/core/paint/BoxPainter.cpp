@@ -10,6 +10,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

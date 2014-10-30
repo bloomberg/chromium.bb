@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/LineBoxListPainter.h"
 
+#include "core/paint/DrawingRecorder.h"
 #include "core/paint/InlinePainter.h"
-#include "core/paint/ViewDisplayList.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxModelObject.h"
