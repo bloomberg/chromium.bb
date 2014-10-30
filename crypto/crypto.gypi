@@ -20,6 +20,7 @@
         'third_party/nss/chromium-prtypes.h',
         'third_party/nss/chromium-sha256.h',
         'third_party/nss/sha512.cc',
+        'wincrypt_shim.h',
       ],
     },
     'hmac_win64_related_sources': [ '<@(hmac_win64_related_sources)' ],

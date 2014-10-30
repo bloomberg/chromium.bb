@@ -4,7 +4,6 @@
 
 #include "components/os_crypt/ie7_password_win.h"
 
-#include <wincrypt.h>
 #include <string>
 #include <vector>
 
@@ -12,6 +11,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "crypto/wincrypt_shim.h"
 
 namespace {
 

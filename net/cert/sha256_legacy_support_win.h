@@ -6,8 +6,8 @@
 #define NET_CERT_SHA256_LEGACY_SUPPORT_WIN_H_
 
 #include <windows.h>
-#include <wincrypt.h>
 
+#include "crypto/wincrypt_shim.h"
 #include "net/base/net_export.h"
 
 namespace net {

@@ -20,11 +20,10 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#include <wincrypt.h>
+#include "crypto/wincrypt_shim.h"
 #elif defined(OS_MACOSX)
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecBase.h>
-
 #elif defined(USE_OPENSSL_CERTS)
 // Forward declaration; real one in <x509.h>
 typedef struct x509_st X509;

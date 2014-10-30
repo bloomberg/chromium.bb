@@ -191,7 +191,7 @@ bool CertSubjectCommonNameHasNull(PCCERT_CONTEXT cert) {
   DWORD name_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                           X509_NAME,
+                           WINCRYPT_X509_NAME,
                            cert->pCertInfo->Subject.pbData,
                            cert->pCertInfo->Subject.cbData,
                            CRYPT_DECODE_ALLOC_FLAG | CRYPT_DECODE_NOCOPY_FLAG,

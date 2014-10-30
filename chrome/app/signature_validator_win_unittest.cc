@@ -4,7 +4,6 @@
 
 #include <windows.h>
 #include <atlstr.h>
-#include <wincrypt.h>
 #include <wintrust.h>
 
 #include "base/base_paths.h"
@@ -19,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/app/signature_validator_win.h"
 #include "crypto/sha2.h"
+#include "crypto/wincrypt_shim.h"
 #include "net/cert/test_root_certs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

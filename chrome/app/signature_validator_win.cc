@@ -6,7 +6,6 @@
 
 #include <atlstr.h>
 #include <softpub.h>
-#include <wincrypt.h>
 #include <windows.h>
 #include <wintrust.h>
 
@@ -19,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "crypto/sha2.h"
+#include "crypto/wincrypt_shim.h"
 
 namespace {
 

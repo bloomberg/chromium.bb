@@ -16,7 +16,7 @@
 #include <vector>
 #elif defined(OS_WIN)
 #include <windows.h>
-#include <wincrypt.h>
+#include "crypto/wincrypt_shim.h"
 #elif defined(OS_MACOSX)
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecTrust.h>

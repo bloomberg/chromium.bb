@@ -5,7 +5,6 @@
 #include "net/test/spawned_test_server/local_test_server.h"
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -22,8 +21,6 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
 #include "net/test/python_utils.h"
-
-#pragma comment(lib, "crypt32.lib")
 
 namespace {
 

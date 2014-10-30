@@ -6,9 +6,9 @@
 #define CRYPTO_CAPI_UTIL_H_
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include "crypto/crypto_export.h"
+#include "crypto/wincrypt_shim.h"
 
 namespace crypto {
 

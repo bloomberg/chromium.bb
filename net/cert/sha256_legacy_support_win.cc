@@ -4,9 +4,6 @@
 
 #include "net/cert/sha256_legacy_support_win.h"
 
-#include <windows.h>
-#include <wincrypt.h>
-
 #include <cert.h>
 #include <keyhi.h>
 #include <secoid.h>

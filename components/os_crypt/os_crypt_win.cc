@@ -5,9 +5,9 @@
 #include "components/os_crypt/os_crypt.h"
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "crypto/wincrypt_shim.h"
 
 #pragma comment(lib, "crypt32.lib")
 

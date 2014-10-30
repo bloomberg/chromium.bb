@@ -5,13 +5,13 @@
 #include "net/cert/x509_cert_types.h"
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
+#include "crypto/wincrypt_shim.h"
 
 #pragma comment(lib, "crypt32.lib")
 
@@ -97,7 +97,7 @@ bool CertPrincipal::ParseDistinguishedName(const void* ber_name_data,
   DWORD name_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                           X509_NAME,
+                           WINCRYPT_X509_NAME,
                            reinterpret_cast<const BYTE*>(ber_name_data),
                            length,
                            CRYPT_DECODE_ALLOC_FLAG | CRYPT_DECODE_NOCOPY_FLAG,

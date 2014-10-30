@@ -4,9 +4,6 @@
 
 #include "net/cert/test_root_certs.h"
 
-#include <windows.h>
-#include <wincrypt.h>
-
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

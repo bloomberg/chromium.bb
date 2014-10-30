@@ -5,7 +5,6 @@
 #include "crypto/hmac.h"
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include <algorithm>
 #include <vector>
@@ -14,6 +13,7 @@
 #include "crypto/scoped_capi_types.h"
 #include "crypto/third_party/nss/chromium-blapi.h"
 #include "crypto/third_party/nss/chromium-sha256.h"
+#include "crypto/wincrypt_shim.h"
 
 namespace crypto {
 

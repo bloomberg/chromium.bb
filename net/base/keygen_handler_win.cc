@@ -5,10 +5,7 @@
 #include "net/base/keygen_handler.h"
 
 #include <windows.h>
-#include <wincrypt.h>
-#pragma comment(lib, "crypt32.lib")
 #include <rpc.h>
-#pragma comment(lib, "rpcrt4.lib")
 
 #include <list>
 #include <string>
@@ -22,7 +19,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
 #include "crypto/scoped_capi_types.h"
+#include "crypto/wincrypt_shim.h"
 
+#pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "rpcrt4.lib")
 
 namespace net {
 

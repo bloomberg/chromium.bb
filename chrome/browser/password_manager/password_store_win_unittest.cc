@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
-#include <wincrypt.h>
+
 #include <string>
 #include <vector>
 
@@ -26,6 +26,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/webdata/common/web_database_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "crypto/wincrypt_shim.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

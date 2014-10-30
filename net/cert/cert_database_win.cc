@@ -5,12 +5,13 @@
 #include "net/cert/cert_database.h"
 
 #include <windows.h>
-#include <wincrypt.h>
-#pragma comment(lib, "crypt32.lib")
 
 #include "base/observer_list_threadsafe.h"
+#include "crypto/wincrypt_shim.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+
+#pragma comment(lib, "crypt32.lib")
 
 namespace net {
 

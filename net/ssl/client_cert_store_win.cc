@@ -9,12 +9,12 @@
 
 #define SECURITY_WIN32  // Needs to be defined before including security.h
 #include <windows.h>
-#include <wincrypt.h>
 #include <security.h>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "crypto/scoped_capi_types.h"
+#include "crypto/wincrypt_shim.h"
 #include "net/cert/x509_util.h"
 
 namespace net {

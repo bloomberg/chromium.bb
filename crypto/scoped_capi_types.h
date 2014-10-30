@@ -6,11 +6,11 @@
 #define CRYPTO_SCOPED_CAPI_TYPES_H_
 
 #include <windows.h>
-#include <wincrypt.h>
 
 #include <algorithm>
 
 #include "base/logging.h"
+#include "crypto/wincrypt_shim.h"
 
 namespace crypto {
 
