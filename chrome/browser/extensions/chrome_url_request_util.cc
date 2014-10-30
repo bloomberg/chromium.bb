@@ -69,13 +69,29 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
             "422489 URLRequestResourceBundleJob::GetData"));
 
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422489 URLRequestResourceBundleJob::GetData 1"));
+
     *data = rb.GetRawDataResource(resource_id_).as_string();
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422489 URLRequestResourceBundleJob::GetData 2"));
 
     // Add the Content-Length header now that we know the resource length.
     response_info_.headers->AddHeader(
         base::StringPrintf("%s: %s",
                            net::HttpRequestHeaders::kContentLength,
                            base::UintToString(data->size()).c_str()));
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422489 URLRequestResourceBundleJob::GetData 3"));
 
     std::string* read_mime_type = new std::string;
     bool posted = base::PostTaskAndReplyWithResult(
