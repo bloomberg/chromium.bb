@@ -382,6 +382,12 @@ void FFmpegDemuxerStream::SetEndOfStream() {
 void FFmpegDemuxerStream::FlushBuffers() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(read_cb_.is_null()) << "There should be no pending read";
+
+  // H264 requires that we resend the header after flush.
+  // Reset its bitstream for converter to do so.
+  // This is related to chromium issue 140371 (http://crbug.com/140371).
+  ResetBitstreamConverter();
+
   buffer_queue_.Clear();
   end_of_stream_ = false;
   last_packet_timestamp_ = kNoTimestamp();
@@ -432,6 +438,16 @@ void FFmpegDemuxerStream::EnableBitstreamConverter() {
 #else
   NOTREACHED() << "Proprietary codecs not enabled.";
 #endif
+}
+
+void FFmpegDemuxerStream::ResetBitstreamConverter() {
+#if defined(USE_PROPRIETARY_CODECS)
+  if (!bitstream_converter_enabled_ || !bitstream_converter_)
+    return;
+
+  bitstream_converter_.reset(
+      new FFmpegH264ToAnnexBBitstreamConverter(stream_->codec));
+#endif  // defined(USE_PROPRIETARY_CODECS)
 }
 
 bool FFmpegDemuxerStream::SupportsConfigChanges() { return false; }

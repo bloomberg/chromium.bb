@@ -124,6 +124,9 @@ class FFmpegDemuxerStream : public DemuxerStream {
   static base::TimeDelta ConvertStreamTimestamp(const AVRational& time_base,
                                                 int64 timestamp);
 
+  // Resets any currently active bitstream converters.
+  void ResetBitstreamConverter();
+
   FFmpegDemuxer* demuxer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   AVStream* stream_;
