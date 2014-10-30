@@ -27,6 +27,8 @@ class HidService {
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
+  static void SetInstanceForTest(HidService* instance);
+
   // Enumerates and returns a list of device identifiers.
   virtual void GetDevices(std::vector<HidDeviceInfo>* devices);
 
