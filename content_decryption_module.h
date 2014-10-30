@@ -157,43 +157,10 @@ struct SubsampleEntry {
 };
 
 // Represents an input buffer to be decrypted (and possibly decoded). It does
-// not own any pointers in this struct.
-// Deprecated: New CDM implementations should use InputBuffer.
-struct InputBuffer_1 {
-  InputBuffer_1()
-      : data(NULL),
-        data_size(0),
-        data_offset(0),
-        key_id(NULL),
-        key_id_size(0),
-        iv(NULL),
-        iv_size(0),
-        subsamples(NULL),
-        num_subsamples(0),
-        timestamp(0) {}
-
-  const uint8_t* data;  // Pointer to the beginning of the input data.
-  uint32_t data_size;  // Size (in bytes) of |data|.
-
-  uint32_t data_offset;  // Number of bytes to be discarded before decryption.
-
-  const uint8_t* key_id;  // Key ID to identify the decryption key.
-  uint32_t key_id_size;  // Size (in bytes) of |key_id|.
-
-  const uint8_t* iv;  // Initialization vector.
-  uint32_t iv_size;  // Size (in bytes) of |iv|.
-
-  const struct SubsampleEntry* subsamples;
-  uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
-
-  int64_t timestamp;  // Presentation timestamp in microseconds.
-};
-
-// Represents an input buffer to be decrypted (and possibly decoded). It does
 // not own any pointers in this struct. If |iv_size| = 0, the data is
 // unencrypted.
-struct InputBuffer_2 {
-  InputBuffer_2()
+struct InputBuffer {
+  InputBuffer()
       : data(NULL),
         data_size(0),
         key_id(NULL),
@@ -218,8 +185,6 @@ struct InputBuffer_2 {
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
-
-typedef InputBuffer_2 InputBuffer;
 
 struct AudioDecoderConfig {
   enum AudioCodec {
