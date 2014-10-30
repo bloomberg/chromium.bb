@@ -55,7 +55,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsLayer.h"

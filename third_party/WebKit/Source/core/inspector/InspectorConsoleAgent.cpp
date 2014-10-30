@@ -46,7 +46,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"

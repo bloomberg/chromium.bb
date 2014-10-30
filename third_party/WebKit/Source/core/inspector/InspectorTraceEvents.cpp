@@ -21,7 +21,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "core/workers/WorkerThread.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
 #include "platform/TracedValue.h"
 #include "platform/graphics/GraphicsLayer.h"

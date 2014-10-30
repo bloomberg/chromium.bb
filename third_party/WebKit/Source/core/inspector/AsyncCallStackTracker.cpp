@@ -38,8 +38,8 @@
 #include "core/dom/Microtask.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
-#include "core/xml/XMLHttpRequest.h"
-#include "core/xml/XMLHttpRequestUpload.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include <v8.h>

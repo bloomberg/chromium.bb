@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "core/xml/XMLHttpRequestUpload.h"
+#include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 
 #include "core/events/Event.h"
-#include "core/xml/XMLHttpRequestProgressEvent.h"
+#include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 

@@ -27,8 +27,8 @@
 #define XMLHttpRequestUpload_h
 
 #include "core/events/EventListener.h"
-#include "core/xml/XMLHttpRequest.h"
-#include "core/xml/XMLHttpRequestEventTarget.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"

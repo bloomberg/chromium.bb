@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "core/xml/XMLHttpRequestProgressEventThrottle.h"
+#include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 
 #include "core/events/EventTarget.h"
-#include "core/xml/XMLHttpRequestProgressEvent.h"
+#include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 
 namespace blink {
 

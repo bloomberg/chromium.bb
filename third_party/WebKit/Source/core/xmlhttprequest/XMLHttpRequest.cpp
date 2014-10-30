@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/FetchInitiatorTypeNames.h"
@@ -53,8 +53,8 @@
 #include "core/streams/ReadableStreamImpl.h"
 #include "core/streams/Stream.h"
 #include "core/streams/UnderlyingSource.h"
-#include "core/xml/XMLHttpRequestProgressEvent.h"
-#include "core/xml/XMLHttpRequestUpload.h"
+#include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
+#include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -530,13 +530,12 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
 
     InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
     if (m_state == DONE && !m_error) {
-        {
-            TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRLoad", "data", InspectorXhrLoadEvent::data(executionContext(), this));
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
-            InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(executionContext(), this);
-            dispatchProgressEventFromSnapshot(EventTypeNames::load);
-            InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
-        }
+        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRLoad", "data", InspectorXhrLoadEvent::data(executionContext(), this));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(executionContext(), this);
+        dispatchProgressEventFromSnapshot(EventTypeNames::load);
+        InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
+
         dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
     }

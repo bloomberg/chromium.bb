@@ -47,7 +47,7 @@
 #include "core/streams/ReadableStream.h"
 #include "core/streams/Stream.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/xml/XMLHttpRequest.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 #include <v8.h>
 
 namespace blink {
