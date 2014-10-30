@@ -17,6 +17,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/browser/webui/webui_cast.h"
 #include "chromecast/common/chromecast_config.h"
+#include "chromecast/common/platform_client_auth.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "content/public/browser/browser_thread.h"
@@ -125,6 +126,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetCrashDumpManager(
       new breakpad::CrashDumpManager(crash_dumps_dir));
 #endif
+
+  if (!PlatformClientAuth::Initialize()) {
+    LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
+  }
 
   cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
 

@@ -162,6 +162,7 @@
         'common/chromecast_config.h',
         'common/chromecast_switches.cc',
         'common/chromecast_switches.h',
+        'common/platform_client_auth.h',
         'common/pref_names.cc',
         'common/pref_names.h',
         'renderer/cast_content_renderer_client.cc',
@@ -181,6 +182,7 @@
             'browser/metrics/platform_metrics_providers_simple.cc',
             'browser/webui/webui_cast_simple.cc',
             'common/chromecast_config_simple.cc',
+            'common/platform_client_auth_simple.cc',
             'renderer/key_systems_cast_simple.cc',
           ],
           'conditions': [
