@@ -11,13 +11,13 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/api/virtual_keyboard_private.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/api/virtual_keyboard_private.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
@@ -27,7 +27,9 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/keyboard_controller.h"
 
-namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
+namespace virtual_keyboard_private =
+    extensions::core_api::virtual_keyboard_private;
+
 typedef virtual_keyboard_private::OnTextInputBoxFocused::Context Context;
 
 namespace {

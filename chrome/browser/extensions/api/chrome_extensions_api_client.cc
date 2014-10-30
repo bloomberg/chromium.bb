@@ -16,11 +16,16 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #endif
 
 namespace extensions {
@@ -90,6 +95,15 @@ scoped_ptr<DevicePermissionsPrompt>
 ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
     content::WebContents* web_contents) const {
   return make_scoped_ptr(new ChromeDevicePermissionsPrompt(web_contents));
+}
+
+scoped_ptr<VirtualKeyboardDelegate>
+ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
+#if defined(OS_CHROMEOS)
+  return make_scoped_ptr(new ChromeVirtualKeyboardDelegate());
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace extensions

@@ -42,6 +42,7 @@
       'system_storage.idl',
       'test.json',
       'usb.idl',
+      'virtual_keyboard_private.json',
       'web_request.json',
       'web_view_internal.json',
     ],

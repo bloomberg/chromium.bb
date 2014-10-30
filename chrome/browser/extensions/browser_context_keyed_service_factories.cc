@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
-#include "chrome/browser/extensions/api/input/input.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
@@ -63,6 +62,7 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -112,9 +112,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::IdentityAPI::GetFactoryInstance();
   extensions::IdleManagerFactory::GetInstance();
   extensions::InstallTrackerFactory::GetInstance();
-#if defined(TOOLKIT_VIEWS)
-  extensions::InputAPI::GetFactoryInstance();
-#endif
 #if defined(OS_CHROMEOS)
   extensions::InputImeAPI::GetFactoryInstance();
   extensions::InputMethodAPI::GetFactoryInstance();
@@ -152,6 +149,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::VirtualKeyboardAPI::GetFactoryInstance();
+#endif
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebRequestAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();

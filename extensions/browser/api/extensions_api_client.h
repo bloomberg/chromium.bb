@@ -40,6 +40,7 @@ class RulesCacheDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
+class VirtualKeyboardDelegate;
 
 // Allows the embedder of the extensions module to customize its support for
 // API features. The embedder must create a single instance in the browser
@@ -101,6 +102,10 @@ class ExtensionsAPIClient {
   // Creates a DevicePermissionsPrompt appropriate for the embedder.
   virtual scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const;
+
+  // Returns a delegate for some of VirtualKeyboardAPI's behavior.
+  virtual scoped_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
+      const;
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

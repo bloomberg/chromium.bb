@@ -84,7 +84,6 @@
       'tabs.json',
       'terminal_private.json',
       'types.json',
-      'virtual_keyboard_private.json',
       'web_navigation.json',
       # Despite the name, this API does not rely on any
       # WebRTC-specific bits and as such does not belong in

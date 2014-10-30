@@ -39,6 +39,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       RulesCacheDelegate* cache_delegate) const override;
   scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const override;
+  scoped_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
+      const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);

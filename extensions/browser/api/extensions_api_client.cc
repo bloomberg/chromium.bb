@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
@@ -72,6 +73,11 @@ ExtensionsAPIClient::CreateContentRulesRegistry(
 scoped_ptr<DevicePermissionsPrompt>
 ExtensionsAPIClient::CreateDevicePermissionsPrompt(
     content::WebContents* web_contents) const {
+  return nullptr;
+}
+
+scoped_ptr<VirtualKeyboardDelegate>
+ExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
   return nullptr;
 }
 

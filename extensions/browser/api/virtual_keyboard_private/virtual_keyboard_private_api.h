@@ -1,9 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
-#define CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
+#ifndef EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_PRIVATE_API_H_
+#define EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_PRIVATE_API_H_
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -42,9 +42,8 @@ class VirtualKeyboardPrivateMoveCursorFunction : public SyncExtensionFunction {
 class VirtualKeyboardPrivateSendKeyEventFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "virtualKeyboardPrivate.sendKeyEvent",
-      VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.sendKeyEvent",
+                             VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
 
  protected:
   ~VirtualKeyboardPrivateSendKeyEventFunction() override {}
@@ -56,9 +55,8 @@ class VirtualKeyboardPrivateSendKeyEventFunction
 class VirtualKeyboardPrivateHideKeyboardFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "virtualKeyboardPrivate.hideKeyboard",
-      VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.hideKeyboard",
+                             VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
 
  protected:
   ~VirtualKeyboardPrivateHideKeyboardFunction() override {}
@@ -70,9 +68,8 @@ class VirtualKeyboardPrivateHideKeyboardFunction
 class VirtualKeyboardPrivateLockKeyboardFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "virtualKeyboardPrivate.lockKeyboard",
-      VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.lockKeyboard",
+                             VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD);
 
  protected:
   ~VirtualKeyboardPrivateLockKeyboardFunction() override {}
@@ -84,9 +81,8 @@ class VirtualKeyboardPrivateLockKeyboardFunction
 class VirtualKeyboardPrivateKeyboardLoadedFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "virtualKeyboardPrivate.keyboardLoaded",
-      VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.keyboardLoaded",
+                             VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED);
 
  protected:
   ~VirtualKeyboardPrivateKeyboardLoadedFunction() override {}
@@ -98,9 +94,8 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
 class VirtualKeyboardPrivateGetKeyboardConfigFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "virtualKeyboardPrivate.getKeyboardConfig",
-      VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG);
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.getKeyboardConfig",
+                             VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG);
 
  protected:
   ~VirtualKeyboardPrivateGetKeyboardConfigFunction() override {}
@@ -122,25 +117,31 @@ class VirtualKeyboardPrivateOpenSettingsFunction
   bool RunSync() override;
 };
 
+class VirtualKeyboardDelegate;
 
-class InputAPI : public BrowserContextKeyedAPI {
+class VirtualKeyboardAPI : public BrowserContextKeyedAPI {
  public:
-  explicit InputAPI(content::BrowserContext* context);
-  ~InputAPI() override;
+  explicit VirtualKeyboardAPI(content::BrowserContext* context);
+  ~VirtualKeyboardAPI() override;
 
   // BrowserContextKeyedAPI implementation.
-  static BrowserContextKeyedAPIFactory<InputAPI>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>*
+  GetFactoryInstance();
+
+  VirtualKeyboardDelegate* delegate() { return delegate_.get(); }
 
  private:
-  friend class BrowserContextKeyedAPIFactory<InputAPI>;
+  friend class BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>;
 
   // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "InputAPI";
-  }
-  static const bool kServiceIsNULLWhileTesting = true;
+  static const char* service_name() { return "VirtualKeyboardAPI"; }
+
+  // Require accces to delegate while incognito or during login.
+  static const bool kServiceHasOwnInstanceInIncognito = true;
+
+  scoped_ptr<VirtualKeyboardDelegate> delegate_;
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_INPUT_INPUT_H_
+#endif  // EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_PRIVATE_API_H_
