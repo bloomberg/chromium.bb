@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/public/interfaces/application/service_provider.mojom";
-import "mojo/services/public/interfaces/input_events/input_events.mojom";
+import "mojo/public/interfaces/application/service_provider.mojom"
+import "mojo/services/public/interfaces/input_events/input_events.mojom"
 
 module mojo {
 
@@ -11,6 +11,28 @@ interface WindowManager {
   // Requests the WindowManager to embed the app for |url| at an appropriate
   // View. See ViewManger::Embed() for details on |service_provider|.
   Embed(string url, ServiceProvider&? service_provider);
+};
+
+// WindowManagerInternalService provides high level window management policies
+// and is used by the ViewManager. This interface is marked as internal as only
+// the view manager is allowed to connect to this.
+[Client=WindowManagerInternalClient]
+interface WindowManagerInternalService {
+  // Called when an input event is received from the native system. It's
+  // expected that when this is received the WindowManagerInternalService will
+  // call back to WindowManagerInternalServieClient will call
+  // DispatchInputEventToView().
+  // TODO(sky): nuke this and instead have an interface specifically for
+  // dispatching events in the NativeViewportService.
+  OnViewInputEvent(mojo.Event event);
+};
+
+// ViewManager provides this interface for functionality only exposed to the
+// WindowManagerInternalServie.
+[Client=WindowManagerInternalService]
+interface WindowManagerInternalClient {
+  // Dispatches the specified input event to the specified view.
+  DispatchInputEventToView(uint32 view_id, mojo.Event event);
 };
 
 }

@@ -190,10 +190,19 @@ public class MessageHeader {
             return false;
 
         MessageHeader other = (MessageHeader) object;
-        return (BindingsHelper.equals(mDataHeader, other.mDataHeader)
-                && mFlags == other.mFlags
-                && mRequestId == other.mRequestId
-                && mType == other.mType);
+        if (mDataHeader == null) {
+            if (other.mDataHeader != null) {
+                return false;
+            }
+        } else {
+            if (!mDataHeader.equals(other.mDataHeader)) {
+                return false;
+            }
+        }
+
+        return (mFlags == other.mFlags &&
+                mRequestId == other.mRequestId &&
+                mType == other.mType);
     }
 
     /**

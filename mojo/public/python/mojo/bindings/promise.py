@@ -8,8 +8,6 @@ Promise used by the python bindings.
 The API is following the ECMAScript 6 API for promises.
 """
 
-import sys
-
 
 class Promise(object):
   """The promise object."""
@@ -35,12 +33,8 @@ class Promise(object):
     self._onRejected = []
     self._state = Promise.STATE_PENDING
     self._result = None
-    try:
+    if generator_function:
       generator_function(self._Resolve, self._Reject)
-    except Exception as e:
-      # Adding traceback similarly to python 3.0 (pep-3134)
-      e.__traceback__ = sys.exc_info()[2]
-      self._Reject(e)
 
   @staticmethod
   def Resolve(value):
@@ -190,7 +184,5 @@ def _Delegate(resolve, reject, action):
       else:
         resolve(x)
     except Exception as e:
-      # Adding traceback similarly to python 3.0 (pep-3134)
-      e.__traceback__ = sys.exc_info()[2]
       reject(e)
   return _Run

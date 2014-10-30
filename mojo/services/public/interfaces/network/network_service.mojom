@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/services/public/interfaces/network/cookie_store.mojom";
-import "mojo/services/public/interfaces/network/net_address.mojom";
-import "mojo/services/public/interfaces/network/network_error.mojom";
-import "mojo/services/public/interfaces/network/tcp_bound_socket.mojom";
-import "mojo/services/public/interfaces/network/tcp_connected_socket.mojom";
-import "mojo/services/public/interfaces/network/udp_socket.mojom";
-import "mojo/services/public/interfaces/network/url_loader.mojom";
-import "mojo/services/public/interfaces/network/web_socket.mojom";
+import "mojo/services/public/interfaces/network/cookie_store.mojom"
+import "mojo/services/public/interfaces/network/net_address.mojom"
+import "mojo/services/public/interfaces/network/network_error.mojom"
+import "mojo/services/public/interfaces/network/tcp_bound_socket.mojom"
+import "mojo/services/public/interfaces/network/tcp_connected_socket.mojom"
+import "mojo/services/public/interfaces/network/udp_socket.mojom"
+import "mojo/services/public/interfaces/network/url_loader.mojom"
+import "mojo/services/public/interfaces/network/web_socket.mojom"
 
 module mojo {
 

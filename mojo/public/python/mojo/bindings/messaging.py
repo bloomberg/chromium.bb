@@ -6,7 +6,6 @@
 
 
 import struct
-import sys
 import weakref
 
 import mojo.bindings.serialization as serialization
@@ -19,12 +18,6 @@ import mojo.system as system
 NO_FLAG = 0
 MESSAGE_EXPECTS_RESPONSE_FLAG = 1 << 0
 MESSAGE_IS_RESPONSE_FLAG = 1 << 1
-
-
-class MessagingException(Exception):
-  def __init__(self, *args, **kwargs):
-    Exception.__init__(self, *args, **kwargs)
-    self.__traceback__ = sys.exc_info()[2]
 
 
 class MessageHeader(object):
@@ -124,10 +117,10 @@ class MessageHeader(object):
 class Message(object):
   """A message for a message pipe. This contains data and handles."""
 
-  def __init__(self, data=None, handles=None, header=None):
+  def __init__(self, data=None, handles=None):
     self.data = data
     self.handles = handles
-    self._header = header
+    self._header = None
     self._payload = None
 
   @property
@@ -258,7 +251,6 @@ class Connector(MessageReceiver):
     assert not self._cancellable
     if self._error_handler:
       self._error_handler.OnError(result)
-    self._handle.Close()
 
   def _RegisterAsyncWaiterForRead(self) :
     assert not self._cancellable
@@ -292,7 +284,7 @@ class Router(MessageReceiverWithResponder):
     self._responders = {}
     self._connector = Connector(handle)
     self._connector.SetIncomingMessageReceiver(
-        ForwardingMessageReceiver(_WeakCallback(self._HandleIncomingMessage)))
+        ForwardingMessageReceiver(self._HandleIncomingMessage))
 
   def Start(self):
     self._connector.Start()

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/services/public/interfaces/network/net_address.mojom";
-import "mojo/services/public/interfaces/network/network_error.mojom";
+import "mojo/services/public/interfaces/network/net_address.mojom"
+import "mojo/services/public/interfaces/network/network_error.mojom"
 
 module mojo {
 
