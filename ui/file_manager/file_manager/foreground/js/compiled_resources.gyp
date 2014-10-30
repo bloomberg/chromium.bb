@@ -106,6 +106,7 @@
           '../../../externs/chrome_echo_private.js',
           '../../../externs/chrome_file_browser_handler.js',
           '../../../externs/chrome_test.js',
+          '../../../externs/connection.js',
           '../../../externs/css_rule.js',
           '../../../externs/html_menu_item_element.js',
           '../../../externs/webview_tag.js',

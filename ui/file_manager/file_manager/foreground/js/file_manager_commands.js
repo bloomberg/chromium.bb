@@ -687,10 +687,16 @@ CommandHandler.COMMANDS_['volume-switch-9'] =
  * @type {Command}
  */
 CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
+  /**
+   * @param {Event} event
+   * @param {FileManager} fileManager
+   */
   execute: function(event, fileManager) {
     var pin = !event.command.checked;
     event.command.checked = pin;
     var entries = CommandUtil.getPinTargetEntries();
+    if (entries.length == 0)
+      return;
     var currentEntry;
     var error = false;
     var steps = {
@@ -735,6 +741,11 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
       }
     };
     steps.start();
+
+    var driveSyncHandler =
+        fileManager.backgroundPage.background.driveSyncHandler;
+    if (pin && driveSyncHandler.isSyncSuppressed())
+      driveSyncHandler.showDisabledMobileSyncNotification();
   },
 
   canExecute: function(event, fileManager) {

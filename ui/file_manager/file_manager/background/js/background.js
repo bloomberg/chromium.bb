@@ -67,10 +67,9 @@ function FileBrowserBackground() {
   /**
    * Drive sync handler.
    * @type {DriveSyncHandler}
-   * @private
    */
-  this.driveSyncHandler_ = new DriveSyncHandler(this.progressCenter);
-  this.driveSyncHandler_.addEventListener(
+  this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
+  this.driveSyncHandler.addEventListener(
       DriveSyncHandler.COMPLETED_EVENT,
       function() { this.tryClose(); }.bind(this));
 
@@ -162,7 +161,7 @@ FileBrowserBackground.prototype.ready = function(callback) {
 FileBrowserBackground.prototype.canClose = function() {
   // If the file operation is going, the background page cannot close.
   if (this.fileOperationManager.hasQueuedTasks() ||
-      this.driveSyncHandler_.syncing) {
+      this.driveSyncHandler.syncing) {
     this.lastTimeCanClose_ = null;
     return false;
   }

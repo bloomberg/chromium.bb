@@ -8,11 +8,14 @@
  *     progressing items.
  * @constructor
  * @extends {cr.EventTarget}
+ * @suppress {checkStructDictInheritance}
+ * @struct
  */
 function DriveSyncHandler(progressCenter) {
   /**
    * Progress center to submit the progressing item.
    * @type {ProgressCenter}
+   * @const
    * @private
    */
   this.progressCenter_ = progressCenter;
@@ -27,6 +30,7 @@ function DriveSyncHandler(progressCenter) {
   /**
    * Progress center item.
    * @type {ProgressCenterItem}
+   * @const
    * @private
    */
   this.item_ = new ProgressCenterItem();
@@ -40,8 +44,16 @@ function DriveSyncHandler(progressCenter) {
   this.syncing_ = false;
 
   /**
+   * Whether the sync is disabled on cellular network or not.
+   * @type {boolean}
+   * @private
+   */
+  this.cellularDisabled_ = false;
+
+  /**
    * Async queue.
    * @type {AsyncUtil.Queue}
+   * @const
    * @private
    */
   this.queue_ = new AsyncUtil.Queue();
@@ -51,6 +63,13 @@ function DriveSyncHandler(progressCenter) {
       this.onFileTransfersUpdated_.bind(this));
   chrome.fileManagerPrivate.onDriveSyncError.addListener(
       this.onDriveSyncError_.bind(this));
+  chrome.notifications.onButtonClicked.addListener(
+      this.onNotificationButtonClicked_.bind(this));
+  chrome.fileManagerPrivate.onPreferencesChanged.addListener(
+      this.onPreferencesChanged_.bind(this));
+
+  // Set initial values.
+  this.onPreferencesChanged_();
 }
 
 /**
@@ -67,7 +86,15 @@ DriveSyncHandler.COMPLETED_EVENT = 'completed';
  */
 DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX = 'drive-sync-error-';
 
-DriveSyncHandler.prototype = {
+/**
+ * Notification ID of the disabled mobile sync notification.
+ * @type {string}
+ * @private
+ * @const
+ */
+DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_ = 'disabled-mobile-sync';
+
+DriveSyncHandler.prototype = /** @struct */ {
   __proto__: cr.EventTarget.prototype,
 
   /**
@@ -76,6 +103,35 @@ DriveSyncHandler.prototype = {
   get syncing() {
     return this.syncing_;
   }
+};
+
+/**
+ * Returns whether the drive sync is currently suppressed or not.
+ * @private
+ * @return {boolean}
+ */
+DriveSyncHandler.prototype.isSyncSuppressed = function() {
+  return navigator.connection.type === 'cellular' &&
+      this.cellularDisabled_;
+};
+
+/**
+ * Shows the notification saying that the drive sync is disabled on cellular
+ * network.
+ */
+DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
+  chrome.notifications.create(
+      DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_,
+      {
+        type: 'basic',
+        title: chrome.runtime.getManifest().name,
+        message: str('DISABLED_MOBILE_SYNC_NOTIFICATION_MESSAGE'),
+        iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
+        buttons: [
+          {title: str('DISABLED_MOBILE_SYNC_NOTIFICATION_ENABLE_BUTTON')}
+        ]
+      },
+      function() {});
 };
 
 /**
@@ -181,5 +237,31 @@ DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
         break;
     }
     this.progressCenter_.updateItem(item);
+  }.bind(this));
+};
+
+/**
+ * Handles notification's button click.
+ * @param {string} notificationId Notification ID.
+ * @param {number} buttonIndex Index of the button.
+ * @private
+ */
+DriveSyncHandler.prototype.onNotificationButtonClicked_ = function(
+    notificationId, buttonIndex) {
+  if (notificationId !== DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_)
+    return;
+  chrome.notifications.clear(
+      DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_,
+      function() {});
+  chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
+};
+
+/**
+ * Handles preferences change.
+ * @private
+ */
+DriveSyncHandler.prototype.onPreferencesChanged_ = function() {
+  chrome.fileManagerPrivate.getPreferences(function(pref) {
+    this.cellularDisabled_ = pref.cellularDisabled;
   }.bind(this));
 };
