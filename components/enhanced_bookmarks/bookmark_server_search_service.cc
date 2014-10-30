@@ -12,6 +12,7 @@
 
 namespace {
 const char kSearchUrl[] = "https://www.google.com/stars/search";
+const int kSearchCacheMaxSize = 50;
 }  // namespace
 
 namespace enhanced_bookmarks {
@@ -24,7 +25,8 @@ BookmarkServerSearchService::BookmarkServerSearchService(
     : BookmarkServerService(request_context_getter,
                             token_service,
                             signin_manager,
-                            enhanced_bookmark_model) {
+                            enhanced_bookmark_model),
+      cache_(kSearchCacheMaxSize) {
 }
 
 BookmarkServerSearchService::~BookmarkServerSearchService() {
@@ -32,26 +34,34 @@ BookmarkServerSearchService::~BookmarkServerSearchService() {
 
 void BookmarkServerSearchService::Search(const std::string& query) {
   DCHECK(query.length());
+  if (current_query_ == query)
+    return;
+
+  // If result is already stored in cache, immediately notify observers.
+  if (cache_.Get(current_query_) != cache_.end()) {
+    Cancel();
+    Notify();
+    return;
+  }
   current_query_ = query;
   TriggerTokenRequest(true);
 }
 
-std::vector<const BookmarkNode*> BookmarkServerSearchService::ResultForQuery(
-    const std::string& query) {
+scoped_ptr<std::vector<const BookmarkNode*>>
+BookmarkServerSearchService::ResultForQuery(const std::string& query) {
   DCHECK(query.length());
-  std::vector<const BookmarkNode*> result;
+  scoped_ptr<std::vector<const BookmarkNode*>> result;
 
-  std::map<std::string, std::vector<std::string> >::iterator it =
-      searches_.find(query);
-  if (it == searches_.end())
+  const auto& it = cache_.Get(query);
+  if (it == cache_.end())
     return result;
 
-  for (std::vector<std::string>::iterator clip_it = it->second.begin();
-       clip_it != it->second.end();
-       ++clip_it) {
-    const BookmarkNode* node = BookmarkForRemoteId(*clip_it);
+  result.reset(new std::vector<const BookmarkNode*>());
+
+  for (const std::string& clip_id : it->second) {
+    const BookmarkNode* node = BookmarkForRemoteId(clip_id);
     if (node)
-      result.push_back(node);
+      result->push_back(node);
   }
   return result;
 }
@@ -80,38 +90,36 @@ bool BookmarkServerSearchService::ProcessResponse(const std::string& response,
     return false;  // Not formatted properly.
 
   std::vector<std::string> clip_ids;
-  for (google::protobuf::RepeatedPtrField<
-           image::collections::CorpusSearchResult_ClipResult>::const_iterator
-           it = response_proto.results().begin();
-       it != response_proto.results().end();
-       ++it) {
-    const std::string& clip_id = it->clip_id();
+  for (const image::collections::CorpusSearchResult_ClipResult& clip_result :
+       response_proto.results()) {
+    const std::string& clip_id = clip_result.clip_id();
     if (!clip_id.length())
       continue;
     clip_ids.push_back(clip_id);
   }
-  searches_[current_query_] = clip_ids;
+  cache_.Put(current_query_, clip_ids);
   current_query_.clear();
   return true;
 }
 
 void BookmarkServerSearchService::CleanAfterFailure() {
-  searches_.clear();
+  cache_.Clear();
+  current_query_.clear();
 }
 
 void BookmarkServerSearchService::EnhancedBookmarkAdded(
     const BookmarkNode* node) {
-  searches_.clear();
+  cache_.Clear();
 }
 
 void BookmarkServerSearchService::EnhancedBookmarkAllUserNodesRemoved() {
-  searches_.clear();
+  cache_.Clear();
 }
 
 void BookmarkServerSearchService::EnhancedBookmarkRemoteIdChanged(
     const BookmarkNode* node,
     const std::string& old_remote_id,
     const std::string& remote_id) {
-  searches_.clear();
+  cache_.Clear();
 }
 }  // namespace enhanced_bookmarks

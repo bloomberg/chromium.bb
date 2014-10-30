@@ -9,6 +9,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/enhanced_bookmarks/bookmark_server_search_service.h"
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
 
 namespace enhanced_bookmarks {
@@ -28,12 +29,12 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
       jobject obj,
       jlong id,
       jint type);
-
   void SetBookmarkDescription(JNIEnv* env,
                               jobject obj,
                               jlong id,
                               jint type,
                               jstring description);
+
   void GetBookmarksForFilter(JNIEnv* env,
                              jobject obj,
                              jstring filter,
@@ -60,16 +61,23 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
       jint index,
       jstring j_title,
       jstring j_url);
+  void SendSearchRequest(JNIEnv* env, jobject obj, jstring j_query);
+
+  base::android::ScopedJavaLocalRef<jobject> GetSearchResults(JNIEnv* env,
+                                                              jobject obj,
+                                                              jstring j_query);
+
   // BookmarkServerServiceObserver
-  // Called on changes to cluster data
+  // Called on changes to cluster data or search results are returned.
   virtual void OnChange(BookmarkServerService* service) override;
 
  private:
   bool IsEditable(const BookmarkNode* node) const;
 
   JavaObjectWeakGlobalRef weak_java_ref_;
-  EnhancedBookmarkModel* enhanced_bookmark_model_;
+  EnhancedBookmarkModel* enhanced_bookmark_model_; // weak
   BookmarkServerClusterService* cluster_service_;  // weak
+  scoped_ptr<BookmarkServerSearchService> search_service_;
   Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);
 };
