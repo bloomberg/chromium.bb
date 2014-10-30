@@ -10,4 +10,5 @@
     GarbageCollected,
 ] interface PushManager {
     [CallWith=ScriptState, ImplementedAs=registerPushMessaging] Promise register();
+    [CallWith=ScriptState] Promise hasPermission();
 };

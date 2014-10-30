@@ -16,6 +16,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
+#include "modules/push_messaging/PushPermissionCallback.h"
 #include "modules/push_messaging/PushRegistration.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
@@ -28,6 +29,8 @@ PushManager::PushManager()
 {
 }
 
+// FIXME: This call should be available from workers which will not have a Document object available.
+// See crbug.com/389194
 ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
 {
     ASSERT(scriptState->executionContext()->isDocument());
@@ -47,6 +50,30 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
     client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
     return promise;
+}
+
+// FIXME: This call should be available from workers which will not have a Document object available.
+// See crbug.com/389194
+ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
+{
+    ASSERT(scriptState->executionContext()->isDocument());
+
+    Document* document = toDocument(scriptState->executionContext());
+    if (!document->domWindow() || !document->page())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
+    blink::WebPushClient* client = PushController::clientFrom(document->page());
+    ASSERT(client);
+
+    // The currently implemented specification does not require a Service Worker to be present for the
+    // hasPermission() call to work, but it will become a requirement soon.
+    WebServiceWorkerProvider* serviceWorkerProvider = NavigatorServiceWorker::serviceWorker(*document->domWindow()->navigator())->provider();
+    if (!serviceWorkerProvider)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "No Service Worker installed for this document."));
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+
+    client->getPermissionStatus(new PushPermissionCallback(resolver), serviceWorkerProvider);
+    return resolver->promise();
 }
 
 } // namespace blink

@@ -10,6 +10,9 @@ description('Tests the Push API surface.');
 shouldBeTrue('!!navigator.push');
 shouldBeTrue('!!navigator.push.register');
 shouldBe('navigator.push.register().constructor', 'Promise');
+shouldBeTrue('!!navigator.push.hasPermission');
+shouldBe('navigator.push.hasPermission().constructor', 'Promise');
+
 </script>
 </body>
 </html>

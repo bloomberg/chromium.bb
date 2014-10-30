@@ -699,6 +699,8 @@
       'push_messaging/PushEvent.h',
       'push_messaging/PushManager.cpp',
       'push_messaging/PushManager.h',
+      'push_messaging/PushPermissionCallback.cpp',
+      'push_messaging/PushPermissionCallback.h',
       'push_messaging/PushRegistration.cpp',
       'push_messaging/PushRegistration.h',
       'push_messaging/ServiceWorkerGlobalScopePush.h',

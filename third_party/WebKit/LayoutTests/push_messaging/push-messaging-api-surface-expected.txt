@@ -6,6 +6,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS !!navigator.push is true
 PASS !!navigator.push.register is true
 PASS navigator.push.register().constructor is Promise
+PASS !!navigator.push.hasPermission is true
+PASS navigator.push.hasPermission().constructor is Promise
 PASS successfullyParsed is true
 
 TEST COMPLETE
