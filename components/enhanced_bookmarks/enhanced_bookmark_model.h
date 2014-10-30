@@ -149,6 +149,8 @@ class EnhancedBookmarkModel : public KeyedService,
                            int old_index,
                            const BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
+  void BookmarkNodeChanged(BookmarkModel* model,
+                           const BookmarkNode* node) override;
   void OnWillChangeBookmarkMetaInfo(BookmarkModel* model,
                                     const BookmarkNode* node) override;
   void BookmarkMetaInfoChanged(BookmarkModel* model,

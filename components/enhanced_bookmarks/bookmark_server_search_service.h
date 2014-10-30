@@ -55,6 +55,7 @@ class BookmarkServerSearchService : public BookmarkServerService {
   void EnhancedBookmarkModelLoaded() override{};
   void EnhancedBookmarkAdded(const BookmarkNode* node) override;
   void EnhancedBookmarkRemoved(const BookmarkNode* node) override{};
+  void EnhancedBookmarkNodeChanged(const BookmarkNode* node) override{};
   void EnhancedBookmarkAllUserNodesRemoved() override;
   void EnhancedBookmarkRemoteIdChanged(const BookmarkNode* node,
                                        const std::string& old_remote_id,

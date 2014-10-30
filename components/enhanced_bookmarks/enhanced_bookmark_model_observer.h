@@ -25,6 +25,9 @@ class EnhancedBookmarkModelObserver {
   // Called when a node is removed from the model.
   virtual void EnhancedBookmarkRemoved(const BookmarkNode* node) = 0;
 
+  // Called when a node has changed.
+  virtual void EnhancedBookmarkNodeChanged(const BookmarkNode* node) = 0;
+
   // Called when all user editable nodes are removed from the model.
   virtual void EnhancedBookmarkAllUserNodesRemoved() = 0;
 

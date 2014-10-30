@@ -198,6 +198,11 @@ void BookmarkServerClusterService::EnhancedBookmarkRemoved(
   // filtered in ClustersForBookmark() this is not strictly necessary.
 }
 
+void BookmarkServerClusterService::EnhancedBookmarkNodeChanged(
+    const BookmarkNode* node) {
+  // Nothing to do.
+}
+
 void BookmarkServerClusterService::EnhancedBookmarkAllUserNodesRemoved() {
   if (!cluster_data_.empty()) {
     ClusterMap empty;
