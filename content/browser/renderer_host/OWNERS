@@ -1,6 +1,9 @@
 # for *aura*
 per-file *aura*=sadrul@chromium.org
 
+# Windows.
+per-file *win*=ananta@chromium.org
+
 # for *mac*
 asvitkine@chromium.org
 
