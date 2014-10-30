@@ -28,8 +28,8 @@ namespace content {
 
 // This struct passes data about an imminent transition between threads.
 struct TransitionLayerData {
-  TransitionLayerData();
-  ~TransitionLayerData();
+  CONTENT_EXPORT TransitionLayerData();
+  CONTENT_EXPORT ~TransitionLayerData();
 
   std::string markup;
   std::string css_selector;
@@ -60,10 +60,11 @@ class TransitionRequestManager {
   // Returns whether the RenderFrameHost specified by the given IDs currently
   // has any pending transition request data. If so, we will have to delay the
   // response until the embedder resumes the request.
-  bool HasPendingTransitionRequest(int render_process_id,
-                                   int render_frame_id,
-                                   const GURL& request_url,
-                                   TransitionLayerData* transition_data);
+  CONTENT_EXPORT bool HasPendingTransitionRequest(
+      int render_process_id,
+      int render_frame_id,
+      const GURL& request_url,
+      TransitionLayerData* transition_data);
 
   // Adds pending request data for a transition navigation for the
   // RenderFrameHost specified by the given IDs.
@@ -79,8 +80,8 @@ class TransitionRequestManager {
       int render_process_id,
       int render_frame_id);
 
-  void ClearPendingTransitionRequestData(int render_process_id,
-                                         int render_frame_id);
+  CONTENT_EXPORT void ClearPendingTransitionRequestData(int render_process_id,
+                                                        int render_frame_id);
 
  private:
   class TransitionRequestData {

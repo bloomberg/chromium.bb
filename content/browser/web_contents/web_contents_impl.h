@@ -193,6 +193,10 @@ class CONTENT_EXPORT WebContentsImpl
   // have been removed.
   void RemoveAccessibilityMode(AccessibilityMode mode);
 
+  // Clear the navigation transition data when the user navigates back to Chrome
+  // from a native app.
+  void ClearNavigationTransitionData();
+
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;
   void SetDelegate(WebContentsDelegate* delegate) override;

@@ -126,7 +126,7 @@ public class TransitionTest extends ContentShellTestBase {
 
     /**
      * Tests that the listener does not receive DidDeferAfterResponseStarted if we specify that
-     * the transition is handled.
+     * the transition is not handled.
      */
     @SmallTest
     public void testDidDeferAfterResponseStartedNotCalled() throws Throwable {
@@ -142,6 +142,32 @@ public class TransitionTest extends ContentShellTestBase {
                 false);
         contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
 
+        loadUrl(contentViewCore.getWebContents().getNavigationController(),
+                testCallbackHelperContainer, new LoadUrlParams(URL_1));
+
+        assertFalse("didDeferAfterResponseStarted called.", delegate.getDidCallDefer());
+    }
+
+    /**
+     * Tests clearNavigationTransitionData(). The listener does not receive
+     * DidDeferAfterResponseStarted even if we specify that the transition is handled
+     * because the data is cleared before the navigation.
+     */
+    @SmallTest
+    public void testDidDeferAfterResponseStartedNotCalledWithoutData() throws Throwable {
+        ContentShellActivity activity = launchContentShellWithUrl(URL_1);
+        waitForActiveShellToBeDoneLoading();
+        ContentViewCore contentViewCore = activity.getActiveContentViewCore();
+        TestCallbackHelperContainer testCallbackHelperContainer =
+                new TestCallbackHelperContainer(contentViewCore);
+
+        contentViewCore.getWebContents().setHasPendingNavigationTransitionForTesting();
+        TestNavigationTransitionDelegate delegate = new TestNavigationTransitionDelegate(
+                contentViewCore.getWebContents(),
+                true);
+        contentViewCore.getWebContents().setNavigationTransitionDelegate(delegate);
+
+        contentViewCore.getWebContents().clearNavigationTransitionData();
         loadUrl(contentViewCore.getWebContents().getNavigationController(),
                 testCallbackHelperContainer, new LoadUrlParams(URL_1));
 

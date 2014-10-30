@@ -287,6 +287,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Resume navigation paused after receiving response headers.
   void ResumeResponseDeferredAtStart();
 
+  // Clear navigation transition data.
+  void ClearNavigationTransitionData();
+
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);
 

@@ -50,6 +50,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
   void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
   void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector);
+  void ClearNavigationTransitionData(JNIEnv* env, jobject jobj);
 
   // This method is invoked when the request is deferred immediately after
   // receiving response headers.

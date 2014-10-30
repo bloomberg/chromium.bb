@@ -187,6 +187,14 @@ import org.chromium.content_public.browser.WebContents;
         nativeBeginExitTransition(mNativeWebContentsAndroid, cssSelector);
     }
 
+    /**
+     * Clear the navigation transition data.
+     */
+    @Override
+    public void clearNavigationTransitionData() {
+        nativeClearNavigationTransitionData(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private void didDeferAfterResponseStarted(String markup, String cssSelector,
             String enteringColor) {
@@ -263,6 +271,7 @@ import org.chromium.content_public.browser.WebContents;
             String markup);
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
             String cssSelector);
+    private native void nativeClearNavigationTransitionData(long nativeWebContentsAndroid);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
     private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameId,

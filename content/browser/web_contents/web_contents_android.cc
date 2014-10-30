@@ -174,6 +174,11 @@ void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
       ConvertJavaStringToUTF8(env, css_selector)));
 }
 
+void WebContentsAndroid::ClearNavigationTransitionData(JNIEnv* env,
+                                                       jobject jobj) {
+  static_cast<WebContentsImpl*>(web_contents_)->ClearNavigationTransitionData();
+}
+
 void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
   web_contents_->WasHidden();
 }

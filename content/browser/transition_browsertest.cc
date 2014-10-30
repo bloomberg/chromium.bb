@@ -43,7 +43,8 @@ class TransitionBrowserTestObserver
       : WebContentsObserver(web_contents),
         request_(NULL),
         did_defer_response_(false),
-        is_transition_request_(false) {
+        is_transition_request_(false),
+        did_clear_data_(false) {
   }
 
   void RequestBeginning(net::URLRequest* request,
@@ -79,16 +80,31 @@ class TransitionBrowserTestObserver
     did_defer_response_ = info->cross_site_handler()->did_defer_for_testing();
   }
 
+  void RequestComplete(net::URLRequest* url_request) override {
+    if (is_transition_request_) {
+      ResourceRequestInfoImpl* info =
+          ResourceRequestInfoImpl::ForRequest(request_);
+      TransitionLayerData transition_data;
+      did_clear_data_ = !TransitionRequestManager::GetInstance(
+          )->HasPendingTransitionRequest(info->GetChildID(),
+                                         info->GetRenderFrameID(),
+                                         request_->url(),
+                                         &transition_data);
+    }
+  }
+
   void set_pending_transition_request(bool is_transition_request) {
     is_transition_request_ = is_transition_request;
   }
 
   bool did_defer_response() const { return did_defer_response_; }
+  bool did_clear_data() const { return did_clear_data_; }
 
  private:
   net::URLRequest* request_;
   bool did_defer_response_;
   bool is_transition_request_;
+  bool did_clear_data_;
 };
 
 // This tests that normal navigations don't defer at first response.
@@ -154,6 +170,22 @@ IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
       transition_web_contents->GetRenderProcessHost()->GetID();
 
   EXPECT_EQ(outgoing_process_id, transition_process_id);
+}
+
+// This tests that the transition data is cleared after the transition.
+IN_PROC_BROWSER_TEST_F(TransitionBrowserTest,
+                       TransitionNavigationDataIsCleared) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  scoped_ptr<TransitionBrowserTestObserver> observer(
+      new TransitionBrowserTestObserver(shell()->web_contents()));
+
+  ResourceDispatcherHost::Get()->SetDelegate(observer.get());
+  observer->set_pending_transition_request(true);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  WaitForLoadStop(shell()->web_contents());
+
+  EXPECT_TRUE(observer->did_clear_data());
 }
 
 }  // namespace content

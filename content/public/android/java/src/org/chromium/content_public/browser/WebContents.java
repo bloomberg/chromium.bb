@@ -152,6 +152,11 @@ public interface WebContents {
     public void beginExitTransition(String cssSelector);
 
     /**
+     * Clear the navigation transition data.
+     */
+    public void clearNavigationTransitionData();
+
+    /**
      * Injects the passed Javascript code in the current page and evaluates it.
      * If a result is required, pass in a callback.
      *

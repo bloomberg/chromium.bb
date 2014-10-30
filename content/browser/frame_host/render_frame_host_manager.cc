@@ -413,6 +413,10 @@ void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
   response_started_id_.reset();
 }
 
+void RenderFrameHostManager::ClearNavigationTransitionData() {
+  render_frame_host_->ClearPendingTransitionRequestData();
+}
+
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host) {
   if (!cross_navigation_pending_) {
