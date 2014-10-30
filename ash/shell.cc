@@ -118,7 +118,6 @@
 #if defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/touch/touch_transformer_controller.h"
 #include "ui/gfx/x/x11_types.h"
 #endif  // defined(USE_X11)
 #include "ash/ash_constants.h"
@@ -135,6 +134,7 @@
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/touch/touch_transformer_controller.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
@@ -784,9 +784,9 @@ Shell::~Shell() {
   desktop_background_controller_.reset();
   mouse_cursor_filter_.reset();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   touch_transformer_controller_.reset();
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#endif  // defined(OS_CHROMEOS)
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
@@ -1021,14 +1021,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   logout_confirmation_controller_.reset(new LogoutConfirmationController(
       base::Bind(&SystemTrayDelegate::SignOut,
                  base::Unretained(system_tray_delegate_.get()))));
-#endif
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
   // Create TouchTransformerController before DisplayController::InitDisplays()
   // since TouchTransformerController listens on
   // DisplayController::Observer::OnDisplaysInitialized().
   touch_transformer_controller_.reset(new TouchTransformerController());
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#endif  // defined(OS_CHROMEOS)
 
   display_controller_->InitDisplays();
 

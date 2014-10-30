@@ -14,14 +14,30 @@
 namespace ash {
 
 namespace {
+
 DisplayInfo CreateDisplayInfo(int64 id,
                               unsigned int touch_device_id,
                               const gfx::Rect& bounds) {
   DisplayInfo info(id, std::string(), false);
   info.SetBounds(bounds);
   info.set_touch_device_id(touch_device_id);
+
+  // Create a default mode.
+  std::vector<DisplayMode> default_modes(
+      1, DisplayMode(bounds.size(), 60, false, true));
+  info.set_display_modes(default_modes);
+
   return info;
 }
+
+ui::TouchscreenDevice CreateTouchscreenDevice(unsigned int id,
+                                              const gfx::Size& size) {
+  return ui::TouchscreenDevice(id,
+                               ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
+                               std::string(),
+                               size);
+}
+
 }  //  namespace
 
 typedef test::AshTestBase TouchTransformerControllerTest;
@@ -32,6 +48,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModeLetterboxing) {
   // mode.
   DisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
+  internal_display_info.set_is_aspect_preserving_scaling(true);
   std::vector<DisplayMode> internal_modes;
   internal_modes.push_back(
       DisplayMode(gfx::Size(2560, 1700), 60, false, true));
@@ -42,21 +59,32 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModeLetterboxing) {
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 0, 1920, 1200));
 
+  gfx::Size fb_size(1920, 1200);
+
+  // Create the touchscreens with the same size as the framebuffer so we can
+  // share the tests between Ozone & X11.
+  ui::TouchscreenDevice internal_touchscreen =
+      CreateTouchscreenDevice(10, fb_size);
+  ui::TouchscreenDevice external_touchscreen =
+      CreateTouchscreenDevice(11, fb_size);
+
   TouchTransformerController* tt_controller =
       Shell::GetInstance()->touch_transformer_controller();
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
-  tt_controller->force_compute_mirror_mode_touch_transformer_ = true;
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(),
       internal_display_info.touch_device_id(),
-      tt_controller->GetMirrorModeTouchTransformer(internal_display_info));
+      tt_controller->GetTouchTransform(internal_display_info,
+                                       internal_touchscreen,
+                                       fb_size));
 
-  tt_controller->force_compute_mirror_mode_touch_transformer_ = false;
   device_manager->UpdateTouchInfoForDisplay(
       external_display_info.id(),
       external_display_info.touch_device_id(),
-      tt_controller->GetMirrorModeTouchTransformer(external_display_info));
+      tt_controller->GetTouchTransform(external_display_info,
+                                       external_touchscreen,
+                                       fb_size));
 
   EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(10));
   EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(11));
@@ -93,6 +121,7 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModePillarboxing) {
   // mode.
   DisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1024, 768));
+  internal_display_info.set_is_aspect_preserving_scaling(true);
   std::vector<DisplayMode> internal_modes;
   internal_modes.push_back(
       DisplayMode(gfx::Size(1366, 768), 60, false, true));
@@ -103,21 +132,32 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerMirrorModePillarboxing) {
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11, gfx::Rect(0, 0, 1024, 768));
 
+  gfx::Size fb_size(1024, 768);
+
+  // Create the touchscreens with the same size as the framebuffer so we can
+  // share the tests between Ozone & X11.
+  ui::TouchscreenDevice internal_touchscreen =
+      CreateTouchscreenDevice(10, fb_size);
+  ui::TouchscreenDevice external_touchscreen =
+      CreateTouchscreenDevice(11, fb_size);
+
   TouchTransformerController* tt_controller =
       Shell::GetInstance()->touch_transformer_controller();
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
 
-  tt_controller->force_compute_mirror_mode_touch_transformer_ = true;
   device_manager->UpdateTouchInfoForDisplay(
       internal_display_info.id(),
       internal_display_info.touch_device_id(),
-      tt_controller->GetMirrorModeTouchTransformer(internal_display_info));
+      tt_controller->GetTouchTransform(internal_display_info,
+                                       internal_touchscreen,
+                                       fb_size));
 
-  tt_controller->force_compute_mirror_mode_touch_transformer_ = false;
   device_manager->UpdateTouchInfoForDisplay(
       external_display_info.id(),
       external_display_info.touch_device_id(),
-      tt_controller->GetMirrorModeTouchTransformer(external_display_info));
+      tt_controller->GetTouchTransform(external_display_info,
+                                       external_touchscreen,
+                                       fb_size));
 
   EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(10));
   EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(11));
@@ -159,6 +199,11 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
       CreateDisplayInfo(2, 6u, gfx::Rect(0, 828, 2560, 1600));
   gfx::Size fb_size(2560, 2428);
 
+  // Create the touchscreens with the same size as the framebuffer so we can
+  // share the tests between Ozone & X11.
+  ui::TouchscreenDevice touchscreen1 = CreateTouchscreenDevice(5, fb_size);
+  ui::TouchscreenDevice touchscreen2 = CreateTouchscreenDevice(6, fb_size);
+
   TouchTransformerController* tt_controller =
       Shell::GetInstance()->touch_transformer_controller();
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
@@ -166,12 +211,16 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
   device_manager->UpdateTouchInfoForDisplay(
       display1.id(),
       display1.touch_device_id(),
-      tt_controller->GetExtendedModeTouchTransformer(display1, fb_size));
+      tt_controller->GetTouchTransform(display1,
+                                       touchscreen1,
+                                       fb_size));
 
   device_manager->UpdateTouchInfoForDisplay(
       display2.id(),
       display2.touch_device_id(),
-      tt_controller->GetExtendedModeTouchTransformer(display2, fb_size));
+      tt_controller->GetTouchTransform(display2,
+                                       touchscreen2,
+                                       fb_size));
 
   EXPECT_EQ(1, device_manager->GetDisplayForTouchDevice(5));
   EXPECT_EQ(2, device_manager->GetDisplayForTouchDevice(6));
@@ -207,10 +256,8 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
 
 TEST_F(TouchTransformerControllerTest, TouchRadiusScale) {
   DisplayInfo display = CreateDisplayInfo(1, 5u, gfx::Rect(0, 0, 2560, 1600));
-  ui::TouchscreenDevice touch_device(5,
-                                     ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
-                                     std::string(),
-                                     gfx::Size(1001, 1001));
+  ui::TouchscreenDevice touch_device =
+      CreateTouchscreenDevice(5, gfx::Size(1001, 1001));
 
   TouchTransformerController* tt_controller =
       Shell::GetInstance()->touch_transformer_controller();

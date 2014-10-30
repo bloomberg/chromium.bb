@@ -62,83 +62,51 @@ double TouchTransformerController::GetTouchResolutionScale(
   return ratio;
 }
 
-// This function computes the extended mode TouchTransformer for
-// |touch_display|. The TouchTransformer maps the touch event position
-// from framebuffer size to the display size.
-gfx::Transform
-TouchTransformerController::GetExtendedModeTouchTransformer(
-    const DisplayInfo& touch_display, const gfx::Size& fb_size) const {
+gfx::Transform TouchTransformerController::GetTouchTransform(
+    const DisplayInfo& display,
+    const ui::TouchscreenDevice& touchscreen,
+    const gfx::Size& framebuffer_size) const {
+  gfx::SizeF current_size = display.bounds_in_native().size();
+  gfx::SizeF native_size = display.GetNativeModeSize();
+#if defined(USE_OZONE)
+  gfx::SizeF touch_area = touchscreen.size;
+#elif defined(USE_X11)
+  // On X11 touches are reported in the framebuffer coordinate space.
+  gfx::SizeF touch_area = framebuffer_size;
+#endif
+
   gfx::Transform ctm;
-  if (touch_display.touch_device_id() == 0u || fb_size.width() == 0.0 ||
-      fb_size.height() == 0.0)
+
+  if (current_size.IsEmpty() || native_size.IsEmpty() || touch_area.IsEmpty() ||
+      touchscreen.id == ui::InputDevice::kInvalidId)
     return ctm;
-  float width = touch_display.bounds_in_native().width();
-  float height = touch_display.bounds_in_native().height();
-  ctm.Scale(width / fb_size.width(), height / fb_size.height());
+
+  // Take care of panel fitting only if supported.
+  // If panel fitting is enabled then the aspect ratio is preserved and the
+  // display is scaled acordingly. In this case blank regions would be present
+  // in order to center the displayed area.
+  if (display.is_aspect_preserving_scaling()) {
+    float native_ar = native_size.width() / native_size.height();
+    float current_ar = current_size.width() / current_size.height();
+
+    if (current_ar > native_ar) {  // Letterboxing
+      ctm.Translate(
+          0, (1 - current_ar / native_ar) * 0.5 * current_size.height());
+      ctm.Scale(1, current_ar / native_ar);
+    } else if (native_ar > current_ar) {  // Pillarboxing
+      ctm.Translate(
+          (1 - native_ar / current_ar) * 0.5 * current_size.width(), 0);
+      ctm.Scale(native_ar / current_ar, 1);
+    }
+  }
+
+  // Take care of scaling between touchscreen area and display resolution.
+  ctm.Scale(current_size.width() / touch_area.width(),
+            current_size.height() / touch_area.height());
   return ctm;
 }
 
-bool TouchTransformerController::ShouldComputeMirrorModeTouchTransformer(
-    const DisplayInfo& touch_display) const {
-  if (force_compute_mirror_mode_touch_transformer_)
-    return true;
-
-  if (touch_display.touch_device_id() == 0u)
-    return false;
-
-  if (touch_display.size_in_pixel() == touch_display.GetNativeModeSize() ||
-      !touch_display.is_aspect_preserving_scaling()) {
-    return false;
-  }
-
-  return true;
-}
-
-// This function computes the mirror mode TouchTransformer for |touch_display|.
-// When internal monitor is applied a resolution that does not have
-// the same aspect ratio as its native resolution, there would be
-// blank regions in the letterboxing/pillarboxing mode.
-// The TouchTransformer will make sure the touch events on the blank region
-// have negative coordinates and touch events within the chrome region
-// have the correct positive coordinates.
-gfx::Transform TouchTransformerController::GetMirrorModeTouchTransformer(
-    const DisplayInfo& touch_display) const {
-  gfx::Transform ctm;
-  if (!ShouldComputeMirrorModeTouchTransformer(touch_display))
-    return ctm;
-
-  float mirror_width = touch_display.bounds_in_native().width();
-  float mirror_height = touch_display.bounds_in_native().height();
-  gfx::Size native_mode_size = touch_display.GetNativeModeSize();
-  float native_width = native_mode_size.width();
-  float native_height = native_mode_size.height();
-
-  if (native_height == 0.0 || mirror_height == 0.0 ||
-      native_width == 0.0 || mirror_width == 0.0)
-    return ctm;
-
-  float native_ar = native_width / native_height;
-  float mirror_ar = mirror_width / mirror_height;
-
-  if (mirror_ar > native_ar) {  // Letterboxing
-    // Translate before scale.
-    ctm.Translate(0.0, (1.0 - mirror_ar / native_ar) * 0.5 * mirror_height);
-    ctm.Scale(1.0, mirror_ar / native_ar);
-    return ctm;
-  }
-
-  if (native_ar > mirror_ar) {  // Pillarboxing
-    // Translate before scale.
-    ctm.Translate((1.0 - native_ar / mirror_ar) * 0.5 * mirror_width, 0.0);
-    ctm.Scale(native_ar / mirror_ar, 1.0);
-    return ctm;
-  }
-
-  return ctm;  // Same aspect ratio - return identity
-}
-
-TouchTransformerController::TouchTransformerController() :
-    force_compute_mirror_mode_touch_transformer_ (false) {
+TouchTransformerController::TouchTransformerController() {
   Shell::GetInstance()->display_controller()->AddObserver(this);
 }
 
@@ -196,6 +164,9 @@ void TouchTransformerController::UpdateTouchTransformer() const {
             FindTouchscreenById(single_display.touch_device_id())));
   }
 
+  gfx::Size fb_size =
+      Shell::GetInstance()->display_configurator()->framebuffer_size();
+
   if (display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
     // In mirror mode, both displays share the same root window so
     // both display ids are associated with the root window.
@@ -205,17 +176,19 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     device_manager->UpdateTouchInfoForDisplay(
         display1_id,
         display1.touch_device_id(),
-        GetMirrorModeTouchTransformer(display1));
+        GetTouchTransform(display1,
+                          FindTouchscreenById(display1.touch_device_id()),
+                          fb_size));
     device_manager->UpdateTouchInfoForDisplay(
         display2_id,
         display2.touch_device_id(),
-        GetMirrorModeTouchTransformer(display2));
+        GetTouchTransform(display2,
+                          FindTouchscreenById(display2.touch_device_id()),
+                          fb_size));
     return;
   }
 
   if (display_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED) {
-    gfx::Size fb_size =
-        Shell::GetInstance()->display_configurator()->framebuffer_size();
     // In extended but software mirroring mode, ther is only one X root window
     // that associates with both displays.
     if (GetDisplayManager()->software_mirroring_enabled())  {
@@ -230,11 +203,15 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       device_manager->UpdateTouchInfoForDisplay(
           display1_id,
           display1.touch_device_id(),
-          GetExtendedModeTouchTransformer(source_display, fb_size));
+          GetTouchTransform(source_display,
+                            FindTouchscreenById(display1.touch_device_id()),
+                            fb_size));
       device_manager->UpdateTouchInfoForDisplay(
           display2_id,
           display2.touch_device_id(),
-          GetExtendedModeTouchTransformer(source_display, fb_size));
+          GetTouchTransform(source_display,
+                            FindTouchscreenById(display2.touch_device_id()),
+                            fb_size));
     } else {
       // In actual extended mode, each display is associated with one root
       // window.
@@ -250,11 +227,15 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       device_manager->UpdateTouchInfoForDisplay(
           display1_id,
           display1.touch_device_id(),
-          GetExtendedModeTouchTransformer(display1, fb_size));
+          GetTouchTransform(display1,
+                            FindTouchscreenById(display1.touch_device_id()),
+                            fb_size));
       device_manager->UpdateTouchInfoForDisplay(
           display2_id,
           display2.touch_device_id(),
-          GetExtendedModeTouchTransformer(display2, fb_size));
+          GetTouchTransform(display2,
+                            FindTouchscreenById(display2.touch_device_id()),
+                            fb_size));
     }
     return;
   }
@@ -264,9 +245,12 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       display_controller->GetRootWindowForDisplayId(single_display.id());
   RootWindowController::ForWindow(root)->ash_host()->UpdateDisplayID(
       single_display.id(), gfx::Display::kInvalidDisplayID);
-  device_manager->UpdateTouchInfoForDisplay(single_display_id,
-                                            single_display.touch_device_id(),
-                                            gfx::Transform());
+  device_manager->UpdateTouchInfoForDisplay(
+      single_display_id,
+      single_display.touch_device_id(),
+      GetTouchTransform(single_display,
+                        FindTouchscreenById(single_display.touch_device_id()),
+                        fb_size));
 }
 
 void TouchTransformerController::OnDisplaysInitialized() {

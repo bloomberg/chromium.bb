@@ -954,8 +954,6 @@
             'accelerators/magnifier_key_scroller.h',
             'accelerators/spoken_feedback_toggler.cc',
             'accelerators/spoken_feedback_toggler.h',
-            'touch/touch_transformer_controller.cc',
-            'touch/touch_transformer_controller.h',
           ],
         }, { # else: use_x11==1
           'dependencies': [
@@ -1145,7 +1143,6 @@
           'sources!': [
             'accelerators/magnifier_key_scroller_unittest.cc',
             'accelerators/spoken_feedback_toggler_unittest.cc',
-            'touch/touch_transformer_controller_unittest.cc',
           ],
         }],
         ['chromeos==1', {

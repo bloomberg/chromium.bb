@@ -41,14 +41,19 @@ class ASH_EXPORT TouchTransformerController
   FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
                            TouchRadiusScale);
 
-  bool ShouldComputeMirrorModeTouchTransformer(
-      const DisplayInfo& touch_display) const ;
-
-  gfx::Transform GetMirrorModeTouchTransformer(
-      const DisplayInfo& touch_display) const;
-
-  gfx::Transform GetExtendedModeTouchTransformer(
-      const DisplayInfo& touch_display, const gfx::Size& fb_size) const;
+  // Returns a transform that will be used to change an event's location from
+  // the touchscreen's coordinate system into the display's coordinate system.
+  // The transform is also responsible for properly scaling the display if the
+  // display support panel fitting.
+  //
+  // On X11 events are reported in framebuffer coordinate space, so the
+  // |framebuffer_size| is used for scaling.
+  // On Ozone events are reported in the touchscreen's resolution, so
+  // |touchscreen| is used to determine the size and scale the event.
+  gfx::Transform GetTouchTransform(
+      const DisplayInfo& display,
+      const ui::TouchscreenDevice& touchscreen,
+      const gfx::Size& framebuffer_size) const;
 
   // Returns the scaling factor for the touch radius such that it scales the
   // radius from |touch_device|'s coordiante system to the |touch_display|'s
@@ -56,9 +61,6 @@ class ASH_EXPORT TouchTransformerController
   double GetTouchResolutionScale(
       const DisplayInfo& touch_display,
       const ui::TouchscreenDevice& touch_device) const;
-
-  // For unittests only.
-  bool force_compute_mirror_mode_touch_transformer_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTransformerController);
 };
