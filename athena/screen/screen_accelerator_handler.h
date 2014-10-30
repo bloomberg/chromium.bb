@@ -8,16 +8,12 @@
 
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace athena {
 
 // Handles screen related accelerators.
 class ScreenAcceleratorHandler : public AcceleratorHandler {
  public:
-  explicit ScreenAcceleratorHandler(aura::Window* root_window);
+  ScreenAcceleratorHandler();
 
  private:
   ~ScreenAcceleratorHandler() override;
@@ -26,8 +22,6 @@ class ScreenAcceleratorHandler : public AcceleratorHandler {
   virtual bool IsCommandEnabled(int command_id) const override;
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) override;
-
-  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenAcceleratorHandler);
 };

@@ -27,6 +27,7 @@ include_rules = [
   "+ui/native_theme",
   "+ui/views",
   "+ui/wm/core",
+  "+ui/wm/public",
 ]
 
 specific_include_rules = {

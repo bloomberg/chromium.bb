@@ -43,6 +43,8 @@
         'athena_renderer_pdf_helper.h',
         'athena_views_delegate.cc',
         'athena_views_delegate.h',
+        'debug_accelerator_handler.cc',
+        'debug_accelerator_handler.h',
         'placeholder.cc',
         'placeholder.h',
         'public/athena_launcher.h',

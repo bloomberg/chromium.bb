@@ -243,7 +243,7 @@ void ScreenManagerImpl::Init() {
 
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
-  accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
+  accelerator_handler_.reset(new ScreenAcceleratorHandler());
 
   aura::client::SetWindowTreeClient(root_window_, this);
 
