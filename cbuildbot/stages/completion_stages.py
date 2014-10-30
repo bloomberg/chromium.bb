@@ -681,9 +681,32 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         manifest_path=self._run.attrs.metadata.GetValue('local_manifest_path'))
 
     changes = set(self.sync_stage.pool.changes)
+    packages = self._GetPackagesUnderTest()
+
     irrelevant_changes = triage_lib.CategorizeChanges.GetIrrelevantChanges(
-        changes, self._run.config, self._build_root, manifest)
+        changes, self._run.config, self._build_root, manifest, packages)
     self.sync_stage.pool.RecordIrrelevantChanges(irrelevant_changes)
+
+  def _GetPackagesUnderTest(self):
+    """Get a list of packages used in this build.
+
+    Returns:
+      A set of packages used in this build. E.g.,
+      set(['chromeos-base/chromite-0.0.1-r1258']); returns None if
+      the information is missing for any  board in the current config.
+    """
+    packages_under_test = set()
+
+    for run in [self._run] + self._run.GetChildren():
+      for board in run.config.boards:
+        board_runattrs = run.GetBoardRunAttrs(board)
+        if not board_runattrs.HasParallel('packages_under_test'):
+          logging.warning('Packages under test were not recorded correctly')
+          return None
+        packages_under_test.update(
+            board_runattrs.GetParallel('packages_under_test'))
+
+    return packages_under_test
 
   def PerformStage(self):
     """Run CommitQueueCompletionStage."""

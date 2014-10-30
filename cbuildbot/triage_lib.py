@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import logging
 import os
+import pprint
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
@@ -106,7 +107,52 @@ class CategorizeChanges(object):
     return overlay_changes, irrelevant_overlay_changes
 
   @classmethod
-  def GetIrrelevantChanges(cls, changes, config, build_root, manifest):
+  def ClassifyWorkOnChanges(cls, changes, config, build_root,
+                            manifest, packages_under_test):
+    """Classifies WorkOn package changes in |changes|.
+
+    Args:
+      changes: The list or set of GerritPatch instances.
+      config: The cbuildbot config.
+      build_root: Path to the build root.
+      manifest: A ManifestCheckout instance representing our build directory.
+      packages_under_test: A list of packages names included in the build.
+        (e.g. ['chromeos-base/chromite-0.0.1-r1258']).
+
+    Returns:
+      A (workon_changes, irrelevant_workon_changes) tuple; workon_changes
+      is a subset of |changes| that have modified workon packages, and
+      irrelevant_workon_changes is a subset of workon_changes which are
+      irrelevant to |config|.
+    """
+    workon_changes = set()
+    irrelevant_workon_changes = set()
+
+    # Strip the version of the package in packages_under_test
+    cpv_list = [portage_util.SplitCPV(x) for x in packages_under_test]
+    cp_under_test = ['%s/%s' % (x.category, x.package) for x in cpv_list]
+
+    workon_dict = portage_util.BuildFullWorkonPackageDictionary(
+        build_root, config.overlays, manifest)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    logging.info('(project, branch) to workon package mapping:\n %s',
+                 pp.pformat(workon_dict))
+    logging.info('packages under test\n: %s', pp.pformat(cp_under_test))
+
+    for change in changes:
+      packages = workon_dict.get((change.project, change.tracking_branch))
+      if packages:
+        # The CL modifies a workon package.
+        workon_changes.add(change)
+        if all(x not in cp_under_test for x in packages):
+          irrelevant_workon_changes.add(change)
+
+    return workon_changes, irrelevant_workon_changes
+
+  @classmethod
+  def GetIrrelevantChanges(cls, changes, config, build_root, manifest,
+                           packages_under_test):
     """Determine changes irrelavant to build |config|.
 
     This method determine a set of changes that are irrelevant to the
@@ -118,6 +164,7 @@ class CategorizeChanges(object):
       config: The cbuildbot config.
       build_root: Path to the build root.
       manifest: A ManifestCheckout instance representing our build directory.
+      packages_under_test: A list of packages that were tested in this build.
 
     Returns:
       A subset of |changes| which are irrelevant to |config|.
@@ -125,15 +172,26 @@ class CategorizeChanges(object):
     untriaged_changes = set(changes)
     irrelevant_changes = set()
 
+    # TODO(yjhong): changes that modify projects in "buildtools"
+    # should always be considered relevant. Add the screening here.
+
     # Handles overlay changes.
     # ClassifyOverlayChanges only handles overlays visible to this
     # build. For example, an external build may not be able to view
-    # the internal overlays. In those cases, the changes have been
-    # filtered out by the previous step.
+    # the internal overlays. However, in that case, the internal changes
+    # have already been filtered out in CommitQueueSyncStage, and are
+    # not included in |changes|.
     overlay_changes, irrelevant_overlay_changes = cls.ClassifyOverlayChanges(
         untriaged_changes, config, build_root, manifest)
     untriaged_changes -= overlay_changes
     irrelevant_changes |= irrelevant_overlay_changes
+
+    # Handles workon package changes.
+    if packages_under_test is not None:
+      workon_changes, irrelevant_workon_changes = cls.ClassifyWorkOnChanges(
+          untriaged_changes, config, build_root, manifest, packages_under_test)
+      untriaged_changes -= workon_changes
+      irrelevant_changes |= irrelevant_workon_changes
 
     return irrelevant_changes
 

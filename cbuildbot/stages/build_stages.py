@@ -275,7 +275,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                                              packages_to_build,
                                              board=self._current_board))
     cros_build_lib.Info('Recording packages under test')
-    self.board_runattrs.SetParallel('packages_under_test', deps)
+    self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.

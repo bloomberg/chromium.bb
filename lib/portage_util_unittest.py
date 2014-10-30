@@ -57,8 +57,8 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     fake_ebuild_path = '/path/to/test_package/test_package-0.0.1-r1.ebuild'
     fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild._category, 'to')
-    self.assertEquals(fake_ebuild._pkgname, 'test_package')
+    self.assertEquals(fake_ebuild.category, 'to')
+    self.assertEquals(fake_ebuild.pkgname, 'test_package')
     self.assertEquals(fake_ebuild.version_no_rev, '0.0.1')
     self.assertEquals(fake_ebuild.current_revision, 1)
     self.assertEquals(fake_ebuild.version, '0.0.1-r1')
@@ -76,8 +76,8 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
     fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild._category, 'to')
-    self.assertEquals(fake_ebuild._pkgname, 'test_package')
+    self.assertEquals(fake_ebuild.category, 'to')
+    self.assertEquals(fake_ebuild.pkgname, 'test_package')
     self.assertEquals(fake_ebuild.version_no_rev, '9999')
     self.assertEquals(fake_ebuild.current_revision, 0)
     self.assertEquals(fake_ebuild.version, '9999')
