@@ -2,15 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.app.runtime.onLaunched.addListener(function() {
-  // TODO(kcarattini): Check if the app is already running. If so, bring it
-  // to focus rather than creating a new window.
+var appId = 'hotword_audio_verification_app';
 
-  // TODO(kcarattini): Don't show the window until the launch mode has been
-  // established.
+chrome.app.runtime.onLaunched.addListener(function() {
+  // We need to focus the window if it already exists, since it
+  // is created as 'hidden'.
+  //
+  // Note: If we ever launch on another platform, make sure that this works
+  // with window managers that support hiding (e.g. Cmd+h on an app window on
+  // Mac).
+  var appWindow = chrome.app.window.get(appId);
+  if (appWindow) {
+    appWindow.focus();
+    return;
+  }
+
   chrome.app.window.create('main.html', {
     'frame': 'none',
     'resizable': false,
+    'hidden': true,
+    'id': appId,
     'bounds': {
       'width': 800,
       'height': 600
