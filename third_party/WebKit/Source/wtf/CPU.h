@@ -180,4 +180,9 @@
 #define WTF_CPU_64BIT 1
 #endif
 
+/* This defines CPU(64BIT). */
+#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+#define WTF_CPU_64BIT 1
+#endif
+
 #endif /* WTF_CPU_h */
