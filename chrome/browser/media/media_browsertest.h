@@ -29,7 +29,7 @@ class MediaBrowserTest : public InProcessBrowserTest,
   static const char kPluginCrashed[];
 
   MediaBrowserTest();
-  virtual ~MediaBrowserTest();
+  ~MediaBrowserTest() override;
 
   // Runs a html page with a list of URL query parameters.
   // If http is true, the test starts a local http test server to load the test

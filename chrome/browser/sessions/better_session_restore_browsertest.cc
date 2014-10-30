@@ -583,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 class RestartTest : public BetterSessionRestoreTest {
  public:
   RestartTest() { }
-  virtual ~RestartTest() { }
+  ~RestartTest() override {}
+
  protected:
   void Restart() {
     // Simulate restarting the browser, but let the test exit peacefully.

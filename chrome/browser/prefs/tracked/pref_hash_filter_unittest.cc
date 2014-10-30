@@ -366,7 +366,7 @@ class PrefHashFilterTest
                          last_filter_on_load_modified_prefs_(false),
                          reset_recorded_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     base::StatisticsRecorder::Initialize();
     Reset();
   }

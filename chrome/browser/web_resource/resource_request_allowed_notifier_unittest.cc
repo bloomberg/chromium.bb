@@ -81,7 +81,7 @@ class ResourceRequestAllowedNotifierTest
     resource_request_allowed_notifier_.InitWithEulaAcceptNotifier(
         this, scoped_ptr<EulaAcceptedNotifier>(eula_notifier_));
   }
-  virtual ~ResourceRequestAllowedNotifierTest() { }
+  ~ResourceRequestAllowedNotifierTest() override {}
 
   bool was_notified() const { return was_notified_; }
 
@@ -128,7 +128,7 @@ class ResourceRequestAllowedNotifierTest
     SetNeedsEulaAcceptance(true);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Assume the test service has already requested permission, as all tests
     // just test that criteria changes notify the server.
     // Set default EULA state to done (not waiting and EULA accepted) to

@@ -28,7 +28,7 @@ class MockDesktopMediaListObserver : public DesktopMediaListObserver {
 class DesktopMediaListAshTest : public ash::test::AshTestBase {
  public:
   DesktopMediaListAshTest() {}
-  virtual ~DesktopMediaListAshTest() {}
+  ~DesktopMediaListAshTest() override {}
 
   void CreateList(int source_types) {
     list_.reset(new DesktopMediaListAsh(source_types));

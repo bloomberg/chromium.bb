@@ -390,7 +390,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     // Registry owns the delegate_ it handles deletion of that object.
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     CHECK(profile_->GetPrefs());
     SetUpRegistry(true);
@@ -398,9 +398,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
         CreateProtocolHandler("test", GURL("http://test.com/%s"));
   }
 
-  virtual void TearDown() {
-    TeadDownRegistry();
-  }
+  void TearDown() override { TeadDownRegistry(); }
 
   TestMessageLoop loop_;
 

@@ -27,7 +27,7 @@ static const char kTestUsername[] = "testuser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),

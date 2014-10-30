@@ -20,10 +20,10 @@ class InstantServiceObserver;
 class InstantUnitTestBase : public BrowserWithTestWindowTest {
  protected:
   InstantUnitTestBase();
-  virtual ~InstantUnitTestBase();
+  ~InstantUnitTestBase() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Query extraction is always enabled on Android and iOS.

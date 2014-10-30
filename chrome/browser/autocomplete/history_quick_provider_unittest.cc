@@ -136,8 +136,8 @@ class HistoryQuickProviderTest : public testing::Test {
         NULL, NULL, base::Closure());
   }
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   virtual void GetTestData(size_t* data_count, TestURLInfo** test_data);
 

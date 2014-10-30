@@ -145,9 +145,9 @@ class ThemeSyncableServiceTest : public testing::Test {
         file_thread_(content::BrowserThread::FILE, &loop_),
         fake_theme_service_(NULL) {}
 
-  virtual ~ThemeSyncableServiceTest() {}
+  ~ThemeSyncableServiceTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     profile_.reset(new TestingProfile);
     fake_theme_service_ = BuildForProfile(profile_.get());
     theme_sync_service_.reset(new ThemeSyncableService(profile_.get(),
@@ -156,7 +156,7 @@ class ThemeSyncableServiceTest : public testing::Test {
     SetUpExtension();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     profile_.reset();
     loop_.RunUntilIdle();
   }

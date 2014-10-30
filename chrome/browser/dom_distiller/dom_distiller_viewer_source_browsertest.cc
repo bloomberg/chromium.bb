@@ -80,7 +80,7 @@ ArticleEntry CreateEntry(std::string entry_id, std::string page_url) {
 class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
  public:
   DomDistillerViewerSourceBrowserTest() {}
-  virtual ~DomDistillerViewerSourceBrowserTest() {}
+  ~DomDistillerViewerSourceBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     database_model_ = new FakeDB<ArticleEntry>::EntryMap;

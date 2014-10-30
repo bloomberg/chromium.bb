@@ -19,7 +19,7 @@ namespace first_run {
 class FirstRunTest : public testing::Test {
  protected:
   FirstRunTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
-  virtual ~FirstRunTest() {}
+  ~FirstRunTest() override {}
 
  private:
   base::ScopedPathOverride user_data_dir_override_;

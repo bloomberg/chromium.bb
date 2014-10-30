@@ -54,7 +54,7 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
   enum ErrorPage { NORMAL_PAGE, ERROR_PAGE };
   enum ErrorType { DNS_ERROR, OTHER_ERROR };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");

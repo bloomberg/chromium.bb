@@ -47,7 +47,7 @@ class BackgroundApplicationListModelTest
     : public extensions::ExtensionServiceTestBase {
  public:
   BackgroundApplicationListModelTest() {}
-  virtual ~BackgroundApplicationListModelTest() {}
+  ~BackgroundApplicationListModelTest() override {}
 
  protected:
   void InitializeAndLoadEmptyExtensionService() {

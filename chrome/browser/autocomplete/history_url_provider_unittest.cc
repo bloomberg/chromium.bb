@@ -163,7 +163,7 @@ class HistoryURLProviderTest : public testing::Test,
     HistoryQuickProvider::set_disabled(true);
   }
 
-  virtual ~HistoryURLProviderTest() {
+  ~HistoryURLProviderTest() override {
     HistoryQuickProvider::set_disabled(false);
   }
 

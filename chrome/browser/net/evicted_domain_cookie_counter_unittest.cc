@@ -44,11 +44,11 @@ class EvictedDomainCookieCounterTest : public testing::Test {
   };
 
   EvictedDomainCookieCounterTest();
-  virtual ~EvictedDomainCookieCounterTest();
+  ~EvictedDomainCookieCounterTest() override;
 
   // testing::Test implementation.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Initialization that allows parameters to be specified.
   void InitCounter(size_t max_size, size_t purge_count);

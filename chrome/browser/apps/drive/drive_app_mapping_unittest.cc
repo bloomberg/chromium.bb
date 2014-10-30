@@ -12,10 +12,10 @@
 class DriveAppMappingTest : public testing::Test {
  public:
   DriveAppMappingTest() {}
-  virtual ~DriveAppMappingTest() {}
+  ~DriveAppMappingTest() override {}
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSyncable);
     DriveAppMapping::RegisterProfilePrefs(pref_service_->registry());
 

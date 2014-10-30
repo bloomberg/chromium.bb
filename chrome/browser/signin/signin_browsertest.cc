@@ -56,7 +56,7 @@ class SigninBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableWebBasedSignin);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     factory_.reset(new net::URLFetcherImplFactory());
     fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
     fake_factory_->SetFakeResponse(
@@ -69,7 +69,7 @@ class SigninBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (fake_factory_.get()) {
       fake_factory_->ClearFakeResponses();
       fake_factory_.reset();

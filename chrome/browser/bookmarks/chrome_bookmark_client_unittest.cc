@@ -30,9 +30,9 @@ using testing::_;
 class ChromeBookmarkClientTest : public testing::Test {
  public:
   ChromeBookmarkClientTest() : client_(NULL), model_(NULL) {}
-  virtual ~ChromeBookmarkClientTest() {}
+  ~ChromeBookmarkClientTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     prefs_ = profile_.GetTestingPrefService();
     ASSERT_FALSE(prefs_->HasPrefPath(bookmarks::prefs::kManagedBookmarks));
 
@@ -46,9 +46,7 @@ class ChromeBookmarkClientTest : public testing::Test {
     EXPECT_NE(-1, model_->root_node()->GetIndexOf(client_->managed_node()));
   }
 
-  virtual void TearDown() override {
-    model_->RemoveObserver(&observer_);
-  }
+  void TearDown() override { model_->RemoveObserver(&observer_); }
 
   void ResetModel() {
     profile_.CreateBookmarkModel(false);

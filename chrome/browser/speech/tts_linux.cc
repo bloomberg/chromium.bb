@@ -33,18 +33,17 @@ struct SPDChromeVoice {
 
 class TtsPlatformImplLinux : public TtsPlatformImpl {
  public:
-  virtual bool PlatformImplAvailable() override;
-  virtual bool Speak(
-      int utterance_id,
-      const std::string& utterance,
-      const std::string& lang,
-      const VoiceData& voice,
-      const UtteranceContinuousParameters& params) override;
-  virtual bool StopSpeaking() override;
-  virtual void Pause() override;
-  virtual void Resume() override;
-  virtual bool IsSpeaking() override;
-  virtual void GetVoices(std::vector<VoiceData>* out_voices) override;
+  bool PlatformImplAvailable() override;
+  bool Speak(int utterance_id,
+             const std::string& utterance,
+             const std::string& lang,
+             const VoiceData& voice,
+             const UtteranceContinuousParameters& params) override;
+  bool StopSpeaking() override;
+  void Pause() override;
+  void Resume() override;
+  bool IsSpeaking() override;
+  void GetVoices(std::vector<VoiceData>* out_voices) override;
 
   void OnSpeechEvent(SPDNotificationType type);
 
@@ -53,7 +52,7 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
 
  private:
   TtsPlatformImplLinux();
-  virtual ~TtsPlatformImplLinux();
+  ~TtsPlatformImplLinux() override;
 
   // Initiate the connection with the speech dispatcher.
   void Initialize();

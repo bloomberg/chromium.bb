@@ -40,7 +40,7 @@ class TestDriveAppRegistryObserver : public DriveAppRegistryObserver {
 
 class DriveAppRegistryTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 

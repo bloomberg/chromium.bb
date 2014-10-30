@@ -84,7 +84,7 @@ class ProxyPolicyTest : public testing::Test {
   ProxyPolicyTest()
       : command_line_(CommandLine::NO_PROGRAM) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
 
@@ -94,9 +94,7 @@ class ProxyPolicyTest : public testing::Test {
     provider_.Init();
   }
 
-  virtual void TearDown() override {
-    provider_.Shutdown();
-  }
+  void TearDown() override { provider_.Shutdown(); }
 
   scoped_ptr<PrefService> CreatePrefService(bool with_managed_policies) {
     PrefServiceMockFactory factory;

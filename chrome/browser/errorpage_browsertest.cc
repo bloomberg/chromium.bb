@@ -293,7 +293,7 @@ class ErrorPageTest : public InProcessBrowserTest {
   };
 
   ErrorPageTest() : link_doctor_interceptor_(NULL) {}
-  virtual ~ErrorPageTest() {}
+  ~ErrorPageTest() override {}
 
   // Navigates the active tab to a mock url created for the file at |file_path|.
   // Needed for StaleCacheStatus and StaleCacheStatusFailedCorrections tests.

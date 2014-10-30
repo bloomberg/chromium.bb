@@ -48,9 +48,9 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   GCMInvalidationBridgeTest()
       : connection_online_(false) {}
 
-  virtual ~GCMInvalidationBridgeTest() {}
+  ~GCMInvalidationBridgeTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);

@@ -14,7 +14,7 @@
 namespace policy {
 
 class JavascriptPolicyHandlerTest : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
           new JavascriptPolicyHandler));
   }

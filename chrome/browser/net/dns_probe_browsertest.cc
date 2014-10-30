@@ -429,7 +429,7 @@ void DnsProbeBrowserTestIOThreadHelper::StartDelayedProbes(
 class DnsProbeBrowserTest : public InProcessBrowserTest {
  public:
   DnsProbeBrowserTest();
-  virtual ~DnsProbeBrowserTest();
+  ~DnsProbeBrowserTest() override;
 
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;

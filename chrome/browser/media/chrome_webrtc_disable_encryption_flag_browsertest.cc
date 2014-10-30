@@ -29,7 +29,7 @@ using chrome::VersionInfo;
 class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
  public:
   WebRtcDisableEncryptionFlagBrowserTest() {}
-  virtual ~WebRtcDisableEncryptionFlagBrowserTest() {}
+  ~WebRtcDisableEncryptionFlagBrowserTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.

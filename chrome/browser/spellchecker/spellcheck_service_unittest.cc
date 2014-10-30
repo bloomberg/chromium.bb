@@ -23,7 +23,7 @@ static KeyedService* BuildSpellcheckService(content::BrowserContext* profile) {
 
 class SpellcheckServiceTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         &profile_, &BuildSpellcheckService);

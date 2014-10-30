@@ -85,7 +85,7 @@ class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
 class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
  public:
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     tab_reloader_.reset(new testing::StrictMock<TestCaptivePortalTabReloader>(
         web_contents()));
@@ -94,7 +94,7 @@ class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
     tab_reloader_->set_slow_ssl_load_time(base::TimeDelta());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     EXPECT_FALSE(tab_reloader().TimerRunning());
     tab_reloader_.reset(NULL);
     ChromeRenderViewHostTestHarness::TearDown();

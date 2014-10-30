@@ -66,8 +66,7 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
       time_factory_(NULL) {
   }
 
-  virtual ~PersistentTabRestoreServiceTest() {
-  }
+  ~PersistentTabRestoreServiceTest() override {}
 
  protected:
   enum {
@@ -75,13 +74,13 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   };
 
   // testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new PersistentTabRestoreService(profile(), time_factory_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     service_->Shutdown();
     service_.reset();
     delete time_factory_;

@@ -18,16 +18,14 @@ class DiagnosticsModelTest : public testing::Test {
       : cmdline_(CommandLine::NO_PROGRAM) {
   }
 
-  virtual ~DiagnosticsModelTest() { }
+  ~DiagnosticsModelTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     model_.reset(MakeDiagnosticsModel(cmdline_));
     ASSERT_TRUE(model_.get() != NULL);
   }
 
-  virtual void TearDown() {
-    model_.reset();
-  }
+  void TearDown() override { model_.reset(); }
 
   scoped_ptr<DiagnosticsModel> model_;
   CommandLine cmdline_;

@@ -51,7 +51,7 @@ class MockObserver : public SigninTracker::Observer {
 class SigninTrackerTest : public testing::Test {
  public:
   SigninTrackerTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
@@ -69,7 +69,7 @@ class SigninTrackerTest : public testing::Test {
     tracker_ =
         SigninTrackerFactory::CreateForProfile(profile_.get(), &observer_);
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     tracker_.reset();
     profile_.reset();
   }

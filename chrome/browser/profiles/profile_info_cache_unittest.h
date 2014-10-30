@@ -45,10 +45,10 @@ class ProfileNameVerifierObserver : public ProfileInfoCacheObserver {
 class ProfileInfoCacheTest : public testing::Test {
  protected:
   ProfileInfoCacheTest();
-  virtual ~ProfileInfoCacheTest();
+  ~ProfileInfoCacheTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   ProfileInfoCache* GetCache();
   base::FilePath GetProfilePath(const std::string& base_name);

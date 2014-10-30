@@ -36,7 +36,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
  public:
   ThemeServiceTest() : is_supervised_(false),
                        registry_(NULL) {}
-  virtual ~ThemeServiceTest() {}
+  ~ThemeServiceTest() override {}
 
   // Moves a minimal theme to |temp_dir_path| and unpacks it from that
   // directory.
@@ -86,7 +86,7 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     extensions::ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();
@@ -241,9 +241,9 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
 class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
  public:
   ThemeServiceSupervisedUserTest() {}
-  virtual ~ThemeServiceSupervisedUserTest() {}
+  ~ThemeServiceSupervisedUserTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     is_supervised_ = true;
     ThemeServiceTest::SetUp();
   }

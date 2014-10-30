@@ -19,7 +19,7 @@ class MostVisitedIframeSourceTest : public testing::Test {
   MostVisitedIframeSource* source() { return source_.get(); }
 
  private:
-  virtual void SetUp() { source_.reset(new MostVisitedIframeSource()); }
+  void SetUp() override { source_.reset(new MostVisitedIframeSource()); }
 
   scoped_ptr<MostVisitedIframeSource> source_;
 };

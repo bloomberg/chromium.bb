@@ -43,7 +43,7 @@ class MockEnvironment : public base::Environment {
     variables_[name] = value;
   }
 
-  virtual bool GetVar(const char* variable_name, std::string* result) override {
+  bool GetVar(const char* variable_name, std::string* result) override {
     if (ContainsKey(variables_, variable_name)) {
       *result = variables_[variable_name];
       return true;
@@ -52,13 +52,13 @@ class MockEnvironment : public base::Environment {
     return false;
   }
 
-  virtual bool SetVar(const char* variable_name,
-                      const std::string& new_value) override {
+  bool SetVar(const char* variable_name,
+              const std::string& new_value) override {
     ADD_FAILURE();
     return false;
   }
 
-  virtual bool UnSetVar(const char* variable_name) override {
+  bool UnSetVar(const char* variable_name) override {
     ADD_FAILURE();
     return false;
   }

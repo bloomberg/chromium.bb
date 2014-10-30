@@ -558,10 +558,10 @@ class TestAddAppWindowObserver
     : public extensions::AppWindowRegistry::Observer {
  public:
   explicit TestAddAppWindowObserver(extensions::AppWindowRegistry* registry);
-  virtual ~TestAddAppWindowObserver();
+  ~TestAddAppWindowObserver() override;
 
   // extensions::AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) override;
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
 
   extensions::AppWindow* WaitForAppWindow();
 
@@ -601,9 +601,9 @@ extensions::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
 class PolicyTest : public InProcessBrowserTest {
  protected:
   PolicyTest() {}
-  virtual ~PolicyTest() {}
+  ~PolicyTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test_extension_cache_.reset(new extensions::ExtensionCacheFake());
     InProcessBrowserTest::SetUp();
   }
@@ -3038,7 +3038,7 @@ INSTANTIATE_TEST_CASE_P(
 class PolicyStatisticsCollectorTest : public PolicyTest {
  public:
   PolicyStatisticsCollectorTest() {}
-  virtual ~PolicyStatisticsCollectorTest() {}
+  ~PolicyStatisticsCollectorTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();

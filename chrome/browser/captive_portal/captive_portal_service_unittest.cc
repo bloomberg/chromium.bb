@@ -90,7 +90,7 @@ class CaptivePortalServiceTest : public testing::Test,
             CaptivePortalService::get_state_for_testing()) {
   }
 
-  virtual ~CaptivePortalServiceTest() {
+  ~CaptivePortalServiceTest() override {
     CaptivePortalService::set_state_for_testing(
         old_captive_portal_testing_state_);
   }

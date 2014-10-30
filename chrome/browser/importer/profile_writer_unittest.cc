@@ -38,7 +38,7 @@ class ProfileWriterTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_) {
   }
-  virtual ~ProfileWriterTest() {}
+  ~ProfileWriterTest() override {}
 
   // Create test bookmark entries to be added to ProfileWriter to
   // simulate bookmark importing.

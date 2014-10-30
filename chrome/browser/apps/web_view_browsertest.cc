@@ -254,7 +254,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     if (UsesFakeSpeech()) {
       // SpeechRecognition test specific SetUp.
       fake_speech_recognition_manager_.reset(
@@ -268,7 +268,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (UsesFakeSpeech()) {
       // SpeechRecognition test specific TearDown.
       content::SpeechRecognitionManager::SetManagerForTesting(NULL);
@@ -2264,8 +2264,8 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 class WebViewCaptureTest : public WebViewTest {
  public:
   WebViewCaptureTest() {}
-  virtual ~WebViewCaptureTest() {}
-  virtual void SetUp() override {
+  ~WebViewCaptureTest() override {}
+  void SetUp() override {
     EnablePixelOutput();
     WebViewTest::SetUp();
   }

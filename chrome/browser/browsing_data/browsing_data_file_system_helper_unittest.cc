@@ -70,7 +70,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
-  virtual ~BrowsingDataFileSystemHelperTest() {
+  ~BrowsingDataFileSystemHelperTest() override {
     // Avoid memory leaks.
     profile_.reset();
     base::MessageLoop::current()->RunUntilIdle();

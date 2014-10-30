@@ -66,7 +66,7 @@ class FeedbackSenderTest : public testing::Test {
     feedback_->StartFeedbackCollection();
   }
 
-  virtual ~FeedbackSenderTest() {}
+  ~FeedbackSenderTest() override {}
 
  protected:
   // Appends the "--enable-spelling-service-feedback" switch to the

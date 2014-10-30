@@ -98,7 +98,7 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
 class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
   PrintPreviewDialogControllerBrowserTest() : initiator_(NULL) {}
-  virtual ~PrintPreviewDialogControllerBrowserTest() {}
+  ~PrintPreviewDialogControllerBrowserTest() override {}
 
   WebContents* initiator() {
     return initiator_;

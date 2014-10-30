@@ -45,11 +45,9 @@ class DownloadQueryTest : public testing::Test {
  public:
   DownloadQueryTest() {}
 
-  virtual ~DownloadQueryTest() {}
+  ~DownloadQueryTest() override {}
 
-  virtual void TearDown() {
-    STLDeleteElements(&mocks_);
-  }
+  void TearDown() override { STLDeleteElements(&mocks_); }
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {

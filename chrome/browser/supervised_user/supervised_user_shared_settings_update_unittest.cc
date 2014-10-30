@@ -13,7 +13,7 @@
 class SupervisedUserSharedSettingsUpdateTest : public testing::Test {
  public:
   SupervisedUserSharedSettingsUpdateTest() : service_(profile_.GetPrefs()) {}
-  virtual ~SupervisedUserSharedSettingsUpdateTest() {}
+  ~SupervisedUserSharedSettingsUpdateTest() override {}
 
   void OnSettingUpdated(bool success) {
     result_.reset(new bool(success));

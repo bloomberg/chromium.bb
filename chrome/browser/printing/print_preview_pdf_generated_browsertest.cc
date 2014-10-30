@@ -299,7 +299,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
  public:
   PrintPreviewPdfGeneratedBrowserTest() {}
-  virtual ~PrintPreviewPdfGeneratedBrowserTest() {}
+  ~PrintPreviewPdfGeneratedBrowserTest() override {}
 
   // Navigates to the given web page, then initiates print preview and waits
   // for all the settings to be set, then save the preview to PDF.

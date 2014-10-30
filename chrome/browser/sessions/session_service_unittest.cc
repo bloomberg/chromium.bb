@@ -47,7 +47,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     profile_manager_.reset(
@@ -76,7 +76,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     sync_save_count_++;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     helper_.SetService(NULL);
     BrowserWithTestWindowTest::TearDown();
   }

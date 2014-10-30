@@ -87,7 +87,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   // testing::Test
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Returns a TestDelegate. Invoking OnNewDownloadReady on the returned
   // delegate results in the DownloadItem* being stored in |notified_item_|.

@@ -14,7 +14,7 @@ class ProbeMessageTest : public ::testing::Test {
  protected:
   ProbeMessageTest() {}
 
-  virtual ~ProbeMessageTest() {}
+  ~ProbeMessageTest() override {}
 };
 
 TEST_F(ProbeMessageTest, TestGenerateProbeRequest) {

@@ -30,9 +30,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         quota_(-1),
         weak_factory_(this) {}
 
-  virtual ~BrowsingDataQuotaHelperTest() {}
+  ~BrowsingDataQuotaHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new storage::QuotaManager(
         false,
@@ -46,7 +46,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         quota_manager_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     helper_ = NULL;
     quota_manager_ = NULL;
     quota_info_.clear();

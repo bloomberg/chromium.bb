@@ -18,7 +18,7 @@ class FileSelectHelperTest : public testing::Test {
   FileSelectHelperTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("file_select_helper");
     ASSERT_TRUE(base::PathExists(data_dir_));

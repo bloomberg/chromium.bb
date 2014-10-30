@@ -113,7 +113,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 class SpellCheckerSubMenuObserverTest : public InProcessBrowserTest {
  public:
   SpellCheckerSubMenuObserverTest() {}
-  virtual ~SpellCheckerSubMenuObserverTest() {}
+  ~SpellCheckerSubMenuObserverTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpellCheckerSubMenuObserverTest);

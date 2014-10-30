@@ -203,14 +203,10 @@ class DownloadHistoryTest : public testing::Test {
         history_(NULL),
         manager_observer_(NULL),
         download_created_index_(0) {}
-  virtual ~DownloadHistoryTest() {
-    STLDeleteElements(&items_);
-  }
+  ~DownloadHistoryTest() override { STLDeleteElements(&items_); }
 
  protected:
-  virtual void TearDown() override {
-    download_history_.reset();
-  }
+  void TearDown() override { download_history_.reset(); }
 
   content::MockDownloadManager& manager() { return *manager_.get(); }
   content::MockDownloadItem& item(size_t index) { return *items_[index]; }

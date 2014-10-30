@@ -10,10 +10,10 @@
 class PrintPreviewTest : public BrowserWithTestWindowTest {
  public:
   PrintPreviewTest();
-  virtual ~PrintPreviewTest();
+  ~PrintPreviewTest() override;
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Create a browser window to provide parenting for web contents modal dialog.
   BrowserWindow* CreateBrowserWindow() override;

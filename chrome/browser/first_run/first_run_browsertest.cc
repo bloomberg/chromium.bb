@@ -83,7 +83,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
   FirstRunMasterPrefsBrowserTestBase() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // All users of this test class need to call SetMasterPreferencesForTest()
     // before this class' SetUp() is invoked.
     ASSERT_TRUE(text_.get());
@@ -96,7 +96,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     EXPECT_TRUE(base::DeleteFile(prefs_file_, false));
     InProcessBrowserTest::TearDown();
   }

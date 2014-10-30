@@ -48,7 +48,7 @@ class TestService : public BitmapFetcherService {
 class BitmapFetcherServiceTest : public testing::Test,
                                  public TestNotificationInterface {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     service_.reset(new TestService(&profile_));
     requestsFinished_ = 0;
     imagesChanged_ = 0;

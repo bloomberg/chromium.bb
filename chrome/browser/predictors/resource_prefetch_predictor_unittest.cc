@@ -72,9 +72,9 @@ class MockResourcePrefetchPredictorTables
 class ResourcePrefetchPredictorTest : public testing::Test {
  public:
   ResourcePrefetchPredictorTest();
-  virtual ~ResourcePrefetchPredictorTest();
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  ~ResourcePrefetchPredictorTest() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   void AddUrlToHistory(const std::string& url, int visit_count) {

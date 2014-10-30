@@ -81,7 +81,7 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
 
   SupervisedUserSharedSettingsServiceTest()
       : settings_service_(profile_.GetPrefs()) {}
-  virtual ~SupervisedUserSharedSettingsServiceTest() {}
+  ~SupervisedUserSharedSettingsServiceTest() override {}
 
   void StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
@@ -114,13 +114,13 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
   }
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     subscription_ = settings_service_.Subscribe(
         base::Bind(&SupervisedUserSharedSettingsServiceTest::OnSettingChanged,
                    base::Unretained(this)));
   }
 
-  virtual void TearDown() override { settings_service_.Shutdown(); }
+  void TearDown() override { settings_service_.Shutdown(); }
 
   void OnSettingChanged(const std::string& su_id, const std::string& key) {
     const Value* value = settings_service_.GetValue(su_id, key);

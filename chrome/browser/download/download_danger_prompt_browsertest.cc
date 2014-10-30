@@ -32,8 +32,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
       did_receive_callback_(false) {
   }
 
-  virtual ~DownloadDangerPromptTest() {
-  }
+  ~DownloadDangerPromptTest() override {}
 
   // Opens a new tab and waits for navigations to finish. If there are pending
   // navigations, the constrained prompt might be dismissed when the navigation

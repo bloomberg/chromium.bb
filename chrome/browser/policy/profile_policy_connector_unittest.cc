@@ -30,9 +30,9 @@ namespace policy {
 class ProfilePolicyConnectorTest : public testing::Test {
  protected:
   ProfilePolicyConnectorTest() {}
-  virtual ~ProfilePolicyConnectorTest() {}
+  ~ProfilePolicyConnectorTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // This must be set up before the TestingBrowserProcess is created.
     BrowserPolicyConnector::SetPolicyProviderForTesting(&mock_provider_);
 
@@ -48,7 +48,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
                                loop_.message_loop_proxy()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
     cloud_policy_manager_->Shutdown();
   }

@@ -95,7 +95,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
         seed_("seed"),
         reset_recorded_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
@@ -140,7 +140,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
                                                &local_state_));
   }
 
-  virtual void TearDown() override { DestroyPrefStore(); }
+  void TearDown() override { DestroyPrefStore(); }
 
  protected:
   // Verifies whether a reset was reported via the RecordReset() hook. Also

@@ -16,7 +16,7 @@ class InvalidatorStorageTest : public testing::Test {
  public:
   InvalidatorStorageTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     InvalidatorStorage::RegisterProfilePrefs(pref_service_.registry());
   }
 

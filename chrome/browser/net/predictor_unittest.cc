@@ -81,7 +81,7 @@ class PredictorTest : public testing::Test {
   }
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
 #if defined(OS_WIN)
     net::EnsureWinsockInit();
 #endif

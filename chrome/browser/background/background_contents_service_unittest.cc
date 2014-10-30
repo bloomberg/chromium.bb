@@ -41,8 +41,8 @@
 class BackgroundContentsServiceTest : public testing::Test {
  public:
   BackgroundContentsServiceTest() {}
-  virtual ~BackgroundContentsServiceTest() {}
-  virtual void SetUp() {
+  ~BackgroundContentsServiceTest() override {}
+  void SetUp() override {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 
@@ -168,10 +168,10 @@ class BackgroundContentsServiceNotificationTest
     : public BrowserWithTestWindowTest {
  public:
   BackgroundContentsServiceNotificationTest() {}
-  virtual ~BackgroundContentsServiceNotificationTest() {}
+  ~BackgroundContentsServiceNotificationTest() override {}
 
   // Overridden from testing::Test
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     // In ChromeOS environment, BrowserWithTestWindowTest initializes
     // MessageCenter.
@@ -189,7 +189,7 @@ class BackgroundContentsServiceNotificationTest
             message_center::MessageCenter::Get(), base::Closure()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     g_browser_process->notification_ui_manager()->CancelAll();
     profile_manager_.reset();
 #if !defined(OS_CHROMEOS)

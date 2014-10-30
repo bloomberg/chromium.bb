@@ -52,7 +52,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
  public:
   ChromeWhispernetClientTest() : context_(NULL), initialized_(false) {}
 
-  virtual ~ChromeWhispernetClientTest() {}
+  ~ChromeWhispernetClientTest() override {}
 
   void InitializeWhispernet() {
     context_ = browser()->profile();

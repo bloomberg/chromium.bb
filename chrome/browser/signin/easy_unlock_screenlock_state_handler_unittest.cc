@@ -195,9 +195,9 @@ class TestLockHandler : public ScreenlockBridge::LockHandler {
 class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
  public:
   EasyUnlockScreenlockStateHandlerTest() : user_email_("test_user@gmail.com") {}
-  virtual ~EasyUnlockScreenlockStateHandlerTest() {}
+  ~EasyUnlockScreenlockStateHandlerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingBrowserProcess::GetGlobal()->SetApplicationLocale("en-US");
 
     // Create and inject fake lock handler to the screenlock bridge.
@@ -212,7 +212,7 @@ class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
         screenlock_bridge));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ScreenlockBridge::Get()->SetLockHandler(NULL);
     lock_handler_.reset();
     state_handler_.reset();

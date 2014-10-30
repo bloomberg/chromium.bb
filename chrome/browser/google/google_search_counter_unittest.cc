@@ -25,11 +25,11 @@ class MockSearchMetrics : public GoogleSearchMetrics {
 class GoogleSearchCounterTest : public testing::Test {
  protected:
   GoogleSearchCounterTest();
-  virtual ~GoogleSearchCounterTest();
+  ~GoogleSearchCounterTest() override;
 
   // testing::Test
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Test if |url| is a Google search for specific types. When |is_omnibox| is
   // true, this method will append Omnibox identifiers to the simulated URL

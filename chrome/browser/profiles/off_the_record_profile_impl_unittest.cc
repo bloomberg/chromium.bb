@@ -79,10 +79,10 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
  protected:
   OffTheRecordProfileImplTest() {}
 
-  virtual ~OffTheRecordProfileImplTest() {}
+  ~OffTheRecordProfileImplTest() override {}
 
   // testing::Test overrides:
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_manager_.reset(new TestingProfileManager(browser_process()));
     ASSERT_TRUE(profile_manager_->SetUp());
 
@@ -93,7 +93,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
 
     testing_io_thread_state_.reset();

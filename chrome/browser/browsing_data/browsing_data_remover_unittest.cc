@@ -703,10 +703,9 @@ class BrowsingDataRemoverTest : public testing::Test,
                    content::Source<Profile>(profile_.get()));
   }
 
-  virtual ~BrowsingDataRemoverTest() {
-  }
+  ~BrowsingDataRemoverTest() override {}
 
-  virtual void TearDown() {
+  void TearDown() override {
 #if defined(ENABLE_EXTENSIONS)
     mock_policy_ = NULL;
 #endif

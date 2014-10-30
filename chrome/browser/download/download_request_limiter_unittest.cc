@@ -60,7 +60,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     WAIT
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
 
@@ -106,7 +106,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     content_settings_->ShutdownOnUIThread();
     content_settings_ = NULL;
     UnsetDelegate();

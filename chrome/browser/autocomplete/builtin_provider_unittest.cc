@@ -27,10 +27,10 @@ class BuiltinProviderTest : public testing::Test {
   };
 
   BuiltinProviderTest() : provider_(NULL) {}
-  virtual ~BuiltinProviderTest() {}
+  ~BuiltinProviderTest() override {}
 
-  virtual void SetUp() override { provider_ = new BuiltinProvider(); }
-  virtual void TearDown() override { provider_ = NULL; }
+  void SetUp() override { provider_ = new BuiltinProvider(); }
+  void TearDown() override { provider_ = NULL; }
 
   void RunTest(const TestData cases[], size_t num_cases) {
     ACMatches matches;

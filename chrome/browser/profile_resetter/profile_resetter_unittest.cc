@@ -100,10 +100,10 @@ class ProfileResetterTest : public extensions::ExtensionServiceTestBase,
                             public ProfileResetterTestBase {
  public:
   ProfileResetterTest();
-  virtual ~ProfileResetterTest();
+  ~ProfileResetterTest() override;
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   TestingProfile* profile() { return profile_.get(); }
 
@@ -161,7 +161,7 @@ KeyedService* ProfileResetterTest::CreateTemplateURLService(
 class PinnedTabsResetTest : public BrowserWithTestWindowTest,
                             public ProfileResetterTestBase {
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   content::WebContents* CreateWebContents();
 };

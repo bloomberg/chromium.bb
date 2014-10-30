@@ -301,7 +301,7 @@ class ThreadWatcherTest : public ::testing::Test {
     }
   }
 
-  virtual ~ThreadWatcherTest() {
+  ~ThreadWatcherTest() override {
     ThreadWatcherList::DeleteAll();
     io_watcher_ = NULL;
     db_watcher_ = NULL;

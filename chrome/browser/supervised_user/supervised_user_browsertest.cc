@@ -53,7 +53,7 @@ class SupervisedUserBlockModeTest : public InProcessBrowserTest {
   };
 
   SupervisedUserBlockModeTest() : supervised_user_service_(NULL) {}
-  virtual ~SupervisedUserBlockModeTest() {}
+  ~SupervisedUserBlockModeTest() override {}
 
   void CheckShownPageIsInterstitial(WebContents* tab) {
     CheckShownPage(tab, content::PAGE_TYPE_INTERSTITIAL);

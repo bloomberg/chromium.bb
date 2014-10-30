@@ -89,9 +89,9 @@ class MockSupervisedUserRefreshTokenFetcher
 class SupervisedUserRegistrationUtilityTest : public ::testing::Test {
  public:
   SupervisedUserRegistrationUtilityTest();
-  virtual ~SupervisedUserRegistrationUtilityTest();
+  ~SupervisedUserRegistrationUtilityTest() override;
 
-  virtual void TearDown() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();

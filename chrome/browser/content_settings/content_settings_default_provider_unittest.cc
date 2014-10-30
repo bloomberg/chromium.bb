@@ -21,9 +21,7 @@ class DefaultProviderTest : public testing::Test {
   DefaultProviderTest()
       : provider_(profile_.GetPrefs(), false) {
   }
-  virtual ~DefaultProviderTest() {
-    provider_.ShutdownOnUIThread();
-  }
+  ~DefaultProviderTest() override { provider_.ShutdownOnUIThread(); }
 
  protected:
   TestingProfile profile_;

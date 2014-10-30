@@ -91,9 +91,9 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
 class SigninManagerTest : public testing::Test {
  public:
   SigninManagerTest() : manager_(NULL) {}
-  virtual ~SigninManagerTest() {}
+  ~SigninManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     manager_ = NULL;
     prefs_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(prefs_->registry());
@@ -113,7 +113,7 @@ class SigninManagerTest : public testing::Test {
             SetURLRequestContext(profile_->GetRequestContext());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (manager_)
       manager_->RemoveObserver(&test_observer_);
 

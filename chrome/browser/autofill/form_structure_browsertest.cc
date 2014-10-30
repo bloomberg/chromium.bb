@@ -45,7 +45,7 @@ class FormStructureBrowserTest : public InProcessBrowserTest,
                                  public DataDrivenTest {
  protected:
   FormStructureBrowserTest();
-  virtual ~FormStructureBrowserTest();
+  ~FormStructureBrowserTest() override;
 
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;

@@ -175,7 +175,7 @@ class PrerenderTrackerTest : public testing::Test {
     chrome_browser_net::SetUrlRequestMocksEnabled(true);
   }
 
-  virtual ~PrerenderTrackerTest() {
+  ~PrerenderTrackerTest() override {
     chrome_browser_net::SetUrlRequestMocksEnabled(false);
 
     // Cleanup work so the file IO tasks from URLRequestMockHTTPJob

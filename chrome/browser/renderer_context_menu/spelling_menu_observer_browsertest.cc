@@ -238,7 +238,7 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
         menu()->GetBrowserContext(), SpellingServiceClient::SPELLCHECK));
   }
 
-  virtual ~SpellingMenuObserverTest();
+  ~SpellingMenuObserverTest() override;
   MockRenderViewContextMenu* menu() { return menu_.get(); }
   SpellingMenuObserver* observer() { return observer_.get(); }
  private:

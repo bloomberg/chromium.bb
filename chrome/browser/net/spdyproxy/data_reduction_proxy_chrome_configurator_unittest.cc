@@ -17,7 +17,7 @@
 
 class DataReductionProxyConfigTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     PrefRegistrySimple* registry = pref_service_.registry();
     registry->RegisterDictionaryPref(prefs::kProxy);
     config_.reset(new DataReductionProxyChromeConfigurator(

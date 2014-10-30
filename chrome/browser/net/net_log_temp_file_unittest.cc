@@ -61,7 +61,7 @@ class NetLogTempFileTest : public ::testing::Test {
   }
 
   // ::testing::Test implementation:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Get a temporary file name for unit tests.
     base::FilePath net_log_dir;
     ASSERT_TRUE(net_log_temp_file_->GetNetExportLogDirectory(&net_log_dir));
@@ -76,7 +76,7 @@ class NetLogTempFileTest : public ::testing::Test {
     ASSERT_FALSE(net_export_log_.empty());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Delete the temporary file we have created.
     ASSERT_TRUE(base::DeleteFile(net_export_log_, false));
   }

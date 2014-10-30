@@ -37,7 +37,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
  protected:
   WebRtcTestBase();
-  virtual ~WebRtcTestBase();
+  ~WebRtcTestBase() override;
 
   // These all require that the loaded page fulfills the public interface in
   // chrome/test/data/webrtc/message_handling.js.

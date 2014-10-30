@@ -36,7 +36,7 @@ const int kUnprotected = BrowsingDataHelper::UNPROTECTED_WEB;
 class BrowsingDataHelperTest : public testing::Test {
  public:
   BrowsingDataHelperTest() {}
-  virtual ~BrowsingDataHelperTest() {}
+  ~BrowsingDataHelperTest() override {}
 
   bool IsWebScheme(const std::string& scheme) {
     GURL test(scheme + "://example.com");

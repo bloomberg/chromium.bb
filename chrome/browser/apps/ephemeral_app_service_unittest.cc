@@ -37,7 +37,7 @@ class EphemeralAppServiceTest : public testing::Test {
   typedef EphemeralAppService::LaunchTimeAppMap LaunchTimeAppMap;
 
   EphemeralAppServiceTest() {}
-  virtual ~EphemeralAppServiceTest() {}
+  ~EphemeralAppServiceTest() override {}
 
   void RunTest(int ephemeral_app_count,
                const LaunchTimeAppMap& launch_times,

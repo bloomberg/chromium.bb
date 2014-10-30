@@ -23,13 +23,13 @@ class BrowsingDataChannelIDHelperTest
   BrowsingDataChannelIDHelperTest() : ssl_config_changed_count_(0) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing_profile_.reset(new TestingProfile());
 
     testing_profile_->GetSSLConfigService()->AddObserver(this);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     testing_profile_->GetSSLConfigService()->RemoveObserver(this);
   }
 

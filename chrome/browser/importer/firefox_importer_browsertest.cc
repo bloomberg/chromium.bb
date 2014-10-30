@@ -244,7 +244,7 @@ class FirefoxObserver : public ProfileWriter,
 // supported platforms.
 class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Creates a new profile in a new subdirectory in the temp directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");

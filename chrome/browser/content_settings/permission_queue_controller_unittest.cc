@@ -21,7 +21,7 @@
 class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
  protected:
   PermissionQueueControllerTests() {}
-  virtual ~PermissionQueueControllerTests() {}
+  ~PermissionQueueControllerTests() override {}
 
   PermissionRequestID RequestID(int bridge_id) {
     return PermissionRequestID(
@@ -33,7 +33,7 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness {
 
  private:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
   }

@@ -145,7 +145,7 @@ class CloudPrintDataSenderTest : public testing::Test {
         io_thread_(BrowserThread::IO, &message_loop_) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     mock_helper_.reset(new MockCloudPrintDataSenderHelper);
   }
 
@@ -222,7 +222,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     base::string16 mock_title;
     base::string16 mock_print_ticket;
     std::string mock_file_type;
@@ -236,7 +236,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
                                                     std::string()));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     delegate_.reset();
     if (mock_flow_handler_.get())
       delete mock_flow_handler_.get();

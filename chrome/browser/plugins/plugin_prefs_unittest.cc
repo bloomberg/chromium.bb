@@ -58,9 +58,7 @@ void GotPlugins(const base::Closure& quit_closure,
 
 class PluginPrefsTest : public ::testing::Test {
  public:
-  virtual void SetUp() override {
-    plugin_prefs_ = new PluginPrefs();
-  }
+  void SetUp() override { plugin_prefs_ = new PluginPrefs(); }
 
   void SetPolicyEnforcedPluginPatterns(
       const std::set<base::string16>& disabled,

@@ -70,15 +70,15 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
         mock_reloader_(new testing::StrictMock<MockCaptivePortalTabReloader>) {
     tab_helper_.SetTabReloaderForTest(mock_reloader_);
   }
-  virtual ~CaptivePortalTabHelperTest() {}
+  ~CaptivePortalTabHelperTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents1_.reset(CreateTestWebContents());
     web_contents2_.reset(CreateTestWebContents());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     web_contents2_.reset(NULL);
     web_contents1_.reset(NULL);
     ChromeRenderViewHostTestHarness::TearDown();

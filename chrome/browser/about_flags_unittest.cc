@@ -292,7 +292,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::ClearState();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     for (size_t i = 0; i < arraysize(kExperiments); ++i)
       kExperiments[i].supported_platforms = GetCurrentPlatform();
 
@@ -304,9 +304,7 @@ class AboutFlagsTest : public ::testing::Test {
     testing::SetExperiments(kExperiments, arraysize(kExperiments));
   }
 
-  virtual void TearDown() override {
-    testing::SetExperiments(NULL, 0);
-  }
+  void TearDown() override { testing::SetExperiments(NULL, 0); }
 
   TestingPrefServiceSimple prefs_;
   PrefServiceFlagsStorage flags_storage_;

@@ -64,7 +64,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
       : testing_profile_(new TestingProfile()) {
   }
 
-  virtual void SetUp() override { cookie_expectations_.clear(); }
+  void SetUp() override { cookie_expectations_.clear(); }
 
   // Adds an expectation for a cookie that satisfies the given parameters.
   void AddCookieExpectation(const char* source,

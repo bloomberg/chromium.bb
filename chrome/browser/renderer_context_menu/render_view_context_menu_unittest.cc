@@ -242,12 +242,12 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
 
 class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     registry_.reset(new ProtocolHandlerRegistry(profile(), NULL));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     registry_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }

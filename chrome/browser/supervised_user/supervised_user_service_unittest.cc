@@ -98,7 +98,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
  public:
   SupervisedUserServiceTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
@@ -107,11 +107,9 @@ class SupervisedUserServiceTest : public ::testing::Test {
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
   }
 
-  virtual void TearDown() override {
-    profile_.reset();
-  }
+  void TearDown() override { profile_.reset(); }
 
-  virtual ~SupervisedUserServiceTest() {}
+  ~SupervisedUserServiceTest() override {}
 
  protected:
   void AddAccessRequest(const GURL& url, AsyncResultHolder* result_holder) {
@@ -275,9 +273,9 @@ class SupervisedUserServiceExtensionTestBase
   explicit SupervisedUserServiceExtensionTestBase(bool is_supervised)
       : is_supervised_(is_supervised),
         channel_(chrome::VersionInfo::CHANNEL_DEV) {}
-  virtual ~SupervisedUserServiceExtensionTestBase() {}
+  ~SupervisedUserServiceExtensionTestBase() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ExtensionServiceTestBase::SetUp();
     ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();

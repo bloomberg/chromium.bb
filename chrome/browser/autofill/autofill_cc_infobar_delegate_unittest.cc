@@ -52,10 +52,10 @@ class TestPersonalDataManager : public PersonalDataManager {
 
 class AutofillCCInfobarDelegateTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual ~AutofillCCInfobarDelegateTest();
+  ~AutofillCCInfobarDelegateTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate(

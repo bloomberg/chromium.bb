@@ -273,10 +273,10 @@ class SavePackageFinishedObserver : public content::DownloadManager::Observer {
 class SavePageBrowserTest : public InProcessBrowserTest {
  public:
   SavePageBrowserTest() {}
-  virtual ~SavePageBrowserTest();
+  ~SavePageBrowserTest() override;
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
     ASSERT_TRUE(save_dir_.CreateUniqueTempDir());
     InProcessBrowserTest::SetUp();
@@ -748,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
 class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
  public:
   SavePageAsMHTMLBrowserTest() {}
-  virtual ~SavePageAsMHTMLBrowserTest();
+  ~SavePageAsMHTMLBrowserTest() override;
   void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSavePageAsMHTML);
   }

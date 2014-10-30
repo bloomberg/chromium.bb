@@ -45,7 +45,7 @@ std::string GetExpectedDownloadDirectory() {
 class DownloadDirPolicyHandlerTest
     : public policy::ConfigurationPolicyPrefStoreTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     recommended_store_ = new policy::ConfigurationPolicyPrefStore(
         policy_service_.get(),
         &handler_list_,

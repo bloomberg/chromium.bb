@@ -24,7 +24,7 @@ class DefaultSearchPrefMigrationTest : public testing::Test {
   DefaultSearchPrefMigrationTest();
 
   // testing::Test:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   scoped_ptr<TemplateURL> CreateKeyword(const std::string& short_name,
                                         const std::string& keyword,

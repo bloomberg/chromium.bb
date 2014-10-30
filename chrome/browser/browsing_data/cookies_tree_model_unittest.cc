@@ -42,7 +42,7 @@ namespace {
 
 class CookiesTreeModelTest : public testing::Test {
  public:
-  virtual ~CookiesTreeModelTest() {
+  ~CookiesTreeModelTest() override {
     // Avoid memory leaks.
 #if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ = NULL;
@@ -51,7 +51,7 @@ class CookiesTreeModelTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     profile_.reset(new TestingProfile());
     mock_browsing_data_cookie_helper_ =
         new MockBrowsingDataCookieHelper(profile_->GetRequestContext());
@@ -85,7 +85,7 @@ class CookiesTreeModelTest : public testing::Test {
 #endif
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     mock_browsing_data_service_worker_helper_ = NULL;
     mock_browsing_data_channel_id_helper_ = NULL;
     mock_browsing_data_quota_helper_ = NULL;

@@ -48,7 +48,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
 
   CloudPolicyInvalidatorTest();
 
-  virtual void TearDown() override;
+  void TearDown() override;
 
   // Starts the invalidator which will be tested.
   // |initialize| determines if the invalidator should be initialized.
@@ -854,7 +854,7 @@ class CloudPolicyInvalidatorUserTypedTest
   virtual ~CloudPolicyInvalidatorUserTypedTest();
 
   // CloudPolicyInvalidatorTest:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   // Get the current count for the given metric.
   base::HistogramBase::Count GetCount(MetricPolicyRefresh metric);

@@ -93,7 +93,7 @@ class HotwordServiceTest :
 #endif
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     extension_id_ = GetParam();
     if (extension_id_ == extension_misc::kHotwordSharedModuleId) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(

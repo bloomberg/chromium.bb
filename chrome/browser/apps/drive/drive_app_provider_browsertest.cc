@@ -91,7 +91,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
                              public extensions::InstallObserver {
  public:
   DriveAppProviderTest() {}
-  virtual ~DriveAppProviderTest() {}
+  ~DriveAppProviderTest() override {}
 
   // ExtensionBrowserTest:
   void SetUpOnMainThread() override {

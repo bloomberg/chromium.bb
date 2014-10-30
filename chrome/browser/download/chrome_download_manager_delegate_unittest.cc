@@ -127,8 +127,8 @@ class ChromeDownloadManagerDelegateTest
   ChromeDownloadManagerDelegateTest();
 
   // ::testing::Test
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Verifies and clears test expectations for |delegate_| and
   // |download_manager_|.

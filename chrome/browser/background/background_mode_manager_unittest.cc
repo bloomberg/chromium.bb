@@ -152,8 +152,8 @@ void AssertBackgroundModeSuspended(
 class BackgroundModeManagerTest : public testing::Test {
  public:
   BackgroundModeManagerTest() {}
-  virtual ~BackgroundModeManagerTest() {}
-  virtual void SetUp() override {
+  ~BackgroundModeManagerTest() override {}
+  void SetUp() override {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
@@ -201,8 +201,8 @@ class BackgroundModeManagerWithExtensionsTest
     : public BackgroundModeManagerTest {
  public:
   BackgroundModeManagerWithExtensionsTest() {}
-  virtual ~BackgroundModeManagerWithExtensionsTest() {}
-  virtual void SetUp() override {
+  ~BackgroundModeManagerWithExtensionsTest() override {}
+  void SetUp() override {
     BackgroundModeManagerTest::SetUp();
     // Aura clears notifications from the message center at shutdown.
     message_center::MessageCenter::Initialize();
@@ -226,7 +226,7 @@ class BackgroundModeManagerWithExtensionsTest
     manager_->RegisterProfile(profile_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Clean up the status icon. If this is not done before profile deletes,
     // the context menu updates will DCHECK with the now deleted profiles.
     StatusIcon* status_icon = manager_->status_icon_;

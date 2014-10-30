@@ -401,8 +401,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
   FaviconHandlerTest() {
   }
 
-  virtual ~FaviconHandlerTest() {
-  }
+  ~FaviconHandlerTest() override {}
 
   // Simulates requesting a favicon for |page_url| given:
   // - We have not previously cached anything in history for |page_url| or for
@@ -447,7 +446,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
     favicon_handler->OnUpdateFaviconURL(candidate_icons);
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // The score computed by SelectFaviconFrames() is dependent on the supported
     // scale factors of the platform. It is used for determining the goodness of
     // a downloaded bitmap in FaviconHandler::OnDidDownloadFavicon().
@@ -461,7 +460,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     Profile* profile = Profile::FromBrowserContext(
         web_contents()->GetBrowserContext());
     FaviconServiceFactory::GetInstance()->SetTestingFactory(

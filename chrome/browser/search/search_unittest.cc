@@ -41,7 +41,7 @@ namespace chrome {
 
 class SearchTest : public BrowserWithTestWindowTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));

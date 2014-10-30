@@ -19,7 +19,7 @@ namespace policy {
 
 class ManagedBookmarksPolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
-  virtual void SetUp() override {
+  void SetUp() override {
     Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
     handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
         new ManagedBookmarksPolicyHandler(chrome_schema)));

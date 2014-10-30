@@ -84,7 +84,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
         unprotected_store_migration_complete_(false),
         protected_store_migration_complete_(false) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
     Reset();
   }

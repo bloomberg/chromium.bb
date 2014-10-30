@@ -62,10 +62,10 @@ void ScopedExtensionLoadObserver::OnExtensionInstalled(
 class KeywordExtensionsDelegateImplTest : public ExtensionServiceTestBase {
  public:
   KeywordExtensionsDelegateImplTest() {}
-  virtual ~KeywordExtensionsDelegateImplTest() {}
+  ~KeywordExtensionsDelegateImplTest() override {}
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   void RunTest(bool incognito);
 

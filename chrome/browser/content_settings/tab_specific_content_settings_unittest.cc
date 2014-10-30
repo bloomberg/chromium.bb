@@ -38,7 +38,7 @@ class MockSiteDataObserver
 
 class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     TabSpecificContentSettings::CreateForWebContents(web_contents());
   }

@@ -300,10 +300,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
                                          public IPC::Listener {
  public:
   CloudPrintProxyPolicyStartupTest();
-  virtual ~CloudPrintProxyPolicyStartupTest();
+  ~CloudPrintProxyPolicyStartupTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   scoped_refptr<base::MessageLoopProxy> IOMessageLoopProxy() {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);

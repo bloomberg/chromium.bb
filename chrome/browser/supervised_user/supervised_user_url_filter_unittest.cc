@@ -18,9 +18,7 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
     filter_->AddObserver(this);
   }
 
-  virtual ~SupervisedUserURLFilterTest() {
-    filter_->RemoveObserver(this);
-  }
+  ~SupervisedUserURLFilterTest() override { filter_->RemoveObserver(this); }
 
   // SupervisedUserURLFilter::Observer:
   void OnSiteListUpdated() override { run_loop_.Quit(); }

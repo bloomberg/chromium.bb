@@ -12,9 +12,7 @@
 
 class AbstractPreferenceMergeTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-    pref_service_ = profile_.GetPrefs();
-  }
+  void SetUp() override { pref_service_ = profile_.GetPrefs(); }
 
   void SetContentPattern(base::DictionaryValue* patterns_dict,
                          const std::string& expression,
@@ -59,7 +57,7 @@ class ListPreferenceMergeTest : public AbstractPreferenceMergeTest {
       local_url0_("http://example.com/local0"),
       local_url1_("http://example.com/local1") {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     AbstractPreferenceMergeTest::SetUp();
     server_url_list_.Append(new base::StringValue(server_url0_));
     server_url_list_.Append(new base::StringValue(server_url1_));
@@ -206,7 +204,7 @@ class DictionaryPreferenceMergeTest : public AbstractPreferenceMergeTest {
       content_type0_("content_type0"),
       content_type1_("content_type1") {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     AbstractPreferenceMergeTest::SetUp();
     SetContentPattern(&server_patterns_, expression0_, content_type0_, 1);
     SetContentPattern(&server_patterns_, expression0_, content_type1_, 2);
@@ -365,7 +363,7 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
       expression1_("expression1"),
       content_type0_("content_type0") {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     AbstractPreferenceMergeTest::SetUp();
     server_url_list_.Append(new base::StringValue(url0_));
     SetContentPattern(&server_patterns_, expression0_, content_type0_, 1);

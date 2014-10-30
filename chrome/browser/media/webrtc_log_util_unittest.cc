@@ -19,7 +19,7 @@ class WebRtcLogUtilTest : public testing::Test {
   WebRtcLogUtilTest()
       : file_thread_(content::BrowserThread::FILE, &message_loop_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Create three files. One with modified date as of now, one with date one
     // day younger than the keep limit, one with date one day older than the
     // limit. The two former are expected to be kept and the last to be deleted

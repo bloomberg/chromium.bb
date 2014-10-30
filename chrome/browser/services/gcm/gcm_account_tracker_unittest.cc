@@ -146,7 +146,7 @@ void CustomFakeGCMDriver::ResetResults() {
 class GCMAccountTrackerTest : public testing::Test {
  public:
   GCMAccountTrackerTest();
-  virtual ~GCMAccountTrackerTest();
+  ~GCMAccountTrackerTest() override;
 
   // Helpers to pass fake events to the tracker. Tests should have either a pair
   // of Start/FinishAccountSignIn or SignInAccount per account. Don't mix.

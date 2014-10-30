@@ -10,9 +10,7 @@
 
 class DesktopNotificationServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
-  virtual void SetUp() {
-    ChromeRenderViewHostTestHarness::SetUp();
-  }
+  void SetUp() override { ChromeRenderViewHostTestHarness::SetUp(); }
 };
 
 

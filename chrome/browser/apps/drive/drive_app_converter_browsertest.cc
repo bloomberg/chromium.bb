@@ -39,7 +39,7 @@ const char kAppUrl[] = "http://foobar.com/drive_app";
 class DriveAppConverterTest : public ExtensionBrowserTest {
  public:
   DriveAppConverterTest() {}
-  virtual ~DriveAppConverterTest() {}
+  ~DriveAppConverterTest() override {}
 
   // ExtensionBrowserTest:
   void SetUpOnMainThread() override {

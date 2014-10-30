@@ -35,8 +35,8 @@ class ShortcutsBackendTest : public testing::Test,
     AutocompleteMatch::Type type = AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   void SetSearchProvider();
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   void OnShortcutsLoaded() override;
   void OnShortcutsChanged() override;

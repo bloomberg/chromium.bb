@@ -81,7 +81,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
                       base::FilePath()) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(proxy_server_.Start());
     InProcessBrowserTest::SetUp();
   }
@@ -149,9 +149,9 @@ class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
                      net::SpawnedTestServer::kLocalhost,
                      base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
-  virtual ~HttpProxyScriptBrowserTest() {}
+  ~HttpProxyScriptBrowserTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(http_server_.Start());
     InProcessBrowserTest::SetUp();
   }
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(HttpProxyScriptBrowserTest, Verify) {
 class FileProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
   FileProxyScriptBrowserTest() {}
-  virtual ~FileProxyScriptBrowserTest() {}
+  ~FileProxyScriptBrowserTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyPacUrl,
@@ -201,9 +201,9 @@ class FtpProxyScriptBrowserTest : public InProcessBrowserTest {
                     net::SpawnedTestServer::kLocalhost,
                     base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
-  virtual ~FtpProxyScriptBrowserTest() {}
+  ~FtpProxyScriptBrowserTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(ftp_server_.Start());
     InProcessBrowserTest::SetUp();
   }
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(FtpProxyScriptBrowserTest, Verify) {
 class DataProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
   DataProxyScriptBrowserTest() {}
-  virtual ~DataProxyScriptBrowserTest() {}
+  ~DataProxyScriptBrowserTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     std::string contents;

@@ -27,7 +27,7 @@ const uint32 kMisspellingHash = 42;
 class FeedbackTest : public testing::Test {
  public:
   FeedbackTest() {}
-  virtual ~FeedbackTest() {}
+  ~FeedbackTest() override {}
 
  protected:
   void AddMisspelling(int renderer_process_id, uint32 hash) {

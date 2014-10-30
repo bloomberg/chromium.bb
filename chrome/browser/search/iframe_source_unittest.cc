@@ -126,7 +126,7 @@ class IframeSourceTest : public testing::Test {
   }
 
  private:
-  virtual void SetUp() override {
+  void SetUp() override {
     source_.reset(new TestIframeSource());
     callback_ = base::Bind(&IframeSourceTest::SaveResponse,
                            base::Unretained(this));
@@ -137,9 +137,7 @@ class IframeSourceTest : public testing::Test {
     response_ = NULL;
   }
 
-  virtual void TearDown() {
-    source_.reset();
-  }
+  void TearDown() override { source_.reset(); }
 
   void SaveResponse(base::RefCountedMemory* data) {
     response_ = data;

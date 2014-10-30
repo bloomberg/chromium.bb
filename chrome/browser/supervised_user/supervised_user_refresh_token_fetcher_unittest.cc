@@ -89,7 +89,7 @@ void VerifyTokenRequest(
 class SupervisedUserRefreshTokenFetcherTest : public testing::Test {
  public:
   SupervisedUserRefreshTokenFetcherTest();
-  virtual ~SupervisedUserRefreshTokenFetcherTest() {}
+  ~SupervisedUserRefreshTokenFetcherTest() override {}
 
  protected:
   void StartFetching();

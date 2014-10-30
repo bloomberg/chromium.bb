@@ -157,8 +157,8 @@ class SearchProviderTest : public testing::Test,
   }
 
   // See description above class for what this registers.
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 

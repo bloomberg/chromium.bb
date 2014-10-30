@@ -21,11 +21,11 @@
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
  protected:
   PermissionContextBaseTests() {}
-  virtual ~PermissionContextBaseTests() {}
+  ~PermissionContextBaseTests() override {}
 
  private:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
   }

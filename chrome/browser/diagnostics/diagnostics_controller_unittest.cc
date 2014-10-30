@@ -26,9 +26,9 @@ class DiagnosticsControllerTest : public testing::Test {
  protected:
   DiagnosticsControllerTest() : cmdline_(CommandLine::NO_PROGRAM) {}
 
-  virtual ~DiagnosticsControllerTest() {}
+  ~DiagnosticsControllerTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath test_data;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data);
@@ -54,7 +54,7 @@ class DiagnosticsControllerTest : public testing::Test {
     // writer_.reset(new DiagnosticsWriter(DiagnosticsWriter::MACHINE));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     DiagnosticsController::GetInstance()->ClearResults();
 #if defined(OS_CHROMEOS)
     PathService::Override(base::DIR_HOME, old_home_dir_);

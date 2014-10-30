@@ -54,11 +54,11 @@ KeyedService* BuildGCMProfileService(content::BrowserContext* context) {
 class GCMProfileServiceTest : public testing::Test {
  protected:
   GCMProfileServiceTest();
-  virtual ~GCMProfileServiceTest();
+  ~GCMProfileServiceTest() override;
 
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   FakeGCMClient* GetGCMClient() const;
 

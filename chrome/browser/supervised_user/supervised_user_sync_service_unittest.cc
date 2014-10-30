@@ -84,7 +84,7 @@ void GetSupervisedUsersCallback(const base::DictionaryValue** dict,
 class SupervisedUserSyncServiceTest : public ::testing::Test {
  public:
   SupervisedUserSyncServiceTest();
-  virtual ~SupervisedUserSyncServiceTest();
+  ~SupervisedUserSyncServiceTest() override;
 
  protected:
   scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();

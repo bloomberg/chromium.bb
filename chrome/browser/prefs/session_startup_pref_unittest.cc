@@ -16,7 +16,7 @@
 // Unit tests for SessionStartupPref.
 class SessionStartupPrefTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSyncable);
     SessionStartupPref::RegisterProfilePrefs(registry());
     registry()->RegisterBooleanPref(

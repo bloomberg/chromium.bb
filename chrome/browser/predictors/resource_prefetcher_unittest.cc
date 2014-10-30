@@ -75,7 +75,7 @@ class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
 class ResourcePrefetcherTest : public testing::Test {
  public:
   ResourcePrefetcherTest();
-  virtual ~ResourcePrefetcherTest();
+  ~ResourcePrefetcherTest() override;
 
  protected:
   typedef ResourcePrefetcher::Request Request;

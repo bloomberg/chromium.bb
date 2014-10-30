@@ -50,7 +50,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
       : updater_(new TestDownloadStatusUpdater()),
         ui_thread_(content::BrowserThread::UI, &loop_) {}
 
-  virtual ~DownloadStatusUpdaterTest() {
+  ~DownloadStatusUpdaterTest() override {
     for (size_t mgr_idx = 0; mgr_idx < managers_.size(); ++mgr_idx) {
       EXPECT_CALL(*Manager(mgr_idx), RemoveObserver(_));
     }

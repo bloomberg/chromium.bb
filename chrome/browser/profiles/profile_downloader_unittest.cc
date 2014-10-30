@@ -40,8 +40,7 @@ class ProfileDownloaderTest : public testing::Test {
   ProfileDownloaderTest() {
   }
 
-  virtual ~ProfileDownloaderTest() {
-  }
+  ~ProfileDownloaderTest() override {}
 
   void VerifyWithAccountData(const std::string& full_name,
                              const std::string& given_name,

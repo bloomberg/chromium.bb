@@ -242,7 +242,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   };
 
   GeolocationBrowserTest();
-  virtual ~GeolocationBrowserTest();
+  ~GeolocationBrowserTest() override;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;

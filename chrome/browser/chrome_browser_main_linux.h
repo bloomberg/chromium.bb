@@ -14,12 +14,12 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
   explicit ChromeBrowserMainPartsLinux(
       const content::MainFunctionParams& parameters);
-  virtual ~ChromeBrowserMainPartsLinux();
+  ~ChromeBrowserMainPartsLinux() override;
 
   // ChromeBrowserMainParts overrides.
-  virtual void ToolkitInitialized() override;
-  virtual void PreProfileInit() override;
-  virtual void PostProfileInit() override;
+  void ToolkitInitialized() override;
+  void PreProfileInit() override;
+  void PostProfileInit() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);

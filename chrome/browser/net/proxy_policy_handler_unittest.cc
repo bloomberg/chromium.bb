@@ -22,7 +22,7 @@ namespace policy {
 class ProxyPolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     ConfigurationPolicyPrefStoreTest::SetUp();
     handler_list_.AddHandler(
         make_scoped_ptr<ConfigurationPolicyHandler>(new ProxyPolicyHandler));

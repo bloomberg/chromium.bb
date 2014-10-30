@@ -13,7 +13,7 @@
 
 class PrefServiceHashStoreContentsTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     PrefServiceHashStoreContents::RegisterPrefs(local_state_.registry());
   }
 

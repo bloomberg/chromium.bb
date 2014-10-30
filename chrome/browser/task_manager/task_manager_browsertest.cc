@@ -64,7 +64,7 @@ const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerBrowserTest() {}
-  virtual ~TaskManagerBrowserTest() {}
+  ~TaskManagerBrowserTest() override {}
 
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();

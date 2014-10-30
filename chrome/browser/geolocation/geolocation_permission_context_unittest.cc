@@ -105,8 +105,8 @@ class GeolocationPermissionContextTests
     : public ChromeRenderViewHostTestHarness {
  protected:
   // ChromeRenderViewHostTestHarness:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   PermissionRequestID RequestID(int bridge_id);
   PermissionRequestID RequestIDForTab(int tab, int bridge_id);

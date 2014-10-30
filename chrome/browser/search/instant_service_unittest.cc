@@ -34,14 +34,14 @@ class MockInstantServiceObserver : public InstantServiceObserver {
 
 class InstantServiceTest : public InstantUnitTestBase {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     InstantUnitTestBase::SetUp();
 
     instant_service_observer_.reset(new MockInstantServiceObserver());
     instant_service_->AddObserver(instant_service_observer_.get());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     instant_service_->RemoveObserver(instant_service_observer_.get());
     InstantUnitTestBase::TearDown();
   }
@@ -59,7 +59,7 @@ class InstantServiceTest : public InstantUnitTestBase {
 
 class InstantServiceEnabledTest : public InstantServiceTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
     InstantServiceTest::SetUp();

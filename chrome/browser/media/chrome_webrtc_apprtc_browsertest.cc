@@ -57,7 +57,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
         switches::kUseFakeDeviceForMediaStream);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Kill any processes we may have brought up.
     LOG(INFO) << "Entering TearDown";
     if (dev_appserver_ != base::kNullProcessHandle)

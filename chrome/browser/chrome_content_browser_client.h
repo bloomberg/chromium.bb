@@ -262,7 +262,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id) override;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  virtual void GetAdditionalMappedFilesForChildProcess(
+  void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::FileDescriptorInfo* mappings) override;

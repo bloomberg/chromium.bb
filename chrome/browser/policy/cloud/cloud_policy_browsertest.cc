@@ -198,7 +198,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
                         public PolicyService::Observer {
  protected:
   CloudPolicyTest() {}
-  virtual ~CloudPolicyTest() {}
+  ~CloudPolicyTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

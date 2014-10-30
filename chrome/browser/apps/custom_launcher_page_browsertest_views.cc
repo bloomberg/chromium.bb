@@ -30,7 +30,7 @@ class CustomLauncherPageBrowserTest
  public:
   CustomLauncherPageBrowserTest() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
 
     // Custom launcher pages only work in the experimental app list.
@@ -43,8 +43,7 @@ class CustomLauncherPageBrowserTest
 
   // Open the launcher. Ignores the Extension argument (this will simply
   // activate any loaded launcher pages).
-  virtual void LaunchPlatformApp(
-      const extensions::Extension* /*unused*/) override {
+  void LaunchPlatformApp(const extensions::Extension* /*unused*/) override {
     AppListService* service =
         AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE);
     DCHECK(service);

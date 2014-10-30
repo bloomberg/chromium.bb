@@ -30,7 +30,7 @@ using content::WebContents;
 class SupervisedUserResourceThrottleTest : public InProcessBrowserTest {
  protected:
   SupervisedUserResourceThrottleTest() : supervised_user_service_(NULL) {}
-  virtual ~SupervisedUserResourceThrottleTest() {}
+  ~SupervisedUserResourceThrottleTest() override {}
 
  private:
   void SetUpOnMainThread() override;

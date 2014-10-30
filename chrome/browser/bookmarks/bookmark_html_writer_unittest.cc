@@ -48,7 +48,7 @@ void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
 
 class BookmarkHTMLWriterTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     testing::Test::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     path_ = temp_dir_.path().AppendASCII("bookmarks.html");

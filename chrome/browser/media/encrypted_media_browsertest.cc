@@ -338,7 +338,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
 // enabled by default.
 class ECKUnprefixedEncryptedMediaTest : public EncryptedMediaTestBase {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
+  void SetUpCommandLine(CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableEncryptedMedia);
     SetUpCommandLineForKeySystem(kExternalClearKeyKeySystem, command_line);

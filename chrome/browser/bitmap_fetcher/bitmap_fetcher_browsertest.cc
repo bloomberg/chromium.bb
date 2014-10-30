@@ -71,7 +71,7 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
 
 class BitmapFetcherBrowserTest : public InProcessBrowserTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     url_fetcher_factory_.reset(
         new net::FakeURLFetcherFactory(&url_fetcher_impl_factory_));
     InProcessBrowserTest::SetUp();

@@ -40,7 +40,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
   MessageCenterNotificationManagerTest() {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if !defined(OS_CHROMEOS)
     // BrowserWithTestWindowTest owns an AshTestHelper on OS_CHROMEOS, which
@@ -76,7 +76,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 #endif
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     run_loop_.reset();
     first_run_pref_.reset();
     profile_manager_.reset();

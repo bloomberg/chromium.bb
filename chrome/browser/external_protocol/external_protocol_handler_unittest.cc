@@ -103,11 +103,9 @@ class ExternalProtocolHandlerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_thread_(BrowserThread::FILE) {}
 
-  virtual void SetUp() {
-    file_thread_.Start();
-  }
+  void SetUp() override { file_thread_.Start(); }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Ensure that g_accept_requests gets set back to true after test execution.
     ExternalProtocolHandler::PermitLaunchUrl();
   }

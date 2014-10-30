@@ -24,10 +24,10 @@ using base::TimeDelta;
 class KeywordTableTest : public testing::Test {
  public:
   KeywordTableTest() {}
-  virtual ~KeywordTableTest() {}
+  ~KeywordTableTest() override {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 

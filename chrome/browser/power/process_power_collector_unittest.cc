@@ -35,9 +35,9 @@ using power::OriginPowerMapFactory;
 class BrowserProcessPowerTest : public BrowserWithTestWindowTest {
  public:
   BrowserProcessPowerTest() {}
-  virtual ~BrowserProcessPowerTest() {}
+  ~BrowserProcessPowerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     collector.reset(new ProcessPowerCollector);
 
@@ -55,7 +55,7 @@ class BrowserProcessPowerTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(profile_manager_->SetUp());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     collector.reset();
     BrowserWithTestWindowTest::TearDown();
   }

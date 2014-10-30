@@ -304,9 +304,7 @@ class MockDriveServiceNoConnectionAtGetUploadStatus : public DummyDriveService {
 
 class DriveUploaderTest : public testing::Test {
  public:
-  virtual void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;

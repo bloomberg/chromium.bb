@@ -47,7 +47,7 @@ namespace policy {
 class CloudPolicyManagerTest : public InProcessBrowserTest {
  protected:
   CloudPolicyManagerTest() {}
-  virtual ~CloudPolicyManagerTest() {}
+  ~CloudPolicyManagerTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     CommandLine* command_line = CommandLine::ForCurrentProcess();

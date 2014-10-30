@@ -14,7 +14,7 @@
 class SafeSearchUtilTest : public ::testing::Test {
  protected:
   SafeSearchUtilTest() {}
-  virtual ~SafeSearchUtilTest() {}
+  ~SafeSearchUtilTest() override {}
 
   scoped_ptr<net::URLRequest> CreateYoutubeRequest() {
     return context_.CreateRequest(GURL("http://www.youtube.com"),

@@ -26,10 +26,10 @@ namespace predictors {
 class AutocompleteActionPredictorTableTest : public testing::Test {
  public:
   AutocompleteActionPredictorTableTest();
-  virtual ~AutocompleteActionPredictorTableTest();
+  ~AutocompleteActionPredictorTableTest() override;
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   size_t CountRecords() const;
 
@@ -61,7 +61,7 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
 class AutocompleteActionPredictorTableReopenTest
     : public AutocompleteActionPredictorTableTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // By calling SetUp twice, we make sure that the table already exists for
     // this fixture.
     AutocompleteActionPredictorTableTest::SetUp();

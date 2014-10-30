@@ -70,7 +70,7 @@ class BookmarkProviderTest : public testing::Test {
   BookmarkProviderTest();
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   bookmarks::TestBookmarkClient client_;
   scoped_ptr<TestingProfile> profile_;

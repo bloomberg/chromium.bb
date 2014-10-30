@@ -32,7 +32,7 @@ SessionCommand* CreateCommandFromData(const TestData& data) {
 
 class SessionBackendTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
     base::CreateDirectory(path_);

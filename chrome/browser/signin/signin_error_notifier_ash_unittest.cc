@@ -62,7 +62,7 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
 
 class SigninErrorNotifierTest : public AshTestBase {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
@@ -91,7 +91,7 @@ class SigninErrorNotifierTest : public AshTestBase {
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
 #if defined(OS_WIN)
     test_screen_.reset();
 #endif

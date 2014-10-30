@@ -44,7 +44,7 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
   virtual ~InfoBarResponder() { infobar_service_->RemoveObserver(this); }
 
   // infobars::InfoBarManager::Observer
-  virtual void OnInfoBarAdded(infobars::InfoBar* infobar) override {
+  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
     if (has_observed_)
       return;
     has_observed_ = true;
@@ -77,10 +77,10 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
 class PushMessagingBrowserTest : public InProcessBrowserTest {
  public:
   PushMessagingBrowserTest() : gcm_service_(nullptr) {}
-  virtual ~PushMessagingBrowserTest() {}
+  ~PushMessagingBrowserTest() override {}
 
   // InProcessBrowserTest:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
 
@@ -88,7 +88,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   // InProcessBrowserTest:
-  virtual void SetUp() override {
+  void SetUp() override {
     https_server_.reset(new net::SpawnedTestServer(
         net::SpawnedTestServer::TYPE_HTTPS,
         net::BaseTestServer::SSLOptions(
@@ -100,7 +100,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   // InProcessBrowserTest:
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     gcm_service_ = static_cast<FakeGCMProfileService*>(
         GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             browser()->profile(), &FakeGCMProfileService::Build));

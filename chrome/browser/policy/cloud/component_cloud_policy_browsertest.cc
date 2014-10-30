@@ -103,7 +103,7 @@ bool Base64UrlEncode(const std::string& value, std::string* encoded) {
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
  protected:
   ComponentCloudPolicyTest() {}
-  virtual ~ComponentCloudPolicyTest() {}
+  ~ComponentCloudPolicyTest() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);

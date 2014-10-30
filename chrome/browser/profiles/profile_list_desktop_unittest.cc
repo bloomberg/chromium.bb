@@ -48,7 +48,7 @@ class ProfileListDesktopTest : public testing::Test {
       : manager_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(manager_.SetUp());
 #if defined(OS_CHROMEOS)
     // AvatarMenu and multiple profiles works after user logged in.

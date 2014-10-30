@@ -33,7 +33,7 @@ namespace component_updater {
 class CldComponentInstallerTest : public PlatformTest {
  public:
   CldComponentInstallerTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     PlatformTest::SetUp();
 
     // ScopedTempDir automatically does a recursive delete on the entire

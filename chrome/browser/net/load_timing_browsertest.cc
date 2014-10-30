@@ -268,8 +268,7 @@ class LoadTimingBrowserTest : public InProcessBrowserTest {
   LoadTimingBrowserTest() {
   }
 
-  virtual ~LoadTimingBrowserTest() {
-  }
+  ~LoadTimingBrowserTest() override {}
 
   // Navigates to |url| and writes the resulting navigation timings to
   // |navigation_deltas|.

@@ -34,7 +34,7 @@
 class MediaStreamInfoBarTest : public WebRtcTestBase {
  public:
   MediaStreamInfoBarTest() {}
-  virtual ~MediaStreamInfoBarTest() {}
+  ~MediaStreamInfoBarTest() override {}
 
   // InProcessBrowserTest:
   void SetUpCommandLine(CommandLine* command_line) override {

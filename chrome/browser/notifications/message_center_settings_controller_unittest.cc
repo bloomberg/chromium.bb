@@ -25,16 +25,14 @@ class MessageCenterSettingsControllerTest : public testing::Test {
  protected:
   MessageCenterSettingsControllerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {};
-  virtual ~MessageCenterSettingsControllerTest() {};
+  ~MessageCenterSettingsControllerTest() override{};
 
   base::FilePath GetProfilePath(const std::string& base_name) {
     return testing_profile_manager_.profile_manager()->user_data_dir()
         .AppendASCII(base_name);
   }
 
-  virtual void SetUp() override {
-    ASSERT_TRUE(testing_profile_manager_.SetUp());
-  }
+  void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
   virtual void CreateProfile(const std::string& name) {
     testing_profile_manager_.CreateTestingProfile(name);

@@ -260,8 +260,8 @@ class ShortcutsProviderTest : public testing::Test {
     std::set<ExpectedURLAndAllowedToBeDefault> matches_;
   };
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Fills test data into the provider.
   void FillData(TestShortcutInfo* db, size_t db_size);

@@ -73,7 +73,7 @@ class PrefsSyncableServiceTest : public testing::Test {
       test_processor_(NULL),
       next_pref_remote_sync_node_id_(0) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     prefs_.registry()->RegisterStringPref(
         kUnsyncedPreferenceName,
         kUnsyncedPreferenceDefaultValue,

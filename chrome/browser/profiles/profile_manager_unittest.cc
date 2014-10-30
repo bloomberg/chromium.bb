@@ -104,7 +104,7 @@ class ProfileManagerTest : public testing::Test {
       : local_state_(TestingBrowserProcess::GetGlobal()) {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
@@ -116,7 +116,7 @@ class ProfileManagerTest : public testing::Test {
 #endif
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();
   }
@@ -402,7 +402,7 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
 
 class ProfileManagerGuestTest : public ProfileManagerTest  {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingBrowserProcess::GetGlobal()->SetProfileManager(

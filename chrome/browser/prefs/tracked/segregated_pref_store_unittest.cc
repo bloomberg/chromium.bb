@@ -62,7 +62,7 @@ class SegregatedPrefStoreTest : public testing::Test {
         read_error_delegate_(
             new MockReadErrorDelegate(&read_error_delegate_data_)) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     selected_store_ = new TestingPrefStore;
     default_store_ = new TestingPrefStore;
 
@@ -77,9 +77,7 @@ class SegregatedPrefStoreTest : public testing::Test {
     segregated_store_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() override {
-    segregated_store_->RemoveObserver(&observer_);
-  }
+  void TearDown() override { segregated_store_->RemoveObserver(&observer_); }
 
  protected:
   scoped_ptr<PersistentPrefStore::ReadErrorDelegate> GetReadErrorDelegate() {

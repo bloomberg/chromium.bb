@@ -16,7 +16,7 @@
 class GoogleUpdateTest : public PlatformTest {
  protected:
   GoogleUpdateTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
-  virtual ~GoogleUpdateTest() {}
+  ~GoogleUpdateTest() override {}
 
  private:
   base::ScopedPathOverride user_data_dir_override_;

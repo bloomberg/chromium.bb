@@ -85,7 +85,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
       context_(0, &profile_) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plug-in"),
                                       foo_plugin_path_,
                                       base::ASCIIToUTF16("1"),

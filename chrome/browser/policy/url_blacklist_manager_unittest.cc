@@ -89,14 +89,14 @@ class URLBlacklistManagerTest : public testing::Test {
  protected:
   URLBlacklistManagerTest() {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlacklist);
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlWhitelist);
     blacklist_manager_.reset(new TestingURLBlacklistManager(&pref_service_));
     loop_.RunUntilIdle();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (blacklist_manager_.get())
       blacklist_manager_->ShutdownOnUIThread();
     loop_.RunUntilIdle();

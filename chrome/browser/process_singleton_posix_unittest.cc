@@ -71,7 +71,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     io_thread_.StartIOThread();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     testing::Test::SetUp();
 
     ProcessSingleton::DisablePromptForTesting();
@@ -89,7 +89,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     cookie_path_ = user_data_path_.Append(chrome::kSingletonCookieFilename);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
     ASSERT_TRUE(io_helper->Run());

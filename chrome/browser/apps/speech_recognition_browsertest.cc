@@ -9,11 +9,11 @@
 
 class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
  public:
-   SpeechRecognitionTest() {}
-   virtual ~SpeechRecognitionTest() {}
+  SpeechRecognitionTest() {}
+  ~SpeechRecognitionTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     // For SpeechRecognitionTest.SpeechFromBackgroundPage test, we need to

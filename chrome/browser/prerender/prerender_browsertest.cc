@@ -1048,7 +1048,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         loader_path_("files/prerender/prerender_loader.html"),
         explicitly_set_browser_(NULL) {}
 
-  virtual ~PrerenderBrowserTest() {}
+  ~PrerenderBrowserTest() override {}
 
   content::SessionStorageNamespace* GetSessionStorageNamespace() const {
     WebContents* web_contents = GetActiveWebContents();
@@ -3527,7 +3527,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
  public:
   PrerenderBrowserTestWithNaCl() {}
-  virtual ~PrerenderBrowserTestWithNaCl() {}
+  ~PrerenderBrowserTestWithNaCl() override {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     PrerenderBrowserTest::SetUpCommandLine(command_line);
@@ -3615,9 +3615,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
     autostart_test_server_ = false;
   }
 
-  virtual void SetUp() override {
-    PrerenderBrowserTest::SetUp();
-  }
+  void SetUp() override { PrerenderBrowserTest::SetUp(); }
 
   void SetUpCommandLine(CommandLine* command_line) override {
     PrerenderBrowserTest::SetUpCommandLine(command_line);

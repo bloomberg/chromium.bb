@@ -20,13 +20,13 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
                             public KeyedService {
  public:
   SigninErrorNotifier(SigninErrorController* controller, Profile* profile);
-  virtual ~SigninErrorNotifier();
+  ~SigninErrorNotifier() override;
 
   // KeyedService:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // SigninErrorController::Observer:
-  virtual void OnErrorChanged() override;
+  void OnErrorChanged() override;
 
  private:
   base::string16 GetMessageBody() const;

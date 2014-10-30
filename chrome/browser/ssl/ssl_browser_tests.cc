@@ -738,7 +738,7 @@ class SSLUITestWithClientCert : public SSLUITest {
   public:
    SSLUITestWithClientCert() : cert_db_(NULL) {}
 
-   virtual void SetUpOnMainThread() override {
+   void SetUpOnMainThread() override {
      SSLUITest::SetUpOnMainThread();
 
      base::RunLoop loop;

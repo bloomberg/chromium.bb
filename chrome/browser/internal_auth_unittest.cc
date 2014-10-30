@@ -20,13 +20,11 @@ class InternalAuthTest : public ::testing::Test {
     for (int i = 20; i--;)
       long_string_ += long_string_;
   }
-  virtual ~InternalAuthTest() {}
+  ~InternalAuthTest() override {}
 
-  virtual void SetUp() {
-  }
+  void SetUp() override {}
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   base::MessageLoop message_loop_;
   std::string long_string_;

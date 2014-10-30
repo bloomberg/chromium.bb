@@ -20,14 +20,14 @@ class SystemThemeX11 : public CustomThemeSupplier {
   explicit SystemThemeX11(PrefService* pref_service);
 
   // Overridden from CustomThemeSupplier:
-  virtual void StartUsingTheme() override;
-  virtual void StopUsingTheme() override;
-  virtual bool GetColor(int id, SkColor* color) const override;
-  virtual gfx::Image GetImageNamed(int id) override;
-  virtual bool HasCustomImage(int id) const override;
+  void StartUsingTheme() override;
+  void StopUsingTheme() override;
+  bool GetColor(int id, SkColor* color) const override;
+  gfx::Image GetImageNamed(int id) override;
+  bool HasCustomImage(int id) const override;
 
  private:
-  virtual ~SystemThemeX11();
+  ~SystemThemeX11() override;
 
   // These pointers are not owned by us.
   views::LinuxUI* const linux_ui_;

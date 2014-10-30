@@ -99,8 +99,7 @@ class FakeEmptyTopSites : public history::TopSites {
   // after top sites have been requested.
   GetMostVisitedURLsCallback mv_callback;
  protected:
-  virtual ~FakeEmptyTopSites() {
-  }
+  ~FakeEmptyTopSites() override {}
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
@@ -117,8 +116,8 @@ class ZeroSuggestProviderTest : public testing::Test,
  public:
   ZeroSuggestProviderTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   // AutocompleteProviderListener:

@@ -10,7 +10,7 @@
 
 class IncognitoModePrefsTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     IncognitoModePrefs::RegisterProfilePrefs(prefs_.registry());
   }
 

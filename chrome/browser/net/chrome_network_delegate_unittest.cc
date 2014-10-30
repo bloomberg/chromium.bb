@@ -31,13 +31,13 @@ class ChromeNetworkDelegateTest : public testing::Test {
       : forwarder_(new extensions::EventRouterForwarder()) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     never_throttle_requests_original_value_ =
         ChromeNetworkDelegate::g_never_throttle_requests_;
     ChromeNetworkDelegate::g_never_throttle_requests_ = false;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     ChromeNetworkDelegate::g_never_throttle_requests_ =
         never_throttle_requests_original_value_;
   }
@@ -103,7 +103,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
 #endif
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
         &enable_referrers_, NULL, &force_google_safe_search_,
         profile_.GetTestingPrefService());
@@ -312,7 +312,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
         kFirstPartySite("http://cool.things.com"),
         kBlockedFirstPartySite("http://no.thirdparties.com") {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
         &enable_referrers_, NULL, NULL,
         profile_.GetTestingPrefService());

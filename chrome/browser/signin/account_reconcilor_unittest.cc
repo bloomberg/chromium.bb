@@ -79,7 +79,7 @@ MockAccountReconcilor::MockAccountReconcilor(
 class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
  public:
   AccountReconcilorTest();
-  virtual void SetUp() override;
+  void SetUp() override;
 
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }

@@ -40,11 +40,11 @@ class ComponentUpdaterTest : public testing::Test {
 
   ComponentUpdaterTest();
 
-  virtual ~ComponentUpdaterTest();
+  ~ComponentUpdaterTest() override;
 
-  virtual void SetUp();
+  void SetUp() override;
 
-  virtual void TearDown();
+  void TearDown() override;
 
   ComponentUpdateService* component_updater();
 

@@ -40,7 +40,7 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
         to_command_line_(CommandLine::NO_PROGRAM) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     from_command_line_.AppendSwitch(switches::kDisableWebRtcEncryption);
   }
 
@@ -93,7 +93,7 @@ namespace content {
 
 class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("42")));
