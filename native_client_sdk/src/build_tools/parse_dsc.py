@@ -56,7 +56,7 @@ DSC_FORMAT = {
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
-    'DEST': (str, ['getting_started', 'examples/api',
+    'DEST': (str, ['getting_started', 'examples/api', 'examples/benchmarks',
                    'examples/demo', 'examples/tutorial',
                    'src', 'tests'], True),
     'NAME': (str, '', False),

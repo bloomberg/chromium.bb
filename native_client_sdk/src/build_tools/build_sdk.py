@@ -666,6 +666,7 @@ def BuildStepUpdateUserProjects(pepperdir, toolchains,
   filters['DEST'] = [
     'getting_started',
     'examples/api',
+    'examples/benchmarks',
     'examples/demo',
     'examples/tutorial',
     'src'
