@@ -5,6 +5,7 @@
 #ifndef UI_GFX_PLATFORM_FONT_WIN_H_
 #define UI_GFX_PLATFORM_FONT_WIN_H_
 
+#include <dwrite.h>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -66,6 +67,11 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   virtual int GetFontSize() const override;
   virtual const FontRenderParams& GetFontRenderParams() const override;
   virtual NativeFont GetNativeFont() const override;
+
+  // Called once during initialization if we are using DirectWrite for fonts.
+  static void set_direct_write_factory(IDWriteFactory* factory) {
+    direct_write_factory_ = factory;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
@@ -155,6 +161,13 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // |base_font|.
   static Font DeriveWithCorrectedSize(HFONT base_font);
 
+  // Converts the GDI font identified by the |gdi_font| parameter to a
+  // DirectWrite compatible HFONT, i.e with metrics compatible with
+  // DirectWrite.
+  // Returns the HFONT which is created from DirectWrite compatible font
+  // metrics.
+  static HFONT ConvertGDIFontToDirectWriteFont(HFONT gdi_font);
+
   // Creates a new PlatformFontWin with the specified HFontRef. Used when
   // constructing a Font from a HFONT we don't want to copy.
   explicit PlatformFontWin(HFontRef* hfont_ref);
@@ -164,6 +177,10 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
 
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
+
+  // Pointer to the global IDWriteFactory interface. This is only set if we are
+  // using DirectWrite for fonts. Defaults to NULL.
+  static IDWriteFactory* direct_write_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };

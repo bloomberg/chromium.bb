@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -80,6 +81,8 @@ PlatformFontWin::AdjustFontCallback
     PlatformFontWin::adjust_font_callback = NULL;
 PlatformFontWin::GetMinimumFontSizeCallback
     PlatformFontWin::get_minimum_font_size_callback = NULL;
+
+IDWriteFactory* PlatformFontWin::direct_write_factory_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin, public
@@ -247,6 +250,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
   TEXTMETRIC font_metrics;
 
+  if (direct_write_factory_) {
+    base::win::ScopedGDIObject<HFONT> gdi_font(font);
+    font = ConvertGDIFontToDirectWriteFont(gdi_font);
+  }
+
   {
     base::win::ScopedGetDC screen_dc(NULL);
     gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
@@ -307,6 +315,43 @@ Font PlatformFontWin::DeriveWithCorrectedSize(HFONT base_font) {
   } while (true);
 
   return Font(new PlatformFontWin(CreateHFontRef(best_font.release())));
+}
+
+// static
+HFONT PlatformFontWin::ConvertGDIFontToDirectWriteFont(HFONT gdi_font) {
+  // This function uses  the DirectWrite Gdi interop interfaces to convert the
+  // gdi font passed in to a HFONT which is compatible with DirectWrite font
+  // metrics which could be different from GDI font metrics. This ensures that
+  // widgets like labels which use font metrics to calculate bounds have the
+  // same calculations as skia which uses DirectWrite.
+  DCHECK(direct_write_factory_);
+  base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
+  HRESULT hr = direct_write_factory_->GetGdiInterop(gdi_interop.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return NULL;
+  }
+
+  base::win::ScopedGetDC screen_dc(NULL);
+  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+
+  base::win::ScopedSelectObject scoped_font(screen_dc, gdi_font);
+
+  base::win::ScopedComPtr<IDWriteFontFace> font_face_gdi;
+  hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face_gdi.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return NULL;
+  }
+
+  LOGFONT dwrite_to_gdi_log_font = {0};
+  hr = gdi_interop->ConvertFontFaceToLOGFONT(font_face_gdi,
+                                             &dwrite_to_gdi_log_font);
+  if (FAILED(hr)) {
+    CHECK(false);
+    return NULL;
+  }
+  return CreateFontIndirect(&dwrite_to_gdi_log_font);
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
