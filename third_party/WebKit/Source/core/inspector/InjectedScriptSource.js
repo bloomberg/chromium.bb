@@ -84,6 +84,7 @@ function concat(array1, array2)
 /**
  * @param {*} obj
  * @return {string}
+ * @suppress {uselessCode}
  */
 function toString(obj)
 {
