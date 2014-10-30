@@ -1,5 +1,5 @@
 {
-  "x-version": 4,
+  "x-version": 5,
   "google-talk": {
     "mime_types": [
     ],
@@ -115,9 +115,9 @@
     ],
     "versions": [
       {
-        "version": "11.1.102",
+        "version": "15.0.0.189",
         "status": "up_to_date",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-03.html"
+        "reference": "http://helpx.adobe.com/security/products/flash-player/apsb14-22.html"
       }
     ],
     "lang": "en-US",
@@ -259,9 +259,9 @@
     ],
     "versions": [
       {
-        "version": "5.1.20125.0",
+        "version": "5.1.30214.0",
         "status": "up_to_date",
-        "reference": "https://support.microsoft.com/kb/2814124"
+        "reference": "https://support.microsoft.com/kb/2932677"
       }
     ],
     "lang": "en-US",
