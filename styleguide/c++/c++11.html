@@ -197,7 +197,7 @@ Are Variadic macros nonstandard?</a></td>
 
 <h3 id="blacklist_banned">C++11 Banned Features</h3>
 
-<p>This section will list C++11 features that are not allowed in the Chromium
+<p>This section lists C++11 features that are not allowed in the Chromium
 codebase.
 </p>
 
@@ -240,6 +240,17 @@ function for logging purposes</td>
 <td><a href="http://www.informit.com/guides/content.aspx?g=cplusplus&amp;seqNum=338">
 The __func__ Predeclared Identifier is Coming to C++</a></td>
 <td>Doesn't work in MSVS2013. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ojGfcgSDzHM">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Inherited Constructors</td>
+<td><code>class Derived : Base {
+<br />&nbsp;&nbsp;using Base::Base;
+<br />};</code></td>
+<td>Allow derived classes to inherit constructors from base classes</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/using_declaration">Using-declaration</a></td>
+<td>Doesn't work in MSVS2013. Reevaluate once it does. <a
+href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/BULzgIKZ-Ao/PLO7_GoVNvYJ">Discussion thread</a></td>
 </tr>
 
 <tr>
