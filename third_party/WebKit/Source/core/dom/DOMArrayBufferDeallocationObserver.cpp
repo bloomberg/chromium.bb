@@ -5,15 +5,17 @@
 #include "config.h"
 #include "core/dom/DOMArrayBufferDeallocationObserver.h"
 
-#include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 #include <v8.h>
 
 namespace blink {
 
 DOMArrayBufferDeallocationObserver* DOMArrayBufferDeallocationObserver::instance()
 {
-    DEFINE_STATIC_LOCAL(DOMArrayBufferDeallocationObserver, deallocationObserver, ());
-    return &deallocationObserver;
+    AtomicallyInitializedStatic(
+        DOMArrayBufferDeallocationObserver*,
+        deallocationObserver = new DOMArrayBufferDeallocationObserver);
+    return deallocationObserver;
 }
 
 void DOMArrayBufferDeallocationObserver::arrayBufferDeallocated(unsigned sizeInBytes)
