@@ -364,6 +364,8 @@
       'renderer/sad_plugin.h',
       'renderer/savable_resources.cc',
       'renderer/savable_resources.h',
+      'renderer/scheduler/renderer_task_queue_selector.cc',
+      'renderer/scheduler/renderer_task_queue_selector.h',
       'renderer/scheduler/task_queue_manager.cc',
       'renderer/scheduler/task_queue_manager.h',
       'renderer/scheduler/task_queue_selector.h',
