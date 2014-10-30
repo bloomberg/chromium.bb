@@ -61,6 +61,8 @@ class AlarmTimer : public base::Timer,
 
   ~AlarmTimer() override;
 
+  bool can_wake_from_suspend() { return can_wake_from_suspend_; }
+
   // Timer overrides.
   void Stop() override;
   void Reset() override;
