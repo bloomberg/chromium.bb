@@ -40,6 +40,7 @@ DataReductionProxyStatisticsPrefs::~DataReductionProxyStatisticsPrefs() {
 void DataReductionProxyStatisticsPrefs::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pref_change_registrar_->RemoveAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void DataReductionProxyStatisticsPrefs::Init() {
