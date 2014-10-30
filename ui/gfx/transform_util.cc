@@ -24,11 +24,6 @@ SkMScalar Length3(SkMScalar v[3]) {
       std::sqrt(vd[0] * vd[0] + vd[1] * vd[1] + vd[2] * vd[2]));
 }
 
-void Scale3(SkMScalar v[3], SkMScalar scale) {
-  for (int i = 0; i < 3; ++i)
-    v[i] *= scale;
-}
-
 template <int n>
 SkMScalar Dot(const SkMScalar* a, const SkMScalar* b) {
   double total = 0.0;
@@ -372,8 +367,11 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
   // Compute X scale factor and normalize first row.
   decomp->scale[0] = Length3(row[0]);
-  if (decomp->scale[0] != 0.0)
-    Scale3(row[0], 1.0 / decomp->scale[0]);
+  if (decomp->scale[0] != 0.0) {
+    row[0][0] /= decomp->scale[0];
+    row[0][1] /= decomp->scale[0];
+    row[0][2] /= decomp->scale[0];
+  }
 
   // Compute XY shear factor and make 2nd row orthogonal to 1st.
   decomp->skew[0] = Dot<3>(row[0], row[1]);
@@ -381,8 +379,11 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
   // Now, compute Y scale and normalize 2nd row.
   decomp->scale[1] = Length3(row[1]);
-  if (decomp->scale[1] != 0.0)
-    Scale3(row[1], 1.0 / decomp->scale[1]);
+  if (decomp->scale[1] != 0.0) {
+    row[1][0] /= decomp->scale[1];
+    row[1][1] /= decomp->scale[1];
+    row[1][2] /= decomp->scale[1];
+  }
 
   decomp->skew[0] /= decomp->scale[1];
 
@@ -394,8 +395,11 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
   // Next, get Z scale and normalize 3rd row.
   decomp->scale[2] = Length3(row[2]);
-  if (decomp->scale[2] != 0.0)
-    Scale3(row[2], 1.0 / decomp->scale[2]);
+  if (decomp->scale[2] != 0.0) {
+    row[2][0] /= decomp->scale[2];
+    row[2][1] /= decomp->scale[2];
+    row[2][2] /= decomp->scale[2];
+  }
 
   decomp->skew[1] /= decomp->scale[2];
   decomp->skew[2] /= decomp->scale[2];

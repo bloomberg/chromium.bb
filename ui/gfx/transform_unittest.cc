@@ -1361,6 +1361,21 @@ TEST(XFormTest, FactorTRS) {
   }
 }
 
+TEST(XFormTest, DecomposeTransform) {
+  for (float scale = 0.001f; scale < 2.0f; scale += 0.001f) {
+    gfx::Transform transform;
+    transform.Scale(scale, scale);
+    EXPECT_TRUE(transform.Preserves2dAxisAlignment());
+
+    DecomposedTransform decomp;
+    bool success = DecomposeTransform(&decomp, transform);
+    EXPECT_TRUE(success);
+
+    gfx::Transform compose_transform = ComposeTransform(decomp);
+    EXPECT_TRUE(compose_transform.Preserves2dAxisAlignment());
+  }
+}
+
 TEST(XFormTest, IntegerTranslation) {
   gfx::Transform transform;
   EXPECT_TRUE(transform.IsIdentityOrIntegerTranslation());
