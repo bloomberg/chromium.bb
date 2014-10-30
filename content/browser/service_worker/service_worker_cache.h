@@ -118,6 +118,8 @@ class CONTENT_EXPORT ServiceWorkerCache
 
   // Put callbacks.
   static void PutImpl(scoped_ptr<PutContext> put_context);
+  static void PutDidDelete(scoped_ptr<PutContext> put_context,
+                           ErrorType delete_error);
   static void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
   static void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                                  int expected_bytes,

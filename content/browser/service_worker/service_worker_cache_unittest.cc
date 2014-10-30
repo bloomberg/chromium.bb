@@ -232,6 +232,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     callback_error_ = error;
     callback_response_ = response.Pass();
 
+    callback_response_data_.reset();
     if (error == ServiceWorkerCache::ErrorTypeOK &&
         !callback_response_->blob_uuid.empty()) {
       callback_response_data_ = body_handle.Pass();
@@ -361,6 +362,20 @@ TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
   loop->Run();
 
   EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
+}
+
+TEST_P(ServiceWorkerCacheTestP, PutReplace) {
+  EXPECT_TRUE(Put(body_request_, no_body_response_));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_FALSE(callback_response_data_);
+
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_data_);
+
+  EXPECT_TRUE(Put(body_request_, no_body_response_));
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_FALSE(callback_response_data_);
 }
 
 TEST_P(ServiceWorkerCacheTestP, MatchNoBody) {

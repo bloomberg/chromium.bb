@@ -887,6 +887,23 @@ void ServiceWorkerCache::PutImpl(scoped_ptr<PutContext> put_context) {
     return;
   }
 
+  scoped_ptr<ServiceWorkerFetchRequest> request_copy(
+      new ServiceWorkerFetchRequest(*put_context->request));
+  ServiceWorkerCache* cache_ptr = put_context->cache.get();
+
+  cache_ptr->Delete(request_copy.Pass(),
+                    base::Bind(PutDidDelete, base::Passed(put_context.Pass())));
+}
+
+// static
+void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
+                                      ErrorType delete_error) {
+  if (!put_context->cache || !put_context->cache->backend_) {
+    put_context->callback.Run(ErrorTypeStorage,
+                              scoped_ptr<ServiceWorkerResponse>(),
+                              scoped_ptr<storage::BlobDataHandle>());
+  }
+
   disk_cache::Entry** entry_ptr = &put_context->cache_entry;
   ServiceWorkerFetchRequest* request_ptr = put_context->request.get();
   disk_cache::Backend* backend_ptr = put_context->cache->backend_.get();
