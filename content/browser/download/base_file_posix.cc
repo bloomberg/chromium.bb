@@ -11,31 +11,38 @@ namespace content {
 
 DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     const base::FilePath& new_path) {
-  // Similarly, on Unix, we're moving a temp file created with permissions 600
-  // to |new_path|. Here, we try to fix up the destination file with appropriate
-  // permissions.
-  struct stat st;
-  // First check the file existence and create an empty file if it doesn't
-  // exist.
+  // Move |full_path_|, created with mode 0600, to |new_path|.
+  //
+  // If |new_path| does not already exist, create it. The kernel will apply
+  // the user's umask to the mode 0666.
   if (!base::PathExists(new_path)) {
-    int write_error = base::WriteFile(new_path, "", 0);
-    if (write_error < 0)
+    if (!base::WriteFileWithMode(new_path, "", 0, 0666))
       return LogSystemError("WriteFile", errno);
   }
-  int stat_error = stat(new_path.value().c_str(), &st);
-  bool stat_succeeded = (stat_error == 0);
-  if (!stat_succeeded)
-    LogSystemError("stat", errno);
 
-  if (!base::Move(full_path_, new_path))
-    return LogSystemError("Move", errno);
-
-  if (stat_succeeded) {
-    // On Windows file systems (FAT, NTFS), chmod fails.  This is OK.
-    int chmod_error = chmod(new_path.value().c_str(), st.st_mode);
-    if (chmod_error < 0)
-      LogSystemError("chmod", errno);
+  // Whether newly-created or pre-existing, get the mode of the file named
+  // |new_path|.
+  mode_t mode;
+  struct stat status;
+  if (stat(new_path.value().c_str(), &status)) {
+    return LogSystemError("WriteFile", errno);
   }
+  mode = status.st_mode & 0777;
+
+  // If rename(2) fails, fall back to base::Move.
+  if (rename(full_path_.value().c_str(), new_path.value().c_str())) {
+    if (!base::Move(full_path_, new_path))
+      return LogSystemError("Move", errno);
+  }
+
+  // If |base::Move| had to copy the file (e.g. because the source is on a
+  // different volume than |new_path|, we must re-set the mode. This is
+  // racy but may be the best we can do.
+  //
+  // On Windows file systems (FAT, NTFS), chmod fails. This is OK.
+  if (chmod(new_path.value().c_str(), mode))
+    (void) LogSystemError("chmod", errno);
+
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
