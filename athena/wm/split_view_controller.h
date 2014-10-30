@@ -8,6 +8,7 @@
 #include "athena/athena_export.h"
 #include "athena/util/drag_handle.h"
 #include "athena/wm/bezel_controller.h"
+#include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -37,7 +38,8 @@ class WindowListProviderImpl;
 class ATHENA_EXPORT SplitViewController
     : public BezelController::ScrollDelegate,
       public DragHandleScrollDelegate,
-      public WindowManagerObserver {
+      public WindowManagerObserver,
+      public WindowListProviderObserver {
  public:
   SplitViewController(aura::Window* container,
                       WindowListProviderImpl* window_list_provider);
@@ -131,6 +133,12 @@ class ATHENA_EXPORT SplitViewController
   void OnOverviewModeExit() override;
   void OnSplitViewModeEnter() override;
   void OnSplitViewModeExit() override;
+
+  // WindowListProviderObserver:
+  void OnWindowStackingChangedInList() override {}
+  void OnWindowAddedToList(aura::Window* added_window) override;
+  void OnWindowRemovedFromList(aura::Window* removed_window,
+                               int index) override;
 
   State state_;
 

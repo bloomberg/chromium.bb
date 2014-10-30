@@ -118,6 +118,7 @@ void WindowListProviderImpl::OnWillRemoveWindow(aura::Window* window) {
   CHECK(find != window_list_.end());
   int index = find - window_list_.begin();
   window_list_.erase(find);
+  window->ClearProperty(kManagedKey);
   window->RemoveObserver(this);
   FOR_EACH_OBSERVER(WindowListProviderObserver,
                     observers_,

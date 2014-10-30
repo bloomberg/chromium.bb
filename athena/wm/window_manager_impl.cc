@@ -366,6 +366,25 @@ void WindowManagerImpl::OnWindowAddedToList(aura::Window* child) {
 
 void WindowManagerImpl::OnWindowRemovedFromList(aura::Window* removed_window,
                                                 int index) {
+  aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  DCHECK(!window_list_provider_->IsWindowInList(removed_window));
+  DCHECK_LE(index, static_cast<int>(windows.size()));
+
+  // Splitted windows are handled in SplitViewController.
+  if (split_view_controller_->IsSplitViewModeActive())
+    return;
+
+  // In overview mode, windows are handled in WindowOverviewMode class.
+  if (!IsOverviewModeActive())
+    return;
+
+  // Shows the next window if the removed window was top.
+  if (!windows.empty() && index == static_cast<int>(windows.size())) {
+    aura::Window* next_window = windows.back();
+    next_window->Show();
+
+   // Don't activate the window here, since it should be done in focus manager.
+  }
 }
 
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {

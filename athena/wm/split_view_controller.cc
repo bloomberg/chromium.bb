@@ -174,9 +174,11 @@ SplitViewController::SplitViewController(
       divider_widget_(nullptr),
       drag_handle_(nullptr),
       weak_factory_(this) {
+  window_list_provider_->AddObserver(this);
 }
 
 SplitViewController::~SplitViewController() {
+  window_list_provider_->RemoveObserver(this);
 }
 
 bool SplitViewController::CanActivateSplitViewMode() const {
@@ -364,6 +366,40 @@ gfx::Rect SplitViewController::GetRightAreaBounds() {
                    0,
                    container_width - divider_position_ - kDividerWidth / 2,
                    work_area.height());
+}
+
+void SplitViewController::OnWindowAddedToList(aura::Window* added_window) {
+}
+
+void SplitViewController::OnWindowRemovedFromList(aura::Window* removed_window,
+                                                  int index) {
+  if (!IsSplitViewModeActive() ||
+      (removed_window != left_window_ && removed_window != right_window_)) {
+    return;
+  }
+
+  DCHECK(!window_list_provider_->IsWindowInList(removed_window));
+
+  const aura::Window::Windows windows = window_list_provider_->GetWindowList();
+  CHECK_GE(static_cast<int>(windows.size()), 1);
+  DCHECK_GE(index, static_cast<int>(windows.size() - 1));
+  DCHECK_LE(index, static_cast<int>(windows.size()));
+
+  if (windows.size() == 1) {
+    DeactivateSplitMode();
+    return;
+  }
+
+  aura::Window* next_window = *(windows.rbegin() + 1);
+  if (removed_window == left_window_) {
+    CHECK(right_window_ == windows.back());
+    left_window_ = next_window;
+  } else {
+    CHECK(left_window_ == windows.back());
+    CHECK(removed_window == right_window_);
+    right_window_ = next_window;
+  }
+  UpdateLayout(false);
 }
 
 void SplitViewController::SetState(SplitViewController::State state) {

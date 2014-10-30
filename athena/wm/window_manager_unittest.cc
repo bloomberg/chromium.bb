@@ -458,4 +458,186 @@ TEST_F(WindowManagerTest, ClickBackgroundInOverview) {
   generator.ClickLeftButton();
 }
 
+TEST_F(WindowManagerTest, CloseWindow) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
+
+  EXPECT_EQ(w3.get(),
+            wm_api.GetWindowListProvider()->GetWindowList().back());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+
+  // Closes the front window (w3).
+  w3.reset();
+  EXPECT_EQ(w2.get(),
+            wm_api.GetWindowListProvider()->GetWindowList().back());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  // Closes a non-front window (w1).
+  w1.reset();
+  EXPECT_EQ(w2.get(),
+            wm_api.GetWindowListProvider()->GetWindowList().back());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  // Closes w2.
+  w2.reset();
+  EXPECT_TRUE(wm_api.GetWindowListProvider()->GetWindowList().empty());
+}
+
+TEST_F(WindowManagerTest, CloseWindowInSplitMode) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w4(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w5(CreateAndActivateWindow(&delegate));
+
+  // Get into split-view mode.
+  wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL, NULL);
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w5.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w4.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w5->IsVisible());
+  EXPECT_TRUE(w4->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w5.get()));
+
+  // Closes the left window (w5).
+  w5.reset();
+
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w4.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w4->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
+
+  // Closes the right window (w4).
+  w4.reset();
+
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+
+  // Closes a non-visible window (w1).
+  w1.reset();
+
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+
+  // Closes a non-visible window (w1).
+  w3.reset();
+
+  EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+}
+
+TEST_F(WindowManagerTest, CloseWindowFromOverview) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+
+  WindowManager::Get()->EnterOverview();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w3.get()));
+
+  w3.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+
+  w1.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_TRUE(w2->IsVisible());
+}
+
+TEST_F(WindowManagerTest, CloseWindowInSplitModeFromOverview) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w2(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w3(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w4(CreateAndActivateWindow(&delegate));
+  scoped_ptr<aura::Window> w5(CreateAndActivateWindow(&delegate));
+
+  // Get into split-view mode.
+  wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL, NULL);
+  WindowManager::Get()->EnterOverview();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w5.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w4.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w5->IsVisible());
+  EXPECT_TRUE(w4->IsVisible());
+
+  // Closes the left window (w5).
+  w5.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w4.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w4->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+
+  // Closes the right window (w4).
+  w4.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+
+  // Closes a non-visible window (w1).
+  w1.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+
+  // Closes a non-visible window (w1).
+  w3.reset();
+
+  ASSERT_TRUE(WindowManager::Get()->IsOverviewModeActive());
+  EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_TRUE(w2->IsVisible());
+}
+
 }  // namespace athena
