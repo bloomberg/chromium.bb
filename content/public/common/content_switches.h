@@ -256,7 +256,6 @@ CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 CONTENT_EXPORT extern const char kDisableClickDelay[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 CONTENT_EXPORT extern const char kDisableWebRTC[];
-CONTENT_EXPORT extern const char kEnableContentVideoViewPowerSaveBlocker[];
 CONTENT_EXPORT extern const char kEnableSpeechRecognition[];
 CONTENT_EXPORT extern const char kForceUseOverlayEmbeddedVideo[];
 CONTENT_EXPORT extern const char kHideScrollbars[];

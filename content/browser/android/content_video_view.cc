@@ -53,7 +53,6 @@ ContentVideoView::ContentVideoView(
   DCHECK(!g_content_video_view);
   j_content_video_view_ = CreateJavaObject();
   g_content_video_view = this;
-  CreatePowerSaveBlocker();
 }
 
 ContentVideoView::~ContentVideoView() {
@@ -72,7 +71,6 @@ void ContentVideoView::OpenVideo() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    CreatePowerSaveBlocker();
     Java_ContentVideoView_openVideo(env, content_video_view.obj());
   }
 }
@@ -81,7 +79,6 @@ void ContentVideoView::OnMediaPlayerError(int error_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    power_save_blocker_.reset();
     Java_ContentVideoView_onMediaPlayerError(env, content_video_view.obj(),
         error_type);
   }
@@ -109,7 +106,6 @@ void ContentVideoView::OnPlaybackComplete() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    power_save_blocker_.reset();
     Java_ContentVideoView_onPlaybackComplete(env, content_video_view.obj());
   }
 }
@@ -201,18 +197,15 @@ void ContentVideoView::SeekTo(JNIEnv*, jobject obj, jint msec) {
 }
 
 void ContentVideoView::Play(JNIEnv*, jobject obj) {
-  CreatePowerSaveBlocker();
   manager_->FullscreenPlayerPlay();
 }
 
 void ContentVideoView::Pause(JNIEnv*, jobject obj) {
-  power_save_blocker_.reset();
   manager_->FullscreenPlayerPause();
 }
 
 void ContentVideoView::ExitFullscreen(
     JNIEnv*, jobject, jboolean release_media_player) {
-  power_save_blocker_.reset();
   j_content_video_view_.reset();
   manager_->ExitFullscreen(release_media_player);
 }
@@ -234,18 +227,6 @@ ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
   return j_content_video_view_.get(env);
 }
 
-gfx::NativeView ContentVideoView::GetNativeView() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
-  if (content_video_view.is_null())
-    return NULL;
-
-  return reinterpret_cast<gfx::NativeView>(
-      Java_ContentVideoView_getNativeViewAndroid(env,
-                                                 content_video_view.obj()));
-
-}
-
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
   JNIEnv* env = AttachCurrentThread();
@@ -256,20 +237,4 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
           content_view_core->GetJavaObject().obj(),
           reinterpret_cast<intptr_t>(this)).obj());
 }
-
-void ContentVideoView::CreatePowerSaveBlocker() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableContentVideoViewPowerSaveBlocker)) {
-    // In fullscreen Clank reuses the power save blocker attached to the
-    // container view that was created for embedded video. The WebView cannot
-    // reuse that so we create a new blocker instead.
-    if (power_save_blocker_) return;
-    power_save_blocker_ = PowerSaveBlocker::Create(
-        PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-        "Playing video").Pass();
-    static_cast<PowerSaveBlockerImpl*>(power_save_blocker_.get())->
-        InitDisplaySleepBlocker(GetNativeView());
-  }
-}
-
 }  // namespace content

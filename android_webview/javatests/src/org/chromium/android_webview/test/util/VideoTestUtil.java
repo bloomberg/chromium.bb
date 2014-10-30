@@ -35,17 +35,17 @@ public class VideoTestUtil {
                 observer.register(awContents.getContentViewCore(), "javaObserver");
             }
         });
-        VideoTestWebServer webServer = new VideoTestWebServer(testCase.getActivity());
+        VideoTestWebServer webServer = new VideoTestWebServer();
         try {
-            String data = "<html><head><script>" +
-                    "addEventListener('DOMContentLoaded', function() { " +
-                    "  document.getElementById('video').addEventListener('play', function() { " +
-                    "    javaObserver.notifyJava(); " +
-                    "  }, false); " +
-                    "}, false); " +
-                    "</script></head><body>" +
-                    "<video id='video' autoplay control src='" +
-                    webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
+            String data = "<html><head><script>"
+                    + "addEventListener('DOMContentLoaded', function() { "
+                    + "  document.getElementById('video').addEventListener('play', function() { "
+                    + "    javaObserver.notifyJava(); "
+                    + "  }, false); "
+                    + "}, false); "
+                    + "</script></head><body>"
+                    + "<video id='video' autoplay control src='"
+                    + webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
             testCase.loadDataAsync(awContents, data, "text/html", false);
             return observer.waitForEvent(waitTime);
         } finally {

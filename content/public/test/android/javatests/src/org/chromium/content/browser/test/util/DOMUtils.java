@@ -21,26 +21,40 @@ import java.util.concurrent.TimeoutException;
  * Collection of DOM-based utilities.
  */
 public class DOMUtils {
-
     /**
-     * Returns whether the video with given {@code nodeId} has ended.
+     * Pauses the video with given {@code nodeId}.
      */
-    public static boolean hasVideoEnded(final WebContents webContents, final String nodeId)
+    public static void pauseVideo(final WebContents webContents, final String nodeId)
             throws InterruptedException, TimeoutException {
-        return getNodeField("ended", webContents, nodeId, Boolean.class);
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var video = document.getElementById('" + nodeId + "');");
+        sb.append("  if (video) video.pause();");
+        sb.append("})();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, sb.toString());
     }
 
     /**
-     * Wait until the end of the video with given {@code nodeId}.
-     * @return Whether the video has ended.
+     * Returns whether the video with given {@code nodeId} is paused.
      */
-    public static boolean waitForEndOfVideo(final WebContents webContents, final String nodeId)
+    public static boolean isVideoPaused(final WebContents webContents, final String nodeId)
+            throws InterruptedException, TimeoutException {
+        return getNodeField("paused", webContents, nodeId, Boolean.class);
+    }
+
+    /**
+     * Waits until the playback of the video with given {@code nodeId} has started.
+     *
+     * @return Whether the playback has started.
+     */
+    public static boolean waitForVideoPlay(final WebContents webContents, final String nodeId)
             throws InterruptedException {
         return CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.hasVideoEnded(webContents, nodeId);
+                    return !DOMUtils.isVideoPaused(webContents, nodeId);
                 } catch (InterruptedException e) {
                     // Intentionally do nothing
                     return false;
@@ -50,6 +64,21 @@ public class DOMUtils {
                 }
             }
         });
+    }
+
+    /**
+     * Returns whether the document is in fullscreen.
+     */
+    public static boolean isFullscreen(final WebContents webContents)
+            throws InterruptedException, TimeoutException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  return [document.webkitIsFullScreen];");
+        sb.append("})();");
+
+        String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, sb.toString());
+        return readValue(jsonText, Boolean.class);
     }
 
     /**
@@ -193,7 +222,10 @@ public class DOMUtils {
                 webContents, sb.toString());
         Assert.assertFalse("Failed to retrieve contents for " + nodeId,
                 jsonText.trim().equalsIgnoreCase("null"));
+        return readValue(jsonText, valueType);
+    }
 
+    private static <T> T readValue(String jsonText, Class<T> valueType) {
         JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
         T value = null;
         try {

@@ -28,6 +28,7 @@
           '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video.js',
           '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_test.html',
           '<(PRODUCT_DIR)/android_webview_apk/assets/full_screen_video_inside_div_test.html',
+          '<(PRODUCT_DIR)/android_webview_apk/assets/video.mp4',
         ],
         'conditions': [
           ['icu_use_data_file_flag==1', {
@@ -55,6 +56,7 @@
             '<(java_in_dir)/assets/full_screen_video.js',
             '<(java_in_dir)/assets/full_screen_video_test.html',
             '<(java_in_dir)/assets/full_screen_video_inside_div_test.html',
+            '<(java_in_dir)/assets/video.mp4',
           ],
 	  'conditions': [
             ['icu_use_data_file_flag==1', {

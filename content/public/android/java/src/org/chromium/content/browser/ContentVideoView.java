@@ -29,16 +29,13 @@ import android.widget.TextView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.ui.base.ViewAndroid;
-import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This class implements accelerated fullscreen video playback using surface view.
  */
 @JNINamespace("content")
 public class ContentVideoView extends FrameLayout
-        implements SurfaceHolder.Callback, ViewAndroidDelegate {
+        implements SurfaceHolder.Callback {
 
     private static final String TAG = "ContentVideoView";
 
@@ -92,9 +89,6 @@ public class ContentVideoView extends FrameLayout
     // Progress view when the video is loading.
     private View mProgressView;
 
-    // The ViewAndroid is used to keep screen on during video playback.
-    private ViewAndroid mViewAndroid;
-
     private final ContentVideoViewClient mClient;
 
     private boolean mInitialOrientation;
@@ -134,9 +128,9 @@ public class ContentVideoView extends FrameLayout
                 } else {
                     // if user quickly switched the orientation back and force, don't
                     // count it in UMA.
-                    if (!mPossibleAccidentalChange &&
-                            isOrientationPortrait() == mInitialOrientation &&
-                            System.currentTimeMillis() - mOrientationChangedTime < 5000) {
+                    if (!mPossibleAccidentalChange
+                            && isOrientationPortrait() == mInitialOrientation
+                            && System.currentTimeMillis() - mOrientationChangedTime < 5000) {
                         mPossibleAccidentalChange = true;
                     }
                 }
@@ -175,7 +169,6 @@ public class ContentVideoView extends FrameLayout
             ContentVideoViewClient client) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
-        mViewAndroid = new ViewAndroid(new WindowAndroid(context.getApplicationContext()), this);
         mClient = client;
         mUmaRecorded = false;
         mPossibleAccidentalChange = false;
@@ -500,28 +493,6 @@ public class ContentVideoView extends FrameLayout
             return true;
         }
         return super.onKeyUp(keyCode, event);
-    }
-
-    @Override
-    public View acquireAnchorView() {
-        View anchorView = new View(getContext());
-        addView(anchorView);
-        return anchorView;
-    }
-
-    @Override
-    public void setAnchorViewPosition(View view, float x, float y, float width, float height) {
-        Log.e(TAG, "setAnchorViewPosition isn't implemented");
-    }
-
-    @Override
-    public void releaseAnchorView(View anchorView) {
-        removeView(anchorView);
-    }
-
-    @CalledByNative
-    private long getNativeViewAndroid() {
-        return mViewAndroid.getNativePointer();
     }
 
     private boolean isOrientationPortrait() {

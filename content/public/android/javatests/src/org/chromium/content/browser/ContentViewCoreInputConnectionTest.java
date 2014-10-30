@@ -40,6 +40,7 @@ public class ContentViewCoreInputConnectionTest extends ContentShellTestBase {
         mImeAdapter.setInputMethodManagerWrapper(new TestInputMethodManagerWrapper(
                 mContentViewCore));
         mContentViewCore.setImeAdapterForTest(mImeAdapter);
+        mContentViewCore.createContentViewAndroidDelegate();
         mContentViewCore.setContainerView(getActivity().getActiveShell().getContentView());
     }
 

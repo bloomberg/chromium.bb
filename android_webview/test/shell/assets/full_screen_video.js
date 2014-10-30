@@ -14,12 +14,6 @@ function playVideo() {
 }
 
 addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('webkitfullscreenchange', function() {
-        javaOnEnterFullscreen.notifyJava();
-    }, false);
-    document.getElementById('video').addEventListener('play', function() {
-        javaOnPlayObserver.notifyJava();
-    }, false);
     document.addEventListener('webkitfullscreenerror', function() {
         javaFullScreenErrorObserver.notifyJava();
     }, false);

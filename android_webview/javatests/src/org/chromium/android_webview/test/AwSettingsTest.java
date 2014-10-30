@@ -2753,8 +2753,7 @@ public class AwSettingsTest extends AwTestBase {
                 awSettings.setDefaultVideoPosterURL(defaultVideoPosterUrl);
             }
         });
-        VideoTestWebServer webServer = new VideoTestWebServer(
-                getInstrumentation().getTargetContext());
+        VideoTestWebServer webServer = new VideoTestWebServer();
         try {
             String data = "<html><head><body>"
                     + "<video id='video' control src='"
