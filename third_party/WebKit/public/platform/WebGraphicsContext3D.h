@@ -60,6 +60,12 @@ typedef signed long int WGC3Dsizeiptr;
 // Typedef for server-side objects like OpenGL textures and program objects.
 typedef WGC3Duint WebGLId;
 
+struct WebGLInfo {
+    WebString vendorInfo;
+    WebString rendererInfo;
+    WebString driverVersion;
+};
+
 // This interface abstracts the operations performed by the
 // GraphicsContext3D in order to implement WebGL. Nearly all of the
 // methods exposed on this interface map directly to entry points in

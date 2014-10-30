@@ -557,6 +557,7 @@ public:
     // Returns newly allocated and initialized offscreen WebGraphicsContext3D instance.
     // Passing an existing context to shareContext will create the new context in the same share group as the passed context.
     virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext) { return 0; }
+    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext, WebGLInfo* glInfo) { return 0; }
     virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&) { return 0; }
 
     // Returns a newly allocated and initialized offscreen context provider. The provider may return a null
