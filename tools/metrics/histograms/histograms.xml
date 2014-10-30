@@ -33698,6 +33698,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SoftwareReporter.Cleaner.ExitCode">
+  <owner>mad@chromium.org</owner>
+  <summary>The exit code of the software reporter cleaner tool.</summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="BooleanCompleted">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    Whether the software reporter cleaner tool has finished execution, otherwise
+    assume it has crashed.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Cleaner.RunningTime" units="ms">
+  <owner>mad@chromium.org</owner>
+  <summary>How long it took to run the software reporter cleaner tool.</summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Cleaner.Version">
+  <owner>mad@chromium.org</owner>
+  <summary>The build version of the software reporter cleaner tool.</summary>
+</histogram>
+
 <histogram name="SoftwareReporter.MajorVersion">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -40084,6 +40107,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanCommonNameMatch" type="int">
   <int value="0" label="subjectAltName used"/>
   <int value="1" label="Common Name used"/>
+</enum>
+
+<enum name="BooleanCompleted" type="int">
+  <int value="0" label="Not Completed"/>
+  <int value="1" label="Completed"/>
 </enum>
 
 <enum name="BooleanCorrupt" type="int">
