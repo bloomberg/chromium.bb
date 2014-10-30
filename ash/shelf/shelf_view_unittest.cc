@@ -63,15 +63,13 @@ class TestShelfIconObserver : public ShelfIconObserver {
       shelf_->AddIconObserver(this);
   }
 
-  virtual ~TestShelfIconObserver() {
+  ~TestShelfIconObserver() override {
     if (shelf_)
       shelf_->RemoveIconObserver(this);
   }
 
   // ShelfIconObserver implementation.
-  virtual void OnShelfIconPositionsChanged() override {
-    change_notified_ = true;
-  }
+  void OnShelfIconPositionsChanged() override { change_notified_ = true; }
 
   int change_notified() const { return change_notified_; }
   void Reset() { change_notified_ = false; }
@@ -86,9 +84,9 @@ class TestShelfIconObserver : public ShelfIconObserver {
 class ShelfViewIconObserverTest : public AshTestBase {
  public:
   ShelfViewIconObserverTest() {}
-  virtual ~ShelfViewIconObserverTest() {}
+  ~ShelfViewIconObserverTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     Shelf* shelf = Shelf::ForPrimaryDisplay();
     observer_.reset(new TestShelfIconObserver(shelf));
@@ -98,7 +96,7 @@ class ShelfViewIconObserverTest : public AshTestBase {
     shelf_view_test_->SetAnimationDuration(1);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     observer_.reset();
     AshTestBase::TearDown();
   }
@@ -126,8 +124,7 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   ShelfItemSelectionTracker() : TestShelfItemDelegate(NULL), selected_(false) {
   }
 
-  virtual ~ShelfItemSelectionTracker() {
-  }
+  ~ShelfItemSelectionTracker() override {}
 
   // Resets to the initial state.
   void Reset() { selected_ = false; }
@@ -138,7 +135,7 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   }
 
   // TestShelfItemDelegate:
-  virtual bool ItemSelected(const ui::Event& event) override {
+  bool ItemSelected(const ui::Event& event) override {
     selected_ = true;
     return false;
   }
@@ -233,40 +230,37 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
  public:
   explicit TestShelfDelegateForShelfView(ShelfModel* model)
       : model_(model) {}
-  virtual ~TestShelfDelegateForShelfView() {}
+  ~TestShelfDelegateForShelfView() override {}
 
   // ShelfDelegate overrides:
-  virtual void OnShelfCreated(Shelf* shelf) override {}
+  void OnShelfCreated(Shelf* shelf) override {}
 
-  virtual void OnShelfDestroyed(Shelf* shelf) override {}
+  void OnShelfDestroyed(Shelf* shelf) override {}
 
-  virtual ShelfID GetShelfIDForAppID(const std::string& app_id) override {
+  ShelfID GetShelfIDForAppID(const std::string& app_id) override {
     ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));
     return id;
   }
 
-  virtual const std::string& GetAppIDForShelfID(ShelfID id) override {
+  const std::string& GetAppIDForShelfID(ShelfID id) override {
     // Use |app_id_| member variable because returning a reference to local
     // variable is not allowed.
     app_id_ = base::IntToString(id);
     return app_id_;
   }
 
-  virtual void PinAppWithID(const std::string& app_id) override {
-  }
+  void PinAppWithID(const std::string& app_id) override {}
 
-  virtual bool IsAppPinned(const std::string& app_id) override {
+  bool IsAppPinned(const std::string& app_id) override {
     // Returns true for ShelfViewTest.OverflowBubbleSize. To test ripping off in
     // that test, an item is already pinned state.
     return true;
   }
 
-  virtual bool CanPin() const override {
-    return true;
-  }
+  bool CanPin() const override { return true; }
 
-  virtual void UnpinAppWithID(const std::string& app_id) override {
+  void UnpinAppWithID(const std::string& app_id) override {
     ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));
     ASSERT_GT(id, 0);
@@ -293,9 +287,9 @@ class ShelfViewTest : public AshTestBase {
         shelf_view_(NULL),
         browser_index_(1),
         item_manager_(NULL) {}
-  virtual ~ShelfViewTest() {}
+  ~ShelfViewTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchFeedback);
     AshTestBase::SetUp();
@@ -317,7 +311,7 @@ class ShelfViewTest : public AshTestBase {
     AddBrowserShortcut();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     test_api_.reset();
     AshTestBase::TearDown();
   }
@@ -663,13 +657,9 @@ class ShelfViewTextDirectionTest
   ShelfViewTextDirectionTest() : text_direction_change_(GetParam()) {}
   virtual ~ShelfViewTextDirectionTest() {}
 
-  virtual void SetUp() override {
-    ShelfViewTest::SetUp();
-  }
+  void SetUp() override { ShelfViewTest::SetUp(); }
 
-  virtual void TearDown() override {
-    ShelfViewTest::TearDown();
-  }
+  void TearDown() override { ShelfViewTest::TearDown(); }
 
  private:
   ScopedTextDirectionChange text_direction_change_;

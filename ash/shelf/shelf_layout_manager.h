@@ -82,7 +82,7 @@ class ASH_EXPORT ShelfLayoutManager
   static const int kShelfItemInset;
 
   explicit ShelfLayoutManager(ShelfWidget* shelf);
-  virtual ~ShelfLayoutManager();
+  ~ShelfLayoutManager() override;
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
@@ -165,23 +165,22 @@ class ASH_EXPORT ShelfLayoutManager
   void SetAnimationDurationOverride(int duration_override_in_ms);
 
   // Overridden from SnapLayoutManager:
-  virtual void OnWindowResized() override;
-  virtual void SetChildBounds(aura::Window* child,
-                              const gfx::Rect& requested_bounds) override;
+  void OnWindowResized() override;
+  void SetChildBounds(aura::Window* child,
+                      const gfx::Rect& requested_bounds) override;
 
   // Overridden from ash::ShellObserver:
-  virtual void OnLockStateChanged(bool locked) override;
+  void OnLockStateChanged(bool locked) override;
 
   // Overriden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // Overridden from ash::LockStateObserver:
-  virtual void OnLockStateEvent(LockStateObserver::EventType event) override;
+  void OnLockStateEvent(LockStateObserver::EventType event) override;
 
   // Overridden from ash::SessionStateObserver:
-  virtual void SessionStateChanged(
-      SessionStateDelegate::SessionState state) override;
+  void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
   // TODO(harrym|oshima): These templates will be moved to
   // new Shelf class.
@@ -317,10 +316,10 @@ class ASH_EXPORT ShelfLayoutManager
   int GetWorkAreaSize(const State& state, int size) const;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
 
   // Overridden from DockedWindowLayoutManagerObserver:
-  virtual void OnDockBoundsChanging(
+  void OnDockBoundsChanging(
       const gfx::Rect& dock_bounds,
       DockedWindowLayoutManagerObserver::Reason reason) override;
 

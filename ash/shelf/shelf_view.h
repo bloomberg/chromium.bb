@@ -63,7 +63,7 @@ class ASH_EXPORT ShelfView : public views::View,
   ShelfView(ShelfModel* model,
             ShelfDelegate* delegate,
             ShelfLayoutManager* manager);
-  virtual ~ShelfView();
+  ~ShelfView() override;
 
   ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
@@ -112,25 +112,23 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Rect GetVisibleItemsBoundsInScreen();
 
   // Overridden from FocusTraversable:
-  virtual views::FocusSearch* GetFocusSearch() override;
-  virtual FocusTraversable* GetFocusTraversableParent() override;
-  virtual View* GetFocusTraversableParentView() override;
+  views::FocusSearch* GetFocusSearch() override;
+  FocusTraversable* GetFocusTraversableParent() override;
+  View* GetFocusTraversableParentView() override;
 
   // Overridden from app_list::ApplicationDragAndDropHost:
-  virtual void CreateDragIconProxy(
-      const gfx::Point& location_in_screen_coordinates,
-      const gfx::ImageSkia& icon,
-      views::View* replaced_view,
-      const gfx::Vector2d& cursor_offset_from_center,
-      float scale_factor) override;
-  virtual void UpdateDragIconProxy(
+  void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,
+                           const gfx::ImageSkia& icon,
+                           views::View* replaced_view,
+                           const gfx::Vector2d& cursor_offset_from_center,
+                           float scale_factor) override;
+  void UpdateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates) override;
-  virtual void DestroyDragIconProxy() override;
-  virtual bool StartDrag(
-      const std::string& app_id,
-      const gfx::Point& location_in_screen_coordinates) override;
-  virtual bool Drag(const gfx::Point& location_in_screen_coordinates) override;
-  virtual void EndDrag(bool cancel) override;
+  void DestroyDragIconProxy() override;
+  bool StartDrag(const std::string& app_id,
+                 const gfx::Point& location_in_screen_coordinates) override;
+  bool Drag(const gfx::Point& location_in_screen_coordinates) override;
+  void EndDrag(bool cancel) override;
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -245,40 +243,38 @@ class ASH_EXPORT ShelfView : public views::View,
   void UpdateOverflowRange(ShelfView* overflow_view) const;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual FocusTraversable* GetPaneFocusTraversable() override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  gfx::Size GetPreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  FocusTraversable* GetPaneFocusTraversable() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from ShelfModelObserver:
-  virtual void ShelfItemAdded(int model_index) override;
-  virtual void ShelfItemRemoved(int model_index, ShelfID id) override;
-  virtual void ShelfItemChanged(int model_index,
-                                const ShelfItem& old_item) override;
-  virtual void ShelfItemMoved(int start_index, int target_index) override;
-  virtual void ShelfStatusChanged() override;
+  void ShelfItemAdded(int model_index) override;
+  void ShelfItemRemoved(int model_index, ShelfID id) override;
+  void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
+  void ShelfItemMoved(int start_index, int target_index) override;
+  void ShelfStatusChanged() override;
 
   // Overridden from ShelfButtonHost:
-  virtual void PointerPressedOnButton(views::View* view,
-                                      Pointer pointer,
-                                      const ui::LocatedEvent& event) override;
-  virtual void PointerDraggedOnButton(views::View* view,
-                                      Pointer pointer,
-                                      const ui::LocatedEvent& event) override;
-  virtual void PointerReleasedOnButton(views::View* view,
-                                       Pointer pointer,
-                                       bool canceled) override;
-  virtual void MouseMovedOverButton(views::View* view) override;
-  virtual void MouseEnteredButton(views::View* view) override;
-  virtual void MouseExitedButton(views::View* view) override;
-  virtual base::string16 GetAccessibleName(const views::View* view) override;
+  void PointerPressedOnButton(views::View* view,
+                              Pointer pointer,
+                              const ui::LocatedEvent& event) override;
+  void PointerDraggedOnButton(views::View* view,
+                              Pointer pointer,
+                              const ui::LocatedEvent& event) override;
+  void PointerReleasedOnButton(views::View* view,
+                               Pointer pointer,
+                               bool canceled) override;
+  void MouseMovedOverButton(views::View* view) override;
+  void MouseEnteredButton(views::View* view) override;
+  void MouseExitedButton(views::View* view) override;
+  base::string16 GetAccessibleName(const views::View* view) override;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Show the list of all running items for this |item|. It will return true
   // when the menu was shown and false if there were no possible items to
@@ -290,9 +286,9 @@ class ASH_EXPORT ShelfView : public views::View,
                            const ui::Event& event);
 
   // Overridden from views::ContextMenuController:
-  virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) override;
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
@@ -305,9 +301,8 @@ class ASH_EXPORT ShelfView : public views::View,
                 ui::MenuSourceType source_type);
 
   // Overridden from views::BoundsAnimatorObserver:
-  virtual void OnBoundsAnimatorProgressed(
-      views::BoundsAnimator* animator) override;
-  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
   // Returns false if the click which closed the previous menu is the click
   // which triggered this event.

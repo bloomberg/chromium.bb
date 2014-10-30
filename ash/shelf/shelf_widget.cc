@@ -58,7 +58,7 @@ class DimmerView : public views::View,
   // be performed instantly.
   DimmerView(ash::ShelfWidget* shelf_widget,
              bool disable_dimming_animations_for_test);
-  virtual ~DimmerView();
+  ~DimmerView() override;
 
   // Called by |DimmerEventFilter| when the mouse |hovered| state changes.
   void SetHovered(bool hovered);
@@ -67,21 +67,17 @@ class DimmerView : public views::View,
   void ForceUndimming(bool force);
 
   // views::WidgetDelegate overrides:
-  virtual views::Widget* GetWidget() override {
-    return View::GetWidget();
-  }
-  virtual const views::Widget* GetWidget() const override {
-    return View::GetWidget();
-  }
+  views::Widget* GetWidget() override { return View::GetWidget(); }
+  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   // ash::BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) override {
+  void UpdateBackground(int alpha) override {
     alpha_ = alpha;
     SchedulePaint();
   }
 
   // views::View overrides:
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // A function to test the current alpha used.
   int get_dimming_alpha_for_test() { return alpha_; }
@@ -91,11 +87,11 @@ class DimmerView : public views::View,
   class DimmerEventFilter : public ui::EventHandler {
    public:
     explicit DimmerEventFilter(DimmerView* owner);
-    virtual ~DimmerEventFilter();
+    ~DimmerEventFilter() override;
 
     // Overridden from ui::EventHandler:
-    virtual void OnMouseEvent(ui::MouseEvent* event) override;
-    virtual void OnTouchEvent(ui::TouchEvent* event) override;
+    void OnMouseEvent(ui::MouseEvent* event) override;
+    void OnTouchEvent(ui::TouchEvent* event) override;
 
    private:
     // The owning class.
@@ -250,7 +246,7 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
     shelf_->AddObserver(this);
   }
 
-  virtual ~ShelfWindowTargeter() {
+  ~ShelfWindowTargeter() override {
     // |shelf_| may have been destroyed by this time.
     if (shelf_)
       shelf_->RemoveObserver(this);
@@ -274,12 +270,9 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
   }
 
   // ash::ShelfLayoutManagerObserver:
-  virtual void WillDeleteShelf() override {
-    shelf_ = NULL;
-  }
+  void WillDeleteShelf() override { shelf_ = NULL; }
 
-  virtual void WillChangeVisibilityState(
-      ash::ShelfVisibilityState new_state) override {
+  void WillChangeVisibilityState(ash::ShelfVisibilityState new_state) override {
     gfx::Insets mouse_insets;
     gfx::Insets touch_insets;
     if (new_state == ash::SHELF_VISIBLE) {
@@ -317,7 +310,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public aura::WindowObserver {
  public:
   explicit DelegateView(ShelfWidget* shelf);
-  virtual ~DelegateView();
+  ~DelegateView() override;
 
   void set_focus_cycler(FocusCycler* focus_cycler) {
     focus_cycler_ = focus_cycler;
@@ -334,33 +327,29 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void SetParentLayer(ui::Layer* layer);
 
   // views::View overrides:
-  virtual void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // views::WidgetDelegateView overrides:
-  virtual views::Widget* GetWidget() override {
-    return View::GetWidget();
-  }
-  virtual const views::Widget* GetWidget() const override {
-    return View::GetWidget();
-  }
+  views::Widget* GetWidget() override { return View::GetWidget(); }
+  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
-  virtual bool CanActivate() const override;
-  virtual void Layout() override;
-  virtual void ReorderChildLayers(ui::Layer* parent_layer) override;
+  bool CanActivate() const override;
+  void Layout() override;
+  void ReorderChildLayers(ui::Layer* parent_layer) override;
   // This will be called when the parent local bounds change.
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) override;
+  void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // aura::WindowObserver overrides:
   // This will be called when the shelf itself changes its absolute position.
   // Since the |dimmer_| panel needs to be placed in screen coordinates it needs
   // to be repositioned. The difference to the OnBoundsChanged call above is
   // that this gets also triggered when the shelf only moves.
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
   // BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) override;
+  void UpdateBackground(int alpha) override;
 
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);

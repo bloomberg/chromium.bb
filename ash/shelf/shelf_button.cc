@@ -77,8 +77,7 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
-  virtual ~ShelfButtonAnimation() {
-  }
+  ~ShelfButtonAnimation() override {}
 
   gfx::ThrobAnimation& GetThrobAnimation() {
     if (!animation_.is_animating()) {
@@ -89,7 +88,7 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
   }
 
   // gfx::AnimationDelegate
-  virtual void AnimationProgressed(const gfx::Animation* animation) override {
+  void AnimationProgressed(const gfx::Animation* animation) override {
     if (animation != &animation_)
       return;
     if (!animation_.is_animating())
@@ -120,13 +119,13 @@ class ShelfButton::BarView : public views::ImageView,
     set_interactive(false);
   }
 
-  virtual ~BarView() {
+  ~BarView() override {
     if (show_attention_)
       ShelfButtonAnimation::GetInstance()->RemoveObserver(this);
   }
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(gfx::Canvas* canvas) override {
     if (show_attention_) {
       int alpha = ShelfButtonAnimation::GetInstance()->GetAlpha();
       canvas->SaveLayerAlpha(alpha);
@@ -138,7 +137,7 @@ class ShelfButton::BarView : public views::ImageView,
   }
 
   // ShelfButtonAnimation::Observer
-  virtual void AnimationProgressed() override {
+  void AnimationProgressed() override {
     UpdateBounds();
     SchedulePaint();
   }

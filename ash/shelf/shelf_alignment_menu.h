@@ -20,15 +20,14 @@ class ASH_EXPORT ShelfAlignmentMenu : public ui::SimpleMenuModel,
                                       public ui::SimpleMenuModel::Delegate {
  public:
   explicit ShelfAlignmentMenu(aura::Window* root);
-  virtual ~ShelfAlignmentMenu();
+  ~ShelfAlignmentMenu() override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsCommandIdChecked(int command_id) const override;
-  virtual bool IsCommandIdEnabled(int command_id) const override;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) override;
-  virtual void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   enum MenuItem {

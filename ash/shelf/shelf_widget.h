@@ -30,7 +30,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfWidget(aura::Window* shelf_container,
               aura::Window* status_container,
               WorkspaceController* workspace_controller);
-  virtual ~ShelfWidget();
+  ~ShelfWidget() override;
 
   // Returns if shelf alignment option is enabled, and the user is able
   // to adjust the alignment (guest and supervised mode users cannot for
@@ -81,8 +81,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void ForceUndimming(bool force);
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetActivationChanged(
-      views::Widget* widget, bool active) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // A function to test the current alpha used by the dimming bar. If there is
   // no dimmer active, the function will return -1.
@@ -96,7 +95,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void DisableDimmingAnimationsForTest();
 
   // ShelfLayoutManagerObserver overrides:
-  virtual void WillDeleteShelf() override;
+  void WillDeleteShelf() override;
 
  private:
   class DelegateView;

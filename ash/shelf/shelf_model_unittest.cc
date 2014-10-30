@@ -40,21 +40,15 @@ class TestShelfModelObserver : public ShelfModelObserver {
   }
 
   // ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int index) override {
-    added_count_++;
-  }
-  virtual void ShelfItemRemoved(int index, ShelfID id) override {
-    removed_count_++;
-  }
-  virtual void ShelfItemChanged(int index,
-                                const ShelfItem& old_item) override {
+  void ShelfItemAdded(int index) override { added_count_++; }
+  void ShelfItemRemoved(int index, ShelfID id) override { removed_count_++; }
+  void ShelfItemChanged(int index, const ShelfItem& old_item) override {
     changed_count_++;
   }
-  virtual void ShelfItemMoved(int start_index, int target_index) override {
+  void ShelfItemMoved(int start_index, int target_index) override {
     moved_count_++;
   }
-  virtual void ShelfStatusChanged() override {
-  }
+  void ShelfStatusChanged() override {}
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {
@@ -78,9 +72,9 @@ class TestShelfModelObserver : public ShelfModelObserver {
 class ShelfModelTest : public testing::Test {
  public:
   ShelfModelTest() {}
-  virtual ~ShelfModelTest() {}
+  ~ShelfModelTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     model_.reset(new ShelfModel);
     observer_.reset(new TestShelfModelObserver);
     EXPECT_EQ(0, model_->item_count());
@@ -93,7 +87,7 @@ class ShelfModelTest : public testing::Test {
     model_->AddObserver(observer_.get());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     observer_.reset();
     model_.reset();
   }

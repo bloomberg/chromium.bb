@@ -33,7 +33,7 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
                      int min_alpha,
                      int max_alpha);
-  virtual ~BackgroundAnimator();
+  ~BackgroundAnimator() override;
 
   // Sets the transition time in ms.
   void SetDuration(int time_in_ms);
@@ -48,7 +48,7 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   int alpha() const { return alpha_; }
 
   // gfx::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   BackgroundAnimatorDelegate* delegate_;

@@ -37,9 +37,9 @@ class ShelfTest : public ash::test::AshTestBase {
         shelf_model_(NULL),
         item_delegate_manager_(NULL) {}
 
-  virtual ~ShelfTest() {}
+  ~ShelfTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     test::AshTestBase::SetUp();
 
     shelf_ = Shelf::ForPrimaryDisplay();
@@ -54,9 +54,7 @@ class ShelfTest : public ash::test::AshTestBase {
     test_.reset(new ash::test::ShelfViewTestAPI(shelf_view_));
   }
 
-  virtual void TearDown() override {
-    test::AshTestBase::TearDown();
-  }
+  void TearDown() override { test::AshTestBase::TearDown(); }
 
   Shelf* shelf() {
     return shelf_;

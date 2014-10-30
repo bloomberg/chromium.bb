@@ -38,9 +38,9 @@ namespace test {
 class ShelfTooltipManagerTest : public AshTestBase {
  public:
   ShelfTooltipManagerTest() {}
-  virtual ~ShelfTooltipManagerTest() {}
+  ~ShelfTooltipManagerTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     AshTestBase::SetUp();
     RootWindowController* controller = Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new ShelfTooltipManager(
@@ -48,7 +48,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
         ShelfTestAPI(controller->shelf()->shelf()).shelf_view()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     tooltip_manager_.reset();
     AshTestBase::TearDown();
   }

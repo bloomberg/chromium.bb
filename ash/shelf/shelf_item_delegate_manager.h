@@ -29,7 +29,7 @@ class ShelfItemDelegateManagerTestAPI;
 class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
  public:
   explicit ShelfItemDelegateManager(ShelfModel* model);
-  virtual ~ShelfItemDelegateManager();
+  ~ShelfItemDelegateManager() override;
 
   // Set |item_delegate| for |id| and take an ownership.
   void SetShelfItemDelegate(ShelfID id,
@@ -39,12 +39,11 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
   ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
 
   // ShelfModelObserver overrides:
-  virtual void ShelfItemAdded(int model_index) override;
-  virtual void ShelfItemRemoved(int index, ShelfID id) override;
-  virtual void ShelfItemMoved(int start_index, int targetindex) override;
-  virtual void ShelfItemChanged(int index,
-                                const ShelfItem& old_item) override;
-  virtual void ShelfStatusChanged() override;
+  void ShelfItemAdded(int model_index) override;
+  void ShelfItemRemoved(int index, ShelfID id) override;
+  void ShelfItemMoved(int start_index, int targetindex) override;
+  void ShelfItemChanged(int index, const ShelfItem& old_item) override;
+  void ShelfStatusChanged() override;
 
  private:
   friend class test::ShelfItemDelegateManagerTestAPI;

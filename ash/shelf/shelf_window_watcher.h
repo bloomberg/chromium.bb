@@ -37,17 +37,17 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
  public:
   ShelfWindowWatcher(ShelfModel* model,
                      ShelfItemDelegateManager* item_delegate_manager);
-  virtual ~ShelfWindowWatcher();
+  ~ShelfWindowWatcher() override;
 
  private:
   class RootWindowObserver : public aura::WindowObserver {
    public:
     explicit RootWindowObserver(ShelfWindowWatcher* window_watcher);
-    virtual ~RootWindowObserver();
+    ~RootWindowObserver() override;
 
    private:
     // aura::WindowObserver overrides:
-    virtual void OnWindowDestroying(aura::Window* window) override;
+    void OnWindowDestroying(aura::Window* window) override;
 
     // Owned by Shell.
     ShelfWindowWatcher* window_watcher_;
@@ -60,13 +60,13 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   class RemovedWindowObserver : public aura::WindowObserver {
    public:
     explicit RemovedWindowObserver(ShelfWindowWatcher* window_watcher);
-    virtual ~RemovedWindowObserver();
+    ~RemovedWindowObserver() override;
 
    private:
     // aura::WindowObserver overrides:
-    virtual void OnWindowParentChanged(aura::Window* window,
-                                       aura::Window* parent) override;
-    virtual void OnWindowDestroyed(aura::Window* window) override;
+    void OnWindowParentChanged(aura::Window* window,
+                               aura::Window* parent) override;
+    void OnWindowDestroyed(aura::Window* window) override;
 
     // Owned by Shell.
     ShelfWindowWatcher* window_watcher_;
@@ -103,22 +103,22 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   void FinishObservingRemovedWindow(aura::Window* window);
 
   // aura::client::ActivationChangeObserver overrides:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) override;
+  void OnWindowActivated(aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowAdded(aura::Window* window) override;
-  virtual void OnWillRemoveWindow(aura::Window* window) override;
-  virtual void OnWindowDestroying(aura::Window* window) override;
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) override;
+  void OnWindowAdded(aura::Window* window) override;
+  void OnWillRemoveWindow(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // gfx::DisplayObserver overrides:
-  virtual void OnDisplayAdded(const gfx::Display& display) override;
-  virtual void OnDisplayRemoved(const gfx::Display& old_display) override;
-  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
-                                       uint32_t metrics) override;
+  void OnDisplayAdded(const gfx::Display& display) override;
+  void OnDisplayRemoved(const gfx::Display& old_display) override;
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t metrics) override;
 
   // Owned by Shell.
   ShelfModel* model_;

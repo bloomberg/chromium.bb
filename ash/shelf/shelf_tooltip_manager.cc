@@ -57,10 +57,10 @@ class ShelfTooltipManager::ShelfTooltipBubble
 
  private:
   // views::WidgetDelegate overrides:
-  virtual void WindowClosing() override;
+  void WindowClosing() override;
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   ShelfTooltipManager* host_;
   views::Label* label_;

@@ -25,14 +25,14 @@ namespace ash {
 class ShelfWindowWatcherTest : public test::AshTestBase {
  public:
   ShelfWindowWatcherTest() : model_(NULL) {}
-  virtual ~ShelfWindowWatcherTest() {}
+  ~ShelfWindowWatcherTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     test::AshTestBase::SetUp();
     model_ = test::ShellTestApi(Shell::GetInstance()).shelf_model();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     model_ = NULL;
     test::AshTestBase::TearDown();
   }
