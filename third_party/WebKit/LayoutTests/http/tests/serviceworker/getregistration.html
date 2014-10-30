@@ -15,7 +15,7 @@ async_test(function(t) {
   }, 'getRegistration');
 
 async_test(function(t) {
-    var scope = 'resources/scope/worker/';
+    var scope = 'resources/scope/getregistration/normal';
     var registration;
     service_worker_unregister_and_register(t, 'resources/empty-worker.js',
                                            scope)
@@ -30,6 +30,24 @@ async_test(function(t) {
         })
       .catch(unreached_rejection(t));
   }, 'Register then getRegistration');
+
+async_test(function(t) {
+    var scope = 'resources/scope/getregistration/url-with-fragment';
+    var documentURL = scope + '#ref';
+    var registration;
+    service_worker_unregister_and_register(t, 'resources/empty-worker.js',
+                                           scope)
+      .then(function(r) {
+          registration = r;
+          return navigator.serviceWorker.getRegistration(documentURL);
+        })
+      .then(function(value) {
+          assert_equals(value, registration,
+                        'getRegistration should resolve with registration');
+          service_worker_unregister_and_done(t, scope);
+        })
+      .catch(unreached_rejection(t));
+  }, 'Register then getRegistration with a URL having a fragment');
 
 async_test(function(t) {
     var documentURL = 'http://example.com/';
@@ -47,7 +65,7 @@ async_test(function(t) {
   }, 'getRegistration with a cross origin URL');
 
 async_test(function(t) {
-    var scope = 'resources/scope/worker/';
+    var scope = 'resources/scope/getregistration/register-unregister';
     service_worker_unregister_and_register(t, 'resources/empty-worker.js',
                                            scope)
       .then(function(registration) {

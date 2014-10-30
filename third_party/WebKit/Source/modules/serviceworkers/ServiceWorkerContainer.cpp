@@ -175,6 +175,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     }
 
     KURL completedURL = executionContext->completeURL(documentURL);
+    completedURL.removeFragmentIdentifier();
     if (!documentOrigin->canRequest(completedURL)) {
         resolver->reject(DOMException::create(SecurityError, "The documentURL must match the current origin."));
         return promise;
