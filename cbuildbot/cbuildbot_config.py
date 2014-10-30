@@ -2019,7 +2019,6 @@ internal_paladin.add_config('link_freon-paladin',
   hw_tests=[],
   # This build can't run vm_tests, bug 387507
   vm_tests=[],
-  important=False,
   paladin_builder_name='link_freon paladin',
 )
 
