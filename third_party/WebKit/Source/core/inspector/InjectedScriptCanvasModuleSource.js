@@ -637,7 +637,7 @@ ReplayableCall.prototype = {
      */
     attachments: function()
     {
-        return this._attachments;
+        return this._attachments || null;
     },
 
     /**
