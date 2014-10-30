@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -25,19 +25,15 @@ class Image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserActionView
+// ToolbarActionView
 // A wrapper around a ToolbarActionViewController to display a toolbar action
 // action in the BrowserActionsContainer.
-// Despite its name, this class can handle any type of toolbar action, including
-// extension actions (browser and page actions) and component actions.
-// TODO(devlin): Rename this and BrowserActionsContainer when more of the
-// toolbar redesign is done.
-class BrowserActionView : public views::MenuButton,
+class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegate,
                           public views::ButtonListener,
                           public content::NotificationObserver {
  public:
-  // Need DragController here because BrowserActionView could be
+  // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
   class Delegate : public views::DragController {
    public:
@@ -47,37 +43,34 @@ class BrowserActionView : public views::MenuButton,
     // Whether the container for this button is shown inside a menu.
     virtual bool ShownInsideMenu() const = 0;
 
-    // Notifies that a drag completed. Note this will only happen if the view
-    // wasn't removed during the drag-and-drop process (i.e., not when there
-    // was a move in the browser actions, since we re-create the views each
-    // time we re-order the browser actions).
-    virtual void OnBrowserActionViewDragDone() = 0;
+    // Notifies that a drag completed.
+    virtual void OnToolbarActionViewDragDone() = 0;
 
-    // Returns the view of the browser actions overflow menu to use as a
+    // Returns the view of the toolbar actions overflow menu to use as a
     // reference point for a popup when this view isn't visible.
     virtual views::MenuButton* GetOverflowReferenceView() = 0;
 
     // Sets the delegate's active popup owner to be |popup_owner|.
-    virtual void SetPopupOwner(BrowserActionView* popup_owner) = 0;
+    virtual void SetPopupOwner(ToolbarActionView* popup_owner) = 0;
 
     // Hides the active popup of the delegate, if one exists.
     virtual void HideActivePopup() = 0;
 
-    // Returns the primary BrowserActionView associated with the given
+    // Returns the primary ToolbarActionView associated with the given
     // |extension|.
-    virtual BrowserActionView* GetMainViewForAction(
-        BrowserActionView* view) = 0;
+    virtual ToolbarActionView* GetMainViewForAction(
+        ToolbarActionView* view) = 0;
 
    protected:
     ~Delegate() override {}
   };
 
-  BrowserActionView(scoped_ptr<ToolbarActionViewController> view_controller,
+  ToolbarActionView(scoped_ptr<ToolbarActionViewController> view_controller,
                     Browser* browser,
                     Delegate* delegate);
-  ~BrowserActionView() override;
+  ~ToolbarActionView() override;
 
-  // Called to update the display to match the browser action's state.
+  // Called to update the display to match the toolbar action's state.
   void UpdateState();
 
   // Overridden from views::View:
@@ -149,7 +142,7 @@ class BrowserActionView : public views::MenuButton,
   // The associated browser.
   Browser* browser_;
 
-  // Delegate that usually represents a container for BrowserActionView.
+  // Delegate that usually represents a container for ToolbarActionView.
   Delegate* delegate_;
 
   // Used to make sure we only register the command once.
@@ -157,7 +150,7 @@ class BrowserActionView : public views::MenuButton,
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_

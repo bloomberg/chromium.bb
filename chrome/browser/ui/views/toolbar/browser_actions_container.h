@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
-#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -36,9 +36,10 @@ class ResizeArea;
 }
 
 // The BrowserActionsContainer is a container view, responsible for drawing the
-// browser action icons (extensions that add icons to the toolbar). It comes in
-// two flavors, a main container (when residing on the toolbar) and an overflow
-// container (that resides in the main application menu, aka the Chrome menu).
+// toolbar action icons (including extension icons and icons for component
+// toolbar actions). It comes intwo flavors, a main container (when residing on
+// the toolbar) and an overflow container (that resides in the main application
+// menu, aka the Chrome menu).
 //
 // When in 'main' mode, the container supports the full functionality of a
 // BrowserActionContainer, but in 'overflow' mode the container is effectively
@@ -126,7 +127,7 @@ class BrowserActionsContainer
       public views::ResizeAreaDelegate,
       public gfx::AnimationDelegate,
       public extensions::ExtensionToolbarModel::Observer,
-      public BrowserActionView::Delegate,
+      public ToolbarActionView::Delegate,
       public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   // Horizontal spacing between most items in the container, as well as after
@@ -141,8 +142,8 @@ class BrowserActionsContainer
 
   void Init();
 
-  // Get the number of browser actions being displayed.
-  size_t num_browser_actions() const { return browser_action_views_.size(); }
+  // Get the number of toolbar actions being displayed.
+  size_t num_toolbar_actions() const { return toolbar_action_views_.size(); }
 
   // Whether we are performing resize animation on the container.
   bool animating() const { return animation_target_size_ > 0; }
@@ -159,44 +160,43 @@ class BrowserActionsContainer
     return extension_keybinding_registry_.get();
   }
 
-  // Get a particular browser action view.
-  BrowserActionView* GetBrowserActionViewAt(int index) {
-    return browser_action_views_[index];
+  // Get a particular toolbar action view.
+  ToolbarActionView* GetToolbarActionViewAt(int index) {
+    return toolbar_action_views_[index];
   }
 
   // Returns the ID of the action represented by the view at |index|.
   const std::string& GetIdAt(size_t index);
 
-  // Returns the BrowserActionView* associated with the given |extension|, or
+  // Returns the ToolbarActionView* associated with the given |extension|, or
   // NULL if none exists.
-  BrowserActionView* GetViewForExtension(
+  ToolbarActionView* GetViewForExtension(
       const extensions::Extension* extension);
 
-  // Update the views to reflect the state of the browser action icons.
-  void RefreshBrowserActionViews();
+  // Update the views to reflect the state of the toolbar actions.
+  void RefreshToolbarActionViews();
 
-  // Sets up the browser action view vector.
-  void CreateBrowserActionViews();
+  // Sets up the toolbar action view vector.
+  void CreateToolbarActionViews();
 
-  // Delete all browser action views.
-  void DeleteBrowserActionViews();
+  // Delete all toolbar action views.
+  void DeleteToolbarActionViews();
 
-  // Returns how many browser actions are currently visible. If the intent is
-  // to find how many are visible once the container finishes animation, see
+  // Returns how many actions are currently visible. If the intent is to find
+  // how many are visible once the container finishes animation, see
   // VisibleBrowserActionsAfterAnimation() below.
   size_t VisibleBrowserActions() const;
 
-  // Returns how many browser actions will be visible once the container
-  // finishes animating to a new size, or (if not animating) the currently
-  // visible icons.
+  // Returns how many actions will be visible once the container finishes
+  // animating to a new size, or (if not animating) the currently visible icons.
   size_t VisibleBrowserActionsAfterAnimation() const;
 
   // Executes |command| registered by |extension|.
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
-  // Notify the browser action container that an extension has been moved to
-  // the overflow container.
+  // Notify the container that an extension has been moved to the overflow
+  // container.
   void NotifyActionMovedToOverflow();
 
   // Add or remove an observer.
@@ -234,14 +234,14 @@ class BrowserActionsContainer
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // Overridden from BrowserActionView::Delegate:
+  // Overridden from ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override;
   bool ShownInsideMenu() const override;
-  void OnBrowserActionViewDragDone() override;
+  void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
-  void SetPopupOwner(BrowserActionView* popup_owner) override;
+  void SetPopupOwner(ToolbarActionView* popup_owner) override;
   void HideActivePopup() override;
-  BrowserActionView* GetMainViewForAction(BrowserActionView* view) override;
+  ToolbarActionView* GetMainViewForAction(ToolbarActionView* view) override;
 
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
@@ -272,7 +272,7 @@ class BrowserActionsContainer
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
 
-  typedef std::vector<BrowserActionView*> BrowserActionViews;
+  typedef std::vector<ToolbarActionView*> ToolbarActionViews;
 
   // extensions::ExtensionToolbarModel::Observer implementation.
   void ToolbarExtensionAdded(const extensions::Extension* extension,
@@ -289,15 +289,15 @@ class BrowserActionsContainer
 
   void LoadImages();
 
-  // Called when a browser action's visibility may have changed.
+  // Called when an action's visibility may have changed.
   void OnBrowserActionVisibilityChanged();
 
   // Returns the preferred width of the container in order to show all icons
   // that should be visible and, optionally, the chevron.
   int GetPreferredWidth();
 
-  // Sets the chevron to be visible or not based on whether all browser actions
-  // are displayed.
+  // Sets the chevron to be visible or not based on whether all actions are
+  // displayed.
   void SetChevronVisibility();
 
   // Given a number of |icons|, returns the pixels needed to draw the entire
@@ -334,10 +334,8 @@ class BrowserActionsContainer
   // Whether or not the container has been initialized.
   bool initialized_;
 
-  // The vector of browser actions (icons/image buttons for each action). Note
-  // that not every BrowserAction in the ToolbarModel will necessarily be in
-  // this collection. Some extensions may be disabled in incognito windows.
-  BrowserActionViews browser_action_views_;
+  // The vector of toolbar actions (icons/image buttons for each action).
+  ToolbarActionViews toolbar_action_views_;
 
   Profile* profile_;
 
@@ -350,8 +348,8 @@ class BrowserActionsContainer
   BrowserActionsContainer* main_container_;
 
   // The view that triggered the current popup (just a reference to a view
-  // from browser_action_views_).
-  BrowserActionView* popup_owner_;
+  // from toolbar_action_views_).
+  ToolbarActionView* popup_owner_;
 
   // The model that tracks the order of the toolbar icons.
   extensions::ExtensionToolbarModel* model_;

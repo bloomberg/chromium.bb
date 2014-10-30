@@ -164,7 +164,7 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
   HideActivePopup();
-  DeleteBrowserActionViews();
+  DeleteToolbarActionViews();
 }
 
 void BrowserActionsContainer::Init() {
@@ -181,47 +181,47 @@ void BrowserActionsContainer::Init() {
 }
 
 const std::string& BrowserActionsContainer::GetIdAt(size_t index) {
-  return browser_action_views_[index]->view_controller()->GetId();
+  return toolbar_action_views_[index]->view_controller()->GetId();
 }
 
-BrowserActionView* BrowserActionsContainer::GetViewForExtension(
+ToolbarActionView* BrowserActionsContainer::GetViewForExtension(
     const Extension* extension) {
-  for (BrowserActionView* view : browser_action_views_) {
+  for (ToolbarActionView* view : toolbar_action_views_) {
     if (view->view_controller()->GetId() == extension->id())
       return view;
   }
-  return NULL;
+  return nullptr;
 }
 
-void BrowserActionsContainer::RefreshBrowserActionViews() {
-  for (BrowserActionView* view : browser_action_views_)
+void BrowserActionsContainer::RefreshToolbarActionViews() {
+  for (ToolbarActionView* view : toolbar_action_views_)
     view->UpdateState();
 }
 
-void BrowserActionsContainer::CreateBrowserActionViews() {
-  DCHECK(browser_action_views_.empty());
+void BrowserActionsContainer::CreateToolbarActionViews() {
+  DCHECK(toolbar_action_views_.empty());
   if (!model_)
     return;
 
   ScopedVector<ToolbarActionViewController> actions =
       GetToolbarActions(model_, browser_);
   for (ToolbarActionViewController* controller : actions) {
-    BrowserActionView* view =
-        new BrowserActionView(make_scoped_ptr(controller), browser_, this);
-    browser_action_views_.push_back(view);
+    ToolbarActionView* view =
+        new ToolbarActionView(make_scoped_ptr(controller), browser_, this);
+    toolbar_action_views_.push_back(view);
     AddChildView(view);
   }
   actions.weak_clear();
 }
 
-void BrowserActionsContainer::DeleteBrowserActionViews() {
+void BrowserActionsContainer::DeleteToolbarActionViews() {
   HideActivePopup();
-  STLDeleteElements(&browser_action_views_);
+  STLDeleteElements(&toolbar_action_views_);
 }
 
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
-  for (const BrowserActionView* view : browser_action_views_) {
+  for (const ToolbarActionView* view : toolbar_action_views_) {
     if (view->visible())
       ++visible_actions;
   }
@@ -253,7 +253,7 @@ void BrowserActionsContainer::NotifyActionMovedToOverflow() {
   // can't possibly have had no visible icons on the main bar.
   DCHECK_NE(0, icon_count);
   if (icon_count == -1)
-    icon_count = browser_action_views_.size();
+    icon_count = toolbar_action_views_.size();
   model_->SetVisibleIconCount(icon_count - 1);
 }
 
@@ -261,7 +261,7 @@ bool BrowserActionsContainer::ShownInsideMenu() const {
   return in_overflow_mode();
 }
 
-void BrowserActionsContainer::OnBrowserActionViewDragDone() {
+void BrowserActionsContainer::OnToolbarActionViewDragDone() {
   ToolbarVisibleCountChanged();
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
@@ -276,7 +276,7 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
       BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
 }
 
-void BrowserActionsContainer::SetPopupOwner(BrowserActionView* popup_owner) {
+void BrowserActionsContainer::SetPopupOwner(ToolbarActionView* popup_owner) {
   // We should never be setting a popup owner when one already exists, and
   // never unsetting one when one wasn't set.
   DCHECK((!popup_owner_ && popup_owner) ||
@@ -289,21 +289,21 @@ void BrowserActionsContainer::HideActivePopup() {
     popup_owner_->view_controller()->HidePopup();
 }
 
-BrowserActionView* BrowserActionsContainer::GetMainViewForAction(
-    BrowserActionView* view) {
+ToolbarActionView* BrowserActionsContainer::GetMainViewForAction(
+    ToolbarActionView* view) {
   if (!in_overflow_mode())
     return view;  // This is the main view.
 
   // The overflow container and main container each have the same views and
   // view indices, so we can return the view of the index that |view| has in
   // this container.
-  BrowserActionViews::const_iterator iter =
-      std::find(browser_action_views_.begin(),
-                browser_action_views_.end(),
+  ToolbarActionViews::const_iterator iter =
+      std::find(toolbar_action_views_.begin(),
+                toolbar_action_views_.end(),
                 view);
-  DCHECK(iter != browser_action_views_.end());
-  size_t index = iter - browser_action_views_.begin();
-  return main_container_->browser_action_views_[index];
+  DCHECK(iter != toolbar_action_views_.end());
+  size_t index = iter - toolbar_action_views_.begin();
+  return main_container_->toolbar_action_views_[index];
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -330,7 +330,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
   }
 
   // If there are no actions to show, then don't show the container at all.
-  if (browser_action_views_.empty())
+  if (toolbar_action_views_.empty())
     return gfx::Size();
 
   // We calculate the size of the view by taking the current width and
@@ -357,7 +357,7 @@ gfx::Size BrowserActionsContainer::GetMinimumSize() const {
 }
 
 void BrowserActionsContainer::Layout() {
-  if (browser_action_views_.empty()) {
+  if (toolbar_action_views_.empty()) {
     SetVisible(false);
     return;
   }
@@ -392,17 +392,17 @@ void BrowserActionsContainer::Layout() {
   // can display with the given width. We add an extra kItemSpacing because the
   // last icon doesn't need padding, but we want it to divide easily.
   size_t end_index = in_overflow_mode() ?
-      browser_action_views_.size() :
+      toolbar_action_views_.size() :
       (max_x - 2 * container_padding + kItemSpacing) / IconWidth(true);
   // The maximum length for one row of icons.
   size_t row_length =
       in_overflow_mode() ? icons_per_overflow_menu_row_ : end_index;
 
-  // Now draw the icons for the browser actions in the available space. Once
-  // all the variables are in place, the layout works equally well for the main
-  // and overflow container.
-  for (size_t i = 0u; i < browser_action_views_.size(); ++i) {
-    BrowserActionView* view = browser_action_views_[i];
+  // Now draw the icons for the actions in the available space. Once all the
+  // variables are in place, the layout works equally well for the main and
+  // overflow container.
+  for (size_t i = 0u; i < toolbar_action_views_.size(); ++i) {
+    ToolbarActionView* view = toolbar_action_views_[i];
     if (i < start_index || i >= end_index) {
       view->SetVisible(false);
     } else {
@@ -436,8 +436,8 @@ int BrowserActionsContainer::OnDragUpdated(
     const ui::DropTargetEvent& event) {
   size_t row_index = 0;
   size_t before_icon_in_row = 0;
-  // If there are no visible browser actions (such as when dragging an icon to
-  // an empty overflow/main container), then 0, 0 for row, column is correct.
+  // If there are no visible actions (such as when dragging an icon to an empty
+  // overflow/main container), then 0, 0 for row, column is correct.
   if (VisibleBrowserActions() != 0) {
     // Figure out where to display the indicator. This is a complex calculation:
 
@@ -542,7 +542,7 @@ int BrowserActionsContainer::OnPerformDrop(
   // If this was a drag between containers, we will have to adjust the number of
   // visible icons.
   bool drag_between_containers =
-      !browser_action_views_[data.index()]->visible();
+      !toolbar_action_views_[data.index()]->visible();
   model_->MoveExtensionIcon(GetIdAt(data.index()), i);
 
   if (drag_between_containers) {
@@ -568,10 +568,10 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                    OSExchangeData* data) {
   DCHECK(data);
 
-  BrowserActionViews::iterator iter = std::find(browser_action_views_.begin(),
-                                                browser_action_views_.end(),
+  ToolbarActionViews::iterator iter = std::find(toolbar_action_views_.begin(),
+                                                toolbar_action_views_.end(),
                                                 sender);
-  DCHECK(iter != browser_action_views_.end());
+  DCHECK(iter != toolbar_action_views_.end());
   ToolbarActionViewController* view_controller = (*iter)->view_controller();
   drag_utils::SetDragImageOnDataObject(
       view_controller->GetIconWithBadge(),
@@ -579,7 +579,7 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
       data);
   // Fill in the remaining info.
   BrowserActionDragData drag_data(view_controller->GetId(),
-                                  iter - browser_action_views_.begin());
+                                  iter - toolbar_action_views_.begin());
   drag_data.Write(profile_, data);
 }
 
@@ -659,7 +659,7 @@ gfx::NativeView BrowserActionsContainer::TestGetPopup() {
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // If the views haven't been initialized yet, wait for the next call to
   // paint (one will be triggered by entering highlight mode).
-  if (model_->is_highlighting() && !browser_action_views_.empty() &&
+  if (model_->is_highlighting() && !toolbar_action_views_.empty() &&
       !in_overflow_mode()) {
     views::Painter::PaintPainterAt(
         canvas, highlight_painter_.get(), GetLocalBounds());
@@ -726,7 +726,7 @@ void BrowserActionsContainer::ViewHierarchyChanged(
     // We do this here instead of in the constructor because AddBrowserAction
     // calls Layout on the Toolbar, which needs this object to be constructed
     // before its Layout function is called.
-    CreateBrowserActionViews();
+    CreateToolbarActionViews();
   }
 }
 
@@ -761,8 +761,8 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
   if (chevron_)
     chevron_->CloseMenu();
 
-  // Add the new browser action to the vector and the view hierarchy.
-  BrowserActionView* view = new BrowserActionView(
+  // Add the new action to the vector and the view hierarchy.
+  ToolbarActionView* view = new ToolbarActionView(
       make_scoped_ptr(new ExtensionActionViewController(
           extension,
           browser_,
@@ -770,7 +770,7 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
               GetExtensionAction(*extension))),
       browser_,
       this);
-  browser_action_views_.insert(browser_action_views_.begin() + index, view);
+  toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 
   // If we are still initializing the container, don't bother animating.
@@ -788,7 +788,7 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
     //   will need to be displayed.
     int model_icon_count = model_->GetVisibleIconCount();
     if (model_icon_count == -1 ||
-        (static_cast<size_t>(model_icon_count) < browser_action_views_.size() &&
+        (static_cast<size_t>(model_icon_count) < toolbar_action_views_.size() &&
          (chevron_ && !chevron_->visible()))) {
       suppress_chevron_ = true;
       Animate(gfx::Tween::LINEAR, GetIconCount());
@@ -807,11 +807,11 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
     chevron_->CloseMenu();
 
   size_t visible_actions = VisibleBrowserActionsAfterAnimation();
-  for (BrowserActionViews::iterator i(browser_action_views_.begin());
-       i != browser_action_views_.end(); ++i) {
+  for (ToolbarActionViews::iterator i(toolbar_action_views_.begin());
+       i != toolbar_action_views_.end(); ++i) {
     if ((*i)->view_controller()->GetId() == extension->id()) {
       delete *i;
-      browser_action_views_.erase(i);
+      toolbar_action_views_.erase(i);
 
       // If the extension is being upgraded we don't want the bar to shrink
       // because the icon is just going to get re-added to the same location.
@@ -819,7 +819,7 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
               IsBeingUpgraded(extension))
         return;
 
-      if (browser_action_views_.size() > visible_actions) {
+      if (toolbar_action_views_.size() > visible_actions) {
         // If we have more icons than we can show, then we must not be changing
         // the container size (since we either removed an icon from the main
         // area and one from the overflow list will have shifted in, or we
@@ -830,7 +830,7 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
         // overflow container by 1.  Either way the size changed, so animate.
         if (chevron_)
           chevron_->SetVisible(false);
-        Animate(gfx::Tween::EASE_OUT, browser_action_views_.size());
+        Animate(gfx::Tween::EASE_OUT, toolbar_action_views_.size());
       }
       return;  // We have found the action to remove, bail out.
     }
@@ -839,21 +839,21 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
 
 void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
                                                     int index) {
-  DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
+  DCHECK(index >= 0 && index < static_cast<int>(toolbar_action_views_.size()));
 
-  BrowserActionViews::iterator iter = browser_action_views_.begin();
-  while (iter != browser_action_views_.end() &&
+  ToolbarActionViews::iterator iter = toolbar_action_views_.begin();
+  while (iter != toolbar_action_views_.end() &&
          (*iter)->view_controller()->GetId() != extension->id())
     ++iter;
 
-  DCHECK(iter != browser_action_views_.end());
-  if (iter - browser_action_views_.begin() == index)
+  DCHECK(iter != toolbar_action_views_.end());
+  if (iter - toolbar_action_views_.begin() == index)
     return;  // Already in place.
 
-  BrowserActionView* moved_view = *iter;
-  browser_action_views_.erase(iter);
-  browser_action_views_.insert(
-      browser_action_views_.begin() + index, moved_view);
+  ToolbarActionView* moved_view = *iter;
+  toolbar_action_views_.erase(iter);
+  toolbar_action_views_.insert(
+      toolbar_action_views_.begin() + index, moved_view);
 
   Layout();
   SchedulePaint();
@@ -861,7 +861,7 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
 
 void BrowserActionsContainer::ToolbarExtensionUpdated(
     const Extension* extension) {
-  BrowserActionView* view = GetViewForExtension(extension);
+  ToolbarActionView* view = GetViewForExtension(extension);
   // There might not be a view in cases where we are highlighting or if we
   // haven't fully initialized extensions.
   if (view)
@@ -875,7 +875,7 @@ bool BrowserActionsContainer::ShowExtensionActionPopup(
   if (popup_owner_ || !browser_->window()->IsActive())
     return false;
 
-  BrowserActionView* view = GetViewForExtension(extension);
+  ToolbarActionView* view = GetViewForExtension(extension);
   return view && view->view_controller()->ExecuteAction(grant_active_tab);
 }
 
@@ -890,8 +890,8 @@ void BrowserActionsContainer::ToolbarHighlightModeChanged(
   // we delete and recreate everything here, but given everything else going on
   // (the lack of highlight, n more extensions appearing, etc), it's not worth
   // the extra complexity to create and insert only the new extensions.
-  DeleteBrowserActionViews();
-  CreateBrowserActionViews();
+  DeleteToolbarActionViews();
+  CreateToolbarActionViews();
   Animate(gfx::Tween::LINEAR, GetIconCount());
 }
 
@@ -914,7 +914,7 @@ void BrowserActionsContainer::LoadImages() {
 }
 
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
-  SetVisible(!browser_action_views_.empty());
+  SetVisible(!toolbar_action_views_.empty());
   if (parent()) {  // Parent can be null in testing.
     parent()->Layout();
     parent()->SchedulePaint();
@@ -928,15 +928,15 @@ int BrowserActionsContainer::GetPreferredWidth() {
 void BrowserActionsContainer::SetChevronVisibility() {
   if (chevron_) {
     chevron_->SetVisible(
-        VisibleBrowserActionsAfterAnimation() < browser_action_views_.size());
+        VisibleBrowserActionsAfterAnimation() < toolbar_action_views_.size());
   }
 }
 
 int BrowserActionsContainer::IconCountToWidth(int icons) const {
   if (icons < 0)
-    icons = browser_action_views_.size();
+    icons = toolbar_action_views_.size();
   bool display_chevron =
-      chevron_ && static_cast<size_t>(icons) < browser_action_views_.size();
+      chevron_ && static_cast<size_t>(icons) < toolbar_action_views_.size();
   if (icons == 0 && !display_chevron)
     return ToolbarView::kStandardSpacing;
   int icons_size =
@@ -956,7 +956,7 @@ int BrowserActionsContainer::IconCountToWidth(int icons) const {
 size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
   // Check for widths large enough to show the entire icon set.
   if (pixels >= IconCountToWidth(-1))
-    return browser_action_views_.size();
+    return toolbar_action_views_.size();
 
   // We reserve space for the padding on either side of the toolbar...
   int available_space = pixels - (ToolbarView::kStandardSpacing * 2);
@@ -1008,7 +1008,7 @@ size_t BrowserActionsContainer::GetIconCount() const {
   // (The only exception is if this is in initialization.)
   if (initialized_) {
     size_t num_extension_actions = 0u;
-    for (BrowserActionView* view : browser_action_views_) {
+    for (ToolbarActionView* view : toolbar_action_views_) {
       // No component action should ever have a valid extension id, so we can
       // use this to check the extension amount.
       // TODO(devlin): Fix this to just check model size when the model also

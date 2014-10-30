@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   // Drag extension A from index 0...
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  BrowserActionView* view = container->GetViewForExtension(extension_b());
+  ToolbarActionView* view = container->GetViewForExtension(extension_b());
   // ...to the right of extension B.
   gfx::Point location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // Drag extension A from index 0...
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  BrowserActionView* view = first->GetViewForExtension(extension_b());
+  ToolbarActionView* view = first->GetViewForExtension(extension_b());
   // ...to the right of extension B.
   gfx::Point location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
                                            ->browser_actions();
 
   // Currently, dragging should be enabled.
-  BrowserActionView* action_view = container->GetBrowserActionViewAt(0);
+  ToolbarActionView* action_view = container->GetToolbarActionViewAt(0);
   ASSERT_TRUE(action_view);
   gfx::Point point(action_view->x(), action_view->y());
   EXPECT_TRUE(container->CanStartDragForView(action_view, point, point));
@@ -314,14 +314,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
 
   // We shouldn't be able to drag in highlight mode.
-  action_view = container->GetBrowserActionViewAt(0);
+  action_view = container->GetToolbarActionViewAt(0);
   EXPECT_FALSE(container->CanStartDragForView(action_view, point, point));
 
   // We should go back to normal after leaving highlight mode.
   model->StopHighlighting();
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  action_view = container->GetBrowserActionViewAt(0);
+  action_view = container->GetToolbarActionViewAt(0);
   EXPECT_TRUE(container->CanStartDragForView(action_view, point, point));
 }
 
@@ -334,7 +334,7 @@ class BrowserActionsContainerOverflowTest
   ~BrowserActionsContainerOverflowTest() override {}
 
  protected:
-  // Returns true if the order of the BrowserActionViews in |main_bar_|
+  // Returns true if the order of the ToolbarActionViews in |main_bar_|
   // and |overflow_bar_| match.
   bool ViewOrdersMatch();
 
@@ -394,10 +394,10 @@ void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {
 }
 
 bool BrowserActionsContainerOverflowTest::ViewOrdersMatch() {
-  if (main_bar_->num_browser_actions() !=
-      overflow_bar_->num_browser_actions())
+  if (main_bar_->num_toolbar_actions() !=
+      overflow_bar_->num_toolbar_actions())
     return false;
-  for (size_t i = 0; i < main_bar_->num_browser_actions(); ++i) {
+  for (size_t i = 0; i < main_bar_->num_toolbar_actions(); ++i) {
     if (main_bar_->GetIdAt(i) != overflow_bar_->GetIdAt(i))
       return false;
   }
@@ -413,13 +413,13 @@ BrowserActionsContainerOverflowTest::VerifyVisibleCount(
 
   // Loop through and check each browser action for proper visibility (which
   // implicitly also guarantees that the proper number are visible).
-  for (size_t i = 0; i < overflow_bar_->num_browser_actions(); ++i) {
+  for (size_t i = 0; i < overflow_bar_->num_toolbar_actions(); ++i) {
     bool visible = i < expected_visible;
-    if (main_bar_->GetBrowserActionViewAt(i)->visible() != visible) {
+    if (main_bar_->GetToolbarActionViewAt(i)->visible() != visible) {
       return testing::AssertionFailure() << "Index " << i <<
           " has improper visibility in main: " << !visible;
     }
-    if (overflow_bar_->GetBrowserActionViewAt(i)->visible() == visible) {
+    if (overflow_bar_->GetToolbarActionViewAt(i)->visible() == visible) {
       return testing::AssertionFailure() << "Index " << i <<
           " has improper visibility in overflow: " << visible;
     }
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   // All actions are showing, and are in the installation order.
   EXPECT_EQ(-1, model()->GetVisibleIconCount());
-  ASSERT_EQ(3u, main_bar()->num_browser_actions());
+  ASSERT_EQ(3u, main_bar()->num_toolbar_actions());
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   overflow_bar()->Layout();
 
   // Verify starting state is A B [C].
-  ASSERT_EQ(3u, main_bar()->num_browser_actions());
+  ASSERT_EQ(3u, main_bar()->num_toolbar_actions());
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(2u));
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   ui::OSExchangeData drop_data;
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  BrowserActionView* view = overflow_bar()->GetViewForExtension(extension_c());
+  ToolbarActionView* view = overflow_bar()->GetViewForExtension(extension_c());
   gfx::Point location(view->x(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);

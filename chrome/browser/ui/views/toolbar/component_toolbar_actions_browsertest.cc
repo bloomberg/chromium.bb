@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/feature_switch.h"
@@ -126,10 +126,10 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
           ->toolbar()->browser_actions();
 
   // There should be only one component action view.
-  ASSERT_EQ(1u, browser_actions_container->num_browser_actions());
+  ASSERT_EQ(1u, browser_actions_container->num_toolbar_actions());
 
-  BrowserActionView* view =
-      browser_actions_container->GetBrowserActionViewAt(0u);
+  ToolbarActionView* view =
+      browser_actions_container->GetToolbarActionViewAt(0u);
   ASSERT_EQ(kMockId, view->view_controller()->GetId());
   MockComponentAction* mock_component_action =
       static_cast<MockComponentAction*>(view->view_controller());

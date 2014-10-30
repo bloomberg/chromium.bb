@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/browser_action_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 
 #include <string>
 
@@ -37,12 +37,12 @@ const int kBorderInset = 4;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserActionView
+// ToolbarActionView
 
-BrowserActionView::BrowserActionView(
+ToolbarActionView::ToolbarActionView(
     scoped_ptr<ToolbarActionViewController> view_controller,
     Browser* browser,
-    BrowserActionView::Delegate* delegate)
+    ToolbarActionView::Delegate* delegate)
     : MenuButton(this, base::string16(), NULL, false),
       view_controller_(view_controller.Pass()),
       browser_(browser),
@@ -65,10 +65,10 @@ BrowserActionView::BrowserActionView(
   UpdateState();
 }
 
-BrowserActionView::~BrowserActionView() {
+ToolbarActionView::~ToolbarActionView() {
 }
 
-void BrowserActionView::ViewHierarchyChanged(
+void ToolbarActionView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && !called_register_command_ && GetFocusManager()) {
     view_controller_->RegisterCommand();
@@ -78,34 +78,34 @@ void BrowserActionView::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(details);
 }
 
-void BrowserActionView::OnDragDone() {
+void ToolbarActionView::OnDragDone() {
   views::MenuButton::OnDragDone();
-  delegate_->OnBrowserActionViewDragDone();
+  delegate_->OnToolbarActionViewDragDone();
 }
 
-gfx::Size BrowserActionView::GetPreferredSize() const {
+gfx::Size ToolbarActionView::GetPreferredSize() const {
   return gfx::Size(BrowserActionsContainer::IconWidth(false),
                    BrowserActionsContainer::IconHeight());
 }
 
-void BrowserActionView::PaintChildren(gfx::Canvas* canvas,
+void ToolbarActionView::PaintChildren(gfx::Canvas* canvas,
                                       const views::CullSet& cull_set) {
   View::PaintChildren(canvas, cull_set);
   view_controller_->PaintExtra(
       canvas, GetLocalBounds(), GetCurrentWebContents());
 }
 
-void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
+void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
   views::MenuButton::GetAccessibleState(state);
   state->role = ui::AX_ROLE_BUTTON;
 }
 
-void BrowserActionView::ButtonPressed(views::Button* sender,
+void ToolbarActionView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   view_controller_->ExecuteAction(true);
 }
 
-void BrowserActionView::UpdateState() {
+void ToolbarActionView::UpdateState() {
   content::WebContents* web_contents = GetCurrentWebContents();
   if (SessionTabHelper::IdForTab(web_contents) < 0)
     return;
@@ -135,14 +135,14 @@ void BrowserActionView::UpdateState() {
   SchedulePaint();
 }
 
-void BrowserActionView::Observe(int type,
+void ToolbarActionView::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
   UpdateState();
 }
 
-bool BrowserActionView::Activate() {
+bool ToolbarActionView::Activate() {
   if (!view_controller_->HasPopup(GetCurrentWebContents()))
     return true;
 
@@ -158,7 +158,7 @@ bool BrowserActionView::Activate() {
   return false;
 }
 
-bool BrowserActionView::OnMousePressed(const ui::MouseEvent& event) {
+bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
     return view_controller_->HasPopup(GetCurrentWebContents()) ?
         MenuButton::OnMousePressed(event) : LabelButton::OnMousePressed(event);
@@ -166,7 +166,7 @@ bool BrowserActionView::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
-void BrowserActionView::OnMouseReleased(const ui::MouseEvent& event) {
+void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
   if (view_controller_->HasPopup(GetCurrentWebContents()) ||
       view_controller_->IsMenuRunning()) {
     // TODO(erikkay) this never actually gets called (probably because of the
@@ -177,7 +177,7 @@ void BrowserActionView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 }
 
-void BrowserActionView::OnMouseExited(const ui::MouseEvent& event) {
+void ToolbarActionView::OnMouseExited(const ui::MouseEvent& event) {
   if (view_controller_->HasPopup(GetCurrentWebContents()) ||
       view_controller_->IsMenuRunning())
     MenuButton::OnMouseExited(event);
@@ -185,46 +185,46 @@ void BrowserActionView::OnMouseExited(const ui::MouseEvent& event) {
     LabelButton::OnMouseExited(event);
 }
 
-bool BrowserActionView::OnKeyReleased(const ui::KeyEvent& event) {
+bool ToolbarActionView::OnKeyReleased(const ui::KeyEvent& event) {
   return view_controller_->HasPopup(GetCurrentWebContents()) ?
       MenuButton::OnKeyReleased(event) : LabelButton::OnKeyReleased(event);
 }
 
-void BrowserActionView::OnGestureEvent(ui::GestureEvent* event) {
+void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
   if (view_controller_->HasPopup(GetCurrentWebContents()))
     MenuButton::OnGestureEvent(event);
   else
     LabelButton::OnGestureEvent(event);
 }
 
-scoped_ptr<LabelButtonBorder> BrowserActionView::CreateDefaultBorder() const {
+scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
   scoped_ptr<LabelButtonBorder> border = LabelButton::CreateDefaultBorder();
   border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
                                  kBorderInset, kBorderInset));
   return border.Pass();
 }
 
-gfx::ImageSkia BrowserActionView::GetIconForTest() {
+gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
 
-void BrowserActionView::OnIconUpdated() {
+void ToolbarActionView::OnIconUpdated() {
   UpdateState();
 }
 
-views::View* BrowserActionView::GetAsView() {
+views::View* ToolbarActionView::GetAsView() {
   return this;
 }
 
-bool BrowserActionView::IsShownInMenu() {
+bool ToolbarActionView::IsShownInMenu() {
   return delegate_->ShownInsideMenu();
 }
 
-views::FocusManager* BrowserActionView::GetFocusManagerForAccelerator() {
+views::FocusManager* ToolbarActionView::GetFocusManagerForAccelerator() {
   return GetFocusManager();
 }
 
-views::Widget* BrowserActionView::GetParentForContextMenu() {
+views::Widget* ToolbarActionView::GetParentForContextMenu() {
   // RunMenuAt expects a nested menu to be parented by the same widget as the
   // already visible menu, in this case the Chrome menu.
   return delegate_->ShownInsideMenu() ?
@@ -234,33 +234,33 @@ views::Widget* BrowserActionView::GetParentForContextMenu() {
 }
 
 ToolbarActionViewController*
-BrowserActionView::GetPreferredPopupViewController() {
+ToolbarActionView::GetPreferredPopupViewController() {
   return delegate_->ShownInsideMenu() ?
       delegate_->GetMainViewForAction(this)->view_controller() :
       view_controller();
 }
 
-views::View* BrowserActionView::GetReferenceViewForPopup() {
+views::View* ToolbarActionView::GetReferenceViewForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow
   // view.
   return visible() ? this : delegate_->GetOverflowReferenceView();
 }
 
-views::MenuButton* BrowserActionView::GetContextMenuButton() {
+views::MenuButton* ToolbarActionView::GetContextMenuButton() {
   DCHECK(visible());  // We should never show a context menu for a hidden item.
   return this;
 }
 
-content::WebContents* BrowserActionView::GetCurrentWebContents() const {
+content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
   return delegate_->GetCurrentWebContents();
 }
 
-void BrowserActionView::HideActivePopup() {
+void ToolbarActionView::HideActivePopup() {
   delegate_->HideActivePopup();
 }
 
-void BrowserActionView::OnPopupShown(bool grant_tab_permissions) {
+void ToolbarActionView::OnPopupShown(bool grant_tab_permissions) {
   delegate_->SetPopupOwner(this);
   // If this was through direct user action, we press the menu button.
   if (grant_tab_permissions) {
@@ -274,7 +274,7 @@ void BrowserActionView::OnPopupShown(bool grant_tab_permissions) {
   }
 }
 
-void BrowserActionView::CleanupPopup() {
+void ToolbarActionView::CleanupPopup() {
   // We need to do these actions synchronously (instead of closing and then
   // performing the rest of the cleanup in OnWidgetDestroyed()) because
   // OnWidgetDestroyed() can be called asynchronously from Close(), and we need
