@@ -1333,9 +1333,9 @@ function handleCommand(e) {
       editSelectedItem();
       break;
 
-    case 'new-folder-command':
-      target = bmm.tree;
     case 'new-folder-from-folders-menu-command':
+      target = bmm.tree;
+    case 'new-folder-command':
       recordUserAction('NewFolder');
       newFolder(target);
       break;
