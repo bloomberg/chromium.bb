@@ -216,8 +216,7 @@
       u'Disable3DAPIs': True,
       u'DisabledPlugins': [
         u'O3D Plugin',
-        u'Shockwave Flash',
-        u'Netflix'],
+        u'Shockwave Flash'],
       u'DnsPrefetchingEnabled': True,
       u'ExtensionInstallBlacklist': [u'*'],
       u'ExtensionInstallForcelist': [
@@ -468,8 +467,7 @@
       u'Disable3DAPIs': True,
       u'DisabledPlugins': [
         u'O3D Plugin',
-        u'Shockwave Flash',
-        u'Netflix'],
+        u'Shockwave Flash'],
       u'DnsPrefetchingEnabled': True,
       u'ExtensionInstallBlacklist': [u'*'],
       u'ExtensionInstallForcelist': [
