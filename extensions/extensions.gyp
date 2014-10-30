@@ -1069,11 +1069,10 @@
       'target_name': 'extensions_shell_and_test_pak',
       'type': 'none',
       'dependencies': [
-        # Need dev-tools related resources in shell_resources.pak and
-        # devtools_resources.pak.
         '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
         '../content/content.gyp:content_resources',
         '../content/content_shell_and_tests.gyp:content_shell_resources',
+        '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         'extensions_resources.gyp:extensions_resources',
@@ -1085,6 +1084,7 @@
           'action_name': 'repack_extensions_shell_and_test_pak',
           'variables': {
             'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
