@@ -8,10 +8,13 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_service.h"
 
 DataReductionProxyChromeConfigurator::DataReductionProxyChromeConfigurator(
@@ -21,6 +24,28 @@ DataReductionProxyChromeConfigurator::DataReductionProxyChromeConfigurator(
 }
 
 DataReductionProxyChromeConfigurator::~DataReductionProxyChromeConfigurator() {
+}
+
+// static
+void DataReductionProxyChromeConfigurator::DisableInProxyConfigPref(
+    PrefService* prefs) {
+  DCHECK(prefs);
+  DictionaryPrefUpdate update(prefs, prefs::kProxy);
+  base::DictionaryValue* dict = update.Get();
+  std::string mode;
+  dict->GetString("mode", &mode);
+  std::string server;
+  dict->GetString("server", &server);
+  net::ProxyConfig::ProxyRules proxy_rules;
+  proxy_rules.ParseFromString(server);
+  // The data reduction proxy uses MODE_FIXED_SERVERS.
+  if (mode != ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS)
+      || !ContainsDataReductionProxy(proxy_rules)) {
+    return;
+  }
+  dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
+  dict->SetString("server", "");
+  dict->SetString("bypass_list", "");
 }
 
 void DataReductionProxyChromeConfigurator::Enable(
@@ -85,12 +110,7 @@ void DataReductionProxyChromeConfigurator::Enable(
 }
 
 void DataReductionProxyChromeConfigurator::Disable() {
-  DCHECK(prefs_);
-  DictionaryPrefUpdate update(prefs_, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetString("mode", ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-  dict->SetString("server", "");
-  dict->SetString("bypass_list", "");
+  DisableInProxyConfigPref(prefs_);
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
   network_task_runner_->PostTask(
       FROM_HERE,
@@ -118,6 +138,36 @@ void DataReductionProxyChromeConfigurator::AddURLPatternToBypass(
     host_pattern = pattern;
 
   AddHostPatternToBypass(host_pattern);
+}
+
+// static
+bool DataReductionProxyChromeConfigurator::ContainsDataReductionProxy(
+    const net::ProxyConfig::ProxyRules& proxy_rules) {
+  data_reduction_proxy::DataReductionProxyParams params(
+      data_reduction_proxy::DataReductionProxyParams::
+          kAllowAllProxyConfigurations);
+  if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
+    return false;
+
+  const net::ProxyList* https_proxy_list =
+      proxy_rules.MapUrlSchemeToProxyList("https");
+  if (https_proxy_list && !https_proxy_list->IsEmpty() &&
+      // Sufficient to check only the first proxy.
+      params.IsDataReductionProxy(https_proxy_list->Get().host_port_pair(),
+                                  NULL)) {
+    return true;
+  }
+
+  const net::ProxyList* http_proxy_list =
+      proxy_rules.MapUrlSchemeToProxyList("http");
+  if (http_proxy_list && !http_proxy_list->IsEmpty() &&
+      // Sufficient to check only the first proxy.
+      params.IsDataReductionProxy(http_proxy_list->Get().host_port_pair(),
+                                  NULL)) {
+    return true;
+  }
+
+  return false;
 }
 
 void DataReductionProxyChromeConfigurator::UpdateProxyConfigOnIO(

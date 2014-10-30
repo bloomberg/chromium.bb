@@ -52,6 +52,8 @@ class DataReductionProxyParams {
   static const unsigned int kFallbackAllowed = (1 << 1);
   static const unsigned int kAlternativeAllowed = (1 << 2);
   static const unsigned int kAlternativeFallbackAllowed = (1 << 3);
+  static const unsigned int kAllowAllProxyConfigurations = kAllowed |
+      kFallbackAllowed | kAlternativeAllowed | kAlternativeFallbackAllowed;
   static const unsigned int kPromoAllowed = (1 << 4);
   static const unsigned int kHoldback = (1 << 5);
 

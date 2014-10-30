@@ -32,6 +32,11 @@ class DataReductionProxyChromeConfigurator
       scoped_refptr<base::SequencedTaskRunner> network_task_runner);
   ~DataReductionProxyChromeConfigurator() override;
 
+  // Removes the data reduction proxy configuration from the proxy preference.
+  // This disables use of the data reduction proxy. This method is public to
+  // disable the proxy on incognito. Disable() should be used otherwise.
+  static void DisableInProxyConfigPref(PrefService* prefs);
+
   void Enable(bool primary_restricted,
               bool fallback_restricted,
               const std::string& primary_origin,
@@ -60,6 +65,10 @@ class DataReductionProxyChromeConfigurator
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestBypassList);
+
+  // Check whether the |proxy_rules| contain any of the data reduction proxies.
+  static bool ContainsDataReductionProxy(
+      const net::ProxyConfig::ProxyRules& proxy_rules);
 
   PrefService* prefs_;
   scoped_refptr<base::SequencedTaskRunner> network_task_runner_;

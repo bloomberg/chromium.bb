@@ -8,10 +8,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,6 +118,10 @@ TEST_F(DataReductionProxyConfigTest, TestFallbackRestricted) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestBothRestricted) {
+  DictionaryPrefUpdate update(&pref_service_, prefs::kProxy);
+  base::DictionaryValue* dict = update.Get();
+  dict->SetString("mode", "system");
+
   config_->Enable(true,
                   true,
                   "https://www.foo.com:443/",
@@ -125,10 +131,38 @@ TEST_F(DataReductionProxyConfigTest, TestBothRestricted) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestDisable) {
+  data_reduction_proxy::DataReductionProxyParams params(
+      data_reduction_proxy::DataReductionProxyParams::
+          kAllowAllProxyConfigurations);
+  config_->Enable(false,
+                  false,
+                  params.origin().spec(),
+                  params.fallback_origin().spec(),
+                  "");
   config_->Disable();
   CheckProxyConfig("system", "", "");
 }
 
+TEST_F(DataReductionProxyConfigTest, TestDisableWithUserOverride) {
+  data_reduction_proxy::DataReductionProxyParams params(
+      data_reduction_proxy::DataReductionProxyParams::
+          kAllowAllProxyConfigurations);
+  config_->Enable(false,
+                  false,
+                  params.origin().spec(),
+                  params.fallback_origin().spec(),
+                  "");
+
+  // Override the data reduction proxy.
+  DictionaryPrefUpdate update(&pref_service_, prefs::kProxy);
+  base::DictionaryValue* dict = update.Get();
+  dict->SetString("server", "https://www.baz.com:22/");
+
+  // This should have no effect since proxy server was overridden.
+  config_->Disable();
+
+  CheckProxyConfig("fixed_servers", "https://www.baz.com:22/", "");
+}
 
 TEST_F(DataReductionProxyConfigTest, TestBypassList) {
   config_->AddHostPatternToBypass("http://www.google.com");

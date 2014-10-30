@@ -315,7 +315,8 @@ bool DataReductionProxyParams::WasDataReductionProxyUsed(
 bool DataReductionProxyParams::IsDataReductionProxy(
     const net::HostPortPair& host_port_pair,
     DataReductionProxyTypeInfo* proxy_info) const {
-  if (net::HostPortPair::FromURL(origin()).Equals(host_port_pair)) {
+  if (allowed() &&
+      net::HostPortPair::FromURL(origin()).Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = origin();
       if (fallback_allowed())
@@ -333,7 +334,8 @@ bool DataReductionProxyParams::IsDataReductionProxy(
     }
     return true;
   }
-  if (net::HostPortPair::FromURL(alt_origin()).Equals(host_port_pair)) {
+  if (alternative_allowed() &&
+      net::HostPortPair::FromURL(alt_origin()).Equals(host_port_pair)) {
     if (proxy_info) {
       proxy_info->proxy_servers.first = alt_origin();
       proxy_info->is_alternative = true;

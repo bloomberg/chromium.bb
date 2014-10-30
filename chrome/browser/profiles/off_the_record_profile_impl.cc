@@ -24,6 +24,7 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -131,9 +132,8 @@ void OffTheRecordProfileImpl::Init() {
          IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
              IncognitoModePrefs::DISABLED);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  UseSystemProxy();
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+  // Clear the proxy pref if and only if the data reduction proxy is specified.
+  DataReductionProxyChromeConfigurator::DisableInProxyConfigPref(prefs_);
 
   // TODO(oshima): Remove the need to eagerly initialize the request context
   // getter. chromeos::OnlineAttempt is illegally trying to access this
@@ -210,22 +210,6 @@ void OffTheRecordProfileImpl::InitHostZoomMap() {
       base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
                  base::Unretained(this)));
 }
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-void OffTheRecordProfileImpl::UseSystemProxy() {
-  // Force the use of the system-assigned proxy when off the record.
-  const char kProxyMode[] = "mode";
-  const char kProxyServer[] = "server";
-  const char kProxyBypassList[] = "bypass_list";
-  const char kProxyPacUrl[] = "pac_url";
-  DictionaryPrefUpdate update(prefs_, prefs::kProxy);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetString(kProxyMode, ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
-  dict->SetString(kProxyPacUrl, "");
-  dict->SetString(kProxyServer, "");
-  dict->SetString(kProxyBypassList, "");
-}
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 std::string OffTheRecordProfileImpl::GetProfileName() {
   // Incognito profile should not return the profile name.
