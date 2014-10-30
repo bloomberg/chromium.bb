@@ -1149,16 +1149,6 @@ crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/overflow/text-color-change.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
-
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
 # crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
