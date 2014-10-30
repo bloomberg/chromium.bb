@@ -18,7 +18,10 @@ InProcessUtilityThread::InProcessUtilityThread(const std::string& channel_id)
 }
 
 InProcessUtilityThread::~InProcessUtilityThread() {
+  // Wait till in-process utility thread finishes clean up.
+  bool previous_value = base::ThreadRestrictions::SetIOAllowed(true);
   Stop();
+  base::ThreadRestrictions::SetIOAllowed(previous_value);
 }
 
 void InProcessUtilityThread::Init() {
