@@ -19,6 +19,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -131,9 +132,10 @@ const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
 //  * A SPDY/4 experiment, for SPDY/4 (aka HTTP/2) vs SPDY/3.1 comparisons and
 //  eventual SPDY/4 deployment.
 const char kSpdyFieldTrialName[] = "SPDY";
-const char kSpdyFieldTrialHoldbackGroupName[] = "SpdyDisabled";
+const char kSpdyFieldTrialHoldbackGroupNamePrefix[] = "SpdyDisabled";
 const char kSpdyFieldTrialHoldbackControlGroupName[] = "Control";
-const char kSpdyFieldTrialSpdy4GroupName[] = "Spdy4Enabled";
+const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
+const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialSpdy4ControlGroupName[] = "Spdy4Control";
 
 // Field trial for Cache-Control: stale-while-revalidate directive.
@@ -838,16 +840,21 @@ void IOThread::ConfigureTCPFastOpen(const CommandLine& command_line) {
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
 }
 
-void IOThread::ConfigureSpdyFromTrial(const std::string& spdy_trial_group,
+void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
                                       Globals* globals) {
-  if (spdy_trial_group == kSpdyFieldTrialHoldbackGroupName) {
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
     // TODO(jgraettinger): Use net::NextProtosHttpOnly() instead?
     net::HttpStreamFactory::set_spdy_enabled(false);
   } else if (spdy_trial_group == kSpdyFieldTrialHoldbackControlGroupName) {
     // Use the current SPDY default (SPDY/3.1).
     globals->next_protos = net::NextProtosSpdy31();
     globals->use_alternate_protocols.set(true);
-  } else if (spdy_trial_group == kSpdyFieldTrialSpdy4GroupName) {
+  } else if (spdy_trial_group.starts_with(
+                 kSpdyFieldTrialSpdy31GroupNamePrefix)) {
+    globals->next_protos = net::NextProtosSpdy4Http2();
+    globals->use_alternate_protocols.set(true);
+  } else if (spdy_trial_group.starts_with(
+                 kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos = net::NextProtosSpdy4Http2();
     globals->use_alternate_protocols.set(true);
   } else if (spdy_trial_group == kSpdyFieldTrialSpdy4ControlGroupName) {

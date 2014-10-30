@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
@@ -289,7 +290,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Configures available SPDY protocol versions from the given trial.
   // Used only if no command-line configuration was present.
-  static void ConfigureSpdyFromTrial(const std::string& spdy_trial_group,
+  static void ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
                                      Globals* globals);
 
   // Global state must be initialized on the IO thread, then this
