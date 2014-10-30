@@ -182,8 +182,6 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     if (!img || img->isNull())
         return;
 
-    HTMLImageElement* imageElt = isHTMLImageElement(m_renderImage.node()) ? toHTMLImageElement(m_renderImage.node()) : 0;
-    CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
     Image* image = img.get();
     InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image, image, alignedRect.size());
 
@@ -192,7 +190,7 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     InspectorInstrumentation::willPaintImage(&m_renderImage);
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    context->drawImage(image, alignedRect, compositeOperator, m_renderImage.shouldRespectImageOrientation());
+    context->drawImage(image, alignedRect, CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
     InspectorInstrumentation::didPaintImage(&m_renderImage);
 }

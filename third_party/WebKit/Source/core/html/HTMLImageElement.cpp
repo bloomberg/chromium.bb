@@ -80,7 +80,6 @@ private:
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLElement(imgTag, document)
     , m_imageLoader(HTMLImageLoader::create(this))
-    , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
@@ -243,12 +242,6 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
-    } else if (name == compositeAttr) {
-        blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
-        if (!parseCompositeAndBlendOperator(value, m_compositeOperator, blendOp))
-            m_compositeOperator = CompositeSourceOver;
-        else if (m_compositeOperator != CompositeSourceOver)
-            UseCounter::count(document(), UseCounter::HTMLImageElementComposite);
     } else {
         HTMLElement::parseAttribute(name, value);
     }

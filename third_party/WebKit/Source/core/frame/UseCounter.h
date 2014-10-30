@@ -480,7 +480,6 @@ public:
         UIEventPageX = 513,
         UIEventPageY = 514,
         BgPropertiesFixed = 515,
-        HTMLImageElementComposite = 516,
         DevToolsConsoleTimeline = 517,
         DevToolsConsoleProfile = 518,
         SVGStyleElementTitle = 519,
