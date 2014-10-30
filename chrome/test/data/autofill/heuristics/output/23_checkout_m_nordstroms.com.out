@@ -1,0 +1,41 @@
+UNKNOWN_TYPE |  |  |  | _1-default
+NAME_FIRST |  | First Name |  | _1-default
+NAME_MIDDLE_INITIAL |  | M.I. |  | _1-default
+NAME_LAST |  | Last Name |  | _1-default
+ADDRESS_HOME_LINE1 |  | Address 1 |  | _1-default
+ADDRESS_HOME_LINE2 |  | Address 2 (Optional) |  | _1-default
+ADDRESS_HOME_CITY |  | City |  | _1-default
+ADDRESS_HOME_STATE |  | State |  | _1-default
+ADDRESS_HOME_ZIP |  | ZIP Code |  | _1-default
+UNKNOWN_TYPE |  | First Name M.I. |  | _1-default
+UNKNOWN_TYPE |  | First Name M.I. Last Name Address 1 Address 2 (Optional) City State ZIP Code Phone Information | on | _1-default
+UNKNOWN_TYPE | multiple-address | Shipping to more than one address? | false | _1-default
+UNKNOWN_TYPE | multiple-address | Shipping to more than one address? | true | _1-default
+UNKNOWN_TYPE |  | Note Number |  | _1-default
+UNKNOWN_TYPE |  | Access Code |  | _1-default
+UNKNOWN_TYPE |  | Gift Card Number |  | _1-default
+UNKNOWN_TYPE |  | Access Code |  | _1-default
+UNKNOWN_TYPE |  | Please do not fill out the next field, it is a security measure to insure that this page is being visited by a human. |  | _1-default
+UNKNOWN_TYPE |  | Enter a Promotion Code |  | _1-default
+UNKNOWN_TYPE |  | Employee Number |  | _1-default
+UNKNOWN_TYPE | discount | Discount |  | _1-default
+UNKNOWN_TYPE | discount | % |  | _1-default
+UNKNOWN_TYPE |  | CREDIT CARD |  | _1-default
+UNKNOWN_TYPE |  | CREDIT CARD |  | _1-default
+UNKNOWN_TYPE |  |  |  | _1-default
+UNKNOWN_TYPE |  |  |  | _1-default
+UNKNOWN_TYPE | credit-ccv | Security Code Information |  | _1-default
+UNKNOWN_TYPE |  | CREDIT CARD | on | _1-default
+UNKNOWN_TYPE |  | BILL TO |  | _1-default
+NAME_FIRST |  | First Name |  | _1-default
+NAME_MIDDLE_INITIAL |  | M.I. |  | _1-default
+NAME_LAST |  | Last Name |  | _1-default
+ADDRESS_HOME_LINE1 |  | Address 1 |  | _1-default
+ADDRESS_HOME_LINE2 |  | Address 2 (Optional) |  | _1-default
+ADDRESS_HOME_CITY |  | City |  | _1-default
+ADDRESS_HOME_STATE |  | State/Province |  | _1-default
+ADDRESS_HOME_ZIP |  | ZIP/Postal Code |  | _1-default
+ADDRESS_HOME_COUNTRY |  | Country | 0 | _1-default
+EMAIL_ADDRESS |  | We'll send any order correspondence e-mails to the address below, and give you a call if anything comes up. E-mail |  | _1-default
+EMAIL_ADDRESS |  | We'll send any order correspondence e-mails to the address below, and give you a call if anything comes up. E-mail |  | _1-default
+UNKNOWN_TYPE |  | Note Number Access Code Gift Card Number Access Code Please do not fill out the next field, it is a security measure to insure that this page is being visited by a human. Enter a Promotion Code Employee Number % % Card Number Information First Name M.I. Last Name Address 1 Address 2 (Optional) City State/Province ZIP/Postal Code Country E-mail Information Information Phone Information Information | on | _1-default
