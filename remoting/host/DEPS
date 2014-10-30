@@ -1,6 +1,8 @@
 include_rules = [
   "+ash",
   "+cc/output",
+  "+content/public/browser",
+  "+components/policy/core/common",
   "+extensions/browser/api/messaging",
   "+jingle/glue",
   "+net",
