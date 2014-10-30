@@ -138,9 +138,15 @@ class NET_EXPORT ProxyConfig {
 
    private:
     // Returns one of {&proxies_for_http, &proxies_for_https, &proxies_for_ftp}
-    // or NULL if it is a scheme that we don't have a mapping
-    // for. Should only call this if the type is TYPE_PROXY_PER_SCHEME.
+    // or NULL if it is a scheme that we don't have a mapping for. Should only
+    // call this if the type is TYPE_PROXY_PER_SCHEME. Intentionally returns
+    // NULL for "ws" and "wss" as those are handled specially by
+    // GetProxyListForWebSocketScheme().
     ProxyList* MapUrlSchemeToProxyListNoFallback(const std::string& scheme);
+
+    // Returns the first of {&fallback_proxies, &proxies_for_https,
+    // &proxies_for_http} that is non-empty, or NULL.
+    const ProxyList* GetProxyListForWebSocketScheme() const;
   };
 
   typedef int ID;

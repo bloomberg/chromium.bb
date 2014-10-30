@@ -145,6 +145,8 @@ const ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyList(
       MapUrlSchemeToProxyListNoFallback(url_scheme);
   if (proxy_server_list && !proxy_server_list->IsEmpty())
     return proxy_server_list;
+  if (url_scheme == "ws" || url_scheme == "wss")
+    return GetProxyListForWebSocketScheme();
   if (!fallback_proxies.IsEmpty())
     return &fallback_proxies;
   return NULL;  // No mapping for this scheme. Use direct.
@@ -171,6 +173,17 @@ ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyListNoFallback(
   if (scheme == "ftp")
     return &proxies_for_ftp;
   return NULL;  // No mapping for this scheme.
+}
+
+const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
+    const {
+  if (!fallback_proxies.IsEmpty())
+    return &fallback_proxies;
+  if (!proxies_for_https.IsEmpty())
+    return &proxies_for_https;
+  if (!proxies_for_http.IsEmpty())
+    return &proxies_for_http;
+  return NULL;
 }
 
 ProxyConfig::ProxyConfig()

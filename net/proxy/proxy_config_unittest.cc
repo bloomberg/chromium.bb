@@ -353,5 +353,76 @@ TEST(ProxyConfigTest, ProxyRulesSetBypassFlag) {
   EXPECT_FALSE(result.did_bypass_proxy());
 }
 
+static const char kWsUrl[] = "ws://example.com/echo";
+static const char kWssUrl[] = "wss://example.com/echo";
+
+class ProxyConfigWebSocketTest : public ::testing::Test {
+ protected:
+  void ParseFromString(const std::string& rules) {
+    rules_.ParseFromString(rules);
+  }
+  void Apply(const GURL& gurl) { rules_.Apply(gurl, &info_); }
+  std::string ToPacString() const { return info_.ToPacString(); }
+
+  static GURL WsUrl() { return GURL(kWsUrl); }
+  static GURL WssUrl() { return GURL(kWssUrl); }
+
+  ProxyConfig::ProxyRules rules_;
+  ProxyInfo info_;
+};
+
+// If a single proxy is set for all protocols, WebSocket uses it.
+TEST_F(ProxyConfigWebSocketTest, UsesProxy) {
+  ParseFromString("proxy:3128");
+  Apply(WsUrl());
+  EXPECT_EQ("PROXY proxy:3128", ToPacString());
+}
+
+// See RFC6455 Section 4.1. item 3, "_Proxy Usage_".
+TEST_F(ProxyConfigWebSocketTest, PrefersSocks) {
+  ParseFromString(
+      "http=proxy:3128 ; https=sslproxy:3128 ; socks=socksproxy:1080");
+  Apply(WsUrl());
+  EXPECT_EQ("SOCKS socksproxy:1080", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, PrefersHttpsToHttp) {
+  ParseFromString("http=proxy:3128 ; https=sslproxy:3128");
+  Apply(WssUrl());
+  EXPECT_EQ("PROXY sslproxy:3128", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, PrefersHttpsEvenForWs) {
+  ParseFromString("http=proxy:3128 ; https=sslproxy:3128");
+  Apply(WsUrl());
+  EXPECT_EQ("PROXY sslproxy:3128", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, PrefersHttpToDirect) {
+  ParseFromString("http=proxy:3128");
+  Apply(WssUrl());
+  EXPECT_EQ("PROXY proxy:3128", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, IgnoresFtpProxy) {
+  ParseFromString("ftp=ftpproxy:3128");
+  Apply(WssUrl());
+  EXPECT_EQ("DIRECT", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, ObeysBypassRules) {
+  ParseFromString("http=proxy:3128 ; https=sslproxy:3128");
+  rules_.bypass_rules.AddRuleFromString(".chromium.org");
+  Apply(GURL("wss://codereview.chromium.org/feed"));
+  EXPECT_EQ("DIRECT", ToPacString());
+}
+
+TEST_F(ProxyConfigWebSocketTest, ObeysLocalBypass) {
+  ParseFromString("http=proxy:3128 ; https=sslproxy:3128");
+  rules_.bypass_rules.AddRuleFromString("<local>");
+  Apply(GURL("ws://localhost/feed"));
+  EXPECT_EQ("DIRECT", ToPacString());
+}
+
 }  // namespace
 }  // namespace net
