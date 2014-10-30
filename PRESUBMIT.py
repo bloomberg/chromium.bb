@@ -1621,17 +1621,21 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_gn_dbg': ['compile'],
       'linux_chromium_gn_rel': ['defaulttests'],
       'linux_chromium_rel': ['defaulttests'],
+      'linux_chromium_rel_ng': ['defaulttests'],
       'linux_chromium_clang_dbg': ['defaulttests'],
       'linux_gpu': ['defaulttests'],
       'linux_nacl_sdk_build': ['compile'],
       'mac_chromium_compile_dbg': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
+      'mac_chromium_rel_ng': ['defaulttests'],
       'mac_gpu': ['defaulttests'],
       'mac_nacl_sdk_build': ['compile'],
       'win_chromium_compile_dbg': ['defaulttests'],
       'win_chromium_dbg': ['defaulttests'],
       'win_chromium_rel': ['defaulttests'],
+      'win_chromium_rel_ng': ['defaulttests'],
       'win_chromium_x64_rel': ['defaulttests'],
+      'win_chromium_x64_rel_ng': ['defaulttests'],
       'win_gpu': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
       'win8_chromium_rel': ['defaulttests'],
@@ -1681,12 +1685,12 @@ def GetPreferredTryMasters(project, change):
   if all(re.search(r'\.(m|mm)$|(^|[\\\/_])mac[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'mac_chromium_compile_dbg',
-        'mac_chromium_rel',
+        'mac_chromium_rel_ng',
     ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'win_chromium_dbg',
-        'win_chromium_rel',
+        'win_chromium_rel_ng',
         'win8_chromium_rel',
     ])
   if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
@@ -1712,14 +1716,14 @@ def GetPreferredTryMasters(project, change):
       'linux_chromium_clang_dbg',
       'linux_chromium_gn_dbg',
       'linux_chromium_gn_rel',
-      'linux_chromium_rel',
+      'linux_chromium_rel_ng',
       'linux_gpu',
       'mac_chromium_compile_dbg',
-      'mac_chromium_rel',
+      'mac_chromium_rel_ng',
       'mac_gpu',
       'win_chromium_compile_dbg',
-      'win_chromium_rel',
-      'win_chromium_x64_rel',
+      'win_chromium_rel_ng',
+      'win_chromium_x64_rel_ng',
       'win_gpu',
       'win8_chromium_rel',
   ]

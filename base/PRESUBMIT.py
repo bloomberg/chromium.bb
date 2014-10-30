@@ -46,17 +46,3 @@ def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
   return results
-
-
-def GetPreferredTryMasters(project, change):
-  return {
-    'tryserver.chromium.linux': {
-      'linux_chromium_rel': set(['defaulttests']),
-    },
-    'tryserver.chromium.mac': {
-      'mac_chromium_rel': set(['defaulttests']),
-    },
-    'tryserver.chromium.win': {
-      'win_chromium_rel': set(['defaulttests']),
-    }
-  }
