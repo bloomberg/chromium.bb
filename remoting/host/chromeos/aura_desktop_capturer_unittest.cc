@@ -48,7 +48,7 @@ class AuraDesktopCapturerTest : public testing::Test,
   void SimulateFrameCapture() {
     scoped_ptr<SkBitmap> bitmap(new SkBitmap());
     const SkImageInfo& info =
-        SkImageInfo::Make(3, 4, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+        SkImageInfo::Make(3, 4, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
     bitmap->installPixels(info, const_cast<unsigned char*>(frame_data), 12);
 
     scoped_ptr<cc::CopyOutputResult> output =

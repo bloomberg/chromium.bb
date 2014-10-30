@@ -82,10 +82,9 @@ class PolicyWatcherMac : public PolicyWatcher {
   }
 };
 
-scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
-    policy::PolicyService* policy_service,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return make_scoped_ptr(new PolicyWatcherMac(task_runner));
+PolicyWatcher* PolicyWatcher::Create(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return new PolicyWatcherMac(task_runner);
 }
 
 }  // namespace policy_hack

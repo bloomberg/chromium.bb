@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "components/policy/core/common/policy_service.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -39,15 +38,12 @@ class PolicyWatcher {
   virtual void StartWatching(const PolicyCallback& policy_callback);
 
   // Should be called after StartWatching() before the object is deleted. Calls
-  // should wait for |stopped_callback| to be called before deleting it.
-  virtual void StopWatching(const base::Closure& stopped_callback);
+  // just wait for |done| to be signaled before deleting the object.
+  virtual void StopWatching(base::WaitableEvent* done);
 
-  // Implemented by each platform.  |task_runner| should be an IO message loop.
-  // |policy_service| is currently only used on ChromeOS.  The caller must
-  // ensure that |policy_service| remains valid for the lifetime of
-  // PolicyWatcher.
-  static scoped_ptr<PolicyWatcher> Create(
-      policy::PolicyService* policy_service,
+  // Implemented by each platform.  This message loop should be an IO message
+  // loop.
+  static PolicyWatcher* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The name of the NAT traversal policy.
@@ -111,7 +107,6 @@ class PolicyWatcher {
   const base::DictionaryValue& Defaults() const;
 
  private:
-  void StopWatchingOnPolicyWatcherThread();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   PolicyCallback policy_callback_;

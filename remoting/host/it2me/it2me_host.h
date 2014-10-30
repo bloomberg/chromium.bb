@@ -16,10 +16,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace policy {
-class PolicyService;
-}  // namespace policy
-
 namespace remoting {
 
 class ChromotingHost;
@@ -32,7 +28,9 @@ class RegisterSupportHostRequest;
 class RsaKeyPair;
 
 namespace policy_hack {
+
 class PolicyWatcher;
+
 }  // namespace policy_hack
 
 // These state values are duplicated in host_session.js. Remember to update
@@ -62,8 +60,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   };
 
   It2MeHost(
-      scoped_ptr<ChromotingHostContext> context,
-      scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
+      ChromotingHostContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
@@ -93,7 +91,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   ~It2MeHost() override;
 
-  ChromotingHostContext* host_context() { return host_context_.get(); }
+  ChromotingHostContext* host_context() { return host_context_; }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
@@ -125,10 +123,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // the UI thread.
   void ShutdownOnUiThread();
 
-  // Called when |policy_watcher_| has stopped listening for changes and it is
-  // safe to delete it.
-  void OnPolicyWatcherShutdown();
-
   // Called when initial policies are read, and when they change.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
 
@@ -137,7 +131,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void UpdateHostDomainPolicy(const std::string& host_domain);
 
   // Caller supplied fields.
-  scoped_ptr<ChromotingHostContext> host_context_;
+
+  // The creator of the It2MeHost object owns the the host context and is
+  // responsible for keeping it alive throughout the liftime of the host.
+  ChromotingHostContext* host_context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
@@ -184,21 +181,14 @@ class It2MeHostFactory {
   It2MeHostFactory();
   virtual ~It2MeHostFactory();
 
-  // |policy_service| is used for creating the policy watcher for new
-  // instances of It2MeHost on ChromeOS.  The caller must ensure that
-  // |policy_service| is valid throughout the lifetime of the It2MeHostFactory
-  // and each created It2MeHost object.  This is currently possible because
-  // |policy_service| is a global singleton available from the browser process.
-  virtual void set_policy_service(policy::PolicyService* policy_service);
-
   virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
-      scoped_ptr<ChromotingHostContext> context,
+      ChromotingHostContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
 
  private:
-  policy::PolicyService* policy_service_;
   DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
 };
 

@@ -8,9 +8,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
-#if defined(OS_CHROMEOS)
-#include "remoting/host/chromeos/aura_desktop_capturer.h"
-#endif
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
@@ -65,14 +62,10 @@ scoped_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-#if defined(OS_CHROMEOS)
-  return scoped_ptr<webrtc::DesktopCapturer>(new AuraDesktopCapturer());
-#else  // !defined(OS_CHROMEOS)
   // The basic desktop environment does not use X DAMAGE, since it is
   // broken on many systems - see http://crbug.com/73423.
   return make_scoped_ptr(
       webrtc::ScreenCapturer::Create(*desktop_capture_options_));
-#endif  // !defined(OS_CHROMEOS)
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

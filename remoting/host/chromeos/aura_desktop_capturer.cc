@@ -43,7 +43,7 @@ SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
     scoped_ptr<SkBitmap> bitmap) {
 
   webrtc::DesktopSize size(bitmap->width(), bitmap->height());
-  DCHECK_EQ(kBGRA_8888_SkColorType, bitmap->info().colorType())
+  DCHECK_EQ(kRGBA_8888_SkColorType, bitmap->info().colorType())
       << "DesktopFrame objects always hold RGBA data.";
 
   uint8_t* bitmap_data = reinterpret_cast<uint8_t*>(bitmap->getPixels());

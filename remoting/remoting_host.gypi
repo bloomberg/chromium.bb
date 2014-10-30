@@ -23,7 +23,7 @@
       }],
       ['chromeos==1', {
         'enable_me2me_host': 0,
-        'enable_it2me_host': 1,
+        'enable_it2me_host': 0,
       }],
     ],
   },
@@ -98,7 +98,6 @@
             'host/constants_mac.h',
             'host/continue_window.cc',
             'host/continue_window.h',
-            'host/continue_window_chromeos.cc',
             'host/continue_window_linux.cc',
             'host/continue_window_mac.mm',
             'host/continue_window_win.cc',
@@ -125,7 +124,6 @@
             'host/desktop_shape_tracker_mac.cc',
             'host/desktop_shape_tracker_win.cc',
             'host/desktop_shape_tracker_x11.cc',
-            'host/disconnect_window_chromeos.cc',
             'host/disconnect_window_linux.cc',
             'host/disconnect_window_mac.h',
             'host/disconnect_window_mac.mm',
@@ -229,7 +227,6 @@
             'host/pin_hash.h',
             'host/policy_hack/policy_watcher.cc',
             'host/policy_hack/policy_watcher.h',
-            'host/policy_hack/policy_watcher_chromeos.cc',
             'host/policy_hack/policy_watcher_linux.cc',
             'host/policy_hack/policy_watcher_mac.mm',
             'host/policy_hack/policy_watcher_win.cc',
@@ -322,7 +319,6 @@
             ['chromeos==1', {
               'dependencies' : [
                 '../cc/cc.gyp:cc',
-                '../components/components.gyp:policy_component_common',
                 '../content/content.gyp:content',
                 '../ppapi/ppapi_internal.gyp:ppapi_host',
                 '../skia/skia.gyp:skia',
@@ -333,7 +329,8 @@
                 '../third_party/skia/include/utils',
               ],
               'sources!' : [
-                'host/policy_hack/policy_watcher_linux.cc',
+                'host/continue_window.cc',
+                'host/continue_window.h',
                 'host/continue_window_linux.cc',
                 'host/disconnect_window.cc',
                 'host/disconnect_window_linux.cc',
@@ -343,9 +340,6 @@
                'sources!' : [
                  'host/chromeos/aura_desktop_capturer.cc',
                  'host/chromeos/aura_desktop_capturer.h',
-                 'host/continue_window_chromeos.cc',
-                 'host/disconnect_window_chromeos.cc',
-                 'host/policy_hack/policy_watcher_chromeos.cc',
                ],
             }],
             ['OS=="mac"', {
@@ -859,7 +853,7 @@
       ], # targets
     }], # end of OS!="win" and enable_me2me_host==1
 
-    ['OS!="win" and enable_it2me_host==1 and chromeos==0', {
+    ['OS!="win" and enable_it2me_host==1', {
       'targets': [
         {
           'target_name': 'remoting_it2me_native_messaging_host',

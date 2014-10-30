@@ -99,13 +99,11 @@ class PolicyWatcherTest : public testing::Test {
   }
 
   void StopWatching() {
-    EXPECT_CALL(*this, PostPolicyWatcherShutdown()).Times(1);
-    policy_watcher_->StopWatching(base::Bind(
-        &PolicyWatcherTest::PostPolicyWatcherShutdown, base::Unretained(this)));
+    base::WaitableEvent stop_event(false, false);
+    policy_watcher_->StopWatching(&stop_event);
     base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(true, stop_event.IsSignaled());
   }
-
-  MOCK_METHOD0(PostPolicyWatcherShutdown, void());
 
   static const char* kHostDomain;
   static const char* kPortRange;

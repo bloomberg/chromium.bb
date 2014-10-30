@@ -7,7 +7,6 @@ include_rules = [
   # unit tests at process start.
   "-net",
   "+net/socket",
-  "+net/url_request",
 
   "-remoting",
   "+remoting/base",

@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_host.h"
 
 namespace base {
@@ -24,22 +23,19 @@ namespace remoting {
 class It2MeNativeMessagingHost : public It2MeHost::Observer,
                                  public extensions::NativeMessageHost {
  public:
-  It2MeNativeMessagingHost(
-      scoped_ptr<ChromotingHostContext> host_context,
-      scoped_ptr<It2MeHostFactory> host_factory);
-  ~It2MeNativeMessagingHost();
+  It2MeNativeMessagingHost(scoped_refptr<AutoThreadTaskRunner> task_runner,
+                           scoped_ptr<It2MeHostFactory> factory);
+  ~It2MeNativeMessagingHost() override;
 
   // extensions::NativeMessageHost implementation.
   void OnMessage(const std::string& message) override;
   void Start(Client* client) override;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner()
-      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
   // It2MeHost::Observer implementation.
-  void OnClientAuthenticated(const std::string& client_username)
-      override;
+  void OnClientAuthenticated(const std::string& client_username) override;
   void OnStoreAccessCode(const std::string& access_code,
-                                 base::TimeDelta access_code_lifetime) override;
+                         base::TimeDelta access_code_lifetime) override;
   void OnNatPolicyChanged(bool nat_traversal_enabled) override;
   void OnStateChanged(It2MeHostState state) override;
 
@@ -60,8 +56,8 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   void SendMessageToClient(scoped_ptr<base::DictionaryValue> message) const;
 
   Client* client_;
-  scoped_ptr<ChromotingHostContext> host_context_;
   scoped_ptr<It2MeHostFactory> factory_;
+  scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<It2MeHost> it2me_host_;
 
   // Cached, read-only copies of |it2me_host_| session state.
