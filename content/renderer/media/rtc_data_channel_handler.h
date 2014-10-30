@@ -6,7 +6,9 @@
 #define CONTENT_RENDERER_MEDIA_RTC_DATA_CHANNEL_HANDLER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
@@ -21,11 +23,20 @@ namespace content {
 // Callbacks to the webrtc::DataChannelObserver implementation also occur on
 // the main render thread.
 class CONTENT_EXPORT RtcDataChannelHandler
-    : NON_EXPORTED_BASE(public blink::WebRTCDataChannelHandler),
-      NON_EXPORTED_BASE(public webrtc::DataChannelObserver),
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public blink::WebRTCDataChannelHandler) {
  public:
-  explicit RtcDataChannelHandler(webrtc::DataChannelInterface* channel);
+  // This object can* be constructed on libjingle's signaling thread and then
+  // ownership is passed to the UI thread where it's eventually given to WebKit.
+  // The reason we must construct and hook ourselves up as an observer on the
+  // signaling thread is to avoid missing out on any state changes or messages
+  // that may occur before we've fully connected with webkit.
+  // This period is basically between when the ctor is called and until
+  // setClient is called.
+  // * For local data channels, the object will be construced on the main thread
+  //   and we don't have the issue described above.
+  RtcDataChannelHandler(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      webrtc::DataChannelInterface* channel);
   virtual ~RtcDataChannelHandler();
 
   // blink::WebRTCDataChannelHandler implementation.
@@ -44,14 +55,46 @@ class CONTENT_EXPORT RtcDataChannelHandler
   virtual bool sendRawData(const char* data, size_t length) override;
   virtual void close() override;
 
-  // webrtc::DataChannelObserver implementation.
-  void OnStateChange() override;
-  void OnMessage(const webrtc::DataBuffer& buffer) override;
+  const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
 
  private:
+  void OnStateChange(webrtc::DataChannelInterface::DataState state);
+  void OnMessage(scoped_ptr<webrtc::DataBuffer> buffer);
   void RecordMessageSent(size_t num_bytes);
 
-  scoped_refptr<webrtc::DataChannelInterface> channel_;
+  class CONTENT_EXPORT Observer
+      : public NON_EXPORTED_BASE(
+            base::RefCountedThreadSafe<RtcDataChannelHandler::Observer>),
+        public NON_EXPORTED_BASE(webrtc::DataChannelObserver) {
+   public:
+    Observer(RtcDataChannelHandler* handler,
+        const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+        webrtc::DataChannelInterface* channel);
+
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread() const;
+    const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
+
+    void ClearHandler();
+
+   private:
+    friend class base::RefCountedThreadSafe<RtcDataChannelHandler::Observer>;
+    ~Observer() override;
+
+    // webrtc::DataChannelObserver implementation.
+    void OnStateChange() override;
+    void OnMessage(const webrtc::DataBuffer& buffer) override;
+
+    void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
+    void OnMessageImpl(scoped_ptr<webrtc::DataBuffer> buffer);
+
+    RtcDataChannelHandler* handler_;
+    const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+    const scoped_refptr<webrtc::DataChannelInterface> channel_;
+  };
+
+  scoped_refptr<Observer> observer_;
+  base::ThreadChecker thread_checker_;
+
   blink::WebRTCDataChannelHandlerClient* webkit_client_;
 };
 

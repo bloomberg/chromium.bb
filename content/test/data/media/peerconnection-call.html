@@ -553,11 +553,7 @@
     // When |firstDataChannel| transition to open state, send a text string.
     firstDataChannel.onopen = function() {
       assertEquals('open', firstDataChannel.readyState);
-      if (firstDataChannel.reliable) {
-        firstDataChannel.send(sendDataString);
-      } else {
-        sendDataRepeatedlyUntilClosed(firstDataChannel);
-      }
+      firstDataChannel.send(sendDataString);
     }
 
     // When |firstDataChannel| receive a message, close the channel and
@@ -583,29 +579,9 @@
       secondDataChannel.onmessage = function(event) {
         assertEquals(event.data, sendDataString);
         console.log("gSecondConnection received data");
-        if (secondDataChannel.reliable) {
-          // If we're reliable we will just send one message over the channel,
-          // and therefore channel one's message handler cannot have shut us
-          // down already.
-          assertEquals('open', secondDataChannel.readyState);
-          secondDataChannel.send(sendDataString);
-        } else {
-          // If unreliable, this could be one in a series of messages and it
-          // is possible we already replied (which will close our channel).
-          sendDataRepeatedlyUntilClosed(secondDataChannel);
-        }
+        assertEquals('open', secondDataChannel.readyState);
+        secondDataChannel.send(sendDataString);
       }
-    }
-
-    // Sends |sendDataString| on |dataChannel| every 200ms as long as
-    // |dataChannel| is open.
-    function sendDataRepeatedlyUntilClosed(dataChannel) {
-      var sendTimer = setInterval(function() {
-        if (dataChannel.readyState == 'open')
-          dataChannel.send(sendDataString);
-        else
-          clearInterval(sendTimer);
-      }, 200);
     }
   }
 
