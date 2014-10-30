@@ -1625,10 +1625,20 @@ void TemplateURLService::SetTemplateURLs(TemplateURLVector* urls) {
 }
 
 void TemplateURLService::ChangeToLoadedState() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 TemplateURLService::ChangeToLoadedState 1"));
+
   DCHECK(!loaded_);
 
   provider_map_->Init(template_urls_, search_terms_data());
   loaded_ = true;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 TemplateURLService::ChangeToLoadedState 2"));
 
   // This will cause a call to NotifyObservers().
   ApplyDefaultSearchChangeNoMetrics(
@@ -1636,6 +1646,12 @@ void TemplateURLService::ChangeToLoadedState() {
           &initial_default_search_provider_->data() : NULL,
       default_search_provider_source_);
   initial_default_search_provider_.reset();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 TemplateURLService::ChangeToLoadedState 3"));
+
   on_loaded_callbacks_.Notify();
 }
 
