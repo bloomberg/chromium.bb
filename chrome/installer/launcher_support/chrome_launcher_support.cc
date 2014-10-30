@@ -16,7 +16,8 @@ namespace chrome_launcher_support {
 namespace {
 
 // TODO(huangs) Refactor the constants: http://crbug.com/148538
-const wchar_t kGoogleRegClientStateKey[] =
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kInstallationRegKey[] =
     L"Software\\Google\\Update\\ClientState";
 
 // Copied from chrome_appid.cc.
@@ -27,21 +28,25 @@ const wchar_t kBrowserAppGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
 // Copied frome google_chrome_sxs_distribution.cc.
 const wchar_t kSxSBrowserAppGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
+#else
+const wchar_t kInstallationRegKey[] = L"Software\\Chromium";
+#endif
 
 // Copied from util_constants.cc.
 const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kUninstallStringField[] = L"UninstallString";
 
-// Reads a string value from the specified product's "ClientState" registry key.
-// Returns true iff the value is present and successfully read.
+// Reads a string value from the specified product's registry key. Returns true
+// iff the value is present and successfully read.
 bool GetClientStateValue(InstallationLevel level,
                          const wchar_t* app_guid,
                          const wchar_t* value_name,
                          base::string16* value) {
   HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
       HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  base::string16 subkey(kGoogleRegClientStateKey);
-  subkey.append(1, L'\\').append(app_guid);
+  base::string16 subkey(kInstallationRegKey);
+  if (app_guid)
+    subkey.append(1, L'\\').append(app_guid);
   base::win::RegKey reg_key;
   // Google Update always uses 32bit hive.
   if (reg_key.Open(root_key, subkey.c_str(),
@@ -54,8 +59,8 @@ bool GetClientStateValue(InstallationLevel level,
 }
 
 // Reads the path to setup.exe from the value "UninstallString" within the
-// specified product's "ClientState" registry key. Returns an empty FilePath if
-// an error occurs or the product is not installed at the specified level.
+// specified product's registry key. Returns an empty FilePath if an error
+// occurs or the product is not installed at the specified level.
 base::FilePath GetSetupExeFromRegistry(InstallationLevel level,
                                        const wchar_t* app_guid) {
   base::string16 uninstall;
@@ -68,21 +73,27 @@ base::FilePath GetSetupExeFromRegistry(InstallationLevel level,
 }
 
 // Returns the path to an existing setup.exe at the specified level, if it can
-// be found via Omaha client state.
+// be found via the registry.
 base::FilePath GetSetupExeForInstallationLevel(InstallationLevel level) {
+  base::FilePath setup_exe_path;
+#if defined(GOOGLE_CHROME_BUILD)
   // Look in the registry for Chrome Binaries first.
-  base::FilePath setup_exe_path(
-      GetSetupExeFromRegistry(level, kBinariesAppGuid));
+  setup_exe_path = GetSetupExeFromRegistry(level, kBinariesAppGuid);
   // If the above fails, look in the registry for Chrome next.
   if (setup_exe_path.empty())
     setup_exe_path = GetSetupExeFromRegistry(level, kBrowserAppGuid);
   // If we fail again, then setup_exe_path would be empty.
+#else
+  // For Chromium, there are no GUIDs. Just look in the Chromium registry key.
+  setup_exe_path = GetSetupExeFromRegistry(level, nullptr);
+#endif
+
   return setup_exe_path;
 }
 
 // Returns the path to an installed |exe_file| (e.g. chrome.exe) at the
-// specified level, given |setup_exe_path| from Omaha client state.  Returns
-// empty base::FilePath if none found, or if |setup_exe_path| is empty.
+// specified level, given |setup_exe_path| from the registry.  Returns empty
+// base::FilePath if none found, or if |setup_exe_path| is empty.
 base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
                                          const wchar_t* exe_file) {
   if (!setup_exe_path.empty()) {
@@ -103,10 +114,15 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
 }
 
 // Returns the path to an installed SxS chrome.exe at the specified level, if
-// it can be found via Omaha client state.
+// it can be found via the registry.
 base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level) {
+#if defined(GOOGLE_CHROME_BUILD)
   return FindExeRelativeToSetupExe(
       GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
+#else
+  // There is no SxS build for Chromium.
+  return base::FilePath();
+#endif
 }
 
 }  // namespace

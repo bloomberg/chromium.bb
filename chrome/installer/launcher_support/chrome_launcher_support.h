@@ -17,21 +17,20 @@ enum InstallationLevel {
 };
 
 // Returns the path to an installed chrome.exe at the specified level, if it can
-// be found via Omaha client state. Prefers the installer from a multi-install,
-// but may also return that of a single-install of Chrome if no multi-install
-// exists.
+// be found in the registry. Prefers the installer from a multi-install, but may
+// also return that of a single-install of Chrome if no multi-install exists.
 base::FilePath GetChromePathForInstallationLevel(InstallationLevel level);
 
 // Returns the path to an installed chrome.exe, or an empty path. Prefers a
-// system-level installation to a user-level installation. Uses Omaha client
-// state to identify a Chrome installation location.
-// The file path returned (if any) is guaranteed to exist.
+// system-level installation to a user-level installation. Uses the registry to
+// identify a Chrome installation location. The file path returned (if any) is
+// guaranteed to exist.
 base::FilePath GetAnyChromePath();
 
 // Returns the path to an installed SxS chrome.exe, or an empty path. Prefers a
-// user-level installation to a system-level installation. Uses Omaha client
-// state to identify a Chrome Canary installation location.
-// The file path returned (if any) is guaranteed to exist.
+// user-level installation to a system-level installation. Uses the registry to
+// identify a Chrome Canary installation location. The file path returned (if
+// any) is guaranteed to exist.
 base::FilePath GetAnyChromeSxSPath();
 
 }  // namespace chrome_launcher_support
