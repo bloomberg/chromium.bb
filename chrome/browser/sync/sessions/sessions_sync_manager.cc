@@ -740,11 +740,13 @@ void SessionsSyncManager::BuildSyncedSessionFromSpecifics(
   if (specifics.has_selected_tab_index())
     session_window->selected_tab_index = specifics.selected_tab_index();
   if (specifics.has_browser_type()) {
+    // TODO(skuhne): Sync data writes |BrowserType| not
+    // |SessionWindow::WindowType|. This should get changed.
     if (specifics.browser_type() ==
         sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
-      session_window->type = 1;
+      session_window->type = SessionWindow::TYPE_TABBED;
     } else {
-      session_window->type = 2;
+      session_window->type = SessionWindow::TYPE_POPUP;
     }
   }
   session_window->timestamp = mtime;

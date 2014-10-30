@@ -61,8 +61,8 @@ void SessionServiceTestHelper::ReadWindows(
   Time last_time;
   ScopedVector<SessionCommand> read_commands;
   backend()->ReadLastSessionCommandsImpl(&(read_commands.get()));
-  service()->RestoreSessionFromCommands(
-      read_commands.get(), windows, active_window_id);
+  RestoreSessionFromCommands(read_commands.get(), windows, active_window_id);
+  service()->RemoveUnusedRestoreWindows(windows);
 }
 
 void SessionServiceTestHelper::AssertTabEquals(const SessionID& window_id,

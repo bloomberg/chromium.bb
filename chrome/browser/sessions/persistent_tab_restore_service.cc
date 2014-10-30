@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/base_session_service.h"
+#include "chrome/browser/sessions/base_session_service_commands.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -413,10 +414,9 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
                           window.timestamp));
 
   if (!window.app_name.empty()) {
-    ScheduleCommand(
-        CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
-                                      window.id,
-                                      window.app_name));
+    ScheduleCommand(CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
+                                                    window.id,
+                                                    window.app_name));
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
@@ -459,24 +459,27 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
   }
 
   if (!tab.extension_app_id.empty()) {
-    ScheduleCommand(
-        CreateSetTabExtensionAppIDCommand(kCommandSetExtensionAppID, tab.id,
-                                          tab.extension_app_id));
+    ScheduleCommand(CreateSetTabExtensionAppIDCommand(
+                          kCommandSetExtensionAppID,
+                          tab.id,
+                          tab.extension_app_id));
   }
 
   if (!tab.user_agent_override.empty()) {
-    ScheduleCommand(
-        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride,
-                                             tab.id, tab.user_agent_override));
+    ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
+                          kCommandSetTabUserAgentOverride,
+                          tab.id,
+                          tab.user_agent_override));
   }
 
   // Then write the navigations.
   for (int i = first_index_to_persist, wrote_count = 0;
        i < max_index && wrote_count < 2 * max_persist_navigation_count; ++i) {
     if (ShouldTrackEntry(navigations[i].virtual_url())) {
-      ScheduleCommand(
-          CreateUpdateTabNavigationCommand(kCommandUpdateTabNavigation, tab.id,
-                                           navigations[i]));
+      ScheduleCommand(CreateUpdateTabNavigationCommand(
+                            kCommandUpdateTabNavigation,
+                            tab.id,
+                            navigations[i]));
     }
   }
 }
@@ -686,8 +689,9 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
         }
         current_tab->navigations.resize(current_tab->navigations.size() + 1);
         SessionID::id_type tab_id;
-        if (!RestoreUpdateTabNavigationCommand(
-            command, &current_tab->navigations.back(), &tab_id)) {
+        if (!RestoreUpdateTabNavigationCommand(command,
+                                               &current_tab->navigations.back(),
+                                               &tab_id)) {
           return;
         }
         break;
@@ -727,7 +731,8 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
         }
         SessionID::id_type tab_id;
         std::string extension_app_id;
-        if (!RestoreSetTabExtensionAppIDCommand(command, &tab_id,
+        if (!RestoreSetTabExtensionAppIDCommand(command,
+                                                &tab_id,
                                                 &extension_app_id)) {
           return;
         }
@@ -742,7 +747,8 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
         }
         SessionID::id_type tab_id;
         std::string user_agent_override;
-        if (!RestoreSetTabUserAgentOverrideCommand(command, &tab_id,
+        if (!RestoreSetTabUserAgentOverrideCommand(command,
+                                                   &tab_id,
                                                    &user_agent_override)) {
           return;
         }

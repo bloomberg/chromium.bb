@@ -9,13 +9,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/location.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "components/sessions/session_id.h"
 #include "url/gurl.h"
 
 class BaseSessionServiceDelegate;
@@ -83,62 +79,6 @@ class BaseSessionService {
   // Saves pending commands to the backend. This is invoked from the timer
   // scheduled by StartSaveTimer.
   virtual void Save();
-
-  // Creates a SessionCommand that represents a navigation.
-  SessionCommand* CreateUpdateTabNavigationCommand(
-      SessionID::id_type command_id,
-      SessionID::id_type tab_id,
-      const sessions::SerializedNavigationEntry& navigation);
-
-  // Creates a SessionCommand that represents marking a tab as an application.
-  SessionCommand* CreateSetTabExtensionAppIDCommand(
-      SessionID::id_type command_id,
-      SessionID::id_type tab_id,
-      const std::string& extension_id);
-
-  // Creates a SessionCommand that containing user agent override used by a
-  // tab's navigations.
-  SessionCommand* CreateSetTabUserAgentOverrideCommand(
-      SessionID::id_type command_id,
-      SessionID::id_type tab_id,
-      const std::string& user_agent_override);
-
-  // Creates a SessionCommand stores a browser window's app name.
-  SessionCommand* CreateSetWindowAppNameCommand(
-      SessionID::id_type command_id,
-      SessionID::id_type window_id,
-      const std::string& app_name);
-
-  // Converts a SessionCommand previously created by
-  // CreateUpdateTabNavigationCommand into a
-  // sessions::SerializedNavigationEntry. Returns true on success. If
-  // successful |tab_id| is set to the id of the restored tab.
-  bool RestoreUpdateTabNavigationCommand(
-      const SessionCommand& command,
-      sessions::SerializedNavigationEntry* navigation,
-      SessionID::id_type* tab_id);
-
-  // Extracts a SessionCommand as previously created by
-  // CreateSetTabExtensionAppIDCommand into the tab id and application
-  // extension id.
-  bool RestoreSetTabExtensionAppIDCommand(
-      const SessionCommand& command,
-      SessionID::id_type* tab_id,
-      std::string* extension_app_id);
-
-  // Extracts a SessionCommand as previously created by
-  // CreateSetTabUserAgentOverrideCommand into the tab id and user agent.
-  bool RestoreSetTabUserAgentOverrideCommand(
-      const SessionCommand& command,
-      SessionID::id_type* tab_id,
-      std::string* user_agent_override);
-
-  // Extracts a SessionCommand as previously created by
-  // CreateSetWindowAppNameCommand into the window id and application name.
-  bool RestoreSetWindowAppNameCommand(
-      const SessionCommand& command,
-      SessionID::id_type* window_id,
-      std::string* app_name);
 
   // Returns true if the entry at specified |url| should be written to disk.
   bool ShouldTrackEntry(const GURL& url);

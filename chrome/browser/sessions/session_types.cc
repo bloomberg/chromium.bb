@@ -59,7 +59,7 @@ sync_pb::SessionTab SessionTab::ToSyncData() const {
 
 SessionWindow::SessionWindow()
     : selected_tab_index(-1),
-      type(Browser::TYPE_TABBED),
+      type(TYPE_TABBED),
       is_constrained(true),
       show_state(ui::SHOW_STATE_DEFAULT) {
 }
@@ -73,11 +73,11 @@ sync_pb::SessionWindow SessionWindow::ToSyncData() const {
   sync_data.set_window_id(window_id.id());
   sync_data.set_selected_tab_index(selected_tab_index);
   switch (type) {
-    case Browser::TYPE_TABBED:
+    case SessionWindow::TYPE_TABBED:
       sync_data.set_browser_type(
           sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
       break;
-    case Browser::TYPE_POPUP:
+    case SessionWindow::TYPE_POPUP:
       sync_data.set_browser_type(
         sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
       break;

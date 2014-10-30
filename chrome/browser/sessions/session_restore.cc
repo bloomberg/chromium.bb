@@ -27,6 +27,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_utils.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -629,7 +630,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     for (std::vector<const SessionWindow*>::const_iterator i = begin;
          i != end; ++i) {
       Browser* browser = CreateRestoredBrowser(
-          static_cast<Browser::Type>((*i)->type),
+          BrowserTypeForWindowType((*i)->type),
           (*i)->bounds,
           (*i)->show_state,
           (*i)->app_name);
@@ -873,9 +874,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     for (std::vector<SessionWindow*>::iterator i = windows->begin();
          i != windows->end(); ++i) {
       Browser* browser = NULL;
-      if (!has_tabbed_browser && (*i)->type == Browser::TYPE_TABBED)
+      if (!has_tabbed_browser && (*i)->type == SessionWindow::TYPE_TABBED)
         has_tabbed_browser = true;
-      if (i == windows->begin() && (*i)->type == Browser::TYPE_TABBED &&
+      if (i == windows->begin() && (*i)->type == SessionWindow::TYPE_TABBED &&
           browser_ && browser_->is_type_tabbed() &&
           !browser_->profile()->IsOffTheRecord()) {
         // The first set of tabs is added to the existing browser.
@@ -892,7 +893,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           has_visible_browser = true;
         }
         browser = CreateRestoredBrowser(
-            static_cast<Browser::Type>((*i)->type),
+            BrowserTypeForWindowType((*i)->type),
             (*i)->bounds,
             show_state,
             (*i)->app_name);
@@ -901,14 +902,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
             "SessionRestore-CreateRestoredBrowser-End", false);
 #endif
       }
-      if ((*i)->type == Browser::TYPE_TABBED)
+      if ((*i)->type == SessionWindow::TYPE_TABBED)
         last_browser = browser;
       WebContents* active_tab =
           browser->tab_strip_model()->GetActiveWebContents();
       int initial_tab_count = browser->tab_strip_model()->count();
       bool close_active_tab = clobber_existing_tab_ &&
                               i == windows->begin() &&
-                              (*i)->type == Browser::TYPE_TABBED &&
+                              (*i)->type == SessionWindow::TYPE_TABBED &&
                               active_tab && browser == browser_ &&
                               (*i)->tabs.size() > 0;
       if (close_active_tab)

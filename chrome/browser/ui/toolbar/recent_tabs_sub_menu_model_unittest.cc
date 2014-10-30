@@ -261,8 +261,9 @@ TEST_F(RecentTabsSubMenuModelTest,
   SessionServiceFactory::SetForTestProfile(profile(), session_service);
   SessionID tab_id;
   SessionID window_id;
-  session_service->SetWindowType(
-      window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
+  session_service->SetWindowType(window_id,
+                                 Browser::TYPE_TABBED,
+                                 SessionService::TYPE_NORMAL);
   session_service->SetTabWindow(window_id, tab_id);
   session_service->SetTabIndexInWindow(window_id, tab_id, 0);
   session_service->SetSelectedTabInWindow(window_id, 0);

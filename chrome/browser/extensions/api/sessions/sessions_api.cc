@@ -289,10 +289,10 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
 
   windows::Window::Type type = windows::Window::TYPE_NONE;
   switch (window.type) {
-    case Browser::TYPE_TABBED:
+    case SessionWindow::TYPE_TABBED:
       type = windows::Window::TYPE_NORMAL;
       break;
-    case Browser::TYPE_POPUP:
+    case SessionWindow::TYPE_POPUP:
       type = windows::Window::TYPE_POPUP;
       break;
   }

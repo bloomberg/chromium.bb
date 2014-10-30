@@ -335,7 +335,7 @@ TEST_F(SessionsSyncManagerTest, PopulateSessionWindow) {
       tag, window_s, base::Time(), session->windows[0]);
   ASSERT_EQ(1U, session->windows[0]->tabs.size());
   ASSERT_EQ(1, session->windows[0]->selected_tab_index);
-  ASSERT_EQ(1, session->windows[0]->type);
+  ASSERT_EQ(SessionWindow::TYPE_TABBED, session->windows[0]->type);
   ASSERT_EQ(1U, manager()->session_tracker_.num_synced_sessions());
   ASSERT_EQ(1U,
             manager()->session_tracker_.num_synced_tabs(std::string("tag")));

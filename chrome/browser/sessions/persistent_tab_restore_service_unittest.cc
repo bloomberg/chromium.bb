@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_utils.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -126,8 +127,9 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
         SessionServiceFactory::GetForProfile(profile());
     SessionID tab_id;
     SessionID window_id;
-    session_service->SetWindowType(
-        window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
+    session_service->SetWindowType(window_id,
+                                   Browser::TYPE_TABBED,
+                                   SessionService::TYPE_NORMAL);
     session_service->SetTabWindow(window_id, tab_id);
     session_service->SetTabIndexInWindow(window_id, tab_id, 0);
     session_service->SetSelectedTabInWindow(window_id, 0);
