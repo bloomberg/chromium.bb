@@ -35,12 +35,10 @@ class EnhancedBookmarkModelTest
         shutting_down_calls_(0),
         added_calls_(0),
         removed_calls_(0),
-        changed_calls_(0),
         all_user_nodes_removed_calls_(0),
         remote_id_changed_calls_(0),
         last_added_(NULL),
         last_removed_(NULL),
-        last_changed_(NULL),
         last_remote_id_node_(NULL) {}
   ~EnhancedBookmarkModelTest() override {}
 
@@ -120,10 +118,6 @@ class EnhancedBookmarkModelTest
     removed_calls_++;
     last_removed_ = node;
   }
-  void EnhancedBookmarkNodeChanged(const BookmarkNode* node) override {
-    changed_calls_++;
-    last_changed_ = node;
-  }
   void EnhancedBookmarkAllUserNodesRemoved() override {
     all_user_nodes_removed_calls_++;
   }
@@ -141,14 +135,12 @@ class EnhancedBookmarkModelTest
   int shutting_down_calls_;
   int added_calls_;
   int removed_calls_;
-  int changed_calls_;
   int all_user_nodes_removed_calls_;
   int remote_id_changed_calls_;
 
   // Observer parameter cache:
   const BookmarkNode* last_added_;
   const BookmarkNode* last_removed_;
-  const BookmarkNode* last_changed_;
   const BookmarkNode* last_remote_id_node_;
   std::string last_old_remote_id_;
   std::string last_remote_id_;
@@ -598,15 +590,6 @@ TEST_F(EnhancedBookmarkModelTest, ObserverNodeRemovedEvent) {
                           folder->parent()->GetIndexOf(folder));
   EXPECT_EQ(2, removed_calls_);
   EXPECT_EQ(folder, last_removed_);
-}
-
-TEST_F(EnhancedBookmarkModelTest, ObserverNodeChangedEvent) {
-  const BookmarkNode* node = AddBookmark();
-
-  EXPECT_EQ(0, changed_calls_);
-  bookmark_model_->SetTitle(node, base::ASCIIToUTF16("New Title"));
-  EXPECT_EQ(1, changed_calls_);
-  EXPECT_EQ(node, last_changed_);
 }
 
 TEST_F(EnhancedBookmarkModelTest, ObserverAllUserNodesRemovedEvent) {

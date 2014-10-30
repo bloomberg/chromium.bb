@@ -321,13 +321,6 @@ void EnhancedBookmarkModel::BookmarkNodeRemoved(
       EnhancedBookmarkModelObserver, observers_, EnhancedBookmarkRemoved(node));
 }
 
-void EnhancedBookmarkModel::BookmarkNodeChanged(BookmarkModel* model,
-                                                const BookmarkNode* node) {
-  FOR_EACH_OBSERVER(
-      EnhancedBookmarkModelObserver, observers_,
-      EnhancedBookmarkNodeChanged(node));
-}
-
 void EnhancedBookmarkModel::OnWillChangeBookmarkMetaInfo(
     BookmarkModel* model,
     const BookmarkNode* node) {
