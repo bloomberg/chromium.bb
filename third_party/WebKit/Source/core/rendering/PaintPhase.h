@@ -38,19 +38,20 @@ namespace blink {
  */
 
 enum PaintPhase {
-    PaintPhaseBlockBackground,
-    PaintPhaseChildBlockBackground,
-    PaintPhaseChildBlockBackgrounds,
-    PaintPhaseFloat,
-    PaintPhaseForeground,
-    PaintPhaseOutline,
-    PaintPhaseChildOutlines,
-    PaintPhaseSelfOutline,
-    PaintPhaseSelection,
-    PaintPhaseCollapsedTableBorders,
-    PaintPhaseTextClip,
-    PaintPhaseMask,
-    PaintPhaseClippingMask,
+    PaintPhaseBlockBackground = 0,
+    PaintPhaseChildBlockBackground = 1,
+    PaintPhaseChildBlockBackgrounds = 2,
+    PaintPhaseFloat = 3,
+    PaintPhaseForeground = 4,
+    PaintPhaseOutline = 5,
+    PaintPhaseChildOutlines = 6,
+    PaintPhaseSelfOutline = 7,
+    PaintPhaseSelection = 8,
+    PaintPhaseCollapsedTableBorders = 9,
+    PaintPhaseTextClip = 10,
+    PaintPhaseMask = 11,
+    PaintPhaseClippingMask = 12,
+    // These values must be kept in sync with DisplayItem::Type.
 };
 
 enum PaintBehaviorFlags {

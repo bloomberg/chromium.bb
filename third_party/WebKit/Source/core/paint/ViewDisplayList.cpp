@@ -23,8 +23,8 @@ void DrawingDisplayItem::replay(GraphicsContext* context)
 void ClipDisplayItem::replay(GraphicsContext* context)
 {
     context->save();
-    context->clip(clipRect);
-    for (RoundedRect roundedRect : roundedRectClips)
+    context->clip(m_clipRect);
+    for (RoundedRect roundedRect : m_roundedRectClips)
         context->clipRoundedRect(roundedRect);
 }
 
@@ -49,12 +49,12 @@ DrawingRecorder::~DrawingRecorder()
 
     RefPtr<DisplayList> displayList = m_context->endRecording();
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(displayList->picture(), displayList->bounds(), m_phase));
+        new DrawingDisplayItem(displayList->picture(), displayList->bounds(), m_phase, m_renderer));
     ASSERT(m_renderer->view());
     m_renderer->view()->viewDisplayList().add(drawingItem.release());
 }
 
-ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, ClipDisplayItem::ClipType clipType, const ClipRect& clipRect)
+ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect)
     : m_graphicsContext(graphicsContext)
     , m_renderLayer(renderLayer)
 {
@@ -63,10 +63,7 @@ ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsCo
         graphicsContext->save();
         graphicsContext->clip(snappedClipRect);
     } else {
-        m_clipDisplayItem = new ClipDisplayItem;
-        m_clipDisplayItem->layer = renderLayer;
-        m_clipDisplayItem->clipType = clipType;
-        m_clipDisplayItem->clipRect = snappedClipRect;
+        m_clipDisplayItem = new ClipDisplayItem(0, renderLayer, clipType, snappedClipRect);
         m_renderLayer->renderer()->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
     }
 }
@@ -74,7 +71,7 @@ ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsCo
 void ClipRecorder::addRoundedRectClip(const RoundedRect& roundedRect)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_clipDisplayItem->roundedRectClips.append(roundedRect);
+        m_clipDisplayItem->roundedRectClips().append(roundedRect);
     else
         m_graphicsContext->clipRoundedRect(roundedRect);
 }
@@ -82,7 +79,7 @@ void ClipRecorder::addRoundedRectClip(const RoundedRect& roundedRect)
 ClipRecorder::~ClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem);
+        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem());
         m_renderLayer->renderer()->view()->viewDisplayList().add(endClip.release());
     } else {
         m_graphicsContext->restore();
