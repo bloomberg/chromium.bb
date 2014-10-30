@@ -316,7 +316,6 @@
             '../chrome/chrome.gyp:browser_tests',
             '../chrome/chrome.gyp:chromedriver_tests',
             '../chrome/chrome.gyp:chromedriver_unittests',
-            '../chrome/chrome.gyp:interactive_ui_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_shell',
@@ -344,7 +343,8 @@
           ],
           'conditions': [
             ['use_athena!=1', {
-              'dependencies' : [ 
+              'dependencies' : [
+                '../chrome/chrome.gyp:interactive_ui_tests',
                 '../chrome/chrome.gyp:sync_integration_tests',
                 '../chrome/chrome.gyp:unit_tests',
                ],
