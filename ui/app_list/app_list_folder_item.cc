@@ -39,7 +39,7 @@ void AppListFolderItem::UpdateIcon() {
 }
 
 const gfx::ImageSkia& AppListFolderItem::GetTopIcon(size_t item_index) {
-  DCHECK(item_index <= top_items_.size());
+  CHECK_LT(item_index, top_items_.size());
   return top_items_[item_index]->icon();
 }
 
@@ -113,20 +113,20 @@ void AppListFolderItem::ItemIconChanged() {
 
 void AppListFolderItem::OnListItemAdded(size_t index,
                                         AppListItem* item) {
-  if (index <= kNumFolderTopItems)
+  if (index < kNumFolderTopItems)
     UpdateTopItems();
 }
 
 void AppListFolderItem::OnListItemRemoved(size_t index,
                                           AppListItem* item) {
-  if (index <= kNumFolderTopItems)
+  if (index < kNumFolderTopItems)
     UpdateTopItems();
 }
 
 void AppListFolderItem::OnListItemMoved(size_t from_index,
                                         size_t to_index,
                                         AppListItem* item) {
-  if (from_index <= kNumFolderTopItems || to_index <= kNumFolderTopItems)
+  if (from_index < kNumFolderTopItems || to_index < kNumFolderTopItems)
     UpdateTopItems();
 }
 
