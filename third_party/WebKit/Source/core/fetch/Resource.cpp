@@ -265,10 +265,11 @@ void Resource::finishOnePart()
     checkNotify();
 }
 
-void Resource::finish()
+void Resource::finish(double finishTime)
 {
     ASSERT(!m_resourceToRevalidate);
     ASSERT(!errorOccurred());
+    m_loadFinishTime = finishTime;
     finishOnePart();
     if (!errorOccurred())
         m_status = Cached;

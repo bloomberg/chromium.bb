@@ -59,6 +59,8 @@ window.onload = function()
     // - Tests for the Location object -
     shouldThrow("window.location.toString.call(targetWindow.location)", '"SecurityError: Failed to execute \'toString\' on \'Location\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
 
+    // Work around DRT bug that causes subsequent tests to fail.
+    window.stop();
     finishJSTest();
 }
 </script>

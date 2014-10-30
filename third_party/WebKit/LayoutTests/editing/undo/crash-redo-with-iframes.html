@@ -27,7 +27,6 @@ sample.appendChild(iframe3);
 document.execCommand('SelectAll');
 document.execCommand('CreateLink', false, 'foobar');
 iframe1.contentWindow.document.write('0123456789');
-iframe1.contentWindow.document.close();
 document.execCommand('Undo');
 
 var iframe4 = document.createElement('iframe');

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <script src="../../resources/run-after-display.js"></script>
         <style>
             #back {
                 width: 1000px;
@@ -47,15 +46,6 @@
         <div id="back">
             <div id="front" />
         </div>
-        <script>
-            if (window.testRunner)
-                testRunner.waitUntilDone();
-
-            runAfterDisplay(function() {
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            });
-        </script>
     </body>
 </html>
 

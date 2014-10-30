@@ -243,10 +243,8 @@ bool FrameLoader::closeURL()
 void FrameLoader::didExplicitOpen()
 {
     // Calling document.open counts as committing the first real document load.
-    if (!m_stateMachine.committedFirstRealDocumentLoad()) {
+    if (!m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
-        m_progressTracker->progressStarted();
-    }
 
     // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing away results
     // from a subsequent window.document.open / window.document.write call.
@@ -963,7 +961,6 @@ FrameLoadType FrameLoader::loadType() const
     return m_loadType;
 }
 
-#if defined(ENABLE_LOAD_COMPLETION_HACKS)
 // This function is an incomprehensible mess and is only used in checkLoadCompleteForThisFrame.
 // If you're thinking of using it elsewhere, stop right now and reconsider your life.
 static bool isDocumentDoneLoading(Document* document)
@@ -972,8 +969,10 @@ static bool isDocumentDoneLoading(Document* document)
         return true;
     if (document->loader()->isLoadingMainResource())
         return false;
-    if (!document->loadEventFinished())
-        return false;
+    if (!document->loadEventFinished()) {
+        if (document->loader()->isLoading() || document->isDelayingLoadEvent())
+            return false;
+    }
     if (document->fetcher()->requestCount())
         return false;
     if (document->processingLoadEvent())
@@ -982,7 +981,6 @@ static bool isDocumentDoneLoading(Document* document)
         return false;
     return true;
 }
-#endif
 
 bool FrameLoader::checkLoadCompleteForThisFrame()
 {
@@ -1018,16 +1016,8 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return true;
     if (m_provisionalDocumentLoader || !m_documentLoader)
         return false;
-
-#if defined(ENABLE_LOAD_COMPLETION_HACKS)
     if (!isDocumentDoneLoading(m_frame->document()) && !m_inStopAllLoaders)
         return false;
-#else
-    if (m_inStopAllLoaders)
-        m_frame->document()->suppressLoadEvent();
-    if (!m_frame->document()->loadEventFinished())
-        return false;
-#endif
 
     m_state = FrameStateComplete;
 
@@ -1286,8 +1276,6 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
-        if (!m_stateMachine.committedFirstRealDocumentLoad())
-            m_state = FrameStateComplete;
         checkCompleted();
         return;
     }

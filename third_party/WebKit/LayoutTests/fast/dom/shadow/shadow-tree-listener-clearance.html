@@ -24,7 +24,6 @@ function test()
     window.child.contentDocument.open(); // This should clear event listeners
     toBeListened.dispatchEvent(new CustomEvent("test"));
     shouldBe("firedCount", "1");
-    window.child.contentDocument.close();
 
     finishJSTest();
 }
