@@ -15416,7 +15416,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CRLRequestFailedTimeMs" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to block to fetch one or
     more revocation lists. This measures the amount of time that failures to get
@@ -15425,7 +15425,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CRLRequestSuccess" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to block to fetch one or
     more revocation lists. This records the fraction of successful requests.
@@ -15433,7 +15433,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CRLRequestTimeMs" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to block to fetch one or
     more revocation lists. This measures the amount of time that each fetch
@@ -16640,7 +16640,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.OCSPRequestFailedTimeMs" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to make one or more HTTP
     fetches to OCSP responders in order to get revocation information. This
@@ -16649,7 +16649,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.OCSPRequestSuccess" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to make one or more HTTP
     fetches to OCSP responders in order to get revocation information. This
@@ -16658,7 +16658,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.OCSPRequestTimeMs" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When validating an HTTPS certificate we may have to make one or more HTTP
     fetches to OCSP responders in order to get revocation information. This
@@ -16667,7 +16667,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.OCSPResponseStapled" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     When connecting over HTTPS, a server may include an OCSP response as part of
     the TLS handshake so that clients do not have to fetch it, provided the
