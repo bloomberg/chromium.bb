@@ -160,26 +160,27 @@ class _W3CTestConverter(HTMLParser):
                     new_path = re.sub('/resources/testharness',
                                       self.resources_relpath + '/testharness',
                                       attr_value)
-                    converted = re.sub(attr_value, new_path, converted)
+                    converted = re.sub(re.escape(attr_value), new_path, converted)
                     new_path = re.sub('/common/vendor-prefix',
                                       self.resources_relpath + '/vendor-prefix',
                                       attr_value)
-                    converted = re.sub(attr_value, new_path, converted)
+                    converted = re.sub(re.escape(attr_value), new_path, converted)
 
         for attr_name, attr_value in attrs:
             if attr_name == 'style':
                 new_style = self.convert_style_data(attr_value)
-                converted = re.sub(attr_value, new_style, converted)
+                converted = re.sub(re.escape(attr_value), new_style, converted)
             if attr_name == 'class' and 'instructions' in attr_value:
                 # Always hide instructions, they're for manual testers.
                 converted = re.sub(' style=".*?"', '', converted)
                 converted = re.sub('\>', ' style="display:none">', converted)
 
-        src_tags = ('script', 'img', 'frame', 'iframe', 'input', 'layer', 'textarea', 'video', 'audio')
+        src_tags = ('script', 'img', 'style', 'frame', 'iframe', 'input', 'layer', 'textarea', 'video', 'audio')
         if tag in src_tags and self.reference_support_info is not None and self.reference_support_info != {}:
             for attr_name, attr_value in attrs:
                 if attr_name == 'src':
-                    converted = re.sub(attr_value, self.convert_reference_relpaths(attr_value), converted)
+                    new_path = self.convert_reference_relpaths(attr_value)
+                    converted = re.sub(re.escape(attr_value), new_path, converted)
 
         self.converted_data.append(converted)
 
