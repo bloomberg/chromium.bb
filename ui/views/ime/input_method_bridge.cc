@@ -21,19 +21,15 @@ namespace views {
 class InputMethodBridge::HostObserver : public ui::InputMethodObserver {
  public:
   explicit HostObserver(InputMethodBridge* bridge);
-  virtual ~HostObserver();
+  ~HostObserver() override;
 
-  virtual void OnTextInputTypeChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnFocus() override {}
-  virtual void OnBlur() override {}
-  virtual void OnCaretBoundsChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnTextInputStateChanged(
-      const ui::TextInputClient* client) override {}
-  virtual void OnInputMethodDestroyed(
-      const ui::InputMethod* input_method) override;
-  virtual void OnShowImeIfNeeded() override {}
+  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
+  void OnShowImeIfNeeded() override {}
 
  private:
   InputMethodBridge* bridge_;

@@ -22,24 +22,24 @@ class NullInputMethod : public InputMethod {
   NullInputMethod();
 
   // Overridden from InputMethod:
-  virtual void SetDelegate(internal::InputMethodDelegate* delegate) override;
-  virtual void Init(Widget* widget) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) override;
-  virtual void DispatchKeyEvent(const ui::KeyEvent& key) override;
-  virtual void OnTextInputTypeChanged(View* view) override;
-  virtual void OnCaretBoundsChanged(View* view) override;
-  virtual void CancelComposition(View* view) override;
-  virtual void OnInputLocaleChanged() override;
-  virtual std::string GetInputLocale() override;
-  virtual bool IsActive() override;
-  virtual ui::TextInputClient* GetTextInputClient() const override;
-  virtual ui::TextInputType GetTextInputType() const override;
-  virtual bool IsCandidatePopupOpen() const override;
-  virtual void ShowImeIfNeeded() override;
-  virtual bool IsMock() const override;
+  void SetDelegate(internal::InputMethodDelegate* delegate) override;
+  void Init(Widget* widget) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                NativeEventResult* result) override;
+  void DispatchKeyEvent(const ui::KeyEvent& key) override;
+  void OnTextInputTypeChanged(View* view) override;
+  void OnCaretBoundsChanged(View* view) override;
+  void CancelComposition(View* view) override;
+  void OnInputLocaleChanged() override;
+  std::string GetInputLocale() override;
+  bool IsActive() override;
+  ui::TextInputClient* GetTextInputClient() const override;
+  ui::TextInputType GetTextInputType() const override;
+  bool IsCandidatePopupOpen() const override;
+  void ShowImeIfNeeded() override;
+  bool IsMock() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullInputMethod);

@@ -32,60 +32,59 @@ class InputMethodBridge : public InputMethodBase,
   InputMethodBridge(internal::InputMethodDelegate* delegate,
                     ui::InputMethod* host,
                     bool shared_input_method);
-  virtual ~InputMethodBridge();
+  ~InputMethodBridge() override;
 
   // Overridden from InputMethod:
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) override;
-  virtual void DispatchKeyEvent(const ui::KeyEvent& key) override;
-  virtual void OnTextInputTypeChanged(View* view) override;
-  virtual void OnCaretBoundsChanged(View* view) override;
-  virtual void CancelComposition(View* view) override;
-  virtual void OnInputLocaleChanged() override;
-  virtual std::string GetInputLocale() override;
-  virtual bool IsActive() override;
-  virtual bool IsCandidatePopupOpen() const override;
-  virtual void ShowImeIfNeeded() override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                NativeEventResult* result) override;
+  void DispatchKeyEvent(const ui::KeyEvent& key) override;
+  void OnTextInputTypeChanged(View* view) override;
+  void OnCaretBoundsChanged(View* view) override;
+  void CancelComposition(View* view) override;
+  void OnInputLocaleChanged() override;
+  std::string GetInputLocale() override;
+  bool IsActive() override;
+  bool IsCandidatePopupOpen() const override;
+  void ShowImeIfNeeded() override;
 
   // Overridden from TextInputClient:
-  virtual void SetCompositionText(
-      const ui::CompositionText& composition) override;
-  virtual void ConfirmCompositionText() override;
-  virtual void ClearCompositionText() override;
-  virtual void InsertText(const base::string16& text) override;
-  virtual void InsertChar(base::char16 ch, int flags) override;
-  virtual gfx::NativeWindow GetAttachedWindow() const override;
-  virtual ui::TextInputType GetTextInputType() const override;
-  virtual ui::TextInputMode GetTextInputMode() const override;
-  virtual int GetTextInputFlags() const override;
-  virtual bool CanComposeInline() const override;
-  virtual gfx::Rect GetCaretBounds() const override;
-  virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) const override;
-  virtual bool HasCompositionText() const override;
-  virtual bool GetTextRange(gfx::Range* range) const override;
-  virtual bool GetCompositionTextRange(gfx::Range* range) const override;
-  virtual bool GetSelectionRange(gfx::Range* range) const override;
-  virtual bool SetSelectionRange(const gfx::Range& range) override;
-  virtual bool DeleteRange(const gfx::Range& range) override;
-  virtual bool GetTextFromRange(const gfx::Range& range,
-                                base::string16* text) const override;
-  virtual void OnInputMethodChanged() override;
-  virtual bool ChangeTextDirectionAndLayoutAlignment(
+  void SetCompositionText(const ui::CompositionText& composition) override;
+  void ConfirmCompositionText() override;
+  void ClearCompositionText() override;
+  void InsertText(const base::string16& text) override;
+  void InsertChar(base::char16 ch, int flags) override;
+  gfx::NativeWindow GetAttachedWindow() const override;
+  ui::TextInputType GetTextInputType() const override;
+  ui::TextInputMode GetTextInputMode() const override;
+  int GetTextInputFlags() const override;
+  bool CanComposeInline() const override;
+  gfx::Rect GetCaretBounds() const override;
+  bool GetCompositionCharacterBounds(uint32 index,
+                                     gfx::Rect* rect) const override;
+  bool HasCompositionText() const override;
+  bool GetTextRange(gfx::Range* range) const override;
+  bool GetCompositionTextRange(gfx::Range* range) const override;
+  bool GetSelectionRange(gfx::Range* range) const override;
+  bool SetSelectionRange(const gfx::Range& range) override;
+  bool DeleteRange(const gfx::Range& range) override;
+  bool GetTextFromRange(const gfx::Range& range,
+                        base::string16* text) const override;
+  void OnInputMethodChanged() override;
+  bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
-  virtual void ExtendSelectionAndDelete(size_t before, size_t after) override;
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) override;
-  virtual void OnCandidateWindowShown() override;
-  virtual void OnCandidateWindowUpdated() override;
-  virtual void OnCandidateWindowHidden() override;
-  virtual bool IsEditingCommandEnabled(int command_id) override;
-  virtual void ExecuteEditingCommand(int command_id) override;
+  void ExtendSelectionAndDelete(size_t before, size_t after) override;
+  void EnsureCaretInRect(const gfx::Rect& rect) override;
+  void OnCandidateWindowShown() override;
+  void OnCandidateWindowUpdated() override;
+  void OnCandidateWindowHidden() override;
+  bool IsEditingCommandEnabled(int command_id) override;
+  void ExecuteEditingCommand(int command_id) override;
 
   // Overridden from FocusChangeListener.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused) override;
-  virtual void OnDidChangeFocus(View* focused_before, View* focused) override;
+  void OnWillChangeFocus(View* focused_before, View* focused) override;
+  void OnDidChangeFocus(View* focused_before, View* focused) override;
 
   ui::InputMethod* GetHostInputMethod() const;
 

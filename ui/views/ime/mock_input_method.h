@@ -20,24 +20,24 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
  public:
   MockInputMethod();
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
-  virtual ~MockInputMethod();
+  ~MockInputMethod() override;
 
   // Overridden from InputMethod:
-  virtual void Init(Widget* widget) override;
-  virtual void OnFocus() override;
-  virtual void OnBlur() override;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) override;
-  virtual void DispatchKeyEvent(const ui::KeyEvent& key) override;
-  virtual void OnTextInputTypeChanged(View* view) override;
-  virtual void OnCaretBoundsChanged(View* view) override;
-  virtual void CancelComposition(View* view) override;
-  virtual void OnInputLocaleChanged() override;
-  virtual std::string GetInputLocale() override;
-  virtual bool IsActive() override;
-  virtual bool IsCandidatePopupOpen() const override;
-  virtual void ShowImeIfNeeded() override;
-  virtual bool IsMock() const override;
+  void Init(Widget* widget) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                NativeEventResult* result) override;
+  void DispatchKeyEvent(const ui::KeyEvent& key) override;
+  void OnTextInputTypeChanged(View* view) override;
+  void OnCaretBoundsChanged(View* view) override;
+  void CancelComposition(View* view) override;
+  void OnInputLocaleChanged() override;
+  std::string GetInputLocale() override;
+  bool IsActive() override;
+  bool IsCandidatePopupOpen() const override;
+  void ShowImeIfNeeded() override;
+  bool IsMock() const override;
 
   bool focus_changed() const { return focus_changed_; }
   bool untranslated_ime_message_called() const {
@@ -59,7 +59,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
  private:
   // Overridden from InputMethodBase.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused) override;
+  void OnWillChangeFocus(View* focused_before, View* focused) override;
 
   // Clears boolean states defined below.
   void ClearStates();
