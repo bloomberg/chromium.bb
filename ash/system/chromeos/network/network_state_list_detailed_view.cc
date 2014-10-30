@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -35,7 +36,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_info.h"
@@ -271,7 +271,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
         list_type_ == LIST_TYPE_VPN ?
         ash::UMA_STATUS_AREA_CONNECT_TO_VPN :
         ash::UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
+    ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
   }
 }
 
@@ -587,8 +587,8 @@ void NetworkStateListDetailedView::ToggleMobile() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled =
       handler->IsTechnologyEnabled(NetworkTypePattern::Mobile());
-  ui::NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Mobile(),
-                                                  !enabled);
+  ash::NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Mobile(),
+                                                   !enabled);
 }
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(

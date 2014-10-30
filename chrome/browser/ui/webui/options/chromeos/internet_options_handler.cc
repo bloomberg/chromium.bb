@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/system/chromeos/network/network_connect.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -54,7 +55,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -395,7 +395,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
+  ash::NetworkConnect::Get()->ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SetApnCallback(const base::ListValue* args) {
@@ -465,7 +465,7 @@ void InternetOptionsHandler::CarrierStatusCallback() {
     const NetworkState* network =
         handler->FirstNetworkByType(NetworkTypePattern::Cellular());
     if (network && network->path() == details_path_) {
-      ui::NetworkConnect::Get()->ActivateCellular(network->path());
+      ash::NetworkConnect::Get()->ActivateCellular(network->path());
       UpdateConnectionData(network->path());
     }
   }
@@ -587,7 +587,7 @@ void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
+  ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 void InternetOptionsHandler::StartDisconnectCallback(
@@ -644,7 +644,7 @@ void InternetOptionsHandler::GetManagedPropertiesResult(
     // out a more robust way to track errors. Service.Error is transient so we
     // use NetworkState.error() which accurately tracks the "last" error.
     dictionary->SetString(kTagErrorMessage,
-                          ui::NetworkConnect::Get()->GetErrorString(
+                          ash::NetworkConnect::Get()->GetErrorString(
                               network->error(), service_path));
     // Add additional non-ONC cellular properties to inform the UI.
     if (network->type() == shill::kTypeCellular) {
@@ -892,7 +892,7 @@ void InternetOptionsHandler::ActivateNetwork(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ActivateCellular(service_path);
+  ash::NetworkConnect::Get()->ActivateCellular(service_path);
 }
 
 void InternetOptionsHandler::RemoveNetwork(const base::ListValue* args) {

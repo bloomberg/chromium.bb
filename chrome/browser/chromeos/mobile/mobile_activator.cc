@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -36,7 +37,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/chromeos/network/network_connect.h"
 
 using content::BrowserThread;
 
@@ -624,7 +624,7 @@ void MobileActivator::ContinueConnecting() {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
       VLOG(1) << "Connecting to: " << network->path();
-      ui::NetworkConnect::Get()->ConnectToNetwork(network->path());
+      ash::NetworkConnect::Get()->ConnectToNetwork(network->path());
     }
   }
 }

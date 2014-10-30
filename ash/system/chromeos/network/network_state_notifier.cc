@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_state_notifier.h"
+#include "ash/system/chromeos/network/network_state_notifier.h"
 
+#include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
@@ -15,12 +17,12 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
+#include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
+#include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
@@ -53,7 +55,7 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED);
   }
-  if (error_name == ui::NetworkConnect::kErrorActivateFailed) {
+  if (error_name == ash::NetworkConnect::kErrorActivateFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
   }
@@ -66,23 +68,19 @@ void ShowErrorNotification(const std::string& notification_id,
                            const base::string16& message,
                            const base::Closure& callback) {
   int icon_id = (network_type == shill::kTypeCellular)
-                    ? IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR
+                    ? IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED
                     : IDR_AURA_UBER_TRAY_NETWORK_FAILED;
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
           notification_id, title, message, icon,
-          ui::NetworkStateNotifier::kNotifierNetworkError, callback));
+          ash::system_notifier::kNotifierNetworkError, callback));
 }
 
 }  // namespace
 
-namespace ui {
-
-const char NetworkStateNotifier::kNotifierNetwork[] = "ui.chromeos.network";
-const char NetworkStateNotifier::kNotifierNetworkError[] =
-    "ui.chromeos.network.error";
+namespace ash {
 
 const char NetworkStateNotifier::kNetworkConnectNotificationId[] =
     "chrome://settings/internet/connect";
@@ -199,7 +197,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      base::UTF8ToUTF16((cellular->name()))),
-          icon, kNotifierNetwork,
+          icon, system_notifier::kNotifierNetwork,
           base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                      weak_ptr_factory_.GetWeakPtr(), cellular->path())));
 }
@@ -238,8 +236,8 @@ void NetworkStateNotifier::ShowMobileActivationError(
           l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
                                      base::UTF8ToUTF16(cellular->name())),
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR),
-          kNotifierNetworkError,
+              IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
+          ash::system_notifier::kNotifierNetworkError,
           base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                      weak_ptr_factory_.GetWeakPtr(), service_path)));
 }
@@ -362,4 +360,4 @@ void NetworkStateNotifier::ShowNetworkSettings(
   network_connect_->ShowNetworkSettings(service_path);
 }
 
-}  // namespace ui
+}  // namespace ash

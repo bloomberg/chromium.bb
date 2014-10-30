@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 
+#include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -23,7 +24,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -374,7 +374,7 @@ bool VPNConfigView::Login() {
                                                 false);
     }
 
-    ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
+    ash::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
                                                               shared);
   } else {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
@@ -387,7 +387,7 @@ bool VPNConfigView::Login() {
     }
     base::DictionaryValue properties;
     SetConfigProperties(&properties);
-    ui::NetworkConnect::Get()->ConfigureNetworkAndConnect(
+    ash::NetworkConnect::Get()->ConfigureNetworkAndConnect(
         service_path_, properties, false /* not shared */);
   }
   return true;  // Close dialog.
@@ -1000,7 +1000,7 @@ void VPNConfigView::UpdateErrorLabel() {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (vpn && vpn->connection_state() == shill::kStateFailure)
-      error_msg = ui::NetworkConnect::Get()->GetErrorString(
+      error_msg = ash::NetworkConnect::Get()->GetErrorString(
           vpn->last_error(), vpn->path());
   }
   if (!error_msg.empty()) {

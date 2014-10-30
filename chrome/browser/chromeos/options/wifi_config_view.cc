@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
+#include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,7 +28,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -588,7 +588,7 @@ void WifiConfigView::UpdateErrorLabel() {
   if (error_msg.empty() && !service_path_.empty()) {
     const NetworkState* network = GetNetworkState();
     if (network && network->connection_state() == shill::kStateFailure) {
-      error_msg = ui::NetworkConnect::Get()->GetErrorString(
+      error_msg = ash::NetworkConnect::Get()->GetErrorString(
           network->last_error(), network->path());
     }
   }
@@ -705,8 +705,8 @@ bool WifiConfigView::Login() {
         shill::kSecurityProperty, security);
 
     // Configure and connect to network.
-    ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
-                                                             share_network);
+    ash::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
+                                                              share_network);
   } else {
     if (!network) {
       // Shill no longer knows about this network (edge case).
@@ -732,10 +732,10 @@ bool WifiConfigView::Login() {
       properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                shill::kTypeEthernetEap);
       share_network = false;
-      ui::NetworkConnect::Get()->CreateConfiguration(&properties,
-                                                     share_network);
+      ash::NetworkConnect::Get()->CreateConfiguration(&properties,
+                                                      share_network);
     } else {
-      ui::NetworkConnect::Get()->ConfigureNetworkAndConnect(
+      ash::NetworkConnect::Get()->ConfigureNetworkAndConnect(
           service_path_, properties, share_network);
     }
   }

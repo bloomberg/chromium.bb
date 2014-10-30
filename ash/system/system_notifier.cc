@@ -6,10 +6,6 @@
 
 #include "base/logging.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/chromeos/network/network_state_notifier.h"
-#endif
-
 namespace ash {
 namespace system_notifier {
 
@@ -20,9 +16,7 @@ namespace {
 const char* kAlwaysShownNotifierIds[] = {
   kNotifierDisplay,
   kNotifierDisplayError,
-#if defined(OS_CHROMEOS)
-  ui::NetworkStateNotifier::kNotifierNetworkError,
-#endif
+  kNotifierNetworkError,
   kNotifierPower,
   // Note: Order doesn't matter here, so keep this in alphabetic order, don't
   // just add your stuff at the end!
@@ -36,10 +30,8 @@ const char* kAshSystemNotifiers[] = {
   kNotifierDisplayResolutionChange,
   kNotifierLocale,
   kNotifierMultiProfileFirstRun,
-#if defined(OS_CHROMEOS)
-  ui::NetworkStateNotifier::kNotifierNetwork,
-  ui::NetworkStateNotifier::kNotifierNetworkError,
-#endif
+  kNotifierNetwork,
+  kNotifierNetworkError,
   kNotifierNetworkPortalDetector,
   kNotifierPower,
   kNotifierScreenshot,
@@ -72,6 +64,8 @@ const char kNotifierDisplayError[] = "ash.display.error";
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
+const char kNotifierNetwork[] = "ash.network";
+const char kNotifierNetworkError[] = "ash.network.error";
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 const char kNotifierPower[] = "ash.power";
 const char kNotifierScreenshot[] = "ash.screenshot";

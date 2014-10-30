@@ -2,25 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_state_notifier.h"
+#include "ash/system/chromeos/network/network_state_notifier.h"
 
-#include "base/run_loop.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
+#include "ash/system/chromeos/network/network_connect.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/message_center/message_center.h"
+
+namespace {
+
+ash::SystemTray* GetSystemTray() {
+  return ash::Shell::GetPrimaryRootWindowController()
+      ->shelf()
+      ->status_area_widget()
+      ->system_tray();
+}
+
+}  // namespace
 
 using chromeos::DBusThreadManager;
 using chromeos::ShillDeviceClient;
 using chromeos::ShillServiceClient;
 
-namespace ui {
+namespace ash {
 namespace test {
 
 class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
@@ -41,19 +55,18 @@ class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);
 };
 
-class NetworkStateNotifierTest : public testing::Test {
+class NetworkStateNotifierTest : public AshTestBase {
  public:
   NetworkStateNotifierTest() {}
   ~NetworkStateNotifierTest() override {}
 
   void SetUp() override {
-    testing::Test::SetUp();
     DBusThreadManager::Initialize();
     chromeos::LoginState::Initialize();
     SetupDefaultShillState();
     chromeos::NetworkHandler::Initialize();
-    message_center::MessageCenter::Initialize();
-    base::RunLoop().RunUntilIdle();
+    RunAllPendingInMessageLoop();
+    AshTestBase::SetUp();
     network_connect_delegate_.reset(new NetworkConnectTestDelegate);
     NetworkConnect::Initialize(network_connect_delegate_.get());
   }
@@ -61,16 +74,15 @@ class NetworkStateNotifierTest : public testing::Test {
   void TearDown() override {
     NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
-    message_center::MessageCenter::Shutdown();
+    AshTestBase::TearDown();
     chromeos::LoginState::Shutdown();
     chromeos::NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
-    testing::Test::TearDown();
   }
 
  protected:
   void SetupDefaultShillState() {
-    base::RunLoop().RunUntilIdle();
+    RunAllPendingInMessageLoop();
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
@@ -93,19 +105,19 @@ class NetworkStateNotifierTest : public testing::Test {
                                      base::FundamentalValue(true));
     service_test->SetServiceProperty("wifi1", shill::kPassphraseProperty,
                                      base::StringValue("failure"));
-    base::RunLoop().RunUntilIdle();
+    RunAllPendingInMessageLoop();
   }
 
   scoped_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
-  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifierTest);
 };
 
 TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
+  EXPECT_FALSE(GetSystemTray()->HasNotificationBubble());
   NetworkConnect::Get()->ConnectToNetwork("wifi1");
-    base::RunLoop().RunUntilIdle();
+  RunAllPendingInMessageLoop();
   // Failure should spawn a notification.
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -114,4 +126,4 @@ TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace ash

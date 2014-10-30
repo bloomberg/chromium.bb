@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_connect.h"
+#include "ash/system/chromeos/network/network_connect.h"
 
+#include "ash/system/chromeos/network/network_state_notifier.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -20,11 +21,11 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ui_chromeos_strings.h"
+#include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_state_notifier.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
@@ -38,7 +39,7 @@ using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -644,4 +645,4 @@ NetworkConnect::NetworkConnect() {
 NetworkConnect::~NetworkConnect() {
 }
 
-}  // namespace ui
+}  // ash

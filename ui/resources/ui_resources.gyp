@@ -58,25 +58,11 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'pak_output': '<(PRODUCT_DIR)/ui_test.pak',
-            'conditions': [
-              ['chromeos==1', {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/strings/ui_chromeos_strings_en-US.pak',
-                ],
-              }],
-            ],
           },
           'includes': [ '../../build/repack_action.gypi' ],
         },
       ],
       'conditions': [
-        ['chromeos==1', {
-          'dependencies': [
-            '../chromeos/ui_chromeos.gyp:ui_chromeos_strings',
-            '../chromeos/ui_chromeos.gyp:ui_chromeos_resources',
-          ],
-        }],
         ['OS != "mac"', {
           'copies': [
             {
