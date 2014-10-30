@@ -40,7 +40,8 @@ class CopresenceDelegate {
 
   virtual const std::string GetPlatformVersionString() const = 0;
 
-  virtual const std::string GetAPIKey() const = 0;
+  virtual const std::string GetAPIKey(const std::string& app_id) const = 0;
+  virtual const std::string GetAuthToken() const = 0;
 
   virtual WhispernetClient* GetWhispernetClient() = 0;
 };

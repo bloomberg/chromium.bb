@@ -41,9 +41,11 @@ class HttpPost : public net::URLFetcherDelegate {
   // and the context it provides must be available until the request completes.
   HttpPost(net::URLRequestContextGetter* url_context_getter,
            const std::string& server_host,
+           // TODO(ckehoe): Condense some of these into a struct.
            const std::string& rpc_name,
-           const std::string& tracing_token,
            std::string api_key,  // If blank, we overwrite with a default.
+           const std::string& auth_token,
+           const std::string& tracing_token,
            const google::protobuf::MessageLite& request_proto);
 
   // HTTP requests are cancelled on delete.

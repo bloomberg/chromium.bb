@@ -968,6 +968,7 @@ enum HistogramValue {
   USB_GETUSERSELECTEDDEVICES,
   INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG,
   WALLPAPERPRIVATE_GETSYNCSETTING,
+  COPRESENCE_SETAUTHTOKEN,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

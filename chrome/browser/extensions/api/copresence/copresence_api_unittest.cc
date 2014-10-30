@@ -74,7 +74,7 @@ class MockCopresenceManager : public CopresenceManager {
   ~MockCopresenceManager() override {}
 
   void ExecuteReportRequest(
-      ReportRequest request,
+      const ReportRequest& request,
       const std::string& app_id,
       const copresence::StatusCallback& status_callback) override {
     request_ = request;

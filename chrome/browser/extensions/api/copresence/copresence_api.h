@@ -45,7 +45,9 @@ class CopresenceService : public BrowserContextKeyedAPI,
     return apps_by_subscription_id_;
   }
 
-  void set_api_key(const std::string& api_key) { api_key_ = api_key; }
+  void set_api_key(const std::string& app_id,
+                   const std::string& api_key);
+  void set_auth_token(const std::string& token);
 
   // Manager override for testing.
   void set_manager_for_testing(
@@ -63,7 +65,8 @@ class CopresenceService : public BrowserContextKeyedAPI,
                       const std::vector<copresence::Message>& message) override;
   net::URLRequestContextGetter* GetRequestContext() const override;
   const std::string GetPlatformVersionString() const override;
-  const std::string GetAPIKey() const override;
+  const std::string GetAPIKey(const std::string& app_id) const override;
+  const std::string GetAuthToken() const override;
   copresence::WhispernetClient* GetWhispernetClient() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -73,7 +76,11 @@ class CopresenceService : public BrowserContextKeyedAPI,
   std::map<std::string, std::string> apps_by_subscription_id_;
 
   content::BrowserContext* const browser_context_;
-  std::string api_key_;
+  std::map<std::string, std::string> api_keys_by_app_;
+
+  // TODO(ckehoe): This is a temporary hack.
+  // Auth tokens from different apps needs to be separated properly.
+  std::string auth_token_;
 
   scoped_ptr<copresence::CopresenceManager> manager_;
   scoped_ptr<ChromeWhispernetClient> whispernet_client_;
@@ -104,6 +111,16 @@ class CopresenceSetApiKeyFunction : public ChromeUIThreadExtensionFunction {
  protected:
   ~CopresenceSetApiKeyFunction() override {}
   ExtensionFunction::ResponseAction Run() override;
+};
+
+class CopresenceSetAuthTokenFunction : public ChromeUIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("copresence.setAuthToken",
+                             COPRESENCE_SETAUTHTOKEN);
+
+ protected:
+  virtual ~CopresenceSetAuthTokenFunction() {}
+  virtual ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

@@ -122,6 +122,11 @@ namespace copresence {
     // apps on any platform that are using this API key can publish/subscribe to
     // each other.
     [nodoc] static void setApiKey(DOMString apiKey);
+
+    // Temporary call to enable authenticated copresence
+    // with an externally provided OAuth token.
+    // TODO(ckehoe): Replace this with a proper API.
+    [nodoc] static void setAuthToken(DOMString token);
     
     // Executes a set of copresence operations in one batch. They will either
     // all be executed, or none will be executed (due to an error in one or

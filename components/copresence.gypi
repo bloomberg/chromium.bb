@@ -21,7 +21,6 @@
       'sources': [
         # Note: sources list duplicated in GN build.
         'copresence/copresence_constants.cc',
-        'copresence/copresence_manager.cc',
         'copresence/copresence_manager_impl.cc',
         'copresence/copresence_switches.cc',
         'copresence/copresence_switches.h',

@@ -5,7 +5,6 @@
 static_library("copresence") {
   sources = [
     "copresence_constants.cc",
-    "copresence_manager.cc",
     "copresence_manager_impl.cc",
     "copresence_switches.cc",
     "copresence_switches.h",

@@ -19,6 +19,7 @@ const char kFakeServerHost[] = "test.server.google.com";
 const char kRPCName[] = "testRpc";
 const char kTracingToken[] = "trace me!";
 const char kApiKey[] = "unlock ALL the APIz";
+const char kAuthToken[] = "oogabooga";
 
 }  // namespace
 
@@ -46,22 +47,25 @@ class HttpPostTest : public testing::Test {
 
  protected:
   bool ResponsePassedThrough(int response_code, const std::string& response) {
-    pending_post_ = new HttpPost(context_getter_.get(),
-                                 std::string("http://") + kFakeServerHost,
-                                 kRPCName,
-                                 "",
-                                 kApiKey,
-                                 proto_);
-    pending_post_->Start(base::Bind(&HttpPostTest::TestResponseCallback,
-                                    base::Unretained(this)));
+    scoped_ptr<HttpPost> post(
+        new HttpPost(context_getter_.get(),
+                     std::string("http://") + kFakeServerHost,
+                     kRPCName,
+                     kApiKey,
+                     "",  // auth token
+                     "",  // tracing token
+                     proto_));
+    post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
+                           base::Unretained(this)));
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(
         HttpPost::kUrlFetcherId);
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
-    delete pending_post_;
     return received_response_code_ == response_code &&
-           received_response_ == response;
+           received_response_ == response &&
+           GetApiKeySent() == kApiKey &&
+           GetAuthHeaderSent().empty();
   }
 
   net::TestURLFetcher* GetFetcher() {
@@ -74,6 +78,13 @@ class HttpPostTest : public testing::Test {
                                HttpPost::kApiKeyField,
                                &api_key_sent);
     return api_key_sent;
+  }
+
+  const std::string GetAuthHeaderSent() {
+    net::HttpRequestHeaders headers;
+    std::string header;
+    GetFetcher()->GetExtraRequestHeaders(&headers);
+    return headers.GetHeader("Authorization", &header) ? header : "";
   }
 
   const std::string GetTracingTokenSent() {
@@ -91,9 +102,6 @@ class HttpPostTest : public testing::Test {
 
   int received_response_code_;
   std::string received_response_;
-
- private:
-  HttpPost* pending_post_;
 };
 
 TEST_F(HttpPostTest, OKResponse) {
@@ -101,8 +109,9 @@ TEST_F(HttpPostTest, OKResponse) {
   HttpPost* post = new HttpPost(context_getter_.get(),
                                 std::string("http://") + kFakeServerHost,
                                 kRPCName,
-                                kTracingToken,
                                 kApiKey,
+                                kAuthToken,
+                                kTracingToken,
                                 proto_);
   post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
                          base::Unretained(this)));
@@ -112,8 +121,9 @@ TEST_F(HttpPostTest, OKResponse) {
   EXPECT_EQ(kFakeServerHost, requested_url.host());
   EXPECT_EQ(std::string("/") + kRPCName, requested_url.path());
 
-  // Check query parameters.
-  EXPECT_EQ(kApiKey, GetApiKeySent());
+  // Check parameters.
+  EXPECT_EQ("", GetApiKeySent());  // No API key when using an auth token.
+  EXPECT_EQ(std::string("Bearer ") + kAuthToken, GetAuthHeaderSent());
   EXPECT_EQ(std::string("token:") + kTracingToken, GetTracingTokenSent());
 
   // Verify that the right data was sent.
