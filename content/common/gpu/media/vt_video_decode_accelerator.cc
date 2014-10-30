@@ -7,6 +7,7 @@
 #include <OpenGL/gl.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,6 +21,12 @@ using content_common_gpu_media::kModuleVt;
 using content_common_gpu_media::InitializeStubs;
 using content_common_gpu_media::IsVtInitialized;
 using content_common_gpu_media::StubPathMap;
+
+#define NOTIFY_STATUS(name, status)                            \
+    do {                                                       \
+      LOG(ERROR) << name << " failed with status " << status;  \
+      NotifyError(PLATFORM_FAILURE);                           \
+    } while (0)
 
 namespace content {
 
@@ -69,6 +76,7 @@ VTVideoDecodeAccelerator::PendingAction::~PendingAction() {
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(CGLContextObj cgl_context)
     : cgl_context_(cgl_context),
       client_(NULL),
+      has_error_(false),
       format_(NULL),
       session_(NULL),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -115,21 +123,26 @@ bool VTVideoDecodeAccelerator::Initialize(
   return true;
 }
 
-// TODO(sandersd): Proper error reporting instead of CHECKs.
-void VTVideoDecodeAccelerator::ConfigureDecoder(
+bool VTVideoDecodeAccelerator::ConfigureDecoder(
     const std::vector<const uint8_t*>& nalu_data_ptrs,
     const std::vector<size_t>& nalu_data_sizes) {
   DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
   // Construct a new format description from the parameter sets.
   // TODO(sandersd): Replace this with custom code to support OS X < 10.9.
   format_.reset();
-  CHECK(!CMVideoFormatDescriptionCreateFromH264ParameterSets(
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
       kCFAllocatorDefault,
       nalu_data_ptrs.size(),      // parameter_set_count
       &nalu_data_ptrs.front(),    // &parameter_set_pointers
       &nalu_data_sizes.front(),   // &parameter_set_sizes
       kNALUHeaderLength,          // nal_unit_header_length
-      format_.InitializeInto()));
+      format_.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("CMVideoFormatDescriptionCreateFromH264ParameterSets()",
+                  status);
+    return false;
+  }
   CMVideoDimensions coded_dimensions =
       CMVideoFormatDescriptionGetDimensions(format_);
 
@@ -170,13 +183,17 @@ void VTVideoDecodeAccelerator::ConfigureDecoder(
 
   // TODO(sandersd): Check if the session is already compatible.
   session_.reset();
-  CHECK(!VTDecompressionSessionCreate(
+  status = VTDecompressionSessionCreate(
       kCFAllocatorDefault,
       format_,              // video_format_description
       decoder_config,       // video_decoder_specification
       image_config,         // destination_image_buffer_attributes
       &callback_,           // output_callback
-      session_.InitializeInto()));
+      session_.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("VTDecompressionSessionCreate()", status);
+    return false;
+  }
 
   // If the size has changed, trigger a request for new picture buffers.
   // TODO(sandersd): Move to SendPictures(), and use this just as a hint for an
@@ -189,26 +206,45 @@ void VTVideoDecodeAccelerator::ConfigureDecoder(
         weak_this_factory_.GetWeakPtr(),
         coded_size_));;
   }
+
+  return true;
 }
 
 void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
   DCHECK(CalledOnValidThread());
-  CHECK_GE(bitstream.id(), 0) << "Negative bitstream_id";
+  // Not actually a requirement of the VDA API, but we're lazy and use negative
+  // values as flags internally. Revisit that if this actually happens.
+  if (bitstream.id() < 0) {
+    LOG(ERROR) << "Negative bitstream ID";
+    NotifyError(INVALID_ARGUMENT);
+    client_->NotifyEndOfBitstreamBuffer(bitstream.id());
+    return;
+  }
   pending_bitstream_ids_.push(bitstream.id());
   decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &VTVideoDecodeAccelerator::DecodeTask, base::Unretained(this),
       bitstream));
 }
 
-// TODO(sandersd): Proper error reporting instead of CHECKs.
 void VTVideoDecodeAccelerator::DecodeTask(
-    const media::BitstreamBuffer bitstream) {
+    const media::BitstreamBuffer& bitstream) {
   DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  // Once we have a bitstream buffer, we must either decode it or drop it.
+  // This construct ensures that the buffer is always dropped unless we call
+  // drop_bitstream.Release().
+  base::ScopedClosureRunner drop_bitstream(base::Bind(
+      &VTVideoDecodeAccelerator::DropBitstream, base::Unretained(this),
+      bitstream.id()));
 
   // Map the bitstream buffer.
   base::SharedMemory memory(bitstream.handle(), true);
   size_t size = bitstream.size();
-  CHECK(memory.Map(size));
+  if (!memory.Map(size)) {
+    LOG(ERROR) << "Failed to map bitstream buffer";
+    NotifyError(PLATFORM_FAILURE);
+    return;
+  }
   const uint8_t* buf = static_cast<uint8_t*>(memory.memory());
 
   // NALUs are stored with Annex B format in the bitstream buffer (start codes),
@@ -227,7 +263,11 @@ void VTVideoDecodeAccelerator::DecodeTask(
     media::H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
     if (result == media::H264Parser::kEOStream)
       break;
-    CHECK_EQ(result, media::H264Parser::kOk);
+    if (result != media::H264Parser::kOk) {
+      LOG(ERROR) << "Failed to find H.264 NALU";
+      NotifyError(PLATFORM_FAILURE);
+      return;
+    }
     // TODO(sandersd): Check that these are only at the start.
     if (nalu.nal_unit_type == media::H264NALU::kSPS ||
         nalu.nal_unit_type == media::H264NALU::kPPS ||
@@ -243,23 +283,21 @@ void VTVideoDecodeAccelerator::DecodeTask(
 
   // 2. Initialize VideoToolbox.
   // TODO(sandersd): Reinitialize when there are new parameter sets.
-  if (!session_)
-    ConfigureDecoder(config_nalu_data_ptrs, config_nalu_data_sizes);
+  if (!session_) {
+    // If configuring fails, ConfigureDecoder() already called NotifyError().
+    if (!ConfigureDecoder(config_nalu_data_ptrs, config_nalu_data_sizes))
+      return;
+  }
 
   // If there are no non-configuration units, immediately return an empty
   // (ie. dropped) frame. It is an error to create a MemoryBlock with zero
   // size.
-  if (!data_size) {
-    gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &VTVideoDecodeAccelerator::OutputTask,
-        weak_this_factory_.GetWeakPtr(),
-        DecodedFrame(bitstream.id(), NULL)));
+  if (!data_size)
     return;
-  }
 
   // 3. Allocate a memory-backed CMBlockBuffer for the translated data.
   base::ScopedCFTypeRef<CMBlockBufferRef> data;
-  CHECK(!CMBlockBufferCreateWithMemoryBlock(
+  OSStatus status = CMBlockBufferCreateWithMemoryBlock(
       kCFAllocatorDefault,
       NULL,                 // &memory_block
       data_size,            // block_length
@@ -268,23 +306,35 @@ void VTVideoDecodeAccelerator::DecodeTask(
       0,                    // offset_to_data
       data_size,            // data_length
       0,                    // flags
-      data.InitializeInto()));
+      data.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("CMBlockBufferCreateWithMemoryBlock()", status);
+    return;
+  }
 
   // 4. Copy NALU data, inserting length headers.
   size_t offset = 0;
   for (size_t i = 0; i < nalus.size(); i++) {
     media::H264NALU& nalu = nalus[i];
     uint32_t header = base::HostToNet32(static_cast<uint32_t>(nalu.size));
-    CHECK(!CMBlockBufferReplaceDataBytes(
-        &header, data, offset, kNALUHeaderLength));
+    status = CMBlockBufferReplaceDataBytes(
+        &header, data, offset, kNALUHeaderLength);
+    if (status) {
+      NOTIFY_STATUS("CMBlockBufferReplaceDataBytes()", status);
+      return;
+    }
     offset += kNALUHeaderLength;
-    CHECK(!CMBlockBufferReplaceDataBytes(nalu.data, data, offset, nalu.size));
+    status = CMBlockBufferReplaceDataBytes(nalu.data, data, offset, nalu.size);
+    if (status) {
+      NOTIFY_STATUS("CMBlockBufferReplaceDataBytes()", status);
+      return;
+    }
     offset += nalu.size;
   }
 
   // 5. Package the data for VideoToolbox and request decoding.
   base::ScopedCFTypeRef<CMSampleBufferRef> frame;
-  CHECK(!CMSampleBufferCreate(
+  status = CMSampleBufferCreate(
       kCFAllocatorDefault,
       data,                 // data_buffer
       true,                 // data_ready
@@ -296,7 +346,11 @@ void VTVideoDecodeAccelerator::DecodeTask(
       NULL,                 // &sample_timing_array
       0,                    // num_sample_size_entries
       NULL,                 // &sample_size_array
-      frame.InitializeInto()));
+      frame.InitializeInto());
+  if (status) {
+    NOTIFY_STATUS("CMSampleBufferCreate()", status);
+    return;
+  }
 
   // Asynchronous Decompression allows for parallel submission of frames
   // (without it, DecodeFrame() does not return until the frame has been
@@ -306,23 +360,37 @@ void VTVideoDecodeAccelerator::DecodeTask(
       kVTDecodeFrame_EnableAsynchronousDecompression;
 
   intptr_t bitstream_id = bitstream.id();
-  CHECK(!VTDecompressionSessionDecodeFrame(
+  status = VTDecompressionSessionDecodeFrame(
       session_,
       frame,                                  // sample_buffer
       decode_flags,                           // decode_flags
       reinterpret_cast<void*>(bitstream_id),  // source_frame_refcon
-      NULL));                                 // &info_flags_out
+      NULL);                                  // &info_flags_out
+  if (status) {
+    NOTIFY_STATUS("VTDecompressionSessionDecodeFrame()", status);
+    return;
+  }
+
+  // Now that the bitstream is decoding, don't drop it.
+  (void)drop_bitstream.Release();
 }
 
 // This method may be called on any VideoToolbox thread.
-// TODO(sandersd): Proper error reporting instead of CHECKs.
 void VTVideoDecodeAccelerator::Output(
     int32_t bitstream_id,
     OSStatus status,
     CVImageBufferRef image_buffer) {
-  CHECK(!status);
-  CHECK_EQ(CFGetTypeID(image_buffer), CVPixelBufferGetTypeID());
-  CFRetain(image_buffer);
+  if (status) {
+    // TODO(sandersd): Handle dropped frames.
+    NOTIFY_STATUS("Decoding", status);
+    image_buffer = NULL;
+  } else if (CFGetTypeID(image_buffer) != CVPixelBufferGetTypeID()) {
+    LOG(ERROR) << "Decoded frame is not a CVPixelBuffer";
+    NotifyError(PLATFORM_FAILURE);
+    image_buffer = NULL;
+  } else {
+    CFRetain(image_buffer);
+  }
   gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
       &VTVideoDecodeAccelerator::OutputTask,
       weak_this_factory_.GetWeakPtr(),
@@ -348,7 +416,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(CalledOnValidThread());
 
   for (size_t i = 0; i < pictures.size(); i++) {
-    CHECK(!texture_ids_.count(pictures[i].id()));
+    DCHECK(!texture_ids_.count(pictures[i].id()));
     available_picture_ids_.push(pictures[i].id());
     texture_ids_[pictures[i].id()] = pictures[i].texture_id();
   }
@@ -399,7 +467,8 @@ void VTVideoDecodeAccelerator::ProcessDecodedFrames() {
   while (!decoded_frames_.empty()) {
     if (pending_actions_.empty()) {
       // No pending actions; send frames normally.
-      SendPictures(pending_bitstream_ids_.back());
+      if (!has_error_)
+        SendPictures(pending_bitstream_ids_.back());
       return;
     }
 
@@ -408,11 +477,15 @@ void VTVideoDecodeAccelerator::ProcessDecodedFrames() {
     switch (pending_actions_.front().action) {
       case ACTION_FLUSH:
         // Send frames normally.
+        if (has_error_)
+          return;
         last_sent_bitstream_id = SendPictures(next_action_bitstream_id);
         break;
 
       case ACTION_RESET:
         // Drop decoded frames.
+        if (has_error_)
+          return;
         while (!decoded_frames_.empty() &&
                last_sent_bitstream_id != next_action_bitstream_id) {
           last_sent_bitstream_id = decoded_frames_.front().bitstream_id;
@@ -454,22 +527,28 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(!decoded_frames_.empty());
 
+  // TODO(sandersd): Store the actual last sent bitstream ID?
+  int32_t last_sent_bitstream_id = -1;
+
   if (available_picture_ids_.empty())
-    return -1;
+    return last_sent_bitstream_id;
 
   gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context_);
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
-
-  int32_t last_sent_bitstream_id = -1;
   while (!available_picture_ids_.empty() &&
          !decoded_frames_.empty() &&
-         last_sent_bitstream_id != up_to_bitstream_id) {
-    DecodedFrame frame = decoded_frames_.front();
-    decoded_frames_.pop();
+         last_sent_bitstream_id != up_to_bitstream_id &&
+         !has_error_) {
+    // We don't pop |frame| until it is consumed, which won't happen if an
+    // error occurs. Conveniently, this also removes some refcounting.
+    const DecodedFrame& frame = decoded_frames_.front();
     DCHECK_EQ(pending_bitstream_ids_.front(), frame.bitstream_id);
-    pending_bitstream_ids_.pop();
+
+    // Likewise, |picture_id| won't be popped if |image_buffer| is NULL or an
+    // error occurs.
+    // TODO(sandersd): Don't block waiting for a |picture_id| when
+    // |image_buffer| is NULL.
     int32_t picture_id = available_picture_ids_.front();
-    available_picture_ids_.pop();
 
     CVImageBufferRef image_buffer = frame.image_buffer.get();
     if (image_buffer) {
@@ -478,7 +557,7 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
       // TODO(sandersd): Find out why this sometimes fails due to no GL context.
       gfx::ScopedTextureBinder
           texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
-      CHECK(!CGLTexImageIOSurface2D(
+      CGLError status = CGLTexImageIOSurface2D(
           cgl_context_,                 // ctx
           GL_TEXTURE_RECTANGLE_ARB,     // target
           GL_RGB,                       // internal_format
@@ -487,24 +566,32 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
           GL_YCBCR_422_APPLE,           // format
           GL_UNSIGNED_SHORT_8_8_APPLE,  // type
           surface,                      // io_surface
-          0));                          // plane
+          0);                           // plane
+      if (status != kCGLNoError) {
+        NOTIFY_STATUS("CGLTexImageIOSurface2D()", status);
+        break;
+      }
 
       picture_bindings_[picture_id] = frame.image_buffer;
       client_->PictureReady(media::Picture(
           picture_id, frame.bitstream_id, gfx::Rect(texture_size_)));
+      available_picture_ids_.pop();
     }
 
     client_->NotifyEndOfBitstreamBuffer(frame.bitstream_id);
     last_sent_bitstream_id = frame.bitstream_id;
+    decoded_frames_.pop();
+    pending_bitstream_ids_.pop();
   }
-
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
   return last_sent_bitstream_id;
 }
 
 void VTVideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
-  CHECK(!VTDecompressionSessionFinishDelayedFrames(session_));
+  OSStatus status = VTDecompressionSessionFinishDelayedFrames(session_);
+  if (status)
+    NOTIFY_STATUS("VTDecompressionSessionFinishDelayedFrames()", status);
 }
 
 void VTVideoDecodeAccelerator::QueueAction(Action action) {
@@ -523,6 +610,26 @@ void VTVideoDecodeAccelerator::QueueAction(Action action) {
     // See if we can make progress now that there is a new pending action.
     ProcessDecodedFrames();
   }
+}
+
+void VTVideoDecodeAccelerator::NotifyError(Error error) {
+  if (!CalledOnValidThread()) {
+    gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &VTVideoDecodeAccelerator::NotifyError,
+        weak_this_factory_.GetWeakPtr(),
+        error));
+    return;
+  }
+  has_error_ = true;
+  client_->NotifyError(error);
+}
+
+void VTVideoDecodeAccelerator::DropBitstream(int32_t bitstream_id) {
+  DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
+  gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &VTVideoDecodeAccelerator::OutputTask,
+      weak_this_factory_.GetWeakPtr(),
+      DecodedFrame(bitstream_id, NULL)));
 }
 
 void VTVideoDecodeAccelerator::Flush() {

@@ -81,15 +81,17 @@ class VTVideoDecodeAccelerator
   };
 
   // Methods for interacting with VideoToolbox. Run on |decoder_thread_|.
-  void ConfigureDecoder(
+  bool ConfigureDecoder(
       const std::vector<const uint8_t*>& nalu_data_ptrs,
       const std::vector<size_t>& nalu_data_sizes);
-  void DecodeTask(const media::BitstreamBuffer);
+  void DecodeTask(const media::BitstreamBuffer&);
   void FlushTask();
+  void DropBitstream(int32_t bitstream_id);
 
   // Methods for interacting with |client_|. Run on |gpu_task_runner_|.
   void OutputTask(DecodedFrame frame);
   void SizeChangedTask(gfx::Size coded_size);
+  void NotifyError(Error error);
 
   // Send decoded frames up to and including |up_to_bitstream_id|, and return
   // the last sent |bitstream_id|.
@@ -120,6 +122,7 @@ class VTVideoDecodeAccelerator
   //
   CGLContextObj cgl_context_;
   media::VideoDecodeAccelerator::Client* client_;
+  bool has_error_;  // client_->NotifyError() called.
   gfx::Size texture_size_;
   std::queue<PendingAction> pending_actions_;
   std::queue<int32_t> pending_bitstream_ids_;
