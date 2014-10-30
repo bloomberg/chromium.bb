@@ -44,6 +44,39 @@ public final class EnhancedBookmarksBridge {
         mNativeEnhancedBookmarksBridge = 0;
     }
 
+    /**
+     * Adds a folder to the EnhancedBookmarkModel
+     * @param parent The parent of this folder
+     * @param index The position this folder should appear within the parent
+     * @param title The title of the bookmark
+     * @return The ID of the newly created folder.
+     */
+    public BookmarkId addFolder(BookmarkId parent, int index, String title) {
+        return nativeAddFolder(mNativeEnhancedBookmarksBridge, parent, index, title);
+    }
+
+    /**
+     * Adds a Bookmark to the EnhancedBookmarkModel
+     * @param parent The parent of this bookmark
+     * @param index The position this bookmark should appear within the parent
+     * @param title The title of the bookmark
+     * @param url URL of the bookmark
+     * @return The ID of the newly created bookmark
+     */
+    public BookmarkId addBookmark(BookmarkId parent, int index, String title, String url) {
+        return nativeAddBookmark(mNativeEnhancedBookmarksBridge, parent, index, title, url);
+    }
+
+    /**
+     * Moves a Bookmark in the EnhancedBookmarkModel
+     * @param bookmarkId The item to be be moved
+     * @param newParentId The new parent of the item
+     * @param index New position index of bookmark within the parent
+     */
+    public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId, int index) {
+        nativeMoveBookmark(mNativeEnhancedBookmarksBridge, bookmarkId, newParentId, index);
+    }
+
     public String getBookmarkDescription(BookmarkId id) {
         return nativeGetBookmarkDescription(mNativeEnhancedBookmarksBridge, id.getId(),
                 id.getType());
@@ -111,4 +144,11 @@ public final class EnhancedBookmarksBridge {
     private native void nativeGetBookmarksForFilter(long nativeEnhancedBookmarksBridge,
             String filter, List<BookmarkId> list);
     private native String[] nativeGetFilters(long nativeEnhancedBookmarksBridge);
+    private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
+            int index, String title);
+    private native void nativeMoveBookmark(long nativeEnhancedBookmarksBridge,
+            BookmarkId bookmarkId, BookmarkId newParentId, int index);
+    private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
+            BookmarkId parent, int index, String title, String url);
+
 }

@@ -87,6 +87,16 @@ public class BookmarkId {
         return mType;
     }
 
+    /**
+     * @param id The id of the bookmark.
+     * @param type The bookmark type.
+     * @return The BookmarkId Object.
+     */
+    @CalledByNative
+    private static BookmarkId createBookmarkId(long id, int type) {
+        return new BookmarkId(id, type);
+    }
+
     private String getBookmarkTypeString() {
         switch (mType) {
             case BookmarkType.PARTNER:

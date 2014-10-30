@@ -41,11 +41,32 @@ class EnhancedBookmarksBridge : public BookmarkServerServiceObserver {
   base::android::ScopedJavaLocalRef<jobjectArray> GetFilters(JNIEnv* env,
                                                              jobject obj);
 
+  base::android::ScopedJavaLocalRef<jobject> AddFolder(JNIEnv* env,
+                                                       jobject obj,
+                                                       jobject j_parent_id_obj,
+                                                       jint index,
+                                                       jstring j_title);
+
+  void MoveBookmark(JNIEnv* env,
+                    jobject obj,
+                    jobject j_bookmark_id_obj,
+                    jobject j_parent_id_obj,
+                    jint index);
+
+  base::android::ScopedJavaLocalRef<jobject> AddBookmark(
+      JNIEnv* env,
+      jobject obj,
+      jobject j_parent_id_obj,
+      jint index,
+      jstring j_title,
+      jstring j_url);
   // BookmarkServerServiceObserver
   // Called on changes to cluster data
   virtual void OnChange(BookmarkServerService* service) override;
 
  private:
+  bool IsEditable(const BookmarkNode* node) const;
+
   JavaObjectWeakGlobalRef weak_java_ref_;
   EnhancedBookmarkModel* enhanced_bookmark_model_;
   BookmarkServerClusterService* cluster_service_;  // weak

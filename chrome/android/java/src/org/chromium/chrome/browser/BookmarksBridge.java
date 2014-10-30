@@ -644,11 +644,6 @@ public class BookmarksBridge {
         depthList.add(depth);
     }
 
-    @CalledByNative
-    private static BookmarkId createBookmarkId(long id, int type) {
-        return new BookmarkId(id, type);
-    }
-
     private native BookmarkItem nativeGetBookmarkByID(long nativeBookmarksBridge, long id,
             int type);
     private native void nativeGetPermanentNodeIDs(long nativeBookmarksBridge,

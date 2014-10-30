@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
+
 namespace bookmarks {
 namespace android {
 
@@ -15,6 +17,10 @@ long JavaBookmarkIdGetId(JNIEnv* env, jobject obj);
 
 // See BookmarkId#getType
 int JavaBookmarkIdGetType(JNIEnv* env, jobject obj);
+
+// See BookmarkId#createBookmarkId
+base::android::ScopedJavaLocalRef<jobject> JavaBookmarkIdCreateBookmarkId(
+    JNIEnv* env, jlong id, jint type);
 
 bool RegisterBookmarkId(JNIEnv* env);
 

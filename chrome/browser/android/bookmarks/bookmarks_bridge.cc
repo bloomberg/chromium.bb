@@ -33,6 +33,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
+using bookmarks::android::JavaBookmarkIdCreateBookmarkId;
 using bookmarks::android::JavaBookmarkIdGetId;
 using bookmarks::android::JavaBookmarkIdGetType;
 using bookmarks::BookmarkType;
@@ -363,7 +364,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetMobileFolderId(JNIEnv* env,
                                                                jobject obj) {
   const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, mobile_node->id(), GetBookmarkType(mobile_node));
   return folder_id_obj;
 }
@@ -372,7 +373,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetOtherFolderId(JNIEnv* env,
                                                               jobject obj) {
   const BookmarkNode* other_node = bookmark_model_->other_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, other_node->id(), GetBookmarkType(other_node));
   return folder_id_obj;
 }
@@ -381,7 +382,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetDesktopFolderId(JNIEnv* env,
                                                                 jobject obj) {
   const BookmarkNode* desktop_node = bookmark_model_->bookmark_bar_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, desktop_node->id(), GetBookmarkType(desktop_node));
   return folder_id_obj;
 }
@@ -434,7 +435,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetChildAt(JNIEnv* env,
   const BookmarkNode* parent = GetNodeByID(id, type);
   DCHECK(parent);
   const BookmarkNode* child = parent->GetChild(index);
-  return Java_BookmarksBridge_createBookmarkId(
+  return JavaBookmarkIdCreateBookmarkId(
       env, child->id(), GetBookmarkType(child));
 }
 
@@ -532,7 +533,7 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
 
   // Recreate the java bookmarkId object due to fallback.
   ScopedJavaLocalRef<jobject> folder_id_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, folder->id(), GetBookmarkType(folder));
   j_folder_id_obj = folder_id_obj.obj();
 
@@ -572,7 +573,7 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
 
   // Recreate the java bookmarkId object due to fallback.
   ScopedJavaLocalRef<jobject> folder_id_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, folder->id(), GetBookmarkType(folder));
   j_folder_id_obj = folder_id_obj.obj();
 
@@ -604,7 +605,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::AddFolder(JNIEnv* env,
     return ScopedJavaLocalRef<jobject>();
   }
   ScopedJavaLocalRef<jobject> new_java_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, new_node->id(), GetBookmarkType(new_node));
   return new_java_obj;
 }
@@ -674,7 +675,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::AddBookmark(
     return ScopedJavaLocalRef<jobject>();
   }
   ScopedJavaLocalRef<jobject> new_java_obj =
-      Java_BookmarksBridge_createBookmarkId(
+      JavaBookmarkIdCreateBookmarkId(
           env, new_node->id(), GetBookmarkType(new_node));
   return new_java_obj;
 }
