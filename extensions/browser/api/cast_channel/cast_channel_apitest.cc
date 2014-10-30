@@ -183,6 +183,15 @@ class CastChannelAPITest : public ExtensionApiTest {
     return cast_channel_send_function;
   }
 
+  extensions::CastChannelSetAuthorityKeysFunction*
+  CreateSetAuthorityKeysFunction(scoped_refptr<Extension> extension) {
+    extensions::CastChannelSetAuthorityKeysFunction*
+        cast_channel_set_authority_keys_function =
+            new extensions::CastChannelSetAuthorityKeysFunction;
+    cast_channel_set_authority_keys_function->set_extension(extension.get());
+    return cast_channel_set_authority_keys_function;
+  }
+
   MockCastSocket* mock_cast_socket_;
   net::CapturingNetLog capturing_net_log_;
 };
@@ -395,4 +404,101 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
       "\"destinationId\": \"\", \"data\": \"data\"}]",
       browser());
   EXPECT_EQ(error, "message_info.destination_id is required");
+}
+
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysInvalid) {
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
+  scoped_refptr<extensions::CastChannelSetAuthorityKeysFunction>
+      cast_channel_set_authority_keys_function;
+  std::string errorResult = "Unable to set authority keys.";
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  std::string error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(),
+      "[\"\", \"signature\"]",
+      browser());
+  EXPECT_EQ(error, errorResult);
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(),
+      "[\"keys\", \"\"]",
+      browser());
+  EXPECT_EQ(error, errorResult);
+
+  std::string keys =
+      "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
+      "2A9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEg"
+      "mVDN7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZv"
+      "tYVMBeOcf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0g"
+      "QBLx3SXr1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk"
+      "0K48YcqZP6OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQ==";
+  std::string signature =
+      "chCUHZKkykcwU8HzU+hm027fUTBL0dqPMtrzppwExQwK9+"
+      "XlmCjJswfce2sUUfhR1OL1tyW4hWFwu4JnuQCJ+CvmSmAh2bzRpnuSKzBfgvIDjNOAGUs7"
+      "ADaNSSWPLxp+6ko++2Dn4S9HpOt8N1v6gMWqj3Ru5IqFSQPZSvGH2ois6uE50CFayPcjQE"
+      "OVZt41noQdFd15RmKTvocoCC5tHNlaikeQ52yi0IScOlad1B1lMhoplW3rWophQaqxMumr"
+      "OcHIZ+Y+p858x5f8Pny/kuqUClmFh9B/vF07NsUHwoSL9tA5t5jCY3L5iUc/v7o3oFcW/T"
+      "gojKkX2Kg7KQ86QA==";
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(),
+      "[\"" + keys + "\", \"signature\"]",
+      browser());
+  EXPECT_EQ(error, errorResult);
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(),
+      "[\"keys\", \"" + signature + "\"]",
+      browser());
+  EXPECT_EQ(error, errorResult);
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(),
+      "[\"" + keys + "\", \"" + signature + "\"]",
+      browser());
+  EXPECT_EQ(error, errorResult);
+}
+
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysValid) {
+  scoped_refptr<Extension> empty_extension(
+      extensions::test_util::CreateEmptyExtension());
+  scoped_refptr<extensions::CastChannelSetAuthorityKeysFunction>
+      cast_channel_set_authority_keys_function;
+
+  cast_channel_set_authority_keys_function =
+      CreateSetAuthorityKeysFunction(empty_extension);
+  std::string keys =
+      "CrMCCiBSnZzWf+XraY5w3SbX2PEmWfHm5SNIv2pc9xbhP0EOcxKOAjCCAQoCggEBALwigL"
+      "2A9johADuudl41fz3DZFxVlIY0LwWHKM33aYwXs1CnuIL638dDLdZ+q6BvtxNygKRHFcEg"
+      "mVDN7BRiCVukmM3SQbY2Tv/oLjIwSoGoQqNsmzNuyrL1U2bgJ1OGGoUepzk/SneO+1RmZv"
+      "tYVMBeOcf1UAYL4IrUzuFqVR+LFwDmaaMn5gglaTwSnY0FLNYuojHetFJQ1iBJ3nGg+a0g"
+      "QBLx3SXr1ea4NvTWj3/KQ9zXEFvmP1GKhbPz//YDLcsjT5ytGOeTBYysUpr3TOmZer5ufk"
+      "0K48YcqZP6OqWRXRy9ZuvMYNyGdMrP+JIcmH1X+mFHnquAt+RIgCqSxRsCAwEAAQqzAgog"
+      "okjC6FTmVqVt6CMfHuF1b9vkB/n+1GUNYMxay2URxyASjgIwggEKAoIBAQCwDl4HOt+kX2"
+      "j3Icdk27Z27+6Lk/j2G4jhk7cX8BUeflJVdzwCjXtKbNO91sGccsizFc8RwfVGxNUgR/sw"
+      "9ORhDGjwXqs3jpvhvIHDcIp41oM0MpwZYuvknO3jZGxBHZzSi0hMI5CVs+dS6gVXzGCzuh"
+      "TkugA55EZVdM5ajnpnI9poCvrEhB60xaGianMfbsguL5qeqLEO/Yemj009SwXVNVp0TbyO"
+      "gkSW9LWVYE6l3yc9QVwHo7Q1WrOe8gUkys0xWg0mTNTT/VDhNOlMgVgwssd63YGJptQ6OI"
+      "QDtzSedz//eAdbmcGyHzVWbjo8DCXhV/aKfknAzIMRNeeRbS5lAgMBAAE=";
+  std::string signature =
+      "o83oku3jP+xjTysNBalqp/ZfJRPLt8R+IUhZMepbARFSRVizLoeFW5XyUwe6lQaC+PFFQH"
+      "SZeGZyeeGRpwCJ/lef0xh6SWJlVMWNTk5+z0U84GQdizJP/CTCeHpIwMobN+kyDajgOyfD"
+      "DLhktc6LHmSlFGG6J7B8W67oziS8ZFEdrcT9WSXFrjLVyURHjvidZD5iFtuImI6k9R9OoX"
+      "LR6SyAwpjdrL+vlHMk3Gol6KQ98YpF0ghHnN3/FFW4ibvIwjmRbp+tUV3h8TRcCOjlXVGp"
+      "bzPtNRRlTqfv7Rxm5YXkZMLmJJMZiTs5+o8FMRMTQZT4hRR3DQ+A/jofViyTGA==";
+
+  std::string args = "[\"" + keys + "\", \"" + signature + "\"]";
+  std::string error = utils::RunFunctionAndReturnError(
+      cast_channel_set_authority_keys_function.get(), args, browser());
+  EXPECT_EQ(error, std::string());
 }

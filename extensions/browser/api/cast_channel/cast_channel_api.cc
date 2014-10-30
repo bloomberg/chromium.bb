@@ -14,6 +14,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/event_router.h"
@@ -506,6 +507,29 @@ void CastChannelGetLogsFunction::AsyncWorkStart() {
   }
 
   api_->GetLogger()->Reset();
+
+  AsyncWorkCompleted();
+}
+
+CastChannelSetAuthorityKeysFunction::CastChannelSetAuthorityKeysFunction() {
+}
+
+CastChannelSetAuthorityKeysFunction::~CastChannelSetAuthorityKeysFunction() {
+}
+
+bool CastChannelSetAuthorityKeysFunction::Prepare() {
+  params_ = cast_channel::SetAuthorityKeys::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void CastChannelSetAuthorityKeysFunction::AsyncWorkStart() {
+  std::string& keys = params_->keys;
+  std::string& signature = params_->signature;
+  if (signature.empty() || keys.empty() ||
+      !cast_channel::SetTrustedCertificateAuthorities(keys, signature)) {
+    SetError("Unable to set authority keys.");
+  }
 
   AsyncWorkCompleted();
 }

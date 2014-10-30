@@ -22,8 +22,9 @@
       'target_name': 'cast_channel_proto',
       'type': 'static_library',
       'sources': [
+          'cast_channel/authority_keys.proto',
           'cast_channel/cast_channel.proto',
-          'cast_channel/logging.proto'
+          'cast_channel/logging.proto',
       ],
       'variables': {
           'proto_in_dir': 'cast_channel',
