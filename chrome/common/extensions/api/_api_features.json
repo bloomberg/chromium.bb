@@ -250,6 +250,11 @@
     "dependencies": ["permission:dial"],
     "contexts": ["blessed_extension"]
   },
+  "documentScan": {
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:documentScan"],
+    "contexts": ["blessed_extension"]
+  },
   "downloads": {
     "dependencies": ["permission:downloads"],
     "contexts": ["blessed_extension"]

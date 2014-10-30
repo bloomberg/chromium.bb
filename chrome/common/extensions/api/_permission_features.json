@@ -330,6 +330,10 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
+  "documentScan": {
+    "channel": "dev",
+    "extension_types": ["extension", "platform_app"]
+  },
   "downloads": {
     "channel": "stable",
     "extension_types": ["extension"]
