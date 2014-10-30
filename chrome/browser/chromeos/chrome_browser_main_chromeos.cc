@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -336,8 +335,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   base::FilePath downloads_directory;
   CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
-  imageburner::BurnManager::Initialize(
-      downloads_directory, g_browser_process->system_request_context());
 
   DeviceOAuth2TokenServiceFactory::Initialize();
 
@@ -723,7 +720,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   SystemKeyEventListener::Shutdown();
 #endif
 
-  imageburner::BurnManager::Shutdown();
   CrasAudioHandler::Shutdown();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
