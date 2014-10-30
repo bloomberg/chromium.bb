@@ -120,6 +120,7 @@
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebPluginPlaceholder.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
@@ -1605,6 +1606,16 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
 }
 
 // blink::WebFrameClient implementation ----------------------------------------
+
+blink::WebPluginPlaceholder* RenderFrameImpl::createPluginPlaceholder(
+    blink::WebLocalFrame* frame,
+    const blink::WebPluginParams& params) {
+  DCHECK_EQ(frame_, frame);
+  return GetContentClient()
+      ->renderer()
+      ->CreatePluginPlaceholder(this, frame, params)
+      .release();
+}
 
 blink::WebPlugin* RenderFrameImpl::createPlugin(
     blink::WebLocalFrame* frame,

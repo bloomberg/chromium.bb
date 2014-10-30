@@ -61,6 +61,8 @@
       'renderer/plugins/chrome_plugin_placeholder.h',
       'renderer/plugins/plugin_uma.cc',
       'renderer/plugins/plugin_uma.h',
+      'renderer/plugins/shadow_dom_plugin_placeholder.cc',
+      'renderer/plugins/shadow_dom_plugin_placeholder.h',
       'renderer/prefetch_helper.cc',
       'renderer/prefetch_helper.h',
       'renderer/prerender/prerender_dispatcher.cc',

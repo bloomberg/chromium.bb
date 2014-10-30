@@ -4,14 +4,24 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include "third_party/WebKit/public/web/WebPluginPlaceholder.h"
+
 namespace content {
 
 SkBitmap* ContentRendererClient::GetSadPluginBitmap() {
-  return NULL;
+  return nullptr;
 }
 
 SkBitmap* ContentRendererClient::GetSadWebViewBitmap() {
-  return NULL;
+  return nullptr;
+}
+
+scoped_ptr<blink::WebPluginPlaceholder>
+ContentRendererClient::CreatePluginPlaceholder(
+    RenderFrame* render_frame,
+    blink::WebLocalFrame* frame,
+    const blink::WebPluginParams& params) {
+  return nullptr;
 }
 
 bool ContentRendererClient::OverrideCreatePlugin(
@@ -25,7 +35,7 @@ bool ContentRendererClient::OverrideCreatePlugin(
 blink::WebPlugin* ContentRendererClient::CreatePluginReplacement(
     RenderFrame* render_frame,
     const base::FilePath& plugin_path) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentRendererClient::HasErrorPage(int http_status_code,
@@ -46,38 +56,38 @@ void ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
 blink::WebMediaStreamCenter*
 ContentRendererClient::OverrideCreateWebMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebRTCPeerConnectionHandler*
 ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client) {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebMIDIAccessor*
 ContentRendererClient::OverrideCreateMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebAudioDevice*
 ContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
-  return NULL;
+  return nullptr;
 }
 
 blink::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
@@ -131,7 +141,7 @@ bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
 
 blink::WebPrescientNetworking*
 ContentRendererClient::GetPrescientNetworking() {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
@@ -142,7 +152,7 @@ bool ContentRendererClient::ShouldOverridePageVisibilityState(
 
 const void* ContentRendererClient::CreatePPAPIInterface(
     const std::string& interface_name) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentRendererClient::IsExternalPepperPlugin(
@@ -170,7 +180,7 @@ bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
 blink::WebWorkerPermissionClientProxy*
 ContentRendererClient::CreateWorkerPermissionClientProxy(
     RenderFrame* render_frame, blink::WebFrame* frame) {
-  return NULL;
+  return nullptr;
 }
 
 bool ContentRendererClient::IsPluginAllowedToUseCompositorAPI(const GURL& url) {
@@ -189,7 +199,7 @@ bool ContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
     RenderFrame* render_frame,
     const std::string& mime_type) {
-  return NULL;
+  return nullptr;
 }
 
 std::string ContentRendererClient::GetUserAgentOverrideForURL(const GURL& url) {

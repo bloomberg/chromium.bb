@@ -282,6 +282,9 @@ class CONTENT_EXPORT RenderFrameImpl
                                       v8::Handle<v8::Context> context) override;
 
   // blink::WebFrameClient implementation:
+  blink::WebPluginPlaceholder* createPluginPlaceholder(
+      blink::WebLocalFrame*,
+      const blink::WebPluginParams&) override;
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params);
   // TODO(jrummell): Remove this method once blink updated.

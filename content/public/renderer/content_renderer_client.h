@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
@@ -37,6 +38,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebPlugin;
 class WebPluginContainer;
+class WebPluginPlaceholder;
 class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -86,6 +88,14 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns the bitmap to show when a <webview> guest has crashed, or NULL for
   // none.
   virtual SkBitmap* GetSadWebViewBitmap();
+
+  // Allows the embedder to create a plugin placeholder instead of a plugin.
+  // Called before OverrideCreatePlugin. May return null to decline to provide
+  // a plugin placeholder.
+  virtual scoped_ptr<blink::WebPluginPlaceholder> CreatePluginPlaceholder(
+      RenderFrame* render_frame,
+      blink::WebLocalFrame* frame,
+      const blink::WebPluginParams& params);
 
   // Allows the embedder to override creating a plugin. If it returns true, then
   // |plugin| will contain the created plugin, although it could be NULL. If it

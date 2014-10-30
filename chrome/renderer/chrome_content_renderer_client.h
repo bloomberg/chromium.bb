@@ -85,6 +85,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             blink::WebLocalFrame* frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
+  scoped_ptr<blink::WebPluginPlaceholder> CreatePluginPlaceholder(
+      content::RenderFrame* render_frame,
+      blink::WebLocalFrame* frame,
+      const blink::WebPluginParams& params) override;
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
