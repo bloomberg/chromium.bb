@@ -153,7 +153,7 @@ private:
     bool canTakeNextToken();
     void pumpTokenizer();
     void pumpTokenizerIfPossible();
-    void constructTreeFromHTMLToken(HTMLToken&);
+    void constructTreeFromHTMLToken();
     void constructTreeFromCompactHTMLToken(const CompactHTMLToken&);
 
     void runScriptsForPausedTreeBuilder();

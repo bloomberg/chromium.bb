@@ -196,6 +196,12 @@ void HTMLDocumentParser::detach()
     m_preloadScanner.clear();
     m_insertionPreloadScanner.clear();
     m_parserScheduler.clear(); // Deleting the scheduler will clear any timers.
+    // Oilpan: It is important to clear m_token to deallocate backing memory of
+    // HTMLToken::m_data and let the allocator reuse the memory for
+    // HTMLToken::m_data of a next HTMLDocumentParser. We need to clear
+    // m_tokenizer first because m_tokenizer has a raw pointer to m_token.
+    m_tokenizer.clear();
+    m_token.clear();
 }
 
 void HTMLDocumentParser::stopParsing()
@@ -590,8 +596,8 @@ void HTMLDocumentParser::pumpTokenizer()
                 m_xssAuditorDelegate.didBlockScript(*xssInfo);
         }
 
-        constructTreeFromHTMLToken(token());
-        ASSERT(token().isUninitialized());
+        constructTreeFromHTMLToken();
+        ASSERT(isStopped() || token().isUninitialized());
     }
 
 #if !ENABLE(OILPAN)
@@ -622,28 +628,32 @@ void HTMLDocumentParser::pumpTokenizer()
     InspectorInstrumentation::didWriteHTML(cookie, m_input.current().currentLine().zeroBasedInt());
 }
 
-void HTMLDocumentParser::constructTreeFromHTMLToken(HTMLToken& rawToken)
+void HTMLDocumentParser::constructTreeFromHTMLToken()
 {
-    AtomicHTMLToken token(rawToken);
+    AtomicHTMLToken atomicToken(token());
 
-    // We clear the rawToken in case constructTreeFromAtomicToken
+    // We clear the m_token in case constructTreeFromAtomicToken
     // synchronously re-enters the parser. We don't clear the token immedately
     // for Character tokens because the AtomicHTMLToken avoids copying the
     // characters by keeping a pointer to the underlying buffer in the
     // HTMLToken. Fortunately, Character tokens can't cause us to re-enter
     // the parser.
     //
-    // FIXME: Stop clearing the rawToken once we start running the parser off
+    // FIXME: Stop clearing the m_token once we start running the parser off
     // the main thread or once we stop allowing synchronous JavaScript
     // execution from parseAttribute.
-    if (rawToken.type() != HTMLToken::Character)
-        rawToken.clear();
+    if (token().type() != HTMLToken::Character)
+        token().clear();
 
-    m_treeBuilder->constructTree(&token);
+    m_treeBuilder->constructTree(&atomicToken);
 
-    if (!rawToken.isUninitialized()) {
-        ASSERT(rawToken.type() == HTMLToken::Character);
-        rawToken.clear();
+    // FIXME: constructTree may synchronously cause Document to be detached.
+    if (!m_token)
+        return;
+
+    if (!token().isUninitialized()) {
+        ASSERT(token().type() == HTMLToken::Character);
+        token().clear();
     }
 }
 
