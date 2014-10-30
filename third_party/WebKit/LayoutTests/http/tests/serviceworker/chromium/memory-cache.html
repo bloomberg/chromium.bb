@@ -33,10 +33,19 @@ async_test(function(t) {
     .then(function() { return with_iframe(scope); })
     .then(function(f) {
         frame = f;
+
         // Request a json file from controlled page.
+        assert_false(
+            frame.contentWindow.internals.isLoadingFromMemoryCache(json_url),
+            'Cache for controlled page should be empty');
         promises.push(frame.contentWindow.getJSONP(json_url));
+
         // Request a json file from non-controlled page.
+        assert_false(
+            internals.isLoadingFromMemoryCache(json_url),
+            'Cache for non-controlled page should be empty');
         promises.push(getJSONP(json_url));
+
         return Promise.all(promises);
       })
     .then(function(results) {
@@ -48,6 +57,12 @@ async_test(function(t) {
           results[1].src,
           'network',
           'Response for non-controlled page should be served by network');
+        assert_true(
+          frame.contentWindow.internals.isLoadingFromMemoryCache(json_url),
+          'Response for controlled page should be cached');
+        assert_true(
+          internals.isLoadingFromMemoryCache(json_url),
+          'Response for non-controlled page should be cached');
         unload_iframe(frame);
         return registration.unregister();
       })

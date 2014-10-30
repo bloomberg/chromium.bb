@@ -242,6 +242,9 @@ public:
     bool wasPurged() const;
     bool lock();
 
+    void setCacheIdentifier(const String& cacheIdentifier) { m_cacheIdentifier = cacheIdentifier; }
+    String cacheIdentifier() const { return m_cacheIdentifier; };
+
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }
 
@@ -373,6 +376,8 @@ private:
     unsigned m_handleCount;
     unsigned m_preloadCount;
     unsigned m_protectorCount;
+
+    String m_cacheIdentifier;
 
     unsigned m_preloadResult : 2; // PreloadResult
     unsigned m_requestedFromNetworkingLayer : 1;

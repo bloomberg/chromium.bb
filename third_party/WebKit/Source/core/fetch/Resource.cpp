@@ -106,6 +106,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_handleCount(0)
     , m_preloadCount(0)
     , m_protectorCount(0)
+    , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
     , m_requestedFromNetworkingLayer(false)
     , m_loading(false)
@@ -142,7 +143,6 @@ Resource::~Resource()
     ASSERT(canDelete());
     RELEASE_ASSERT(!memoryCache()->contains(this));
     RELEASE_ASSERT(!ResourceCallback::callbackHandler()->isScheduled(this));
-    ASSERT(url().isNull() || memoryCache()->resourceForURL(KURL(ParsedURLString, url())) != this);
     assertAlive();
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK

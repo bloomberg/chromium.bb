@@ -354,7 +354,8 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
 {
     if (!contextDocument())
         return false;
-    Resource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url));
+    const String cacheIdentifier = contextDocument()->fetcher()->getCacheIdentifier();
+    Resource* resource = memoryCache()->resourceForURL(contextDocument()->completeURL(url), cacheIdentifier);
     return resource && resource->status() == Resource::Cached;
 }
 

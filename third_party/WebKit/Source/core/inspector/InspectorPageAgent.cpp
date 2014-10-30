@@ -347,7 +347,7 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
         }
     }
     if (!cachedResource)
-        cachedResource = memoryCache()->resourceForURL(url);
+        cachedResource = memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier());
     return cachedResource;
 }
 

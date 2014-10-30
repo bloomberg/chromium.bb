@@ -34,6 +34,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -361,7 +362,7 @@ static unsigned avoidDownloadIfHigherDensityResourceIsInCache(Vector<ImageCandid
         return winner;
     for (unsigned i = imageCandidates.size() - 1; i > winner; --i) {
         KURL url = document->completeURL(stripLeadingAndTrailingHTMLSpaces(imageCandidates[i].url()));
-        if (memoryCache()->resourceForURL(url))
+        if (memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier()))
             return i;
     }
     return winner;

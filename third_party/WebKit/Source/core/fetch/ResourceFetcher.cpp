@@ -156,7 +156,7 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
     return ResourceLoadPriorityUnresolved;
 }
 
-static Resource* resourceFromDataURIRequest(const ResourceRequest& request, const ResourceLoaderOptions& resourceOptions)
+static Resource* resourceFromDataURIRequest(const ResourceRequest& request, const ResourceLoaderOptions& resourceOptions, const String& cacheIdentifier)
 {
     const KURL& url = request.url();
     ASSERT(url.protocolIsData());
@@ -173,6 +173,7 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     resource->responseReceived(response);
     if (data->size())
         resource->setResourceBuffer(data);
+    resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
     return resource;
 }
@@ -330,10 +331,11 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
     const KURL& url = request.resourceRequest().url();
     ASSERT(url.protocolIsData());
 
-    if (memoryCache()->resourceForURL(url))
+    const String cacheIdentifier = getCacheIdentifier();
+    if (memoryCache()->resourceForURL(url, cacheIdentifier))
         return;
 
-    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest(), request.options())) {
+    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest(), request.options(), cacheIdentifier)) {
         memoryCache()->add(resource);
         scheduleDocumentResourcesGC();
     }
@@ -424,8 +426,9 @@ ResourcePtr<RawResource> ResourceFetcher::fetchTextTrack(FetchRequest& request)
 
 void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& request, const SubstituteData& substituteData)
 {
+    const String cacheIdentifier = getCacheIdentifier();
     const KURL& url = request.url();
-    if (Resource* oldResource = memoryCache()->resourceForURL(url))
+    if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier))
         memoryCache()->remove(oldResource);
 
     ResourceResponse response(url, substituteData.mimeType(), substituteData.content()->size(), substituteData.textEncoding(), emptyString());
@@ -436,6 +439,7 @@ void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& 
     resource->responseReceived(response);
     if (substituteData.content()->size())
         resource->setResourceBuffer(substituteData.content());
+    resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
     memoryCache()->add(resource.get());
 }
@@ -730,7 +734,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     }
 
     // See if we can use an existing resource from the cache.
-    ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url);
+    ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
 
     const RevalidationPolicy policy = determineRevalidationPolicy(type, request, resource.get());
     switch (policy) {
@@ -802,17 +806,6 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         ASSERT(policy != Use || m_documentLoader->substituteData().isValid());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
-    } else {
-        // Remove a resource to be handled by Service Worker from the cache to
-        // prevent reuse because Service Worker can serve an arbitrary resource
-        // for an URL and pollute a memory cache entry.
-        // FIXME: isControlledByServiceWorker() always returns false on main
-        // resource request, but main resource is always removed from the cache
-        // as the above comment (http://crbug.com/388375).
-        if (isControlledByServiceWorker()) {
-            ASSERT(policy == Load || policy == Reload);
-            memoryCache()->remove(resource.get());
-        }
     }
 
     requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork);
@@ -915,6 +908,7 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
     WTF_LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
 
     newResource->setResourceToRevalidate(resource);
+    newResource->setCacheIdentifier(resource->cacheIdentifier());
 
     memoryCache()->remove(resource);
     memoryCache()->add(newResource.get());
@@ -923,12 +917,14 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(Resource::Type type, FetchRequest& request, const String& charset)
 {
-    ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url()));
+    const String cacheIdentifier = getCacheIdentifier();
+    ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
     addAdditionalRequestHeaders(request.mutableResourceRequest(), type);
     ResourcePtr<Resource> resource = createResource(type, request.resourceRequest(), charset);
+    resource->setCacheIdentifier(cacheIdentifier);
 
     memoryCache()->add(resource.get());
     return resource;
@@ -966,11 +962,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     if (!existingResource)
         return Load;
-
-    // FIXME: Currently caching for a resource to be handled by Service Worker
-    // is disabled (http://crbug.com/388375).
-    if (isControlledByServiceWorker())
-        return Reload;
 
     // We already have a preload going for this URL.
     if (fetchRequest.forPreload() && existingResource->isPreloaded())
@@ -1525,6 +1516,13 @@ const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (BufferData, AllowStoredCredentials, ClientRequestedCredentials, CheckContentSecurityPolicy, DocumentContext));
     return options;
+}
+
+String ResourceFetcher::getCacheIdentifier() const
+{
+    if (isControlledByServiceWorker())
+        return String::number(serviceWorkerID());
+    return MemoryCache::defaultCacheIdentifier();
 }
 
 ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()

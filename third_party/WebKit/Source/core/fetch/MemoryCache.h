@@ -170,6 +170,8 @@ public:
     };
 
     Resource* resourceForURL(const KURL&);
+    Resource* resourceForURL(const KURL&, const String& cacheIdentifier);
+    WillBeHeapVector<Member<Resource>> resourcesForURL(const KURL&);
 
     void add(Resource*);
     void replace(Resource* newResource, Resource* oldResource);
@@ -177,6 +179,8 @@ public:
     bool contains(const Resource*) const;
 
     static KURL removeFragmentIdentifierIfNeeded(const KURL& originalURL);
+
+    static String defaultCacheIdentifier();
 
     // Sets the cache's memory capacities, in bytes. These will hold only approximately,
     // since the decoded cost of resources like scripts and stylesheets is not known.
@@ -252,6 +256,8 @@ private:
 
     bool evict(MemoryCacheEntry*);
 
+    MemoryCacheEntry* getEntryForResource(const Resource*) const;
+
     static void removeURLFromCacheInternal(ExecutionContext*, const KURL&);
 
     bool m_inPruneResources;
@@ -280,8 +286,10 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry>> ResourceMap;
-    ResourceMap m_resources;
+    using ResourceMap = WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry>>;
+    using ResourceMapIndex = WillBeHeapHashMap<String, OwnPtrWillBeMember<ResourceMap>>;
+    ResourceMap* ensureResourceMap(const String& cacheIdentifier);
+    ResourceMapIndex m_resourceMaps;
 
 #if ENABLE(OILPAN)
     // Unlike m_allResources, m_liveResources is a set of Resource objects which

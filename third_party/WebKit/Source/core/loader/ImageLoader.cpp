@@ -365,7 +365,7 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url, LoadType loadType) cons
         || isHTMLObjectElement(m_element)
         || isHTMLEmbedElement(m_element)
         || url.protocolIsData()
-        || memoryCache()->resourceForURL(url)
+        || memoryCache()->resourceForURL(url, m_element->document().fetcher()->getCacheIdentifier())
         || loadType == ForceLoadImmediately);
 }
 

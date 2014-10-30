@@ -739,9 +739,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
 
     RefPtrWillBeRawPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
 
-    Resource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
-    if (cachedResource)
-        memoryCache()->remove(cachedResource);
+    memoryCache()->removeURLFromCache(executionContext, xhrReplayData->url());
 
     xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION);
     HTTPHeaderMap::const_iterator end = xhrReplayData->headers().end();
@@ -857,7 +855,7 @@ bool InspectorResourceAgent::fetchResourceContent(Document* document, const KURL
     // First try to fetch content from the cached resource.
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource)
-        cachedResource = memoryCache()->resourceForURL(url);
+        cachedResource = memoryCache()->resourceForURL(url, document->fetcher()->getCacheIdentifier());
     if (cachedResource && InspectorPageAgent::cachedResourceContent(cachedResource, content, base64Encoded))
         return true;
 
