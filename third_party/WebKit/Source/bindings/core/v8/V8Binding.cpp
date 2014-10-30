@@ -685,7 +685,7 @@ String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     return replaceUnmatchedSurrogates(x);
 }
 
-PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = nullptr;
     if (V8XPathNSResolver::hasInstance(value, isolate))

@@ -254,7 +254,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
-            event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, info.GetIsolate()));
+            event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), initializedByEventConstructorReadonlyAnyAttribute));
     }
 
     v8::Handle<v8::Object> wrapper = info.Holder();

@@ -63,7 +63,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
             // we need to find the 'state' property on the main world wrapper and clone it.
             v8::Local<v8::Value> mainWorldState = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::state(info.GetIsolate()));
             if (!mainWorldState.IsEmpty())
-                event->setSerializedState(SerializedScriptValue::createAndSwallowExceptions(mainWorldState, info.GetIsolate()));
+                event->setSerializedState(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), mainWorldState));
         }
         if (event->serializedState())
             result = event->serializedState()->deserialize();

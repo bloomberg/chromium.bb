@@ -67,7 +67,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     RefPtrWillBeRawPtr<Node> contextNode = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
 
     const int resolverArgumentIndex = 2;
-    RefPtrWillBeRawPtr<XPathNSResolver> resolver = toXPathNSResolver(info[resolverArgumentIndex], info.GetIsolate());
+    RefPtrWillBeRawPtr<XPathNSResolver> resolver = toXPathNSResolver(info.GetIsolate(), info[resolverArgumentIndex]);
     if (!resolver && !isUndefinedOrNull(info[resolverArgumentIndex])) {
         exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(resolverArgumentIndex + 1, "XPathNSResolver"));
         exceptionState.throwIfNeeded();

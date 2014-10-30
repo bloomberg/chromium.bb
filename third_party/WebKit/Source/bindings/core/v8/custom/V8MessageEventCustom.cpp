@@ -56,7 +56,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
                 // we need to find the 'data' property on the main world wrapper and clone it.
                 v8::Local<v8::Value> mainWorldData = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::data(info.GetIsolate()));
                 if (!mainWorldData.IsEmpty())
-                    event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(mainWorldData, info.GetIsolate()));
+                    event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), mainWorldData));
             }
             if (event->dataAsSerializedScriptValue())
                 result = event->dataAsSerializedScriptValue()->deserialize(info.GetIsolate());
@@ -126,7 +126,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     if (!dataArg.IsEmpty()) {
         V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()), dataArg);
         if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
-            event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(dataArg, info.GetIsolate()));
+            event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), dataArg));
     }
 }
 

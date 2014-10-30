@@ -473,7 +473,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, 0, 0, exceptionState, {isolate})',
     'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
     'Window': 'toDOMWindow({v8_value}, {isolate})',
-    'XPathNSResolver': 'toXPathNSResolver({v8_value}, {isolate})',
+    'XPathNSResolver': 'toXPathNSResolver({isolate}, {v8_value})',
 }
 
 

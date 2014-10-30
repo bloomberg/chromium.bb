@@ -144,7 +144,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
     LocalFrame* frame = enteredWindow->document()->frame();
     if (frame && frame->script().existingWindowProxy(scriptState->world())) {
-        V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
+        V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate, event.get(), data, scriptState->context()->Global());
     }
 
     if (scriptState->world().isPrivateScriptIsolatedWorld()) {
@@ -419,7 +419,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         // If execution termination has been triggered as part of constructing
         // the error event from the v8::Message, quietly leave.
         if (!v8::V8::IsExecutionTerminating(isolate)) {
-            V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
+            V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate, event.get(), data, scriptState->context()->Global());
             context->reportException(event.release(), scriptId, nullptr, corsStatus);
         }
     }

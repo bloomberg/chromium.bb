@@ -2802,7 +2802,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::V
     return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, 0, exceptionState, isolate));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     TrackExceptionState exceptionState;
     return adoptRef(new SerializedScriptValue(value, 0, 0, 0, exceptionState, isolate));

@@ -79,7 +79,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(v8::Handle<v8::Value> 
 }
 
 // static
-void V8ErrorHandler::storeExceptionOnErrorEventWrapper(ErrorEvent* event, v8::Handle<v8::Value> data, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void V8ErrorHandler::storeExceptionOnErrorEventWrapper(v8::Isolate* isolate, ErrorEvent* event, v8::Handle<v8::Value> data, v8::Handle<v8::Object> creationContext)
 {
     v8::Local<v8::Value> wrappedEvent = toV8(event, creationContext, isolate);
     if (!wrappedEvent.IsEmpty()) {
