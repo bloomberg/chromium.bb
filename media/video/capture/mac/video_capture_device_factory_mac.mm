@@ -18,16 +18,29 @@
 
 namespace media {
 
-// Some devices are known to crash if VGA is requested: http://crbug.com/396812;
-// for them HD is the only supported resolution. These devices are identified by
-// a characteristic trailing substring of uniqueId and by (part of) the vendor's
-// name.
+// In QTKit API, some devices are known to crash if VGA is requested, for them
+// HD is the only supported resolution (see http://crbug.com/396812). In the
+// AVfoundation case, we skip enumerating them altogether. These devices are
+// identified by a characteristic trailing substring of uniqueId. At the moment
+// these are just Blackmagic devices.
 const struct NameAndVid {
-  const char* name;
+  const char* unique_id_signature;
   const int capture_width;
   const int capture_height;
   const float capture_frame_rate;
-} kBlacklistedCameras[] = { {"Blackmagic", 1280, 720, 60.0f } };
+} kBlacklistedCameras[] = { {"-01FDA82C8A9C", 1280, 720, 60.0f } };
+
+static bool IsDeviceBlacklisted(const VideoCaptureDevice::Name& name) {
+  bool is_device_blacklisted = false;
+  for(size_t i = 0;
+    !is_device_blacklisted && i < arraysize(kBlacklistedCameras); ++i) {
+    is_device_blacklisted = EndsWith(name.id(),
+      kBlacklistedCameras[i].unique_id_signature, false);
+  }
+  DVLOG_IF(2, is_device_blacklisted) << "Blacklisted camera: " <<
+      name.name() << ", id: " << name.id();
+  return is_device_blacklisted;
+}
 
 static scoped_ptr<media::VideoCaptureDevice::Names>
 EnumerateDevicesUsingQTKit() {
@@ -40,13 +53,8 @@ EnumerateDevicesUsingQTKit() {
     VideoCaptureDevice::Name name(
         [[[capture_devices valueForKey:key] deviceName] UTF8String],
         [key UTF8String], VideoCaptureDevice::Name::QTKIT);
-    for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
-      if (name.id().find(kBlacklistedCameras[i].name) != std::string::npos) {
-        DVLOG(2) << "Found blacklisted camera: " << name.id();
-        name.set_is_blacklisted(true);
-        break;
-      }
-    }
+    if (IsDeviceBlacklisted(name))
+      name.set_is_blacklisted(true);
     device_names->push_back(name);
   }
   return device_names.Pass();
@@ -131,6 +139,8 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
           [[[capture_devices valueForKey:key] deviceName] UTF8String],
           [key UTF8String], VideoCaptureDevice::Name::AVFOUNDATION,
           device_transport_type);
+      if (IsDeviceBlacklisted(name))
+        continue;
       device_names->push_back(name);
     }
     // Also retrieve Blackmagic devices, if present, via DeckLink SDK API.
@@ -169,11 +179,11 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
     break;
   case VideoCaptureDevice::Name::QTKIT:
     // Blacklisted cameras provide their own supported format(s), otherwise no
-    // such information is provided for QTKit.
+    // such information is provided for QTKit devices.
     if (device.is_blacklisted()) {
       for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
-        if (device.id().find(kBlacklistedCameras[i].name) !=
-            std::string::npos) {
+        if (EndsWith(device.id(), kBlacklistedCameras[i].unique_id_signature,
+            false)) {
           supported_formats->push_back(media::VideoCaptureFormat(
               gfx::Size(kBlacklistedCameras[i].capture_width,
                         kBlacklistedCameras[i].capture_height),
