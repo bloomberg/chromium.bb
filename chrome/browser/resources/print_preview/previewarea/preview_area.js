@@ -199,7 +199,10 @@ cr.define('print_preview', function() {
     OPEN_SYSTEM_DIALOG_BUTTON: 'preview-area-open-system-dialog-button',
     OPEN_SYSTEM_DIALOG_BUTTON_THROBBER:
         'preview-area-open-system-dialog-button-throbber',
-    OVERLAY: 'preview-area-overlay-layer'
+    OVERLAY: 'preview-area-overlay-layer',
+    OVERLAYED: 'preview-area-overlayed',
+    MARGIN_CONTROL: 'margin-control',
+    PREVIEW_AREA: 'preview-area-plugin-wrapper'
   };
 
   /**
@@ -504,20 +507,39 @@ cr.define('print_preview', function() {
             PreviewArea.MessageIdClassMap_[messageId])[0];
       setIsVisible(messageEl, true);
 
-      // Show overlay.
-      this.overlayEl_.classList.remove(PreviewArea.Classes_.INVISIBLE);
+      this.setOverlayVisible_(true);
     },
 
     /**
-     * Hides the message overlay.
+     * Set the visibility of the message overlay.
+     * @param {boolean} visible Whether to make the overlay visible or not
      * @private
      */
-    hideOverlay_: function() {
-      this.overlayEl_.classList.add(PreviewArea.Classes_.INVISIBLE);
-      // Disable jumping animation to conserve cycles.
-      var jumpingDotsEl = this.getElement().querySelector(
-          '.preview-area-loading-message-jumping-dots');
-      jumpingDotsEl.classList.remove('jumping-dots');
+    setOverlayVisible_: function(visible) {
+      this.overlayEl_.classList.toggle(
+          PreviewArea.Classes_.INVISIBLE,
+          !visible);
+
+      // Hide/show all controls that will overlap when the overlay is visible.
+      var marginControls = this.getElement().getElementsByClassName(
+          PreviewArea.Classes_.MARGIN_CONTROL);
+      for (var i = 0; i < marginControls.length; ++i) {
+        marginControls[i].classList.toggle(PreviewArea.Classes_.OVERLAYED,
+                                           visible);
+      }
+      var previewAreaControls = this.getElement().getElementsByClassName(
+          PreviewArea.Classes_.PREVIEW_AREA);
+      for (var i = 0; i < previewAreaControls.length; ++i) {
+        previewAreaControls[i].classList.toggle(PreviewArea.Classes_.OVERLAYED,
+                                                visible);
+      }
+
+      if (!visible) {
+        // Disable jumping animation to conserve cycles.
+        var jumpingDotsEl = this.getElement().querySelector(
+            '.preview-area-loading-message-jumping-dots');
+        jumpingDotsEl.classList.remove('jumping-dots');
+      }
     },
 
     /**
@@ -714,7 +736,7 @@ cr.define('print_preview', function() {
           this.plugin_.fitToHeight();
         }
       }
-      this.hideOverlay_();
+      this.setOverlayVisible_(false);
       this.isPluginReloaded_ = true;
       this.dispatchPreviewGenerationDoneIfReady_();
     },

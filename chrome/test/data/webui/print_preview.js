@@ -45,6 +45,15 @@ PrintPreviewWebUITest.prototype = {
    */
   browsePrintPreload: 'print_preview_hello_world_test.html',
 
+  /** @override */
+  runAccessibilityChecks: true,
+
+  /** @override */
+  accessibilityIssuesAreErrors: true,
+
+  /** @override */
+  isAsync: true,
+
   /**
    * Stub out low-level functionality like the NativeLayer and
    * CloudPrintInterface.
@@ -87,16 +96,61 @@ PrintPreviewWebUITest.prototype = {
     }.bind(this));
   },
 
-  setUpPreview: function() {
+  /**
+   * Dispatch the INITIAL_SETTINGS_SET event. This call is NOT async and will
+   * happen in the same thread.
+   */
+  setInitialSettings: function() {
     var initialSettingsSetEvent =
         new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
     initialSettingsSetEvent.initialSettings = this.initialSettings_;
     this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  },
 
+  /**
+   * Dispatch the LOCAL_DESTINATIONS_SET event. This call is NOT async and will
+   * happen in the same thread.
+   */
+  setLocalDestinations: function() {
     var localDestsSetEvent =
-        new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
     localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
     this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+  },
+
+  /**
+   * Dispatch the CAPABILITIES_SET event. This call is NOT async and will
+   * happen in the same thread.
+   * @device - The device whose capabilities should be dispatched.
+   */
+  setCapabilities: function(device) {
+    var capsSetEvent =
+      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+    capsSetEvent.settingsInfo = device;
+    this.nativeLayer_.dispatchEvent(capsSetEvent);
+  },
+
+  /**
+   * Even though animation duration and delay is set to zero, it is necessary to
+   * wait until the animation has finished.
+   */
+  waitForAnimationToEnd: function(elementId) {
+    // add a listener for the animation end event
+    document.addEventListener('webkitAnimationEnd', function f(e) {
+      if (e.target.id == elementId) {
+        document.removeEventListener(f, 'webkitAnimationEnd');
+        testDone();
+      }
+    });
+  },
+
+  /**
+   * Expand the 'More Settings' div to expose all options.
+   */
+  expandMoreSettings: function() {
+    var moreSettings = $('more-settings');
+    checkSectionVisible(moreSettings, true);
+    moreSettings.click();
   },
 
   /**
@@ -132,6 +186,18 @@ PrintPreviewWebUITest.prototype = {
       { printerName: 'BarName', deviceName: 'BarDevice' }
     ];
     this.nativeLayer_ = printPreview.nativeLayer_;
+
+    // Make all transitions and animations take 0ms for testing purposes.
+    // Animations still happen and must be waited on.
+    var noAnimationStyle = document.createElement('style');
+    noAnimationStyle.textContent =
+      '* {' +
+      '  -webkit-transition-duration: 0s !important;' +
+      '  -webkit-transition-delay: 0s !important;' +
+      '  -webkit-animation-duration: 0s !important;' +
+      '  -webkit-animation-delay: 0s !important;' +
+      '}';
+    document.querySelector('head').appendChild(noAnimationStyle);
   }
 };
 
@@ -139,15 +205,8 @@ GEN('#include "chrome/test/data/webui/print_preview.h"');
 
 // Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
   var recentList = $('destination-search').querySelector('.recent-list ul');
   var localList = $('destination-search').querySelector('.local-list ul');
@@ -168,20 +227,15 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   assertEquals('BarName',
                localList.childNodes.item(PrintPreviewWebUITest.BAR_INDEX).
                    querySelector('.destination-list-item-name').textContent);
+
+  testDone();
 });
 
 // Test that the printer list is structured correctly after calling
 // addCloudPrinters with an empty list.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
   var cloudPrintEnableEvent =
       new Event(print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE);
@@ -219,6 +273,8 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
 
   assertNotEquals(null, cloudList);
   assertEquals(0, cloudList.childNodes.length);
+
+  testDone();
 });
 
 /**
@@ -287,14 +343,13 @@ TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKioskMode',
   if (cr.isChromeOS) {
     assertEquals(null, $('system-dialog-link'));
   } else {
-    var initialSettingsSetEvent =
-        new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-    initialSettingsSetEvent.initialSettings = this.initialSettings_;
-    initialSettingsSetEvent.initialSettings.isInAppKioskMode_ = true;
-    this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+    this.initialSettings_.isInAppKioskMode_ = true;
+    this.setInitialSettings();
 
     checkElementDisplayed($('system-dialog-link'), false);
   }
+
+  testDone();
 });
 
 // Test that disabled settings hide the disabled sections.
@@ -303,30 +358,22 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   checkSectionVisible($('color-settings'), false);
   checkSectionVisible($('copies-settings'), false);
 
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "STANDARD_COLOR"}
     ]
   };
-  delete capsSetEvent.settingsInfo.capabilities.printer.copies;
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  delete device.capabilities.printer.copies;
+  this.setCapabilities(device);
 
   checkSectionVisible($('layout-settings'), true);
   checkSectionVisible($('color-settings'), false);
   checkSectionVisible($('copies-settings'), false);
+
+  this.waitForAnimationToEnd('other-options-collapsible');
 });
 
 // When the source is 'PDF' and 'Save as PDF' option is selected, we hide the
@@ -335,15 +382,9 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   // Add PDF printer.
   this.initialSettings_.isDocumentModifiable_ = false;
   this.initialSettings_.systemDefaultDestinationId_ = 'Save as PDF';
+  this.setInitialSettings();
 
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
+  var device = {
     printerId: 'Save as PDF',
     capabilities: {
       version: '1.0',
@@ -372,128 +413,85 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
       }
     }
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('other-options-settings'), false);
   checkSectionVisible($('media-size-settings'), false);
+
+  testDone();
 });
 
 // When the source is 'HTML', we always hide the fit to page option and show
 // media size option.
 TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var mediaSizeDiv = $('media-size-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var fitToPageEl = otherOptionsDiv.querySelector('.fit-to-page-container');
+  var otherOptions = $('other-options-settings');
+  var fitToPage = otherOptions.querySelector('.fit-to-page-container');
+  var mediaSize = $('media-size-settings');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
-  checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(fitToPageEl, false);
-  checkSectionVisible(mediaSizeDiv, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(fitToPage, false);
+  checkSectionVisible(mediaSize, false);
 
-  checkElementDisplayed(fitToPageEl, false);
-  checkSectionVisible(mediaSizeDiv, true);
+  this.expandMoreSettings();
+
+  checkElementDisplayed(fitToPage, false);
+  checkSectionVisible(mediaSize, true);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // When the source is "PDF", depending on the selected destination printer, we
 // show/hide the fit to page option and hide media size selection.
 TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var otherOptionsDiv = $('other-options-settings');
-
-  checkSectionVisible(otherOptionsDiv, true);
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, true);
   checkElementDisplayed(
-      otherOptionsDiv.querySelector('.fit-to-page-container'), true);
+      otherOptions.querySelector('.fit-to-page-container'), true);
   expectTrue(
-      otherOptionsDiv.querySelector('.fit-to-page-checkbox').checked);
+      otherOptions.querySelector('.fit-to-page-checkbox').checked);
   checkSectionVisible($('media-size-settings'), true);
+
+  this.waitForAnimationToEnd('other-options-collapsible');
 });
 
 // When the print scaling is disabled for the source "PDF", we show the fit
 // to page option but the state is unchecked by default.
 TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
   this.initialSettings_.isDocumentModifiable_ = false;
-
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
   // Indicate that the PDF does not support scaling by default.
   cr.dispatchSimpleEvent(
       this.nativeLayer_, print_preview.NativeLayer.EventType.DISABLE_SCALING);
 
-  var otherOptionsDiv = $('other-options-settings');
-
-  checkSectionVisible(otherOptionsDiv, true);
-
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, true);
   checkElementDisplayed(
-      otherOptionsDiv.querySelector('.fit-to-page-container'), true);
+      otherOptions.querySelector('.fit-to-page-container'), true);
   expectFalse(
-      otherOptionsDiv.querySelector('.fit-to-page-checkbox').checked);
+      otherOptions.querySelector('.fit-to-page-checkbox').checked);
+
+  this.waitForAnimationToEnd('other-options-collapsible');
 });
 
 // Make sure that custom margins controls are properly set up.
 TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
   printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
@@ -505,130 +503,95 @@ TEST_F('PrintPreviewWebUITest', 'CustomMarginsControlsCheck', function() {
     assertTrue(input.hasAttribute('aria-label'));
     assertNotEquals('undefined', input.getAttribute('aria-label'));
   });
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Page layout has zero margins. Hide header and footer option.
 TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
     function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var headerFooterEl =
-      otherOptionsDiv.querySelector('.header-footer-container');
+  var otherOptions = $('other-options-settings');
+  var headerFooter = otherOptions.querySelector('.header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
-  checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(headerFooterEl, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(headerFooter, false);
 
-  checkElementDisplayed(headerFooterEl, true);
+  this.expandMoreSettings();
+
+  checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 0, 0, 0));
 
-  checkElementDisplayed(headerFooterEl, false);
+  checkElementDisplayed(headerFooter, false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Page layout has half-inch margins. Show header and footer option.
 TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
     function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var headerFooterEl =
-      otherOptionsDiv.querySelector('.header-footer-container');
+  var otherOptions = $('other-options-settings');
+  var headerFooter = otherOptions.querySelector('.header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
-  checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(headerFooterEl, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(headerFooter, false);
 
-  checkElementDisplayed(headerFooterEl, true);
+  this.expandMoreSettings();
+
+  checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(36, 36, 36, 36));
 
-  checkElementDisplayed(headerFooterEl, true);
+  checkElementDisplayed(headerFooter, true);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Page layout has zero top and bottom margins. Hide header and footer option.
 TEST_F('PrintPreviewWebUITest',
        'ZeroTopAndBottomMarginsHideHeaderFooter',
        function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var headerFooterEl =
-      otherOptionsDiv.querySelector('.header-footer-container');
+  var otherOptions = $('other-options-settings');
+  var headerFooter = otherOptions.querySelector('.header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
-  checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(headerFooterEl, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(headerFooter, false);
 
-  checkElementDisplayed(headerFooterEl, true);
+  this.expandMoreSettings();
+
+  checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 0, 36));
 
-  checkElementDisplayed(headerFooterEl, false);
+  checkElementDisplayed(headerFooter, false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Page layout has zero top and half-inch bottom margin. Show header and footer
@@ -636,258 +599,218 @@ TEST_F('PrintPreviewWebUITest',
 TEST_F('PrintPreviewWebUITest',
        'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
        function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var headerFooterEl =
-      otherOptionsDiv.querySelector('.header-footer-container');
+  var otherOptions = $('other-options-settings');
+  var headerFooter = otherOptions.querySelector('.header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
-  checkSectionVisible(otherOptionsDiv, true);
-  checkElementDisplayed(headerFooterEl, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(headerFooter, false);
 
-  checkElementDisplayed(headerFooterEl, true);
+  this.expandMoreSettings();
+
+  checkElementDisplayed(headerFooter, true);
 
   printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 36, 36));
 
-  checkElementDisplayed(headerFooterEl, true);
+  checkElementDisplayed(headerFooter, true);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, one option, standard monochrome.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsMonochrome', function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
   // Only one option, standard monochrome.
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "STANDARD_MONOCHROME"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, one option, custom monochrome.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomMonochrome',
     function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
   // Only one option, standard monochrome.
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "CUSTOM_MONOCHROME", "vendor_id": "42"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, one option, standard color.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsColor', function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "STANDARD_COLOR"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, one option, custom color.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsCustomColor', function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
-  var capsSetEvent =
-     new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "42"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), false);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, two options, both standard, defaults to color.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettingsBothStandardDefaultColor',
     function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"type": "STANDARD_MONOCHROME"},
       {"is_default": true, "type": "STANDARD_COLOR"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), true);
   expectEquals(
       'color',
       $('color-settings').querySelector('.color-settings-select').value);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, two options, both standard, defaults to
 // monochrome.
 TEST_F('PrintPreviewWebUITest',
     'TestColorSettingsBothStandardDefaultMonochrome', function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
-  var capsSetEvent =
-     new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "STANDARD_MONOCHROME"},
       {"type": "STANDARD_COLOR"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), true);
   expectEquals(
       'bw', $('color-settings').querySelector('.color-settings-select').value);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that the color settings, two options, both custom, defaults to color.
 TEST_F('PrintPreviewWebUITest',
     'TestColorSettingsBothCustomDefaultColor', function() {
-  this.setUpPreview();
+  this.setInitialSettings();
+  this.setLocalDestinations();
 
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("FooDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"type": "CUSTOM_MONOCHROME", "vendor_id": "42"},
       {"is_default": true, "type": "CUSTOM_COLOR", "vendor_id": "43"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
 
   checkSectionVisible($('color-settings'), true);
   expectEquals(
       'color',
       $('color-settings').querySelector('.color-settings-select').value);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test to verify that duplex settings are set according to the printer
 // capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, true);
+  expectFalse(otherOptions.querySelector('.duplex-container').hidden);
+  expectFalse(otherOptions.querySelector('.duplex-checkbox').checked);
 
-  var otherOptionsDiv = $('other-options-settings');
-  var duplexDiv = otherOptionsDiv.querySelector('.duplex-container');
-  var duplexCheckbox = otherOptionsDiv.querySelector('.duplex-checkbox');
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  checkSectionVisible(otherOptionsDiv, true);
-  expectFalse(duplexDiv.hidden);
-  expectFalse(duplexCheckbox.checked);
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test to verify that duplex settings are set according to the printer
 // capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
-  var initialSettingsSetEvent =
-     new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-     new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var moreSettingsDiv = $('more-settings');
-  var otherOptionsDiv = $('other-options-settings');
-  var duplexDiv = otherOptionsDiv.querySelector('.duplex-container');
-
-  var capsSetEvent =
-     new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  delete capsSetEvent.settingsInfo.capabilities.printer.duplex;
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  var device = getCddTemplate("FooDevice");
+  delete device.capabilities.printer.duplex;
+  this.setCapabilities(device);
 
   // Check that it is collapsed.
-  checkSectionVisible(otherOptionsDiv, false);
-  // Expand it.
-  checkSectionVisible(moreSettingsDiv, true);
-  moreSettingsDiv.click();
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, false);
+
+  this.expandMoreSettings();
+
   // Now it should be visible.
-  checkSectionVisible(otherOptionsDiv, true);
-  expectTrue(duplexDiv.hidden);
+  checkSectionVisible(otherOptions, true);
+  expectTrue(otherOptions.querySelector('.duplex-container').hidden);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that changing the selected printer updates the preview.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
-
-  var initialSettingsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  initialSettingsSetEvent.initialSettings = this.initialSettings_;
-  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
-
-  var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
-  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
-  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("FooDevice");
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setInitialSettings();
+  this.setLocalDestinations();
+  this.setCapabilities(getCddTemplate("FooDevice"));
 
   var previewGenerator = mock(print_preview.PreviewGenerator);
   printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
@@ -904,15 +827,15 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   printPreview.destinationStore_.selectDestination(barDestination);
 
-  var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = getCddTemplate("BarDevice");
-  capsSetEvent.settingsInfo.capabilities.printer.color = {
+  var device = getCddTemplate("BarDevice");
+  device.capabilities.printer.color = {
     "option": [
       {"is_default": true, "type": "STANDARD_MONOCHROME"}
     ]
   };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
+  this.setCapabilities(device);
+
+  this.waitForAnimationToEnd('more-settings');
 });
 
 // Test that error message is displayed when plugin doesn't exist.
@@ -934,4 +857,6 @@ TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
   var customMessageEl =
       previewAreaEl.getElementsByClassName('preview-area-custom-message')[0];
   expectEquals(false, customMessageEl.hidden);
+
+  testDone();
 });

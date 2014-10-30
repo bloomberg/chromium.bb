@@ -78,3 +78,7 @@
 #preview-area .preview-area-open-system-dialog-button-throbber {
   vertical-align: middle;
 }
+
+.preview-area-overlayed {
+  visibility: hidden;
+}
