@@ -229,14 +229,13 @@ def GypBuild():
   elif sys.platform == 'win32':
     retcode += GypTestFormat('ninja')
     if os.environ['BUILDBOT_BUILDERNAME'] == 'gyp-win64':
-      retcode += GypTestFormat('msvs-ninja-2012', format='msvs-ninja',
-                               msvs_version='2012',
+      retcode += GypTestFormat('msvs-ninja-2013', format='msvs-ninja',
+                               msvs_version='2013',
                                tests=[
                                    'test\generator-output\gyptest-actions.py',
                                    'test\generator-output\gyptest-relocate.py',
                                    'test\generator-output\gyptest-rules.py'])
-      retcode += GypTestFormat('msvs-2010', format='msvs', msvs_version='2010')
-      retcode += GypTestFormat('msvs-2012', format='msvs', msvs_version='2012')
+      retcode += GypTestFormat('msvs-2013', format='msvs', msvs_version='2013')
   else:
     raise Exception('Unknown platform')
   if retcode:
