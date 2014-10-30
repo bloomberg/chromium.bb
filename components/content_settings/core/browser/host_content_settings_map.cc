@@ -525,6 +525,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return setting == CONTENT_SETTING_ASK;
     default:
       return false;
