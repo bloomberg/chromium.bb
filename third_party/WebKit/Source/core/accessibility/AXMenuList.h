@@ -37,6 +37,7 @@ public:
     static PassRefPtr<AXMenuList> create(RenderMenuList* renderer);
 
     virtual bool isCollapsed() const override;
+    virtual AccessibilityExpanded isExpanded() const override final;
     virtual bool press() const override;
 
     void didUpdateActiveOption(int optionIndex);

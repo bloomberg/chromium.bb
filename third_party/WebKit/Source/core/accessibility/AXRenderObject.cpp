@@ -1739,8 +1739,17 @@ void AXRenderObject::handleAriaExpandedChanged()
         axObjectCache()->postNotification(containerParent, document(), AXObjectCacheImpl::AXRowCountChanged, true);
 
     // Post that the specific row either collapsed or expanded.
-    if (roleValue() == RowRole || roleValue() == TreeItemRole)
-        axObjectCache()->postNotification(this, document(), isExpanded() ? AXObjectCacheImpl::AXRowExpanded : AXObjectCacheImpl::AXRowCollapsed, true);
+    AccessibilityExpanded expanded = isExpanded();
+    if (!expanded)
+        return;
+
+    if (roleValue() == RowRole || roleValue() == TreeItemRole) {
+        AXObjectCacheImpl::AXNotification notification = AXObjectCacheImpl::AXRowExpanded;
+        if (expanded == ExpandedCollapsed)
+            notification = AXObjectCacheImpl::AXRowCollapsed;
+
+        axObjectCache()->postNotification(this, document(), notification, true);
+    }
 }
 
 void AXRenderObject::textChanged()

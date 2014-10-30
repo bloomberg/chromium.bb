@@ -203,7 +203,6 @@ enum WebAXRole {
 enum WebAXState {
     WebAXStateBusy,
     WebAXStateChecked,
-    WebAXStateCollapsed,
     WebAXStateEnabled,
     WebAXStateExpanded,
     WebAXStateFocusable,
@@ -231,6 +230,15 @@ enum WebAXTextDirection {
     WebAXTextDirectionRL,
     WebAXTextDirectionTB,
     WebAXTextDirectionBT
+};
+
+// Expanded State.
+// These values must match blink::AccessibilityExpanded values.
+// Enforced in AssertMatchingEnums.cpp.
+enum WebAXExpanded {
+    WebAXExpandedUndefined = 0,
+    WebAXExpandedCollapsed,
+    WebAXExpandedExpanded
 };
 
 } // namespace blink

@@ -274,12 +274,12 @@ bool WebAXObject::isEnabled() const
     return m_private->isEnabled();
 }
 
-bool WebAXObject::isExpanded() const
+WebAXExpanded WebAXObject::isExpanded() const
 {
     if (isDetached())
-        return 0;
+        return WebAXExpandedUndefined;
 
-    return m_private->isExpanded();
+    return static_cast<WebAXExpanded>(m_private->isExpanded());
 }
 
 bool WebAXObject::isFocused() const

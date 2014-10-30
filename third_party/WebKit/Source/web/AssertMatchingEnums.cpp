@@ -300,7 +300,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXRoleWindow, WindowRole);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateBusy, AXBusyState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateChecked, AXCheckedState);
-COMPILE_ASSERT_MATCHING_ENUM(WebAXStateCollapsed, AXCollapsedState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateEnabled, AXEnabledState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateExpanded, AXExpandedState);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXStateFocusable, AXFocusableState);
@@ -325,6 +324,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLef
 COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRightToLeft);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTopToBottom);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXTextDirectionBT, AccessibilityTextDirectionBottomToTop);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedUndefined, ExpandedUndefined);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedCollapsed, ExpandedCollapsed);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXExpandedExpanded, ExpandedExpanded);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 COMPILE_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);

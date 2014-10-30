@@ -87,6 +87,14 @@ bool AXMenuList::isCollapsed() const
     return !toRenderMenuList(m_renderer)->popupIsVisible();
 }
 
+AccessibilityExpanded AXMenuList::isExpanded() const
+{
+    if (isCollapsed())
+        return ExpandedCollapsed;
+
+    return ExpandedExpanded;
+}
+
 bool AXMenuList::canSetFocusAttribute() const
 {
     if (!node())

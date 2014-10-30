@@ -194,7 +194,6 @@ enum AccessibilityTextSource {
 enum AccessibilityState {
     AXBusyState,
     AXCheckedState,
-    AXCollapsedState,
     AXEnabledState,
     AXExpandedState,
     AXFocusableState,
@@ -255,6 +254,12 @@ enum AccessibilityTextDirection {
     AccessibilityTextDirectionRightToLeft,
     AccessibilityTextDirectionTopToBottom,
     AccessibilityTextDirectionBottomToTop
+};
+
+enum AccessibilityExpanded {
+    ExpandedUndefined = 0,
+    ExpandedCollapsed,
+    ExpandedExpanded,
 };
 
 class AXObject : public RefCounted<AXObject> {
@@ -365,7 +370,7 @@ public:
     virtual bool isClickable() const;
     virtual bool isCollapsed() const { return false; }
     virtual bool isEnabled() const { return false; }
-    virtual bool isExpanded() const { return false; }
+    virtual AccessibilityExpanded isExpanded() const { return ExpandedUndefined; }
     virtual bool isFocused() const { return false; }
     virtual bool isHovered() const { return false; }
     virtual bool isIndeterminate() const { return false; }

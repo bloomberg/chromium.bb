@@ -709,12 +709,15 @@ bool AXNodeObject::isEnabled() const
     return !toElement(node)->isDisabledFormControl();
 }
 
-bool AXNodeObject::isExpanded() const
+AccessibilityExpanded AXNodeObject::isExpanded() const
 {
-    if (equalIgnoringCase(getAttribute(aria_expandedAttr), "true"))
-        return true;
+    const AtomicString& expanded = getAttribute(aria_expandedAttr);
+    if (equalIgnoringCase(expanded, "true"))
+        return ExpandedExpanded;
+    if (equalIgnoringCase(expanded, "false"))
+        return ExpandedCollapsed;
 
-    return false;
+    return ExpandedUndefined;
 }
 
 bool AXNodeObject::isIndeterminate() const
@@ -1100,7 +1103,6 @@ String AXNodeObject::ariaDescribedByAttribute() const
 
     return accessibilityDescriptionForElements(elements);
 }
-
 
 String AXNodeObject::ariaLabeledByAttribute() const
 {

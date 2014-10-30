@@ -113,7 +113,7 @@ protected:
     virtual bool isChecked() const override final;
     virtual bool isClickable() const override final;
     virtual bool isEnabled() const override;
-    virtual bool isExpanded() const override final;
+    virtual AccessibilityExpanded isExpanded() const override;
     virtual bool isIndeterminate() const override final;
     virtual bool isPressed() const override final;
     virtual bool isReadOnly() const override;
