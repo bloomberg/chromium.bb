@@ -340,9 +340,9 @@ class NavigationController {
 
   // Removing of entries -------------------------------------------------------
 
-  // Removes the entry at the specified |index|.  This call discards any
-  // transient entries.  If the index is the last committed index or the pending
-  // entry, this does nothing and returns false.
+  // Removes the entry at the specified |index|.  If the index is the last
+  // committed index or the pending entry, this does nothing and returns false.
+  // Otherwise this call discards any transient or pending entries.
   virtual bool RemoveEntryAtIndex(int index) = 0;
 
   // Random --------------------------------------------------------------------
