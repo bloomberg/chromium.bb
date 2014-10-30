@@ -27,6 +27,8 @@ extern "C" {
 
 #define SCM_RIGHTS 1
 
+#define MSG_CTRUNC 0x8
+#define MSG_TRUNC 0x20
 #define MSG_DONTWAIT 0x40
 #define MSG_NOSIGNAL 0x4000
 
