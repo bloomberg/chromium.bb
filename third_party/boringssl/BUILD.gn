@@ -25,6 +25,14 @@ gypi_values = exec_script(
     "scope",
     [ "//third_party/boringssl/boringssl.gypi" ])
 
+# Win32's assembly is built by Yasm. The other ports use the platform assembler.
+if (cpu_arch == "x86" && is_win) {
+  import("//third_party/yasm/yasm_assemble.gni")
+  yasm_assemble("boringssl_asm") {
+    sources = gypi_values.boringssl_win_x86_sources
+  }
+}
+
 component("boringssl") {
   sources = gypi_values.boringssl_lib_sources
 
@@ -68,6 +76,8 @@ component("boringssl") {
       sources += gypi_values.boringssl_mac_x86_sources
     } else if (is_linux || is_android) {
       sources += gypi_values.boringssl_linux_x86_sources
+    } else if (is_win) {
+      deps += [ ":boringssl_asm" ]
     } else {
       defines += [ "OPENSSL_NO_ASM" ]
     }

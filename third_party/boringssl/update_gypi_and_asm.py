@@ -18,6 +18,7 @@ OS_ARCH_COMBOS = [
     ('linux', 'x86_64', 'elf', [''], 'S'),
     ('mac', 'x86', 'macosx', ['-fPIC'], 'S'),
     ('mac', 'x86_64', 'macosx', [''], 'S'),
+    ('win', 'x86', 'win32n', [''], 'asm'),
     ('win', 'x86_64', 'masm', [''], 'asm'),
 ]
 
