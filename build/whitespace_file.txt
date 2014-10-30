@@ -142,4 +142,4 @@ It was love at first sight.  The moment Yossarian first laid eyes on the chaplai
 
 Cool whitespace change for git-cl land
 
-Oh god the bots are red! I'm blind! Mmmm, donuts.
+Oh god the bots are red! I'm blind! Mmmm, cronuts.
