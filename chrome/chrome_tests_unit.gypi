@@ -322,8 +322,6 @@
       'browser/extensions/api/dial/dial_device_data_unittest.cc',
       'browser/extensions/api/dial/dial_registry_unittest.cc',
       'browser/extensions/api/dial/dial_service_unittest.cc',
-      'browser/extensions/api/document_scan/document_scan_api_unittest.cc',
-      'browser/extensions/api/document_scan/mock_document_scan_interface.cc',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc',
       'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
       'browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc',
@@ -2310,7 +2308,6 @@
             'browser/upgrade_detector_impl_unittest.cc',
           ],
           'sources': [
-            'browser/extensions/api/document_scan/document_scan_interface_chromeos_unittest.cc',
             'browser/extensions/updater/local_extension_cache_unittest.cc',
             'browser/metrics/chromeos_metrics_provider_unittest.cc',
           ],

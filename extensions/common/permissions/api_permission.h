@@ -53,7 +53,6 @@ class APIPermission {
     kBookmark,
     kBookmarkManagerPrivate,
     kBrailleDisplayPrivate,
-    kBrowser,
     kBrowsingData,
     kCast,
     kCastStreaming,
@@ -78,7 +77,6 @@ class APIPermission {
     kDeveloperPrivate,
     kDevtools,
     kDns,
-    kDocumentScan,
     kDownloads,
     kDownloadsInternal,
     kDownloadsOpen,
@@ -101,7 +99,6 @@ class APIPermission {
     kFileSystemRetainEntries,
     kFileSystemWrite,
     kFileSystemWriteDirectory,
-    kFirstRunPrivate,
     kFontSettings,
     kFullscreen,
     kGcdPrivate,
@@ -191,6 +188,8 @@ class APIPermission {
     kSystemNetwork,
     kSystemInfoCpu,
     kSystemInfoMemory,
+    kFirstRunPrivate,
+    kBrowser,
     kEnumBoundary
   };
 

@@ -969,7 +969,6 @@ enum HistogramValue {
   INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG,
   WALLPAPERPRIVATE_GETSYNCSETTING,
   COPRESENCE_SETAUTHTOKEN,
-  DOCUMENT_SCAN_SCAN,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

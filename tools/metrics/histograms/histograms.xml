@@ -43445,7 +43445,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="908" label="INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG"/>
   <int value="909" label="WALLPAPERPRIVATE_GETSYNCSETTING"/>
   <int value="910" label="COPRESENCE_SETAUTHTOKEN"/>
-  <int value="911" label="DOCUMENT_SCAN_SCAN"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -43627,12 +43626,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="60" label="kAccessibilityFeaturesModify"/>
   <int value="61" label="kAccessibilityFeaturesRead"/>
   <int value="62" label="kBluetoothPrivate"/>
-  <int value="63" label="kIdentityEmail"/>
-  <int value="64" label="kExperienceSamplingPrivate"/>
-  <int value="65" label="kCopresence"/>
-  <int value="66" label="kTopSites"/>
-  <int value="67" label="kU2fDevices"/>
-  <int value="68" label="kDocumentScan"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
