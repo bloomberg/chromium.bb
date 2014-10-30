@@ -528,6 +528,7 @@ public class ContentViewCore
     /**
      * @return The context used for creating this ContentViewCore.
      */
+    @CalledByNative
     public Context getContext() {
         return mContext;
     }

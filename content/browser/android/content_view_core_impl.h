@@ -248,6 +248,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void DidStopFlinging();
 
+  // Returns the context with which the ContentViewCore was created, typically
+  // the Activity context.
+  base::android::ScopedJavaLocalRef<jobject> GetContext() const;
+
   // Returns the viewport size after accounting for the viewport offset.
   gfx::Size GetViewSize() const;
 
