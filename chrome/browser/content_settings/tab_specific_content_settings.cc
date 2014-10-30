@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -110,6 +111,13 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
 TabSpecificContentSettings::~TabSpecificContentSettings() {
   FOR_EACH_OBSERVER(
       SiteDataObserver, observer_list_, ContentSettingsDestroyed());
+}
+
+void TabSpecificContentSettings::RecordMixedScriptAction(
+    MixedScriptAction action) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.MixedScript",
+                            action,
+                            MIXED_SCRIPT_ACTION_COUNT);
 }
 
 TabSpecificContentSettings* TabSpecificContentSettings::Get(
@@ -334,6 +342,9 @@ void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
         chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
         content::Source<WebContents>(web_contents()),
         content::NotificationService::NoDetails());
+
+    if (type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT)
+      RecordMixedScriptAction(MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD);
   }
 }
 

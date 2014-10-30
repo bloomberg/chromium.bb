@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -35,6 +36,8 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       // We don't (yet?) implement user-settable exceptions for mixed script
       // blocking, so bounce to an explanatory page for now.
+      TabSpecificContentSettings::RecordMixedScriptAction(
+          TabSpecificContentSettings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
       chrome::AddSelectedTabWithURL(browser_,
                                     GURL(kInsecureScriptHelpUrl),
                                     ui::PAGE_TRANSITION_LINK);

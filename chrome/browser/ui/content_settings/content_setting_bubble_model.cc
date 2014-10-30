@@ -964,11 +964,14 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
     : ContentSettingTitleLinkAndCustomModel(
         delegate, web_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+  TabSpecificContentSettings::RecordMixedScriptAction(
+      TabSpecificContentSettings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
   set_custom_link_enabled(true);
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
-  content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
+  TabSpecificContentSettings::RecordMixedScriptAction(
+      TabSpecificContentSettings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
   DCHECK(web_contents());
   web_contents()->SendToAllFrames(
       new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));

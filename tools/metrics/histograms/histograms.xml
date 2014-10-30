@@ -3120,6 +3120,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.MixedScript"
+    enum="ContentSettingMixedScriptAction">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    Tracks whether the mixed content shield was shown, and how the user
+    interacted with it.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.PermissionActions" enum="PermissionAction">
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -40765,6 +40774,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="BLOCK"/>
   <int value="3" label="ASK"/>
   <int value="4" label="SESSION_ONLY"/>
+</enum>
+
+<enum name="ContentSettingMixedScriptAction" type="int">
+  <int value="0" label="Displayed shield"/>
+  <int value="1" label="Displayed bubble"/>
+  <int value="2" label="Clicked 'Load unsafe scripts'"/>
+  <int value="3" label="Clicked 'Learn more'"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
