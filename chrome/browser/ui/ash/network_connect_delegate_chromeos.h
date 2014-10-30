@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "ash/system/chromeos/network/network_connect.h"
 #include "base/basictypes.h"
+#include "ui/chromeos/network/network_connect.h"
 
 namespace chromeos {
 
-class NetworkConnectDelegateChromeOS : public ash::NetworkConnect::Delegate {
+class NetworkConnectDelegateChromeOS : public ui::NetworkConnect::Delegate {
  public:
   NetworkConnectDelegateChromeOS();
   ~NetworkConnectDelegateChromeOS() override;

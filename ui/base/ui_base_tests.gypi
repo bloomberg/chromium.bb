@@ -192,10 +192,14 @@
         '../../chromeos/chromeos.gyp:chromeos',
         '../aura/aura.gyp:aura_test_support',
         '../chromeos/ui_chromeos.gyp:ui_chromeos',
+        '../chromeos/ui_chromeos.gyp:ui_chromeos_resources',
+        '../chromeos/ui_chromeos.gyp:ui_chromeos_strings',
         '../events/events.gyp:gesture_detection',
+        '../message_center/message_center.gyp:message_center',
       ],
       'sources': [
-        '../chromeos/touch_exploration_controller_unittest.cc'
+        '../chromeos/network/network_state_notifier_unittest.cc',
+        '../chromeos/touch_exploration_controller_unittest.cc',
       ],
       'sources!': [
         'dragdrop/os_exchange_data_provider_aurax11_unittest.cc',

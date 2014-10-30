@@ -887,6 +887,7 @@ test("ui_unittests") {
 
   if (is_chromeos) {
     sources += [
+      "../chromeos/network/network_state_notifier_unittest.cc",
       "../chromeos/touch_exploration_controller_unittest.cc",
     ]
     sources -= [
@@ -895,9 +896,12 @@ test("ui_unittests") {
     ]
     deps += [
       "//chromeos",
+      "//chromeos/resources",
+      "//chromeos/strings",
       "//ui/aura:test_support",
       "//ui/events:gesture_detection",
       "//ui/chromeos:ui_chromeos",
+      "//ui/message_center:message_center",
     ]
   }
 }

@@ -51,6 +51,7 @@
         '../aura/aura.gyp:aura',
         '../events/events.gyp:events',
         '../events/events.gyp:gesture_detection',
+        '../message_center/message_center.gyp:message_center',
         '../views/views.gyp:views',
         '../wm/wm.gyp:wm',
         'ui_chromeos_resources',
@@ -60,6 +61,8 @@
         'UI_CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'network/network_connect.cc',
+        'network/network_connect.h',
         'network/network_icon.cc',
         'network/network_icon.h',
         'network/network_icon_animation.cc',
@@ -70,7 +73,8 @@
         'network/network_list.cc',
         'network/network_list.h',
         'network/network_list_delegate.h',
-
+        'network/network_state_notifier.cc',
+        'network/network_state_notifier.h',
         'touch_exploration_controller.cc',
         'touch_exploration_controller.h',
         'user_activity_power_manager_notifier.cc',
