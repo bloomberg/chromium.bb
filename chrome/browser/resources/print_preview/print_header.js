@@ -86,6 +86,11 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
+    decorateInternal: function() {
+      cr.ui.reverseButtonStrips(this.getElement());
+    },
+
+    /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../node_utils.js">
+
 cr.define('cr.ui.pageManager', function() {
   var PageManager = cr.ui.pageManager.PageManager;
 
@@ -93,27 +95,13 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
-     * Reverses the child elements of this overlay's button strip if it hasn't
-     * already been reversed. This is necessary because WebKit does not alter
-     * the tab order for elements that are visually reversed using
-     * flex-direction: reverse, and the button order is reversed for views.
-     * See http://webk.it/62664 for more information.
+     * Reverse any buttons strips in this page (only applies to overlays).
+     * @see cr.ui.reverseButtonStrips for an explanation of why this is
+     * necessary and when it's done.
      */
     reverseButtonStrip: function() {
       assert(this.isOverlay);
-      var buttonStrips =
-          this.pageDiv.querySelectorAll('.button-strip:not([reversed])');
-
-      // Reverse all button-strips in the overlay.
-      for (var j = 0; j < buttonStrips.length; j++) {
-        var buttonStrip = buttonStrips[j];
-
-        var childNodes = buttonStrip.childNodes;
-        for (var i = childNodes.length - 1; i >= 0; i--)
-          buttonStrip.appendChild(childNodes[i]);
-
-        buttonStrip.setAttribute('reversed', '');
-      }
+      cr.ui.reverseButtonStrips(this.pageDiv);
     },
 
     /**

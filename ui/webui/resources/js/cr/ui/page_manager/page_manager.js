@@ -112,12 +112,7 @@ cr.define('cr.ui.pageManager', function() {
       overlay.tab = undefined;
       overlay.isOverlay = true;
 
-      // Reverse the button strip for Windows and CrOS. See the documentation of
-      // cr.ui.pageManager.Page.reverseButtonStrip() for an explanation of why
-      // this is done.
-      if (cr.isWindows || cr.isChromeOS)
-        overlay.reverseButtonStrip();
-
+      overlay.reverseButtonStrip();
       overlay.initializePage();
     },
 

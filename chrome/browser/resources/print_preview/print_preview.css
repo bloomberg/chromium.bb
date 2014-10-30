@@ -274,11 +274,7 @@ span.jumping-dots > span:nth-child(3) {
   -webkit-animation-delay: 300ms;
 }
 
-/* TODO(estade): unfork this code. */
 #print-header .button-strip {
-<if expr="not chromeos and not is_win">
-  -webkit-box-direction: reverse;
-</if>
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;

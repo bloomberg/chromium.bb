@@ -246,6 +246,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_CSS_WIDGETS"
                  file="css/widgets.css" type="chrome_html"
                  flattenhtml="true" />
+      <structure name="IDR_WEBUI_JS_ACTION_LINK"
+                 file="js/action_link.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_ASSERT"
                  file="js/assert.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR"
@@ -310,10 +312,13 @@ without changes to the corresponding grd file. -->
                  file="js/cr/ui/menu_button.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_MENU_ITEM"
                  file="js/cr/ui/menu_item.js" type="chrome_html" />
+      <structure name="IDR_WEBUI_JS_CR_UI_NODE_UTILS"
+                 file="js/cr/ui/node_utils.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_OVERLAY"
                  file="js/cr/ui/overlay.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE"
-                 file="js/cr/ui/page_manager/page.js" type="chrome_html" />
+                 file="js/cr/ui/page_manager/page.js" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
                  file="js/cr/ui/page_manager/page_manager.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_POSITION_UTIL"
@@ -353,8 +358,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS"
                  file="js/i18n_template_no_process.js"
                  type="chrome_html" />
-      <structure name="IDR_WEBUI_JS_ACTION_LINK"
-                 file="js/action_link.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
                  file="js/load_time_data.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_MEDIA_COMMON"

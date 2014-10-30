@@ -13,6 +13,7 @@
 }
 
 #print-header .print:enabled {
+  /* TODO(dbeam): reconcile this with overlay.css' .default-button. */
   background-color: rgb(77, 144, 254);
   background-image:
       linear-gradient(to bottom, rgb(77, 144, 254), rgb(71, 135, 237));
