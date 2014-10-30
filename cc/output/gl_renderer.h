@@ -336,9 +336,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                                     BlendMode blend_mode);
   const RenderPassMaskProgram* GetRenderPassMaskProgram(
       TexCoordPrecision precision,
+      SamplerType sampler,
       BlendMode blend_mode);
   const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA(
       TexCoordPrecision precision,
+      SamplerType sampler,
       BlendMode blend_mode);
   const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram(
       TexCoordPrecision precision,
@@ -348,9 +350,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       BlendMode blend_mode);
   const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram(
       TexCoordPrecision precision,
+      SamplerType sampler,
       BlendMode blend_mode);
   const RenderPassMaskColorMatrixProgramAA*
   GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
+                                        SamplerType sampler,
                                         BlendMode blend_mode);
 
   const TextureProgram* GetTextureProgram(
@@ -399,18 +403,18 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   RenderPassProgram render_pass_program_[NumTexCoordPrecisions][NumBlendModes];
   RenderPassProgramAA
       render_pass_program_aa_[NumTexCoordPrecisions][NumBlendModes];
-  RenderPassMaskProgram
-      render_pass_mask_program_[NumTexCoordPrecisions][NumBlendModes];
-  RenderPassMaskProgramAA
-      render_pass_mask_program_aa_[NumTexCoordPrecisions][NumBlendModes];
+  RenderPassMaskProgram render_pass_mask_program_
+      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
+  RenderPassMaskProgramAA render_pass_mask_program_aa_
+      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
   RenderPassColorMatrixProgram
       render_pass_color_matrix_program_[NumTexCoordPrecisions][NumBlendModes];
   RenderPassColorMatrixProgramAA render_pass_color_matrix_program_aa_
       [NumTexCoordPrecisions][NumBlendModes];
   RenderPassMaskColorMatrixProgram render_pass_mask_color_matrix_program_
-      [NumTexCoordPrecisions][NumBlendModes];
+      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
   RenderPassMaskColorMatrixProgramAA render_pass_mask_color_matrix_program_aa_
-      [NumTexCoordPrecisions][NumBlendModes];
+      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
 
   VideoYUVProgram video_yuv_program_[NumTexCoordPrecisions];
   VideoYUVAProgram video_yuva_program_[NumTexCoordPrecisions];

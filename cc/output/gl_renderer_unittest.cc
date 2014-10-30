@@ -114,18 +114,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
           renderer()->GetRenderPassProgram(precision, blend_mode));
       EXPECT_PROGRAM_VALID(
           renderer()->GetRenderPassProgramAA(precision, blend_mode));
-      EXPECT_PROGRAM_VALID(
-          renderer()->GetRenderPassMaskProgram(precision, blend_mode));
-      EXPECT_PROGRAM_VALID(
-          renderer()->GetRenderPassMaskProgramAA(precision, blend_mode));
-      EXPECT_PROGRAM_VALID(
-          renderer()->GetRenderPassColorMatrixProgram(precision, blend_mode));
-      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
-          precision, blend_mode));
-      EXPECT_PROGRAM_VALID(
-          renderer()->GetRenderPassColorMatrixProgramAA(precision, blend_mode));
-      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
-          precision, blend_mode));
     }
     EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision));
     EXPECT_PROGRAM_VALID(
@@ -158,6 +146,17 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
         renderer()->GetTileProgramSwizzleOpaque(precision, sampler));
     EXPECT_PROGRAM_VALID(
         renderer()->GetTileProgramSwizzleAA(precision, sampler));
+    for (int i = 0; i < NumBlendModes; ++i) {
+      BlendMode blend_mode = static_cast<BlendMode>(i);
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetRenderPassMaskProgram(precision, sampler, blend_mode));
+      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(
+          precision, sampler, blend_mode));
+      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
+          precision, sampler, blend_mode));
+      EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
+          precision, sampler, blend_mode));
+    }
   }
 };
 
@@ -266,23 +265,24 @@ class GLRendererShaderTest : public GLRendererTest {
   }
 
   void TestRenderPassMaskProgram(TexCoordPrecision precision,
+                                 SamplerType sampler,
                                  BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_program_[precision][blend_mode]);
+        &renderer_->render_pass_mask_program_[precision][sampler][blend_mode]);
     EXPECT_EQ(
-        renderer_->render_pass_mask_program_[precision][blend_mode].program(),
+        renderer_->render_pass_mask_program_[precision][sampler][blend_mode]
+            .program(),
         renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
+                                            SamplerType sampler,
                                             BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_
-             ->render_pass_mask_color_matrix_program_[precision][blend_mode]);
-    EXPECT_EQ(
-        renderer_->render_pass_mask_color_matrix_program_[precision][blend_mode]
-            .program(),
-        renderer_->program_shadow_);
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_
+                              [precision][sampler][blend_mode]);
+    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_
+                  [precision][sampler][blend_mode].program(),
+              renderer_->program_shadow_);
   }
 
   void TestRenderPassProgramAA(TexCoordPrecision precision,
@@ -306,23 +306,25 @@ class GLRendererShaderTest : public GLRendererTest {
   }
 
   void TestRenderPassMaskProgramAA(TexCoordPrecision precision,
+                                   SamplerType sampler,
                                    BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_program_aa_[precision][blend_mode]);
-    EXPECT_EQ(renderer_->render_pass_mask_program_aa_[precision][blend_mode]
-                  .program(),
-              renderer_->program_shadow_);
+        &renderer_
+             ->render_pass_mask_program_aa_[precision][sampler][blend_mode]);
+    EXPECT_EQ(
+        renderer_->render_pass_mask_program_aa_[precision][sampler][blend_mode]
+            .program(),
+        renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
+                                              SamplerType sampler,
                                               BlendMode blend_mode) {
     EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_
-                              [precision][blend_mode]);
-    EXPECT_EQ(
-        renderer_
-            ->render_pass_mask_color_matrix_program_aa_[precision][blend_mode]
-            .program(),
-        renderer_->program_shadow_);
+                              [precision][sampler][blend_mode]);
+    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_
+                  [precision][sampler][blend_mode].program(),
+              renderer_->program_shadow_);
   }
 
   void TestSolidColorProgramAA() {
@@ -1499,7 +1501,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                          viewport_rect,
                          viewport_rect,
                          false);
-    TestRenderPassMaskProgram(TexCoordPrecisionMedium, blend_mode);
+    TestRenderPassMaskProgram(
+        TexCoordPrecisionMedium, SamplerType2D, blend_mode);
 
     // RenderPassMaskColorMatrixProgram
     render_passes_in_draw_order_.clear();
@@ -1524,7 +1527,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                          viewport_rect,
                          viewport_rect,
                          false);
-    TestRenderPassMaskColorMatrixProgram(TexCoordPrecisionMedium, blend_mode);
+    TestRenderPassMaskColorMatrixProgram(
+        TexCoordPrecisionMedium, SamplerType2D, blend_mode);
 
     // RenderPassProgramAA
     render_passes_in_draw_order_.clear();
@@ -1607,7 +1611,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                          viewport_rect,
                          viewport_rect,
                          false);
-    TestRenderPassMaskProgramAA(TexCoordPrecisionMedium, blend_mode);
+    TestRenderPassMaskProgramAA(
+        TexCoordPrecisionMedium, SamplerType2D, blend_mode);
 
     // RenderPassMaskColorMatrixProgramAA
     render_passes_in_draw_order_.clear();
@@ -1632,7 +1637,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                          viewport_rect,
                          viewport_rect,
                          false);
-    TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecisionMedium, blend_mode);
+    TestRenderPassMaskColorMatrixProgramAA(
+        TexCoordPrecisionMedium, SamplerType2D, blend_mode);
   }
 }
 

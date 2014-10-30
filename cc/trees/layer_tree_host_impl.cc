@@ -2003,89 +2003,19 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(settings_.impl_side_painting);
   DCHECK(output_surface_);
   DCHECK(resource_provider_);
+
+  CreateResourceAndRasterWorkerPool(
+      &raster_worker_pool_, &resource_pool_, &staging_resource_pool_);
+  DCHECK(raster_worker_pool_);
+  DCHECK(resource_pool_);
+
   base::SingleThreadTaskRunner* task_runner =
       proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
                               : proxy_->MainThreadTaskRunner();
   DCHECK(task_runner);
-
-  ContextProvider* context_provider = output_surface_->context_provider();
-  bool is_synchronous_single_threaded =
-      !proxy_->HasImplThread() && !settings_.single_thread_proxy_scheduler;
-  bool should_use_zero_copy_rasterizer =
-      settings_.use_zero_copy || is_synchronous_single_threaded;
-  size_t scheduled_raster_task_limit = settings_.scheduled_raster_task_limit;
-
-  if (!context_provider) {
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GL_TEXTURE_2D,
-                             resource_provider_->best_texture_format());
-
-    raster_worker_pool_ =
-        BitmapRasterWorkerPool::Create(task_runner,
-                                       RasterWorkerPool::GetTaskGraphRunner(),
-                                       resource_provider_.get());
-  } else if (use_gpu_rasterization_) {
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GL_TEXTURE_2D,
-                             resource_provider_->best_texture_format());
-
-    raster_worker_pool_ =
-        GpuRasterWorkerPool::Create(task_runner,
-                                    context_provider,
-                                    resource_provider_.get(),
-                                    settings_.use_distance_field_text);
-  } else if (should_use_zero_copy_rasterizer && CanUseZeroCopyRasterizer()) {
-    resource_pool_ = ResourcePool::Create(
-        resource_provider_.get(),
-        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
-        resource_provider_->best_texture_format());
-
-    TaskGraphRunner* task_graph_runner;
-    if (is_synchronous_single_threaded) {
-      DCHECK(!single_thread_synchronous_task_graph_runner_);
-      single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
-      task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
-      scheduled_raster_task_limit = std::numeric_limits<size_t>::max();
-    } else {
-      task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
-    }
-
-    raster_worker_pool_ = ZeroCopyRasterWorkerPool::Create(
-        task_runner, task_graph_runner, resource_provider_.get());
-  } else if (UseOneCopyRasterizer()) {
-    // We need to create a staging resource pool when using copy rasterizer.
-    staging_resource_pool_ = ResourcePool::Create(
-        resource_provider_.get(),
-        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
-        resource_provider_->best_texture_format());
-    resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(),
-                             GL_TEXTURE_2D,
-                             resource_provider_->best_texture_format());
-
-    raster_worker_pool_ =
-        OneCopyRasterWorkerPool::Create(task_runner,
-                                        RasterWorkerPool::GetTaskGraphRunner(),
-                                        context_provider,
-                                        resource_provider_.get(),
-                                        staging_resource_pool_.get());
-  } else {
-    resource_pool_ = ResourcePool::Create(
-        resource_provider_.get(),
-        GL_TEXTURE_2D,
-        resource_provider_->memory_efficient_texture_format());
-
-    raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
-        task_runner,
-        RasterWorkerPool::GetTaskGraphRunner(),
-        context_provider,
-        resource_provider_.get(),
-        GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
-                                       settings_.refresh_rate));
-  }
-
+  size_t scheduled_raster_task_limit =
+      IsSynchronousSingleThreaded() ? std::numeric_limits<size_t>::max()
+                                    : settings_.scheduled_raster_task_limit;
   tile_manager_ = TileManager::Create(this,
                                       task_runner,
                                       resource_pool_.get(),
@@ -2095,6 +2025,90 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;
+}
+
+void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
+    scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+    scoped_ptr<ResourcePool>* resource_pool,
+    scoped_ptr<ResourcePool>* staging_resource_pool) {
+  base::SingleThreadTaskRunner* task_runner =
+      proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
+                              : proxy_->MainThreadTaskRunner();
+  DCHECK(task_runner);
+
+  ContextProvider* context_provider = output_surface_->context_provider();
+  bool should_use_zero_copy_rasterizer =
+      settings_.use_zero_copy || IsSynchronousSingleThreaded();
+
+  if (!context_provider) {
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(),
+                             GL_TEXTURE_2D,
+                             resource_provider_->best_texture_format());
+
+    *raster_worker_pool =
+        BitmapRasterWorkerPool::Create(task_runner,
+                                       RasterWorkerPool::GetTaskGraphRunner(),
+                                       resource_provider_.get());
+  } else if (use_gpu_rasterization_) {
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(),
+                             GL_TEXTURE_2D,
+                             resource_provider_->best_texture_format());
+
+    *raster_worker_pool =
+        GpuRasterWorkerPool::Create(task_runner,
+                                    context_provider,
+                                    resource_provider_.get(),
+                                    settings_.use_distance_field_text);
+  } else if (should_use_zero_copy_rasterizer && CanUseZeroCopyRasterizer()) {
+    *resource_pool = ResourcePool::Create(
+        resource_provider_.get(),
+        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
+        resource_provider_->best_texture_format());
+
+    TaskGraphRunner* task_graph_runner;
+    if (IsSynchronousSingleThreaded()) {
+      DCHECK(!single_thread_synchronous_task_graph_runner_);
+      single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
+      task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
+    } else {
+      task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
+    }
+
+    *raster_worker_pool = ZeroCopyRasterWorkerPool::Create(
+        task_runner, task_graph_runner, resource_provider_.get());
+  } else if (settings_.use_one_copy && CanUseOneCopyRasterizer()) {
+    // We need to create a staging resource pool when using copy rasterizer.
+    *staging_resource_pool = ResourcePool::Create(
+        resource_provider_.get(),
+        GetMapImageTextureTarget(context_provider->ContextCapabilities()),
+        resource_provider_->best_texture_format());
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(),
+                             GL_TEXTURE_2D,
+                             resource_provider_->best_texture_format());
+
+    *raster_worker_pool =
+        OneCopyRasterWorkerPool::Create(task_runner,
+                                        RasterWorkerPool::GetTaskGraphRunner(),
+                                        context_provider,
+                                        resource_provider_.get(),
+                                        staging_resource_pool_.get());
+  } else {
+    *resource_pool = ResourcePool::Create(
+        resource_provider_.get(),
+        GL_TEXTURE_2D,
+        resource_provider_->memory_efficient_texture_format());
+
+    *raster_worker_pool = PixelBufferRasterWorkerPool::Create(
+        task_runner,
+        RasterWorkerPool::GetTaskGraphRunner(),
+        context_provider,
+        resource_provider_.get(),
+        GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
+                                       settings_.refresh_rate));
+  }
 }
 
 void LayerTreeHostImpl::DestroyTileManager() {
@@ -2111,12 +2125,18 @@ bool LayerTreeHostImpl::UsePendingTreeForSync() const {
   return settings_.impl_side_painting;
 }
 
+bool LayerTreeHostImpl::IsSynchronousSingleThreaded() const {
+  return !proxy_->HasImplThread() && !settings_.single_thread_proxy_scheduler;
+}
+
 bool LayerTreeHostImpl::CanUseZeroCopyRasterizer() const {
   return GetRendererCapabilities().using_image;
 }
 
-bool LayerTreeHostImpl::UseOneCopyRasterizer() const {
-  return settings_.use_one_copy && GetRendererCapabilities().using_image;
+bool LayerTreeHostImpl::CanUseOneCopyRasterizer() const {
+  // Sync query support is required by one-copy rasterizer.
+  return GetRendererCapabilities().using_image &&
+         resource_provider_->use_sync_query();
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {

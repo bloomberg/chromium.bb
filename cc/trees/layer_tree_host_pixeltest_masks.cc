@@ -7,7 +7,7 @@
 #include "cc/layers/picture_image_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
-#include "cc/test/layer_tree_pixel_test.h"
+#include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 
 #if !defined(OS_ANDROID)
@@ -15,7 +15,9 @@
 namespace cc {
 namespace {
 
-class LayerTreeHostMasksPixelTest : public LayerTreePixelTest {};
+typedef ParameterizedPixelResourceTest LayerTreeHostMasksPixelTest;
+
+INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostMasksPixelTest);
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -51,7 +53,7 @@ class MaskContentLayerClient : public ContentLayerClient {
   gfx::Size bounds_;
 };
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskOfLayer) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -67,12 +69,11 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   mask->SetIsMask(true);
   green->SetMaskLayer(mask.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
+  RunPixelResourceTest(background,
+                       base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
+TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -98,12 +99,11 @@ TEST_F(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   green->SetMaskLayer(mask.get());
   background->AddChild(green);
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")));
+  RunPixelResourceTest(
+      background, base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -126,12 +126,12 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   mask->SetIsMask(true);
   green->SetMaskLayer(mask.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
+  RunPixelResourceTest(
+      background,
+      base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplica) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -156,12 +156,11 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("mask_with_replica.png")));
+  RunPixelResourceTest(
+      background, base::FilePath(FILE_PATH_LITERAL("mask_with_replica.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -194,13 +193,12 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "mask_with_replica_of_clipped_layer.png")));
+  RunPixelResourceTest(background,
+                       base::FilePath(FILE_PATH_LITERAL(
+                           "mask_with_replica_of_clipped_layer.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplica) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -230,12 +228,11 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   replica->SetMaskLayer(mask.get());
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(FILE_PATH_LITERAL("mask_of_replica.png")));
+  RunPixelResourceTest(
+      background, base::FilePath(FILE_PATH_LITERAL("mask_of_replica.png")));
 }
 
-TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
+TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -272,10 +269,9 @@ TEST_F(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
   replica->SetMaskLayer(mask.get());
   green->SetReplicaLayer(replica.get());
 
-  RunPixelTest(PIXEL_TEST_GL,
-               background,
-               base::FilePath(
-                   FILE_PATH_LITERAL("mask_of_replica_of_clipped_layer.png")));
+  RunPixelResourceTest(background,
+                       base::FilePath(FILE_PATH_LITERAL(
+                           "mask_of_replica_of_clipped_layer.png")));
 }
 
 }  // namespace

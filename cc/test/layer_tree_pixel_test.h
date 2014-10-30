@@ -30,6 +30,12 @@ class TextureLayer;
 class TextureMailbox;
 
 class LayerTreePixelTest : public LayerTreeTest {
+ public:
+  enum PixelTestType {
+    PIXEL_TEST_GL,
+    PIXEL_TEST_SOFTWARE,
+  };
+
  protected:
   LayerTreePixelTest();
   virtual ~LayerTreePixelTest();
@@ -57,11 +63,6 @@ class LayerTreePixelTest : public LayerTreeTest {
       SkColor border_color);
   scoped_refptr<TextureLayer> CreateTextureLayer(const gfx::Rect& rect,
                                                  const SkBitmap& bitmap);
-
-  enum PixelTestType {
-    PIXEL_TEST_GL,
-    PIXEL_TEST_SOFTWARE,
-  };
 
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,

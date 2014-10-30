@@ -485,6 +485,13 @@ class CC_EXPORT LayerTreeHostImpl
   // Only valid for synchronous (non-scheduled) single-threaded case.
   void SynchronouslyInitializeAllTiles();
 
+  bool CanUseZeroCopyRasterizer() const;
+  bool CanUseOneCopyRasterizer() const;
+  virtual void CreateResourceAndRasterWorkerPool(
+      scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+      scoped_ptr<ResourcePool>* resource_pool,
+      scoped_ptr<ResourcePool>* staging_resource_pool);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -499,8 +506,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);
-
-  // Virtual for testing.
   virtual base::TimeDelta LowFrequencyAnimationInterval() const;
 
   const AnimationRegistrar::AnimationControllerMap&
@@ -521,8 +526,7 @@ class CC_EXPORT LayerTreeHostImpl
   void EnforceZeroBudget(bool zero_budget);
 
   bool UsePendingTreeForSync() const;
-  bool CanUseZeroCopyRasterizer() const;
-  bool UseOneCopyRasterizer() const;
+  bool IsSynchronousSingleThreaded() const;
 
   // Scroll by preferring to move the outer viewport first, only moving the
   // inner if the outer is at its scroll extents.

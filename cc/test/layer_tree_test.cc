@@ -44,6 +44,15 @@ DrawResult TestHooks::PrepareToDrawOnThread(
   return draw_result;
 }
 
+void TestHooks::CreateResourceAndRasterWorkerPool(
+    LayerTreeHostImpl* host_impl,
+    scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+    scoped_ptr<ResourcePool>* resource_pool,
+    scoped_ptr<ResourcePool>* staging_resource_pool) {
+  host_impl->LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
+      raster_worker_pool, resource_pool, staging_resource_pool);
+}
+
 base::TimeDelta TestHooks::LowFrequencyAnimationInterval() const {
   return base::TimeDelta::FromMilliseconds(16);
 }
@@ -145,6 +154,14 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
+
+  void CreateResourceAndRasterWorkerPool(
+      scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+      scoped_ptr<ResourcePool>* resource_pool,
+      scoped_ptr<ResourcePool>* staging_resource_pool) override {
+    test_hooks_->CreateResourceAndRasterWorkerPool(
+        this, raster_worker_pool, resource_pool, staging_resource_pool);
+  }
 
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
     LayerTreeHostImpl::WillBeginImplFrame(args);
@@ -399,7 +416,8 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 };
 
 LayerTreeTest::LayerTreeTest()
-    : beginning_(false),
+    : output_surface_(nullptr),
+      beginning_(false),
       end_when_begin_returns_(false),
       timed_out_(false),
       scheduled_(false),

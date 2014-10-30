@@ -1434,13 +1434,13 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderString(
       // clang-format on
       precision mediump float;
       varying TexCoordPrecision vec2 v_texCoord;
-      uniform SamplerType s_texture;
+      uniform sampler2D s_texture;
       uniform SamplerType s_mask;
       uniform TexCoordPrecision vec2 maskTexCoordScale;
       uniform TexCoordPrecision vec2 maskTexCoordOffset;
       uniform float alpha;
       void main() {
-        vec4 texColor = TextureLookup(s_texture, v_texCoord);
+        vec4 texColor = texture2D(s_texture, v_texCoord);
         TexCoordPrecision vec2 maskTexCoord =
             vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                  maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
@@ -1494,7 +1494,7 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
   return FRAGMENT_SHADER(
       // clang-format on
       precision mediump float;
-      uniform SamplerType s_texture;
+      uniform sampler2D s_texture;
       uniform SamplerType s_mask;
       uniform TexCoordPrecision vec2 maskTexCoordScale;
       uniform TexCoordPrecision vec2 maskTexCoordOffset;
@@ -1503,7 +1503,7 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
       varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
       void main() {
-        vec4 texColor = TextureLookup(s_texture, v_texCoord);
+        vec4 texColor = texture2D(s_texture, v_texCoord);
         TexCoordPrecision vec2 maskTexCoord =
             vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                  maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
@@ -1567,7 +1567,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
   return FRAGMENT_SHADER(
       // clang-format on
       precision mediump float;
-      uniform SamplerType s_texture;
+      uniform sampler2D s_texture;
       uniform SamplerType s_mask;
       uniform vec2 maskTexCoordScale;
       uniform vec2 maskTexCoordOffset;
@@ -1578,7 +1578,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
       varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
       void main() {
-        vec4 texColor = TextureLookup(s_texture, v_texCoord);
+        vec4 texColor = texture2D(s_texture, v_texCoord);
         float nonZeroAlpha = max(texColor.a, 0.00001);
         texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
         texColor = colorMatrix * texColor + colorOffset;
@@ -1705,7 +1705,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
       // clang-format on
       precision mediump float;
       varying TexCoordPrecision vec2 v_texCoord;
-      uniform SamplerType s_texture;
+      uniform sampler2D s_texture;
       uniform SamplerType s_mask;
       uniform vec2 maskTexCoordScale;
       uniform vec2 maskTexCoordOffset;
@@ -1713,7 +1713,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
       uniform vec4 colorOffset;
       uniform float alpha;
       void main() {
-        vec4 texColor = TextureLookup(s_texture, v_texCoord);
+        vec4 texColor = texture2D(s_texture, v_texCoord);
         float nonZeroAlpha = max(texColor.a, 0.00001);
         texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
         texColor = colorMatrix * texColor + colorOffset;

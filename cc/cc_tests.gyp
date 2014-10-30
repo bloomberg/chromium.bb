@@ -199,6 +199,8 @@
       'test/layer_tree_host_common_test.h',
       'test/layer_tree_json_parser.cc',
       'test/layer_tree_json_parser.h',
+      'test/layer_tree_pixel_resource_test.cc',
+      'test/layer_tree_pixel_resource_test.h',
       'test/layer_tree_pixel_test.cc',
       'test/layer_tree_pixel_test.h',
       'test/layer_tree_test.cc',
