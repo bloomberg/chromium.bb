@@ -322,8 +322,6 @@ BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.
-// The file will be created with a default mode (POSIX) or security
-// descriptor (Windows). To specify a mode on POSIX, use |WriteFileWithMode|.
 BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
 
@@ -331,12 +329,6 @@ BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
 // Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff
 // |size| bytes of |data| were written to |fd|.
 BASE_EXPORT bool WriteFileDescriptor(const int fd, const char* data, int size);
-
-// Writes the given buffer into the file, overwriting any data that was
-// previously there. Returns true iff |size| bytes of |data| were written to
-// |filename|. The file is created with the given |mode|.
-BASE_EXPORT bool WriteFileWithMode(const FilePath& filename, const char* data,
-                                   int size, mode_t mode);
 #endif
 
 // Appends |data| to |filename|.  Returns true iff |size| bytes of |data| were

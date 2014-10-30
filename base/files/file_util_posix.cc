@@ -695,15 +695,6 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
   return bytes_written;
 }
 
-bool WriteFileWithMode(const FilePath& filename, const char* data, int size,
-                       mode_t mode) {
-  ThreadRestrictions::AssertIOAllowed();
-  ScopedFD file(HANDLE_EINTR(creat(filename.value().c_str(), mode)));
-  if (!file.is_valid())
-    return false;
-  return WriteFileDescriptor(file.get(), data, size);
-}
-
 bool WriteFileDescriptor(const int fd, const char* data, int size) {
   // Allow for partial writes.
   ssize_t bytes_written_total = 0;
