@@ -37,8 +37,8 @@ const char kEmptySourcesListError[] =
 const char kTabCaptureNotSupportedError[] = "Tab capture is not supported yet.";
 const char kNoTabIdError[] = "targetTab doesn't have id field set.";
 const char kNoUrlError[] = "targetTab doesn't have URL field set.";
+const char kInvalidOriginError[] = "targetTab.url is not a valid URL.";
 const char kInvalidTabIdError[] = "Invalid tab specified.";
-const char kTabUrlChangedError[] = "URL for the specified tab has changed.";
 const char kTabUrlNotSecure[] =
     "URL scheme for the specified tab is not secure.";
 
@@ -101,6 +101,11 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     }
     origin_ = GURL(*(params->target_tab->url)).GetOrigin();
 
+    if (!origin_.is_valid()) {
+      error_ = kInvalidOriginError;
+      return false;
+    }
+
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAllowHttpScreenCapture) &&
         !origin_.SchemeIsSecure()) {
@@ -121,11 +126,6 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       return false;
     }
     DCHECK(web_contents);
-
-    if (origin_ != web_contents->GetLastCommittedURL().GetOrigin()) {
-      error_ = kTabUrlChangedError;
-      return false;
-    }
   } else {
     origin_ = extension()->url();
     target_name = base::UTF8ToUTF16(extension()->name());
