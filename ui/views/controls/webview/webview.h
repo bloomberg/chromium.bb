@@ -130,6 +130,8 @@ class WEBVIEW_EXPORT WebView : public View,
   void OnBadMessageReceived(const IPC::Message& message) override {}
 
  private:
+  friend class WebViewUnitTest;
+
   void AttachWebContents();
   void DetachWebContents();
   void ReattachForFullscreenChange(bool enter_fullscreen);
