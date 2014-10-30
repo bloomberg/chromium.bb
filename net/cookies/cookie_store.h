@@ -34,8 +34,10 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   typedef base::Callback<void(const std::string& cookie)> GetCookiesCallback;
   typedef base::Callback<void(bool success)> SetCookiesCallback;
   typedef base::Callback<void(int num_deleted)> DeleteCallback;
-  typedef base::Closure CookieChangedCallback;
-  typedef base::CallbackList<void(void)> CookieChangedCallbackList;
+  typedef base::Callback<void(const CanonicalCookie& cookie, bool removed)>
+      CookieChangedCallback;
+  typedef base::CallbackList<void(const CanonicalCookie& cookie, bool removed)>
+      CookieChangedCallbackList;
   typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
 
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
@@ -98,6 +100,13 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // Add a callback to be notified when the set of cookies named |name| that
   // would be sent for a request to |url| changes. The returned handle is
   // guaranteed not to hold a hard reference to the CookieStore object.
+  //
+  // |callback| will be called when a cookie is added or removed. |callback| is
+  // passed the respective |cookie| which was added to or removed from the
+  // cookies and a boolean indicating if the cookies was removed or not.
+  //
+  // Note that |callback| is called twice when a cookie is updated: once for
+  // the removal of the existing cookie and once for the adding the new cookie.
   //
   // Note that this method consumes memory and CPU per (url, name) pair ever
   // registered that are still consumed even after all subscriptions for that

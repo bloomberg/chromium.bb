@@ -2757,100 +2757,132 @@ class CookieMonsterNotificationTest : public CookieMonsterTest {
   scoped_refptr<CookieMonster> monster_;
 };
 
-void CountCalls(int *calls) {
-  (*calls)++;
+void RecordCookieChanges(std::vector<net::CanonicalCookie>* out_cookies,
+                         std::vector<bool>* out_removes,
+                         const net::CanonicalCookie& cookie,
+                         bool removed) {
+  DCHECK(out_cookies);
+  out_cookies->push_back(cookie);
+  if (out_removes)
+    out_removes->push_back(removed);
 }
 
 TEST_F(CookieMonsterNotificationTest, NoNotifyWithNoCookie) {
-  int calls = 0;
+  std::vector<net::CanonicalCookie> cookies;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls)));
+          base::Bind(&RecordCookieChanges, &cookies, nullptr)));
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(0, calls);
+  EXPECT_EQ(0U, cookies.size());
 }
 
 TEST_F(CookieMonsterNotificationTest, NoNotifyWithInitialCookie) {
-  int calls = 0;
+  std::vector<net::CanonicalCookie> cookies;
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
   scoped_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls)));
+          base::Bind(&RecordCookieChanges, &cookies, nullptr)));
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(0, calls);
+  EXPECT_EQ(0U, cookies.size());
 }
 
 TEST_F(CookieMonsterNotificationTest, NotifyOnSet) {
-  int calls = 0;
+  std::vector<net::CanonicalCookie> cookies;
+  std::vector<bool> removes;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls)));
+          base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls);
+  EXPECT_EQ(1U, cookies.size());
+  EXPECT_EQ(1U, removes.size());
+
+  EXPECT_EQ("abc", cookies[0].Name());
+  EXPECT_EQ("def", cookies[0].Value());
+  EXPECT_FALSE(removes[0]);
 }
 
 TEST_F(CookieMonsterNotificationTest, NotifyOnDelete) {
-  int calls = 0;
+  std::vector<net::CanonicalCookie> cookies;
+  std::vector<bool> removes;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls)));
+          base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls);
+  EXPECT_EQ(1U, cookies.size());
+  EXPECT_EQ(1U, removes.size());
+
   DeleteCookie(monster(), test_url_, "abc");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(2, calls);
+  EXPECT_EQ(2U, cookies.size());
+  EXPECT_EQ(2U, removes.size());
+
+  EXPECT_EQ("abc", cookies[1].Name());
+  EXPECT_EQ("def", cookies[1].Value());
+  EXPECT_TRUE(removes[1]);
 }
 
 TEST_F(CookieMonsterNotificationTest, NotifyOnUpdate) {
-  int calls = 0;
+  std::vector<net::CanonicalCookie> cookies;
+  std::vector<bool> removes;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls)));
+          base::Bind(&RecordCookieChanges, &cookies, &removes)));
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls);
+  EXPECT_EQ(1U, cookies.size());
+
   // Replacing an existing cookie is actually a two-phase delete + set
-  // operation, so we get an extra notification. :(
+  // operation, so we get an extra notification.
   SetCookie(monster(), test_url_, "abc=ghi");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(3, calls);
+
+  EXPECT_EQ(3U, cookies.size());
+  EXPECT_EQ(3U, removes.size());
+
+  EXPECT_EQ("abc", cookies[1].Name());
+  EXPECT_EQ("def", cookies[1].Value());
+  EXPECT_TRUE(removes[1]);
+
+  EXPECT_EQ("abc", cookies[2].Name());
+  EXPECT_EQ("ghi", cookies[2].Value());
+  EXPECT_FALSE(removes[2]);
 }
 
 TEST_F(CookieMonsterNotificationTest, MultipleNotifies) {
-  int calls0 = 0;
-  int calls1 = 0;
+  std::vector<net::CanonicalCookie> cookies0;
+  std::vector<net::CanonicalCookie> cookies1;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub0(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls0)));
+          base::Bind(&RecordCookieChanges, &cookies0, nullptr)));
   scoped_ptr<CookieStore::CookieChangedSubscription> sub1(
       monster()->AddCallbackForCookie(test_url_, "def",
-          base::Bind(&CountCalls, &calls1)));
+          base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls0);
-  EXPECT_EQ(0, calls1);
+  EXPECT_EQ(1U, cookies0.size());
+  EXPECT_EQ(0U, cookies1.size());
   SetCookie(monster(), test_url_, "def=abc");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls0);
-  EXPECT_EQ(1, calls1);
+  EXPECT_EQ(1U, cookies0.size());
+  EXPECT_EQ(1U, cookies1.size());
 }
 
 TEST_F(CookieMonsterNotificationTest, MultipleSameNotifies) {
-  int calls0 = 0;
-  int calls1 = 0;
+  std::vector<net::CanonicalCookie> cookies0;
+  std::vector<net::CanonicalCookie> cookies1;
   scoped_ptr<CookieStore::CookieChangedSubscription> sub0(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls0)));
+          base::Bind(&RecordCookieChanges, &cookies0, nullptr)));
   scoped_ptr<CookieStore::CookieChangedSubscription> sub1(
       monster()->AddCallbackForCookie(test_url_, "abc",
-          base::Bind(&CountCalls, &calls1)));
+          base::Bind(&RecordCookieChanges, &cookies1, nullptr)));
   SetCookie(monster(), test_url_, "abc=def");
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(1, calls0);
-  EXPECT_EQ(1, calls1);
+  EXPECT_EQ(1U, cookies0.size());
+  EXPECT_EQ(1U, cookies0.size());
 }
 
 }  // namespace net

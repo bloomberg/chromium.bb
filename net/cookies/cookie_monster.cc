@@ -307,8 +307,10 @@ std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
 }
 
 void RunAsync(scoped_refptr<base::TaskRunner> proxy,
-              const CookieStore::CookieChangedCallback& callback) {
-  proxy->PostTask(FROM_HERE, callback);
+              const CookieStore::CookieChangedCallback& callback,
+              const CanonicalCookie& cookie,
+              bool removed) {
+  proxy->PostTask(FROM_HERE, base::Bind(callback, cookie, removed));
 }
 
 }  // namespace
@@ -1782,6 +1784,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     delegate_->OnCookieChanged(
         *cc, false, CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT);
   }
+  RunCallbacks(*cc, false);
 
   return inserted;
 }
@@ -1838,7 +1841,6 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
     {
       CanonicalCookie cookie = *(cc->get());
       InternalInsertCookie(key, cc->release(), true);
-      RunCallbacks(cookie);
     }
   } else {
     VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
@@ -1903,8 +1905,8 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
     if (mapping.notify)
       delegate_->OnCookieChanged(*cc, true, mapping.cause);
   }
+  RunCallbacks(*cc, true);
   cookies_.erase(it);
-  RunCallbacks(*cc);
   delete cc;
 }
 
@@ -2321,11 +2323,11 @@ CookieMonster::AddCallbackForCookie(
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0)
     hook_map_[key] = make_linked_ptr(new CookieChangedCallbackList());
-  return hook_map_[key]->Add(base::Bind(
-      &RunAsync, base::MessageLoopProxy::current(), callback));
+  return hook_map_[key]->Add(
+      base::Bind(&RunAsync, base::MessageLoopProxy::current(), callback));
 }
 
-void CookieMonster::RunCallbacks(const CanonicalCookie& cookie) {
+void CookieMonster::RunCallbacks(const CanonicalCookie& cookie, bool removed) {
   lock_.AssertAcquired();
   CookieOptions opts;
   opts.set_include_httponly();
@@ -2339,7 +2341,7 @@ void CookieMonster::RunCallbacks(const CanonicalCookie& cookie) {
     std::pair<GURL, std::string> key = it->first;
     if (cookie.IncludeForRequestURL(key.first, opts) &&
         cookie.Name() == key.second) {
-      it->second->Notify();
+      it->second->Notify(cookie, removed);
     }
   }
 }
