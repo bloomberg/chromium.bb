@@ -107,6 +107,9 @@ struct VolumeInfo {
 
   // True if the volume is read only.
   bool is_read_only;
+
+  // True if the volume contains media.
+  bool has_media;
 };
 
 // Manages "Volume"s for file manager. Here are "Volume"s.

@@ -279,6 +279,9 @@ dictionary VolumeMetadata {
   // Flag that specifies if volume is mounted in read-only mode.
   boolean isReadOnly;
 
+  // Flag that specifies whether the volume contains media.
+  boolean hasMedia;
+  
   // Additional data about mount, for example, that the filesystem is not
   // supported.
   MountCondition? mountCondition;
