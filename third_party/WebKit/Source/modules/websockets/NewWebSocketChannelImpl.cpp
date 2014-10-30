@@ -407,9 +407,11 @@ Document* NewWebSocketChannelImpl::document()
 void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
+
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
+
     if (fail) {
         failAsError("Cannot connect to " + m_url.string() + ".");
         // failAsError may delete this object.
@@ -421,6 +423,10 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
 void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeRequestInfo& request)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
+
+    ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketSendHandshakeRequest", "data", InspectorWebSocketEvent::data(document(), m_identifier));
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
@@ -433,6 +439,10 @@ void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, 
 void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponseInfo& response)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
+
+    ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketReceiveHandshakeResponse", "data", InspectorWebSocketEvent::data(document(), m_identifier));
         // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
@@ -444,6 +454,10 @@ void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle,
 void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebString& message)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
+
+    ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     // This function is called when the browser is required to fail the
     // WebSocketConnection. Hence we fail this channel by calling
     // |this->failAsError| function.
@@ -454,11 +468,13 @@ void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebString& 
 void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveData(%p, %d, %d, (%p, %zu))", this, handle, fin, type, data, size);
+
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
     // Non-final frames cannot be empty.
     ASSERT(fin || size);
+
     switch (type) {
     case WebSocketHandle::MessageTypeText:
         ASSERT(m_receivingMessageData.isEmpty());
@@ -505,8 +521,12 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
 void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebString& reason)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
+
     ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     m_handle.clear();
+
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(document(), m_identifier));
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
@@ -522,7 +542,10 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, u
 void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int64_t quota)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
+
     ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     m_sendingQuota += quota;
     sendInternal();
 }
@@ -530,6 +553,10 @@ void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int
 void NewWebSocketChannelImpl::didStartClosingHandshake(WebSocketHandle* handle)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartClosingHandshake(%p)", this, handle);
+
+    ASSERT(m_handle);
+    ASSERT(handle == m_handle);
+
     if (m_client)
         m_client->didStartClosingHandshake();
 }
