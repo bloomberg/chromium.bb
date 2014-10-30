@@ -3,18 +3,21 @@
 <head>
 <!-- TODO(arv): Check in Closure unit tests and make this run as part of the
      tests -->
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="cr.js"></script>
-<script src="bmm/treeiterator.js"></script>
+<script src="https://cdn.rawgit.com/google/closure-library/master/closure/goog/base.js"></script>
+<script src="../../../../../ui/webui/resources/js/cr.js"></script>
 <script src="bmm.js"></script>
+<title>Bookmark Manager Loading Test</title>
 <script>
 
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.AsyncTestCase');
 
 </script>
 </head>
 <body>
 <script>
+
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 var tree = {
   id: 0,
@@ -53,26 +56,11 @@ chrome.bookmarkManagerPrivate.getSubtree.load = function(node) {
   }
 };
 
-function setUp() {
-  callbacks = {}
+function continueTesting() {
+  asyncTestCase.continueTesting();
 }
 
-function testLoadSingle() {
-  var calls = 0;
-  function f(node) {
-    calls++;
-    assertEquals(tree, node);
-  }
-  var p = bmm.loadTree();
-  p.then(f);
-
-  chrome.bookmarkManagerPrivate.getSubtree.load(tree);
-
-  assertEquals(1, calls);
-  assertEquals(1, callbacks[''].$calls);
-}
-
-function testLoadMultiple() {
+function testLoad() {
   var calls1 = 0;
   var calls2 = 0;
   function f1(node) {
@@ -86,29 +74,37 @@ function testLoadMultiple() {
 
   var p = bmm.loadTree();
   var p2 = bmm.loadTree();
-  p.then(f1);
-  p2.then(f2);
+  var r = [
+    p.then(f1),
+    p2.then(f2),
+  ];
 
   chrome.bookmarkManagerPrivate.getSubtree.load(tree);
 
-  assertEquals(1, calls1);
-  assertEquals(1, calls2);
-  assertEquals(1, callbacks[''].$calls);
-}
+  var root = Promise.all(r).then(function() {
+    assertEquals(1, calls1);
+    assertEquals(1, calls2);
+    assertEquals(1, callbacks[''].$calls);
+  });
 
-function testLoadSubtree() {
-  var calls = 0;
-  function f(node) {
-    calls++;
+
+  var calls3 = 0;
+  function f3(node) {
+    calls3++;
     assertEquals(tree.children[0], node);
   }
-  var p = bmm.loadSubtree(1);
-  p.then(f);
+
+  var p3 = bmm.loadSubtree(1);
+  var s = p3.then(f3);
 
   chrome.bookmarkManagerPrivate.getSubtree.load(tree.children[0]);
 
-  assertEquals(1, calls);
-  assertEquals(1, callbacks[1].$calls);
+  var subtree = s.then(function() {
+    assertEquals(1, calls3);
+    assertEquals(1, callbacks[1].$calls);
+  });
+
+  Promise.all([root, subtree]).then(continueTesting);
 }
 
 </script>
