@@ -2859,35 +2859,38 @@ STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
 // CComObjectRootEx methods.
 //
 
+// static
 HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
     void* this_ptr,
     const _ATL_INTMAP_ENTRY* entries,
     REFIID iid,
     void** object) {
+  int32 ia_role =
+      reinterpret_cast<BrowserAccessibilityWin*>(this_ptr)->ia_role_;
   if (iid == IID_IAccessibleImage) {
-    if (ia_role_ != ROLE_SYSTEM_GRAPHIC) {
+    if (ia_role != ROLE_SYSTEM_GRAPHIC) {
       *object = NULL;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTable || iid == IID_IAccessibleTable2) {
-    if (ia_role_ != ROLE_SYSTEM_TABLE) {
+    if (ia_role != ROLE_SYSTEM_TABLE) {
       *object = NULL;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTableCell) {
-    if (ia_role_ != ROLE_SYSTEM_CELL) {
+    if (ia_role != ROLE_SYSTEM_CELL) {
       *object = NULL;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleValue) {
-    if (ia_role_ != ROLE_SYSTEM_PROGRESSBAR &&
-        ia_role_ != ROLE_SYSTEM_SCROLLBAR &&
-        ia_role_ != ROLE_SYSTEM_SLIDER) {
+    if (ia_role != ROLE_SYSTEM_PROGRESSBAR &&
+        ia_role != ROLE_SYSTEM_SCROLLBAR &&
+        ia_role != ROLE_SYSTEM_SLIDER) {
       *object = NULL;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_ISimpleDOMDocument) {
-    if (ia_role_ != ROLE_SYSTEM_DOCUMENT) {
+    if (ia_role != ROLE_SYSTEM_DOCUMENT) {
       *object = NULL;
       return E_NOINTERFACE;
     }

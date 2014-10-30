@@ -112,76 +112,82 @@ BrowserAccessibilityWin
   //
 
   // Performs the default action on a given object.
-  CONTENT_EXPORT STDMETHODIMP accDoDefaultAction(VARIANT var_id);
+  CONTENT_EXPORT STDMETHODIMP accDoDefaultAction(VARIANT var_id) override;
 
   // Retrieves the child element or child object at a given point on the screen.
-  CONTENT_EXPORT STDMETHODIMP accHitTest(LONG x_left, LONG y_top,
-                                         VARIANT* child);
+  CONTENT_EXPORT STDMETHODIMP
+  accHitTest(LONG x_left, LONG y_top, VARIANT* child) override;
 
   // Retrieves the specified object's current screen location.
   CONTENT_EXPORT STDMETHODIMP accLocation(LONG* x_left,
                                           LONG* y_top,
                                           LONG* width,
                                           LONG* height,
-                                          VARIANT var_id);
+                                          VARIANT var_id) override;
 
   // Traverses to another UI element and retrieves the object.
-  CONTENT_EXPORT STDMETHODIMP accNavigate(LONG nav_dir, VARIANT start,
-                                          VARIANT* end);
+  CONTENT_EXPORT STDMETHODIMP
+  accNavigate(LONG nav_dir, VARIANT start, VARIANT* end) override;
 
   // Retrieves an IDispatch interface pointer for the specified child.
-  CONTENT_EXPORT STDMETHODIMP get_accChild(VARIANT var_child,
-                                           IDispatch** disp_child);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accChild(VARIANT var_child, IDispatch** disp_child) override;
 
   // Retrieves the number of accessible children.
-  CONTENT_EXPORT STDMETHODIMP get_accChildCount(LONG* child_count);
+  CONTENT_EXPORT STDMETHODIMP get_accChildCount(LONG* child_count) override;
 
   // Retrieves a string that describes the object's default action.
-  CONTENT_EXPORT STDMETHODIMP get_accDefaultAction(VARIANT var_id,
-                                                   BSTR* default_action);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accDefaultAction(VARIANT var_id, BSTR* default_action) override;
 
   // Retrieves the object's description.
-  CONTENT_EXPORT STDMETHODIMP get_accDescription(VARIANT var_id, BSTR* desc);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accDescription(VARIANT var_id, BSTR* desc) override;
 
   // Retrieves the object that has the keyboard focus.
-  CONTENT_EXPORT STDMETHODIMP get_accFocus(VARIANT* focus_child);
+  CONTENT_EXPORT STDMETHODIMP get_accFocus(VARIANT* focus_child) override;
 
   // Retrieves the help information associated with the object.
-  CONTENT_EXPORT STDMETHODIMP get_accHelp(VARIANT var_id, BSTR* heflp);
+  CONTENT_EXPORT STDMETHODIMP get_accHelp(VARIANT var_id, BSTR* heflp) override;
 
   // Retrieves the specified object's shortcut.
-  CONTENT_EXPORT STDMETHODIMP get_accKeyboardShortcut(VARIANT var_id,
-                                                      BSTR* access_key);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accKeyboardShortcut(VARIANT var_id, BSTR* access_key) override;
 
   // Retrieves the name of the specified object.
-  CONTENT_EXPORT STDMETHODIMP get_accName(VARIANT var_id, BSTR* name);
+  CONTENT_EXPORT STDMETHODIMP get_accName(VARIANT var_id, BSTR* name) override;
 
   // Retrieves the IDispatch interface of the object's parent.
-  CONTENT_EXPORT STDMETHODIMP get_accParent(IDispatch** disp_parent);
+  CONTENT_EXPORT STDMETHODIMP get_accParent(IDispatch** disp_parent) override;
 
   // Retrieves information describing the role of the specified object.
-  CONTENT_EXPORT STDMETHODIMP get_accRole(VARIANT var_id, VARIANT* role);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accRole(VARIANT var_id, VARIANT* role) override;
 
   // Retrieves the current state of the specified object.
-  CONTENT_EXPORT STDMETHODIMP get_accState(VARIANT var_id, VARIANT* state);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accState(VARIANT var_id, VARIANT* state) override;
 
   // Returns the value associated with the object.
-  CONTENT_EXPORT STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accValue(VARIANT var_id, BSTR* value) override;
 
   // Make an object take focus or extend the selection.
-  CONTENT_EXPORT STDMETHODIMP accSelect(LONG flags_sel, VARIANT var_id);
+  CONTENT_EXPORT STDMETHODIMP
+  accSelect(LONG flags_sel, VARIANT var_id) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_accHelpTopic(BSTR* help_file,
-                                               VARIANT var_id,
-                                               LONG* topic_id);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accHelpTopic(BSTR* help_file, VARIANT var_id, LONG* topic_id) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_accSelection(VARIANT* selected);
+  CONTENT_EXPORT STDMETHODIMP get_accSelection(VARIANT* selected) override;
 
   // Deprecated methods, not implemented.
-  CONTENT_EXPORT STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name) {
+  CONTENT_EXPORT STDMETHODIMP
+  put_accName(VARIANT var_id, BSTR put_name) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP put_accValue(VARIANT var_id, BSTR put_val) {
+  CONTENT_EXPORT STDMETHODIMP
+  put_accValue(VARIANT var_id, BSTR put_val) override {
     return E_NOTIMPL;
   }
 
@@ -190,95 +196,99 @@ BrowserAccessibilityWin
   //
 
   // Returns role from a longer list of possible roles.
-  CONTENT_EXPORT STDMETHODIMP role(LONG* role);
+  CONTENT_EXPORT STDMETHODIMP role(LONG* role) override;
 
   // Returns the state bitmask from a larger set of possible states.
-  CONTENT_EXPORT STDMETHODIMP get_states(AccessibleStates* states);
+  CONTENT_EXPORT STDMETHODIMP get_states(AccessibleStates* states) override;
 
   // Returns the attributes specific to this IAccessible2 object,
   // such as a cell's formula.
-  CONTENT_EXPORT STDMETHODIMP get_attributes(BSTR* attributes);
+  CONTENT_EXPORT STDMETHODIMP get_attributes(BSTR* attributes) override;
 
   // Get the unique ID of this object so that the client knows if it's
   // been encountered previously.
-  CONTENT_EXPORT STDMETHODIMP get_uniqueID(LONG* unique_id);
+  CONTENT_EXPORT STDMETHODIMP get_uniqueID(LONG* unique_id) override;
 
   // Get the window handle of the enclosing window.
-  CONTENT_EXPORT STDMETHODIMP get_windowHandle(HWND* window_handle);
+  CONTENT_EXPORT STDMETHODIMP get_windowHandle(HWND* window_handle) override;
 
   // Get this object's index in its parent object.
-  CONTENT_EXPORT STDMETHODIMP get_indexInParent(LONG* index_in_parent);
+  CONTENT_EXPORT STDMETHODIMP get_indexInParent(LONG* index_in_parent) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nRelations(LONG* n_relations);
+  CONTENT_EXPORT STDMETHODIMP get_nRelations(LONG* n_relations) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_relation(LONG relation_index,
-                                           IAccessibleRelation** relation);
+  CONTENT_EXPORT STDMETHODIMP
+  get_relation(LONG relation_index, IAccessibleRelation** relation) override;
 
   CONTENT_EXPORT STDMETHODIMP get_relations(LONG max_relations,
                                             IAccessibleRelation** relations,
-                                            LONG* n_relations);
+                                            LONG* n_relations) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type);
+  CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollToPoint(
-      enum IA2CoordinateType coordinate_type,
-      LONG x,
-      LONG y);
+  CONTENT_EXPORT STDMETHODIMP
+  scrollToPoint(enum IA2CoordinateType coordinate_type,
+                LONG x,
+                LONG y) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_groupPosition(LONG* group_level,
-                                                LONG* similar_items_in_group,
-                                                LONG* position_in_group);
+  CONTENT_EXPORT STDMETHODIMP
+  get_groupPosition(LONG* group_level,
+                    LONG* similar_items_in_group,
+                    LONG* position_in_group) override;
 
   //
   // IAccessibleEx methods not implemented.
   //
-  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) {
+  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_localizedExtendedRole(
-      BSTR* localized_extended_role) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_localizedExtendedRole(BSTR* localized_extended_role) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_nExtendedStates(LONG* n_extended_states) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_extendedStates(LONG max_extended_states,
-                                                 BSTR** extended_states,
-                                                 LONG* n_extended_states) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_extendedStates(LONG max_extended_states,
+                     BSTR** extended_states,
+                     LONG* n_extended_states) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_localizedExtendedStates(
-      LONG max_localized_extended_states,
-      BSTR** localized_extended_states,
-      LONG* n_localized_extended_states) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_localizedExtendedStates(LONG max_localized_extended_states,
+                              BSTR** localized_extended_states,
+                              LONG* n_localized_extended_states) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_locale(IA2Locale* locale) {
+  CONTENT_EXPORT STDMETHODIMP get_locale(IA2Locale* locale) override {
     return E_NOTIMPL;
   }
 
   //
   // IAccessibleApplication methods.
   //
-  CONTENT_EXPORT STDMETHODIMP get_appName(BSTR* app_name);
+  CONTENT_EXPORT STDMETHODIMP get_appName(BSTR* app_name) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_appVersion(BSTR* app_version);
+  CONTENT_EXPORT STDMETHODIMP get_appVersion(BSTR* app_version) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_toolkitName(BSTR* toolkit_name);
+  CONTENT_EXPORT STDMETHODIMP get_toolkitName(BSTR* toolkit_name) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_toolkitVersion(BSTR* toolkit_version);
+  CONTENT_EXPORT STDMETHODIMP
+  get_toolkitVersion(BSTR* toolkit_version) override;
 
   //
   // IAccessibleImage methods.
   //
-  CONTENT_EXPORT STDMETHODIMP get_description(BSTR* description);
+  CONTENT_EXPORT STDMETHODIMP get_description(BSTR* description) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_imagePosition(
-      enum IA2CoordinateType coordinate_type,
-      LONG* x,
-      LONG* y);
+  CONTENT_EXPORT STDMETHODIMP
+  get_imagePosition(enum IA2CoordinateType coordinate_type,
+                    LONG* x,
+                    LONG* y) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_imageSize(LONG* height, LONG* width);
+  CONTENT_EXPORT STDMETHODIMP get_imageSize(LONG* height, LONG* width) override;
 
   //
   // IAccessibleTable methods.
@@ -286,102 +296,96 @@ BrowserAccessibilityWin
 
   // get_description - also used by IAccessibleImage
 
-  CONTENT_EXPORT STDMETHODIMP get_accessibleAt(long row,
-                                               long column,
-                                               IUnknown** accessible);
+  CONTENT_EXPORT STDMETHODIMP
+  get_accessibleAt(long row, long column, IUnknown** accessible) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_caption(IUnknown** accessible);
+  CONTENT_EXPORT STDMETHODIMP get_caption(IUnknown** accessible) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_childIndex(long row_index,
-                                             long column_index,
-                                             long* cell_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_childIndex(long row_index, long column_index, long* cell_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnDescription(long column,
-                                                    BSTR* description);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnDescription(long column, BSTR* description) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnExtentAt(long row,
-                                                 long column,
-                                                 long* n_columns_spanned);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnExtentAt(long row, long column, long* n_columns_spanned) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnHeader(
-      IAccessibleTable** accessible_table,
-      long* starting_row_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnHeader(IAccessibleTable** accessible_table,
+                   long* starting_row_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnIndex(long cell_index,
-                                              long* column_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnIndex(long cell_index, long* column_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nColumns(long* column_count);
+  CONTENT_EXPORT STDMETHODIMP get_nColumns(long* column_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nRows(long* row_count);
+  CONTENT_EXPORT STDMETHODIMP get_nRows(long* row_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedChildren(long* cell_count);
+  CONTENT_EXPORT STDMETHODIMP get_nSelectedChildren(long* cell_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedColumns(long* column_count);
+  CONTENT_EXPORT STDMETHODIMP get_nSelectedColumns(long* column_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedRows(long *row_count);
+  CONTENT_EXPORT STDMETHODIMP get_nSelectedRows(long* row_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowDescription(long row,
-                                                 BSTR* description);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowDescription(long row, BSTR* description) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowExtentAt(long row,
-                                              long column,
-                                              long* n_rows_spanned);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowExtentAt(long row, long column, long* n_rows_spanned) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowHeader(IAccessibleTable** accessible_table,
-                                            long* starting_column_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowHeader(IAccessibleTable** accessible_table,
+                long* starting_column_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowIndex(long cell_index,
-                                           long* row_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowIndex(long cell_index, long* row_index) override;
 
   CONTENT_EXPORT STDMETHODIMP get_selectedChildren(long max_children,
                                                    long** children,
-                                                   long* n_children);
+                                                   long* n_children) override;
 
   CONTENT_EXPORT STDMETHODIMP get_selectedColumns(long max_columns,
                                                   long** columns,
-                                                  long* n_columns);
+                                                  long* n_columns) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_selectedRows(long max_rows,
-                                               long** rows,
-                                               long* n_rows);
+  CONTENT_EXPORT STDMETHODIMP
+  get_selectedRows(long max_rows, long** rows, long* n_rows) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_summary(IUnknown** accessible);
+  CONTENT_EXPORT STDMETHODIMP get_summary(IUnknown** accessible) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_isColumnSelected(long column,
-                                                   boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP
+  get_isColumnSelected(long column, boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_isRowSelected(long row,
-                                                boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP
+  get_isRowSelected(long row, boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_isSelected(long row,
-                                             long column,
-                                             boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP
+  get_isSelected(long row, long column, boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowColumnExtentsAtIndex(long index,
-                                                          long* row,
-                                                          long* column,
-                                                          long* row_extents,
-                                                          long* column_extents,
-                                                          boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowColumnExtentsAtIndex(long index,
+                              long* row,
+                              long* column,
+                              long* row_extents,
+                              long* column_extents,
+                              boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP selectRow(long row) {
+  CONTENT_EXPORT STDMETHODIMP selectRow(long row) override { return E_NOTIMPL; }
+
+  CONTENT_EXPORT STDMETHODIMP selectColumn(long column) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP selectColumn(long column) {
+  CONTENT_EXPORT STDMETHODIMP unselectRow(long row) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP unselectRow(long row) {
+  CONTENT_EXPORT STDMETHODIMP unselectColumn(long column) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP unselectColumn(long column) {
-    return E_NOTIMPL;
-  }
-
-  CONTENT_EXPORT STDMETHODIMP get_modelChange(
-      IA2TableModelChange* model_change) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_modelChange(IA2TableModelChange* model_change) override {
     return E_NOTIMPL;
   }
 
@@ -392,132 +396,136 @@ BrowserAccessibilityWin
   // unique ones are included here.)
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_cellAt(long row,
-                                         long column,
-                                         IUnknown** cell);
+  CONTENT_EXPORT STDMETHODIMP
+  get_cellAt(long row, long column, IUnknown** cell) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nSelectedCells(long* cell_count);
+  CONTENT_EXPORT STDMETHODIMP get_nSelectedCells(long* cell_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_selectedCells(IUnknown*** cells,
-                                                long* n_selected_cells);
+  CONTENT_EXPORT STDMETHODIMP
+  get_selectedCells(IUnknown*** cells, long* n_selected_cells) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_selectedColumns(long** columns,
-                                                  long* n_columns);
+  CONTENT_EXPORT STDMETHODIMP
+  get_selectedColumns(long** columns, long* n_columns) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_selectedRows(long** rows,
-                                               long* n_rows);
+  CONTENT_EXPORT STDMETHODIMP
+  get_selectedRows(long** rows, long* n_rows) override;
 
   //
   // IAccessibleTableCell methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_columnExtent(long* n_columns_spanned);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnExtent(long* n_columns_spanned) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnHeaderCells(
-      IUnknown*** cell_accessibles,
-      long* n_column_header_cells);
+  CONTENT_EXPORT STDMETHODIMP
+  get_columnHeaderCells(IUnknown*** cell_accessibles,
+                        long* n_column_header_cells) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_columnIndex(long* column_index);
+  CONTENT_EXPORT STDMETHODIMP get_columnIndex(long* column_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowExtent(long* n_rows_spanned);
+  CONTENT_EXPORT STDMETHODIMP get_rowExtent(long* n_rows_spanned) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowHeaderCells(IUnknown*** cell_accessibles,
-                                                 long* n_row_header_cells);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowHeaderCells(IUnknown*** cell_accessibles,
+                     long* n_row_header_cells) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowIndex(long* row_index);
+  CONTENT_EXPORT STDMETHODIMP get_rowIndex(long* row_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_isSelected(boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP get_isSelected(boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_rowColumnExtents(long* row,
-                                                   long* column,
-                                                   long* row_extents,
-                                                   long* column_extents,
-                                                   boolean* is_selected);
+  CONTENT_EXPORT STDMETHODIMP
+  get_rowColumnExtents(long* row,
+                       long* column,
+                       long* row_extents,
+                       long* column_extents,
+                       boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_table(IUnknown** table);
+  CONTENT_EXPORT STDMETHODIMP get_table(IUnknown** table) override;
 
   //
   // IAccessibleText methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_nCharacters(LONG* n_characters);
+  CONTENT_EXPORT STDMETHODIMP get_nCharacters(LONG* n_characters) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_caretOffset(LONG* offset);
+  CONTENT_EXPORT STDMETHODIMP get_caretOffset(LONG* offset) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_characterExtents(
-      LONG offset,
-      enum IA2CoordinateType coord_type,
-      LONG* out_x,
-      LONG* out_y,
-      LONG* out_width,
-      LONG* out_height);
+  CONTENT_EXPORT STDMETHODIMP
+  get_characterExtents(LONG offset,
+                       enum IA2CoordinateType coord_type,
+                       LONG* out_x,
+                       LONG* out_y,
+                       LONG* out_width,
+                       LONG* out_height) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nSelections(LONG* n_selections);
+  CONTENT_EXPORT STDMETHODIMP get_nSelections(LONG* n_selections) override;
 
   CONTENT_EXPORT STDMETHODIMP get_selection(LONG selection_index,
                                             LONG* start_offset,
-                                            LONG* end_offset);
+                                            LONG* end_offset) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_text(LONG start_offset,
-                                       LONG end_offset,
-                                       BSTR* text);
+  CONTENT_EXPORT STDMETHODIMP
+  get_text(LONG start_offset, LONG end_offset, BSTR* text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_textAtOffset(
-      LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset,
-      LONG* end_offset,
-      BSTR* text);
+  CONTENT_EXPORT STDMETHODIMP
+  get_textAtOffset(LONG offset,
+                   enum IA2TextBoundaryType boundary_type,
+                   LONG* start_offset,
+                   LONG* end_offset,
+                   BSTR* text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_textBeforeOffset(
-      LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset,
-      LONG* end_offset,
-      BSTR* text);
+  CONTENT_EXPORT STDMETHODIMP
+  get_textBeforeOffset(LONG offset,
+                       enum IA2TextBoundaryType boundary_type,
+                       LONG* start_offset,
+                       LONG* end_offset,
+                       BSTR* text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_textAfterOffset(
-      LONG offset,
-      enum IA2TextBoundaryType boundary_type,
-      LONG* start_offset,
-      LONG* end_offset,
-      BSTR* text);
+  CONTENT_EXPORT STDMETHODIMP
+  get_textAfterOffset(LONG offset,
+                      enum IA2TextBoundaryType boundary_type,
+                      LONG* start_offset,
+                      LONG* end_offset,
+                      BSTR* text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_newText(IA2TextSegment* new_text);
+  CONTENT_EXPORT STDMETHODIMP get_newText(IA2TextSegment* new_text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_oldText(IA2TextSegment* old_text);
+  CONTENT_EXPORT STDMETHODIMP get_oldText(IA2TextSegment* old_text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_offsetAtPoint(
-      LONG x,
-      LONG y,
-      enum IA2CoordinateType coord_type,
-      LONG* offset);
+  CONTENT_EXPORT STDMETHODIMP
+  get_offsetAtPoint(LONG x,
+                    LONG y,
+                    enum IA2CoordinateType coord_type,
+                    LONG* offset) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollSubstringTo(
-       LONG start_index,
-       LONG end_index,
-       enum IA2ScrollType scroll_type);
+  CONTENT_EXPORT STDMETHODIMP
+  scrollSubstringTo(LONG start_index,
+                    LONG end_index,
+                    enum IA2ScrollType scroll_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollSubstringToPoint(
-      LONG start_index,
-      LONG end_index,
-      enum IA2CoordinateType coordinate_type,
-      LONG x, LONG y);
+  CONTENT_EXPORT STDMETHODIMP
+  scrollSubstringToPoint(LONG start_index,
+                         LONG end_index,
+                         enum IA2CoordinateType coordinate_type,
+                         LONG x,
+                         LONG y) override;
 
-  CONTENT_EXPORT STDMETHODIMP addSelection(LONG start_offset, LONG end_offset);
+  CONTENT_EXPORT STDMETHODIMP
+  addSelection(LONG start_offset, LONG end_offset) override;
 
-  CONTENT_EXPORT STDMETHODIMP removeSelection(LONG selection_index);
+  CONTENT_EXPORT STDMETHODIMP removeSelection(LONG selection_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP setCaretOffset(LONG offset);
+  CONTENT_EXPORT STDMETHODIMP setCaretOffset(LONG offset) override;
 
   CONTENT_EXPORT STDMETHODIMP setSelection(LONG selection_index,
                                            LONG start_offset,
-                                           LONG end_offset);
+                                           LONG end_offset) override;
 
   // IAccessibleText methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_attributes(LONG offset, LONG* start_offset,
+  CONTENT_EXPORT STDMETHODIMP get_attributes(LONG offset,
+                                             LONG* start_offset,
                                              LONG* end_offset,
-                                             BSTR* text_attributes) {
+                                             BSTR* text_attributes) override {
     return E_NOTIMPL;
   }
 
@@ -525,54 +533,54 @@ BrowserAccessibilityWin
   // IAccessibleHypertext methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_nHyperlinks(long* hyperlink_count);
+  CONTENT_EXPORT STDMETHODIMP get_nHyperlinks(long* hyperlink_count) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_hyperlink(long index,
-                                            IAccessibleHyperlink** hyperlink);
+  CONTENT_EXPORT STDMETHODIMP
+  get_hyperlink(long index, IAccessibleHyperlink** hyperlink) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_hyperlinkIndex(long char_index,
-                                                 long* hyperlink_index);
+  CONTENT_EXPORT STDMETHODIMP
+  get_hyperlinkIndex(long char_index, long* hyperlink_index) override;
 
   // IAccessibleHyperlink not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) {
+  CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_anchorTarget(long index,
-                                               VARIANT* anchor_target) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_anchorTarget(long index, VARIANT* anchor_target) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_startIndex( long* index) {
+  CONTENT_EXPORT STDMETHODIMP get_startIndex(long* index) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_endIndex( long* index) {
+  CONTENT_EXPORT STDMETHODIMP get_endIndex(long* index) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) {
+  CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) override {
     return E_NOTIMPL;
   }
 
   // IAccessibleAction not implemented.
-  CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) {
+  CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP doAction(long action_index) {
+  CONTENT_EXPORT STDMETHODIMP doAction(long action_index) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_description(long action_index,
-                                              BSTR* description) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_description(long action_index, BSTR* description) override {
     return E_NOTIMPL;
   }
   CONTENT_EXPORT STDMETHODIMP get_keyBinding(long action_index,
                                              long n_max_bindings,
                                              BSTR** key_bindings,
-                                             long* n_bindings) {
+                                             long* n_bindings) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) {
+  CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP get_localizedName(long action_index,
-                                                BSTR* localized_name) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_localizedName(long action_index, BSTR* localized_name) override {
     return E_NOTIMPL;
   }
 
@@ -580,32 +588,32 @@ BrowserAccessibilityWin
   // IAccessibleValue methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_currentValue(VARIANT* value);
+  CONTENT_EXPORT STDMETHODIMP get_currentValue(VARIANT* value) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_minimumValue(VARIANT* value);
+  CONTENT_EXPORT STDMETHODIMP get_minimumValue(VARIANT* value) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_maximumValue(VARIANT* value);
+  CONTENT_EXPORT STDMETHODIMP get_maximumValue(VARIANT* value) override;
 
-  CONTENT_EXPORT STDMETHODIMP setCurrentValue(VARIANT new_value);
+  CONTENT_EXPORT STDMETHODIMP setCurrentValue(VARIANT new_value) override;
 
   //
   // ISimpleDOMDocument methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_URL(BSTR* url);
+  CONTENT_EXPORT STDMETHODIMP get_URL(BSTR* url) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_title(BSTR* title);
+  CONTENT_EXPORT STDMETHODIMP get_title(BSTR* title) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_mimeType(BSTR* mime_type);
+  CONTENT_EXPORT STDMETHODIMP get_mimeType(BSTR* mime_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_docType(BSTR* doc_type);
+  CONTENT_EXPORT STDMETHODIMP get_docType(BSTR* doc_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nameSpaceURIForID(short name_space_id,
-                                                    BSTR* name_space_uri) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_nameSpaceURIForID(short name_space_id, BSTR* name_space_uri) override {
     return E_NOTIMPL;
   }
-  CONTENT_EXPORT STDMETHODIMP put_alternateViewMediaTypes(
-      BSTR* comma_separated_media_types) {
+  CONTENT_EXPORT STDMETHODIMP
+  put_alternateViewMediaTypes(BSTR* comma_separated_media_types) override {
     return E_NOTIMPL;
   }
 
@@ -618,57 +626,60 @@ BrowserAccessibilityWin
                                            BSTR* node_value,
                                            unsigned int* num_children,
                                            unsigned int* unique_id,
-                                           unsigned short* node_type);
+                                           unsigned short* node_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_attributes(unsigned short max_attribs,
-                                             BSTR* attrib_names,
-                                             short* name_space_id,
-                                             BSTR* attrib_values,
-                                             unsigned short* num_attribs);
+  CONTENT_EXPORT STDMETHODIMP
+  get_attributes(unsigned short max_attribs,
+                 BSTR* attrib_names,
+                 short* name_space_id,
+                 BSTR* attrib_values,
+                 unsigned short* num_attribs) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_attributesForNames(
-      unsigned short num_attribs,
-      BSTR* attrib_names,
-      short* name_space_id,
-      BSTR* attrib_values);
+  CONTENT_EXPORT STDMETHODIMP
+  get_attributesForNames(unsigned short num_attribs,
+                         BSTR* attrib_names,
+                         short* name_space_id,
+                         BSTR* attrib_values) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_computedStyle(
-      unsigned short max_style_properties,
-      boolean use_alternate_view,
-      BSTR *style_properties,
-      BSTR *style_values,
-      unsigned short *num_style_properties);
+  CONTENT_EXPORT STDMETHODIMP
+  get_computedStyle(unsigned short max_style_properties,
+                    boolean use_alternate_view,
+                    BSTR* style_properties,
+                    BSTR* style_values,
+                    unsigned short* num_style_properties) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_computedStyleForProperties(
-      unsigned short num_style_properties,
-      boolean use_alternate_view,
-      BSTR* style_properties,
-      BSTR* style_values);
+  CONTENT_EXPORT STDMETHODIMP
+  get_computedStyleForProperties(unsigned short num_style_properties,
+                                 boolean use_alternate_view,
+                                 BSTR* style_properties,
+                                 BSTR* style_values) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollTo(boolean placeTopLeft);
+  CONTENT_EXPORT STDMETHODIMP scrollTo(boolean placeTopLeft) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_parentNode(ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP get_parentNode(ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_firstChild(ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP get_firstChild(ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_lastChild(ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP get_lastChild(ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_previousSibling(ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP
+  get_previousSibling(ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_nextSibling(ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP get_nextSibling(ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_childAt(unsigned int child_index,
-                                          ISimpleDOMNode** node);
+  CONTENT_EXPORT STDMETHODIMP
+  get_childAt(unsigned int child_index, ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_innerHTML(BSTR* innerHTML) {
+  CONTENT_EXPORT STDMETHODIMP get_innerHTML(BSTR* innerHTML) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP get_localInterface(void** local_interface) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_localInterface(void** local_interface) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP get_language(BSTR* language) {
+  CONTENT_EXPORT STDMETHODIMP get_language(BSTR* language) override {
     return E_NOTIMPL;
   }
 
@@ -676,28 +687,28 @@ BrowserAccessibilityWin
   // ISimpleDOMText methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP get_domText(BSTR* dom_text);
+  CONTENT_EXPORT STDMETHODIMP get_domText(BSTR* dom_text) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_clippedSubstringBounds(
-      unsigned int start_index,
-      unsigned int end_index,
-      int* out_x,
-      int* out_y,
-      int* out_width,
-      int* out_height);
+  CONTENT_EXPORT STDMETHODIMP
+  get_clippedSubstringBounds(unsigned int start_index,
+                             unsigned int end_index,
+                             int* out_x,
+                             int* out_y,
+                             int* out_width,
+                             int* out_height) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_unclippedSubstringBounds(
-      unsigned int start_index,
-      unsigned int end_index,
-      int* out_x,
-      int* out_y,
-      int* out_width,
-      int* out_height);
+  CONTENT_EXPORT STDMETHODIMP
+  get_unclippedSubstringBounds(unsigned int start_index,
+                               unsigned int end_index,
+                               int* out_x,
+                               int* out_y,
+                               int* out_width,
+                               int* out_height) override;
 
-  CONTENT_EXPORT STDMETHODIMP scrollToSubstring(unsigned int start_index,
-                                                unsigned int end_index);
+  CONTENT_EXPORT STDMETHODIMP
+  scrollToSubstring(unsigned int start_index, unsigned int end_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_fontFamily(BSTR *font_family)  {
+  CONTENT_EXPORT STDMETHODIMP get_fontFamily(BSTR* font_family) override {
     return E_NOTIMPL;
   }
 
@@ -705,28 +716,27 @@ BrowserAccessibilityWin
   // IServiceProvider methods.
   //
 
-  CONTENT_EXPORT STDMETHODIMP QueryService(REFGUID guidService,
-                                           REFIID riid,
-                                           void** object);
+  CONTENT_EXPORT STDMETHODIMP
+  QueryService(REFGUID guidService, REFIID riid, void** object) override;
 
   // IAccessibleEx methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP GetObjectForChild(long child_id,
-                                                IAccessibleEx** ret) {
+  CONTENT_EXPORT STDMETHODIMP
+  GetObjectForChild(long child_id, IAccessibleEx** ret) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP GetIAccessiblePair(IAccessible** acc,
-                                                 long* child_id) {
+  CONTENT_EXPORT STDMETHODIMP
+  GetIAccessiblePair(IAccessible** acc, long* child_id) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) {
+  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP ConvertReturnedElement(
-      IRawElementProviderSimple* element,
-      IAccessibleEx** acc) {
+  CONTENT_EXPORT STDMETHODIMP
+  ConvertReturnedElement(IRawElementProviderSimple* element,
+                         IAccessibleEx** acc) override {
     return E_NOTIMPL;
   }
 
@@ -735,19 +745,21 @@ BrowserAccessibilityWin
   //
   // The GetPatternProvider/GetPropertyValue methods need to be implemented for
   // the on-screen keyboard to show up in Windows 8 metro.
-  CONTENT_EXPORT STDMETHODIMP GetPatternProvider(PATTERNID id,
-                                                 IUnknown** provider);
-  CONTENT_EXPORT STDMETHODIMP GetPropertyValue(PROPERTYID id, VARIANT* ret);
+  CONTENT_EXPORT STDMETHODIMP
+  GetPatternProvider(PATTERNID id, IUnknown** provider) override;
+  CONTENT_EXPORT STDMETHODIMP
+  GetPropertyValue(PROPERTYID id, VARIANT* ret) override;
 
   //
   // IRawElementProviderSimple methods not implemented
   //
-  CONTENT_EXPORT STDMETHODIMP get_ProviderOptions(enum ProviderOptions* ret) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_ProviderOptions(enum ProviderOptions* ret) override {
     return E_NOTIMPL;
   }
 
-  CONTENT_EXPORT STDMETHODIMP get_HostRawElementProvider(
-      IRawElementProviderSimple** provider) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_HostRawElementProvider(IRawElementProviderSimple** provider) override {
     return E_NOTIMPL;
   }
 
@@ -755,11 +767,12 @@ BrowserAccessibilityWin
   // CComObjectRootEx methods.
   //
 
-  CONTENT_EXPORT HRESULT WINAPI InternalQueryInterface(
-      void* this_ptr,
-      const _ATL_INTMAP_ENTRY* entries,
-      REFIID iid,
-      void** object);
+  // Called by BEGIN_COM_MAP() / END_COM_MAP().
+  static CONTENT_EXPORT HRESULT WINAPI
+  InternalQueryInterface(void* this_ptr,
+                         const _ATL_INTMAP_ENTRY* entries,
+                         REFIID iid,
+                         void** object);
 
   // Accessors.
   int32 ia_role() const { return ia_role_; }
