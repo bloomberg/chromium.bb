@@ -15,8 +15,9 @@
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "media/base/media.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -35,23 +36,22 @@ const remoting::protocol::NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
     {kConnected, "CONNECTED"},
     {kDisconnecting, "DISCONNECTING"},
     {kError, "ERROR"},
-    {kInvalidDomainError, "INVALID_DOMAIN_ERROR"}, };
+    {kInvalidDomainError, "INVALID_DOMAIN_ERROR"},
+};
 
 }  // namespace
 
 It2MeNativeMessagingHost::It2MeNativeMessagingHost(
-    scoped_refptr<AutoThreadTaskRunner> task_runner,
+    scoped_ptr<ChromotingHostContext> context,
     scoped_ptr<It2MeHostFactory> factory)
     : client_(NULL),
+      host_context_(context.Pass()),
       factory_(factory.Pass()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
-  // Initialize the host context to manage the threads for the it2me host.
-  // The native messaging host, rather than the It2MeHost object, owns and
-  // maintains the lifetime of the host context.
-
-  host_context_.reset(ChromotingHostContext::Create(task_runner).release());
+  // Ensures runtime specific CPU features are initialized.
+  media::InitializeCPUSpecificMediaFeatures();
 
   const ServiceUrls* service_urls = ServiceUrls::GetInstance();
   const bool xmpp_server_valid =
@@ -203,8 +203,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #endif  // !defined(NDEBUG)
 
   // Create the It2Me host and start connecting.
-  it2me_host_ = factory_->CreateIt2MeHost(host_context_.get(),
-                                          host_context_->ui_task_runner(),
+  it2me_host_ = factory_->CreateIt2MeHost(host_context_->Copy(),
                                           weak_ptr_,
                                           xmpp_config,
                                           directory_bot_jid_);

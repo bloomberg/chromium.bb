@@ -961,6 +961,10 @@
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',
             '../third_party/libevent/libevent.gyp:libevent',
+            '../remoting/remoting.gyp:remoting_it2me_host_static',
+          ],
+          'include_dirs': [
+            '../third_party/libjingle/source',
           ],
           'sources': [
             '<@(chrome_browser_extensions_chromeos_sources)',

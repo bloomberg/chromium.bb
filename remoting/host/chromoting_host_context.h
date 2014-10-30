@@ -21,14 +21,33 @@ class AutoThreadTaskRunner;
 // process.  This class is virtual only for testing purposes (see below).
 class ChromotingHostContext {
  public:
-  ~ChromotingHostContext();
-
   // Create threads and URLRequestContextGetter for use by a host.
   // During shutdown the caller should tear-down the ChromotingHostContext and
   // then continue to run until |ui_task_runner| is no longer referenced.
   // NULL is returned if any threads fail to start.
   static scoped_ptr<ChromotingHostContext> Create(
       scoped_refptr<AutoThreadTaskRunner> ui_task_runner);
+
+#if defined(OS_CHROMEOS)
+  // Attaches task runners to the relevant browser threads for the chromoting
+  // host.  Must be called on the UI thread of the browser process.
+  // remoting::UrlRequestContextGetter returns BasicURLRequestContext under
+  // the hood which spawns two new threads per instance.  Since
+  // ChromotingHostContext can be destroyed from any thread, as its owner
+  // (It2MeHost) is ref-counted, joining the created threads during shutdown
+  // violates the "Disallow IO" thread restrictions on some task runners (e.g.
+  // the IO Thread of the browser process).
+  // Instead, we re-use the |url_request_context_getter| in the browser process.
+  static scoped_ptr<ChromotingHostContext> CreateForChromeOS(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+#endif  // defined(OS_CHROMEOS)
+
+  ~ChromotingHostContext();
+
+  scoped_ptr<ChromotingHostContext> Copy();
+
+  // Task runner for the thread that is used for the UI.
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner();
 
   // Task runner for the thread used for audio capture and encoding.
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner();
@@ -49,9 +68,6 @@ class ChromotingHostContext {
   // libjingle code may be run.
   scoped_refptr<AutoThreadTaskRunner> network_task_runner();
 
-  // Task runner for the thread that is used for the UI.
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner();
-
   // Task runner for the thread used by the ScreenRecorder to capture
   // the screen.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner();
@@ -62,7 +78,18 @@ class ChromotingHostContext {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter();
 
  private:
-  ChromotingHostContext(AutoThreadTaskRunner* ui_task_runner);
+  ChromotingHostContext(
+      scoped_refptr<AutoThreadTaskRunner> ui_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> audio_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> file_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> network_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+
+  // Caller-supplied UI thread. This is usually the application main thread.
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
   // Thread for audio capture and encoding.
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner_;
@@ -75,9 +102,6 @@ class ChromotingHostContext {
 
   // Thread for network operations.
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
-
-  // Caller-supplied UI thread. This is usually the application main thread.
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
   // Thread for screen capture.
   scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner_;

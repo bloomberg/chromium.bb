@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/auto_thread.h"
@@ -36,18 +35,19 @@ const int kMaxLoginAttempts = 5;
 }  // namespace
 
 It2MeHost::It2MeHost(
-    ChromotingHostContext* host_context,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_ptr<ChromotingHostContext> host_context,
+    scoped_ptr<policy_hack::PolicyWatcher> policy_watcher,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
-  : host_context_(host_context),
-    task_runner_(task_runner),
+  : host_context_(host_context.Pass()),
+    task_runner_(host_context_->ui_task_runner()),
     observer_(observer),
     xmpp_server_config_(xmpp_server_config),
     directory_bot_jid_(directory_bot_jid),
     state_(kDisconnected),
     failed_login_attempts_(0),
+    policy_watcher_(policy_watcher.Pass()),
     nat_traversal_enabled_(false),
     policy_received_(false) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -67,10 +67,7 @@ void It2MeHost::Connect() {
       host_context_->ui_task_runner()));
 
   // Start monitoring configured policies.
-  policy_watcher_.reset(
-      policy_hack::PolicyWatcher::Create(host_context_->network_task_runner()));
-  policy_watcher_->StartWatching(
-      base::Bind(&It2MeHost::OnPolicyUpdate, this));
+  policy_watcher_->StartWatching(base::Bind(&It2MeHost::OnPolicyUpdate, this));
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -257,11 +254,14 @@ void It2MeHost::ShutdownOnUiThread() {
 
   // Stop listening for policy updates.
   if (policy_watcher_.get()) {
-    base::WaitableEvent policy_watcher_stopped_(true, false);
-    policy_watcher_->StopWatching(&policy_watcher_stopped_);
-    policy_watcher_stopped_.Wait();
-    policy_watcher_.reset();
+    policy_watcher_->StopWatching(
+        base::Bind(&It2MeHost::OnPolicyWatcherShutdown, this));
+    return;
   }
+}
+
+void It2MeHost::OnPolicyWatcherShutdown() {
+  policy_watcher_.reset();
 }
 
 void It2MeHost::OnAccessDenied(const std::string& jid) {
@@ -311,7 +311,14 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
 }
 
 void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
-  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+  // The policy watcher runs on the |ui_task_runner| on ChromeOS and the
+  // |network_task_runner| on other platforms.
+  if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
+    host_context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&It2MeHost::OnPolicyUpdate, this, base::Passed(&policies)));
+    return;
+  }
 
   bool nat_policy;
   if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
@@ -459,18 +466,28 @@ void It2MeHost::OnReceivedSupportID(
   SetState(kReceivedAccessCode);
 }
 
-It2MeHostFactory::It2MeHostFactory() {}
+It2MeHostFactory::It2MeHostFactory() : policy_service_(nullptr) {
+}
 
 It2MeHostFactory::~It2MeHostFactory() {}
 
+void It2MeHostFactory::set_policy_service(
+    policy::PolicyService* policy_service) {
+  DCHECK(policy_service);
+  DCHECK(!policy_service_) << "|policy_service| can only be set once.";
+  policy_service_ = policy_service;
+}
+
 scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
-    ChromotingHostContext* context,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_ptr<ChromotingHostContext> context,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid) {
-  return new It2MeHost(
-      context, task_runner, observer, xmpp_server_config, directory_bot_jid);
+  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher =
+      policy_hack::PolicyWatcher::Create(policy_service_,
+                                         context->network_task_runner());
+  return new It2MeHost(context.Pass(), policy_watcher.Pass(), observer,
+                       xmpp_server_config, directory_bot_jid);
 }
 
 }  // namespace remoting

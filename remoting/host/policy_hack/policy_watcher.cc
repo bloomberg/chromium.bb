@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -165,19 +164,17 @@ void PolicyWatcher::StartWatching(const PolicyCallback& policy_callback) {
   StartWatchingInternal();
 }
 
-void PolicyWatcher::StopWatching(base::WaitableEvent* done) {
-  if (!OnPolicyWatcherThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&PolicyWatcher::StopWatching,
-                                      base::Unretained(this), done));
-    return;
-  }
+void PolicyWatcher::StopWatching(const base::Closure& stopped_callback) {
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&PolicyWatcher::StopWatchingOnPolicyWatcherThread,
+                            base::Unretained(this)),
+      stopped_callback);
+}
 
+void PolicyWatcher::StopWatchingOnPolicyWatcherThread() {
   StopWatchingInternal();
   weak_factory_.InvalidateWeakPtrs();
   policy_callback_.Reset();
-
-  done->Signal();
 }
 
 void PolicyWatcher::ScheduleFallbackReloadTask() {

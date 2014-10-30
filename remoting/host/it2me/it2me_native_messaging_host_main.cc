@@ -9,10 +9,10 @@
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/resources.h"
+#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/logging.h"
@@ -80,9 +80,6 @@ int StartIt2MeNativeMessagingHost() {
   // single-threaded.
   net::EnableSSLServerSockets();
 
-  // Ensures runtime specific CPU features are initialized.
-  media::InitializeCPUSpecificMediaFeatures();
-
 #if defined(OS_WIN)
   // GetStdHandle() returns pseudo-handles for stdin and stdout even if
   // the hosting executable specifies "Windows" subsystem. However the returned
@@ -126,8 +123,7 @@ int StartIt2MeNativeMessagingHost() {
       new PipeMessagingChannel(read_file.Pass(), write_file.Pass()));
 
   scoped_ptr<extensions::NativeMessageHost> host(new It2MeNativeMessagingHost(
-      task_runner,
-      factory.Pass()));
+      ChromotingHostContext::Create(task_runner), factory.Pass()));
 
   host->Start(native_messaging_pipe.get());
 

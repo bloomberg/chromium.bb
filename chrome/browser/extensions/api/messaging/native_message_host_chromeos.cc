@@ -16,9 +16,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
+#include "components/policy/core/common/policy_service.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -26,10 +32,9 @@ namespace extensions {
 
 namespace {
 
-// A simple NativeMesageHost that echoes the received message. It is currently
-// used for testing.
-// TODO(kelvinp): Replace this class once Remote Assistance in process host
-// is implemented.
+// A simple NativeMessageHost that mimics the implementation of
+// chrome/test/data/native_messaging/native_hosts/echo.py. It is currently
+// used for testing by ExtensionApiTest::NativeMessagingBasic.
 
 const char* const kEchoHostOrigins[] = {
     // ScopedTestNativeMessagingHost::kExtensionId
@@ -90,25 +95,46 @@ struct BuiltInHost {
   scoped_ptr<NativeMessageHost>(*create_function)();
 };
 
+scoped_ptr<NativeMessageHost> CreateIt2MeHost() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRemoteAssistance)) {
+    scoped_ptr<remoting::It2MeHostFactory> host_factory(
+        new remoting::It2MeHostFactory());
+    host_factory->set_policy_service(g_browser_process->policy_service());
+    scoped_ptr<remoting::ChromotingHostContext> context =
+        remoting::ChromotingHostContext::CreateForChromeOS(
+            make_scoped_refptr(g_browser_process->system_request_context()));
+    scoped_ptr<NativeMessageHost> host(new remoting::It2MeNativeMessagingHost(
+        context.Pass(), host_factory.Pass()));
+    return host.Pass();
+  }
+  return nullptr;
+}
+
 // If you modify the list of allowed_origins, don't forget to update
 // remoting/host/it2me/com.google.chrome.remote_assistance.json.jinja2
 // to keep the two lists in sync.
 // TODO(kelvinp): Load the native messaging manifest as a resource file into
-// chrome and fetch the list of allowed_origins from the manifest.
-/*const char* const kRemotingIt2MeOrigins[] = {
+// chrome and fetch the list of allowed_origins from the manifest (see
+// crbug/424743).
+const char* const kRemotingIt2MeOrigins[] = {
     "chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/",
     "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/",
     "chrome-extension://kgngmbheleoaphbjbaiobfdepmghbfah/",
     "chrome-extension://odkaodonbgfohohmklejpjiejmcipmib/",
     "chrome-extension://dokpleeekgeeiehdhmdkeimnkmoifgdd/",
     "chrome-extension://ajoainacpilcemgiakehflpbkbfipojk/",
-    "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/"};*/
+    "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/"};
 
 static const BuiltInHost kBuiltInHost[] = {
     {"com.google.chrome.test.echo", // ScopedTestNativeMessagingHost::kHostName
      kEchoHostOrigins,
      arraysize(kEchoHostOrigins),
      &EchoHost::Create},
+     {"com.google.chrome.remote_assistance",
+     kRemotingIt2MeOrigins,
+     arraysize(kRemotingIt2MeOrigins),
+     &CreateIt2MeHost},
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,
