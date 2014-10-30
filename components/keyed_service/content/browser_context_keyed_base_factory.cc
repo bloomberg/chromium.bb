@@ -56,31 +56,6 @@ void BrowserContextKeyedBaseFactory::BrowserContextDestroyed(
 user_prefs::PrefRegistrySyncable*
 BrowserContextKeyedBaseFactory::GetAssociatedPrefRegistry(
     base::SupportsUserData* context) const {
-  // Safe timing for pref registration is hard. Previously, we made
-  // BrowserContext responsible for all pref registration on every service
-  // that used BrowserContext. Now we don't and there are timing issues.
-  //
-  // With normal contexts, prefs can simply be registered at
-  // BrowserContextDependencyManager::RegisterProfilePrefsForServices time.
-  // With incognito contexts, we just never register since incognito contexts
-  // share the same pref services with their parent contexts.
-  //
-  // TestingBrowserContexts throw a wrench into the mix, in that some tests will
-  // swap out the PrefService after we've registered user prefs on the original
-  // PrefService. Test code that does this is responsible for either manually
-  // invoking RegisterProfilePrefs() on the appropriate
-  // BrowserContextKeyedServiceFactory associated with the prefs they need,
-  // or they can use SetTestingFactory() and create a service (since service
-  // creation with a factory method causes registration to happen at
-  // TestingProfile creation time).
-  //
-  // Now that services are responsible for declaring their preferences, we have
-  // to enforce a uniquenes check here because some tests create one context and
-  // multiple services of the same type attached to that context (serially, not
-  // parallel) and we don't want to register multiple times on the same context.
-  // This is the purpose of RegisterProfilePrefsIfNecessary() which could be
-  // replaced directly by RegisterProfilePrefs() if this method is ever phased
-  // out.
   PrefService* prefs = user_prefs::UserPrefs::Get(
       static_cast<content::BrowserContext*>(context));
   user_prefs::PrefRegistrySyncable* registry =

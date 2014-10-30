@@ -5,15 +5,17 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 
-#include <map>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
+#include "components/keyed_service/core/keyed_service_factory.h"
 
 class BrowserContextDependencyManager;
 class KeyedService;
+
+namespace content {
+class BrowserContext;
+}
 
 // Base class for Factories that take a BrowserContext object and return some
 // service on a one-to-one mapping. Each factory that derives from this class
@@ -23,8 +25,18 @@ class KeyedService;
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state which services are depended on.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
-    : public BrowserContextKeyedBaseFactory {
+    : public KeyedServiceFactory {
  public:
+  // Registers preferences used in this service on the pref service of
+  // |context|. This is the public interface and is safe to be called multiple
+  // times because testing code can have multiple services of the same type
+  // attached to a single |context|. Only test code is allowed to call this
+  // method.
+  // TODO(gab): This method can be removed entirely when
+  // PrefService::DeprecatedGetPrefRegistry() is phased out.
+  void RegisterUserPrefsOnBrowserContextForTest(
+      content::BrowserContext* context);
+
   // A function that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific mock into the BCKSF system.
@@ -68,11 +80,25 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   KeyedService* GetServiceForBrowserContext(content::BrowserContext* context,
                                             bool create);
 
-  // Maps |context| to |service| with debug checks to prevent duplication.
-  void Associate(content::BrowserContext* context, KeyedService* service);
+  // Interface for people building a concrete FooServiceFactory: --------------
 
-  // Removes the mapping from |context| to a service.
-  void Disassociate(content::BrowserContext* context);
+  // Finds which browser context (if any) to use.
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const;
+
+  // By default, we create instances of a service lazily and wait until
+  // GetForBrowserContext() is called on our subclass. Some services need to be
+  // created as soon as the BrowserContext has been brought up.
+  virtual bool ServiceIsCreatedWithBrowserContext() const;
+
+  // By default, TestingBrowserContexts will be treated like normal contexts.
+  // You can override this so that by default, the service associated with the
+  // TestingBrowserContext is NULL. (This is just a shortcut around
+  // SetTestingFactory() to make sure our contexts don't directly refer to the
+  // services they use.)
+  bool ServiceIsNULLWhileTesting() const override;
+
+  // Interface for people building a type of BrowserContextKeyedFactory: -------
 
   // All subclasses of BrowserContextKeyedServiceFactory must return a
   // KeyedService instead of just a BrowserContextKeyedBase.
@@ -91,28 +117,32 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // Secondly, BrowserContextDestroyed() is called on every ServiceFactory
   // and the default implementation removes it from |mapping_| and deletes
   // the pointer.
-  void BrowserContextShutdown(content::BrowserContext* context) override;
-  void BrowserContextDestroyed(content::BrowserContext* context) override;
-
-  void SetEmptyTestingFactory(content::BrowserContext* context) override;
-  bool HasTestingFactory(content::BrowserContext* context) override;
-  void CreateServiceNow(content::BrowserContext* context) override;
+  virtual void BrowserContextShutdown(content::BrowserContext* context);
+  virtual void BrowserContextDestroyed(content::BrowserContext* context);
 
  private:
-  friend class BrowserContextDependencyManager;
   friend class BrowserContextDependencyManagerUnittests;
 
-  typedef std::map<content::BrowserContext*, KeyedService*>
-      BrowserContextKeyedServices;
-  typedef std::map<content::BrowserContext*, TestingFactoryFunction>
-      BrowserContextOverriddenTestingFunctions;
+  // Registers any user preferences on this service. This is called by
+  // RegisterProfilePrefsIfNecessary() and should be overriden by any service
+  // that wants to register profile-specific preferences.
+  virtual void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) {}
 
-  // The mapping between a BrowserContext and its service.
-  BrowserContextKeyedServices mapping_;
+  // KeyedServiceFactory:
+  KeyedService* BuildServiceInstanceFor(
+      base::SupportsUserData* context) const final;
+  bool IsOffTheRecord(base::SupportsUserData* context) const final;
 
-  // The mapping between a BrowserContext and its overridden
-  // TestingFactoryFunction.
-  BrowserContextOverriddenTestingFunctions testing_factories_;
+  // KeyedServiceBaseFactory:
+  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
+      base::SupportsUserData* context) const final;
+  base::SupportsUserData* GetContextToUse(
+      base::SupportsUserData* context) const final;
+  bool ServiceIsCreatedWithContext() const final;
+  void ContextShutdown(base::SupportsUserData* context) final;
+  void ContextDestroyed(base::SupportsUserData* context) final;
+  void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedServiceFactory);
 };

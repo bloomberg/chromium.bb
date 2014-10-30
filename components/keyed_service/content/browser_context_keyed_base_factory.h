@@ -27,6 +27,11 @@ class PrefRegistrySyncable;
 // RefcountedBrowserContextKeyedServiceFactory. This object describes general
 // dependency management between Factories; subclasses react to lifecycle
 // events and implement memory management.
+//
+// Note: this class is deprecated and should not be used and will be removed
+// once http://crbug.com/131843 and http://crbug.com/131844 are closed. If you
+// need to implement a new way to manage KeyedService lifetime, base your code
+// on KeyedServiceBaseFactory instead.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
     : public KeyedServiceBaseFactory {
  public:
