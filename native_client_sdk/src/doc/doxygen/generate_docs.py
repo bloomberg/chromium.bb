@@ -15,6 +15,11 @@ import tempfile
 import urllib2
 
 
+if sys.version_info < (2, 7, 0):
+  sys.stderr.write("python 2.7 or later is required run this script\n")
+  sys.exit(1)
+
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DOC_DIR = os.path.dirname(SCRIPT_DIR)
 
@@ -75,31 +80,57 @@ def RemoveDir(dirname):
     shutil.rmtree(dirname)
 
 
-def GetSVNRepositoryRoot(branch):
-  if branch == 'trunk':
-    return 'http://src.chromium.org/chrome/trunk/src'
-  return 'http://src.chromium.org/chrome/branches/%s/src' % branch
+def HasBranchHeads():
+  cmd = ['git', 'for-each-ref', '--format=%(refname)',
+         'refs/remotes/branch-heads']
+  output = subprocess.check_output(cmd).splitlines()
+  return output != []
+
+
+def CheckoutDirectories(dest_dirname, refname, root_path, patterns=None):
+  treeish = '%s:%s' % (refname, root_path)
+  cmd = ['git', 'ls-tree', '--full-tree', '-r', treeish]
+  if patterns:
+    cmd.extend(patterns)
+
+  Trace('Running \"%s\":' % ' '.join(cmd))
+  output = subprocess.check_output(cmd)
+  for line in output.splitlines():
+    info, rel_filename = line.split('\t')
+    sha = info.split(' ')[2]
+
+    Trace('  %s %s' % (sha, rel_filename))
+
+    cmd = ['git', 'show', sha]
+    blob = subprocess.check_output(cmd)
+    filename = os.path.join(dest_dirname, rel_filename)
+    dirname = os.path.dirname(filename)
+    if not os.path.exists(dirname):
+      os.makedirs(dirname)
+
+    Trace('    writing to %s' % filename)
+    with open(filename, 'w') as f:
+      f.write(blob)
 
 
 def CheckoutPepperDocs(branch, doc_dirname):
   Trace('Removing directory %s' % doc_dirname)
   RemoveDir(doc_dirname)
 
-  svn_root_url = GetSVNRepositoryRoot(branch)
+  if branch == 'master':
+    refname = 'refs/remotes/origin/master'
+  else:
+    refname = 'refs/remotes/branch-heads/%s' % branch
 
-  for subdir in ('api', 'generators', 'cpp', 'utility'):
-    url = svn_root_url + '/ppapi/%s' % subdir
-    cmd = ['svn', 'co', url, os.path.join(doc_dirname, subdir)]
-    Trace('Checking out docs into %s:\n  %s' % (doc_dirname, ' '.join(cmd)))
-    subprocess.check_call(cmd)
+  Trace('Checking out docs into %s' % doc_dirname)
+  subdirs = ['api', 'generators', 'cpp', 'utility']
+  CheckoutDirectories(doc_dirname, refname, 'ppapi', subdirs)
 
   # The IDL generator needs PLY (a python lexing library); check it out into
   # generators.
-  url = svn_root_url + '/third_party/ply'
   ply_dirname = os.path.join(doc_dirname, 'generators', 'ply')
-  cmd = ['svn', 'co', url, ply_dirname]
-  Trace('Checking out PLY into %s:\n  %s' % (ply_dirname, ' '.join(cmd)))
-  subprocess.check_call(cmd)
+  Trace('Checking out PLY into %s' % ply_dirname)
+  CheckoutDirectories(ply_dirname, refname, 'third_party/ply')
 
 
 def FixPepperDocLinks(doc_dirname):
@@ -174,7 +205,8 @@ def RunDoxygen(out_dirname, doxyfile):
   Trace('Making new output directory %s' % out_dirname)
   os.makedirs(out_dirname)
 
-  cmd = ['doxygen', doxyfile]
+  doxygen = os.environ.get('DOXYGEN', 'doxygen')
+  cmd = [doxygen, doxyfile]
   Trace('Running Doxygen:\n  %s' % ' '.join(cmd))
   subprocess.check_call(cmd)
 
@@ -201,6 +233,14 @@ def RunRstIndex(kind, channel, pepper_version, out_dirname, out_rst_filename):
   subprocess.check_call(cmd)
 
 
+def GetRstName(kind, channel):
+  if channel == 'stable':
+    filename = '%s-api.rst' % kind
+  else:
+    filename = '%s-api-%s.rst' % (kind, channel)
+  return os.path.join(DOC_DIR, filename)
+
+
 def GenerateDocs(root_dirname, channel, pepper_version, branch):
   Trace('Generating docs for %s (branch %s)' % (channel, branch))
   pepper_dirname = 'pepper_%s' % channel
@@ -225,7 +265,7 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
     out_dirname_c = os.path.join(out_dirname, 'c')
     doxyfile_c = os.path.join(doxyfile_dirname, 'Doxyfile.c.%s' % channel)
     doxyfile_c_template = os.path.join(SCRIPT_DIR, 'Doxyfile.c.template')
-    rst_index_c = os.path.join(DOC_DIR, pepper_dirname, 'c', 'index.rst')
+    rst_index_c = GetRstName('c', channel)
     GenerateDoxyfile(doxyfile_c_template, out_dirname_c, svn_dirname,
                      doxyfile_c)
     RunDoxygen(out_dirname_c, doxyfile_c)
@@ -236,7 +276,7 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
     out_dirname_cpp = os.path.join(out_dirname, 'cpp')
     doxyfile_cpp = os.path.join(doxyfile_dirname, 'Doxyfile.cpp.%s' % channel)
     doxyfile_cpp_template = os.path.join(SCRIPT_DIR, 'Doxyfile.cpp.template')
-    rst_index_cpp = os.path.join(DOC_DIR, pepper_dirname, 'cpp', 'index.rst')
+    rst_index_cpp = GetRstName('cpp', channel)
     GenerateDoxyfile(doxyfile_cpp_template, out_dirname_cpp, svn_dirname,
                      doxyfile_cpp)
     RunDoxygen(out_dirname_cpp, doxyfile_cpp)

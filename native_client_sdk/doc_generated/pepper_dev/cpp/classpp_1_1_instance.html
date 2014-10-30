@@ -37,6 +37,8 @@ Public Member Functions</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a6341c14fc54427e45349f5158483e017">RequestFilteringInputEvents</a> (uint32_t event_classes)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a286bc22174e2f7b6e917c56aa5c7de86">ClearInputEventRequest</a> (uint32_t event_classes)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a67e888a4e4e23effe7a09625e73ecae9">PostMessage</a> (const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;message)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a5b5b1a66eda2d0e6884de8f7e25e2346">RegisterMessageHandler</a> (<a class="el" href="classpp_1_1_message_handler.html">MessageHandler</a> *message_handler, const <a class="el" href="classpp_1_1_message_loop.html">MessageLoop</a> &amp;message_loop)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a5e37f26ebc58915574819542a41a6329">UnregisterMessageHandler</a> ()</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PPB_Console methods for logging to the console:</div></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a192ab89f4acf2e1e25df14e22d0cff43">LogToConsole</a> (PP_LogLevel level, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;value)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpp_1_1_instance.html#a48286ccf1217b3ae02138049d00af48f">LogToConsoleWithSource</a> (PP_LogLevel level, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;source, const <a class="el" href="classpp_1_1_var.html">Var</a> &amp;value)</td></tr>
@@ -629,6 +631,44 @@ Static Public Member Functions</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Instance</code> identifying this object. </dd></dl>
 </div>
 </div>
+<a class="anchor" id="a5b5b1a66eda2d0e6884de8f7e25e2346"></a><!-- doxytag: member="pp::Instance::RegisterMessageHandler" ref="a5b5b1a66eda2d0e6884de8f7e25e2346" args="(MessageHandler *message_handler, const MessageLoop &amp;message_loop)" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">int32_t <a class="el" href="classpp_1_1_instance.html#a5b5b1a66eda2d0e6884de8f7e25e2346">pp::Instance::RegisterMessageHandler</a> </td>
+<td>(</td>
+<td class="paramtype"><a class="el" href="classpp_1_1_message_handler.html">MessageHandler</a> *&#160;</td>
+<td class="paramname"><em>message_handler</em>, </td>
+</tr>
+<tr>
+<td class="paramkey"></td>
+<td></td>
+<td class="paramtype">const <a class="el" href="classpp_1_1_message_loop.html">MessageLoop</a> &amp;&#160;</td>
+<td class="paramname"><em>message_loop</em>&#160;</td>
+</tr>
+<tr>
+<td></td>
+<td>)</td>
+<td></td><td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Dev-Channel Only. </p>
+<p>Registers a handler for receiving messages from JavaScript. If a handler is registered this way, it will replace the <a class="el" href="classpp_1_1_instance.html">Instance</a>'s HandleMessage method, and all messages sent from JavaScript via postMessage and postMessageAndAwaitResponse will be dispatched to <code>message_handler</code>.</p>
+<p>The function calls will be dispatched via <code>message_loop</code>. This means that the functions will be invoked on the thread to which <code>message_loop</code> is attached, when <code>message_loop</code> is run. It is illegal to pass the main thread message loop; RegisterMessageHandler will return PP_ERROR_WRONG_THREAD in that case. If you quit <code>message_loop</code> before calling Unregister(), the browser will not be able to call functions in the plugin's message handler any more. That could mean missing some messages or could cause a leak if you depend on Destroy() to free hander data. So you should, whenever possible, Unregister() the handler prior to quitting its event loop.</p>
+<p>Attempting to register a message handler when one is already registered will cause the current <a class="el" href="classpp_1_1_message_handler.html" title="MessageHandler is an abstract base class that the plugin may implement if it wants to receive message...">MessageHandler</a> to be unregistered and replaced. In that case, no messages will be sent to the "default" message handler (<a class="el" href="classpp_1_1_instance.html#a5dce8c8b36b1df7cfcc12e42397a35e8" title="HandleMessage() is a function that the browser calls when PostMessage() is invoked on the DOM element...">pp::Instance::HandleMessage()</a>). Messages will stop arriving at the prior message handler and will begin to be dispatched at the new message handler.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<table class="params">
+<tr><td class="paramdir">[in]</td><td class="paramname">message_handler</td><td>The plugin-provided object for handling messages. The instance does not take ownership of the pointer; it is up to the plugin to ensure that |message_handler| lives until its WasUnregistered() function is invoked. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">message_loop</td><td>Represents the message loop on which <a class="el" href="classpp_1_1_message_handler.html" title="MessageHandler is an abstract base class that the plugin may implement if it wants to receive message...">MessageHandler</a>'s functions should be invoked. </td></tr>
+</table>
+</dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>PP_OK on success, or an error from pp_errors.h. </dd></dl>
+</div>
+</div>
 <a class="anchor" id="a33c633189c7c321dac8e0c5dc6e67f5b"></a><!-- doxytag: member="pp::Instance::RemovePerInstanceObject" ref="a33c633189c7c321dac8e0c5dc6e67f5b" args="(const std::string &amp;interface_name, void *object)" -->
 <div class="memitem">
 <div class="memproto">
@@ -756,6 +796,24 @@ Static Public Member Functions</h2><table class="memberdecls">
 </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd><code>PP_OK</code> if the operation succeeded, <code>PP_ERROR_BADARGUMENT</code> if instance is invalid, or <code>PP_ERROR_NOTSUPPORTED</code> if one of the event class bits were illegal. In the case of an invalid bit, all valid bits will be applied and only the illegal bits will be ignored. </dd></dl>
+</div>
+</div>
+<a class="anchor" id="a5e37f26ebc58915574819542a41a6329"></a><!-- doxytag: member="pp::Instance::UnregisterMessageHandler" ref="a5e37f26ebc58915574819542a41a6329" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<table class="memname">
+<tr>
+<td class="memname">void <a class="el" href="classpp_1_1_instance.html#a5e37f26ebc58915574819542a41a6329">pp::Instance::UnregisterMessageHandler</a> </td>
+<td>(</td>
+<td class="paramname"></td><td>)</td>
+<td></td>
+</tr>
+</table>
+</div>
+<div class="memdoc">
+<p>Unregisters the current message handler for this instance if one is registered. </p>
+<p>After this call, the message handler (if one was registered) will have "WasUnregistered" called on it and will receive no further messages. After that point, all messages sent from JavaScript using postMessage() will be dispatched to <a class="el" href="classpp_1_1_instance.html#a5dce8c8b36b1df7cfcc12e42397a35e8" title="HandleMessage() is a function that the browser calls when PostMessage() is invoked on the DOM element...">pp::Instance::HandleMessage()</a> on the main thread. Attempts to call postMessageAndAwaitResponse() from JavaScript after that point will fail.</p>
+<p>Attempting to unregister a message handler when none is registered has no effect. </p>
 </div>
 </div>
 <hr />The documentation for this class was generated from the following file:<ul>
