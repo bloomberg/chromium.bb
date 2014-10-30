@@ -110,6 +110,9 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, BadNative) {
 #elif defined(OS_MACOSX)
 // crbug.com/425570
 #  define MAYBE_Crash DISABLED_Crash
+#elif defined(OS_LINUX)
+// crbug.com/428838
+#  define MAYBE_Crash DISABLED_Crash
 #else
 #  define MAYBE_Crash Crash
 #endif
