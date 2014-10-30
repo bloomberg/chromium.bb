@@ -804,20 +804,11 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Broadcast a notification of the visit.
   if (visit_id) {
-    if (typed_url_syncable_service_.get())
-      typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
-
     RedirectList redirects;
     // TODO(meelapshah) Disabled due to potential PageCycler regression.
     // Re-enable this.
     // QueryRedirectsTo(url, &redirects);
     NotifyURLVisited(transition, url_info, redirects, time);
-
-    // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
-    // an HistoryBackendObserver and register it so that we can remove this
-    // method.
-    if (delegate_)
-      delegate_->NotifyURLVisited(transition, url_info, redirects, time);
   } else {
     VLOG(0) << "Failed to build visit insert statement:  "
             << "url_id = " << url_id;
@@ -826,22 +817,12 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_id);
 }
 
-void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
-                                      const URLRow& row,
-                                      const RedirectList& redirects,
-                                      base::Time visit_time) {
-  FOR_EACH_OBSERVER(
-      HistoryBackendObserver,
-      observers_,
-      OnURLVisited(this, transition, row, redirects, visit_time));
-}
-
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                          VisitSource visit_source) {
   if (!db_)
     return;
 
-  scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
+  URLRows changed_urls;
   for (URLRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     DCHECK(!i->last_visit().is_null());
 
@@ -859,8 +840,8 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
         return;
       }
 
-      modified->changed_urls.push_back(*i);
-      modified->changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
+      changed_urls.push_back(*i);
+      changed_urls.back().set_id(url_id);  // i->id_ is likely 0.
     }
 
     // Sync code manages the visits itself.
@@ -882,17 +863,12 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     }
   }
 
-  if (typed_url_syncable_service_.get())
-    typed_url_syncable_service_->OnUrlsModified(&modified->changed_urls);
-
   // Broadcast a notification for typed URLs that have been modified. This
   // will be picked up by the in-memory URL database on the main thread.
   //
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
-  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                         modified.Pass());
-
+  NotifyURLsModified(changed_urls);
   ScheduleCommit();
 }
 
@@ -924,24 +900,21 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     redirects = &dummy_list;
   }
 
-  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
+  URLRows changed_urls;
   for (size_t i = 0; i < redirects->size(); i++) {
     URLRow row;
     URLID row_id = db_->GetRowForURL(redirects->at(i), &row);
     if (row_id && row.title() != title) {
       row.set_title(title);
       db_->UpdateURLRow(row_id, row);
-      details->changed_urls.push_back(row);
+      changed_urls.push_back(row);
     }
   }
 
   // Broadcast notifications for any URLs that have changed. This will
   // update the in-memory database and the InMemoryURLIndex.
-  if (!details->changed_urls.empty()) {
-    if (typed_url_syncable_service_.get())
-      typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
-    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                           details.Pass());
+  if (!changed_urls.empty()) {
+    NotifyURLsModified(changed_urls);
     ScheduleCommit();
   }
 }
@@ -1012,22 +985,19 @@ size_t HistoryBackend::UpdateURLs(const history::URLRows& urls) {
   if (!db_)
     return 0;
 
-  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
+  URLRows changed_urls;
   for (history::URLRows::const_iterator it = urls.begin(); it != urls.end();
        ++it) {
     DCHECK(it->id());
     if (db_->UpdateURLRow(it->id(), *it))
-      details->changed_urls.push_back(*it);
+      changed_urls.push_back(*it);
   }
 
   // Broadcast notifications for any URLs that have actually been changed. This
   // will update the in-memory database and the InMemoryURLIndex.
-  size_t num_updated_records = details->changed_urls.size();
+  size_t num_updated_records = changed_urls.size();
   if (num_updated_records) {
-    if (typed_url_syncable_service_)
-      typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
-    BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                           details.Pass());
+    NotifyURLsModified(changed_urls);
     ScheduleCommit();
   }
   return num_updated_records;
@@ -2542,16 +2512,54 @@ void HistoryBackend::BroadcastNotifications(
     delegate_->BroadcastNotifications(type, details.Pass());
 }
 
-void HistoryBackend::NotifySyncURLsModified(URLRows* rows) {
+void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
+                                      const URLRow& row,
+                                      const RedirectList& redirects,
+                                      base::Time visit_time) {
+  URLRow url_info(row);
   if (typed_url_syncable_service_.get())
-    typed_url_syncable_service_->OnUrlsModified(rows);
+    typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
+
+  FOR_EACH_OBSERVER(
+      HistoryBackendObserver,
+      observers_,
+      OnURLVisited(this, transition, url_info, redirects, visit_time));
+
+  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
+  // an HistoryBackendObserver and register it so that we can remove this
+  // method.
+  if (delegate_)
+    delegate_->NotifyURLVisited(transition, url_info, redirects, visit_time);
 }
 
-void HistoryBackend::NotifySyncURLsDeleted(bool all_history,
-                                           bool expired,
-                                           URLRows* rows) {
+void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
+  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
+  details->changed_urls = rows;
+
   if (typed_url_syncable_service_.get())
-    typed_url_syncable_service_->OnUrlsDeleted(all_history, expired, rows);
+    typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
+
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                         details.Pass());
+}
+
+void HistoryBackend::NotifyURLsDeleted(bool all_history,
+                                       bool expired,
+                                       const URLRows& rows,
+                                       const std::set<GURL>& favicon_urls) {
+  scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
+  details->all_history = all_history;
+  details->expired = expired;
+  details->rows = rows;
+  details->favicon_urls = favicon_urls;
+
+  if (typed_url_syncable_service_.get()) {
+    typed_url_syncable_service_->OnUrlsDeleted(
+        all_history, expired, &details->rows);
+  }
+
+  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                         details.Pass());
 }
 
 // Deleting --------------------------------------------------------------------
@@ -2607,11 +2615,7 @@ void HistoryBackend::DeleteAllHistory() {
 
   // Send out the notification that history is cleared. The in-memory database
   // will pick this up and clear itself.
-  scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
-  details->all_history = true;
-  NotifySyncURLsDeleted(true, false, NULL);
-  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                         details.Pass());
+  NotifyURLsDeleted(true, false, URLRows(), std::set<GURL>());
 }
 
 bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {

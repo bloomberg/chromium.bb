@@ -52,6 +52,7 @@ class CommitLaterTask;
 struct DownloadRow;
 class HistoryBackendObserver;
 class HistoryClient;
+struct HistoryDetails;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
 class TypedUrlSyncableService;
@@ -99,7 +100,7 @@ class QueuedHistoryDBTask {
 // functions in the history service. These functions are not documented
 // here, see the history service for behavior.
 class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
-                       public BroadcastNotificationDelegate {
+                       public ExpireHistoryBackendDelegate {
  public:
   // Interface implemented by the owner of the HistoryBackend object. Normally,
   // the history service implements this to send stuff back to the main thread.
@@ -795,12 +796,17 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // to be invoked again if there are more tasks that need to run.
   void ProcessDBTaskImpl();
 
-  void BroadcastNotifications(int type,
-                              scoped_ptr<HistoryDetails> details) override;
-  void NotifySyncURLsModified(URLRows* rows) override;
-  void NotifySyncURLsDeleted(bool all_history,
-                             bool expired,
-                             URLRows* rows) override;
+  // Broadcasts the specified notification to the notification service on both
+  // the main thread and the history thread if a notification service is
+  // running.
+  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details);
+
+  // ExpireHistoryBackendDelegate:
+  void NotifyURLsModified(const URLRows& rows) override;
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const URLRows& rows,
+                         const std::set<GURL>& favicon_urls) override;
 
   // Deleting all history ------------------------------------------------------
 

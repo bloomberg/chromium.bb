@@ -23,25 +23,20 @@ namespace history {
 
 class HistoryClient;
 class HistoryDatabase;
-struct HistoryDetails;
 class ThumbnailDatabase;
 
 // Delegate used to broadcast notifications to the main thread.
-class BroadcastNotificationDelegate {
+class ExpireHistoryBackendDelegate {
  public:
-  // Schedules a broadcast of the given notification on the application main
-  // thread.
-  virtual void BroadcastNotifications(int type,
-                                      scoped_ptr<HistoryDetails> details) = 0;
-
   // Tells typed url sync code to handle URL modifications or deletions.
-  virtual void NotifySyncURLsModified(URLRows* rows) = 0;
-  virtual void NotifySyncURLsDeleted(bool all_history,
-                                     bool expired,
-                                     URLRows* rows) = 0;
+  virtual void NotifyURLsModified(const URLRows& rows) = 0;
+  virtual void NotifyURLsDeleted(bool all_history,
+                                 bool expired,
+                                 const URLRows& rows,
+                                 const std::set<GURL>& favicon_urls) = 0;
 
  protected:
-  virtual ~BroadcastNotificationDelegate() {}
+  virtual ~ExpireHistoryBackendDelegate() {}
 };
 
 // Encapsulates visit expiration criteria and type of visits to expire.
@@ -67,7 +62,7 @@ class ExpireHistoryBackend {
   // HistoryClient may be NULL. The HistoryClient is used when expiring URLS so
   // that we don't remove any URLs or favicons that are bookmarked (visits are
   // removed though).
-  ExpireHistoryBackend(BroadcastNotificationDelegate* delegate,
+  ExpireHistoryBackend(ExpireHistoryBackendDelegate* delegate,
                        HistoryClient* history_client);
   ~ExpireHistoryBackend();
 
@@ -247,7 +242,7 @@ class ExpireHistoryBackend {
   const ExpiringVisitsReader* GetAutoSubframeVisitsReader();
 
   // Non-owning pointer to the notification delegate (guaranteed non-NULL).
-  BroadcastNotificationDelegate* delegate_;
+  ExpireHistoryBackendDelegate* delegate_;
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
   HistoryDatabase* main_db_;       // Main history database.
