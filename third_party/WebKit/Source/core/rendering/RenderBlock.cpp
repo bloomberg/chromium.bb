@@ -2219,8 +2219,11 @@ void RenderBlock::removePositionedObjects(RenderBlock* o, ContainingBlockState c
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         r = *it;
         if (!o || r->isDescendantOf(o)) {
-            if (containingBlockState == NewContainingBlock)
+            if (containingBlockState == NewContainingBlock) {
                 r->setChildNeedsLayout(MarkOnlyThis);
+                if (r->needsPreferredWidthsRecalculation())
+                    r->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+            }
 
             // It is parent blocks job to add positioned child to positioned objects list of its containing block
             // Parent layout needs to be invalidated to ensure this happens.
