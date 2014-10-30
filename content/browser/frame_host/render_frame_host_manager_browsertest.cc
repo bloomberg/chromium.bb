@@ -334,10 +334,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ("/files/title2.html",
             shell()->web_contents()->GetLastCommittedURL().path());
 
-  // Should have the same SiteInstance.
+  // Should have the same SiteInstance unless we're in site-per-process mode.
   scoped_refptr<SiteInstance> noref_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_EQ(orig_site_instance, noref_site_instance);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    EXPECT_EQ(orig_site_instance, noref_site_instance);
+  else
+    EXPECT_NE(orig_site_instance, noref_site_instance);
 }
 
 // Test for crbug.com/116192.  Targeted links should still work after the
