@@ -787,7 +787,6 @@ bind_display(struct wl_client *client, struct wl_display *display)
 
 /** Create Wayland display object.
  *
- * \param None
  * \return The Wayland display object. Null if failed to create
  *
  * This creates the wl_display object.
