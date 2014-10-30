@@ -1432,5 +1432,29 @@ TEST_F(PicturePileTest, SolidRectangleIsSolid) {
   EXPECT_FALSE(pile_.is_solid_color());
 }
 
+TEST_F(PicturePileTest, NonSolidRectangleOnOffsettedLayerIsNonSolid) {
+  gfx::Rect visible_rect(tiling_rect());
+  visible_rect.Offset(gfx::Vector2d(1000, 1000));
+  // The picture pile requires that the tiling completely encompass the viewport
+  // to make this test work correctly since the recorded viewport is an
+  // intersection of the tile size and viewport rect.  This is possibly a flaw
+  // in |PicturePile|.
+  gfx::Size tiling_size(visible_rect.right(), visible_rect.bottom());
+  // |Setup()| will create pictures here that mess with the test, clear it!
+  pile_.Clear();
+
+  SkPaint paint;
+  paint.setColor(SK_ColorCYAN);
+
+  // Add a rect that doesn't cover the viewport completely, the solid state
+  // will be false.
+  gfx::Rect smallRect = visible_rect;
+  smallRect.Inset(10, 10, 10, 10);
+  client_.add_draw_rect(smallRect, paint);
+  Region invalidation(visible_rect);
+  UpdateAndExpandInvalidation(&invalidation, tiling_size, visible_rect);
+  EXPECT_FALSE(pile_.is_solid_color());
+}
+
 }  // namespace
 }  // namespace cc
