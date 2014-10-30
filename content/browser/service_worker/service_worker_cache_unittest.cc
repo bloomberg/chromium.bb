@@ -498,11 +498,6 @@ TEST_P(ServiceWorkerCacheTestP, TwoKeysThenOne) {
   EXPECT_TRUE(VerifyKeys(expected_key));
 }
 
-// TODO(jkarlin): Once SimpleCache is working bug-free on Windows reenable these
-// tests. In the meanwhile we know that Windows operations will be a little
-// flaky (though not crashy). See https://crbug.com/409109 and
-// https://crbug.com/416940.
-#ifndef OS_WIN
 TEST_P(ServiceWorkerCacheTestP, DeleteNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Match(no_body_request_));
@@ -550,7 +545,6 @@ TEST_P(ServiceWorkerCacheTestP, PutResponseType) {
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeError));
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeOpaque));
 }
-#endif  // OS_WIN
 
 TEST_F(ServiceWorkerCacheTest, CaselessServiceWorkerResponseHeaders) {
   // ServiceWorkerCache depends on ServiceWorkerResponse having caseless
