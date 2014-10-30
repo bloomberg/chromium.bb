@@ -223,8 +223,8 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
 
 static bool hasTextContent(Resource* cachedResource)
 {
-    InspectorPageAgent::ResourceType type = InspectorPageAgent::cachedResourceType(*cachedResource);
-    return type == InspectorPageAgent::DocumentResource || type == InspectorPageAgent::StylesheetResource || type == InspectorPageAgent::ScriptResource || type == InspectorPageAgent::XHRResource;
+    Resource::Type type = cachedResource->type();
+    return type == Resource::CSSStyleSheet || type == Resource::XSLStyleSheet || type == Resource::Script || type == Resource::Raw || type == Resource::ImportResource || type == Resource::MainResource;
 }
 
 PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
@@ -395,8 +395,6 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
         return InspectorPageAgent::StylesheetResource;
     case Resource::Script:
         return InspectorPageAgent::ScriptResource;
-    case Resource::Raw:
-        return InspectorPageAgent::XHRResource;
     case Resource::ImportResource:
         // Fall through.
     case Resource::MainResource:

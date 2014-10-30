@@ -322,6 +322,12 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
 
+    InspectorPageAgent::ResourceType type = InspectorPageAgent::OtherResource;
+    if (initiatorInfo.name == FetchInitiatorTypeNames::xmlhttprequest) {
+        type = InspectorPageAgent::XHRResource;
+        m_resourcesData->setResourceType(requestId, type);
+    }
+
     RefPtr<JSONObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
 
     if (headers) {
@@ -352,7 +358,8 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     if (!m_hostId.isEmpty())
         request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
 
-    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), requestInfo.release(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
+    TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
+    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), requestInfo.release(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader), &resourceType);
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
@@ -391,9 +398,10 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     }
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
-    // Workaround for worker scripts that use RawResources for loading.
-    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
-        type = InspectorPageAgent::ScriptResource;
+    // Workaround for worker scripts and XHRs that use RawResources for loading.
+    InspectorPageAgent::ResourceType savedType = m_resourcesData->resourceType(requestId);
+    if (savedType == InspectorPageAgent::ScriptResource || savedType == InspectorPageAgent::XHRResource)
+        type = savedType;
     // Workaround for background: url() in inline style.
     if (loader && equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
         type = InspectorPageAgent::DocumentResource;
