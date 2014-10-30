@@ -26,6 +26,9 @@ class PreferenceWhitelist {
   PreferenceWhitelist() {
     whitelist_.insert("googlegeolocationaccess.enabled");
     whitelist_.insert("spdy_proxy.enabled");
+    whitelist_.insert("data_reduction.daily_original_length");
+    whitelist_.insert("data_reduction.daily_received_length");
+    whitelist_.insert("data_reduction.update_daily_lengths");
   }
 
   ~PreferenceWhitelist() {}
