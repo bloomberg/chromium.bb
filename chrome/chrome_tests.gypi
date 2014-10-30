@@ -449,6 +449,7 @@
       'browser/media/chrome_webrtc_video_quality_browsertest.cc',
       'browser/media/chrome_webrtc_webcam_browsertest.cc',
       'browser/media/encrypted_media_istypesupported_browsertest.cc',
+      'browser/media/media_stream_devices_controller_browsertest.cc',
       'browser/media/test_license_server.cc',
       'browser/media/test_license_server.h',
       'browser/media/test_license_server_config.h',

@@ -15,14 +15,12 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
-#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/media_stream_request.h"
 #include "net/cookies/canonical_cookie.h"
 
 class HostContentSettingsMap;
@@ -351,12 +349,14 @@ class TabSpecificContentSettings
 #endif
 
   // This method is called to update the status about the microphone and
-  // camera stream access. |request_permissions| contains a list of requested
-  // media stream types and the permission for each type.
+  // camera stream access.
   void OnMediaStreamPermissionSet(
       const GURL& request_origin,
-      const MediaStreamDevicesController::MediaStreamTypeSettingsMap&
-          request_permissions);
+      MicrophoneCameraState new_microphone_camera_state,
+      const std::string& media_stream_selected_audio_device,
+      const std::string& media_stream_selected_video_device,
+      const std::string& media_stream_requested_audio_device,
+      const std::string& media_stream_requested_video_device);
 
   // There methods are called to update the status about MIDI access.
   void OnMidiSysExAccessed(const GURL& reqesting_origin);

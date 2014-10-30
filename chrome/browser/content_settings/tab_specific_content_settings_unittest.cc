@@ -74,13 +74,18 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
                                     false);
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   content_settings->SetPopupsBlocked(true);
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  TabSpecificContentSettings::MicrophoneCameraState
+      blocked_microphone_camera_state =
+          TabSpecificContentSettings::MICROPHONE_ACCESSED |
+          TabSpecificContentSettings::MICROPHONE_BLOCKED |
+          TabSpecificContentSettings::CAMERA_ACCESSED |
+          TabSpecificContentSettings::CAMERA_BLOCKED;
   content_settings->OnMediaStreamPermissionSet(GURL("http://google.com"),
-                                               request_permissions);
+                                               blocked_microphone_camera_state,
+                                               std::string(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
 
   // Check that only the respective content types are affected.
   EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
@@ -197,163 +202,6 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
       content_settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES));
   ASSERT_TRUE(
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
-}
-
-TEST_F(TabSpecificContentSettingsTest, AllowedBlockedMediaContent) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and allow microphone access.
-  GURL security_origin("http://google.com");
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and allow camera access.
-  request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  // cam request should not affect previous mic settings.
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_EQ(TabSpecificContentSettings::CAMERA_ACCESSED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and block microphone access.
-  request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  // mic request should not affect previous cam settings.
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-            TabSpecificContentSettings::MICROPHONE_BLOCKED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and block camera access.
-  request_permissions.clear();
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  // cam request should not affect previous mic settings.
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_EQ(TabSpecificContentSettings::CAMERA_ACCESSED |
-            TabSpecificContentSettings::CAMERA_BLOCKED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and allow microphone and camera access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-            TabSpecificContentSettings::CAMERA_ACCESSED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request and block microphone and camera access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-            TabSpecificContentSettings::MICROPHONE_BLOCKED |
-            TabSpecificContentSettings::CAMERA_ACCESSED |
-            TabSpecificContentSettings::CAMERA_BLOCKED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request microphone and camera access. Allow microphone, block camera.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-            TabSpecificContentSettings::CAMERA_ACCESSED |
-            TabSpecificContentSettings::CAMERA_BLOCKED,
-            content_settings->GetMicrophoneCameraState());
-
-  // Request microphone and camera access. Block microphone, allow camera.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
-  ASSERT_FALSE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
-  ASSERT_TRUE(content_settings->IsContentAllowed(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_FALSE(content_settings->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  ASSERT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
-            TabSpecificContentSettings::MICROPHONE_BLOCKED |
-            TabSpecificContentSettings::CAMERA_ACCESSED,
-            content_settings->GetMicrophoneCameraState());
 }
 
 TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {

@@ -540,49 +540,31 @@ bool TabSpecificContentSettings::IsMicrophoneCameraStateChanged() const {
 
 void TabSpecificContentSettings::OnMediaStreamPermissionSet(
     const GURL& request_origin,
-    const MediaStreamDevicesController::MediaStreamTypeSettingsMap&
-        request_permissions) {
+    MicrophoneCameraState new_microphone_camera_state,
+    const std::string& media_stream_selected_audio_device,
+    const std::string& media_stream_selected_video_device,
+    const std::string& media_stream_requested_audio_device,
+    const std::string& media_stream_requested_video_device) {
   media_stream_access_origin_ = request_origin;
-  MicrophoneCameraState prev_microphone_camera_state = microphone_camera_state_;
-  microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
 
-  PrefService* prefs =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
-      GetPrefs();
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap::const_iterator it =
-      request_permissions.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
-  if (it != request_permissions.end()) {
-    media_stream_requested_audio_device_ = it->second.requested_device_id;
-    media_stream_selected_audio_device_ =
-        media_stream_requested_audio_device_.empty() ?
-            prefs->GetString(prefs::kDefaultAudioCaptureDevice) :
-            media_stream_requested_audio_device_;
-    DCHECK_NE(MediaStreamDevicesController::MEDIA_NONE, it->second.permission);
-    bool mic_allowed =
-        it->second.permission == MediaStreamDevicesController::MEDIA_ALLOWED;
-    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = mic_allowed;
-    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = !mic_allowed;
-    microphone_camera_state_ |=
-        MICROPHONE_ACCESSED | (mic_allowed ? 0 : MICROPHONE_BLOCKED);
+  if (new_microphone_camera_state & MICROPHONE_ACCESSED) {
+    media_stream_requested_audio_device_ = media_stream_requested_audio_device;
+    media_stream_selected_audio_device_ = media_stream_selected_audio_device;
+    bool mic_blocked = (new_microphone_camera_state & MICROPHONE_BLOCKED) != 0;
+    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = !mic_blocked;
+    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] = mic_blocked;
   }
 
-  it = request_permissions.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
-  if (it != request_permissions.end()) {
-    media_stream_requested_video_device_ = it->second.requested_device_id;
-    media_stream_selected_video_device_ =
-        media_stream_requested_video_device_.empty() ?
-        prefs->GetString(prefs::kDefaultVideoCaptureDevice) :
-        media_stream_requested_video_device_;
-    DCHECK_NE(MediaStreamDevicesController::MEDIA_NONE, it->second.permission);
-    bool cam_allowed =
-        it->second.permission == MediaStreamDevicesController::MEDIA_ALLOWED;
-    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = cam_allowed;
-    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = !cam_allowed;
-    microphone_camera_state_ |=
-        CAMERA_ACCESSED | (cam_allowed ? 0 : CAMERA_BLOCKED);
+  if (new_microphone_camera_state & CAMERA_ACCESSED) {
+    media_stream_requested_video_device_ = media_stream_requested_video_device;
+    media_stream_selected_video_device_ = media_stream_selected_video_device;
+    bool cam_blocked = (new_microphone_camera_state & CAMERA_BLOCKED) != 0;
+    content_allowed_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = !cam_blocked;
+    content_blocked_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = cam_blocked;
   }
 
-  if (microphone_camera_state_ != prev_microphone_camera_state) {
+  if (microphone_camera_state_ != new_microphone_camera_state) {
+    microphone_camera_state_ = new_microphone_camera_state;
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
         content::Source<WebContents>(web_contents()),

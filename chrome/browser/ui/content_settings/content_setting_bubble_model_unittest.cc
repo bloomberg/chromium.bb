@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -51,6 +53,16 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
               bubble_content.custom_link.empty());
     EXPECT_EQ(expect_clear_link, bubble_content.custom_link_enabled);
     EXPECT_FALSE(bubble_content.manage_link.empty());
+  }
+
+  std::string GetDefaultAudioDevice() {
+    PrefService* prefs = profile()->GetPrefs();
+    return prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+  }
+
+  std::string GetDefaultVideoDevice() {
+    PrefService* prefs = profile()->GetPrefs();
+    return prefs->GetString(prefs::kDefaultVideoCaptureDevice);
   }
 };
 
@@ -119,14 +131,15 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED |
+      TabSpecificContentSettings::CAMERA_ACCESSED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               GetDefaultVideoDevice(),
+                                               std::string(),
+                                               std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -180,13 +193,17 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED |
+      TabSpecificContentSettings::MICROPHONE_BLOCKED |
+      TabSpecificContentSettings::CAMERA_ACCESSED |
+      TabSpecificContentSettings::CAMERA_BLOCKED;
+  content_settings->OnMediaStreamPermissionSet(url,
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               GetDefaultVideoDevice(),
+                                               std::string(),
+                                               std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -261,11 +278,15 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED |
+      TabSpecificContentSettings::MICROPHONE_BLOCKED;
+  content_settings->OnMediaStreamPermissionSet(url,
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -351,11 +372,15 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED |
+      TabSpecificContentSettings::MICROPHONE_BLOCKED;
+  content_settings->OnMediaStreamPermissionSet(url,
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -405,9 +430,13 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
   scoped_ptr<content::MediaStreamUI> media_stream_ui =
       indicator->RegisterMediaStream(web_contents(), audio_devices);
   media_stream_ui->OnStarted(base::Closure());
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
-  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  microphone_camera_state &= ~TabSpecificContentSettings::MICROPHONE_BLOCKED;
+  content_settings->OnMediaStreamPermissionSet(url,
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -447,9 +476,13 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
   }
 
   // Simulate that yet another audio stream capture request was initiated.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
-  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
+  microphone_camera_state |= TabSpecificContentSettings::MICROPHONE_BLOCKED;
+  content_settings->OnMediaStreamPermissionSet(url,
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
 
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -482,12 +515,14 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -514,10 +549,13 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
             bubble_content.media_menus.begin()->first);
 
   // Change the microphone access.
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  microphone_camera_state |= TabSpecificContentSettings::MICROPHONE_BLOCKED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),
@@ -552,12 +590,14 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::CAMERA_ACCESSED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               std::string(),
+                                               GetDefaultVideoDevice(),
+                                               std::string(),
+                                               std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -584,10 +624,13 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Change the camera access.
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  microphone_camera_state |= TabSpecificContentSettings::CAMERA_BLOCKED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               std::string(),
+                                               GetDefaultVideoDevice(),
+                                               std::string(),
+                                               std::string());
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),
@@ -624,12 +667,14 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   GURL security_origin("http://" + request_host);
 
   // Firstly, add microphone access.
-  MediaStreamDevicesController::MediaStreamTypeSettingsMap
-      request_permissions;
-  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
+  TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
+      TabSpecificContentSettings::MICROPHONE_ACCESSED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               std::string(),
+                                               std::string(),
+                                               std::string());
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -653,10 +698,13 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Then add camera access.
-  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
-      MediaStreamDevicesController::MEDIA_ALLOWED;
+  microphone_camera_state |= TabSpecificContentSettings::CAMERA_ACCESSED;
   content_settings->OnMediaStreamPermissionSet(security_origin,
-                                               request_permissions);
+                                               microphone_camera_state,
+                                               GetDefaultAudioDevice(),
+                                               GetDefaultVideoDevice(),
+                                               std::string(),
+                                               std::string());
 
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
