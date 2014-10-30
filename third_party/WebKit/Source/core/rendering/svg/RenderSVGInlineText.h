@@ -43,6 +43,8 @@ public:
     // Preserves floating point precision for the use in DRT. It knows how to round and does a better job than enclosingIntRect.
     FloatRect floatLinesBoundingBox() const;
 
+    virtual PassRefPtr<StringImpl> originalText() const override;
+
 private:
     virtual const char* renderName() const override { return "RenderSVGInlineText"; }
 
