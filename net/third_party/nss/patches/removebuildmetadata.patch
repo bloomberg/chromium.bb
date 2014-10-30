@@ -1,0 +1,27 @@
+diff --git a/net/third_party/nss/ssl/sslver.c b/net/third_party/nss/ssl/sslver.c
+index 35e0317..ea60888 100644
+--- a/net/third_party/nss/ssl/sslver.c
++++ b/net/third_party/nss/ssl/sslver.c
+@@ -12,6 +12,13 @@
+ #define _DEBUG_STRING ""
+ #endif
+ 
++#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
++#define _DATE_AND_TIME "Sep 02 2008 08:00:00"
++#else
++#define _DATE_AND_TIME __DATE__ " " __TIME__
++#endif
++
++
+ /*
+  * Version information for the 'ident' and 'what commands
+  *
+@@ -19,6 +26,6 @@
+  * must not end in a '$' to prevent rcs keyword substitution.
+  */
+ const char __nss_ssl_rcsid[] = "$Header: NSS " NSS_VERSION _DEBUG_STRING
+-        "  " __DATE__ " " __TIME__ " $";
++        "  " _DATE_AND_TIME " $";
+ const char __nss_ssl_sccsid[] = "@(#)NSS " NSS_VERSION _DEBUG_STRING
+-        "  " __DATE__ " " __TIME__;
++        "  " _DATE_AND_TIME;
