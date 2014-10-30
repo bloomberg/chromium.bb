@@ -1295,7 +1295,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         CSSPropertyID propertyId = static_cast<CSSPropertyID>(i);
 
         // StyleBuilder does not allow any expanded shorthands.
-        if (isExpandedShorthand(propertyId))
+        if (isShorthandProperty(propertyId))
             continue;
 
         // all shorthand spec says:

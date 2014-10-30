@@ -130,7 +130,7 @@ const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID property
     }
 }
 
-bool isExpandedShorthand(CSSPropertyID id)
+bool isShorthandProperty(CSSPropertyID id)
 {
     return shorthandForProperty(id).length();
 }

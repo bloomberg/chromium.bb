@@ -109,7 +109,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     m_keyframeGroups = adoptPtrWillBeNoop(new KeyframeGroupMap);
     for (const auto& keyframe : normalizedKeyframes(getFrames())) {
         for (CSSPropertyID property : keyframe->properties()) {
-            ASSERT_WITH_MESSAGE(!isExpandedShorthand(property), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property);
+            ASSERT_WITH_MESSAGE(!isShorthandProperty(property), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property);
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
             if (groupIter == m_keyframeGroups->end())
