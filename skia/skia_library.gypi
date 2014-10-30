@@ -132,16 +132,12 @@
   '../third_party/skia/src/utils/SkPathUtils.cpp',
   '../third_party/skia/src/utils/SkSHA1.cpp',
   '../third_party/skia/src/utils/SkSHA1.h',
-  '../third_party/skia/src/utils/SkThreadUtils.h',
-  '../third_party/skia/src/utils/SkThreadUtils_pthread.cpp',
-  '../third_party/skia/src/utils/SkThreadUtils_pthread.h',
-  '../third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp',
-  '../third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp',
-  '../third_party/skia/src/utils/SkThreadUtils_pthread_other.cpp',
-  '../third_party/skia/src/utils/SkThreadUtils_win.cpp',
-  '../third_party/skia/src/utils/SkThreadUtils_win.h',
   '../third_party/skia/src/utils/SkTFitsIn.h',
   '../third_party/skia/src/utils/SkTLogic.h',
+
+  # We don't currently need to change thread affinity, so leave out this complexity for now.
+  "../third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
+  "../third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp",
 
 #windows
   '../third_party/skia/include/utils/win/SkAutoCoInitialize.h',
@@ -199,6 +195,19 @@
     ['skia_support_pdf == 1', {
       'dependencies': [
         '../third_party/sfntly/sfntly.gyp:sfntly',
+      ],
+    }],
+
+    [ 'OS == "win"', {
+      'sources!': [
+        # Keeping _win.cpp
+        "../third_party/skia/src/utils/SkThreadUtils_pthread.cpp",
+        "../third_party/skia/src/utils/SkThreadUtils_pthread_other.cpp",
+      ],
+    },{
+      'sources!': [
+        # Keeping _pthread.cpp and _pthread_other.cpp
+        "../third_party/skia/src/utils/SkThreadUtils_win.cpp",
       ],
     }],
 
