@@ -203,6 +203,37 @@ void UdpNode::QueueOutput() {
   stream()->EnqueueWork(work);
 }
 
+Error UdpNode::SetSockOpt(int lvl,
+                          int optname,
+                          const void* optval,
+                          socklen_t len) {
+  if (lvl == SOL_SOCKET && optname == SO_RCVBUF) {
+    if (static_cast<size_t>(len) < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    int bufsize = *static_cast<const int*>(optval);
+    int32_t error =
+          UDPInterface()->SetOption(socket_resource_,
+                       PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE,
+                       PP_MakeInt32(bufsize),
+                       PP_BlockUntilComplete());
+    return PPErrorToErrno(error);
+  } else if (lvl == SOL_SOCKET && optname == SO_SNDBUF) {
+    if (static_cast<size_t>(len) < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    int bufsize = *static_cast<const int*>(optval);
+    int32_t error =
+        UDPInterface()->SetOption(socket_resource_,
+                PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE,
+                PP_MakeInt32(bufsize),
+                PP_BlockUntilComplete());
+    return PPErrorToErrno(error);
+  }
+
+  return SocketNode::SetSockOpt(lvl, optname, optval, len);
+}
+
 Error UdpNode::Bind(const struct sockaddr* addr, socklen_t len) {
   if (0 == socket_resource_)
     return EBADF;

@@ -594,6 +594,20 @@ TEST_F(SocketTestUDP, Listen) {
   EXPECT_EQ(errno, ENOTSUP);
 }
 
+TEST_F(SocketTestUDP, Sockopt_BUFSIZE) {
+  int option = 1024*1024;
+  socklen_t len = sizeof(option);
+
+  ASSERT_EQ(0, Bind(sock1_, LOCAL_HOST, ANY_PORT));
+
+  // Modify the test to verify the change by calling getsockopt
+  // once UDPInterface supports GetOption() call
+  ASSERT_EQ(0, ki_setsockopt(sock1_, SOL_SOCKET, SO_RCVBUF, &option, len))
+    << "failed with: " << strerror(errno);
+  ASSERT_EQ(0, ki_setsockopt(sock1_, SOL_SOCKET, SO_SNDBUF, &option, len))
+    << "failed with: " << strerror(errno);
+}
+
 TEST_F(SocketTestTCP, Listen) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
@@ -854,6 +868,37 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
   }
 
   ASSERT_EQ(0, ki_close(new_sock));
+}
+
+TEST_F(SocketTestTCP, Sockopt_BUFSIZE) {
+  int option = 1024*1024;
+  socklen_t len = sizeof(option);
+  sockaddr_in addr;
+  socklen_t addrlen = sizeof(addr);
+
+  int server_sock = sock1_;
+  int client_sock = sock2_;
+
+  // bind and listen
+  ASSERT_EQ(0, Bind(server_sock, LOCAL_HOST, PORT1));
+  ASSERT_EQ(0, ki_listen(server_sock, 10))
+    << "listen failed with: " << strerror(errno);
+
+  // connect to listening socket
+  IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
+  ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
+    << "Failed with " << errno << ": " << strerror(errno);
+
+  addrlen = sizeof(addr);
+  int new_sock = ki_accept(server_sock, (sockaddr*)&addr, &addrlen);
+  ASSERT_NE(-1, new_sock);
+
+  // Modify the test to verify the change by calling getsockopt
+  // once TCPInterface supports GetOption() call
+  ASSERT_EQ(0, ki_setsockopt(sock2_, SOL_SOCKET, SO_RCVBUF, &option, len))
+      << "failed with: " << strerror(errno);
+  ASSERT_EQ(0, ki_setsockopt(sock2_, SOL_SOCKET, SO_SNDBUF, &option, len))
+      << "failed with: " << strerror(errno);
 }
 
 #endif  // PROVIDES_SOCKET_API

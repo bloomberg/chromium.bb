@@ -365,6 +365,28 @@ Error TcpNode::SetSockOpt(int lvl,
     AUTO_LOCK(node_lock_);
     tcp_nodelay_ = *static_cast<const int*>(optval) != 0;
     return SetNoDelay_Locked();
+  } else if (lvl == SOL_SOCKET && optname == SO_RCVBUF) {
+    if (static_cast<size_t>(len) < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    int bufsize = *static_cast<const int*>(optval);
+    int32_t error =
+        TCPInterface()->SetOption(socket_resource_,
+                                  PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE,
+                                  PP_MakeInt32(bufsize),
+                                  PP_BlockUntilComplete());
+    return PPErrorToErrno(error);
+  } else if (lvl == SOL_SOCKET && optname == SO_SNDBUF) {
+    if (static_cast<size_t>(len) < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    int bufsize = *static_cast<const int*>(optval);
+    int32_t error =
+        TCPInterface()->SetOption(socket_resource_,
+                PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE,
+                PP_MakeInt32(bufsize),
+                PP_BlockUntilComplete());
+    return PPErrorToErrno(error);
   }
 
   return SocketNode::SetSockOpt(lvl, optname, optval, len);
