@@ -1021,7 +1021,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   bool must_revalidate = HasHeaderValue("cache-control", "must-revalidate");
 
   if (must_revalidate || !GetStaleWhileRevalidateValue(&lifetimes.staleness)) {
-    DCHECK(lifetimes.staleness == TimeDelta());
+    DCHECK_EQ(TimeDelta(), lifetimes.staleness);
   }
 
   // NOTE: "Cache-Control: max-age" overrides Expires, so we only check the
@@ -1045,7 +1045,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
       return lifetimes;
     }
 
-    DCHECK(lifetimes.freshness == TimeDelta());
+    DCHECK_EQ(TimeDelta(), lifetimes.freshness);
     return lifetimes;
   }
 
@@ -1097,7 +1097,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   // Our heuristic freshness estimate for this resource is 0 seconds, in
   // accordance with common browser behaviour. However, stale-while-revalidate
   // may still apply.
-  DCHECK(lifetimes.freshness == TimeDelta());
+  DCHECK_EQ(TimeDelta(), lifetimes.freshness);
   return lifetimes;
 }
 
