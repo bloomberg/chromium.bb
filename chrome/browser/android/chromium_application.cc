@@ -5,9 +5,17 @@
 #include "chrome/browser/android/chromium_application.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ChromiumApplication_jni.h"
+
+using base::android::ConvertUTF8ToJavaString;
+
+static jstring GetBrowserUserAgent(JNIEnv* env, jclass clazz) {
+  return ConvertUTF8ToJavaString(env, GetUserAgent()).Release();
+}
 
 namespace chrome {
 namespace android {

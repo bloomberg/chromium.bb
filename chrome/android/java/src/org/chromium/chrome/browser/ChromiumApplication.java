@@ -47,4 +47,13 @@ public abstract class ChromiumApplication extends ContentApplication {
     // TODO(yfriedman): This is too widely available. Plumb this through ChromeNetworkDelegate
     // instead.
     protected abstract PKCS11AuthenticationManager getPKCS11AuthenticationManager();
+
+    /**
+     * @return The user agent string of Chrome.
+     */
+    public static String getBrowserUserAgent() {
+        return nativeGetBrowserUserAgent();
+    }
+
+    private static native String nativeGetBrowserUserAgent();
 }
