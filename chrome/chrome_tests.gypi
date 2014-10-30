@@ -40,7 +40,6 @@
       '../extensions/browser/api/cast_channel/cast_channel_apitest.cc',
       '../extensions/browser/api/runtime/runtime_apitest.cc',
       '../extensions/browser/api/serial/serial_apitest.cc',
-      '../extensions/browser/api/usb/usb_apitest.cc',
       '../extensions/browser/api/usb/usb_manual_apitest.cc',
       '../extensions/browser/app_window/app_window_browsertest.cc',
       '../extensions/browser/guest_view/extension_options/extension_options_apitest.cc',

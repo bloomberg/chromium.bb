@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/usb/usb_api.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -24,6 +24,8 @@ using device::UsbInterfaceDescriptor;
 using device::UsbService;
 using device::UsbTransferCallback;
 
+namespace extensions {
+
 namespace {
 
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
@@ -34,14 +36,6 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
   ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
 }
 
-// MSVC erroneously thinks that at least one of the arguments for the transfer
-// methods differ by const or volatility and emits a warning about the old
-// standards-noncompliant behaviour of their compiler.
-#if defined(OS_WIN)
-#pragma warning(push)
-#pragma warning(disable : 4373)
-#endif
-
 class MockUsbDeviceHandle : public UsbDeviceHandle {
  public:
   MockUsbDeviceHandle() : UsbDeviceHandle() {}
@@ -49,49 +43,49 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD0(Close, void());
 
   MOCK_METHOD10(ControlTransfer,
-                void(const UsbEndpointDirection direction,
-                     const TransferRequestType request_type,
-                     const TransferRecipient recipient,
-                     const uint8 request,
-                     const uint16 value,
-                     const uint16 index,
+                void(UsbEndpointDirection direction,
+                     TransferRequestType request_type,
+                     TransferRecipient recipient,
+                     uint8 request,
+                     uint16 value,
+                     uint16 index,
                      net::IOBuffer* buffer,
-                     const size_t length,
-                     const unsigned int timeout,
+                     size_t length,
+                     unsigned int timeout,
                      const UsbTransferCallback& callback));
 
   MOCK_METHOD6(BulkTransfer,
-               void(const UsbEndpointDirection direction,
-                    const uint8 endpoint,
+               void(UsbEndpointDirection direction,
+                    uint8 endpoint,
                     net::IOBuffer* buffer,
-                    const size_t length,
-                    const unsigned int timeout,
+                    size_t length,
+                    unsigned int timeout,
                     const UsbTransferCallback& callback));
 
   MOCK_METHOD6(InterruptTransfer,
-               void(const UsbEndpointDirection direction,
-                    const uint8 endpoint,
+               void(UsbEndpointDirection direction,
+                    uint8 endpoint,
                     net::IOBuffer* buffer,
-                    const size_t length,
-                    const unsigned int timeout,
+                    size_t length,
+                    unsigned int timeout,
                     const UsbTransferCallback& callback));
 
   MOCK_METHOD8(IsochronousTransfer,
-               void(const UsbEndpointDirection direction,
-                    const uint8 endpoint,
+               void(UsbEndpointDirection direction,
+                    uint8 endpoint,
                     net::IOBuffer* buffer,
-                    const size_t length,
-                    const unsigned int packets,
-                    const unsigned int packet_length,
-                    const unsigned int timeout,
+                    size_t length,
+                    unsigned int packets,
+                    unsigned int packet_length,
+                    unsigned int timeout,
                     const UsbTransferCallback& callback));
 
   MOCK_METHOD0(ResetDevice, bool());
   MOCK_METHOD2(GetStringDescriptor, bool(uint8_t, base::string16*));
-  MOCK_METHOD1(ClaimInterface, bool(const int interface_number));
-  MOCK_METHOD1(ReleaseInterface, bool(const int interface_number));
+  MOCK_METHOD1(ClaimInterface, bool(int interface_number));
+  MOCK_METHOD1(ReleaseInterface, bool(int interface_number));
   MOCK_METHOD2(SetInterfaceAlternateSetting,
-               bool(const int interface_number, const int alternate_setting));
+               bool(int interface_number, int alternate_setting));
 
   virtual scoped_refptr<UsbDevice> GetDevice() const override {
     return device_;
@@ -158,13 +152,10 @@ class MockUsbService : public UsbService {
   scoped_refptr<UsbDevice> device_;
 };
 
-#if defined(OS_WIN)
-#pragma warning(pop)
-#endif
-
-class UsbApiTest : public ExtensionApiTest {
+class UsbApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
+    ShellApiTest::SetUpOnMainThread();
     mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_ = new MockUsbDevice(mock_device_handle_.get());
     scoped_refptr<content::MessageLoopRunner> runner =
@@ -201,7 +192,7 @@ class UsbApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(4);
-  ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/device_handling"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
@@ -212,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
   EXPECT_CALL(*mock_device_handle_.get(),
               InterruptTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
-  ASSERT_TRUE(RunExtensionTest("usb/reset_device"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/reset_device"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
@@ -220,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   EXPECT_CALL(*mock_device_.get(), GetConfiguration())
       .WillOnce(ReturnRef(config_descriptor));
-  ASSERT_TRUE(RunExtensionTest("usb/list_interfaces"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/list_interfaces"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
@@ -247,14 +238,14 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
       IsochronousTransfer(device::USB_DIRECTION_OUTBOUND, 3, _, 1, 1, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<7>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
-  ASSERT_TRUE(RunExtensionTest("usb/transfer_event"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/transfer_event"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
   EXPECT_CALL(*mock_device_handle_.get(), BulkTransfer(_, _, _, 0, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
-  ASSERT_TRUE(RunExtensionTest("usb/zero_length_transfer"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/zero_length_transfer"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
@@ -263,10 +254,12 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_ERROR))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_TIMEOUT));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
-  ASSERT_TRUE(RunExtensionTest("usb/transfer_failure"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/transfer_failure"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidLengthTransfer) {
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
-  ASSERT_TRUE(RunExtensionTest("usb/invalid_length_transfer"));
+  ASSERT_TRUE(RunAppTest("api_test/usb/invalid_length_transfer"));
 }
+
+}  // namespace extensions

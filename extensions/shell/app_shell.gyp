@@ -185,6 +185,7 @@
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
         '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
       'defines': [
@@ -199,6 +200,7 @@
         '../browser/api/socket/socket_apitest.cc',
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
         '../browser/api/sockets_udp/sockets_udp_apitest.cc',
+        '../browser/api/usb/usb_apitest.cc',
         '../browser/guest_view/web_view/web_view_apitest.h',
         '../browser/guest_view/web_view/web_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_media_access_apitest.cc',
