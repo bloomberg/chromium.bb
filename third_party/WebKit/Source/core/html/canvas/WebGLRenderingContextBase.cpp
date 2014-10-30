@@ -607,7 +607,6 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwn
 void WebGLRenderingContextBase::initializeNewContext()
 {
     ASSERT(!isContextLost());
-    m_needsUpdate = true;
     m_markedCanvasDirty = false;
     m_activeTextureUnit = 0;
     m_packAlignment = 4;
@@ -966,13 +965,6 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     GLint maxHeight = std::min(maxSize, m_maxViewportDims[1]);
     width = clamp(width, 1, maxWidth);
     height = clamp(height, 1, maxHeight);
-
-    if (m_needsUpdate) {
-        RenderBox* renderBox = canvas()->renderBox();
-        if (renderBox && renderBox->hasAcceleratedCompositing())
-            renderBox->contentChanged(CanvasChanged);
-        m_needsUpdate = false;
-    }
 
     // We don't have to mark the canvas as dirty, since the newly created image buffer will also start off
     // clear (and this matches what reshape will do).

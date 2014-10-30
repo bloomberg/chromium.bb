@@ -455,7 +455,6 @@ protected:
     bool m_restoreAllowed;
     Timer<WebGLRenderingContextBase> m_restoreTimer;
 
-    bool m_needsUpdate;
     bool m_markedCanvasDirty;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject> > m_contextObjects;
 
