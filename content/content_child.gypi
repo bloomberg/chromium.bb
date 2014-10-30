@@ -197,6 +197,8 @@
       'child/thread_safe_sender.h',
       'child/threaded_data_provider.cc',
       'child/threaded_data_provider.h',
+      'child/web_data_consumer_handle_impl.cc',
+      'child/web_data_consumer_handle_impl.h',
       'child/web_database_observer_impl.cc',
       'child/web_database_observer_impl.h',
       'child/web_discardable_memory_impl.cc',
