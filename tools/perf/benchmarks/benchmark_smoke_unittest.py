@@ -94,7 +94,21 @@ def load_tests(_, _2, _3):
 
     class BenchmarkSmokeTest(unittest.TestCase):
       pass
-    setattr(BenchmarkSmokeTest, benchmark.Name(), SmokeTestGenerator(benchmark))
+
+    method = SmokeTestGenerator(benchmark)
+
+    # Make sure any decorators are propagated from the original declaration.
+    # (access to protected members) pylint: disable=W0212
+    # TODO(dpranke): Since we only pick the first test from every class
+    # (above), if that test is disabled, we'll end up not running *any*
+    # test from the class. We should probably discover all of the tests
+    # in a class, and then throw the ones we don't need away instead.
+    if hasattr(benchmark, '_enabled_strings'):
+      method._enabled_strings = benchmark._enabled_strings
+    if hasattr(benchmark, '_disabled_strings'):
+      method._disabled_strings = benchmark._disabled_strings
+    setattr(BenchmarkSmokeTest, benchmark.Name(), method)
+
     suite.addTest(BenchmarkSmokeTest(benchmark.Name()))
 
   return suite
