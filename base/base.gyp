@@ -1411,7 +1411,6 @@
         {
           # GN: //base:base_android_java_enums_srcjar
           'target_name': 'base_java_library_load_from_apk_status_codes',
-          'toolsets': ['host', 'target'],
           'type': 'none',
           'variables': {
             'source_file': 'android/library_loader/library_load_from_apk_status_codes.h'
