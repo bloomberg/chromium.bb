@@ -72,8 +72,6 @@ public:
 
     virtual void handleEvent(ExecutionContext*, Event*) override;
 
-    virtual bool isLazy() const { return false; }
-
     // Returns the listener object, either a function or an object.
     v8::Local<v8::Object> getListenerObject(ExecutionContext* context)
     {

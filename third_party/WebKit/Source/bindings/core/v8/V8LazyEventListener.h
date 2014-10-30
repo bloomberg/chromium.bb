@@ -50,7 +50,6 @@ public:
         return adoptRef(new V8LazyEventListener(functionName, eventParameterName, code, sourceURL, position, node, isolate));
     }
 
-    virtual bool isLazy() const override { return true; }
     // V8LazyEventListener is always for the main world.
     virtual DOMWrapperWorld& world() const override { return DOMWrapperWorld::mainWorld(); }
 
