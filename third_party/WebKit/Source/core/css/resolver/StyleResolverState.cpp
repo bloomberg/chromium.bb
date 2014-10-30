@@ -37,7 +37,6 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     , m_parentStyle(parentStyle)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
-    , m_lineHeightValue(nullptr)
     , m_fontBuilder(document)
     , m_styleMap(*this, m_elementStyleResources)
 {

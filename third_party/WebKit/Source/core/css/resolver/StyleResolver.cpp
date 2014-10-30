@@ -672,7 +672,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
 
     // Create the style
     state.setStyle(RenderStyle::clone(&elementStyle));
-    state.setLineHeightValue(0);
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
@@ -684,10 +683,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element& element, const 
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
-
-    // Line-height is set when we are sure we decided on the font-size
-    if (state.lineHeightValue())
-        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     // Now do rest of the properties.
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
@@ -866,7 +861,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     if (ScopedStyleResolver* scopedResolver = document().scopedStyleResolver())
         scopedResolver->matchPageRules(collector);
 
-    state.setLineHeightValue(0);
     bool inheritedOnly = false;
 
     MatchResult& result = collector.matchedResult();
@@ -874,10 +868,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
-
-    // Line-height is set when we are sure we decided on the font-size.
-    if (state.lineHeightValue())
-        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
@@ -912,8 +902,6 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     StyleResolverState state(document(), 0);
     state.setStyle(RenderStyle::create());
-    state.style()->setLineHeight(RenderStyle::initialLineHeight());
-    state.setLineHeightValue(0);
     state.fontBuilder().setInitial(state.style()->effectiveZoom());
     state.style()->font().update(document().styleEngine()->fontSelector());
     return state.takeStyle();
@@ -1253,9 +1241,9 @@ template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::HighPr
 // This method returns the last CSSPropertyId of high priority properties.
 template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyLineHeight == CSSPropertyColor + 17, CSS_line_height_is_end_of_high_prioity_property_range);
-    COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyLineHeight - 1, CSS_zoom_is_before_line_height);
-    return CSSPropertyLineHeight;
+    COMPILE_ASSERT(CSSPropertyZoom == CSSPropertyColor + 16, CSS_zoom_is_end_of_high_priority_property_range);
+    COMPILE_ASSERT(CSSPropertyTextRendering == CSSPropertyZoom - 1, CSS_text_rendering_is_before_zoom);
+    return CSSPropertyZoom;
 }
 
 // This method returns the first CSSPropertyId of remaining properties,
@@ -1266,7 +1254,7 @@ template<> CSSPropertyID StyleResolver::lastCSSPropertyId<StyleResolver::HighPri
 // lastCSSPropertyId<LowPriorityProperties>.
 template<> CSSPropertyID StyleResolver::firstCSSPropertyId<StyleResolver::LowPriorityProperties>()
 {
-    COMPILE_ASSERT(CSSPropertyAlignContent == CSSPropertyLineHeight + 1, CSS_background_is_first_low_priority_property);
+    COMPILE_ASSERT(CSSPropertyAlignContent == CSSPropertyZoom + 1, CSS_align_content_is_first_low_priority_property);
     return CSSPropertyAlignContent;
 }
 
@@ -1350,10 +1338,8 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 
         if (!isPropertyForPass<pass>(property))
             continue;
-        if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
-            state.setLineHeightValue(current.value());
-        else
-            StyleBuilder::applyProperty(current.id(), state, current.value());
+
+        StyleBuilder::applyProperty(current.id(), state, current.value());
     }
 }
 
@@ -1436,7 +1422,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
-    state.setLineHeightValue(0);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
@@ -1459,10 +1444,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
-
-    // Line-height is set when we are sure we decided on the font-size.
-    if (state.lineHeightValue())
-        StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     // Many properties depend on the font. If it changes we just apply all properties.
     if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->fontDescription() != state.style()->fontDescription())

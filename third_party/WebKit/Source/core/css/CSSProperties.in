@@ -97,7 +97,6 @@ font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=
 -webkit-writing-mode inherited, custom_value
 text-rendering inherited, font, type_name=TextRenderingMode
 zoom animatable, custom_all
-line-height animatable, inherited, getter=specifiedLineHeight, custom_value
 
 align-content
 align-items custom_all
@@ -191,6 +190,7 @@ justify-self runtime_flag=CSSGridLayout, custom_all
 left animatable, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color animatable, svg, converter=convertSVGColor
+line-height animatable, inherited, getter=specifiedLineHeight, custom_value
 list-style-image animatable, inherited, custom_value
 list-style-position inherited
 list-style-type inherited

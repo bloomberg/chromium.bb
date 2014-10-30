@@ -93,9 +93,6 @@ public:
     // Holds all attribute names found while applying "content" properties that contain an "attr()" value.
     Vector<AtomicString>& contentAttrValues() { return m_contentAttrValues; }
 
-    void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
-    CSSValue* lineHeightValue() { return m_lineHeightValue; }
-
     void cacheUserAgentBorderAndBackground()
     {
         // RenderTheme only needs the cached style if it has an appearance,
@@ -152,8 +149,6 @@ private:
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
-
-    RawPtrWillBeMember<CSSValue> m_lineHeightValue;
 
     FontBuilder m_fontBuilder;
 
