@@ -2013,6 +2013,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableRemoteAssistance)
   },
+  {
+    "disable-new-zip-unpacker",
+    IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_NAME,
+    IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)
+  }
 #endif  // defined(OS_CHROMEOS)
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

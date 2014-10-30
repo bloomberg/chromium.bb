@@ -56,6 +56,9 @@ const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
 // Disables new Kiosk UI when kiosk apps are represented as user pods.
 const char kDisableNewKioskUI[] = "disable-new-kiosk-ui";
 
+// Disables the new File System Provider API based ZIP unpacker.
+const char kDisableNewZIPUnpacker[] = "disable-new-zip-unpacker";
+
 // Disable Office Editing for Docs, Sheets & Slides component app so handlers
 // won't be registered, making it possible to install another version for
 // testing.
