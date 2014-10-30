@@ -79,6 +79,13 @@ repack("repack_ui_test_pak") {
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
 
+  if (is_chromeos) {
+    sources += [
+      "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
+      "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
+    ]
+  }
+
   output = "$root_out_dir/ui_test.pak"
 
   deps = [
@@ -88,6 +95,13 @@ repack("repack_ui_test_pak") {
 
   if (!is_mac) {
     deps += [ ":copy_ui_resources_100_percent" ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
+    ]
   }
 }
 

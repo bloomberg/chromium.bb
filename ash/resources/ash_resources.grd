@@ -123,7 +123,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="cros/network/status_cellular_disabled_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="cros/network/status_cellular_enabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="cros/network/status_cellular_enabled_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED" file="cros/network/status_cellular_failed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY" file="cros/status/status_display_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE" file="cros/status/status_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_BOTTOM" file="cros/status/status_logout_button_normal_bottom.png" />
@@ -147,8 +146,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SUPERVISED_USER" file="cros/status/status_managed_mode_user.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="cros/network/status_network_info.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="cros/network/status_network_info_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_3G" file="cros/network/notification_3g.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" file="cros/notification/notification_session_length_timer.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="cros/status/status_power_small_all.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE" file="cros/status/status_power_small_all_fluctuating.png" />

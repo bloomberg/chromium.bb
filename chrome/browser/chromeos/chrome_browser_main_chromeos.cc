@@ -184,7 +184,7 @@ class DBusServices {
 
     // Initialize the NetworkConnect handler.
     network_connect_delegate_.reset(new NetworkConnectDelegateChromeOS);
-    ash::NetworkConnect::Initialize(network_connect_delegate_.get());
+    ui::NetworkConnect::Initialize(network_connect_delegate_.get());
 
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
@@ -200,7 +200,7 @@ class DBusServices {
   }
 
   ~DBusServices() {
-    ash::NetworkConnect::Shutdown();
+    ui::NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
 
     CertLibrary::Shutdown();

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#ifndef UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#define UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
 
 #include <set>
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,7 +23,7 @@ namespace chromeos {
 class NetworkState;
 }
 
-namespace ash {
+namespace ui {
 
 class NetworkConnect;
 
@@ -34,7 +34,7 @@ class NetworkConnect;
 //    notification system.
 // 2. It observes NetworkState changes to generate notifications when a
 //    Cellular network is out of credits.
-class ASH_EXPORT NetworkStateNotifier :
+class UI_CHROMEOS_EXPORT NetworkStateNotifier :
       public chromeos::NetworkStateHandlerObserver {
  public:
   explicit NetworkStateNotifier(NetworkConnect* network_connect);
@@ -59,6 +59,8 @@ class ASH_EXPORT NetworkStateNotifier :
   // Removes any existing connect notifications.
   void RemoveConnectNotification();
 
+  static const char kNotifierNetwork[];
+  static const char kNotifierNetworkError[];
   static const char kNetworkConnectNotificationId[];
   static const char kNetworkActivateNotificationId[];
   static const char kNetworkOutOfCreditsNotificationId[];
@@ -98,6 +100,6 @@ class ASH_EXPORT NetworkStateNotifier :
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#endif  // UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_

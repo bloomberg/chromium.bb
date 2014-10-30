@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/network/network_connect.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/image/image_skia.h"
@@ -61,7 +61,7 @@ bool ShouldHighlightNetwork(const NetworkState* network) {
 void ToggleTechnology(const NetworkTypePattern& technology) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool is_enabled = handler->IsTechnologyEnabled(technology);
-  ash::NetworkConnect::Get()->SetTechnologyEnabled(technology, !is_enabled);
+  ui::NetworkConnect::Get()->SetTechnologyEnabled(technology, !is_enabled);
 }
 
 }  // namespace
@@ -217,7 +217,7 @@ class MainMenuModel : public NetworkMenuModel {
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
-  ash::NetworkConnect::Get()->ConnectToNetwork(service_path);
+  ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

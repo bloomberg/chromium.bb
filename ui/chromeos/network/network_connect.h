@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_CONNECT_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_CONNECT_H
+#ifndef UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H
+#define UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H
 
 #include <string>
 
-#include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -18,9 +18,9 @@ namespace chromeos {
 class NetworkTypePattern;
 }
 
-namespace ash {
+namespace ui {
 
-class ASH_EXPORT NetworkConnect {
+class UI_CHROMEOS_EXPORT NetworkConnect {
  public:
   class Delegate {
    public:
@@ -110,6 +110,6 @@ class ASH_EXPORT NetworkConnect {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnect);
 };
 
-}  // ash
+}  // ui
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_CONNECT_H
+#endif  // UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H

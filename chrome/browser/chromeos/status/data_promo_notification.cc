@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
-#include "ash/resources/grit/ash_resources.h"
-#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/system_notifier.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -27,9 +25,12 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/network/network_connect.h"
+#include "ui/chromeos/network/network_state_notifier.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/view.h"
@@ -123,7 +124,7 @@ const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
 void NotificationClicked(const std::string& service_path,
                          const std::string& info_url) {
   if (info_url.empty())
-    ash::NetworkConnect::Get()->ShowNetworkSettings(service_path);
+    ui::NetworkConnect::Get()->ShowNetworkSettings(service_path);
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetPrimaryUserProfile(),
@@ -216,7 +217,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
           kDataPromoNotificationId, base::string16() /* title */, message, icon,
-          ash::system_notifier::kNotifierNetwork,
+          ui::NetworkStateNotifier::kNotifierNetwork,
           base::Bind(&NotificationClicked, default_network->path(), info_url)));
 
   check_for_promo_ = false;
