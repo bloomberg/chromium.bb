@@ -27,6 +27,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         bug=421710)
+    self.Fail('conformance/glsl/bugs/essl3-shaders-with-webgl1.html',
+        bug=428845)
+    self.Fail('conformance/glsl/misc/expression-list-in-declarator-initializer.html',
+        bug=428845)
 
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
@@ -50,6 +54,11 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Flaky on Win
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win'], bug=369349)
+
+    self.Fail('conformance/rendering/framebuffer-switch.html',
+        ['win'], bug=428849)
+    self.Fail('conformance/rendering/framebuffer-texture-switch.html',
+        ['win'], bug=428849)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
