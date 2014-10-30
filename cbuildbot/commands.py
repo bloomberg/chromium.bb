@@ -1189,8 +1189,16 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
   if raw_cmd_result:
     return result
 
-  # Parse the result.
-  return json.loads(result.output)
+  # TODO(yjhong): Let the exception propagate and remove extra logging
+  # after crbug.com/428824 is fixed.
+  try:
+    # Parse the result.
+    deps = json.loads(result.output)
+  except ValueError as e:
+    logging.warning('%s: %s', e, result.output)
+    deps = {}
+
+  return deps
 
 
 def GenerateCPEExport(buildroot, board, useflags=None):
