@@ -131,10 +131,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
 
   // Methods called by |Channel|:
 
-  // TODO(vtl): Remove these once we've switched over to |AttachAndRun()|.
-  void AttachToChannel(Channel* channel, ChannelEndpointId local_id);
-  void Run(ChannelEndpointId remote_id);
-
   // Called by |Channel| when it takes a reference to this object. It will send
   // all queue messages (in |paused_message_queue_|).
   // TODO(vtl): Maybe rename this "OnAttach"?

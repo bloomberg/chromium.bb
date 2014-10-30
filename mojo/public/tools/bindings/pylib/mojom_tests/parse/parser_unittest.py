@@ -961,7 +961,7 @@ class ParserTest(unittest.TestCase):
     """Tests parsing import statements."""
 
     # One import (no module statement).
-    source1 = "import \"somedir/my.mojom\""
+    source1 = "import \"somedir/my.mojom\";"
     expected1 = ast.Mojom(
         None,
         ast.ImportList(ast.Import("somedir/my.mojom")),
@@ -970,8 +970,8 @@ class ParserTest(unittest.TestCase):
 
     # Two imports (no module statement).
     source2 = """\
-        import "somedir/my1.mojom"
-        import "somedir/my2.mojom"
+        import "somedir/my1.mojom";
+        import "somedir/my2.mojom";
         """
     expected2 = ast.Mojom(
         None,
@@ -982,8 +982,8 @@ class ParserTest(unittest.TestCase):
 
     # Imports with module statement.
     source3 = """\
-        import "somedir/my1.mojom"
-        import "somedir/my2.mojom"
+        import "somedir/my1.mojom";
+        import "somedir/my2.mojom";
         module my_module {}
         """
     expected3 = ast.Mojom(
@@ -1015,6 +1015,16 @@ class ParserTest(unittest.TestCase):
         r"^my_file\.mojom:2: Error: Unexpected 'module':\n"
             r" *module {}$"):
       parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+        import "foo.mojom"  // Missing semicolon.
+        module {}
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'module':\n"
+            r" *module {}$"):
+      parser.Parse(source3, "my_file.mojom")
 
   def testValidNullableTypes(self):
     """Tests parsing nullable types."""

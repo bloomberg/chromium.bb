@@ -4,3 +4,8 @@ include_rules = [
   "+mojo/public/interfaces/application",
   "+mojo/public/interfaces/service_provider",
 ]
+specific_include_rules = {
+  r"application_test_base\.h": [
+    "+testing/gtest/include/gtest",
+  ],
+}

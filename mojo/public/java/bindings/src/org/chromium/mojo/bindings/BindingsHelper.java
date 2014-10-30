@@ -110,6 +110,64 @@ public class BindingsHelper {
     }
 
     /**
+     * Returns |true| if and only if the two objects are equals, handling |null|.
+     */
+    public static boolean equals(Object o1, Object o2) {
+        if (o1 == o2) {
+            return true;
+        }
+        if (o1 == null) {
+            return false;
+        }
+        return o1.equals(o2);
+    }
+
+    /**
+     * Returns the hash code of the object, handling |null|.
+     */
+    public static int hashCode(Object o) {
+        if (o == null) {
+            return 0;
+        }
+        return o.hashCode();
+    }
+
+    /**
+     * Returns the hash code of the value.
+     */
+    public static int hashCode(boolean o) {
+        return o ? 1231 : 1237;
+    }
+
+    /**
+     * Returns the hash code of the value.
+     */
+    public static int hashCode(long o) {
+        return (int) (o ^ (o >>> 32));
+    }
+
+    /**
+     * Returns the hash code of the value.
+     */
+    public static int hashCode(float o) {
+        return Float.floatToIntBits(o);
+    }
+
+    /**
+     * Returns the hash code of the value.
+     */
+    public static int hashCode(double o) {
+        return hashCode(Double.doubleToLongBits(o));
+    }
+
+    /**
+     * Returns the hash code of the value.
+     */
+    public static int hashCode(int o) {
+        return o;
+    }
+
+    /**
      * Determines if the given {@code char} value is a Unicode <i>surrogate code unit</i>. See
      * {@link Character#isSurrogate}. Extracting here because the method only exists at API level
      * 19.
@@ -119,8 +177,7 @@ public class BindingsHelper {
     }
 
     /**
-     * Returns an {@link AsyncWaiter} to use with the given handle, or <code>null</code> if none if
-     * available.
+     * Returns an {@link AsyncWaiter} to use with the given handle, or |null| if none if available.
      */
     static AsyncWaiter getDefaultAsyncWaiterForHandle(Handle handle) {
         if (handle.getCore() != null) {
@@ -129,5 +186,4 @@ public class BindingsHelper {
             return null;
         }
     }
-
 }

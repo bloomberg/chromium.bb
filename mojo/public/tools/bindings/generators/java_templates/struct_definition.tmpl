@@ -1,6 +1,34 @@
 {% from "constant_definition.tmpl" import constant_def %}
 {% from "enum_definition.tmpl" import enum_def %}
 
+{%- macro inequality(kind, v1, v2) -%}
+{%-   if kind|is_reference_kind -%}
+{%-     if kind|is_array_kind -%}
+{%-       if kind.kind|is_reference_kind -%}
+!java.util.Arrays.deepEquals({{v1}}, {{v2}})
+{%-       else -%}
+!java.util.Arrays.equals({{v1}}, {{v2}})
+{%-       endif -%}
+{%-     else -%}
+!org.chromium.mojo.bindings.BindingsHelper.equals({{v1}}, {{v2}})
+{%-     endif -%}
+{%-   else -%}
+{{v1}} != {{v2}}
+{%-   endif -%}
+{%- endmacro -%}
+
+{%- macro hash(kind, v) -%}
+{%-   if kind|is_array_kind -%}
+{%-     if kind.kind|is_reference_kind -%}
+java.util.Arrays.deepHashCode({{v}})
+{%-     else -%}
+java.util.Arrays.hashCode({{v}})
+{%-     endif -%}
+{%-   else -%}
+org.chromium.mojo.bindings.BindingsHelper.hashCode({{v}})
+{%-   endif -%}
+{%- endmacro -%}
+
 {% macro encode(variable, kind, offset, bit, level=0, check_for_null=True) %}
 {% if kind|is_pointer_array_kind %}
 {% set sub_kind = kind.kind %}
@@ -146,6 +174,38 @@ if (decoder{{level+1}} == null) {
         {{encode(packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(8)}}
 {%   endfor %}
 {% endfor %}
+    }
+
+    /**
+     * @see Object#equals(Object)
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (object == this)
+            return true;
+        if (object == null)
+            return false;
+        if (getClass() != object.getClass())
+            return false;
+        {{struct|name}} other = ({{struct|name}}) object;
+{% for field in struct.fields %}
+        if ({{inequality(field.kind, field|name, 'other.'~field|name)}})
+            return false;
+{% endfor %}
+        return true;
+    }
+
+    /**
+     * @see Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+{% for field in struct.fields %}
+        result = prime * result + {{hash(field.kind, field|name)}};
+{% endfor %}
+        return result;
     }
 }
 {% endmacro %}

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "media/mojo/interfaces/demuxer_stream.mojom"
-import "media/mojo/interfaces/media_types.mojom"
+import "media/mojo/interfaces/demuxer_stream.mojom";
+import "media/mojo/interfaces/media_types.mojom";
 
 module mojo {
 

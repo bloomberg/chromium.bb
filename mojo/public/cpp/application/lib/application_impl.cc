@@ -36,6 +36,10 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
   BindShell(MakeScopedHandle(MessagePipeHandle(shell_handle)));
 }
 
+bool ApplicationImpl::HasArg(const std::string& arg) const {
+  return std::find(args_.begin(), args_.end(), arg) != args_.end();
+}
+
 void ApplicationImpl::ClearConnections() {
   for (ServiceRegistryList::iterator i(incoming_service_registries_.begin());
        i != incoming_service_registries_.end();
