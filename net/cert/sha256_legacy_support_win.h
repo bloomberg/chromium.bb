@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include "base/strings/string_piece.h"
 #include "crypto/wincrypt_shim.h"
 #include "net/base/net_export.h"
 
@@ -40,6 +41,21 @@ NET_EXPORT BOOL CryptVerifyCertificateSignatureExHook(
     void* issuer_data,
     DWORD flags,
     void* extra);
+
+// Returns true if |subject_type| a supported subject type for interception.
+bool IsSupportedSubjectType(DWORD subject_type);
+
+// Returns true if |issuer_type| is a supported issuer type for interception.
+bool IsSupportedIssuerType(DWORD issuer_type);
+
+// Returns the encoded form of |subject_data| or an empty StringPiece if not
+// supported.
+base::StringPiece GetSubjectSignature(DWORD subject_type,
+                                      void* subject_data);
+
+// Returns the public key of |issuer_data| or NULL if not supported.
+PCERT_PUBLIC_KEY_INFO GetIssuerPublicKey(DWORD issuer_type,
+                                         void* issuer_data);
 
 }  // namespace sha256_interception
 

@@ -4,8 +4,6 @@
 
 #include "net/cert/x509_certificate.h"
 
-#include <blapi.h>  // Implement CalculateChainFingerprint() with NSS.
-
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
@@ -16,6 +14,13 @@
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
+
+// Implement CalculateChainFingerprint() with our native crypto library.
+#if defined(USE_OPENSSL)
+#include <openssl/sha.h>
+#else
+#include <blapi.h>
+#endif
 
 #pragma comment(lib, "crypt32.lib")
 
@@ -334,15 +339,22 @@ SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
   return sha256;
 }
 
-// TODO(wtc): This function is implemented with NSS low-level hash
-// functions to ensure it is fast.  Reimplement this function with
-// CryptoAPI.  May need to cache the HCRYPTPROV to reduce the overhead.
-// static
 SHA1HashValue X509Certificate::CalculateCAFingerprint(
     const OSCertHandles& intermediates) {
   SHA1HashValue sha1;
   memset(sha1.data, 0, sizeof(sha1.data));
 
+#if defined(USE_OPENSSL)
+  SHA_CTX ctx;
+  if (!SHA1_Init(&ctx))
+    return sha1;
+  for (size_t i = 0; i < intermediates.size(); ++i) {
+    PCCERT_CONTEXT ca_cert = intermediates[i];
+    if (!SHA1_Update(&ctx, ca_cert->pbCertEncoded, ca_cert->cbCertEncoded))
+      return sha1;
+  }
+  SHA1_Final(sha1.data, &ctx);
+#else  // !USE_OPENSSL
   SHA1Context* sha1_ctx = SHA1_NewContext();
   if (!sha1_ctx)
     return sha1;
@@ -354,6 +366,7 @@ SHA1HashValue X509Certificate::CalculateCAFingerprint(
   unsigned int result_len;
   SHA1_End(sha1_ctx, sha1.data, &result_len, SHA1_LENGTH);
   SHA1_DestroyContext(sha1_ctx, PR_TRUE);
+#endif  // USE_OPENSSL
 
   return sha1;
 }

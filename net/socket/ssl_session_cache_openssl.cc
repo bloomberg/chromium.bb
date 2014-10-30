@@ -250,7 +250,7 @@ class SSLSessionCacheOpenSSLImpl {
     void* session_is_good =
         SSL_SESSION_get_ex_data(session, GetSSLSessionExIndex());
 
-    return session_is_good;
+    return session_is_good != NULL;
   }
 
   void MarkSSLSessionAsGood(SSL* ssl) {

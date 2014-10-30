@@ -43,8 +43,8 @@ class NET_EXPORT OpenSSLClientKeyStore {
   // Returns false if an error occured.
   // This function does not take ownership of the private_key, but may
   // increment its internal reference count.
-  NET_EXPORT bool RecordClientCertPrivateKey(const X509Certificate* cert,
-                                             EVP_PKEY* private_key);
+  bool RecordClientCertPrivateKey(const X509Certificate* cert,
+                                  EVP_PKEY* private_key);
 
   // Given a certificate's |public_key|, return the corresponding private
   // key that has been recorded previously by RecordClientCertPrivateKey().
