@@ -114,7 +114,7 @@ remoting.HostList.prototype.load = function(onDone) {
   /** @param {Object.<string>} items */
   var storeHostList = function(items) {
     if (items[remoting.HostList.HOSTS_KEY]) {
-      var cached = jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
+      var cached = base.jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
       if (cached) {
         that.hosts_ = /** @type {Array} */ cached;
       } else {
@@ -198,8 +198,8 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
   this.lastError_ = '';
   try {
     if (xhr.status == 200) {
-      var response =
-          /** @type {{data: {items: Array}}} */ jsonParseSafe(xhr.responseText);
+      var response = /** @type {{data: {items: Array}}} */
+          (base.jsonParseSafe(xhr.responseText));
       if (response && response.data) {
         if (response.data.items) {
           this.hosts_ = response.data.items;
@@ -497,7 +497,9 @@ remoting.HostList.prototype.onLocalHostStarted = function(
  */
 remoting.HostList.prototype.onErrorClick_ = function() {
   if (this.lastError_ == remoting.Error.AUTHENTICATION_FAILED) {
-    remoting.oauth2.doAuthRedirect();
+    remoting.oauth2.doAuthRedirect(function() {
+      window.location.reload();
+    });
   } else {
     this.refresh(remoting.updateLocalHostState);
   }

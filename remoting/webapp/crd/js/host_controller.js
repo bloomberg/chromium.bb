@@ -240,7 +240,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
     var success = (xhr.status == 200);
 
     if (success) {
-      var result = jsonParseSafe(xhr.responseText);
+      var result = base.jsonParseSafe(xhr.responseText);
       if ('data' in result && 'authorizationCode' in result['data']) {
         that.hostDaemonFacade_.getCredentialsFromAuthCode(
             result['data']['authorizationCode'],

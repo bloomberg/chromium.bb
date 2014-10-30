@@ -422,3 +422,26 @@ base.decodeUtf8 = function(buffer) {
   return decodeURIComponent(
       escape(String.fromCharCode.apply(null, new Uint8Array(buffer))));
 }
+
+/**
+ * Generate a nonce, to be used as an xsrf protection token.
+ *
+ * @return {string} A URL-Safe Base64-encoded 128-bit random value. */
+base.generateXsrfToken = function() {
+  var random = new Uint8Array(16);
+  window.crypto.getRandomValues(random);
+  var base64Token = window.btoa(String.fromCharCode.apply(null, random));
+  return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};
+
+/**
+ * @param {string} jsonString A JSON-encoded string.
+ * @return {*} The decoded object, or undefined if the string cannot be parsed.
+ */
+base.jsonParseSafe = function(jsonString) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (err) {
+    return undefined;
+  }
+}

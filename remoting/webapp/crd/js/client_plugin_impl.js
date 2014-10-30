@@ -292,7 +292,7 @@ remoting.ClientPluginImpl.prototype.setFetchPinHandler = function(handler) {
 remoting.ClientPluginImpl.prototype.handleMessage_ = function(rawMessage) {
   var message =
       /** @type {{method:string, data:Object.<string,*>}} */
-      ((typeof(rawMessage) == 'string') ? jsonParseSafe(rawMessage)
+      ((typeof(rawMessage) == 'string') ? base.jsonParseSafe(rawMessage)
                                         : rawMessage);
   if (!message || !('method' in message) || !('data' in message)) {
     console.error('Received invalid message from the plugin:', rawMessage);

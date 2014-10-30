@@ -163,7 +163,7 @@ remoting.OAuth2.prototype.getAccessTokenInternal_ = function() {
   }
   var accessToken = window.localStorage.getItem(this.KEY_ACCESS_TOKEN_);
   if (typeof accessToken == 'string') {
-    var result = jsonParseSafe(accessToken);
+    var result = base.jsonParseSafe(accessToken);
     if (result && 'token' in result && 'expiration' in result) {
       return /** @type {{token: string, expiration: number}} */ result;
     }
@@ -237,12 +237,13 @@ remoting.OAuth2.prototype.onTokens_ =
 /**
  * Redirect page to get a new OAuth2 Refresh Token.
  *
+ * @param {function():void} onDone Completion callback.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.doAuthRedirect = function() {
+remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
   /** @type {remoting.OAuth2} */
   var that = this;
-  var xsrf_token = remoting.generateXsrfToken();
+  var xsrf_token = base.generateXsrfToken();
   window.localStorage.setItem(this.KEY_XSRF_TOKEN_, xsrf_token);
   var GET_CODE_URL = this.getOAuth2AuthEndpoint_() + '?' +
     remoting.xhr.urlencodeParamHash({
@@ -263,9 +264,6 @@ remoting.OAuth2.prototype.doAuthRedirect = function() {
    */
   function oauth2MessageListener(message) {
     if ('code' in message && 'state' in message) {
-      var onDone = function() {
-        window.location.reload();
-      };
       that.exchangeCodeForToken(
           message['code'], message['state'], onDone);
     } else {

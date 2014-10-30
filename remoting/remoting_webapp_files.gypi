@@ -213,8 +213,11 @@
       'webapp/crd/js/it2me_host_facade.js',
       'webapp/crd/js/it2me_service.js',
       'webapp/crd/js/l10n.js',
+      'webapp/crd/js/oauth2.js',
+      'webapp/crd/js/oauth2_api.js',
       'webapp/crd/js/plugin_settings.js',
       'webapp/crd/js/typecheck.js',
+      'webapp/crd/js/xhr.js',
     ],
 
     # The JavaScript files required by wcs_sandbox.html.

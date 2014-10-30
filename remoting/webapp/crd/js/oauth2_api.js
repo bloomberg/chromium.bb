@@ -74,8 +74,8 @@ remoting.OAuth2Api.refreshAccessToken = function(
   var onResponse = function(xhr) {
     if (xhr.status == 200) {
       try {
-        // Don't use jsonParseSafe here unless you move the definition out of
-        // remoting.js, otherwise this won't work from the OAuth trampoline.
+        // Don't use base.jsonParseSafe here unless you also include base.js,
+        // otherwise this won't work from the OAuth trampoline.
         // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
         var tokens = JSON.parse(xhr.responseText);
         onDone(tokens['access_token'], tokens['expires_in']);
@@ -122,8 +122,8 @@ remoting.OAuth2Api.exchangeCodeForTokens = function(
   var onResponse = function(xhr) {
     if (xhr.status == 200) {
       try {
-        // Don't use jsonParseSafe here unless you move the definition out of
-        // remoting.js, otherwise this won't work from the OAuth trampoline.
+        // Don't use base.jsonParseSafe here unless you also include base.js,
+        // otherwise this won't work from the OAuth trampoline.
         // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
         var tokens = JSON.parse(xhr.responseText);
         onDone(tokens['refresh_token'],

@@ -83,7 +83,7 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
     try {
       var hosts = allHosts[remoting.HostSettings.KEY_];
       if (hosts) {
-        result = jsonParseSafe(hosts);
+        result = base.jsonParseSafe(hosts);
         if (typeof(result) != 'object') {
           console.error("Error loading host settings: Not an object");
           result = {};

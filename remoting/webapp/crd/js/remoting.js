@@ -424,18 +424,6 @@ function getUrlParameters_() {
 }
 
 /**
- * @param {string} jsonString A JSON-encoded string.
- * @return {*} The decoded object, or undefined if the string cannot be parsed.
- */
-function jsonParseSafe(jsonString) {
-  try {
-    return JSON.parse(jsonString);
-  } catch (err) {
-    return undefined;
-  }
-}
-
-/**
  * Return the current time as a formatted string suitable for logging.
  *
  * @return {string} The current time, formatted as [mmdd/hhmmss.xyz]
@@ -526,17 +514,6 @@ function migrateLocalToChromeStorage_() {
     }
   }
 }
-
-/**
- * Generate a nonce, to be used as an xsrf protection token.
- *
- * @return {string} A URL-Safe Base64-encoded 128-bit random value. */
-remoting.generateXsrfToken = function() {
-  var random = new Uint8Array(16);
-  window.crypto.getRandomValues(random);
-  var base64Token = window.btoa(String.fromCharCode.apply(null, random));
-  return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
 
 /**
  * Tests whether we are running on Mac.

@@ -41,7 +41,7 @@ remoting.ThirdPartyTokenFetcher = function(
   this.tokenScope_ = scope;
   this.onThirdPartyTokenFetched_ = onThirdPartyTokenFetched;
   this.failFetchToken_ = function() { onThirdPartyTokenFetched('', ''); };
-  this.xsrfToken_ = remoting.generateXsrfToken();
+  this.xsrfToken_ = base.generateXsrfToken();
   this.tokenUrlPatterns_ = tokenUrlPatterns;
   this.hostPublicKey_ = hostPublicKey;
   if (chrome.identity) {

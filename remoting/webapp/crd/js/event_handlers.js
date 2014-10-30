@@ -40,7 +40,9 @@ function onLoad() {
   };
   var doAuthRedirect = function() {
     if (!base.isAppsV2()) {
-      remoting.oauth2.doAuthRedirect();
+      remoting.oauth2.doAuthRedirect(function() {
+        window.location.reload();
+      });
     }
   };
   var fixAuthError = function() {

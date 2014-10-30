@@ -374,23 +374,39 @@ remoting.It2MeHelpeeChannel.prototype.initializeHost_ = function() {
 };
 
 /**
- * TODO(kelvinp): The existing implementation only works in the v2 app
- * We need to implement token fetching for the v1 app using remoting.OAuth2
- * before launch (crbug.com/405130).
- *
  * @return {Promise} Promise that resolves with the OAuth token as the value.
  */
 remoting.It2MeHelpeeChannel.prototype.fetchOAuthToken_ = function() {
-  if (!base.isAppsV2()) {
-    throw new Error('fetchOAuthToken_ is not implemented in the v1 app.');
+  if (base.isAppsV2()) {
+    /**
+     * @param {function(*=):void} resolve
+     */
+    return new Promise(function(resolve){
+      // TODO(jamiewalch): Make this work with {interactive: true} as well.
+      chrome.identity.getAuthToken({ 'interactive': false }, resolve);
+    });
+  } else {
+    /**
+     * @param {function(*=):void} resolve
+     */
+    return new Promise(function(resolve) {
+      /** @type {remoting.OAuth2} */
+      var oauth2 = new remoting.OAuth2();
+      var onAuthenticated = function() {
+        oauth2.callWithToken(
+            resolve,
+            function() { throw new Error('Authentication failed.'); });
+      };
+      /** @param {remoting.Error} error */
+      var onError = function(error) {
+        if (error != remoting.Error.NOT_AUTHENTICATED) {
+          throw new Error('Unexpected error fetch auth token: ' + error);
+        }
+        oauth2.doAuthRedirect(onAuthenticated);
+      };
+      oauth2.callWithToken(resolve, onError);
+    });
   }
-
-  /**
-   * @param {function(*=):void} resolve
-   */
-  return new Promise(function(resolve){
-    chrome.identity.getAuthToken({ 'interactive': false }, resolve);
-  });
 };
 
 /**

@@ -415,7 +415,7 @@ remoting.SessionConnectorImpl.prototype.onIT2MeHostInfo_ = function(xhr) {
   this.pendingXhr_ = null;
   if (xhr.status == 200) {
     var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        jsonParseSafe(xhr.responseText);
+        base.jsonParseSafe(xhr.responseText);
     if (host && host.data && host.data.jabberId && host.data.publicKey) {
       this.hostJid_ = host.data.jabberId;
       this.hostPublicKey_ = host.data.publicKey;
