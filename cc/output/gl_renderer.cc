@@ -441,9 +441,6 @@ static ResourceProvider::ResourceId WaitOnResourceSyncPoints(
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
-  if (frame->device_viewport_rect.IsEmpty())
-    return;
-
   TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
 
   scoped_refptr<ResourceProvider::Fence> read_lock_fence;
