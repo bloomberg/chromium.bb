@@ -16,7 +16,7 @@ async_test(function(t) {
     window.addEventListener('message', t.step_func(on_message), false);
     with_iframe(
       host_info['HTTPS_ORIGIN'] + base_path() +
-      'resources/fetch-mixed-content-iframe.html');
+      'resources/fetch-mixed-content-iframe.html?target=outscope');
     function on_message(e) {
       assert_equals(e.data.results, 'finish');
       t.done();

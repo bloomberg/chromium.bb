@@ -14,7 +14,8 @@ function test1() {
     results += 'FAIL(1)';
     test2();
   };
-  img.src = host_info['HTTPS_ORIGIN'] + image_path;
+  img.src = './dummy?url=' +
+            encodeURIComponent(host_info['HTTPS_ORIGIN'] + image_path);
 }
 
 function test2() {
@@ -27,7 +28,8 @@ function test2() {
     results += 'FAIL(2)';
     test3();
   };
-  img.src = host_info['HTTPS_REMOTE_ORIGIN'] + image_path;
+  img.src = './dummy?mode=no-cors&url=' +
+            encodeURIComponent(host_info['HTTPS_REMOTE_ORIGIN'] + image_path);
 }
 
 function test3() {
@@ -40,7 +42,8 @@ function test3() {
   img.onerror = function() {
     test4();
   };
-  img.src = host_info['HTTP_ORIGIN'] + image_path;
+  img.src = './dummy?mode=no-cors&url=' +
+            encodeURIComponent(host_info['HTTP_ORIGIN'] + image_path);
 }
 
 function test4() {
@@ -48,61 +51,6 @@ function test4() {
   document.body.appendChild(img);
   img.onload = function() {
     results += 'FAIL(4)';
-    test5();
-  };
-  img.onerror = function() {
-    test5();
-  };
-  img.src = host_info['HTTP_REMOTE_ORIGIN'] + image_path;
-}
-
-function test5() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
-    test6();
-  };
-  img.onerror = function() {
-    results += 'FAIL(5)';
-    test6();
-  };
-  img.src = './dummy?url=' +
-            encodeURIComponent(host_info['HTTPS_ORIGIN'] + image_path);
-}
-
-function test6() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
-    test7();
-  };
-  img.onerror = function() {
-    results += 'FAIL(6)';
-    test7();
-  };
-  img.src = './dummy?mode=no-cors&url=' +
-            encodeURIComponent(host_info['HTTPS_REMOTE_ORIGIN'] + image_path);
-}
-
-function test7() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
-    results += 'FAIL(7)';
-    test8();
-  };
-  img.onerror = function() {
-    test8();
-  };
-  img.src = './dummy?mode=no-cors&url=' +
-            encodeURIComponent(host_info['HTTP_ORIGIN'] + image_path);
-}
-
-function test8() {
-  var img = document.createElement('img');
-  document.body.appendChild(img);
-  img.onload = function() {
-    results += 'FAIL(8)';
     finish();
   };
   img.onerror = function() {

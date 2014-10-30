@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <script src="test-helpers.js?pipe=sub"></script>
 <script>
-var SCOPE = 'fetch-mixed-content-iframe-inscope.html';
+var params = get_query_params(location.href);
+var SCOPE = 'fetch-mixed-content-iframe-inscope-to-' + params['target'] + '.html';
 var URL = 'fetch-rewrite-worker.js';
 var host_info = get_host_info();
 
@@ -51,5 +52,19 @@ function on_message(e) {
         window.parent.postMessage({results: 'FAILURE: ' + reason.message},
                                   host_info['HTTP_ORIGIN']);
      });
+}
+
+function get_query_params(url) {
+  var search = (new URL(url)).search;
+  if (!search) {
+    return {};
+  }
+  var ret = {};
+  var params = search.substring(1).split('&');
+  params.forEach(function(param) {
+      var element = param.split('=');
+      ret[decodeURIComponent(element[0])] = decodeURIComponent(element[1]);
+    });
+  return ret;
 }
 </script>
