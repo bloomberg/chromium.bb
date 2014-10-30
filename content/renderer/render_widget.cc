@@ -718,11 +718,13 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   DCHECK(resize_ack != SEND_RESIZE_ACK || next_paint_is_resize_ack());
 }
 
-void RenderWidget::ResizeSynchronously(const gfx::Rect& new_position) {
+void RenderWidget::ResizeSynchronously(
+    const gfx::Rect& new_position,
+    const gfx::Size& visible_viewport_size) {
   Resize(new_position.size(),
          new_position.size(),
          top_controls_layout_height_,
-         visible_viewport_size_,
+         visible_viewport_size,
          gfx::Rect(),
          is_fullscreen_,
          NO_RESIZE_ACK);
@@ -1479,7 +1481,7 @@ void RenderWidget::setWindowRect(const WebRect& rect) {
       initial_pos_ = pos;
     }
   } else {
-    ResizeSynchronously(pos);
+    ResizeSynchronously(pos, visible_viewport_size_);
   }
 }
 

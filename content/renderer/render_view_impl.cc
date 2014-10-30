@@ -4142,6 +4142,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.screen_info = screen_info_;
   params.screen_info.deviceScaleFactor = factor;
   params.new_size = size();
+  params.visible_viewport_size = visible_viewport_size_;
   params.physical_backing_size =
       gfx::ToCeiledSize(gfx::ScaleSize(size(), factor));
   params.top_controls_layout_height = 0.f;
@@ -4160,7 +4161,7 @@ void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {
                          rootWindowRect().y,
                          new_size.width(),
                          new_size.height());
-  ResizeSynchronously(new_position);
+  ResizeSynchronously(new_position, new_size);
 }
 
 void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {

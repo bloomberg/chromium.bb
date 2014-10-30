@@ -632,7 +632,7 @@ void WebKitTestRunner::Reset() {
   render_view()->ClearEditCommands();
   render_view()->GetWebView()->mainFrame()->setName(WebString());
   render_view()->GetWebView()->mainFrame()->clearOpener();
-  render_view()->GetWebView()->setPageScaleFactorLimits(-1, -1);
+  render_view()->GetWebView()->setPageScaleFactorLimits(1, 4);
   render_view()->GetWebView()->setPageScaleFactor(1, WebPoint(0, 0));
 
   // Resetting the internals object also overrides the WebPreferences, so we

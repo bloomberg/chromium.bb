@@ -358,7 +358,9 @@ class CONTENT_EXPORT RenderWidget
               bool is_fullscreen,
               ResizeAck resize_ack);
   // Used to force the size of a window when running layout tests.
-  void ResizeSynchronously(const gfx::Rect& new_position);
+  void ResizeSynchronously(
+      const gfx::Rect& new_position,
+      const gfx::Size& visible_viewport_size);
   virtual void SetScreenMetricsEmulationParameters(
       float device_scale_factor,
       const gfx::Point& root_layer_offset,
