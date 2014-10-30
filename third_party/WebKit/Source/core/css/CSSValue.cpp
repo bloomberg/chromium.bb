@@ -30,6 +30,7 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCanvasValue.h"
+#include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFilterValue.h"
@@ -209,6 +210,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSSVGDocumentClass:
             return compareCSSValues<CSSSVGDocumentValue>(*this, other);
+        case CSSContentDistributionClass:
+            return compareCSSValues<CSSContentDistributionValue>(*this, other);
         default:
             ASSERT_NOT_REACHED();
             return false;
@@ -285,6 +288,8 @@ String CSSValue::cssText() const
         return toCSSFilterValue(this)->customCSSText();
     case CSSSVGDocumentClass:
         return toCSSSVGDocumentValue(this)->customCSSText();
+    case CSSContentDistributionClass:
+        return toCSSContentDistributionValue(this)->customCSSText();
     }
     ASSERT_NOT_REACHED();
     return String();
@@ -384,6 +389,9 @@ void CSSValue::destroy()
     case CSSSVGDocumentClass:
         delete toCSSSVGDocumentValue(this);
         return;
+    case CSSContentDistributionClass:
+        delete toCSSContentDistributionValue(this);
+        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -482,6 +490,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
         return;
+    case CSSContentDistributionClass:
+        toCSSContentDistributionValue(this)->~CSSContentDistributionValue();
+        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -579,6 +590,9 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->traceAfterDispatch(visitor);
+        return;
+    case CSSContentDistributionClass:
+        toCSSContentDistributionValue(this)->traceAfterDispatch(visitor);
         return;
     }
     ASSERT_NOT_REACHED();

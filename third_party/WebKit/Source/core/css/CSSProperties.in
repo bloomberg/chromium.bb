@@ -184,7 +184,7 @@ grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height animatable, initial=initialSize, converter=convertLengthSizing
 image-rendering inherited
 isolation runtime_flag=CSSCompositing
-justify-content
+justify-content custom_all
 justify-items runtime_flag=CSSGridLayout, custom_all
 justify-self runtime_flag=CSSGridLayout, custom_all
 left animatable, initial=initialOffset, converter=convertLengthOrAuto

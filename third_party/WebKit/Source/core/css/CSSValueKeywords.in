@@ -502,11 +502,14 @@ single
 multiple
 
 // align-content
+// start
+// end
 flex-start
 flex-end
 // center
 space-between
 space-around
+space-evenly
 // stretch
 
 // align-items / align-self
@@ -517,11 +520,16 @@ space-around
 // stretch
 
 // justify-content
+// start
+// end
 // flex-start
 // flex-end
 // center
 // space-between
 // space-around
+// space-evenly
+// stretch
+
 
 // flex-flow
 row

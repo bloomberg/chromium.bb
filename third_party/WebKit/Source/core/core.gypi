@@ -738,6 +738,8 @@
             'css/CSSCharsetRule.cpp',
             'css/CSSCharsetRule.h',
             'css/CSSComputedStyleDeclaration.cpp',
+            'css/CSSContentDistributionValue.cpp',
+            'css/CSSContentDistributionValue.h',
             'css/CSSCrossfadeValue.cpp',
             'css/CSSCrossfadeValue.h',
             'css/CSSCursorImageValue.cpp',

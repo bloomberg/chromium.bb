@@ -766,7 +766,9 @@ public:
     bool isColumnFlexDirection() const { return flexDirection() == FlowColumn || flexDirection() == FlowColumnReverse; }
     bool isReverseFlexDirection() const { return flexDirection() == FlowRowReverse || flexDirection() == FlowColumnReverse; }
     EFlexWrap flexWrap() const { return static_cast<EFlexWrap>(rareNonInheritedData->m_flexibleBox->m_flexWrap); }
-    EJustifyContent justifyContent() const { return static_cast<EJustifyContent>(rareNonInheritedData->m_justifyContent); }
+    ContentPosition justifyContent() const { return static_cast<ContentPosition>(rareNonInheritedData->m_justifyContent); }
+    ContentDistributionType justifyContentDistribution() const { return static_cast<ContentDistributionType>(rareNonInheritedData->m_justifyContentDistribution); }
+    OverflowAlignment justifyContentOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_justifyContentOverflowAlignment); }
     ItemPosition justifyItems() const { return static_cast<ItemPosition>(rareNonInheritedData->m_justifyItems); }
     OverflowAlignment justifyItemsOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_justifyItemsOverflowAlignment); }
     ItemPositionType justifyItemsPositionType() const { return static_cast<ItemPositionType>(rareNonInheritedData->m_justifyItemsPositionType); }
@@ -1267,7 +1269,9 @@ public:
     void setAlignSelfOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_alignSelfOverflowAlignment, overflowAlignment); }
     void setFlexDirection(EFlexDirection direction) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexDirection, direction); }
     void setFlexWrap(EFlexWrap w) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexWrap, w); }
-    void setJustifyContent(EJustifyContent p) { SET_VAR(rareNonInheritedData, m_justifyContent, p); }
+    void setJustifyContent(ContentPosition p) { SET_VAR(rareNonInheritedData, m_justifyContent, p); }
+    void setJustifyContentDistribution(ContentDistributionType p) { SET_VAR(rareNonInheritedData, m_justifyContentDistribution, p); }
+    void setJustifyContentOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_justifyContentOverflowAlignment, overflowAlignment); }
     void setJustifyItems(ItemPosition justifyItems) { SET_VAR(rareNonInheritedData, m_justifyItems, justifyItems); }
     void setJustifyItemsOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_justifyItemsOverflowAlignment, overflowAlignment); }
     void setJustifyItemsPositionType(ItemPositionType positionType) { SET_VAR(rareNonInheritedData, m_justifyItemsPositionType, positionType); }
@@ -1490,6 +1494,7 @@ public:
     bool isDisplayInlineType() const { return isDisplayInlineType(display()); }
     bool isOriginalDisplayInlineType() const { return isDisplayInlineType(originalDisplay()); }
     bool isDisplayFlexibleOrGridBox() const { return isDisplayFlexibleBox(display()) || isDisplayGridBox(display()); }
+    bool isDisplayFlexibleBox() const { return isDisplayFlexibleBox(display()); }
 
 
     bool setWritingMode(WritingMode v)
@@ -1608,7 +1613,9 @@ public:
     static OverflowAlignment initialAlignSelfOverflowAlignment() { return OverflowAlignmentDefault; }
     static EFlexDirection initialFlexDirection() { return FlowRow; }
     static EFlexWrap initialFlexWrap() { return FlexNoWrap; }
-    static EJustifyContent initialJustifyContent() { return JustifyFlexStart; }
+    static ContentPosition initialJustifyContent() { return ContentPositionAuto; }
+    static ContentDistributionType initialJustifyContentDistribution() { return ContentDistributionDefault; }
+    static OverflowAlignment initialJustifyContentOverflowAlignment() { return OverflowAlignmentDefault; }
     static ItemPosition initialJustifyItems() { return ItemPositionAuto; }
     static OverflowAlignment initialJustifyItemsOverflowAlignment() { return OverflowAlignmentDefault; }
     static ItemPositionType initialJustifyItemsPositionType() { return NonLegacyPosition; }

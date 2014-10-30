@@ -63,6 +63,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_alignSelf(RenderStyle::initialAlignSelf())
     , m_alignSelfOverflowAlignment(RenderStyle::initialAlignSelfOverflowAlignment())
     , m_justifyContent(RenderStyle::initialJustifyContent())
+    , m_justifyContentDistribution(RenderStyle::initialJustifyContentDistribution())
+    , m_justifyContentOverflowAlignment(RenderStyle::initialJustifyContentOverflowAlignment())
     , userDrag(RenderStyle::initialUserDrag())
     , textOverflow(RenderStyle::initialTextOverflow())
     , marginBeforeCollapse(MCOLLAPSE)
@@ -142,6 +144,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_alignSelf(o.m_alignSelf)
     , m_alignSelfOverflowAlignment(o.m_alignSelfOverflowAlignment)
     , m_justifyContent(o.m_justifyContent)
+    , m_justifyContentDistribution(o.m_justifyContentDistribution)
+    , m_justifyContentOverflowAlignment(o.m_justifyContentOverflowAlignment)
     , userDrag(o.userDrag)
     , textOverflow(o.textOverflow)
     , marginBeforeCollapse(o.marginBeforeCollapse)
@@ -228,6 +232,8 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_alignSelf == o.m_alignSelf
         && m_alignSelfOverflowAlignment == o.m_alignSelfOverflowAlignment
         && m_justifyContent == o.m_justifyContent
+        && m_justifyContentDistribution == o.m_justifyContentDistribution
+        && m_justifyContentOverflowAlignment == o.m_justifyContentOverflowAlignment
         && userDrag == o.userDrag
         && textOverflow == o.textOverflow
         && marginBeforeCollapse == o.marginBeforeCollapse

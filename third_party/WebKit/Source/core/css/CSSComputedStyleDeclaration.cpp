@@ -1545,6 +1545,17 @@ static ItemPosition resolveAlignmentAuto(ItemPosition position, Node* element)
     return isFlexOrGrid ? ItemPositionStretch : ItemPositionStart;
 }
 
+static ContentPosition resolveContentAlignmentAuto(ContentPosition position, ContentDistributionType distribution, Node* element)
+{
+    if (position != ContentPositionAuto || distribution != ContentDistributionDefault)
+        return position;
+
+    bool isFlex = element && element->computedStyle()
+        && element->computedStyle()->isDisplayFlexibleBox();
+
+    return isFlex ? ContentPositionFlexStart : ContentPositionStart;
+}
+
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlignment(ItemPosition itemPosition, OverflowAlignment overflowAlignment, ItemPositionType positionType)
 {
     RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
@@ -1554,6 +1565,20 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlig
     if (itemPosition >= ItemPositionCenter && overflowAlignment != OverflowAlignmentDefault)
         result->append(CSSPrimitiveValue::create(overflowAlignment));
     ASSERT(result->length() <= 2);
+    return result.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> valueForContentPositionAndDistributionWithOverflowAlignment(ContentPosition position, OverflowAlignment overflowAlignment, ContentDistributionType distribution)
+{
+    RefPtrWillBeRawPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+    if (distribution != ContentDistributionDefault)
+        result->append(CSSPrimitiveValue::create(distribution));
+    if (distribution == ContentDistributionDefault || position != ContentPositionAuto)
+        result->append(CSSPrimitiveValue::create(position));
+    if ((position >= ContentPositionCenter || distribution != ContentDistributionDefault) && overflowAlignment != OverflowAlignmentDefault)
+        result->append(CSSPrimitiveValue::create(overflowAlignment));
+    ASSERT(result->length() > 0);
+    ASSERT(result->length() <= 3);
     return result.release();
 }
 
@@ -1844,7 +1869,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyFlexWrap:
             return cssValuePool().createValue(style->flexWrap());
         case CSSPropertyJustifyContent:
-            return cssValuePool().createValue(style->justifyContent());
+            return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style->justifyContent(), style->justifyContentDistribution(), styledNode), style->justifyContentOverflowAlignment(), style->justifyContentDistribution());
         case CSSPropertyOrder:
             return cssValuePool().createValue(style->order(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyFloat:

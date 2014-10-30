@@ -155,7 +155,9 @@ public:
     unsigned m_alignItemsOverflowAlignment : 2; // OverflowAlignment
     unsigned m_alignSelf : 4; // ItemPosition
     unsigned m_alignSelfOverflowAlignment : 2; // OverflowAlignment
-    unsigned m_justifyContent : 3; // EJustifyContent
+    unsigned m_justifyContent : 4; // ContentPosition
+    unsigned m_justifyContentDistribution : 3; // ContentDistributionType
+    unsigned m_justifyContentOverflowAlignment : 2; // OverflowAlignment
 
     unsigned userDrag : 2; // EUserDrag
     unsigned textOverflow : 1; // Whether or not lines that spill out should be truncated with "..."

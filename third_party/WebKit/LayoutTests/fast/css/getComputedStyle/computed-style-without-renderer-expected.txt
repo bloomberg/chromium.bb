@@ -148,7 +148,7 @@ align-items: start
 align-self: start
 flex-direction: row
 flex-wrap: nowrap
-justify-content: flex-start
+justify-content: start
 -webkit-font-smoothing: auto
 -webkit-highlight: none
 -webkit-hyphenate-character: auto

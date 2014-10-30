@@ -296,8 +296,8 @@ rect: style.getPropertyValue(flex-direction) : row
 rect: style.getPropertyCSSValue(flex-direction) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(flex-wrap) : nowrap
 rect: style.getPropertyCSSValue(flex-wrap) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(justify-content) : flex-start
-rect: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(justify-content) : start
+rect: style.getPropertyCSSValue(justify-content) : [object CSSValueList]
 rect: style.getPropertyValue(-webkit-font-smoothing) : auto
 rect: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-highlight) : none
@@ -762,8 +762,8 @@ g: style.getPropertyValue(flex-direction) : row
 g: style.getPropertyCSSValue(flex-direction) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(flex-wrap) : nowrap
 g: style.getPropertyCSSValue(flex-wrap) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(justify-content) : flex-start
-g: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(justify-content) : start
+g: style.getPropertyCSSValue(justify-content) : [object CSSValueList]
 g: style.getPropertyValue(-webkit-font-smoothing) : auto
 g: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-highlight) : none

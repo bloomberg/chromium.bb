@@ -165,7 +165,6 @@ enum EBoxDirection { BNORMAL, BREVERSE };
 enum EAlignContent { AlignContentFlexStart, AlignContentFlexEnd, AlignContentCenter, AlignContentSpaceBetween, AlignContentSpaceAround, AlignContentStretch };
 enum EFlexDirection { FlowRow, FlowRowReverse, FlowColumn, FlowColumnReverse };
 enum EFlexWrap { FlexNoWrap, FlexWrap, FlexWrapReverse };
-enum EJustifyContent { JustifyFlexStart, JustifyFlexEnd, JustifyCenter, JustifySpaceBetween, JustifySpaceAround };
 
 enum ETextSecurity {
     TSNONE, TSDISC, TSCIRCLE, TSSQUARE
@@ -535,6 +534,27 @@ enum OverflowAlignment {
 enum ItemPositionType {
     NonLegacyPosition,
     LegacyPosition
+};
+
+enum ContentPosition {
+    ContentPositionAuto,
+    ContentPositionBaseline,
+    ContentPositionLastBaseline,
+    ContentPositionCenter,
+    ContentPositionStart,
+    ContentPositionEnd,
+    ContentPositionFlexStart,
+    ContentPositionFlexEnd,
+    ContentPositionLeft,
+    ContentPositionRight
+};
+
+enum ContentDistributionType {
+    ContentDistributionDefault,
+    ContentDistributionSpaceBetween,
+    ContentDistributionSpaceAround,
+    ContentDistributionSpaceEvenly,
+    ContentDistributionStretch
 };
 
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).

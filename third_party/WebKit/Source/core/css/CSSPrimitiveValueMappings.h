@@ -1325,51 +1325,6 @@ template<> inline CSSPrimitiveValue::operator EEmptyCell() const
     return SHOW;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EJustifyContent e)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (e) {
-    case JustifyFlexStart:
-        m_value.valueID = CSSValueFlexStart;
-        break;
-    case JustifyFlexEnd:
-        m_value.valueID = CSSValueFlexEnd;
-        break;
-    case JustifyCenter:
-        m_value.valueID = CSSValueCenter;
-        break;
-    case JustifySpaceBetween:
-        m_value.valueID = CSSValueSpaceBetween;
-        break;
-    case JustifySpaceAround:
-        m_value.valueID = CSSValueSpaceAround;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator EJustifyContent() const
-{
-    ASSERT(isValueID());
-    switch (m_value.valueID) {
-    case CSSValueFlexStart:
-        return JustifyFlexStart;
-    case CSSValueFlexEnd:
-        return JustifyFlexEnd;
-    case CSSValueCenter:
-        return JustifyCenter;
-    case CSSValueSpaceBetween:
-        return JustifySpaceBetween;
-    case CSSValueSpaceAround:
-        return JustifySpaceAround;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return JustifyFlexStart;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFlexDirection e)
     : CSSValue(PrimitiveClass)
 {
@@ -4661,6 +4616,115 @@ template<> inline CSSPrimitiveValue::operator ItemPosition() const
     }
     ASSERT_NOT_REACHED();
     return ItemPositionAuto;
+}
+
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ContentPosition contentPosition)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (contentPosition) {
+    case ContentPositionAuto:
+        m_value.valueID = CSSValueAuto;
+        break;
+    case ContentPositionBaseline:
+        m_value.valueID = CSSValueBaseline;
+        break;
+    case ContentPositionLastBaseline:
+        m_value.valueID = CSSValueLastBaseline;
+        break;
+    case ContentPositionCenter:
+        m_value.valueID = CSSValueCenter;
+        break;
+    case ContentPositionStart:
+        m_value.valueID = CSSValueStart;
+        break;
+    case ContentPositionEnd:
+        m_value.valueID = CSSValueEnd;
+        break;
+    case ContentPositionFlexStart:
+        m_value.valueID = CSSValueFlexStart;
+        break;
+    case ContentPositionFlexEnd:
+        m_value.valueID = CSSValueFlexEnd;
+        break;
+    case ContentPositionLeft:
+        m_value.valueID = CSSValueLeft;
+        break;
+    case ContentPositionRight:
+        m_value.valueID = CSSValueRight;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator ContentPosition() const
+{
+    switch (m_value.valueID) {
+    case CSSValueAuto:
+        return ContentPositionAuto;
+    case CSSValueBaseline:
+        return ContentPositionBaseline;
+    case CSSValueLastBaseline:
+        return ContentPositionLastBaseline;
+    case CSSValueCenter:
+        return ContentPositionCenter;
+    case CSSValueStart:
+        return ContentPositionStart;
+    case CSSValueEnd:
+        return ContentPositionEnd;
+    case CSSValueFlexStart:
+        return ContentPositionFlexStart;
+    case CSSValueFlexEnd:
+        return ContentPositionFlexEnd;
+    case CSSValueLeft:
+        return ContentPositionLeft;
+    case CSSValueRight:
+        return ContentPositionRight;
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return ContentPositionAuto;
+}
+
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ContentDistributionType contentDistribution)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (contentDistribution) {
+    case ContentDistributionDefault:
+        m_value.valueID = CSSValueDefault;
+        break;
+    case ContentDistributionSpaceBetween:
+        m_value.valueID = CSSValueSpaceBetween;
+        break;
+    case ContentDistributionSpaceAround:
+        m_value.valueID = CSSValueSpaceAround;
+        break;
+    case ContentDistributionSpaceEvenly:
+        m_value.valueID = CSSValueSpaceEvenly;
+        break;
+    case ContentDistributionStretch:
+        m_value.valueID = CSSValueStretch;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator ContentDistributionType() const
+{
+    switch (m_value.valueID) {
+    case CSSValueSpaceBetween:
+        return ContentDistributionSpaceBetween;
+    case CSSValueSpaceAround:
+        return ContentDistributionSpaceAround;
+    case CSSValueSpaceEvenly:
+        return ContentDistributionSpaceEvenly;
+    case CSSValueStretch:
+        return ContentDistributionStretch;
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return ContentDistributionStretch;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(OverflowAlignment overflowAlignment)

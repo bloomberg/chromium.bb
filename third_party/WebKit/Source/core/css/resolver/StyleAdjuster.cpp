@@ -295,6 +295,16 @@ void StyleAdjuster::adjustStyleForAlignment(RenderStyle& style, const RenderStyl
             style.setAlignSelfOverflowAlignment(parentStyle.alignItemsOverflowAlignment());
         }
     }
+
+    // Block Containers: For table cells, the behavior of the 'auto' depends on the computed
+    // value of 'vertical-align', otherwise behaves as 'start'.
+    // Flex Containers: 'auto' computes to 'flex-start'.
+    // Grid Containers: 'auto' computes to 'start', and 'stretch' behaves like 'start'.
+    if ((style.justifyContent() == ContentPositionAuto) && (style.justifyContentDistribution() == ContentDistributionDefault)) {
+        if (style.isDisplayFlexibleBox()) {
+            style.setJustifyContent(ContentPositionFlexStart);
+        }
+    }
 }
 
 void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* parentStyle, Element& element)

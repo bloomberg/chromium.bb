@@ -102,6 +102,7 @@ public:
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
+    bool isContentDistributionValue() const { return m_classType == CSSContentDistributionClass; }
     bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
     bool isGridLineNamesValue() const { return m_classType == GridLineNamesClass; }
 
@@ -160,6 +161,8 @@ protected:
 
         // SVG classes.
         CSSSVGDocumentClass,
+
+        CSSContentDistributionClass,
 
         // List class types must appear after ValueListClass.
         ValueListClass,

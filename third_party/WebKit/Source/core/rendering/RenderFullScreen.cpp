@@ -105,7 +105,7 @@ void RenderFullScreen::updateStyle()
     fullscreenStyle->font().update(nullptr);
 
     fullscreenStyle->setDisplay(FLEX);
-    fullscreenStyle->setJustifyContent(JustifyCenter);
+    fullscreenStyle->setJustifyContent(ContentPositionCenter);
     fullscreenStyle->setAlignItems(ItemPositionCenter);
     fullscreenStyle->setFlexDirection(FlowColumn);
 
