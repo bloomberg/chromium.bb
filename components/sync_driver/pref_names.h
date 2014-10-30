@@ -46,6 +46,7 @@ extern const char kSyncSyncedNotifications[];
 extern const char kSyncTabs[];
 extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
+extern const char kSyncWifiCredentials[];
 
 extern const char kSyncManaged[];
 extern const char kSyncSuppressStart[];

@@ -57,6 +57,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::SUPERVISED_USER_SETTINGS,
   syncer::SUPERVISED_USER_SHARED_SETTINGS,
   syncer::ARTICLES,
+  syncer::WIFI_CREDENTIALS,
 };
 
 COMPILE_ASSERT(arraysize(kStartOrder) ==

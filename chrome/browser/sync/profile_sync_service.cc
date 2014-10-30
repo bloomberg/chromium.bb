@@ -1738,10 +1738,11 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     sync_driver::user_selectable_type::TYPED_URLS,
     sync_driver::user_selectable_type::EXTENSIONS,
     sync_driver::user_selectable_type::APPS,
-    sync_driver::user_selectable_type::PROXY_TABS
+    sync_driver::user_selectable_type::WIFI_CREDENTIAL,
+    sync_driver::user_selectable_type::PROXY_TABS,
   };
 
-  COMPILE_ASSERT(32 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
+  COMPILE_ASSERT(33 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
 
   if (!sync_everything) {
     const syncer::ModelTypeSet current_types = GetPreferredDataTypes();

@@ -423,7 +423,8 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingExplicit) {
   EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(ModelTypeSet(PASSWORDS)));
+  EXPECT_TRUE(encrypted_types.Equals(
+      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -459,7 +460,8 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingImplicit) {
   EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(ModelTypeSet(PASSWORDS)));
+  EXPECT_TRUE(encrypted_types.Equals(
+      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -503,7 +505,8 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
   EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(ModelTypeSet(PASSWORDS)));
+  EXPECT_TRUE(encrypted_types.Equals(
+      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -514,7 +517,8 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
 
   EXPECT_FALSE(encryption_handler()->EncryptEverythingEnabled());
   encrypted_types = encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(ModelTypeSet(BOOKMARKS, PASSWORDS)));
+  EXPECT_TRUE(encrypted_types.Equals(
+      ModelTypeSet(BOOKMARKS, PASSWORDS, WIFI_CREDENTIALS)));
 }
 
 // Receive an old nigori with old encryption keys and encrypted types. We should

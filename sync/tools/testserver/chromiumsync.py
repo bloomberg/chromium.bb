@@ -55,6 +55,7 @@ import synced_notification_render_pb2
 import synced_notification_specifics_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
+import wifi_credential_specifics_pb2
 
 # An enumeration of the various kinds of data that can be synced.
 # Over the wire, this enumeration is not used: a sync object's type is
@@ -90,7 +91,8 @@ ALL_TYPES = (
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(30)
+    FAVICON_TRACKING,
+    WIFI_CREDENTIAL) = range(31)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -138,6 +140,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
         SYNC_TYPE_FIELDS["synced_notification_app_info"],
     THEME: SYNC_TYPE_FIELDS['theme'],
     TYPED_URL: SYNC_TYPE_FIELDS['typed_url'],
+    WIFI_CREDENTIAL: SYNC_TYPE_FIELDS["wifi_credential"],
     }
 
 # The parent ID used to indicate a top-level node.
@@ -560,6 +563,8 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=THEME),
       PermanentItem('google_chrome_typed_urls', name='Typed URLs',
                     parent_tag=ROOT_ID, sync_type=TYPED_URL),
+      PermanentItem('google_chrome_wifi_credentials', name='WiFi Credentials',
+                    parent_tag=ROOT_ID, sync_type=WIFI_CREDENTIAL),
       PermanentItem('google_chrome_dictionary', name='Dictionary',
                     parent_tag=ROOT_ID, sync_type=DICTIONARY),
       PermanentItem('google_chrome_articles', name='Articles',

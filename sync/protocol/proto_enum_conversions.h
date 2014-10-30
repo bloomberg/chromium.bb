@@ -35,6 +35,9 @@ SYNC_EXPORT_PRIVATE const char* GetPageTransitionRedirectTypeString(
     sync_pb::SyncEnums::PageTransitionRedirectType
         redirect_type);
 
+SYNC_EXPORT_PRIVATE const char* GetWifiCredentialSecurityClassString(
+    sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
+
 SYNC_EXPORT const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 

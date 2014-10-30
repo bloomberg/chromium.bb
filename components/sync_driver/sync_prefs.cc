@@ -137,6 +137,7 @@ void SyncPrefs::RegisterProfilePrefs(
   model_set.Put(syncer::TYPED_URLS);
   model_set.Put(syncer::SESSIONS);
   model_set.Put(syncer::ARTICLES);
+  model_set.Put(syncer::WIFI_CREDENTIALS);
   registry->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                              syncer::ModelTypeSetToValue(model_set),
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -343,6 +344,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncSupervisedUserSharedSettings;
     case syncer::DEVICE_INFO:
       return prefs::kSyncDeviceInfo;
+    case syncer::WIFI_CREDENTIALS:
+      return prefs::kSyncWifiCredentials;
     default:
       break;
   }

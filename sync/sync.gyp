@@ -506,6 +506,7 @@
         'protocol/theme_specifics.proto',
         'protocol/typed_url_specifics.proto',
         'protocol/unique_position.proto',
+	'protocol/wifi_credential_specifics.proto',
       ],
       'variables': {
         'enable_wexit_time_destructors': 1,

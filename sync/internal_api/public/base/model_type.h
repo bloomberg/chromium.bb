@@ -9,6 +9,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_MODEL_TYPE_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -110,6 +111,9 @@ enum ModelType {
   ARTICLES,
   // App List items
   APP_LIST,
+  // WiFi credentials. Each item contains the information for connecting to one
+  // WiFi network. This includes, e.g., network name and password.
+  WIFI_CREDENTIALS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -145,6 +149,7 @@ typedef EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>
     ModelTypeSet;
 typedef EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>
     FullModelTypeSet;
+typedef std::map<syncer::ModelType, const char*> ModelTypeNameMap;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
@@ -182,6 +187,7 @@ SYNC_EXPORT ModelTypeSet UserTypes();
 // These are the user-selectable data types.
 SYNC_EXPORT ModelTypeSet UserSelectableTypes();
 SYNC_EXPORT bool IsUserSelectableType(ModelType model_type);
+SYNC_EXPORT ModelTypeNameMap GetUserSelectableTypeNameMap();
 
 // This is the subset of UserTypes() that can be encrypted.
 SYNC_EXPORT_PRIVATE ModelTypeSet EncryptableUserTypes();

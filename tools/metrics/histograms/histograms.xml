@@ -34957,6 +34957,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for apps. Used as estimate of datatype commit frequency.
+    Logged when a sync cycle is performed for apps.
   </summary>
 </histogram>
 
@@ -34964,7 +34965,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for autofill entries. Used as estimate of datatype
-    commit frequency.
+    commit frequency. Logged when a sync cycle is performed for autofill
+    entries.
   </summary>
 </histogram>
 
@@ -34972,7 +34974,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for autofill profiles. Used as estimate of datatype
-    commit frequency.
+    commit frequency. Logged when a sync cycle is performed for autofill
+    profiles.
   </summary>
 </histogram>
 
@@ -34980,7 +34983,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for bookmarks. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for boomarks.
   </summary>
 </histogram>
 
@@ -34988,7 +34991,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for dictionary. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for dictionary.
   </summary>
 </histogram>
 
@@ -34996,7 +34999,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for extensions. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for extensions.
   </summary>
 </histogram>
 
@@ -35004,7 +35007,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for favicon images. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for favicon images.
   </summary>
 </histogram>
 
@@ -35012,7 +35015,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for favicon tracking. Used as estimate of datatype
-    commit frequency.
+    commit frequency. Logged when a sync cycle is performed for favicon
+    tracking.
   </summary>
 </histogram>
 
@@ -35020,7 +35024,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for nigori. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for nigori.
   </summary>
 </histogram>
 
@@ -35028,7 +35032,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for passwords. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for passwords.
   </summary>
 </histogram>
 
@@ -35036,7 +35040,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for preferences. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for preferences.
   </summary>
 </histogram>
 
@@ -35044,7 +35048,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for search engines. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for search engines.
   </summary>
 </histogram>
 
@@ -35052,7 +35056,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for sessions. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for sessions.
   </summary>
 </histogram>
 
@@ -35060,7 +35064,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for synced notifications. Used as estimate of datatype
-    commit frequency.
+    commit frequency. Logged when a sync cycle is performed for synced
+    notifications.
   </summary>
 </histogram>
 
@@ -35068,7 +35073,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for themes. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for themes.
   </summary>
 </histogram>
 
@@ -35076,7 +35081,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>zea@chromium.org</owner>
   <summary>
     Time between nudges for typed urls. Used as estimate of datatype commit
-    frequency.
+    frequency. Logged when a sync cycle is performed for typed urls.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqWifiCredentials" units="milliseconds">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Time between nudges for WiFi credentials. Used as estimate of datatype
+    commit frequency. Logged when a sync cycle is performed for WiFi
+    credentials.
   </summary>
 </histogram>
 
@@ -35534,6 +35548,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Sync.UserPerceivedBookmarkAssociation">
   <owner>zea@chromium.org</owner>
   <summary>Time taken during bookmark association.</summary>
+</histogram>
+
+<histogram name="Sync.WifiCredentialsAssociationTime" units="milliseconds">
+  <owner>zea@chromium.org</owner>
+  <summary>Time taken during WiFi credentials association.</summary>
+</histogram>
+
+<histogram name="Sync.WifiCredentialsStartFailure" enum="SyncStartResult">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Enumeration of types of WiFi credentials association failures.
+  </summary>
 </histogram>
 
 <histogram name="SyncedNotifications.Actions"

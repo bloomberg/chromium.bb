@@ -306,7 +306,7 @@ cr.define('options', function() {
       $('use-default-link').onclick = null;
 
       // These values need to be kept in sync with where they are read in
-      // SyncSetupFlow::GetDataTypeChoiceData().
+      // sync_setup_handler.cc:GetConfiguration().
       var syncAll = $('sync-select-datatypes').selectedIndex ==
                     options.DataTypeSelection.SYNC_EVERYTHING;
       var syncNothing = $('sync-select-datatypes').selectedIndex ==
@@ -323,6 +323,8 @@ cr.define('options', function() {
         'typedUrlsSynced': syncAll || $('typed-urls-checkbox').checked,
         'appsSynced': syncAll || $('apps-checkbox').checked,
         'tabsSynced': syncAll || $('tabs-checkbox').checked,
+        'wifiCredentialsSynced': syncAll ||
+                                 $('wifi-credentials-checkbox').checked,
         'encryptAllData': encryptAllData,
         'usePassphrase': usePassphrase,
         'isGooglePassphrase': googlePassphrase,
@@ -438,6 +440,17 @@ cr.define('options', function() {
         $('tabs-item').hidden = false;
       } else {
         $('tabs-item').hidden = true;
+      }
+      if (args.wifiCredentialsRegistered) {
+        $('wifi-credentials-checkbox').checked = args.wifiCredentialsSynced;
+        dataTypeBoxesChecked_['wifi-credentials-checkbox'] =
+            args.wifiCredentialsSynced;
+        dataTypeBoxesDisabled_['wifi-credentials-checkbox'] =
+            args.wifiCredentialsEnforced;
+        $('wifi-credentials-checkbox').onclick = this.handleDataTypeClick_;
+        $('wifi-credentials-item').hidden = false;
+      } else {
+        $('wifi-credentials-item').hidden = true;
       }
 
       this.setDataTypeCheckboxes_(datatypeSelect.selectedIndex);

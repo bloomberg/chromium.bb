@@ -34,6 +34,7 @@ enum UserSelectableSyncType {
   // TODO(petewil): There was talk of removing this from user selectable sync
   // types.  Should we?
   SYNCED_NOTIFICATIONS = 9,
+  WIFI_CREDENTIAL = 10,
 
   // The datatypes below are implicitly synced, and are not exposed via user
   // selectable checkboxes.
@@ -57,7 +58,7 @@ enum UserSelectableSyncType {
   // SYNCED_NOTIFICATION_APP_INFO
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
-  SELECTABLE_DATATYPE_COUNT = 10,
+  SELECTABLE_DATATYPE_COUNT = 11,
 };
 
 }  // namespace user_selectable_type

@@ -78,6 +78,7 @@ class Target;
 class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
+class WifiCredentialSpecifics;
 }  // namespace sync_pb
 
 // Utility functions to convert sync protocol buffers to dictionaries.
@@ -273,6 +274,9 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* ThemeSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* WifiCredentialSpecificsToValue(
+    const sync_pb::WifiCredentialSpecifics& wifi_credential_specifics);
 
 // Any present extensions are mapped to sub-dictionary values with the
 // key equal to the extension name.

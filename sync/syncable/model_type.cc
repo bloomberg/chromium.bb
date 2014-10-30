@@ -25,6 +25,28 @@
 
 namespace syncer {
 
+// Notes:
+// 1) This list must contain exactly the same elements as the set returned by
+//    UserSelectableTypes().
+// 2) This list must be in the same order as the respective values in the
+//    ModelType enum.
+const char* kUserSelectableDataTypeNames[] = {
+  "bookmarks",
+  "preferences",
+  "passwords",
+  "autofill",
+  "themes",
+  "typedUrls",
+  "extensions",
+  "apps",
+  "wifiCredentials",
+  "tabs",
+};
+
+COMPILE_ASSERT(
+    33 == MODEL_TYPE_COUNT,
+    update_kUserSelectableDataTypeNames_to_match_UserSelectableTypes);
+
 void AddDefaultFieldValue(ModelType datatype,
                           sync_pb::EntitySpecifics* specifics) {
   if (!ProtocolTypes().Has(datatype)) {
@@ -119,6 +141,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case ARTICLES:
       specifics->mutable_article();
       break;
+    case WIFI_CREDENTIALS:
+      specifics->mutable_wifi_credential();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -196,6 +221,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber;
     case ARTICLES:
       return sync_pb::EntitySpecifics::kArticleFieldNumber;
+    case WIFI_CREDENTIALS:
+      return sync_pb::EntitySpecifics::kWifiCredentialFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -324,6 +351,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_article())
     return ARTICLES;
 
+  if (specifics.has_wifi_credential())
+    return WIFI_CREDENTIALS;
+
   return UNSPECIFIED;
 }
 
@@ -356,12 +386,25 @@ ModelTypeSet UserSelectableTypes() {
   set.Put(TYPED_URLS);
   set.Put(EXTENSIONS);
   set.Put(APPS);
+  set.Put(WIFI_CREDENTIALS);
   set.Put(PROXY_TABS);
   return set;
 }
 
 bool IsUserSelectableType(ModelType model_type) {
   return UserSelectableTypes().Has(model_type);
+}
+
+ModelTypeNameMap GetUserSelectableTypeNameMap() {
+  ModelTypeNameMap type_names;
+  ModelTypeSet type_set = UserSelectableTypes();
+  ModelTypeSet::Iterator it = type_set.First();
+  DCHECK_EQ(arraysize(kUserSelectableDataTypeNames), type_set.Size());
+  for (size_t i = 0; i < arraysize(kUserSelectableDataTypeNames) && it.Good();
+       ++i, it.Inc()) {
+    type_names[it.Get()] = kUserSelectableDataTypeNames[i];
+  }
+  return type_names;
 }
 
 ModelTypeSet EncryptableUserTypes() {
@@ -524,6 +567,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Managed User Shared Settings";
     case ARTICLES:
       return "Articles";
+    case WIFI_CREDENTIALS:
+      return "WiFi Credentials";
     case PROXY_TABS:
       return "Tabs";
     default:
@@ -603,6 +648,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 30;
     case SYNCED_NOTIFICATION_APP_INFO:
       return 31;
+    case WIFI_CREDENTIALS:
+      return 32;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -696,6 +743,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return SUPERVISED_USER_SHARED_SETTINGS;
   else if (model_type_string == "Articles")
     return ARTICLES;
+  else if (model_type_string == "WiFi Credentials")
+    return WIFI_CREDENTIALS;
   else if (model_type_string == "Tabs")
     return PROXY_TABS;
   else
@@ -820,6 +869,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_managed_user_shared_settings";
     case ARTICLES:
       return "google_chrome_articles";
+    case WIFI_CREDENTIALS:
+      return "google_chrome_wifi_credentials";
     case PROXY_TABS:
       return std::string();
     default:

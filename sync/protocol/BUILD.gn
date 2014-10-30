@@ -46,6 +46,7 @@ proto_library("protocol") {
     "theme_specifics.proto",
     "typed_url_specifics.proto",
     "unique_position.proto",
+    "wifi_credential_specifics.proto",
   ]
 
   cc_generator_options = "dllexport_decl=SYNC_PROTO_EXPORT:"

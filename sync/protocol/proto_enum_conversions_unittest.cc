@@ -53,6 +53,13 @@ TEST_F(ProtoEnumConversionsTest, GetPageTransitionQualifierString) {
       sync_pb::SyncEnums::PageTransitionRedirectType_MAX);
 }
 
+TEST_F(ProtoEnumConversionsTest, GetWifiCredentialSecurityClassString) {
+  TestEnumStringFunction(
+      GetWifiCredentialSecurityClassString,
+      sync_pb::WifiCredentialSpecifics::SecurityClass_MIN,
+      sync_pb::WifiCredentialSpecifics::SecurityClass_MAX);
+}
+
 TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
   TestEnumStringFunction(
       GetUpdatesSourceString,

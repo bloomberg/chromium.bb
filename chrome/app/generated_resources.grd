@@ -12376,6 +12376,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
           Open Tabs
         </message>
+        <message name="IDS_SYNC_DATATYPE_WIFI_CREDENTIALS" desc="WiFi network names and passwords, one of the data types that we allow syncing.">
+          WiFi Credentials
+        </message>
 
         <!-- Encryption tab of the configure sync dialog -->
         <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">

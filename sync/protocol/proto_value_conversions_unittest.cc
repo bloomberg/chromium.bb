@@ -35,6 +35,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/protocol/wifi_credential_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -55,7 +56,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(32, MODEL_TYPE_COUNT);
+  EXPECT_EQ(33, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -264,6 +265,10 @@ TEST_F(ProtoValueConversionsTest, ArticleSpecificsToValue) {
   TestSpecificsToValue(ArticleSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, WifiCredentialSpecificsToValue) {
+  TestSpecificsToValue(WifiCredentialSpecificsToValue);
+}
+
 // TODO(akalin): Figure out how to better test EntitySpecificsToValue.
 
 TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
@@ -301,6 +306,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(synced_notification_app_info);
   SET_FIELD(theme);
   SET_FIELD(typed_url);
+  SET_FIELD(wifi_credential);
 
 #undef SET_FIELD
 
