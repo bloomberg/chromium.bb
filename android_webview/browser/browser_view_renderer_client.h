@@ -27,6 +27,10 @@ class BrowserViewRendererClient {
   // Called to trigger view invalidations.
   virtual void PostInvalidate() = 0;
 
+  // Call postInvalidateOnAnimation for invalidations. This is only used to
+  // synchronize draw functor destruction.
+  virtual void InvalidateOnFunctorDestroy() = 0;
+
   // Called to update the parent draw constraints in browser view renderer.
   virtual void UpdateParentDrawConstraints() = 0;
 

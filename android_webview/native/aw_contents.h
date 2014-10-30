@@ -191,6 +191,7 @@ class AwContents : public FindHelper::Listener,
   // BrowserViewRendererClient implementation.
   virtual bool RequestDrawGL(bool wait_for_completion) override;
   virtual void PostInvalidate() override;
+  virtual void InvalidateOnFunctorDestroy() override;
   virtual void UpdateParentDrawConstraints() override;
   virtual void DidSkipCommitFrame() override;
   virtual void OnNewPicture() override;
@@ -242,10 +243,8 @@ class AwContents : public FindHelper::Listener,
   BrowserViewRenderer browser_view_renderer_;
   // SharedRendererState is owned by BrowserViewRenderer.
   // So keep a raw pointer here.
+  // TODO(hush): remove this pointer from AwContents.
   SharedRendererState* shared_renderer_state_;
-  // TODO(hush): hardware renderer will be owned by SharedRendererState,
-  // after DrawGL is moved to SharedRendererState.
-  scoped_ptr<HardwareRenderer> hardware_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
   scoped_ptr<PermissionRequestHandler> permission_request_handler_;
 

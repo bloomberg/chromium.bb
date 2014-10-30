@@ -5,6 +5,10 @@
 #include "android_webview/browser/shared_renderer_state.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/deferred_gpu_command_service.h"
+#include "android_webview/browser/hardware_renderer.h"
+#include "android_webview/browser/scoped_app_gl_state_restore.h"
+#include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -72,6 +76,7 @@ SharedRendererState::SharedRendererState(
     BrowserViewRenderer* browser_view_renderer)
     : ui_loop_(ui_loop),
       browser_view_renderer_(browser_view_renderer),
+      renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
       force_commit_(false),
       inside_hardware_release_(false),
       needs_force_invalidate_on_next_draw_gl_(false),
@@ -84,13 +89,14 @@ SharedRendererState::SharedRendererState(
 
 SharedRendererState::~SharedRendererState() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(!hardware_renderer_.get());
 }
 
 void SharedRendererState::ClientRequestDrawGL() {
   if (ui_loop_->BelongsToCurrentThread()) {
     if (!g_request_draw_gl_tracker.Get().ShouldRequestOnUiThread(this))
       return;
-    ClientRequestDrawGLOnUIThread();
+    ClientRequestDrawGLOnUI();
   } else {
     if (!g_request_draw_gl_tracker.Get().ShouldRequestOnNonUiThread(this))
       return;
@@ -110,13 +116,12 @@ void SharedRendererState::DidDrawGLProcess() {
 void SharedRendererState::ResetRequestDrawGLCallback() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  request_draw_gl_cancelable_closure_.Reset(
-      base::Bind(&SharedRendererState::ClientRequestDrawGLOnUIThread,
-                 base::Unretained(this)));
+  request_draw_gl_cancelable_closure_.Reset(base::Bind(
+      &SharedRendererState::ClientRequestDrawGLOnUI, base::Unretained(this)));
   request_draw_gl_closure_ = request_draw_gl_cancelable_closure_.callback();
 }
 
-void SharedRendererState::ClientRequestDrawGLOnUIThread() {
+void SharedRendererState::ClientRequestDrawGLOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ResetRequestDrawGLCallback();
   if (!browser_view_renderer_->RequestDrawGL(false)) {
@@ -125,7 +130,7 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
   }
 }
 
-void SharedRendererState::UpdateParentDrawConstraintsOnUIThread() {
+void SharedRendererState::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   browser_view_renderer_->UpdateParentDrawConstraints();
 }
@@ -154,7 +159,13 @@ void SharedRendererState::SetCompositorFrameOnUI(
   force_commit_ = force_commit;
 }
 
-scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrame() {
+scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrameOnRT() {
+  base::AutoLock lock(lock_);
+  return compositor_frame_.Pass();
+}
+
+scoped_ptr<cc::CompositorFrame>
+SharedRendererState::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
   return compositor_frame_.Pass();
 }
@@ -182,7 +193,7 @@ void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(
     // No need to hold the lock_ during the post task.
     ui_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUIThread,
+        base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUI,
                    ui_thread_weak_ptr_));
   }
 }
@@ -240,19 +251,125 @@ void SharedRendererState::SwapReturnedResourcesOnUI(
   resources->swap(returned_resources_);
 }
 
-bool SharedRendererState::ReturnedResourcesEmpty() const {
+bool SharedRendererState::ReturnedResourcesEmptyOnUI() const {
   base::AutoLock lock(lock_);
   return returned_resources_.empty();
 }
 
-InsideHardwareReleaseReset::InsideHardwareReleaseReset(
+void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
+  if (draw_info->mode == AwDrawGLInfo::kModeSync) {
+    if (hardware_renderer_)
+      hardware_renderer_->CommitFrame();
+    return;
+  }
+
+  {
+    GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+    base::AutoLock lock(lock_);
+    if (renderer_manager_key_ != manager->NullKey()) {
+      manager->DidDrawGL(renderer_manager_key_);
+    }
+  }
+
+  ScopedAppGLStateRestore state_restore(
+      draw_info->mode == AwDrawGLInfo::kModeDraw
+          ? ScopedAppGLStateRestore::MODE_DRAW
+          : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+  ScopedAllowGL allow_gl;
+
+  if (draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
+    LOG(ERROR) << "Received unexpected kModeProcessNoContext";
+  }
+
+  // kModeProcessNoContext should never happen because we tear down hardware
+  // in onTrimMemory. However that guarantee is maintained outside of chromium
+  // code. Not notifying shared state in kModeProcessNoContext can lead to
+  // immediate deadlock, which is slightly more catastrophic than leaks or
+  // corruption.
+  if (draw_info->mode == AwDrawGLInfo::kModeProcess ||
+      draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
+    DidDrawGLProcess();
+  }
+
+  if (IsInsideHardwareRelease()) {
+    hardware_renderer_.reset();
+    // Flush the idle queue in tear down.
+    DeferredGpuCommandService::GetInstance()->PerformAllIdleWork();
+    return;
+  }
+
+  if (draw_info->mode != AwDrawGLInfo::kModeDraw) {
+    if (draw_info->mode == AwDrawGLInfo::kModeProcess) {
+      DeferredGpuCommandService::GetInstance()->PerformIdleWork(true);
+    }
+    return;
+  }
+
+  if (!hardware_renderer_) {
+    hardware_renderer_.reset(new HardwareRenderer(this));
+    hardware_renderer_->CommitFrame();
+  }
+
+  hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
+                             state_restore.framebuffer_binding_ext(),
+                             draw_info);
+  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
+}
+
+void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
+
+  browser_view_renderer_->InvalidateOnFunctorDestroy();
+  bool hardware_initialized = browser_view_renderer_->hardware_enabled();
+  if (hardware_initialized) {
+    bool draw_functor_succeeded = browser_view_renderer_->RequestDrawGL(true);
+    if (!draw_functor_succeeded) {
+      LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
+      // Calling release on wrong thread intentionally.
+      AwDrawGLInfo info;
+      info.mode = AwDrawGLInfo::kModeProcess;
+      DrawGL(&info);
+    }
+
+    browser_view_renderer_->ReleaseHardware();
+  }
+
+  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+
+  {
+    base::AutoLock lock(lock_);
+    if (renderer_manager_key_ != manager->NullKey()) {
+      manager->Remove(renderer_manager_key_);
+      renderer_manager_key_ = manager->NullKey();
+    }
+  }
+
+  if (hardware_initialized) {
+    // Flush any invoke functors that's caused by ReleaseHardware.
+    browser_view_renderer_->RequestDrawGL(true);
+  }
+}
+
+void SharedRendererState::InitializeHardwareDrawIfNeededOnUI() {
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+
+  base::AutoLock lock(lock_);
+  if (renderer_manager_key_ == manager->NullKey()) {
+    renderer_manager_key_ = manager->PushBack(this);
+    DeferredGpuCommandService::SetInstance();
+  }
+}
+
+SharedRendererState::InsideHardwareReleaseReset::InsideHardwareReleaseReset(
     SharedRendererState* shared_renderer_state)
     : shared_renderer_state_(shared_renderer_state) {
   DCHECK(!shared_renderer_state_->IsInsideHardwareRelease());
   shared_renderer_state_->SetInsideHardwareRelease(true);
 }
 
-InsideHardwareReleaseReset::~InsideHardwareReleaseReset() {
+SharedRendererState::InsideHardwareReleaseReset::~InsideHardwareReleaseReset() {
   shared_renderer_state_->SetInsideHardwareRelease(false);
 }
 

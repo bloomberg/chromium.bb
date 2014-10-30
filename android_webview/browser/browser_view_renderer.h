@@ -128,6 +128,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   void UpdateParentDrawConstraints();
   void DidSkipCommitFrame();
+  void InvalidateOnFunctorDestroy();
 
  private:
   void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);

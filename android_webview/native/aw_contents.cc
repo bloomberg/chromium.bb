@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
-#include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
@@ -264,7 +263,6 @@ void AwContents::SetAwAutofillClient(jobject client) {
 
 AwContents::~AwContents() {
   DCHECK_EQ(this, AwContents::FromWebContents(web_contents_.get()));
-  DCHECK(!hardware_renderer_.get());
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
@@ -340,65 +338,8 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   return reinterpret_cast<intptr_t>(this);
 }
 
-// TODO(hush): move this function to SharedRendererState.
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
-  if (draw_info->mode == AwDrawGLInfo::kModeSync) {
-    if (hardware_renderer_)
-      hardware_renderer_->CommitFrame();
-    return;
-  }
-
-  {
-    GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
-    base::AutoLock lock(render_thread_lock_);
-    if (renderer_manager_key_ != manager->NullKey()) {
-      manager->DidDrawGL(renderer_manager_key_);
-    }
-  }
-
-  ScopedAppGLStateRestore state_restore(
-      draw_info->mode == AwDrawGLInfo::kModeDraw
-          ? ScopedAppGLStateRestore::MODE_DRAW
-          : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
-  ScopedAllowGL allow_gl;
-
-  if (draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
-    LOG(ERROR) << "Received unexpected kModeProcessNoContext";
-  }
-
-  // kModeProcessNoContext should never happen because we tear down hardware
-  // in onTrimMemory. However that guarantee is maintained outside of chromium
-  // code. Not notifying shared state in kModeProcessNoContext can lead to
-  // immediate deadlock, which is slightly more catastrophic than leaks or
-  // corruption.
-  if (draw_info->mode == AwDrawGLInfo::kModeProcess ||
-      draw_info->mode == AwDrawGLInfo::kModeProcessNoContext) {
-    shared_renderer_state_->DidDrawGLProcess();
-  }
-
-  if (shared_renderer_state_->IsInsideHardwareRelease()) {
-    hardware_renderer_.reset();
-    // Flush the idle queue in tear down.
-    DeferredGpuCommandService::GetInstance()->PerformAllIdleWork();
-    return;
-  }
-
-  if (draw_info->mode != AwDrawGLInfo::kModeDraw) {
-    if (draw_info->mode == AwDrawGLInfo::kModeProcess) {
-      DeferredGpuCommandService::GetInstance()->PerformIdleWork(true);
-    }
-    return;
-  }
-
-  if (!hardware_renderer_) {
-    hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
-    hardware_renderer_->CommitFrame();
-  }
-
-  hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
-                             state_restore.framebuffer_binding_ext(),
-                             draw_info);
-  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
+  shared_renderer_state_->DrawGL(draw_info);
 }
 
 namespace {
@@ -880,13 +821,7 @@ void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
 }
 
 void AwContents::InitializeHardwareDrawIfNeeded() {
-  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
-
-  base::AutoLock lock(render_thread_lock_);
-  if (renderer_manager_key_ == manager->NullKey()) {
-    renderer_manager_key_ = manager->PushBack(shared_renderer_state_);
-    DeferredGpuCommandService::SetInstance();
-  }
+  shared_renderer_state_->InitializeHardwareDrawIfNeededOnUI();
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
@@ -896,41 +831,14 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::ReleaseHardwareDrawIfNeeded() {
-  InsideHardwareReleaseReset inside_reset(shared_renderer_state_);
+  shared_renderer_state_->ReleaseHardwareDrawIfNeededOnUI();
+}
 
+void AwContents::InvalidateOnFunctorDestroy() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_AwContents_invalidateOnFunctorDestroy(env, obj.obj());
-
-  bool hardware_initialized = browser_view_renderer_.hardware_enabled();
-  if (hardware_initialized) {
-    bool draw_functor_succeeded = RequestDrawGL(true);
-    if (!draw_functor_succeeded) {
-      LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
-      // Calling release on wrong thread intentionally.
-      AwDrawGLInfo info;
-      info.mode = AwDrawGLInfo::kModeProcess;
-      DrawGL(&info);
-    }
-    browser_view_renderer_.ReleaseHardware();
-  }
-  DCHECK(!hardware_renderer_);
-
-  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
-
-  {
-    base::AutoLock lock(render_thread_lock_);
-    if (renderer_manager_key_ != manager->NullKey()) {
-      manager->Remove(renderer_manager_key_);
-      renderer_manager_key_ = manager->NullKey();
-    }
-  }
-
-  if (hardware_initialized) {
-    // Flush any invoke functors that's caused by OnDetachedFromWindow.
-    RequestDrawGL(true);
-  }
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>

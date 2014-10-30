@@ -150,7 +150,7 @@ void HardwareRenderer::CommitFrame() {
     return;
   }
 
-  committed_frame_ = shared_renderer_state_->PassCompositorFrame();
+  committed_frame_ = shared_renderer_state_->PassCompositorFrameOnRT();
   // Happens with empty global visible rect.
   if (!committed_frame_.get())
     return;

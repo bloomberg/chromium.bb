@@ -273,6 +273,10 @@ void BrowserViewRenderer::DidSkipCommitFrame() {
   DidSkipCompositeInDraw();
 }
 
+void BrowserViewRenderer::InvalidateOnFunctorDestroy() {
+  client_->InvalidateOnFunctorDestroy();
+}
+
 bool BrowserViewRenderer::OnDrawSoftware(jobject java_canvas) {
   if (!compositor_) {
     TRACE_EVENT_INSTANT0(
@@ -395,11 +399,9 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
 
 void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(hardware_enabled_);
-  // TODO(hush): do this in somewhere else. Either in hardware render or in
-  // shared renderer state.
-  ReturnUnusedResource(shared_renderer_state_.PassCompositorFrame());
+  ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
   ReturnResourceFromParent();
-  DCHECK(shared_renderer_state_.ReturnedResourcesEmpty());
+  DCHECK(shared_renderer_state_.ReturnedResourcesEmptyOnUI());
 
   if (compositor_) {
     compositor_->ReleaseHwDraw();
@@ -688,7 +690,7 @@ void BrowserViewRenderer::FallbackTickFired() {
   if (compositor_needs_continuous_invalidate_ && compositor_) {
     if (hardware_enabled_) {
       ReturnResourceFromParent();
-      ReturnUnusedResource(shared_renderer_state_.PassCompositorFrame());
+      ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
       scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
       if (frame.get()) {
         shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), true);
