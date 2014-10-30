@@ -176,7 +176,11 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 // static
 bool ChannelMojo::ShouldBeUsed() {
   // TODO(morrita): Turn this on for a set of platforms.
+#if defined(OS_LINUX)
+  return true;
+#else
   return false;
+#endif
 }
 
 // static
