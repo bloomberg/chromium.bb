@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -45,6 +46,35 @@
 #include "net/websockets/websocket_stream.h"
 
 namespace net {
+
+namespace {
+
+// TODO(yhirano): Remove these functions once http://crbug.com/399535 is fixed.
+NOINLINE void RunCallbackWithOk(const CompletionCallback& callback,
+                                int result) {
+  DCHECK_EQ(result, OK);
+  callback.Run(OK);
+}
+
+NOINLINE void RunCallbackWithInvalidResponseCausedByRedirect(
+    const CompletionCallback& callback,
+    int result) {
+  DCHECK_EQ(result, ERR_INVALID_RESPONSE);
+  callback.Run(ERR_INVALID_RESPONSE);
+}
+
+NOINLINE void RunCallbackWithInvalidResponse(
+    const CompletionCallback& callback,
+    int result) {
+  DCHECK_EQ(result, ERR_INVALID_RESPONSE);
+  callback.Run(ERR_INVALID_RESPONSE);
+}
+
+NOINLINE void RunCallback(const CompletionCallback& callback, int result) {
+  callback.Run(result);
+}
+
+}  // namespace
 
 // TODO(ricea): If more extensions are added, replace this with a more general
 // mechanism.
@@ -430,7 +460,8 @@ int WebSocketBasicHandshakeStream::ReadResponseHeaders(
                  callback));
   if (rv == ERR_IO_PENDING)
     return rv;
-  return ValidateResponse(rv);
+  bool is_redirect = false;
+  return ValidateResponse(rv, &is_redirect);
 }
 
 int WebSocketBasicHandshakeStream::ReadResponseBody(
@@ -535,7 +566,25 @@ void WebSocketBasicHandshakeStream::SetWebSocketKeyForTesting(
 void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
     const CompletionCallback& callback,
     int result) {
-  callback.Run(ValidateResponse(result));
+  bool is_redirect = false;
+  int rv = ValidateResponse(result, &is_redirect);
+
+  // TODO(yhirano): Simplify this statement once http://crbug.com/399535 is
+  // fixed.
+  switch (rv) {
+    case OK:
+      RunCallbackWithOk(callback, rv);
+      break;
+    case ERR_INVALID_RESPONSE:
+      if (is_redirect)
+        RunCallbackWithInvalidResponseCausedByRedirect(callback, rv);
+      else
+        RunCallbackWithInvalidResponse(callback, rv);
+      break;
+    default:
+      RunCallback(callback, rv);
+      break;
+  }
 }
 
 void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
@@ -546,14 +595,17 @@ void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
                                             http_response_info_->response_time);
 }
 
-int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
+int WebSocketBasicHandshakeStream::ValidateResponse(int rv,
+                                                    bool* is_redirect) {
   DCHECK(http_response_info_);
+  *is_redirect = false;
   // Most net errors happen during connection, so they are not seen by this
   // method. The histogram for error codes is created in
   // Delegate::OnResponseStarted in websocket_stream.cc instead.
   if (rv >= 0) {
     const HttpResponseHeaders* headers = http_response_info_->headers.get();
     const int response_code = headers->response_code();
+    *is_redirect = HttpResponseHeaders::IsRedirectResponseCode(response_code);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.WebSocket.ResponseCode", response_code);
     switch (response_code) {
       case HTTP_SWITCHING_PROTOCOLS:

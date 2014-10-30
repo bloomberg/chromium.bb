@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   void OnFinishOpeningHandshake();
 
   // Validates the response and sends the finished handshake event.
-  int ValidateResponse(int rv);
+  int ValidateResponse(int rv, bool* is_redirect);
 
   // Check that the headers are well-formed for a 101 response, and returns
   // OK if they are, otherwise returns ERR_INVALID_RESPONSE.
