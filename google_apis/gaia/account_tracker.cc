@@ -236,16 +236,33 @@ void AccountTracker::StartFetchingUserInfo(const std::string account_key) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AccountTracker::StartFetchingUserInfo"));
 
-  if (ContainsKey(user_info_requests_, account_key))
+  if (ContainsKey(user_info_requests_, account_key)) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 AccountTracker::StartFetchingUserInfo 1"));
+
     DeleteFetcher(user_info_requests_[account_key]);
+  }
 
   DVLOG(1) << "StartFetching " << account_key;
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::StartFetchingUserInfo 2"));
+
   AccountIdFetcher* fetcher =
       new AccountIdFetcher(identity_provider_->GetTokenService(),
                            request_context_getter_.get(),
                            this,
                            account_key);
   user_info_requests_[account_key] = fetcher;
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AccountTracker::StartFetchingUserInfo 3"));
+
   fetcher->Start();
 }
 
