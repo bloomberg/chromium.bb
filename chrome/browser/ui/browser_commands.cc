@@ -815,13 +815,13 @@ void ManagePasswordsForPage(Browser* browser) {
   chrome::ShowManagePasswordsBubble(web_contents);
 }
 
-void TogglePagePinnedToStartScreen(Browser* browser) {
 #if defined(OS_WIN)
+void TogglePagePinnedToStartScreen(Browser* browser) {
   MetroPinTabHelper::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())->
           TogglePinnedToStartScreen();
-#endif
 }
+#endif
 
 void SavePage(Browser* browser) {
   content::RecordAction(UserMetricsAction("SavePage"));

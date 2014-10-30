@@ -510,6 +510,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
         chrome::AttemptRestartToMetroMode();
       }
       break;
+    case IDC_PIN_TO_START_SCREEN:
+      TogglePagePinnedToStartScreen(browser_);
+      break;
 #endif
 
 #if defined(OS_MACOSX)
@@ -527,9 +530,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_BOOKMARK_PAGE:
       BookmarkCurrentPage(browser_);
-      break;
-    case IDC_PIN_TO_START_SCREEN:
-      TogglePagePinnedToStartScreen(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
       BookmarkAllTabs(browser_);
@@ -1176,8 +1176,9 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
                                         CanBookmarkCurrentPage(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_PIN_TO_START_SCREEN,
-                                        true);
+#if defined(OS_WIN)
+  command_updater_.UpdateCommandEnabled(IDC_PIN_TO_START_SCREEN, true);
+#endif
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {

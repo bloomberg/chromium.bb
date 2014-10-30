@@ -10,11 +10,6 @@
 // For views and cocoa, we have complex delegate systems to handle
 // injecting the bookmarks to the bookmark submenu. This is done to support
 // advanced interactions with the menu contents, like right click context menus.
-// For the time being on GTK systems, we have a dedicated bookmark menu model in
-// chrome/browser/ui/gtk/bookmarks/bookmark_sub_menu_model_gtk.cc instead.
-
-// Note that although this file's header is included on GTK systems, this
-// source file is not compiled there. (The header just includes the GTK one.)
 
 BookmarkSubMenuModel::BookmarkSubMenuModel(
     ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
@@ -30,15 +25,22 @@ void BookmarkSubMenuModel::Build(Browser* browser) {
 #if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
 #endif
-  if (delegate()->IsCommandIdVisible(IDC_BOOKMARK_PAGE) ||
-      delegate()->IsCommandIdVisible(IDC_BOOKMARK_ALL_TABS) ||
-      delegate()->IsCommandIdVisible(IDC_PIN_TO_START_SCREEN)) {
+  bool is_submenu_visible =
+      delegate()->IsCommandIdVisible(IDC_BOOKMARK_PAGE) ||
+      delegate()->IsCommandIdVisible(IDC_BOOKMARK_ALL_TABS);
+#if defined(OS_WIN)
+  is_submenu_visible |=
+      delegate()->IsCommandIdVisible(IDC_PIN_TO_START_SCREEN);
+#endif
+  if (is_submenu_visible) {
     AddSeparator(ui::NORMAL_SEPARATOR);
 
     AddItemWithStringId(IDC_BOOKMARK_PAGE, IDS_BOOKMARK_THIS_PAGE);
     AddItemWithStringId(IDC_BOOKMARK_ALL_TABS, IDS_BOOKMARK_OPEN_PAGES);
 
+#if defined(OS_WIN)
     AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
+#endif
   }
 #if defined(OS_MACOSX)
   AddSeparator(ui::NORMAL_SEPARATOR);
