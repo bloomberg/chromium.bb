@@ -1179,9 +1179,7 @@
               'type': 'none',
               'dependencies': [
                 '../base/base.gyp:base_unittests',
-                # TODO(jackhou): Ensure that app_installer builds on trybots
-                # and waterfall, then de-comment here.
-                #'../chrome/chrome.gyp:app_installer',
+                '../chrome/chrome.gyp:app_installer',
                 '../chrome/chrome.gyp:browser_tests',
                 '../chrome/chrome.gyp:sync_integration_tests',
                 '../chrome/chrome.gyp:crash_service',
