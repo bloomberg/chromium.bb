@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import logging
 import operator
 
 from chromite.cbuildbot import constants
@@ -343,11 +344,59 @@ class GerritHelper(object):
                                label='Commit-Queue', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
-    """Land (merge) a gerrit change."""
+    """Land (merge) a gerrit change using the JSON API."""
     if dryrun:
       cros_build_lib.Info('Would have submitted change %s', change)
       return
     gob_util.SubmitChange(self.host, change.gerrit_number, revision=change.sha1)
+
+  def SubmitChangeUsingGit(self, change, git_repo, dryrun=False):
+    """Submit |change| using 'git push'.
+
+    This tries to submit a change that is present in |git_repo| via 'git push'.
+    It rebases the change if necessary and submits it.
+
+    Returns:
+      True if we were able to submit the change using 'git push'. If not, we
+      output a warning and return False.
+    """
+    remote, checkout_ref = git.GetTrackingBranch(git_repo)
+    uploaded_sha1 = change.sha1
+    for _ in range(3):
+      # Get our updated SHA1.
+      local_sha1 = change.GetLocalSHA1(git_repo, checkout_ref)
+      if local_sha1 is None:
+        logging.warn('%s is not present in %s', change, git_repo)
+        break
+
+      if local_sha1 != uploaded_sha1:
+        try:
+          push_to = git.RemoteRef(change.project_url,
+                                  'refs/for/%s' % change.tracking_branch)
+          git.GitPush(git_repo, local_sha1, push_to, dryrun=dryrun)
+          uploaded_sha1 = local_sha1
+        except cros_build_lib.RunCommandError:
+          break
+
+      try:
+        push_to = git.RemoteRef(change.project_url, change.tracking_branch)
+        git.GitPush(git_repo, local_sha1, push_to, dryrun=dryrun)
+        return True
+      except cros_build_lib.RunCommandError:
+        logging.warn('git push failed for %s; was a change chumped in the '
+                     'middle of the CQ run?',
+                     change, exc_info=True)
+
+      # Rebase the branch.
+      try:
+        git.SyncPushBranch(git_repo, remote, checkout_ref)
+      except cros_build_lib.RunCommandError:
+        logging.warn('git rebase failed for %s; was a change chumped in the '
+                     'middle of the CQ run?',
+                     change, exc_info=True)
+        break
+
+    return False
 
   def AbandonChange(self, change, dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""

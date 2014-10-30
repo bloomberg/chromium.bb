@@ -455,7 +455,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     redirect_stdout, redirect_stderr = True, True
 
   if quiet:
-    print_cmd = False
+    debug_level = logging.DEBUG
     stdout_to_pipe, combine_stdout_stderr = True, True
 
   # Set default for variables.

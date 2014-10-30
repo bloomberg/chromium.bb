@@ -29,6 +29,7 @@ import urllib
 
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
+from chromite.lib import git
 import cros_build_lib
 import gob_util
 import osutils
@@ -1180,10 +1181,11 @@ class GerritTestCase(MockTempDirTestCase):
 
   def _CloneProject(self, name, path):
     """Clone a project from the test gerrit server."""
-    osutils.SafeMakedirs(os.path.dirname(path))
+    root = os.path.dirname(path)
+    osutils.SafeMakedirs(root)
     url = '%s://%s/%s' % (
         gob_util.GIT_PROTOCOL, self.gerrit_instance.git_host, name)
-    cros_build_lib.RunCommand(['git', 'clone', url, path], quiet=True)
+    git.RunGit(root, ['clone', url, path])
     # Install commit-msg hook.
     hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
     hook_cmd = ['curl', '-n', '-o', hook_path]

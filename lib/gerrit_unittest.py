@@ -18,6 +18,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import gob_util
 
 import mock
@@ -30,19 +31,18 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
   def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
     return gerrit.GetGerritHelper(remote)
 
-  def createPatch(self, clone_path, project, amend=False):
+  def createPatch(self, clone_path, project, **kwargs):
     """Create a patch in the given git checkout and upload it to gerrit.
 
     Args:
       clone_path: The directory on disk of the git clone.
       project: The associated project.
-      amend: Whether to amend an existing patch. If set, we will amend the
-        HEAD commit in the checkout and upload that patch.
+      **kwargs: Additional keyword arguments to pass to createCommit.
 
     Returns:
       A GerritPatch object.
     """
-    (revision, changeid) = self.createCommit(clone_path, amend=amend)
+    (revision, changeid) = self.createCommit(clone_path, **kwargs)
     self.uploadChange(clone_path)
     gpatch = self._GetHelper().QuerySingleRecord(
         change=changeid, project=project, branch='master')
@@ -268,6 +268,53 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     # Try submitting the up-to-date change.
     helper.SubmitChange(gpatch2)
     self.assertTrue(helper.IsChangeCommitted(gpatch2.gerrit_number))
+
+  @cros_test_lib.NetworkTest()
+  def test010SubmitUsingGit(self):
+    """Tests that we can rebase & submit a change."""
+    project = self.createProject('test010')
+
+    # Init the repository first.
+    helper = self._GetHelper()
+    clone_path1 = self.cloneProject(project, 'p1')
+    gpatch1 = self.createPatch(clone_path1, project, msg='Init')
+    helper.SetReview(gpatch1.gerrit_number, labels={'Code-Review':'+2'})
+    helper.SubmitChange(gpatch1)
+    self.assertTrue(helper.IsChangeCommitted(gpatch1.gerrit_number))
+
+    # Create a change.
+    clone_path2 = self.cloneProject(project, 'p2')
+    git.CreateBranch(clone_path2, 'patch', 'origin/master', track=True)
+    gpatchA = self.createPatch(clone_path2, project, msg='Change A',
+                               filename='a.txt')
+
+    # Create another change.
+    clone_path3 = self.cloneProject(project, 'p3')
+    git.CreateBranch(clone_path3, 'patch', 'origin/master', track=True)
+    gpatchB = self.createPatch(clone_path3, project, msg='Change B',
+                               filename='b.txt')
+
+    # Create another two changes.
+    gpatchC = self.createPatch(clone_path2, project, msg='Change C',
+                               filename='a.txt')
+    gpatchD = self.createPatch(clone_path2, project, msg='Change D',
+                               filename='a.txt')
+
+    # Submit patch A.
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchA, clone_path2))
+    self.assertTrue(helper.IsChangeCommitted(gpatchA.gerrit_number))
+
+    # Submit patch B.
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchB, clone_path3))
+    self.assertTrue(helper.IsChangeCommitted(gpatchB.gerrit_number))
+
+    # Submit patch C and D.
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchC, clone_path2))
+    self.assertTrue(helper.SubmitChangeUsingGit(gpatchD, clone_path2))
+
+    # Check that C and D are submitted.
+    self.assertTrue(helper.IsChangeCommitted(gpatchC.gerrit_number))
+    self.assertTrue(helper.IsChangeCommitted(gpatchD.gerrit_number))
 
 
 if __name__ == '__main__':

@@ -1090,6 +1090,26 @@ class GitRepoPatch(PatchQuery):
       s += ' "%s"' % (self._subject_line,)
     return s
 
+  def GetLocalSHA1(self, git_repo, revision):
+    """Get the local SHA1 for this patch in the given |manifest|.
+
+    Args:
+      git_repo: The path to the repo.
+      revision: The tracking branch.
+
+    Returns:
+      The local SHA1 for this patch, if it is present in the given |manifest|.
+      If this patch is not present, returns None.
+    """
+    match = '\n'.join(x for x in self.commit_message.split('\n') if x)
+    cmd = ['log', '-F', '--all-match', '--grep', match,
+           '--format=%H', '%s..HEAD' % revision]
+    output = git.RunGit(git_repo, cmd).output.split()
+    if len(output) == 1:
+      return output[0]
+    elif len(output) > 1:
+      raise BrokenChangeID(self, 'Duplicate change ID')
+
 
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
