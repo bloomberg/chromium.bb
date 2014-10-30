@@ -160,7 +160,9 @@ to stdout, in a serialized JSON format.""")
                       help='The board to use when computing deps.')
   parser.add_argument('--format', default='deps',
                       choices=['deps', 'cpe'],
-                      help='Output either traditional deps or CPE-only JSON')
+                      help='Output either traditional deps or CPE-only JSON.')
+  parser.add_argument('--output-path', default=None,
+                      help='Write output to the given path.')
   # Even though this is really just a pass-through to DepGraphGenerator,
   # handling it as a known arg here allows us to specify a default more
   # elegantly than testing for its presence in the unknown_args later.
@@ -181,4 +183,10 @@ to stdout, in a serialized JSON format.""")
   deps_list = FlattenDepTree(deps_tree, get_cpe=(known_args.format == 'cpe'))
   if known_args.format == 'cpe':
     deps_list = ExtractCPEList(deps_list)
-  print(json.dumps(deps_list, sort_keys=True, indent=2))
+
+  deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
+  if known_args.output_path:
+    with open(known_args.output_path, 'w') as f:
+      f.write(deps_output)
+  else:
+    print(deps_output)

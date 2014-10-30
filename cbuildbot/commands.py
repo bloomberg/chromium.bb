@@ -1183,20 +1183,27 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
   if useflags:
     env['USE'] = ' '.join(useflags)
 
-  result = RunBuildScript(buildroot, cmd, enter_chroot=True,
-                          chromite_cmd=True, capture_output=True,
-                          extra_env=env)
   if raw_cmd_result:
-    return result
+    return RunBuildScript(
+      buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+      capture_output=True, extra_env=env)
 
-  # TODO(yjhong): Let the exception propagate and remove extra logging
-  # after crbug.com/428824 is fixed.
-  try:
-    # Parse the result.
-    deps = json.loads(result.output)
-  except ValueError as e:
-    logging.warning('%s: %s', e, result.output)
-    deps = {}
+  # The stdout of cros_extract_deps may contain undesirable
+  # output. Avoid that by instructing the script to explicitly dump
+  # the deps into a file.
+  with tempfile.NamedTemporaryFile(
+      dir=os.path.join(buildroot, 'chroot', 'tmp')) as f:
+    cmd += ['--output-path', cros_build_lib.ToChrootPath(f.name)]
+    RunBuildScript(buildroot, cmd, enter_chroot=True,
+                   chromite_cmd=True, capture_output=True, extra_env=env)
+    raw_deps = f.read()
+    try:
+      # TODO(yjhong): Let the exception propagate and remove extra logging
+      # after crbug.com/428824 is fixed.
+      deps = json.loads(raw_deps)
+    except ValueError as e:
+      logging.warning('%s: %s', e, raw_deps)
+      deps = {}
 
   return deps
 
