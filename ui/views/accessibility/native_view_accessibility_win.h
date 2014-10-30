@@ -61,159 +61,155 @@ NativeViewAccessibilityWin
   virtual ~NativeViewAccessibilityWin();
 
   // NativeViewAccessibility.
-  virtual void NotifyAccessibilityEvent(
-      ui::AXEvent event_type) override;
-  virtual gfx::NativeViewAccessible GetNativeObject() override;
-  virtual void Destroy() override;
+  void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
+  gfx::NativeViewAccessible GetNativeObject() override;
+  void Destroy() override;
 
   // Supported IAccessible methods.
 
   // Retrieves the child element or child object at a given point on the screen.
-  virtual STDMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child);
+  STDMETHODIMP accHitTest(LONG x_left, LONG y_top, VARIANT* child) override;
 
   // Performs the object's default action.
-  STDMETHODIMP accDoDefaultAction(VARIANT var_id);
+  STDMETHODIMP accDoDefaultAction(VARIANT var_id) override;
 
   // Retrieves the specified object's current screen location.
   STDMETHODIMP accLocation(LONG* x_left,
                            LONG* y_top,
                            LONG* width,
                            LONG* height,
-                           VARIANT var_id);
+                           VARIANT var_id) override;
 
   // Traverses to another UI element and retrieves the object.
-  STDMETHODIMP accNavigate(LONG nav_dir, VARIANT start, VARIANT* end);
+  STDMETHODIMP accNavigate(LONG nav_dir, VARIANT start, VARIANT* end) override;
 
   // Retrieves an IDispatch interface pointer for the specified child.
-  virtual STDMETHODIMP get_accChild(VARIANT var_child, IDispatch** disp_child);
+  STDMETHODIMP get_accChild(VARIANT var_child, IDispatch** disp_child) override;
 
   // Retrieves the number of accessible children.
-  virtual STDMETHODIMP get_accChildCount(LONG* child_count);
+  STDMETHODIMP get_accChildCount(LONG* child_count) override;
 
   // Retrieves a string that describes the object's default action.
-  STDMETHODIMP get_accDefaultAction(VARIANT var_id, BSTR* default_action);
+  STDMETHODIMP get_accDefaultAction(VARIANT var_id,
+                                    BSTR* default_action) override;
 
   // Retrieves the tooltip description.
-  STDMETHODIMP get_accDescription(VARIANT var_id, BSTR* desc);
+  STDMETHODIMP get_accDescription(VARIANT var_id, BSTR* desc) override;
 
   // Retrieves the object that has the keyboard focus.
-  STDMETHODIMP get_accFocus(VARIANT* focus_child);
+  STDMETHODIMP get_accFocus(VARIANT* focus_child) override;
 
   // Retrieves the specified object's shortcut.
-  STDMETHODIMP get_accKeyboardShortcut(VARIANT var_id, BSTR* access_key);
+  STDMETHODIMP get_accKeyboardShortcut(VARIANT var_id,
+                                       BSTR* access_key) override;
 
   // Retrieves the name of the specified object.
-  STDMETHODIMP get_accName(VARIANT var_id, BSTR* name);
+  STDMETHODIMP get_accName(VARIANT var_id, BSTR* name) override;
 
   // Retrieves the IDispatch interface of the object's parent.
-  STDMETHODIMP get_accParent(IDispatch** disp_parent);
+  STDMETHODIMP get_accParent(IDispatch** disp_parent) override;
 
   // Retrieves information describing the role of the specified object.
-  STDMETHODIMP get_accRole(VARIANT var_id, VARIANT* role);
+  STDMETHODIMP get_accRole(VARIANT var_id, VARIANT* role) override;
 
   // Retrieves the current state of the specified object.
-  STDMETHODIMP get_accState(VARIANT var_id, VARIANT* state);
+  STDMETHODIMP get_accState(VARIANT var_id, VARIANT* state) override;
 
   // Retrieve or set the string value associated with the specified object.
   // Setting the value is not typically used by screen readers, but it's
   // used frequently by automation software.
-  STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value);
-  STDMETHODIMP put_accValue(VARIANT var_id, BSTR new_value);
+  STDMETHODIMP get_accValue(VARIANT var_id, BSTR* value) override;
+  STDMETHODIMP put_accValue(VARIANT var_id, BSTR new_value) override;
 
   // Selections not applicable to views.
-  STDMETHODIMP get_accSelection(VARIANT* selected);
-  STDMETHODIMP accSelect(LONG flags_sel, VARIANT var_id);
+  STDMETHODIMP get_accSelection(VARIANT* selected) override;
+  STDMETHODIMP accSelect(LONG flags_sel, VARIANT var_id) override;
 
   // Help functions not supported.
-  STDMETHODIMP get_accHelp(VARIANT var_id, BSTR* help);
+  STDMETHODIMP get_accHelp(VARIANT var_id, BSTR* help) override;
   STDMETHODIMP get_accHelpTopic(BSTR* help_file,
                                 VARIANT var_id,
-                                LONG* topic_id);
+                                LONG* topic_id) override;
 
   // Deprecated functions, not implemented here.
-  STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name);
+  STDMETHODIMP put_accName(VARIANT var_id, BSTR put_name) override;
 
   //
   // IAccessible2
   //
 
-  STDMETHODIMP role(LONG* role);
+  STDMETHODIMP role(LONG* role) override;
 
-  STDMETHODIMP get_states(AccessibleStates* states);
+  STDMETHODIMP get_states(AccessibleStates* states) override;
 
-  STDMETHODIMP get_uniqueID(LONG* unique_id);
+  STDMETHODIMP get_uniqueID(LONG* unique_id) override;
 
-  STDMETHODIMP get_windowHandle(HWND* window_handle);
+  STDMETHODIMP get_windowHandle(HWND* window_handle) override;
 
   STDMETHODIMP get_relationTargetsOfType(BSTR type,
                                          long max_targets,
-                                         IUnknown ***targets,
-                                         long *n_targets);
+                                         IUnknown*** targets,
+                                         long* n_targets) override;
 
-  STDMETHODIMP get_attributes(BSTR* attributes);
+  STDMETHODIMP get_attributes(BSTR* attributes) override;
 
   //
   // IAccessible2 methods not implemented.
   //
 
-  STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) {
+  STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_indexInParent(LONG* index_in_parent) {
+  STDMETHODIMP get_indexInParent(LONG* index_in_parent) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_extendedRole(BSTR* extended_role) {
+  STDMETHODIMP get_extendedRole(BSTR* extended_role) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_nRelations(LONG* n_relations) {
-    return E_NOTIMPL;
-  }
+  STDMETHODIMP get_nRelations(LONG* n_relations) override { return E_NOTIMPL; }
   STDMETHODIMP get_relation(LONG relation_index,
-                            IAccessibleRelation** relation) {
+                            IAccessibleRelation** relation) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_relations(LONG max_relations,
-      IAccessibleRelation** relations,
-      LONG* n_relations) {
+                             IAccessibleRelation** relations,
+                             LONG* n_relations) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) {
+  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP scrollToPoint(
-      enum IA2CoordinateType coordinate_type,
-      LONG x,
-      LONG y) {
+  STDMETHODIMP scrollToPoint(enum IA2CoordinateType coordinate_type,
+                             LONG x,
+                             LONG y) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_groupPosition(LONG* group_level,
                                  LONG* similar_items_in_group,
-                                 LONG* position_in_group) {
+                                 LONG* position_in_group) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_localizedExtendedRole(
-      BSTR* localized_extended_role) {
+      BSTR* localized_extended_role) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) {
+  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_extendedStates(LONG max_extended_states,
                                   BSTR** extended_states,
-                                  LONG* n_extended_states) {
+                                  LONG* n_extended_states) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_localizedExtendedStates(
       LONG max_localized_extended_states,
       BSTR** localized_extended_states,
-      LONG* n_localized_extended_states) {
+      LONG* n_localized_extended_states) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_locale(IA2Locale* locale) {
-    return E_NOTIMPL;
-  }
+  STDMETHODIMP get_locale(IA2Locale* locale) override { return E_NOTIMPL; }
   STDMETHODIMP get_accessibleWithCaret(IUnknown** accessible,
-                                       long* caret_offset) {
+                                       long* caret_offset) override {
     return E_NOTIMPL;
   }
 
@@ -221,82 +217,89 @@ NativeViewAccessibilityWin
   // IAccessibleText methods.
   //
 
-  STDMETHODIMP get_nCharacters(LONG* n_characters);
+  STDMETHODIMP get_nCharacters(LONG* n_characters) override;
 
-  STDMETHODIMP get_caretOffset(LONG* offset);
+  STDMETHODIMP get_caretOffset(LONG* offset) override;
 
-  STDMETHODIMP get_nSelections(LONG* n_selections);
+  STDMETHODIMP get_nSelections(LONG* n_selections) override;
 
   STDMETHODIMP get_selection(LONG selection_index,
                              LONG* start_offset,
-                             LONG* end_offset);
+                             LONG* end_offset) override;
 
-  STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
+  STDMETHODIMP get_text(LONG start_offset,
+                        LONG end_offset,
+                        BSTR* text) override;
 
   STDMETHODIMP get_textAtOffset(LONG offset,
                                 enum IA2TextBoundaryType boundary_type,
-                                LONG* start_offset, LONG* end_offset,
-                                BSTR* text);
+                                LONG* start_offset,
+                                LONG* end_offset,
+                                BSTR* text) override;
 
   STDMETHODIMP get_textBeforeOffset(LONG offset,
                                     enum IA2TextBoundaryType boundary_type,
-                                    LONG* start_offset, LONG* end_offset,
-                                    BSTR* text);
+                                    LONG* start_offset,
+                                    LONG* end_offset,
+                                    BSTR* text) override;
 
   STDMETHODIMP get_textAfterOffset(LONG offset,
                                    enum IA2TextBoundaryType boundary_type,
-                                   LONG* start_offset, LONG* end_offset,
-                                   BSTR* text);
+                                   LONG* start_offset,
+                                   LONG* end_offset,
+                                   BSTR* text) override;
 
-  STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
-      enum IA2CoordinateType coord_type,
-      LONG* offset);
+  STDMETHODIMP get_offsetAtPoint(LONG x,
+                                 LONG y,
+                                 enum IA2CoordinateType coord_type,
+                                 LONG* offset) override;
 
   //
   // IAccessibleText methods not implemented.
   //
 
-  STDMETHODIMP get_newText(IA2TextSegment* new_text) {
+  STDMETHODIMP get_newText(IA2TextSegment* new_text) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_oldText(IA2TextSegment* old_text) {
+  STDMETHODIMP get_oldText(IA2TextSegment* old_text) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
+  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_attributes(LONG offset,
                               LONG* start_offset,
                               LONG* end_offset,
-                              BSTR* text_attributes) {
+                              BSTR* text_attributes) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_characterExtents(LONG offset,
-      enum IA2CoordinateType coord_type,
-      LONG* x, LONG* y,
-      LONG* width, LONG* height) {
+                                    enum IA2CoordinateType coord_type,
+                                    LONG* x,
+                                    LONG* y,
+                                    LONG* width,
+                                    LONG* height) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP removeSelection(LONG selection_index) {
+  STDMETHODIMP removeSelection(LONG selection_index) override {
     return E_NOTIMPL;
   }
-  STDMETHODIMP setCaretOffset(LONG offset) {
-    return E_NOTIMPL;
-  }
+  STDMETHODIMP setCaretOffset(LONG offset) override { return E_NOTIMPL; }
   STDMETHODIMP setSelection(LONG selection_index,
                             LONG start_offset,
-                            LONG end_offset) {
+                            LONG end_offset) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP scrollSubstringTo(LONG start_index,
                                  LONG end_index,
-                                 enum IA2ScrollType scroll_type) {
+                                 enum IA2ScrollType scroll_type) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP scrollSubstringToPoint(LONG start_index,
-      LONG end_index,
-      enum IA2CoordinateType coordinate_type,
-      LONG x, LONG y) {
+                                      LONG end_index,
+                                      enum IA2CoordinateType coordinate_type,
+                                      LONG x,
+                                      LONG y) override {
     return E_NOTIMPL;
   }
 
@@ -304,25 +307,27 @@ NativeViewAccessibilityWin
   // IServiceProvider methods.
   //
 
-  STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void** object);
+  STDMETHODIMP QueryService(REFGUID guidService,
+                            REFIID riid,
+                            void** object) override;
 
   //
   // IAccessibleEx methods not implemented.
   //
-  STDMETHODIMP GetObjectForChild(long child_id, IAccessibleEx** ret) {
+  STDMETHODIMP GetObjectForChild(long child_id, IAccessibleEx** ret) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetIAccessiblePair(IAccessible** acc, long* child_id) {
+  STDMETHODIMP GetIAccessiblePair(IAccessible** acc, long* child_id) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) {
+  STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override {
     return E_NOTIMPL;
   }
 
   STDMETHODIMP ConvertReturnedElement(IRawElementProviderSimple* element,
-                                      IAccessibleEx** acc) {
+                                      IAccessibleEx** acc) override {
     return E_NOTIMPL;
   }
 
@@ -331,18 +336,18 @@ NativeViewAccessibilityWin
   //
   // The GetPatternProvider/GetPropertyValue methods need to be implemented for
   // the on-screen keyboard to show up in Windows 8 metro.
-  STDMETHODIMP GetPatternProvider(PATTERNID id, IUnknown** provider);
-  STDMETHODIMP GetPropertyValue(PROPERTYID id, VARIANT* ret);
+  STDMETHODIMP GetPatternProvider(PATTERNID id, IUnknown** provider) override;
+  STDMETHODIMP GetPropertyValue(PROPERTYID id, VARIANT* ret) override;
 
   //
   // IRawElementProviderSimple methods not implemented.
   //
-  STDMETHODIMP get_ProviderOptions(enum ProviderOptions* ret) {
+  STDMETHODIMP get_ProviderOptions(enum ProviderOptions* ret) override {
     return E_NOTIMPL;
   }
 
   STDMETHODIMP get_HostRawElementProvider(
-      IRawElementProviderSimple** provider) {
+      IRawElementProviderSimple** provider) override {
     return E_NOTIMPL;
   }
 

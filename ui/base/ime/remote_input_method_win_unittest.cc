@@ -86,29 +86,26 @@ class MockTextInputClient : public DummyTextInputClient {
 
  private:
   // Overriden from DummyTextInputClient.
-  virtual void SetCompositionText(
-      const ui::CompositionText& composition) override {
+  void SetCompositionText(const ui::CompositionText& composition) override {
     ++call_count_set_composition_text_;
   }
-  virtual void InsertChar(base::char16 ch, int flags) override {
+  void InsertChar(base::char16 ch, int flags) override {
     inserted_text_.append(1, ch);
     ++call_count_insert_char_;
   }
-  virtual void InsertText(const base::string16& text) override {
+  void InsertText(const base::string16& text) override {
     inserted_text_.append(text);
     ++call_count_insert_text_;
   }
-  virtual ui::TextInputType GetTextInputType() const override {
+  ui::TextInputType GetTextInputType() const override {
     return text_input_type_;
   }
-  virtual ui::TextInputMode GetTextInputMode() const override {
+  ui::TextInputMode GetTextInputMode() const override {
     return text_input_mode_;
   }
-  virtual gfx::Rect GetCaretBounds() const {
-    return caret_bounds_;
-  }
-  virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             gfx::Rect* rect) const override {
+  gfx::Rect GetCaretBounds() const override { return caret_bounds_; }
+  bool GetCompositionCharacterBounds(uint32 index,
+                                     gfx::Rect* rect) const override {
     // Emulate the situation of crbug.com/328237.
     if (emulate_pepper_flash_)
       return false;
@@ -117,19 +114,19 @@ class MockTextInputClient : public DummyTextInputClient {
     *rect = composition_character_bounds_[index];
     return true;
   }
-  virtual bool HasCompositionText() const override {
+  bool HasCompositionText() const override {
     return !composition_character_bounds_.empty();
   }
-  virtual bool GetCompositionTextRange(gfx::Range* range) const override {
+  bool GetCompositionTextRange(gfx::Range* range) const override {
     if (composition_character_bounds_.empty())
       return false;
     *range = gfx::Range(0, composition_character_bounds_.size());
     return true;
   }
-  virtual void OnCandidateWindowShown() override {
+  void OnCandidateWindowShown() override {
     is_candidate_window_shown_called_ = true;
   }
-  virtual void OnCandidateWindowHidden() override {
+  void OnCandidateWindowHidden() override {
     is_candidate_window_hidden_called_ = true;
   }
 
@@ -159,7 +156,7 @@ class MockInputMethodDelegate : public internal::InputMethodDelegate {
   }
 
  private:
-  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
     EXPECT_FALSE(event.HasNativeEvent());
     fabricated_key_events_.push_back(event.key_code());
     return true;
@@ -197,11 +194,9 @@ class MockRemoteInputMethodDelegateWin
   }
 
  private:
-  virtual void CancelComposition() override {
-    cancel_composition_called_ = true;
-  }
+  void CancelComposition() override { cancel_composition_called_ = true; }
 
-  virtual void OnTextInputClientUpdated(
+  void OnTextInputClientUpdated(
       const std::vector<int32>& input_scopes,
       const std::vector<gfx::Rect>& composition_character_bounds) override {
     text_input_client_updated_called_ = true;
@@ -237,22 +232,17 @@ class MockInputMethodObserver : public InputMethodObserver {
 
  private:
   // Overriden from InputMethodObserver.
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) override {
-  }
-  virtual void OnFocus() override {
-  }
-  virtual void OnBlur() override {
-  }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) override {
-  }
-  virtual void OnTextInputStateChanged(const TextInputClient* client) override {
+  void OnTextInputTypeChanged(const TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const TextInputClient* client) override {}
+  void OnTextInputStateChanged(const TextInputClient* client) override {
     ++on_text_input_state_changed_;
   }
-  virtual void OnInputMethodDestroyed(const InputMethod* client) override {
+  void OnInputMethodDestroyed(const InputMethod* client) override {
     ++on_input_method_destroyed_changed_;
   }
-  virtual void OnShowImeIfNeeded() {
-  }
+  void OnShowImeIfNeeded() override {}
 
   size_t on_text_input_state_changed_;
   size_t on_input_method_destroyed_changed_;

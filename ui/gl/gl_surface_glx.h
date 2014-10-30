@@ -39,7 +39,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 
   // Get the FB config that the surface was created with or NULL if it is not
   // a GLX drawable.
-  virtual void* GetConfig() = 0;
+  void* GetConfig() override = 0;
 
  protected:
   ~GLSurfaceGLX() override;
