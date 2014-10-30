@@ -41,13 +41,13 @@ SkPath MakePath(const AccessibilityFocusRing& input_ring,
     do {
       prev_index = (prev_index + 35) % 36;
       prev = input_ring.points[prev_index];
-    } while (prev.x() == p.x() && prev.y() == p.y());
+    } while (prev.x() == p.x() && prev.y() == p.y() && prev_index != i);
 
     int next_index = i;
     do {
       next_index = (next_index + 1) % 36;
       next = input_ring.points[next_index];
-    } while (next.x() == p.x() && next.y() == p.y());
+    } while (next.x() == p.x() && next.y() == p.y() && next_index != i);
 
     gfx::Point delta0 = gfx::Point(sign(p.x() - prev.x()),
                                    sign(p.y() - prev.y()));

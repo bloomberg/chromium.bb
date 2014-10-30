@@ -297,6 +297,12 @@ void AccessibilityFocusRingController::OnAnimationStep(
   CHECK(!layers_.empty());
   CHECK(layers_[0]);
 
+  // It's quite possible for the first 1 or 2 animation frames to be
+  // for a timestamp that's earlier than the time we received the
+  // focus change, so we just treat those as a delta of zero.
+  if (timestamp < focus_change_time_)
+    timestamp = focus_change_time_;
+
   base::TimeDelta delta = timestamp - focus_change_time_;
   base::TimeDelta transition_time =
       base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
