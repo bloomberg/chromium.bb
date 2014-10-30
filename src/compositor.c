@@ -4713,7 +4713,7 @@ int main(int argc, char *argv[])
 	char *option_modules = NULL;
 	char *log = NULL;
 	char *server_socket = NULL, *end;
-	int32_t idle_time = 300;
+	int32_t idle_time = -1;
 	int32_t help = 0;
 	char *socket_name = NULL;
 	int32_t version = 0;
@@ -4811,6 +4811,10 @@ int main(int argc, char *argv[])
 	catch_signals();
 	segv_compositor = ec;
 
+	if (idle_time < 0)
+		weston_config_section_get_int(section, "idle-time", &idle_time, -1);
+	if (idle_time < 0)
+		idle_time = 300; /* default idle timeout, in seconds */
 	ec->idle_time = idle_time;
 	ec->default_pointer_grab = NULL;
 	ec->exit_code = EXIT_SUCCESS;

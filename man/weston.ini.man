@@ -69,7 +69,7 @@ The section headers are:
 .PP
 .RS 4
 .nf
-.BR "core           " "The core modules"
+.BR "core           " "The core modules and options"
 .BR "libinput       " "Input device configuration"
 .BR "shell          " "Desktop customization"
 .BR "launcher       " "Add launcher to the panel"
@@ -92,7 +92,7 @@ be given in decimal (e.g. 123), octal (e.g. 0173), and hexadecimal
 .SH "CORE SECTION"
 The
 .B core
-section is used to select the startup compositor modules.
+section is used to select the startup compositor modules and general options.
 .TP 7
 .BI "shell=" desktop-shell.so
 specifies a shell to load (string). This can be used to load your own
@@ -145,6 +145,23 @@ sets the GBM format used for the framebuffer for the GBM backend. Can be
 By default, xrgb8888 is used.
 .RS
 .PP
+.RE
+.TP 7
+.BI "idle-time="seconds
+sets Weston's idle timeout in seconds. This idle timeout is the time
+after which Weston will enter an "inactive" mode and screen will fade to
+black. Note that a screensaver may also start at this moment after fade-out
+(if enabled in the SCREENSAVER section below), but the current idle-time
+option has nothing to do with screensavers.
+
+.IR Important
+: This option may also be set via Weston's '-i' command
+line option and will take precedence over the current .ini option. This
+means that if both weston.ini and command line define this idle-timeout
+time, the one specified in the command-line will be used. On the other
+hand, if none of these sets the value, default idle timeout will be
+set to 300 seconds.
+.RS
 
 .SH "LIBINPUT SECTION"
 The
@@ -295,7 +312,7 @@ is disabled.
 .RE
 .TP 7
 .BI "duration=" 600
-The idle time in seconds until the screensaver disappears in order to save power
+The time in seconds until the screensaver disappears in order to save power
 (unsigned integer).
 .SH "OUTPUT SECTION"
 There can be multiple output sections, each corresponding to one output. It is
