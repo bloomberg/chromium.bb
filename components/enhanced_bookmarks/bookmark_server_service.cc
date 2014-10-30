@@ -56,6 +56,11 @@ const std::string BookmarkServerService::RemoteIDForBookmark(
   return model_->GetRemoteId(bookmark);
 }
 
+void BookmarkServerService::Cancel() {
+  url_fetcher_.reset();
+  token_request_.reset();
+}
+
 void BookmarkServerService::Notify() {
   FOR_EACH_OBSERVER(BookmarkServerServiceObserver, observers_, OnChange(this));
 }
