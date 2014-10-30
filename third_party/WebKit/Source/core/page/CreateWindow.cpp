@@ -62,23 +62,23 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
     if (openerFrame.document()->isSandboxed(SandboxPopups)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
         openerFrame.document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Blocked opening '" + request.resourceRequest().url().elidedString() + "' in a new window because the request was made in a sandboxed frame whose 'allow-popups' permission is not set."));
-        return 0;
+        return nullptr;
     }
 
     if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows()) {
         created = false;
         if (!openerFrame.tree().top()->isLocalFrame())
-            return 0;
+            return nullptr;
         return toLocalFrame(openerFrame.tree().top());
     }
 
     Page* oldPage = openerFrame.page();
     if (!oldPage)
-        return 0;
+        return nullptr;
 
     Page* page = oldPage->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
     if (!page || !page->mainFrame()->isLocalFrame())
-        return 0;
+        return nullptr;
     FrameHost* host = &page->frameHost();
 
     ASSERT(page->mainFrame());
@@ -125,7 +125,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     if (!completedURL.isEmpty() && !completedURL.isValid()) {
         // Don't expose client code to invalid URLs.
         callingWindow.printErrorMessage("Unable to open a window with invalid URL '" + completedURL.string() + "'.\n");
-        return 0;
+        return nullptr;
     }
 
     FrameLoadRequest frameRequest(callingWindow.document(), completedURL, frameName);
@@ -142,7 +142,7 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
     bool created;
     LocalFrame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
-        return 0;
+        return nullptr;
 
     if (newFrame != &openerFrame && newFrame != openerFrame.tree().top())
         newFrame->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());

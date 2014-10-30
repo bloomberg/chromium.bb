@@ -81,7 +81,7 @@ struct WindowFeatures {
     Vector<String> additionalFeatures;
 
 private:
-    typedef HashMap<String, String> DialogFeaturesMap;
+    using DialogFeaturesMap = HashMap<String, String>;
     static void parseDialogFeatures(const String&, HashMap<String, String>&);
     static bool boolFeature(const DialogFeaturesMap&, const char* key, bool defaultValue = false);
     static float floatFeature(const DialogFeaturesMap&, const char* key, float min, float max, float defaultValue);

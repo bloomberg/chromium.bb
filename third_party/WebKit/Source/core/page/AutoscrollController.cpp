@@ -51,7 +51,7 @@ PassOwnPtr<AutoscrollController> AutoscrollController::create(Page& page)
 
 AutoscrollController::AutoscrollController(Page& page)
     : m_page(page)
-    , m_autoscrollRenderer(0)
+    , m_autoscrollRenderer(nullptr)
     , m_autoscrollType(NoAutoscroll)
     , m_dragAndDropAutoscrollStartTime(0)
 {
@@ -74,7 +74,7 @@ void AutoscrollController::startAutoscrollForSelection(RenderObject* renderer)
         return;
     RenderBox* scrollable = RenderBox::findAutoscrollable(renderer);
     if (!scrollable)
-        scrollable = renderer->isListBox() ? toRenderListBox(renderer) : 0;
+        scrollable = renderer->isListBox() ? toRenderListBox(renderer) : nullptr;
     if (!scrollable)
         return;
     m_autoscrollType = AutoscrollForSelection;
@@ -85,7 +85,7 @@ void AutoscrollController::startAutoscrollForSelection(RenderObject* renderer)
 void AutoscrollController::stopAutoscroll()
 {
     RenderBox* scrollable = m_autoscrollRenderer;
-    m_autoscrollRenderer = 0;
+    m_autoscrollRenderer = nullptr;
 
     if (!scrollable)
         return;
@@ -107,7 +107,7 @@ void AutoscrollController::stopAutoscrollIfNeeded(RenderObject* renderer)
 {
     if (m_autoscrollRenderer != renderer)
         return;
-    m_autoscrollRenderer = 0;
+    m_autoscrollRenderer = nullptr;
     m_autoscrollType = NoAutoscroll;
 }
 
@@ -127,7 +127,7 @@ void AutoscrollController::updateAutoscrollRenderer()
 
     while (renderer && !(renderer->isBox() && toRenderBox(renderer)->canAutoscroll()))
         renderer = renderer->parent();
-    m_autoscrollRenderer = renderer && renderer->isBox() ? toRenderBox(renderer) : 0;
+    m_autoscrollRenderer = renderer && renderer->isBox() ? toRenderBox(renderer) : nullptr;
 }
 
 void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
@@ -146,7 +146,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
         return;
     }
 
-    Page* page = scrollable->frame() ? scrollable->frame()->page() : 0;
+    Page* page = scrollable->frame() ? scrollable->frame()->page() : nullptr;
     if (!page) {
         stopAutoscroll();
         return;

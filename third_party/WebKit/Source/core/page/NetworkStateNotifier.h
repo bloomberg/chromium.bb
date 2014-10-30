@@ -97,7 +97,7 @@ private:
 
     void setWebConnectionTypeImpl(blink::WebConnectionType);
 
-    typedef HashMap<ExecutionContext*, OwnPtr<ObserverList> > ObserverListMap;
+    using ObserverListMap = HashMap<ExecutionContext*, OwnPtr<ObserverList>>;
 
     void notifyObserversOnContext(ExecutionContext*, blink::WebConnectionType);
 

@@ -40,7 +40,7 @@ private:
 
     RefPtrWillBeMember<HTMLMenuElement> m_menu;
     RefPtrWillBeMember<HTMLElement> m_subjectElement;
-    WillBeHeapVector<RefPtrWillBeMember<HTMLElement> > m_menuItems;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLElement>> m_menuItems;
 };
 
 } // namespace blink

@@ -240,25 +240,25 @@ static inline Node* parentShadowHostOrOwner(const Node* node)
         return ancestor;
     if (node->isDocumentNode())
         return toDocument(node)->ownerElement();
-    return 0;
+    return nullptr;
 }
 
 // Compiles a list of subtargets of all the relevant target nodes.
-void compileSubtargetList(const WillBeHeapVector<RefPtrWillBeMember<Node> >& intersectedNodes, SubtargetGeometryList& subtargets, NodeFilter nodeFilter, AppendSubtargetsForNode appendSubtargetsForNode)
+void compileSubtargetList(const WillBeHeapVector<RefPtrWillBeMember<Node>>& intersectedNodes, SubtargetGeometryList& subtargets, NodeFilter nodeFilter, AppendSubtargetsForNode appendSubtargetsForNode)
 {
     // Find candidates responding to tap gesture events in O(n) time.
-    WillBeHeapHashMap<RawPtrWillBeMember<Node>, RawPtrWillBeMember<Node> > responderMap;
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > ancestorsToRespondersSet;
-    WillBeHeapVector<RawPtrWillBeMember<Node> > candidates;
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > editableAncestors;
+    WillBeHeapHashMap<RawPtrWillBeMember<Node>, RawPtrWillBeMember<Node>> responderMap;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> ancestorsToRespondersSet;
+    WillBeHeapVector<RawPtrWillBeMember<Node>> candidates;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> editableAncestors;
 
     // A node matching the NodeFilter is called a responder. Candidate nodes must either be a
     // responder or have an ancestor that is a responder.
     // This iteration tests all ancestors at most once by caching earlier results.
     for (unsigned i = 0; i < intersectedNodes.size(); ++i) {
         Node* node = intersectedNodes[i].get();
-        WillBeHeapVector<RawPtrWillBeMember<Node> > visitedNodes;
-        Node* respondingNode = 0;
+        WillBeHeapVector<RawPtrWillBeMember<Node>> visitedNodes;
+        Node* respondingNode = nullptr;
         for (Node* visitedNode = node; visitedNode; visitedNode = visitedNode->parentOrShadowHostNode()) {
             // Check if we already have a result for a common ancestor from another candidate.
             respondingNode = responderMap.get(visitedNode);
@@ -270,7 +270,7 @@ void compileSubtargetList(const WillBeHeapVector<RefPtrWillBeMember<Node> >& int
                 respondingNode = visitedNode;
                 // Continue the iteration to collect the ancestors of the responder, which we will need later.
                 for (visitedNode = parentShadowHostOrOwner(visitedNode); visitedNode; visitedNode = parentShadowHostOrOwner(visitedNode)) {
-                    WillBeHeapHashSet<RawPtrWillBeMember<Node> >::AddResult addResult = ancestorsToRespondersSet.add(visitedNode);
+                    WillBeHeapHashSet<RawPtrWillBeMember<Node>>::AddResult addResult = ancestorsToRespondersSet.add(visitedNode);
                     if (!addResult.isNewEntry)
                         break;
                 }
@@ -305,7 +305,7 @@ void compileSubtargetList(const WillBeHeapVector<RefPtrWillBeMember<Node> >& int
             while (parent && parent->isContentEditable()) {
                 replacement = parent;
                 if (editableAncestors.contains(replacement)) {
-                    replacement = 0;
+                    replacement = nullptr;
                     break;
                 }
                 editableAncestors.add(replacement);
@@ -319,7 +319,7 @@ void compileSubtargetList(const WillBeHeapVector<RefPtrWillBeMember<Node> >& int
 }
 
 // Compiles a list of zoomable subtargets.
-void compileZoomableSubtargets(const WillBeHeapVector<RefPtrWillBeMember<Node> >& intersectedNodes, SubtargetGeometryList& subtargets)
+void compileZoomableSubtargets(const WillBeHeapVector<RefPtrWillBeMember<Node>>& intersectedNodes, SubtargetGeometryList& subtargets)
 {
     for (unsigned i = 0; i < intersectedNodes.size(); ++i) {
         Node* candidate = intersectedNodes[i].get();
@@ -449,7 +449,7 @@ bool snapTo(const SubtargetGeometry& geom, const IntPoint& touchPoint, const Int
 // Distance functions could for instance be distance squared or area of intersection.
 bool findNodeWithLowestDistanceMetric(Node*& targetNode, IntPoint& targetPoint, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, SubtargetGeometryList& subtargets, DistanceFunction distanceFunction)
 {
-    targetNode = 0;
+    targetNode = nullptr;
     float bestDistanceMetric = std::numeric_limits<float>::infinity();
     SubtargetGeometryList::const_iterator it = subtargets.begin();
     const SubtargetGeometryList::const_iterator end = subtargets.end();
@@ -489,7 +489,7 @@ bool findNodeWithLowestDistanceMetric(Node*& targetNode, IntPoint& targetPoint, 
 
 } // namespace TouchAdjustment
 
-bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes)
+bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes)
 {
     IntRect targetArea;
     TouchAdjustment::SubtargetGeometryList subtargets;
@@ -497,7 +497,7 @@ bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const 
     return TouchAdjustment::findNodeWithLowestDistanceMetric(targetNode, targetPoint, targetArea, touchHotspot, touchArea, subtargets, TouchAdjustment::hybridDistanceFunction);
 }
 
-bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes)
+bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes)
 {
     IntRect targetArea;
     TouchAdjustment::SubtargetGeometryList subtargets;
@@ -505,7 +505,7 @@ bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, cons
     return TouchAdjustment::findNodeWithLowestDistanceMetric(targetNode, targetPoint, targetArea, touchHotspot, touchArea, subtargets, TouchAdjustment::hybridDistanceFunction);
 }
 
-bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes)
+bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes)
 {
     IntPoint targetPoint;
     TouchAdjustment::SubtargetGeometryList subtargets;

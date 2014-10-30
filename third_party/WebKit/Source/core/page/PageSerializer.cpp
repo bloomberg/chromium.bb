@@ -78,10 +78,9 @@ static bool isCharsetSpecifyingNode(const Node& node)
     const HTMLMetaElement& element = toHTMLMetaElement(node);
     HTMLAttributeList attributeList;
     AttributeCollection attributes = element.attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
+    for (const Attribute& attr : attributes) {
         // FIXME: We should deal appropriately with the attribute if they have a namespace.
-        attributeList.append(std::make_pair(it->name().localName(), it->value().string()));
+        attributeList.append(std::make_pair(attr.name().localName(), attr.value().string()));
     }
     WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributeList);
     return textEncoding.isValid();
@@ -100,7 +99,7 @@ static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerEleme
 
 class SerializerMarkupAccumulator final : public MarkupAccumulator {
 public:
-    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node> >*);
+    SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>*);
     virtual ~SerializerMarkupAccumulator();
 
 protected:
@@ -114,7 +113,7 @@ private:
     const Document& m_document;
 };
 
-SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node> >* nodes)
+SerializerMarkupAccumulator::SerializerMarkupAccumulator(PageSerializer* serializer, const Document& document, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes)
     : MarkupAccumulator(nodes, ResolveAllURLs, nullptr)
     , m_serializer(serializer)
     , m_document(document)
@@ -207,20 +206,19 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
         return;
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<Node> > serializedNodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
     SerializerMarkupAccumulator accumulator(this, document, &serializedNodes);
     String text = accumulator.serializeNodes(document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
-    for (WillBeHeapVector<RawPtrWillBeMember<Node> >::iterator iter = serializedNodes.begin(); iter != serializedNodes.end(); ++iter) {
-        ASSERT(*iter);
-        Node& node = **iter;
-        if (!node.isElementNode())
+    for (Node* node : serializedNodes) {
+        ASSERT(node);
+        if (!node->isElementNode())
             continue;
 
-        Element& element = toElement(node);
+        Element& element = toElement(*node);
         // We have to process in-line style as it might contain some resources (typically background images).
         if (element.isStyledElement())
             retrieveResourcesForProperties(element.inlineStyle(), document);
@@ -321,7 +319,7 @@ void PageSerializer::addImageToResources(ImageResource* image, RenderObject* ima
     if (!image || image->image() == Image::nullImage() || image->errorOccurred())
         return;
 
-    RefPtr<SharedBuffer> data = imageRenderer ? image->imageForRenderer(imageRenderer)->data() : 0;
+    RefPtr<SharedBuffer> data = imageRenderer ? image->imageForRenderer(imageRenderer)->data() : nullptr;
     if (!data)
         data = image->image()->data();
 
@@ -362,7 +360,7 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
         if (!styleImage || !styleImage->isImageResource())
             return;
 
-        addImageToResources(styleImage->cachedImage(), 0, styleImage->cachedImage()->url());
+        addImageToResources(styleImage->cachedImage(), nullptr, styleImage->cachedImage()->url());
     } else if (cssValue->isFontFaceSrcValue()) {
         CSSFontFaceSrcValue* fontFaceSrcValue = toCSSFontFaceSrcValue(cssValue);
         if (fontFaceSrcValue->isLocal()) {

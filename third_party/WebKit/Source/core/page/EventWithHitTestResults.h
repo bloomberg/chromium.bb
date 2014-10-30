@@ -54,9 +54,9 @@ private:
     HitTestResult m_hitTestResult;
 };
 
-typedef EventWithHitTestResults<PlatformMouseEvent> MouseEventWithHitTestResults;
+using MouseEventWithHitTestResults = EventWithHitTestResults<PlatformMouseEvent>;
 
-typedef EventWithHitTestResults<PlatformGestureEvent> GestureEventWithHitTestResults;
+using GestureEventWithHitTestResults = EventWithHitTestResults<PlatformGestureEvent>;
 
 } // namespace blink
 

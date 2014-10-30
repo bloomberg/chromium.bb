@@ -63,7 +63,7 @@ public:
     bool containsURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
     bool containsPlainText() const;
     bool containsCompatibleContent() const;
-    String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
+    String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = nullptr) const;
     String asPlainText() const;
     void asFilenames(Vector<String>&) const;
     PassRefPtrWillBeRawPtr<DocumentFragment> asFragment(LocalFrame*, PassRefPtrWillBeRawPtr<Range> context, bool allowPlainText, bool& chosePlainText) const;

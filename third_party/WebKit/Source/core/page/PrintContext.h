@@ -90,7 +90,7 @@ private:
     bool m_isPrinting;
 
     WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL> m_linkDestinations;
-    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> > m_linkedDestinations;
+    WillBeHeapHashMap<String, RawPtrWillBeMember<Element>> m_linkedDestinations;
     bool m_linkAndLinkedDestinationsValid;
 };
 

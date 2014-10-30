@@ -121,7 +121,7 @@ HTMLElement* CustomContextMenuProvider::menuItemAt(unsigned menuId)
 {
     int itemIndex = menuId - ContextMenuItemBaseCustomTag;
     if (itemIndex < 0 || static_cast<unsigned long>(itemIndex) >= m_menuItems.size())
-        return 0;
+        return nullptr;
     return m_menuItems[itemIndex].get();
 }
 

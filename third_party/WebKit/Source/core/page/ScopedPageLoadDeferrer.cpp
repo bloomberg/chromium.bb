@@ -32,10 +32,7 @@ namespace blink {
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
     const HashSet<Page*>& pages = Page::ordinaryPages();
-
-    HashSet<Page*>::const_iterator end = pages.end();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        Page* page = *it;
+    for (const Page* page : pages) {
         if (page == exclusion || page->defersLoading())
             continue;
 

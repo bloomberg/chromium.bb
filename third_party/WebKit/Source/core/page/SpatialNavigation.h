@@ -113,7 +113,7 @@ public:
     bool isNull() const { return !visibleNode; }
     bool inScrollableContainer() const { return visibleNode && enclosingScrollableBox; }
     bool isFrameOwnerElement() const { return visibleNode && visibleNode->isFrameOwnerElement(); }
-    Document* document() const { return visibleNode ? &visibleNode->document() : 0; }
+    Document* document() const { return visibleNode ? &visibleNode->document() : nullptr; }
 
     // We handle differently visibleNode and FocusableNode to properly handle the areas of imagemaps,
     // where visibleNode would represent the image element and focusableNode would represent the area element.

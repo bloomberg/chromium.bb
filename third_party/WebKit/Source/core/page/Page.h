@@ -207,7 +207,7 @@ public:
     void acceptLanguagesChanged();
 
     static void networkStateChanged(bool online);
-    PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier();
+    PassOwnPtr<LifecycleNotifier<Page>> createLifecycleNotifier();
 
     void trace(Visitor*);
     void willBeDestroyed();
@@ -280,7 +280,7 @@ private:
     bool m_isPainting;
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> > m_multisamplingChangedObservers;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver>> m_multisamplingChangedObservers;
 
     // A pointer to all the interfaces provided to in-process Frames for this Page.
     // FIXME: Most of the members of Page should move onto FrameHost.

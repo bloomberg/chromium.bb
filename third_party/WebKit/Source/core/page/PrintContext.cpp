@@ -187,7 +187,7 @@ static RenderBoxModelObject* enclosingBoxModelObject(RenderObject* object)
     while (object && !object->isBoxModelObject())
         object = object->parent();
     if (!object)
-        return 0;
+        return nullptr;
     return toRenderBoxModelObject(object);
 }
 
@@ -255,12 +255,11 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
         m_linkAndLinkedDestinationsValid = true;
     }
 
-    WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL>::const_iterator endOfLinkDestinations = m_linkDestinations.end();
-    for (WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL>::const_iterator it = m_linkDestinations.begin(); it != endOfLinkDestinations; ++it) {
-        RenderObject* renderer = it->key->renderer();
+    for (const auto& entry : m_linkDestinations) {
+        RenderObject* renderer = entry.key->renderer();
         if (!renderer)
             continue;
-        KURL url = it->value;
+        KURL url = entry.value;
         IntRect boundingBox = renderer->absoluteBoundingBoxRect();
         if (!pageRect.intersects(boundingBox))
             continue;
@@ -273,9 +272,8 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
         }
     }
 
-    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator endOfLinkedDestinations = m_linkedDestinations.end();
-    for (WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator it = m_linkedDestinations.begin(); it != endOfLinkedDestinations; ++it) {
-        RenderObject* renderer = it->value->renderer();
+    for (const auto& entry : m_linkedDestinations) {
+        RenderObject* renderer = entry.value->renderer();
         if (!renderer)
             continue;
         IntRect boundingBox = renderer->absoluteBoundingBoxRect();
@@ -283,7 +281,7 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
             continue;
         IntPoint point = boundingBox.minXMinYCorner();
         point.clampNegativeToZero();
-        graphicsContext.addURLTargetAtPoint(it->key, point);
+        graphicsContext.addURLTargetAtPoint(entry.key, point);
     }
 }
 

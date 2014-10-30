@@ -750,7 +750,7 @@ LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement& area, FocusTyp
 
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate& candidate)
 {
-    return candidate.isFrameOwnerElement() ? toHTMLFrameOwnerElement(candidate.visibleNode) : 0;
+    return candidate.isFrameOwnerElement() ? toHTMLFrameOwnerElement(candidate.visibleNode) : nullptr;
 };
 
 } // namespace blink

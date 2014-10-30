@@ -76,8 +76,8 @@ void NetworkStateNotifier::setWebConnectionTypeImpl(blink::WebConnectionType typ
         return;
     m_type = type;
 
-    for (ObserverListMap::iterator it = m_observers.begin(); it != m_observers.end(); ++it) {
-        ExecutionContext* context = it->key;
+    for (const auto& entry : m_observers) {
+        ExecutionContext* context = entry.key;
         context->postTask(createCrossThreadTask(&NetworkStateNotifier::notifyObserversOnContext, this, AllowCrossThreadAccess(context), type));
     }
 }

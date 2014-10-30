@@ -52,10 +52,8 @@ void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
 {
     // Clear our cached sheets and have them just reparse.
     const HashSet<Page*>& pages = Page::ordinaryPages();
-
-    HashSet<Page*>::const_iterator end = pages.end();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (const Page* page : pages) {
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->styleEngine()->invalidateInjectedStyleSheetCache();
         }

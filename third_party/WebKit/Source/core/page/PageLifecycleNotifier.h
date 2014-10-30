@@ -49,7 +49,7 @@ public:
 private:
     explicit PageLifecycleNotifier(Page*);
 
-    typedef HashSet<PageLifecycleObserver*> PageObserverSet;
+    using PageObserverSet = HashSet<PageLifecycleObserver*>;
     PageObserverSet m_pageObservers;
 };
 
@@ -61,15 +61,15 @@ inline PassOwnPtr<PageLifecycleNotifier> PageLifecycleNotifier::create(Page* con
 inline void PageLifecycleNotifier::notifyPageVisibilityChanged()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverPageObservers);
-    for (PageObserverSet::iterator it = m_pageObservers.begin(); it != m_pageObservers.end(); ++it)
-        (*it)->pageVisibilityChanged();
+    for (PageLifecycleObserver* pageObserver : m_pageObservers)
+        pageObserver->pageVisibilityChanged();
 }
 
 inline void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverPageObservers);
-    for (PageObserverSet::iterator it = m_pageObservers.begin(); it != m_pageObservers.end(); ++it)
-        (*it)->didCommitLoad(frame);
+    for (PageLifecycleObserver* pageObserver : m_pageObservers)
+        pageObserver->didCommitLoad(frame);
 }
 
 } // namespace blink

@@ -132,7 +132,7 @@ public:
 
     // Attempts to scroll the DOM tree. If that fails, scrolls the view.
     // If the view can't be scrolled either, recursively bubble to the parent frame.
-    bool bubblingScroll(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
+    bool bubblingScroll(ScrollDirection, ScrollGranularity, Node* startingNode = nullptr);
 
     bool handleMouseMoveEvent(const PlatformMouseEvent&);
     void handleMouseLeaveEvent(const PlatformMouseEvent&);
@@ -177,7 +177,7 @@ public:
     bool keyEvent(const PlatformKeyboardEvent&);
     void defaultKeyboardEventHandler(KeyboardEvent*);
 
-    bool handleTextInputEvent(const String& text, Event* underlyingEvent = 0, TextEventInputType = TextEventInputKeyboard);
+    bool handleTextInputEvent(const String& text, Event* underlyingEvent = nullptr, TextEventInputType = TextEventInputKeyboard);
     void defaultTextInputEventHandler(TextEvent*);
 
     void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
@@ -210,7 +210,7 @@ private:
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
 
-    bool handleMouseMoveOrLeaveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = 0, bool onlyUpdateScrollbars = false);
+    bool handleMouseMoveOrLeaveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = nullptr, bool onlyUpdateScrollbars = false);
     bool handleMousePressEvent(const MouseEventWithHitTestResults&);
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
@@ -259,7 +259,7 @@ private:
     //            On output, if provided and a node was scrolled stopNode will point to that node.
     // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
     // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
-    bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = 0, Node** stopNode = 0, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
+    bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
 
     TouchAction intersectTouchAction(const TouchAction, const TouchAction);
     TouchAction computeEffectiveTouchAction(const Node&);
@@ -287,7 +287,7 @@ private:
     bool dragHysteresisExceeded(const IntPoint&) const;
 
     bool passMousePressEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe);
-    bool passMouseMoveEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe, HitTestResult* hoveredNode = 0);
+    bool passMouseMoveEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe, HitTestResult* hoveredNode = nullptr);
     bool passMouseReleaseEventToSubframe(MouseEventWithHitTestResults&, LocalFrame* subframe);
 
     bool passMousePressEventToScrollbar(MouseEventWithHitTestResults&);
@@ -380,7 +380,7 @@ private:
     RefPtrWillBeMember<Node> m_previousWheelScrolledNode;
 
     // The target of each active touch point indexed by the touch ID.
-    typedef WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > TouchTargetMap;
+    using TouchTargetMap = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchTargetMap m_targetForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.

@@ -53,7 +53,7 @@ DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint
     DragOperation sourceOperationMask, DragApplicationFlags flags)
     : m_clientPosition(clientPosition)
     , m_globalPosition(globalPosition)
-    , m_platformDragData(0)
+    , m_platformDragData(nullptr)
     , m_draggingSourceOperationMask(sourceOperationMask)
     , m_applicationFlags(flags)
 {

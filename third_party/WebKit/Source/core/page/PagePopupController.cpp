@@ -104,7 +104,7 @@ String PagePopupController::formatWeek(int year, int weekNumber, const String& l
 
 void PagePopupController::clearPagePopupClient()
 {
-    m_popupClient = 0;
+    m_popupClient = nullptr;
 }
 
 void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)

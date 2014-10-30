@@ -224,7 +224,7 @@ void DragController::dragExited(DragData* dragData)
         mainFrame->eventHandler().cancelDragAndDrop(createMouseEvent(dragData), dataTransfer.get());
         dataTransfer->setAccessPolicy(DataTransferNumb); // invalidate clipboard here for security
     }
-    mouseMovedIntoDocument(0);
+    mouseMovedIntoDocument(nullptr);
     if (m_fileInputElementUnderMouse)
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
     m_fileInputElementUnderMouse = nullptr;
@@ -266,7 +266,7 @@ bool DragController::performDrag(DragData* dragData)
         return false;
 
     if (m_page->settings().navigateOnDragDrop())
-        m_page->deprecatedLocalMainFrame()->loader().load(FrameLoadRequest(0, ResourceRequest(dragData->asURL())));
+        m_page->deprecatedLocalMainFrame()->loader().load(FrameLoadRequest(nullptr, ResourceRequest(dragData->asURL())));
     return true;
 }
 
@@ -307,7 +307,7 @@ static HTMLInputElement* asFileInput(Node* node)
         if (isHTMLInputElement(*node) && toHTMLInputElement(node)->type() == InputTypeNames::file)
             return toHTMLInputElement(node);
     }
-    return 0;
+    return nullptr;
 }
 
 // This can return null if an empty document is loaded.
@@ -629,7 +629,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
         dragType = DragSourceActionNone;
     }
 
-    Node* node = 0;
+    Node* node = nullptr;
     DragSourceAction candidateDragType = DragSourceActionNone;
     for (const RenderObject* renderer = startNode->renderer(); renderer; renderer = renderer->parent()) {
         node = renderer->nonPseudoNode();
@@ -642,7 +642,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
             // In this case we have a click in the unselected portion of text. If this text is
             // selectable, we want to start the selection process instead of looking for a parent
             // to try to drag.
-            return 0;
+            return nullptr;
         }
         if (node->isElementNode()) {
             EUserDrag dragMode = renderer->style()->userDrag();
@@ -673,7 +673,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
         // 2) There was a selection under the cursor but selectionDragPolicy is set to
         //    DelayedSelectionDragResolution and no other draggable element could be found, so bail
         //    out and allow text selection to start at the cursor instead.
-        return 0;
+        return nullptr;
     }
 
     ASSERT(node);
@@ -696,7 +696,7 @@ static ImageResource* getImageResource(Element* element)
     ASSERT(element);
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isImage())
-        return 0;
+        return nullptr;
     RenderImage* image = toRenderImage(renderer);
     return image->cachedImage();
 }
@@ -709,7 +709,7 @@ static Image* getImage(Element* element)
     // Users of getImage() want access to the SVGImage, in order to figure out the filename extensions,
     // which would be empty when asking the cached BitmapImages.
     return (cachedImage && !cachedImage->errorOccurred()) ?
-        cachedImage->image() : 0;
+        cachedImage->image() : nullptr;
 }
 
 static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* dataTransfer, Element* node, const KURL& linkURL, const KURL& imageURL, const String& label)

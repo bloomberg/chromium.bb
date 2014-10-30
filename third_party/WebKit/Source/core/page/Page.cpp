@@ -83,17 +83,16 @@ HashSet<Page*>& Page::ordinaryPages()
 
 void Page::networkStateChanged(bool online)
 {
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > frames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> frames;
 
     // Get all the frames of all the pages in all the page groups
-    HashSet<Page*>::iterator end = allPages().end();
-    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Page* page : allPages()) {
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             // FIXME: There is currently no way to dispatch events to out-of-process frames.
             if (frame->isLocalFrame())
                 frames.append(toLocalFrame(frame));
         }
-        InspectorInstrumentation::networkStateChanged(*it, online);
+        InspectorInstrumentation::networkStateChanged(page, online);
     }
 
     AtomicString eventName = online ? EventTypeNames::online : EventTypeNames::offline;
@@ -229,9 +228,8 @@ void Page::setOpenedByDOM()
 
 void Page::scheduleForcedStyleRecalcForAllPages()
 {
-    HashSet<Page*>::iterator end = allPages().end();
-    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it)
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (const Page* page : allPages())
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
         }
@@ -264,12 +262,9 @@ void Page::refreshPlugins(bool reload)
 
     PluginData::refresh();
 
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > framesNeedingReload;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> framesNeedingReload;
 
-    HashSet<Page*>::iterator end = allPages().end();
-    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
-        Page* page = *it;
-
+    for (const Page* page : allPages()) {
         // Clear out the page's plug-in data.
         if (page->m_pluginData)
             page->m_pluginData = nullptr;
@@ -277,7 +272,7 @@ void Page::refreshPlugins(bool reload)
         if (!reload)
             continue;
 
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame() && toLocalFrame(frame)->document()->containsPlugins())
                 framesNeedingReload.append(toLocalFrame(frame));
         }
@@ -291,7 +286,7 @@ PluginData* Page::pluginData() const
 {
     if (!mainFrame()->isLocalFrame()
         || !deprecatedLocalMainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        return 0;
+        return nullptr;
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
     return m_pluginData.get();
@@ -394,9 +389,7 @@ void Page::resetDeviceColorProfile()
 
 void Page::allVisitedStateChanged()
 {
-    HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
-    for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
-        Page* page = *it;
+    for (const Page* page : ordinaryPages()) {
         for (Frame* frame = page->m_mainFrame; frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForAllLinks();
@@ -406,9 +399,7 @@ void Page::allVisitedStateChanged()
 
 void Page::visitedStateChanged(LinkHash linkHash)
 {
-    HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
-    for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
-        Page* page = *it;
+    for (const Page* page : ordinaryPages()) {
         for (Frame* frame = page->m_mainFrame; frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->visitedLinkState().invalidateStyleForLink(linkHash);
@@ -501,9 +492,8 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         break;
     case SettingsDelegate::MultisamplingChange: {
-        WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> >::iterator stop = m_multisamplingChangedObservers.end();
-        for (WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver> >::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
-            (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
+        for (MultisamplingChangedObserver* observer : m_multisamplingChangedObservers)
+            observer->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
         break;
     }
     case SettingsDelegate::ImageLoadingChange:
@@ -570,7 +560,7 @@ void Page::didCommitLoad(LocalFrame* frame)
 
 void Page::acceptLanguagesChanged()
 {
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame> > frames;
+    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> frames;
 
     // Even though we don't fire an event from here, the LocalDOMWindow's will fire
     // an event so we keep the frames alive until we are done.
@@ -588,7 +578,7 @@ PageLifecycleNotifier& Page::lifecycleNotifier()
     return static_cast<PageLifecycleNotifier&>(LifecycleContext<Page>::lifecycleNotifier());
 }
 
-PassOwnPtr<LifecycleNotifier<Page> > Page::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier<Page>> Page::createLifecycleNotifier()
 {
     return PageLifecycleNotifier::create(this);
 }
@@ -647,14 +637,14 @@ void Page::willBeDestroyed()
 }
 
 Page::PageClients::PageClients()
-    : chromeClient(0)
-    , contextMenuClient(0)
-    , editorClient(0)
-    , dragClient(0)
-    , inspectorClient(0)
-    , backForwardClient(0)
-    , spellCheckerClient(0)
-    , storageClient(0)
+    : chromeClient(nullptr)
+    , contextMenuClient(nullptr)
+    , editorClient(nullptr)
+    , dragClient(nullptr)
+    , inspectorClient(nullptr)
+    , backForwardClient(nullptr)
+    , spellCheckerClient(nullptr)
+    , storageClient(nullptr)
 {
 }
 

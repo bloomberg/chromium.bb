@@ -40,7 +40,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
-    WillBeHeapVector<RefPtrWillBeMember<Document> > documents;
+    WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             documents.append(toLocalFrame(frame)->document());
@@ -51,8 +51,8 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             documents[i]->view()->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* scrollableAreas = documents[i]->view()->scrollableAreas()) {
-                for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-                    (*it)->serviceScrollAnimations(monotonicAnimationStartTime);
+                for (ScrollableArea* scrollableArea : *scrollableAreas)
+                    scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
             }
         }
     }

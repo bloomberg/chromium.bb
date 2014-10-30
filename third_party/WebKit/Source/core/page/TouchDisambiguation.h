@@ -40,7 +40,7 @@ class LocalFrame;
 class IntRect;
 class Node;
 
-void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node> >& highlightNodes);
+void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes);
 
 } // namespace blink
 

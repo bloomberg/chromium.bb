@@ -54,7 +54,7 @@ private:
     StyleInjectionTarget m_injectedFrames;
 };
 
-typedef Vector<OwnPtr<InjectedStyleSheetEntry> > InjectedStyleSheetEntryVector;
+using InjectedStyleSheetEntryVector = Vector<OwnPtr<InjectedStyleSheetEntry>>;
 
 class InjectedStyleSheets {
 public:

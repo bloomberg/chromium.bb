@@ -212,7 +212,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_mouseDownMayStartAutoscroll(false)
     , m_fakeMouseMoveEventTimer(this, &EventHandler::fakeMouseMoveEventTimerFired)
     , m_svgPan(false)
-    , m_resizeScrollableArea(0)
+    , m_resizeScrollableArea(nullptr)
     , m_eventHandlerWillResetCapturingMouseEventsNode(0)
     , m_clickCount(0)
     , m_shouldOnlyFireDragOverEvent(false)
@@ -270,7 +270,7 @@ void EventHandler::clear()
     m_cursorUpdateTimer.stop();
     m_fakeMouseMoveEventTimer.stop();
     m_activeIntervalTimer.stop();
-    m_resizeScrollableArea = 0;
+    m_resizeScrollableArea = nullptr;
     m_nodeUnderMouse = nullptr;
     m_lastNodeUnderMouse = nullptr;
     m_lastMouseMoveEventSubframe = nullptr;
@@ -827,7 +827,7 @@ AutoscrollController* EventHandler::autoscrollController() const
 {
     if (Page* page = m_frame->page())
         return &page->autoscrollController();
-    return 0;
+    return nullptr;
 }
 
 bool EventHandler::panScrollInProgress() const
@@ -949,19 +949,19 @@ IntPoint EventHandler::lastKnownMousePosition() const
 static LocalFrame* subframeForTargetNode(Node* node)
 {
     if (!node)
-        return 0;
+        return nullptr;
 
     RenderObject* renderer = node->renderer();
     if (!renderer || !renderer->isRenderPart())
-        return 0;
+        return nullptr;
 
     // FIXME: This explicit check is needed only until RemoteFrames have RemoteFrameViews.
     if (isHTMLFrameElementBase(node) && toHTMLFrameElementBase(node)->contentFrame() && toHTMLFrameElementBase(node)->contentFrame()->isRemoteFrameTemporary())
-        return 0;
+        return nullptr;
 
     Widget* widget = toRenderPart(renderer)->widget();
     if (!widget || !widget->isFrameView())
-        return 0;
+        return nullptr;
 
     return &toFrameView(widget)->frame();
 }
@@ -969,7 +969,7 @@ static LocalFrame* subframeForTargetNode(Node* node)
 static LocalFrame* subframeForHitTestResult(const MouseEventWithHitTestResults& hitTestResult)
 {
     if (!hitTestResult.isOverWidget())
-        return 0;
+        return nullptr;
     return subframeForTargetNode(hitTestResult.innerNode());
 }
 
@@ -1038,7 +1038,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
         return selectAutoCursor(result, node, iBeamCursor());
 
     RenderObject* renderer = node->renderer();
-    RenderStyle* style = renderer ? renderer->style() : 0;
+    RenderStyle* style = renderer ? renderer->style() : nullptr;
 
     if (renderer) {
         Cursor overrideCursor;
@@ -1170,7 +1170,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
         return handCursor();
 
     bool inResizer = false;
-    RenderObject* renderer = node ? node->renderer() : 0;
+    RenderObject* renderer = node ? node->renderer() : nullptr;
     if (renderer && m_frame->view()) {
         RenderLayer* layer = renderer->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
@@ -1267,7 +1267,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(mev.innerNode()) : mev.innerNode();
 
     if (FrameView* view = m_frame->view()) {
-        RenderLayer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : 0;
+        RenderLayer* layer = mev.innerNode()->renderer() ? mev.innerNode()->renderer()->enclosingLayer() : nullptr;
         IntPoint p = view->windowToContents(mouseEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -1320,15 +1320,15 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 static RenderLayer* layerForNode(Node* node)
 {
     if (!node)
-        return 0;
+        return nullptr;
 
     RenderObject* renderer = node->renderer();
     if (!renderer)
-        return 0;
+        return nullptr;
 
     RenderLayer* layer = renderer->enclosingLayer();
     if (!layer)
-        return 0;
+        return nullptr;
 
     return layer;
 }
@@ -1340,7 +1340,7 @@ ScrollableArea* EventHandler::associatedScrollableArea(const RenderLayer* layer)
             return scrollableArea;
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
@@ -1430,7 +1430,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
     if (hoveredNode)
         *hoveredNode = mev.hitTestResult();
 
-    Scrollbar* scrollbar = 0;
+    Scrollbar* scrollbar = nullptr;
 
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode())
         m_resizeScrollableArea->resize(mouseEvent, m_offsetFromResizeCorner);
@@ -1493,7 +1493,7 @@ static Node* parentForClickEvent(const Node& node)
     // IE doesn't dispatch click events for mousedown/mouseup events across form
     // controls.
     if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
-        return 0;
+        return nullptr;
     return NodeRenderingTraversal::parent(&node);
 }
 
@@ -1571,7 +1571,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
     if (m_resizeScrollableArea) {
         m_resizeScrollableArea->setInResizeMode(false);
-        m_resizeScrollableArea = 0;
+        m_resizeScrollableArea = nullptr;
     }
 
     bool swallowMouseReleaseEvent = false;
@@ -1891,7 +1891,7 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
     // The layout needs to be up to date to determine if an element is focusable.
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    Element* element = 0;
+    Element* element = nullptr;
     if (m_nodeUnderMouse)
         element = m_nodeUnderMouse->isElementNode() ? toElement(m_nodeUnderMouse) : m_nodeUnderMouse->parentOrShadowHostElement();
     for (; element; element = element->parentOrShadowHostElement()) {
@@ -2046,9 +2046,8 @@ bool EventHandler::handleGestureShowPress()
     const FrameView::ScrollableAreaSet* areas = view->scrollableAreas();
     if (!areas)
         return false;
-    for (FrameView::ScrollableAreaSet::const_iterator it = areas->begin(); it != areas->end(); ++it) {
-        ScrollableArea* sa = *it;
-        ScrollAnimator* animator = sa->existingScrollAnimator();
+    for (const ScrollableArea* scrollableArea : *areas) {
+        ScrollAnimator* animator = scrollableArea->existingScrollAnimator();
         if (animator)
             animator->cancelAnimations();
     }
@@ -2347,7 +2346,7 @@ bool EventHandler::handleGestureLongTap(const GestureEventWithHitTestResults& ta
 
 bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent) {
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
-        RenderLayer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : 0;
+        RenderLayer* layer = eventTarget->renderer() ? eventTarget->renderer()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -2364,7 +2363,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     } else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd) {
         if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
             m_resizeScrollableArea->setInResizeMode(false);
-            m_resizeScrollableArea = 0;
+            m_resizeScrollableArea = nullptr;
             return false;
         }
     }
@@ -2440,7 +2439,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
-    Node* stopNode = 0;
+    Node* stopNode = nullptr;
     bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation;
 
     // Try to send the event to the correct view.
@@ -2534,7 +2533,7 @@ bool EventHandler::bestClickableNodeForHitTestResult(const HitTestResult& result
     copyToVector(result.rectBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node> > (nodes));
+    return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>> (nodes));
 }
 
 bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& result, IntPoint& targetPoint, Node*& targetNode)
@@ -2546,7 +2545,7 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& resu
     copyToVector(result.rectBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node> >(nodes));
+    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
 }
 
 bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode)
@@ -2559,7 +2558,7 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, co
     copyToVector(result.rectBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node> >(nodes));
+    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
 }
 
 GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGestureEvent& gestureEvent, bool readOnly)
@@ -2662,7 +2661,7 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent, HitT
     if (!shouldApplyTouchAdjustment(*gestureEvent))
         return;
 
-    Node* adjustedNode = 0;
+    Node* adjustedNode = nullptr;
     IntPoint adjustedPoint = gestureEvent->position();
     IntSize radius = gestureEvent->area();
     radius.scale(1.f / 2);
@@ -2910,7 +2909,7 @@ void EventHandler::setResizingFrameSet(HTMLFrameSetElement* frameSet)
 void EventHandler::resizeScrollableAreaDestroyed()
 {
     ASSERT(m_resizeScrollableArea);
-    m_resizeScrollableArea = 0;
+    m_resizeScrollableArea = nullptr;
 }
 
 void EventHandler::hoverTimerFired(Timer<EventHandler>*)
@@ -3485,7 +3484,7 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar, bool setL
         if (scrollbar && setLast)
             scrollbar->mouseEntered();
 
-        m_lastScrollbarUnderMouse = setLast ? scrollbar : 0;
+        m_lastScrollbarUnderMouse = setLast ? scrollbar : nullptr;
     }
 }
 
@@ -3637,11 +3636,11 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     // A different view on the 'touches' list above, filtered and grouped by
     // event target. Used for the 'targetTouches' list in the JS event.
-    typedef WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList> > TargetTouchesHeapMap;
+    using TargetTouchesHeapMap = WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList>>;
     TargetTouchesHeapMap touchesByTarget;
 
     // Array of touches per state, used to assemble the 'changedTouches' list.
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<EventTarget> > EventTargetSet;
+    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
     struct {
         // The touches corresponding to the particular change state this struct
         // instance represents.
@@ -3666,7 +3665,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             touchTarget = m_targetForTouchID.get(point.id());
         }
 
-        LocalFrame* targetFrame = 0;
+        LocalFrame* targetFrame = nullptr;
         bool knownTarget = false;
         if (touchTarget) {
             Document& doc = touchTarget->toNode()->document();
@@ -3753,8 +3752,8 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
         const AtomicString& stateName(eventNameForTouchPointState(static_cast<PlatformTouchPoint::State>(state)));
         const EventTargetSet& targetsForState = changedTouches[state].m_targets;
-        for (EventTargetSet::const_iterator it = targetsForState.begin(); it != targetsForState.end(); ++it) {
-            EventTarget* touchEventTarget = it->get();
+        for (const RefPtrWillBeMember<EventTarget>& eventTarget : targetsForState) {
+            EventTarget* touchEventTarget = eventTarget.get();
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 stateName, touchEventTarget->toNode()->document().domWindow(),

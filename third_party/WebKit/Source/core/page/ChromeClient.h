@@ -175,7 +175,7 @@ public:
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
 
     // Allows ports to customize the type of graphics layers created by this page.
-    virtual GraphicsLayerFactory* graphicsLayerFactory() const { return 0; }
+    virtual GraphicsLayerFactory* graphicsLayerFactory() const { return nullptr; }
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(GraphicsLayer*) = 0;
@@ -214,11 +214,11 @@ public:
     virtual bool requestPointerLock() { return false; }
     virtual void requestPointerUnlock() { }
 
-    virtual FloatSize minimumWindowSize() const { return FloatSize(100, 100); };
+    virtual FloatSize minimumWindowSize() const { return FloatSize(100, 100); }
 
     virtual bool isChromeClientImpl() const { return false; }
 
-    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element> >&) { };
+    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&) { }
     virtual void didChangeValueInTextField(HTMLFormControlElement&) { }
     virtual void didEndEditingOnTextField(HTMLInputElement&) { }
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
