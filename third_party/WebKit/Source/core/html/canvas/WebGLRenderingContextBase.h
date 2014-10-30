@@ -54,6 +54,7 @@ class ANGLEInstancedArrays;
 class EXTBlendMinMax;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
+class EXTsRGB;
 class EXTTextureFilterAnisotropic;
 class ExceptionState;
 class HTMLImageElement;

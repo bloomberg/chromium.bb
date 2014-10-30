@@ -2020,6 +2020,10 @@ void WebGLRenderingContextBase::generateMipmap(GLenum target)
         synthesizeGLError(GL_INVALID_OPERATION, "generateMipmap", "level 0 not power of 2 or not all the same size");
         return;
     }
+    if (tex->getInternalFormat(target, 0) == GL_SRGB_EXT || tex->getInternalFormat(target, 0) == GL_SRGB_ALPHA_EXT) {
+        synthesizeGLError(GL_INVALID_OPERATION, "generateMipmap", "cannot generate mipmaps for sRGB textures");
+        return;
+    }
     if (!validateSettableTexFormat("generateMipmap", tex->getInternalFormat(target, 0)))
         return;
 
@@ -2231,6 +2235,14 @@ WebGLGetInfo WebGLRenderingContextBase::getFramebufferAttachmentParameter(GLenum
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
                 return WebGLGetInfo(value);
             }
+        case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
+            if (extensionEnabled(EXTsRGBName)) {
+                GLint value = 0;
+                webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
+                return WebGLGetInfo(value);
+            }
+            synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
+            return WebGLGetInfo();
         default:
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for texture attachment");
             return WebGLGetInfo();
@@ -2241,6 +2253,14 @@ WebGLGetInfo WebGLRenderingContextBase::getFramebufferAttachmentParameter(GLenum
             return WebGLGetInfo(GL_RENDERBUFFER);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
             return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLRenderbuffer>(static_cast<WebGLRenderbuffer*>(object)));
+        case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
+            if (extensionEnabled(EXTsRGBName)) {
+                GLint value = 0;
+                webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
+                return WebGLGetInfo(value);
+            }
+            synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
+            return WebGLGetInfo();
         default:
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
             return WebGLGetInfo();
@@ -3176,6 +3196,16 @@ void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum intern
     case GL_RGB5_A1:
     case GL_RGB565:
     case GL_STENCIL_INDEX8:
+        webContext()->renderbufferStorage(target, internalformat, width, height);
+        m_renderbufferBinding->setInternalFormat(internalformat);
+        m_renderbufferBinding->setSize(width, height);
+        m_renderbufferBinding->deleteEmulatedStencilBuffer(webContext());
+        break;
+    case GL_SRGB8_ALPHA8_EXT:
+        if (!extensionEnabled(EXTsRGBName)) {
+            synthesizeGLError(GL_INVALID_ENUM, "renderbufferStorage", "sRGB not enabled");
+            return;
+        }
         webContext()->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
         m_renderbufferBinding->setSize(width, height);
@@ -4610,6 +4640,12 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
             break;
         synthesizeGLError(GL_INVALID_ENUM, functionName, "depth texture formats not enabled");
         return false;
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+        if (extensionEnabled(EXTsRGBName))
+            break;
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "sRGB texture formats not enabled");
+        return false;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture format");
         return false;
@@ -4675,10 +4711,6 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
         }
         break;
     case GL_DEPTH_COMPONENT:
-        if (!extensionEnabled(WebGLDepthTextureName)) {
-            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid format. DEPTH_COMPONENT not enabled");
-            return false;
-        }
         if (type != GL_UNSIGNED_SHORT
             && type != GL_UNSIGNED_INT) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for DEPTH_COMPONENT format");
@@ -4690,16 +4722,19 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
         }
         break;
     case GL_DEPTH_STENCIL_OES:
-        if (!extensionEnabled(WebGLDepthTextureName)) {
-            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid format. DEPTH_STENCIL not enabled");
-            return false;
-        }
         if (type != GL_UNSIGNED_INT_24_8_OES) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for DEPTH_STENCIL format");
             return false;
         }
         if (level > 0) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "level must be 0 for DEPTH_STENCIL format");
+            return false;
+        }
+        break;
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+        if (type != GL_UNSIGNED_BYTE) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for SRGB format");
             return false;
         }
         break;

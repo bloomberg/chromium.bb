@@ -39,6 +39,7 @@
 #include "bindings/core/v8/V8EXTFragDepth.h"
 #include "bindings/core/v8/V8EXTShaderTextureLOD.h"
 #include "bindings/core/v8/V8EXTTextureFilterAnisotropic.h"
+#include "bindings/core/v8/V8EXTsRGB.h"
 #include "bindings/core/v8/V8Float32Array.h"
 #include "bindings/core/v8/V8HTMLCanvasElement.h"
 #include "bindings/core/v8/V8HTMLImageElement.h"
@@ -150,6 +151,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case EXTShaderTextureLODName:
         extensionObject = toV8(static_cast<EXTShaderTextureLOD*>(extension), contextObject, isolate);
         referenceName = "extShaderTextureLODName";
+        break;
+    case EXTsRGBName:
+        extensionObject = toV8(static_cast<EXTsRGB*>(extension), contextObject, isolate);
+        referenceName = "extsRGBName";
         break;
     case EXTTextureFilterAnisotropicName:
         extensionObject = toV8(static_cast<EXTTextureFilterAnisotropic*>(extension), contextObject, isolate);

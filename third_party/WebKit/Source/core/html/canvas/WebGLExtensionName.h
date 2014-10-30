@@ -13,6 +13,7 @@ enum WebGLExtensionName {
     EXTBlendMinMaxName,
     EXTFragDepthName,
     EXTShaderTextureLODName,
+    EXTsRGBName,
     EXTTextureFilterAnisotropicName,
     OESElementIndexUintName,
     OESStandardDerivativesName,

@@ -51,6 +51,7 @@ private:
     RefPtrWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
     RefPtrWillBeMember<EXTFragDepth> m_extFragDepth;
     RefPtrWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;
+    RefPtrWillBeMember<EXTsRGB> m_extsRGB;
     RefPtrWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     RefPtrWillBeMember<OESTextureFloat> m_oesTextureFloat;
     RefPtrWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;

@@ -253,6 +253,7 @@ namespace {
         case GL_RGBA4:
         case GL_RGB5_A1:
         case GL_RGB565:
+        case GL_SRGB8_ALPHA8_EXT:
             return true;
         default:
             return false;
@@ -392,7 +393,8 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
             }
         } else if (object->isTexture()) {
             GLenum type = attachedObject->type();
-            if (internalformat != GL_RGBA && internalformat != GL_RGB) {
+            if (internalformat != GL_RGBA && internalformat != GL_RGB
+                && !(internalformat == GL_SRGB_ALPHA_EXT && context()->extensionEnabled(EXTsRGBName))) {
                 *reason = "the internalformat of the attached texture is not color-renderable";
                 return false;
             }
