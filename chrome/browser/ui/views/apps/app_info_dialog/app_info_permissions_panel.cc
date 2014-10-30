@@ -55,12 +55,11 @@ class RevokeButton : public views::ImageButton, public views::ButtonListener {
     SetBorder(scoped_ptr<views::Border>());
     SetSize(GetPreferredSize());
   }
-  virtual ~RevokeButton() {}
+  ~RevokeButton() override {}
 
  private:
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override {
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(this, sender);
     if (!callback_.is_null())
       callback_.Run();
@@ -127,7 +126,7 @@ class BulletedPermissionsList : public views::View {
                                  0,
                                  0);
   }
-  virtual ~BulletedPermissionsList() {}
+  ~BulletedPermissionsList() override {}
 
   // Given a set of strings for a given permission (|message| for the topmost
   // bullet and a potentially-empty |submessages| for sub-bullets), adds these

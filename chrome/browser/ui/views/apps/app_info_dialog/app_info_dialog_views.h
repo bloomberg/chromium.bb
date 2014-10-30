@@ -30,7 +30,7 @@ class AppInfoDialog : public views::View,
   AppInfoDialog(gfx::NativeWindow parent_window,
                 Profile* profile,
                 const extensions::Extension* app);
-  virtual ~AppInfoDialog();
+  ~AppInfoDialog() override;
 
  private:
   // Closes the dialog.
@@ -40,11 +40,10 @@ class AppInfoDialog : public views::View,
   void StopObservingExtensionRegistry();
 
   // Overridden from extensions::ExtensionRegistryObserver:
-  virtual void OnExtensionUninstalled(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UninstallReason reason) override;
-  virtual void OnShutdown(extensions::ExtensionRegistry* registry) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // UI elements of the dialog.
   views::View* dialog_header_;

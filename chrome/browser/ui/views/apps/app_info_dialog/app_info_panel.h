@@ -22,7 +22,7 @@ class AppInfoPanel : public views::View {
  public:
   AppInfoPanel(Profile* profile, const extensions::Extension* app);
 
-  virtual ~AppInfoPanel();
+  ~AppInfoPanel() override;
 
  protected:
   // Closes the dialog.

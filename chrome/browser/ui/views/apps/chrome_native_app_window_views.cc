@@ -141,7 +141,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
   }
-  virtual ~NativeAppWindowStateDelegate() {
+  ~NativeAppWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
       window_state_->window()->RemoveObserver(this);
@@ -150,7 +150,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 
  private:
   // Overridden from ash::wm::WindowStateDelegate.
-  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     // Windows which cannot be maximized should not be fullscreened.
     DCHECK(window_state->IsFullscreen() || window_state->CanMaximize());
     if (window_state->IsFullscreen())
@@ -161,9 +161,8 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   }
 
   // Overridden from ash::wm::WindowStateObserver:
-  virtual void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::wm::WindowStateType old_type) override {
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::wm::WindowStateType old_type) override {
     // Since the window state might get set by a window manager, it is possible
     // to come here before the application set its |BaseWindow|.
     if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
@@ -179,7 +178,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   }
 
   // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) override {
+  void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
     window_state_->window()->RemoveObserver(this);
     window_state_ = NULL;

@@ -31,7 +31,7 @@ class AppInfoPermissionsPanel : public AppInfoPanel {
  public:
   AppInfoPermissionsPanel(Profile* profile, const extensions::Extension* app);
 
-  virtual ~AppInfoPermissionsPanel();
+  ~AppInfoPermissionsPanel() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AppInfoPermissionsPanelTest,

@@ -31,7 +31,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
  public:
   AppInfoSummaryPanel(Profile* profile, const extensions::Extension* app);
 
-  virtual ~AppInfoSummaryPanel();
+  ~AppInfoSummaryPanel() override;
 
  private:
   // Internal initialisation methods.
@@ -41,7 +41,7 @@ class AppInfoSummaryPanel : public AppInfoPanel,
   void AddSubviews();
 
   // Overridden from views::ComboboxListener:
-  virtual void OnPerformAction(views::Combobox* combobox) override;
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // Called asynchronously to calculate and update the size of the app displayed
   // in the dialog.

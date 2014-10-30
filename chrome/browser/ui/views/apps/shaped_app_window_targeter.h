@@ -13,12 +13,11 @@ class ShapedAppWindowTargeter : public wm::MaskedWindowTargeter {
  public:
   ShapedAppWindowTargeter(aura::Window* window,
                           ChromeNativeAppWindowViews* app_window);
-  virtual ~ShapedAppWindowTargeter();
+  ~ShapedAppWindowTargeter() override;
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const override;
+  bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const override;
 
   ChromeNativeAppWindowViews* app_window_;
 

@@ -31,13 +31,13 @@ class AppInfoHeaderPanel : public AppInfoPanel,
                            public base::SupportsWeakPtr<AppInfoHeaderPanel> {
  public:
   AppInfoHeaderPanel(Profile* profile, const extensions::Extension* app);
-  virtual ~AppInfoHeaderPanel();
+  ~AppInfoHeaderPanel() override;
 
  private:
   void CreateControls();
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Load the app icon asynchronously. For the response, check OnAppImageLoaded.
   void LoadAppImageAsync();

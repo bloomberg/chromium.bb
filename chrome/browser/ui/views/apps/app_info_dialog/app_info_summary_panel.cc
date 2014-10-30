@@ -36,14 +36,14 @@
 class LaunchOptionsComboboxModel : public ui::ComboboxModel {
  public:
   LaunchOptionsComboboxModel();
-  virtual ~LaunchOptionsComboboxModel();
+  ~LaunchOptionsComboboxModel() override;
 
   extensions::LaunchType GetLaunchTypeAtIndex(int index) const;
   int GetIndexForLaunchType(extensions::LaunchType launch_type) const;
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
 
  private:
   // A list of the launch types available in the combobox, in order.
