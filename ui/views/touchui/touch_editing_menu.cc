@@ -16,7 +16,6 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,8 +26,8 @@ const int kMenuCommands[] = {IDS_APP_CUT,
                              IDS_APP_PASTE};
 const int kSpacingBetweenButtons = 2;
 const int kButtonSeparatorColor = SkColorSetARGB(13, 0, 0, 0);
-const int kMenuButtonHeight = 38;
-const int kMenuButtonWidth = 63;
+const int kMenuButtonMinHeight = 38;
+const int kMenuButtonMinWidth = 63;
 const int kMenuMargin = 1;
 
 const char* kEllipsesButtonText = "...";
@@ -143,19 +142,14 @@ Button* TouchEditingMenuView::CreateButton(const base::string16& title,
                                            int tag) {
   base::string16 label = gfx::RemoveAcceleratorChar(title, '&', NULL, NULL);
   LabelButton* button = new LabelButton(this, label);
+  button->SetMinSize(gfx::Size(kMenuButtonMinWidth, kMenuButtonMinHeight));
   button->SetFocusable(true);
   button->set_request_focus_on_press(false);
   const gfx::FontList& font_list =
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::SmallFont);
-  scoped_ptr<LabelButtonBorder> button_border(
-      new LabelButtonBorder(button->style()));
-  int v_border = (kMenuButtonHeight - font_list.GetHeight()) / 2;
-  int h_border = (kMenuButtonWidth - gfx::GetStringWidth(label, font_list)) / 2;
-  button_border->set_insets(
-      gfx::Insets(v_border, h_border, v_border, h_border));
-  button->SetBorder(button_border.Pass());
   button->SetFontList(font_list);
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   button->set_tag(tag);
   return button;
 }
