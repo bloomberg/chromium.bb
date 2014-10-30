@@ -259,6 +259,15 @@ GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
   return base_url_.Resolve(relative_url);
 }
 
+GURL EmbeddedTestServer::GetURL(
+    const std::string& hostname,
+    const std::string& relative_url) const {
+  GURL local_url = GetURL(relative_url);
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(hostname);
+  return local_url.ReplaceComponents(replace_host);
+}
+
 void EmbeddedTestServer::ServeFilesFromDirectory(
     const base::FilePath& directory) {
   RegisterRequestHandler(base::Bind(&HandleFileRequest, directory));

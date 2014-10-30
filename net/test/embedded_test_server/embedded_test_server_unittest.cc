@@ -121,6 +121,12 @@ TEST_F(EmbeddedTestServerTest, GetURL) {
             server_->GetURL("/path?query=foo").spec());
 }
 
+TEST_F(EmbeddedTestServerTest, GetURLWithHostname) {
+  EXPECT_EQ(base::StringPrintf("http://foo.com:%d/path?query=foo",
+                               server_->port()),
+            server_->GetURL("foo.com", "/path?query=foo").spec());
+}
+
 TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
   server_->RegisterRequestHandler(
       base::Bind(&EmbeddedTestServerTest::HandleRequest,

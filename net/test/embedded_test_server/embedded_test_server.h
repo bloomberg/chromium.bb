@@ -129,6 +129,12 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // http://127.0.0.1:<port>/path?query=foo.
   GURL GetURL(const std::string& relative_url) const;
 
+  // Similar to the above method with the difference that it uses the supplied
+  // |hostname| for the URL instead of 127.0.0.1. The hostname should be
+  // resolved to 127.0.0.1.
+  GURL GetURL(const std::string& hostname,
+              const std::string& relative_url) const;
+
   // Returns the port number used by the server.
   int port() const { return port_; }
 
