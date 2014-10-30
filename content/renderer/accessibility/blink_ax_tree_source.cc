@@ -322,9 +322,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     WebElement element = node.to<WebElement>();
     is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
 
-    if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
-      dst->state |= (1 << ui::AX_STATE_EXPANDED);
-
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding
     // a WebElement method that returns the original lower cased tagName.

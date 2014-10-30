@@ -177,6 +177,7 @@ NSArray* BuildAllAttributesArray() {
       NSAccessibilityVisibleChildrenAttribute,
       @"AXVisited",
       @"AXLinkedUIElements",
+      NSAccessibilityExpandedAttribute,
       nil];
   return [array retain];
 }

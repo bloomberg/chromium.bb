@@ -69,6 +69,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel" },
     { NSAccessibilityDisclosedRowsAttribute, @"disclosedRows" },
     { NSAccessibilityEnabledAttribute, @"enabled" },
+    { NSAccessibilityExpandedAttribute, @"expanded" },
     { NSAccessibilityFocusedAttribute, @"focused" },
     { NSAccessibilityHeaderAttribute, @"header" },
     { NSAccessibilityHelpAttribute, @"help" },
@@ -327,6 +328,11 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSNumber*)enabled {
   return [NSNumber numberWithBool:
       GetState(browserAccessibility_, ui::AX_STATE_ENABLED)];
+}
+
+- (NSNumber*)expanded {
+  return [NSNumber numberWithBool:
+      GetState(browserAccessibility_, ui::AX_STATE_EXPANDED)];
 }
 
 - (NSNumber*)focused {
@@ -1176,6 +1182,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityChildrenAttribute,
       NSAccessibilityDescriptionAttribute,
       NSAccessibilityEnabledAttribute,
+      NSAccessibilityExpandedAttribute,
       NSAccessibilityFocusedAttribute,
       NSAccessibilityHelpAttribute,
       NSAccessibilityLinkedUIElementsAttribute,

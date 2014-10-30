@@ -386,6 +386,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDialog) {
   RunTest(FILE_PATH_LITERAL("aria-dialog.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaExpanded) {
+  RunTest(FILE_PATH_LITERAL("aria-expanded.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaHasPopup) {
   RunTest(FILE_PATH_LITERAL("aria-haspopup.html"));
 }
