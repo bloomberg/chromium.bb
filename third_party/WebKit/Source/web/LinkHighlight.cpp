@@ -111,18 +111,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     if (!m_node || !m_node->renderer())
         return 0;
 
-    // Find the nearest enclosing composited layer and attach to it. We may need to cross frame boundaries
-    // to find a suitable layer.
-    RenderObject* renderer = m_node->renderer();
-    RenderLayer* renderLayer;
-    do {
-        renderLayer = renderer->enclosingLayer()->enclosingLayerForPaintInvalidation();
-        if (!renderLayer) {
-            renderer = renderer->frame()->ownerRenderer();
-            if (!renderer)
-                return 0;
-        }
-    } while (!renderLayer);
+    RenderLayer* renderLayer = m_node->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
 
     ASSERT(renderLayer->compositingState() != NotComposited);
 
