@@ -53,6 +53,50 @@ public:
     virtual void reportOpenDatabaseResult(
         const WebString& databaseIdentifier,
         const WebString& databaseName,
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+    {
+        reportOpenDatabaseResult(databaseIdentifier, databaseName, false, errorSite, webSqlErrorCode, sqliteErrorCode);
+    }
+    virtual void reportChangeVersionResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+    {
+        reportChangeVersionResult(databaseIdentifier, databaseName, false, errorSite, webSqlErrorCode, sqliteErrorCode);
+    }
+    virtual void reportStartTransactionResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+    {
+        reportStartTransactionResult(databaseIdentifier, databaseName, false, errorSite, webSqlErrorCode, sqliteErrorCode);
+    }
+    virtual void reportCommitTransactionResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+    {
+        reportCommitTransactionResult(databaseIdentifier, databaseName, false, errorSite, webSqlErrorCode, sqliteErrorCode);
+    }
+    virtual void reportExecuteStatementResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
+        int errorSite, int webSqlErrorCode, int sqliteErrorCode)
+    {
+        reportExecuteStatementResult(databaseIdentifier, databaseName, false, errorSite, webSqlErrorCode, sqliteErrorCode);
+    }
+    virtual void reportVacuumDatabaseResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
+        int sqliteErrorCode)
+    {
+        reportVacuumDatabaseResult(databaseIdentifier, databaseName, false, sqliteErrorCode);
+    }
+
+    // FIXME: Remove these functions once we no longer use isSyncDatabase in Chromium.
+    virtual void reportOpenDatabaseResult(
+        const WebString& databaseIdentifier,
+        const WebString& databaseName,
         bool isSyncDatabase,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
     virtual void reportChangeVersionResult(

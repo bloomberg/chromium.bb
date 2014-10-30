@@ -716,8 +716,7 @@ void Database::reportOpenDatabaseResult(int errorSite, int webSqlErrorCode, int 
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportOpenDatabaseResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false,
-            errorSite, webSqlErrorCode, sqliteErrorCode);
+            stringIdentifier(), errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -726,8 +725,7 @@ void Database::reportChangeVersionResult(int errorSite, int webSqlErrorCode, int
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportChangeVersionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false,
-            errorSite, webSqlErrorCode, sqliteErrorCode);
+            stringIdentifier(), errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -736,8 +734,7 @@ void Database::reportStartTransactionResult(int errorSite, int webSqlErrorCode, 
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportStartTransactionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false,
-            errorSite, webSqlErrorCode, sqliteErrorCode);
+            stringIdentifier(), errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -746,8 +743,7 @@ void Database::reportCommitTransactionResult(int errorSite, int webSqlErrorCode,
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportCommitTransactionResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false,
-            errorSite, webSqlErrorCode, sqliteErrorCode);
+            stringIdentifier(), errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -756,8 +752,7 @@ void Database::reportExecuteStatementResult(int errorSite, int webSqlErrorCode, 
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportExecuteStatementResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false,
-            errorSite, webSqlErrorCode, sqliteErrorCode);
+            stringIdentifier(), errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -766,7 +761,7 @@ void Database::reportVacuumDatabaseResult(int sqliteErrorCode)
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->reportVacuumDatabaseResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
-            stringIdentifier(), false, sqliteErrorCode);
+            stringIdentifier(), sqliteErrorCode);
     }
 }
 
