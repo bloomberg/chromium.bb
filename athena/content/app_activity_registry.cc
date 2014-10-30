@@ -83,6 +83,7 @@ void AppActivityRegistry::Unload() {
   // current activity.
   unloaded_activity_proxy_ = new AppActivityProxy(GetMruActivity(), this);
   ActivityManager::Get()->AddActivity(unloaded_activity_proxy_);
+  unloaded_activity_proxy_->GetWindow()->SetName("AppActivityProxy");
 
   // This function can be called through an observer call. When that happens,
   // several activities will be closed / started. That can then cause a crash.

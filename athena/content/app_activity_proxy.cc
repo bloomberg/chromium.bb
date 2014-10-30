@@ -24,10 +24,6 @@ AppActivityProxy::AppActivityProxy(AppActivity* replaced_activity,
     restart_called_(false) {
 }
 
-AppActivityProxy::~AppActivityProxy() {
-  app_activity_registry_->ProxyDestroyed(this);
-}
-
 ActivityViewModel* AppActivityProxy::GetActivityViewModel() {
   return this;
 }
@@ -108,6 +104,10 @@ void AppActivityProxy::PrepareContentsForOverview() {
 }
 
 void AppActivityProxy::ResetContentsView() {
+}
+
+AppActivityProxy::~AppActivityProxy() {
+  app_activity_registry_->ProxyDestroyed(this);
 }
 
 }  // namespace athena
