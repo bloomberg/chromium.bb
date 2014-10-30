@@ -19,7 +19,6 @@
 #include "base/win/scoped_comptr.h"
 #include "media/base/media_export.h"
 #include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/win/capability_list_win.h"
 
 interface IMFSourceReader;
 
@@ -35,8 +34,6 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
       public VideoCaptureDevice {
  public:
   static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
-  static HRESULT FillCapabilities(IMFSourceReader* source,
-                                  CapabilityList* capabilities);
 
   explicit VideoCaptureDeviceMFWin(const Name& device_name);
   virtual ~VideoCaptureDeviceMFWin();
