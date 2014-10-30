@@ -93,8 +93,10 @@ struct ResourceResponseInfo {
 
   // True if the response was fetched via an explicit proxy (as opposed to a
   // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
-  // Note: we cannot tell if a transparent proxy may have been involved.
+  // Note: we cannot tell if a transparent proxy may have been involved. If
+  // true, |proxy_server| contains the name of the proxy server that was used.
   bool was_fetched_via_proxy;
+  net::HostPortPair proxy_server;
 
   // NPN protocol negotiated with the server.
   std::string npn_negotiated_protocol;
