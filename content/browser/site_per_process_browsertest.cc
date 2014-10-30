@@ -230,15 +230,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   EXPECT_FALSE(proxy_to_parent);
 
   // Load cross-site page into iframe.
-  NavigateFrameToURL(
-      root->child_at(0),
-      embedded_test_server()->GetURL("/cross-site/foo.com/title2.html"));
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
   // Verify that the navigation succeeded and the expected URL was loaded.
   EXPECT_TRUE(observer.navigation_succeeded());
-  EXPECT_EQ(embedded_test_server()->base_url().scheme(),
-            observer.navigation_url().scheme());
-  EXPECT_EQ("foo.com", observer.navigation_url().host());
-  EXPECT_EQ("/title2.html", observer.navigation_url().path());
+  EXPECT_EQ(url, observer.navigation_url());
 
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(2U, root->child_count());
@@ -264,14 +260,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
       proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
 
   // Load another cross-site page into the same iframe.
-  NavigateFrameToURL(
-      root->child_at(0),
-      embedded_test_server()->GetURL("/cross-site/bar.com/title3.html"));
+  url = embedded_test_server()->GetURL("bar.com", "/title3.html");
+  NavigateFrameToURL(root->child_at(0), url);
   EXPECT_TRUE(observer.navigation_succeeded());
-  EXPECT_EQ(embedded_test_server()->base_url().scheme(),
-            observer.navigation_url().scheme());
-  EXPECT_EQ("bar.com", observer.navigation_url().host());
-  EXPECT_EQ("/title3.html", observer.navigation_url().path());
+  EXPECT_EQ(url, observer.navigation_url());
 
   // Check again that a new process is created and is different from the
   // top level one and the previous one.
@@ -319,12 +311,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   EXPECT_TRUE(observer.navigation_succeeded());
 
   // Load cross-site page into iframe.
-  NavigateFrameToURL(
-      root->child_at(0),
-      embedded_test_server()->GetURL("/cross-site/foo.com/title2.html"));
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
   EXPECT_TRUE(observer.navigation_succeeded());
-  EXPECT_EQ("foo.com", observer.navigation_url().host());
-  EXPECT_EQ("/title2.html", observer.navigation_url().path());
+  EXPECT_EQ(url, observer.navigation_url());
 
   // Ensure that we have created a new process for the subframe.
   ASSERT_EQ(2U, root->child_count());
@@ -333,13 +323,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
 
   // Emulate the main frame changing the src of the iframe such that it
   // navigates cross-site.
-  NavigateIframeToURL(
-      shell(),
-      embedded_test_server()->GetURL("/cross-site/bar.com/title3.html"),
-      "test");
+  url = embedded_test_server()->GetURL("bar.com", "/title3.html");
+  NavigateIframeToURL(shell(), url, "test");
   EXPECT_TRUE(observer.navigation_succeeded());
-  EXPECT_EQ("bar.com", observer.navigation_url().host());
-  EXPECT_EQ("/title3.html", observer.navigation_url().path());
+  EXPECT_EQ(url, observer.navigation_url());
 
   // Check again that a new process is created and is different from the
   // top level one and the previous one.
@@ -672,11 +659,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   // Create the cross-site URL to navigate to.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
-  GURL cross_site_url(embedded_test_server()->GetURL("/frame_tree/1-1.html"));
-  replace_host.SetHostStr(foo_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  GURL cross_site_url =
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html");
 
   // Load cross-site page into the second iframe without waiting for the
   // navigation to complete. Once LoadURLWithParams returns, we would expect
@@ -709,16 +693,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // navigation to complete.
     navigation_observer.Wait();
     EXPECT_FALSE(child->render_manager()->pending_frame_host());
-    EXPECT_EQ(cross_site_url, observer.navigation_url());
     EXPECT_TRUE(observer.navigation_succeeded());
+    EXPECT_EQ(cross_site_url, observer.navigation_url());
   }
 
   // Load another cross-site page into the same iframe.
-  cross_site_url = embedded_test_server()->GetURL("/title2.html");
-  std::string bar_com("bar.com");
-  replace_host.SetHostStr(bar_com);
-  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
-
+  cross_site_url = embedded_test_server()->GetURL("bar.com", "/title2.html");
   {
     // Perform the same checks as the first cross-site navigation, since
     // there have been issues in subsequent cross-site navigations. Also ensure
@@ -749,8 +729,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     }
 
     navigation_observer.Wait();
-    EXPECT_EQ(cross_site_url, observer.navigation_url());
     EXPECT_TRUE(observer.navigation_succeeded());
+    EXPECT_EQ(cross_site_url, observer.navigation_url());
     EXPECT_EQ(0U, child->child_count());
   }
 }
