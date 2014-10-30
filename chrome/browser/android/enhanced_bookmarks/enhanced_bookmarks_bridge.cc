@@ -12,8 +12,6 @@
 #include "chrome/browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.h"
 #include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -21,7 +19,6 @@
 #include "components/bookmarks/common/android/bookmark_id.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
 
@@ -45,17 +42,10 @@ EnhancedBookmarksBridge::EnhancedBookmarksBridge(JNIEnv* env,
   cluster_service_ =
       ChromeBookmarkServerClusterServiceFactory::GetForBrowserContext(profile_);
   cluster_service_->AddObserver(this);
-  search_service_.reset(new BookmarkServerSearchService(
-      profile_->GetRequestContext(),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-      SigninManagerFactory::GetForProfile(profile_),
-      EnhancedBookmarkModelFactory::GetForBrowserContext(profile_)));
-  search_service_->AddObserver(this);
 }
 
 EnhancedBookmarksBridge::~EnhancedBookmarksBridge() {
   cluster_service_->RemoveObserver(this);
-  search_service_->RemoveObserver(this);
 }
 
 void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
@@ -109,7 +99,8 @@ ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFilters(
     JNIEnv* env,
     jobject obj) {
   DCHECK(enhanced_bookmark_model_->loaded());
-  const std::vector<std::string> filters = cluster_service_->GetClusters();
+  const std::vector<std::string> filters =
+      cluster_service_->GetClusters();
   return base::android::ToJavaArrayOfStrings(env, filters);
 }
 
@@ -185,35 +176,6 @@ ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddBookmark(
   return new_java_obj;
 }
 
-void EnhancedBookmarksBridge::SendSearchRequest(JNIEnv* env,
-                                                jobject obj,
-                                                jstring j_query) {
-  search_service_->Search(base::android::ConvertJavaStringToUTF8(env, j_query));
-}
-
-ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::GetSearchResults(
-    JNIEnv* env,
-    jobject obj,
-    jstring j_query) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-
-  ScopedJavaLocalRef<jobject> j_list =
-          Java_EnhancedBookmarksBridge_createBookmarkIdList(env);
-  scoped_ptr<std::vector<const BookmarkNode*>> results =
-      search_service_->ResultForQuery(
-          base::android::ConvertJavaStringToUTF8(env, j_query));
-
-  // If result is null, return a null java reference.
-  if (!results.get())
-    return ScopedJavaLocalRef<jobject>();
-
-  for (const BookmarkNode* node : *results) {
-    Java_EnhancedBookmarksBridge_addToBookmarkIdList(env, j_list.obj(),
-                                                     node->id(), node->type());
-  }
-  return j_list;
-}
-
 void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
   DCHECK(enhanced_bookmark_model_->loaded());
   JNIEnv* env = AttachCurrentThread();
@@ -222,11 +184,7 @@ void EnhancedBookmarksBridge::OnChange(BookmarkServerService* service) {
   if (obj.is_null())
     return;
 
-  if (service == cluster_service_) {
-    Java_EnhancedBookmarksBridge_onFiltersChanged(env, obj.obj());
-  } else if (service == search_service_.get()){
-    Java_EnhancedBookmarksBridge_onSearchResultReturned(env, obj.obj());
-  }
+  Java_EnhancedBookmarksBridge_onFiltersChanged(env, obj.obj());
 }
 
 bool EnhancedBookmarksBridge::IsEditable(const BookmarkNode* node) const {

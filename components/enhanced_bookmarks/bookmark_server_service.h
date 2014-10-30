@@ -57,9 +57,6 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
       const std::string& remote_id) const;
   const std::string RemoteIDForBookmark(const BookmarkNode* bookmark) const;
 
-  // Cancels the ongoing request, if any.
-  void Cancel();
-
   // Notifies the observers that something changed.
   void Notify();
 

@@ -20,30 +20,18 @@ import java.util.List;
 @JNINamespace("enhanced_bookmarks::android")
 public final class EnhancedBookmarksBridge {
     private long mNativeEnhancedBookmarksBridge;
-    private final ObserverList<FiltersObserver> mFilterObservers =
+    private final ObserverList<FiltersObserver> mObservers =
             new ObserverList<FiltersObserver>();
-    private final ObserverList<SearchServiceObserver> mSearchObservers =
-            new ObserverList<SearchServiceObserver>();
 
     /**
      * Interface to provide consumers notifications to changes in clusters
      */
     public interface FiltersObserver {
         /**
-         * Invoked when client detects that filters have been added/removed from the server.
+         * Invoked when client detects that filters have been
+         * added / removed from the server.
          */
         void onFiltersChanged();
-    }
-
-    /**
-     * Interface to provide consumers notifications to changes in search service results.
-     */
-    public interface SearchServiceObserver {
-        /**
-         * Invoked when client detects that search results have been updated. This callback is
-         * guaranteed to be called only once and only for the most recent query.
-         */
-        void onSearchResultsReturned();
     }
 
     public EnhancedBookmarksBridge(Profile profile) {
@@ -104,7 +92,7 @@ public final class EnhancedBookmarksBridge {
      * @param observer Observer to add
      */
     public void addFiltersObserver(FiltersObserver observer) {
-        mFilterObservers.addObserver(observer);
+        mObservers.addObserver(observer);
     }
 
     /**
@@ -112,7 +100,7 @@ public final class EnhancedBookmarksBridge {
      * @param observer Observer to remove
      */
     public void removeFiltersObserver(FiltersObserver observer) {
-        mFilterObservers.removeObserver(observer);
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -127,42 +115,6 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
-     * Sends request to search server for querying related bookmarks.
-     * @param query Keyword used to find related bookmarks.
-     */
-    public void sendSearchRequest(String query) {
-        nativeSendSearchRequest(mNativeEnhancedBookmarksBridge, query);
-    }
-
-    /**
-     * Get list of bookmarks as result of a search request that was sent before in
-     * {@link EnhancedBookmarksBridge#sendSearchRequest(String)}. Normally this function should be
-     * called after {@link SearchServiceObserver#onSearchResultsReturned()}
-     * @param query Keyword used to find related bookmarks.
-     * @return List of BookmarkIds that are related to query. It will be null if the request is
-     *         still on the fly, or empty list if there are no results for the query.
-     */
-    public List<BookmarkId> getSearchResultsForQuery(String query) {
-        return nativeGetSearchResults(mNativeEnhancedBookmarksBridge, query);
-    }
-
-    /**
-     * Registers a SearchObserver that listens to search request updates.
-     * @param observer Observer to add
-     */
-    public void addSearchObserver(SearchServiceObserver observer) {
-        mSearchObservers.addObserver(observer);
-    }
-
-    /**
-     * Unregisters a SearchObserver that listens to search request updates.
-     * @param observer Observer to remove
-     */
-    public void removeSearchObserver(SearchServiceObserver observer) {
-        mSearchObservers.removeObserver(observer);
-    }
-
-    /**
      * @return Current set of known auto-filters for bookmarks.
      */
     public List<String> getFilters() {
@@ -173,21 +125,9 @@ public final class EnhancedBookmarksBridge {
 
     @CalledByNative
     private void onFiltersChanged() {
-        for (FiltersObserver observer : mFilterObservers) {
+        for (FiltersObserver observer : mObservers) {
             observer.onFiltersChanged();
         }
-    }
-
-    @CalledByNative
-    private void onSearchResultReturned() {
-        for (SearchServiceObserver observer : mSearchObservers) {
-            observer.onSearchResultsReturned();
-        }
-    }
-
-    @CalledByNative
-    private static List<BookmarkId> createBookmarkIdList() {
-        return new ArrayList<BookmarkId>();
     }
 
     @CalledByNative
@@ -203,8 +143,6 @@ public final class EnhancedBookmarksBridge {
             int type, String description);
     private native void nativeGetBookmarksForFilter(long nativeEnhancedBookmarksBridge,
             String filter, List<BookmarkId> list);
-    private native List<BookmarkId> nativeGetSearchResults(long nativeEnhancedBookmarksBridge,
-            String query);
     private native String[] nativeGetFilters(long nativeEnhancedBookmarksBridge);
     private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
             int index, String title);
@@ -212,5 +150,5 @@ public final class EnhancedBookmarksBridge {
             BookmarkId bookmarkId, BookmarkId newParentId, int index);
     private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
             BookmarkId parent, int index, String title, String url);
-    private native void nativeSendSearchRequest(long nativeEnhancedBookmarksBridge, String query);
+
 }
