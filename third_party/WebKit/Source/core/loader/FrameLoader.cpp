@@ -374,9 +374,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (m_provisionalItem && (m_loadType == FrameLoadTypeBackForward || m_loadType == FrameLoadTypeInitialHistoryLoad))
-        m_frame->domWindow()->statePopped(m_provisionalItem->stateObject());
-
     if (dispatch)
         dispatchDidClearDocumentOfWindowObject();
 

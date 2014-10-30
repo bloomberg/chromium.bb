@@ -33,10 +33,8 @@ function runTest()
         runFirstStageOfTest();
 }
 
-onpopstate = function()
+function continueTest(state)
 {
-    alert("State popped - " + event.state + " (type " + typeof event.state + ")");
-
     // FIXME: Once the popstate and hashchange events fire asynchronously, we
     // can eliminate this setTimeout hack.  The hashchange event currently runs
     // synchronously following the popstate event, but the calls to
@@ -44,7 +42,6 @@ onpopstate = function()
     // our hashchange handler, which expects to see the "old" value of the
     // location.
 
-    var state = event.state;
     setTimeout(function() {
         if (state == "FirstEntry") {
             history.replaceState("FirstEntryWillLaterBeReactivated", null, "#FirstEntryWillLaterBeReactivated");
@@ -57,7 +54,23 @@ onpopstate = function()
     }, 0);
 }
 
-onhashchange = function(event)
+window.onpopstate = function statePopped()
+{
+    var state = event.state;
+    alert("State popped - " + state + " (type " + typeof state + ")");
+    continueTest(state);
+}
+
+window.onpageshow = function pageShown()
+{
+    if (sessionStorage.stage == 2) {
+        var state = history.state;
+        alert("Page shown - " + state + " (type " + typeof state + ")");
+        continueTest(state);
+    }
+}
+
+window.onhashchange = function hashChanged(event)
 {
    alert("hashChanged - Last path component of location is " + lastPathComponent(event.newURL));
    if (hashOf(event.newURL) == "#FirstEntryWillLaterBeReactivated") {
@@ -75,7 +88,7 @@ This test:
 -Builds up a list of state object entries with fragment URLs.
 -Navigates through them to verify that the popstate and hashchanged events are fired.
 -Navigates away to a new document, with the old document being destroyed.
--Navigates back to the state object entries and verifies the popstate event is fired even on the new documents.
+-Navigates back to the state object entries and verifies the pageshow or popstate events are fired on the new documents.
 </pre>
 </body>
 </html>
