@@ -392,7 +392,7 @@ class TextServiceImpl : public TextService,
     delegate_->OnTextCommitted(text);
   }
 
-  virtual RECT GetCaretBounds() {
+  virtual RECT GetCaretBounds() override {
     if (composition_character_bounds_.empty()) {
       const RECT rect = {};
       return rect;

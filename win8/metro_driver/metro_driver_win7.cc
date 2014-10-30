@@ -577,12 +577,12 @@ class CoreWindowEmulation
 
   // ICoreWindow implementation:
   virtual HRESULT STDMETHODCALLTYPE get_AutomationHostProvider(
-      IInspectable** value) {
+      IInspectable** value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_Bounds(
-      winfoundtn::Rect* value) {
+      winfoundtn::Rect* value) override {
     RECT rect;
     if (!::GetClientRect(core_hwnd_, &rect))
       return E_FAIL;
@@ -592,61 +592,61 @@ class CoreWindowEmulation
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_CustomProperties(
-      winfoundtn::Collections::IPropertySet** value) {
+      winfoundtn::Collections::IPropertySet** value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_Dispatcher(
-      winui::Core::ICoreDispatcher** value) {
+      winui::Core::ICoreDispatcher** value) override {
     return dispatcher_.CopyTo(value);
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_FlowDirection(
-      winui::Core::CoreWindowFlowDirection* value) {
+      winui::Core::CoreWindowFlowDirection* value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE put_FlowDirection(
-      winui::Core::CoreWindowFlowDirection value) {
+      winui::Core::CoreWindowFlowDirection value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_IsInputEnabled(
-      boolean* value) {
+      boolean* value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE put_IsInputEnabled(
-      boolean value) {
+      boolean value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_PointerCursor(
-      winui::Core::ICoreCursor** value) {
+      winui::Core::ICoreCursor** value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE put_PointerCursor(
-       winui::Core::ICoreCursor* value) {
+       winui::Core::ICoreCursor* value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_PointerPosition(
-      winfoundtn::Point* value) {
+      winfoundtn::Point* value) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE get_Visible(
-      boolean* value) {
+      boolean* value) override {
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE Activate(void) {
+  virtual HRESULT STDMETHODCALLTYPE Activate(void) override {
     // After we fire OnActivate on the View, Chrome calls us back here.
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE Close(void) {
+  virtual HRESULT STDMETHODCALLTYPE Close(void) override {
     ::PostMessage(core_hwnd_, WM_CLOSE, 0, 0);
     core_hwnd_ = NULL;
     return S_OK;
@@ -654,34 +654,34 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE GetAsyncKeyState(
       ABI::Windows::System::VirtualKey virtualKey,
-      winui::Core::CoreVirtualKeyStates* KeyState) {
+      winui::Core::CoreVirtualKeyStates* KeyState) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE GetKeyState(
       ABI::Windows::System::VirtualKey virtualKey,
-      winui::Core::CoreVirtualKeyStates* KeyState) {
+      winui::Core::CoreVirtualKeyStates* KeyState) override {
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE ReleasePointerCapture(void) {
+  virtual HRESULT STDMETHODCALLTYPE ReleasePointerCapture(void) override {
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE SetPointerCapture(void) {
+  virtual HRESULT STDMETHODCALLTYPE SetPointerCapture(void) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_Activated(
       WindowActivatedHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     window_activated_handler_ = handler;
     handler->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_Activated(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     window_activated_handler_->Release();
     window_activated_handler_ = NULL;
     return S_OK;
@@ -689,25 +689,25 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_AutomationProviderRequested(
       AutomationProviderHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_AutomationProviderRequested(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_CharacterReceived(
       CharEventHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     character_received_handler_ = handler;
     character_received_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_CharacterReceived(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     character_received_handler_->Release();
     character_received_handler_ = NULL;
     return S_OK;
@@ -715,36 +715,36 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_Closed(
       CoreWindowEventHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_Closed(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_InputEnabled(
       InputEnabledEventHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_InputEnabled(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_KeyDown(
       KeyEventHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     key_down_handler_ = handler;
     key_down_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_KeyDown(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     key_down_handler_->Release();
     key_down_handler_ = NULL;
     return S_OK;
@@ -752,14 +752,14 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_KeyUp(
       KeyEventHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     key_up_handler_ = handler;
     key_up_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_KeyUp(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     key_up_handler_->Release();
     key_up_handler_ = NULL;
     return S_OK;
@@ -767,53 +767,53 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerCaptureLost(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_capture_lost_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerCaptureLost(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_capture_lost_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerEntered(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_entered_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerEntered(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_entered_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerExited(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_exited_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerExited(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_exited_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerMoved(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_moved_handler_ = handler;
     mouse_moved_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerMoved(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_moved_handler_->Release();
     mouse_moved_handler_ = NULL;
     return S_OK;
@@ -821,14 +821,14 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerPressed(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_pressed_handler_ = handler;
     mouse_pressed_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerPressed(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_pressed_handler_->Release();
     mouse_pressed_handler_ = NULL;
     return S_OK;
@@ -836,14 +836,14 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerReleased(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_released_handler_ = handler;
     mouse_released_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerReleased(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_released_handler_->Release();
     mouse_released_handler_ = NULL;
     return S_OK;
@@ -851,25 +851,25 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_TouchHitTesting(
       TouchHitTestHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_TouchHitTesting(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerWheelChanged(
       PointerEventHandler* handler,
-      EventRegistrationToken* cookie) {
+      EventRegistrationToken* cookie) override {
     mouse_wheel_changed_handler_ = handler;
     mouse_wheel_changed_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerWheelChanged(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     mouse_wheel_changed_handler_->Release();
     mouse_wheel_changed_handler_ = NULL;
     return S_OK;
@@ -877,29 +877,29 @@ class CoreWindowEmulation
 
   virtual HRESULT STDMETHODCALLTYPE add_SizeChanged(
       SizeChangedHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     // TODO(cpu): implement this.
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_SizeChanged(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_VisibilityChanged(
       VisibilityChangedHandler* handler,
-      EventRegistrationToken* pCookie) {
+      EventRegistrationToken* pCookie) override {
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_VisibilityChanged(
-      EventRegistrationToken cookie) {
+      EventRegistrationToken cookie) override {
     return S_OK;
   }
 
   // ICoreWindowInterop implementation:
-  virtual HRESULT STDMETHODCALLTYPE get_WindowHandle(HWND* hwnd) {
+  virtual HRESULT STDMETHODCALLTYPE get_WindowHandle(HWND* hwnd) override {
     if (!core_hwnd_)
       return E_FAIL;
     *hwnd = core_hwnd_;
@@ -907,7 +907,7 @@ class CoreWindowEmulation
   }
 
   virtual HRESULT STDMETHODCALLTYPE put_MessageHandled(
-    boolean value) {
+    boolean value) override {
     return S_OK;
   }
 
