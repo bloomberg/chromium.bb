@@ -271,7 +271,6 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   early_exit_watcher_.StopWatching();
 #endif
   if (child_process_.get() || data_.handle) {
-    DCHECK(data_.handle != base::kNullProcessHandle);
     int exit_code;
     base::TerminationStatus status = GetTerminationStatus(
         true /* known_dead */, &exit_code);
