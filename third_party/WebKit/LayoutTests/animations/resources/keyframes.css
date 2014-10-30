@@ -1,4 +1,4 @@
-@-webkit-keyframes "anim" {
+@-webkit-keyframes anim {
     from { left: 50px; }
     20%  { left: 100px; }
     40%  { left: 100px; }
