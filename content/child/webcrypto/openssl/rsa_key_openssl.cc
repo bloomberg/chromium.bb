@@ -5,7 +5,6 @@
 #include "content/child/webcrypto/openssl/rsa_key_openssl.h"
 
 #include <openssl/evp.h>
-#include <openssl/pkcs12.h>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -13,6 +12,7 @@
 #include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
+#include "content/child/webcrypto/openssl/util_openssl.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -25,42 +25,6 @@ namespace content {
 namespace webcrypto {
 
 namespace {
-
-Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
-
-  // TODO(eroman): Use the OID specified by webcrypto spec.
-  //               http://crbug.com/373545
-  if (!i2d_PUBKEY_bio(bio.get(), key))
-    return Status::ErrorUnexpected();
-
-  char* data = NULL;
-  long len = BIO_get_mem_data(bio.get(), &data);
-  if (!data || len < 0)
-    return Status::ErrorUnexpected();
-
-  buffer->assign(data, data + len);
-  return Status::Success();
-}
-
-Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
-
-  // TODO(eroman): Use the OID specified by webcrypto spec.
-  //               http://crbug.com/373545
-  if (!i2d_PKCS8PrivateKeyInfo_bio(bio.get(), key))
-    return Status::ErrorUnexpected();
-
-  char* data = NULL;
-  long len = BIO_get_mem_data(bio.get(), &data);
-  if (!data || len < 0)
-    return Status::ErrorUnexpected();
-
-  buffer->assign(data, data + len);
-  return Status::Success();
-}
 
 // Creates a blink::WebCryptoAlgorithm having the modulus length and public
 // exponent  of |key|.
@@ -90,7 +54,8 @@ Status CreateRsaHashedKeyAlgorithm(
   return Status::Success();
 }
 
-Status CreateWebCryptoPrivateKey(
+// Creates a WebCryptoKey that wraps |private_key|.
+Status CreateWebCryptoRsaPrivateKey(
     crypto::ScopedEVP_PKEY private_key,
     const blink::WebCryptoAlgorithmId rsa_algorithm_id,
     const blink::WebCryptoAlgorithm& hash,
@@ -103,23 +68,12 @@ Status CreateWebCryptoPrivateKey(
   if (status.IsError())
     return status;
 
-  // Serialize the key at creation time so that if structured cloning is
-  // requested it can be done synchronously from the Blink thread.
-  std::vector<uint8_t> pkcs8_data;
-  status = ExportPKeyPkcs8(private_key.get(), &pkcs8_data);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(
-      new AsymKeyOpenSsl(private_key.Pass(), CryptoData(pkcs8_data)),
-      blink::WebCryptoKeyTypePrivate,
-      extractable,
-      key_algorithm,
-      usages);
-  return Status::Success();
+  return CreateWebCryptoPrivateKey(private_key.Pass(), key_algorithm,
+                                   extractable, usages, key);
 }
 
-Status CreateWebCryptoPublicKey(
+// Creates a WebCryptoKey that wraps |public_key|.
+Status CreateWebCryptoRsaPublicKey(
     crypto::ScopedEVP_PKEY public_key,
     const blink::WebCryptoAlgorithmId rsa_algorithm_id,
     const blink::WebCryptoAlgorithm& hash,
@@ -132,20 +86,8 @@ Status CreateWebCryptoPublicKey(
   if (status.IsError())
     return status;
 
-  // Serialize the key at creation time so that if structured cloning is
-  // requested it can be done synchronously from the Blink thread.
-  std::vector<uint8_t> spki_data;
-  status = ExportPKeySpki(public_key.get(), &spki_data);
-  if (status.IsError())
-    return status;
-
-  *key = blink::WebCryptoKey::create(
-      new AsymKeyOpenSsl(public_key.Pass(), CryptoData(spki_data)),
-      blink::WebCryptoKeyTypePublic,
-      extractable,
-      key_algorithm,
-      usages);
-  return Status::Success();
+  return CreateWebCryptoPublicKey(public_key.Pass(), key_algorithm, extractable,
+                                  usages, key);
 }
 
 // Converts a BIGNUM to a big endian byte array.
@@ -191,12 +133,9 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
     return Status::OperationError();
 
-  return CreateWebCryptoPrivateKey(pkey.Pass(),
-                                   algorithm.id(),
-                                   algorithm.rsaHashedImportParams()->hash(),
-                                   extractable,
-                                   usages,
-                                   key);
+  return CreateWebCryptoRsaPrivateKey(pkey.Pass(), algorithm.id(),
+                                      algorithm.rsaHashedImportParams()->hash(),
+                                      extractable, usages, key);
 }
 
 Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
@@ -218,12 +157,9 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pkey || !EVP_PKEY_set1_RSA(pkey.get(), rsa.get()))
     return Status::OperationError();
 
-  return CreateWebCryptoPublicKey(pkey.Pass(),
-                                  algorithm.id(),
-                                  algorithm.rsaHashedImportParams()->hash(),
-                                  extractable,
-                                  usages,
-                                  key);
+  return CreateWebCryptoRsaPublicKey(pkey.Pass(), algorithm.id(),
+                                     algorithm.rsaHashedImportParams()->hash(),
+                                     extractable, usages, key);
 }
 
 }  // namespace
@@ -288,21 +224,15 @@ Status RsaHashedAlgorithm::GenerateKey(
 
   // Note that extractable is unconditionally set to true. This is because per
   // the WebCrypto spec generated public keys are always public.
-  status = CreateWebCryptoPublicKey(public_pkey.Pass(),
-                                    algorithm.id(),
-                                    params->hash(),
-                                    true,
-                                    public_usages,
-                                    &public_key);
+  status = CreateWebCryptoRsaPublicKey(public_pkey.Pass(), algorithm.id(),
+                                       params->hash(), true, public_usages,
+                                       &public_key);
   if (status.IsError())
     return status;
 
-  status = CreateWebCryptoPrivateKey(private_pkey.Pass(),
-                                     algorithm.id(),
-                                     params->hash(),
-                                     extractable,
-                                     private_usages,
-                                     &private_key);
+  status = CreateWebCryptoRsaPrivateKey(private_pkey.Pass(), algorithm.id(),
+                                        params->hash(), extractable,
+                                        private_usages, &private_key);
   if (status.IsError())
     return status;
 
@@ -322,10 +252,8 @@ Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(
       // The JWK could represent either a public key or private key. The usages
       // must make sense for one of the two. The usages will be checked again by
       // ImportKeyJwk() once the key type has been determined.
-      if (CheckKeyCreationUsages(all_private_key_usages_, usages)
-              .IsSuccess() ||
-          CheckKeyCreationUsages(all_public_key_usages_, usages)
-              .IsSuccess()) {
+      if (CheckKeyCreationUsages(all_private_key_usages_, usages).IsSuccess() ||
+          CheckKeyCreationUsages(all_public_key_usages_, usages).IsSuccess()) {
         return Status::Success();
       }
       return Status::ErrorCreateKeyBadUsages();
@@ -340,30 +268,13 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
     bool extractable,
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
+  crypto::ScopedEVP_PKEY private_key;
+  Status status =
+      ImportUnverifiedPkeyFromPkcs8(key_data, EVP_PKEY_RSA, &private_key);
+  if (status.IsError())
+    return status;
 
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
-                                        key_data.byte_length()));
-  if (!bio.get())
-    return Status::ErrorUnexpected();
-
-  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-      p8inf(d2i_PKCS8_PRIV_KEY_INFO_bio(bio.get(), NULL));
-  if (!p8inf.get())
-    return Status::DataError();
-
-  crypto::ScopedEVP_PKEY private_key(EVP_PKCS82PKEY(p8inf.get()));
-  if (!private_key.get())
-    return Status::DataError();
-
-  if (EVP_PKEY_id(private_key.get()) != EVP_PKEY_RSA)
-    return Status::DataError();  // Data did not define an RSA key.
-
-  // Verify the parameters of the key (because EVP_PKCS82PKEY() happily imports
-  // invalid keys).
+  // Verify the parameters of the key.
   crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(private_key.get()));
   if (!rsa.get())
     return Status::ErrorUnexpected();
@@ -373,12 +284,9 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided
   // hash. http://crbug.com/389400
 
-  return CreateWebCryptoPrivateKey(private_key.Pass(),
-                                   algorithm.id(),
-                                   algorithm.rsaHashedImportParams()->hash(),
-                                   extractable,
-                                   usages,
-                                   key);
+  return CreateWebCryptoRsaPrivateKey(private_key.Pass(), algorithm.id(),
+                                      algorithm.rsaHashedImportParams()->hash(),
+                                      extractable, usages, key);
 }
 
 Status RsaHashedAlgorithm::ImportKeySpki(
@@ -387,32 +295,18 @@ Status RsaHashedAlgorithm::ImportKeySpki(
     bool extractable,
     blink::WebCryptoKeyUsageMask usages,
     blink::WebCryptoKey* key) const {
-  if (!key_data.byte_length())
-    return Status::ErrorImportEmptyKeyData();
-
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
-                                        key_data.byte_length()));
-  if (!bio.get())
-    return Status::ErrorUnexpected();
-
-  crypto::ScopedEVP_PKEY public_key(d2i_PUBKEY_bio(bio.get(), NULL));
-  if (!public_key.get())
-    return Status::DataError();
-
-  if (EVP_PKEY_id(public_key.get()) != EVP_PKEY_RSA)
-    return Status::DataError();  // Data did not define an RSA key.
+  crypto::ScopedEVP_PKEY public_key;
+  Status status =
+      ImportUnverifiedPkeyFromSpki(key_data, EVP_PKEY_RSA, &public_key);
+  if (status.IsError())
+    return status;
 
   // TODO(eroman): Validate the algorithm OID against the webcrypto provided
   // hash. http://crbug.com/389400
 
-  return CreateWebCryptoPublicKey(public_key.Pass(),
-                                  algorithm.id(),
-                                  algorithm.rsaHashedImportParams()->hash(),
-                                  extractable,
-                                  usages,
-                                  key);
+  return CreateWebCryptoRsaPublicKey(public_key.Pass(), algorithm.id(),
+                                     algorithm.rsaHashedImportParams()->hash(),
+                                     extractable, usages, key);
 }
 
 Status RsaHashedAlgorithm::ImportKeyJwk(
@@ -444,12 +338,8 @@ Status RsaHashedAlgorithm::ImportKeyJwk(
 
   return jwk.is_private_key
              ? ImportRsaPrivateKey(algorithm, extractable, usages, jwk, key)
-             : ImportRsaPublicKey(algorithm,
-                                  extractable,
-                                  usages,
-                                  CryptoData(jwk.n),
-                                  CryptoData(jwk.e),
-                                  key);
+             : ImportRsaPublicKey(algorithm, extractable, usages,
+                                  CryptoData(jwk.n), CryptoData(jwk.e), key);
 }
 
 Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
@@ -472,8 +362,8 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                                         std::vector<uint8_t>* buffer) const {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  EVP_PKEY* public_key = AsymKeyOpenSsl::Cast(key)->key();
-  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(public_key));
+  EVP_PKEY* pkey = AsymKeyOpenSsl::Cast(key)->key();
+  crypto::ScopedRSA rsa(EVP_PKEY_get1_RSA(pkey));
   if (!rsa.get())
     return Status::ErrorUnexpected();
 
@@ -485,11 +375,8 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
   switch (key.type()) {
     case blink::WebCryptoKeyTypePublic:
       WriteRsaPublicKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
-                           CryptoData(BIGNUMToVector(rsa->e)),
-                           jwk_algorithm,
-                           key.extractable(),
-                           key.usages(),
-                           buffer);
+                           CryptoData(BIGNUMToVector(rsa->e)), jwk_algorithm,
+                           key.extractable(), key.usages(), buffer);
       return Status::Success();
     case blink::WebCryptoKeyTypePrivate:
       WriteRsaPrivateKeyJwk(CryptoData(BIGNUMToVector(rsa->n)),
@@ -500,9 +387,7 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
                             CryptoData(BIGNUMToVector(rsa->dmp1)),
                             CryptoData(BIGNUMToVector(rsa->dmq1)),
                             CryptoData(BIGNUMToVector(rsa->iqmp)),
-                            jwk_algorithm,
-                            key.extractable(),
-                            key.usages(),
+                            jwk_algorithm, key.extractable(), key.usages(),
                             buffer);
       return Status::Success();
 

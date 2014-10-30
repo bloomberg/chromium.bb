@@ -5,6 +5,7 @@
 #include "content/child/webcrypto/openssl/util_openssl.h"
 
 #include <openssl/evp.h>
+#include <openssl/pkcs12.h>
 
 #include "base/stl_util.h"
 #include "content/child/webcrypto/crypto_data.h"
@@ -16,6 +17,48 @@
 namespace content {
 
 namespace webcrypto {
+
+namespace {
+
+// Exports an EVP_PKEY public key to the SPKI format.
+Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
+
+  // TODO(eroman): Use the OID specified by webcrypto spec.
+  //               http://crbug.com/373545
+  if (!i2d_PUBKEY_bio(bio.get(), key))
+    return Status::ErrorUnexpected();
+
+  char* data = NULL;
+  long len = BIO_get_mem_data(bio.get(), &data);
+  if (!data || len < 0)
+    return Status::ErrorUnexpected();
+
+  buffer->assign(data, data + len);
+  return Status::Success();
+}
+
+// Exports an EVP_PKEY private key to the PKCS8 format.
+Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
+
+  // TODO(eroman): Use the OID specified by webcrypto spec.
+  //               http://crbug.com/373545
+  if (!i2d_PKCS8PrivateKeyInfo_bio(bio.get(), key))
+    return Status::ErrorUnexpected();
+
+  char* data = NULL;
+  long len = BIO_get_mem_data(bio.get(), &data);
+  if (!data || len < 0)
+    return Status::ErrorUnexpected();
+
+  buffer->assign(data, data + len);
+  return Status::Success();
+}
+
+}  // namespace
 
 void PlatformInit() {
   crypto::EnsureOpenSSLInit();
@@ -101,6 +144,93 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
   if (!ok)
     return Status::OperationError();
   buffer->resize(len);
+  return Status::Success();
+}
+
+Status CreateWebCryptoPublicKey(crypto::ScopedEVP_PKEY public_key,
+                                const blink::WebCryptoKeyAlgorithm& algorithm,
+                                bool extractable,
+                                blink::WebCryptoKeyUsageMask usages,
+                                blink::WebCryptoKey* key) {
+  // Serialize the key at creation time so that if structured cloning is
+  // requested it can be done synchronously from the Blink thread.
+  std::vector<uint8_t> spki_data;
+  Status status = ExportPKeySpki(public_key.get(), &spki_data);
+  if (status.IsError())
+    return status;
+
+  *key = blink::WebCryptoKey::create(
+      new AsymKeyOpenSsl(public_key.Pass(), CryptoData(spki_data)),
+      blink::WebCryptoKeyTypePublic, extractable, algorithm, usages);
+  return Status::Success();
+}
+
+Status CreateWebCryptoPrivateKey(crypto::ScopedEVP_PKEY private_key,
+                                 const blink::WebCryptoKeyAlgorithm& algorithm,
+                                 bool extractable,
+                                 blink::WebCryptoKeyUsageMask usages,
+                                 blink::WebCryptoKey* key) {
+  // Serialize the key at creation time so that if structured cloning is
+  // requested it can be done synchronously from the Blink thread.
+  std::vector<uint8_t> pkcs8_data;
+  Status status = ExportPKeyPkcs8(private_key.get(), &pkcs8_data);
+  if (status.IsError())
+    return status;
+
+  *key = blink::WebCryptoKey::create(
+      new AsymKeyOpenSsl(private_key.Pass(), CryptoData(pkcs8_data)),
+      blink::WebCryptoKeyTypePrivate, extractable, algorithm, usages);
+  return Status::Success();
+}
+
+Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
+                                    int expected_pkey_id,
+                                    crypto::ScopedEVP_PKEY* pkey) {
+  if (!key_data.byte_length())
+    return Status::ErrorImportEmptyKeyData();
+
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
+  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
+                                        key_data.byte_length()));
+  if (!bio.get())
+    return Status::ErrorUnexpected();
+
+  pkey->reset(d2i_PUBKEY_bio(bio.get(), NULL));
+  if (!pkey->get())
+    return Status::DataError();
+
+  if (EVP_PKEY_id(pkey->get()) != expected_pkey_id)
+    return Status::DataError();  // Data did not define expected key type.
+
+  return Status::Success();
+}
+
+Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
+                                     int expected_pkey_id,
+                                     crypto::ScopedEVP_PKEY* pkey) {
+  if (!key_data.byte_length())
+    return Status::ErrorImportEmptyKeyData();
+
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
+  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
+                                        key_data.byte_length()));
+  if (!bio.get())
+    return Status::ErrorUnexpected();
+
+  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
+      p8inf(d2i_PKCS8_PRIV_KEY_INFO_bio(bio.get(), NULL));
+  if (!p8inf.get())
+    return Status::DataError();
+
+  pkey->reset(EVP_PKCS82PKEY(p8inf.get()));
+  if (!pkey->get())
+    return Status::DataError();
+
+  if (EVP_PKEY_id(pkey->get()) != expected_pkey_id)
+    return Status::DataError();  // Data did not define expected key type.
+
   return Status::Success();
 }
 
