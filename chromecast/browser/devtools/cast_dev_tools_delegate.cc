@@ -110,11 +110,7 @@ std::string CastDevToolsDelegate::GetDiscoveryPageHTML() {
 }
 
 bool CastDevToolsDelegate::BundlesFrontendResources() {
-#if defined(OS_ANDROID)
   return false;
-#else
-  return true;
-#endif  // defined(OS_ANDROID)
 }
 
 base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {

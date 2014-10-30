@@ -2,55 +2,84 @@
 <head>
 <title>Cast shell remote debugging</title>
 <style>
+  .local-ui-link {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    color: #333;
+    display: block;
+    font-family: monospace;
+    font-size: 11px;
+    margin: 4px;
+    padding: 4px;
+    width: 100%;
+  }
+
+  .help {
+    font-size: 11px;
+  }
 </style>
+</head>
+<body>
+
+<div id='caption'>Inspectable WebContents</div>
+<div id='items'></div>
 
 <script>
-function onLoad() {
+window.addEventListener('load', function() {
   var tabs_list_request = new XMLHttpRequest();
   tabs_list_request.open("GET", "/json/list?t=" + new Date().getTime(), true);
-  tabs_list_request.onreadystatechange = onReady;
-  tabs_list_request.send();
-}
-
-function onReady() {
-  if(this.readyState == 4 && this.status == 200) {
-    if(this.response != null) {
+  tabs_list_request.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200 && this.response) {
       var responseJSON = JSON.parse(this.response);
       for (var i = 0; i < responseJSON.length; ++i) {
         appendItem(responseJSON[i]);
       }
     }
-  }
-}
+  };
+  tabs_list_request.send();
+});
 
-function appendItem(item_object) {
-  var frontend_ref;
-  if (item_object.devtoolsFrontendUrl) {
-    frontend_ref = document.createElement("a");
-    frontend_ref.href = item_object.devtoolsFrontendUrl;
-    frontend_ref.title = item_object.title;
+function appendItem(metadata) {
+  var item_container = document.createElement('div');
+  var frontend_header = document.createElement('h3');
+  frontend_header.textContent = metadata.title || "(untitled tab)";
+  item_container.appendChild(frontend_header);
+
+  if (metadata.devtoolsFrontendUrl) {
+    var frontend_link = document.createElement('a');
+    frontend_link.textContent = 'Remote Debugging (AppEngine)'
+    frontend_link.href = metadata.devtoolsFrontendUrl;
+    item_container.appendChild(frontend_link);
+
+    var devtools_protocol_link = document.createElement('textarea');
+    devtools_protocol_link.className = 'local-ui-link';
+    devtools_protocol_link.value = metadata.devtoolsFrontendUrl.replace(
+        "https://chrome-devtools-frontend.appspot.com",
+        "chrome-devtools://devtools/remote");
+    // Highlight text when clicked.
+    devtools_protocol_link.onclick = function() { this.select(); }
+    item_container.appendChild(devtools_protocol_link);
   } else {
-    frontend_ref = document.createElement("div");
-    frontend_ref.title = "The tab already has active debugging session";
+    frontend_header.textContent += " (already has active debugging session)";
   }
 
-  var text = document.createElement("div");
-  if (item_object.title)
-    text.innerText = item_object.title;
-  else
-    text.innerText = "(untitled tab)";
-  text.style.cssText = "background-image:url(" + item_object.faviconUrl + ")";
-  frontend_ref.appendChild(text);
-
-  var item = document.createElement("p");
-  item.appendChild(frontend_ref);
-
-  document.getElementById("items").appendChild(item);
+  document.getElementById("items").appendChild(item_container);
 }
 </script>
-</head>
-<body onload='onLoad()'>
-  <div id='caption'>Inspectable WebContents</div>
-  <div id='items'></div>
+
+<h3>Help</h3>
+<div id="help">
+  Note: there are two debugging options presented for each page above. Either
+  is a valid way to initiate a remote debugging session.
+  <ul>
+    <li>For the first option (link), you may have to select the shield icon in
+        the address bar to establish a connection. See the <a
+        href="https://support.google.com/chrome/answer/1342714?hl=en">help
+        center</a> for more information.</li>
+    <li>For the second option (textarea), simply copy/paste the URL into
+        Chrome's URL bar.</li>
+  </ul>
+</div>
+
 </body>
 </html>

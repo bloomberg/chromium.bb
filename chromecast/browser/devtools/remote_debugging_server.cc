@@ -29,10 +29,8 @@ namespace shell {
 
 namespace {
 
-#if defined(OS_ANDROID)
 const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
-#endif  // defined(OS_ANDROID)
+    "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
 const int kDefaultRemoteDebuggingPort = 9222;
 
 #if defined(OS_ANDROID)
@@ -90,11 +88,7 @@ CreateSocketFactory(int port) {
 }
 
 std::string GetFrontendUrl() {
-#if defined(OS_ANDROID)
   return base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str());
-#else
-  return std::string();
-#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace
