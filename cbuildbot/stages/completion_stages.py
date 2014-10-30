@@ -411,18 +411,22 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
       inflight: The names of the builders that are still running.
       no_stat: The names of the builders that had status None.
     """
+    builder_name = 'Canary Master'
+    title = '%s has detected build failures:' % builder_name
     msgs = [str(x) for x in self._GetFailedMessages(failing)]
     slaves = self._GetBuildersWithNoneMessages(failing)
     msgs += ['%s failed with unknown reason.' % x for x in slaves]
     msgs += ['%s timed out' % x for x in inflight]
     msgs += ['%s did not start' % x for x in no_stat]
-    builder_name = self._run.config.name
-    title = '%s has encountered failures:' % (builder_name,)
     msgs.insert(0, title)
-    msgs.append('See %s' % self.ConstructDashboardURL())
+    msgs.append('You can also view the summary of the slave failures from '
+                'the %s stage of %s. Click on the failure message to go '
+                'to an individual slave\'s build status page: %s' % (
+                    self.name, builder_name, self.ConstructDashboardURL()))
     msg = '\n\n'.join(msgs)
+    logging.warning(msg)
     if not self.ShouldDisableAlerts():
-      alerts.SendEmail('%s failures' % (builder_name,),
+      alerts.SendEmail('Canary builder failures',
                        tree_status.GetHealthAlertRecipients(self._run),
                        message=msg,
                        smtp_server=constants.GOLO_SMTP_SERVER,
