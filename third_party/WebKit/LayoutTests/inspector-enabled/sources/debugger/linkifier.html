@@ -54,16 +54,15 @@ function test()
         
         uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(WebInspector.resourceTreeModel.inspectedPageURL());
         var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
-        var mainTarget = WebInspector.targetManager.mainTarget();
-        linkifier = new WebInspector.Linkifier();
-        var fragment = linkifier.linkifyStringAsFragment(mainTarget, linkifyMe);
+        var fragment = WebInspector.linkifyStringAsFragment(linkifyMe);
         var anchor = fragment.querySelector('a');
         InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + anchor.href);
         InspectorTest.addResult("The lineNumber is " + anchor.lineNumber + " with type " + (typeof anchor.lineNumber));
         InspectorTest.addResult("The columnNumber is " + anchor.columnNumber + " with type " + (typeof anchor.columnNumber));
 
+        linkifier = new WebInspector.Linkifier();
         var count1 = liveLocationsCount();
-        link = linkifier.linkifyScriptLocation(mainTarget, null, WebInspector.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
+        link = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, WebInspector.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
         var count2 = liveLocationsCount();
 
         InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));

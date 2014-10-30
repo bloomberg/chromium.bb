@@ -20,7 +20,7 @@ extensions-console.html:47 debug message console-message console-debug-level
 extensions-console.html:48 warning message console-message console-warning-level
 extensions-console.html:49 error message console-message console-error-level
 extensions-console.html:50 log message with two parameters, an integer: 42 and a string: foo console-message console-log-level
-(program):1:9 log message from evaluated code console-message console-log-level
+(program):1 log message from evaluated code console-message console-log-level
 debug message from extension console-message console-debug-level
 test-url.html:42 log message from extension console-message console-log-level
 warning message from extension console-message console-warning-level

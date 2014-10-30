@@ -140,10 +140,10 @@ console-format.html:12 0.12
 console-format.html:13 [0.12]
 globals[9]
 0.12
-console-format.html:12 webkit.org/
+console-format.html:12 http://webkit.org/
 console-format.html:13 ["http://webkit.org/"]
 globals[10]
-"webkit.org/"
+"http://webkit.org/"
 console-format.html:12 null
 console-format.html:13 [null]
 globals[11]

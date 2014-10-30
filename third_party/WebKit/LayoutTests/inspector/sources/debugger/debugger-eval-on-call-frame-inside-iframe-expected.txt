@@ -11,12 +11,12 @@ dir() = "overridden dir() in iframe"
 dirxml() = undefined
 table = "local in iframe"
 clear = function clear() { [Command Line API] }
-x: = (program):1:2 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}
+x: = (program):1 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}
 
 === Evaluating on top frame ===
 dir() = undefined
 dirxml() = "overridden dirxml() in top frame"
 table = function table(data, [columns]) { [Command Line API] }
 clear = "local in top frame"
-x: = (program):1:2 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}
+x: = (program):1 Uncaught SyntaxError {stack: (...), message: "Unexpected end of input"}
 
