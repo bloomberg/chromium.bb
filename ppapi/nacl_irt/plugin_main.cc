@@ -33,7 +33,7 @@ int PpapiPluginMain() {
   base::MessageLoop loop;
   ppapi::proxy::PluginGlobals plugin_globals;
 
-#if defined(__native_client__)
+#if defined(OS_NACL_SFI)
   // Currently on non-SFI mode, we don't use SRPC server on plugin.
   // TODO(hidehiko): Make sure this SRPC is actually used on SFI-mode.
 

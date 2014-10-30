@@ -23,12 +23,15 @@
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
           },
           'include_dirs': [
             '..',
           ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
             '../components/tracing_nacl.gyp:tracing_nacl',
             '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
             '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
@@ -37,6 +40,7 @@
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../ipc/ipc_nacl.gyp:ipc_nacl',
+            '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
             '../native_client/tools.gyp:prep_toolchain',
             '../ppapi/ppapi_ipc_nacl.gyp:ppapi_ipc_nacl',
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',

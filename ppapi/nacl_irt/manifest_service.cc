@@ -104,7 +104,7 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
     return false;
   }
 
-#if defined(OS_NACL)
+#if defined(OS_NACL_SFI)
   // File tokens are used internally by NaClIPCAdapter and should have
   // been cleared from the message when it is received here.
   // Note that, on Non-SFI NaCl, the IPC channel is directly connected to the

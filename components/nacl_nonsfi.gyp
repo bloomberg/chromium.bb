@@ -64,6 +64,9 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libgpu_ipc_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libipc_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/liblatency_info_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libppapi_ipc_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libppapi_proxy_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libppapi_shared_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libshared_memory_support_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libtracing_nacl.a',
                 ],
@@ -76,19 +79,7 @@
             '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
             '../native_client/tools.gyp:prep_toolchain',
-
-            # Temporarily depends on some libraries to make sure they can be
-            # built properly. These are depended on by PPAPI library.
-            # TODO(hidehiko): Remove them when PPAPI library is introduced.
-            '../components/tracing_nacl.gyp:tracing_nacl',
-            '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
-            '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
-            '../gpu/gpu_nacl.gyp:command_buffer_common_nacl',
-            '../gpu/gpu_nacl.gyp:gles2_cmd_helper_nacl',
-            '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
-            '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
-            '../media/media_nacl.gyp:shared_memory_support_nacl',
-            '../ui/events/latency_info_nacl.gyp:latency_info_nacl',
+            '../ppapi/ppapi_proxy_nacl.gyp:ppapi_proxy_nacl',
           ],
         },
         # TODO(hidehiko): Add Non-SFI version of nacl_loader_unittests.

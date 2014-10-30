@@ -24,6 +24,8 @@
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
           },
           'include_dirs': [
             '..',
@@ -31,6 +33,7 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_nacl.gyp:base_nacl',
+            '../base/base_nacl.gyp:base_nacl_nonsfi',
             '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
             '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
