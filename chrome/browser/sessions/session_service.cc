@@ -107,6 +107,28 @@ SessionService::~SessionService() {
   Save();
 }
 
+bool SessionService::ShouldNewWindowStartSession() {
+  // ChromeOS and OSX have different ideas of application lifetime than
+  // the other platforms.
+  // On ChromeOS opening a new window should never start a new session.
+#if defined(OS_CHROMEOS)
+  if (!force_browser_not_alive_with_no_windows_)
+    return false;
+#endif
+  if (!has_open_trackable_browsers_ &&
+      !StartupBrowserCreator::InSynchronousProfileLaunch() &&
+      !SessionRestore::IsRestoring(profile())
+#if defined(OS_MACOSX)
+      // On OSX, a new window should not start a new session if it was opened
+      // from the dock or the menubar.
+      && !app_controller_mac::IsOpeningNewWindow()
+#endif  // OS_MACOSX
+      ) {
+    return true;
+  }
+  return false;
+}
+
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open) {
   return RestoreIfNecessary(urls_to_open, NULL);
 }
@@ -275,6 +297,52 @@ void SessionService::WindowClosed(const SessionID& window_id) {
       ScheduleCommand(CreateWindowClosedCommand(window_id.id()));
   }
   MaybeDeleteSessionOnlyData();
+}
+
+void SessionService::TabInserted(WebContents* contents) {
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(contents);
+  if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
+    return;
+  SetTabWindow(session_tab_helper->window_id(),
+               session_tab_helper->session_id());
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents);
+  if (extensions_tab_helper &&
+      extensions_tab_helper->extension_app()) {
+    SetTabExtensionAppID(
+        session_tab_helper->window_id(),
+        session_tab_helper->session_id(),
+        extensions_tab_helper->extension_app()->id());
+  }
+
+  // Record the association between the SessionStorageNamespace and the
+  // tab.
+  //
+  // TODO(ajwong): This should be processing the whole map rather than
+  // just the default. This in particular will not work for tabs with only
+  // isolated apps which won't have a default partition.
+  content::SessionStorageNamespace* session_storage_namespace =
+      contents->GetController().GetDefaultSessionStorageNamespace();
+  ScheduleCommand(CreateSessionStorageAssociatedCommand(
+      session_tab_helper->session_id(),
+      session_storage_namespace->persistent_id()));
+  session_storage_namespace->SetShouldPersist(true);
+}
+
+void SessionService::TabClosing(WebContents* contents) {
+  // Allow the associated sessionStorage to get deleted; it won't be needed
+  // in the session restore.
+  content::SessionStorageNamespace* session_storage_namespace =
+      contents->GetController().GetDefaultSessionStorageNamespace();
+  session_storage_namespace->SetShouldPersist(false);
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(contents);
+  TabClosed(session_tab_helper->window_id(),
+            session_tab_helper->session_id(),
+            contents->GetClosedByUserGesture());
+  RecordSessionUpdateHistogramData(content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                                   &last_updated_tab_closed_time_);
 }
 
 void SessionService::SetWindowType(const SessionID& window_id,
@@ -477,28 +545,6 @@ void SessionService::RemoveUnusedRestoreWindows(
 
 bool SessionService::processed_any_commands() {
   return backend()->inited() || !pending_commands().empty();
-}
-
-bool SessionService::ShouldNewWindowStartSession() {
-  // ChromeOS and OSX have different ideas of application lifetime than
-  // the other platforms.
-  // On ChromeOS opening a new window should never start a new session.
-#if defined(OS_CHROMEOS)
-  if (!force_browser_not_alive_with_no_windows_)
-    return false;
-#endif
-  if (!has_open_trackable_browsers_ &&
-      !StartupBrowserCreator::InSynchronousProfileLaunch() &&
-      !SessionRestore::IsRestoring(profile())
-#if defined(OS_MACOSX)
-      // On OSX, a new window should not start a new session if it was opened
-      // from the dock or the menubar.
-      && !app_controller_mac::IsOpeningNewWindow()
-#endif  // OS_MACOSX
-      ) {
-    return true;
-  }
-  return false;
 }
 
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
@@ -971,25 +1017,6 @@ void SessionService::RecordUpdatedNavEntryCommit(base::TimeDelta delta,
   }
 }
 
-void SessionService::RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
-                                                         bool use_long_period) {
-  std::string name("SessionRestore.NavOrTabUpdatePeriod");
-  UMA_HISTOGRAM_CUSTOM_TIMES(name,
-      delta,
-      // 2500ms is the default save delay.
-      save_delay_in_millis_,
-      save_delay_in_mins_,
-      50);
-  if (use_long_period) {
-    std::string long_name_("SessionRestore.NavOrTabUpdateLongPeriod");
-    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
-        delta,
-        save_delay_in_mins_,
-        save_delay_in_hrs_,
-        50);
-  }
-}
-
 void SessionService::RecordUpdatedSaveTime(base::TimeDelta delta,
                                            bool use_long_period) {
   std::string name("SessionRestore.SavePeriod");
@@ -1009,50 +1036,23 @@ void SessionService::RecordUpdatedSaveTime(base::TimeDelta delta,
   }
 }
 
-void SessionService::TabInserted(WebContents* contents) {
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(contents);
-  if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
-    return;
-  SetTabWindow(session_tab_helper->window_id(),
-               session_tab_helper->session_id());
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents);
-  if (extensions_tab_helper &&
-      extensions_tab_helper->extension_app()) {
-    SetTabExtensionAppID(
-        session_tab_helper->window_id(),
-        session_tab_helper->session_id(),
-        extensions_tab_helper->extension_app()->id());
+void SessionService::RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
+                                                         bool use_long_period) {
+  std::string name("SessionRestore.NavOrTabUpdatePeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.NavOrTabUpdateLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
   }
-
-  // Record the association between the SessionStorageNamespace and the
-  // tab.
-  //
-  // TODO(ajwong): This should be processing the whole map rather than
-  // just the default. This in particular will not work for tabs with only
-  // isolated apps which won't have a default partition.
-  content::SessionStorageNamespace* session_storage_namespace =
-      contents->GetController().GetDefaultSessionStorageNamespace();
-  ScheduleCommand(CreateSessionStorageAssociatedCommand(
-      session_tab_helper->session_id(),
-      session_storage_namespace->persistent_id()));
-  session_storage_namespace->SetShouldPersist(true);
-}
-
-void SessionService::TabClosing(WebContents* contents) {
-  // Allow the associated sessionStorage to get deleted; it won't be needed
-  // in the session restore.
-  content::SessionStorageNamespace* session_storage_namespace =
-      contents->GetController().GetDefaultSessionStorageNamespace();
-  session_storage_namespace->SetShouldPersist(false);
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(contents);
-  TabClosed(session_tab_helper->window_id(),
-            session_tab_helper->session_id(),
-            contents->GetClosedByUserGesture());
-  RecordSessionUpdateHistogramData(content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                                   &last_updated_tab_closed_time_);
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {
