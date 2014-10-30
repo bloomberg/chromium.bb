@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -38,7 +39,8 @@ class Browser;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
-class ProfileChooserView : public views::BubbleDelegateView,
+class ProfileChooserView : public content::WebContentsDelegate,
+                           public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
                            public views::StyledLabelListener,
@@ -89,6 +91,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void Init() override;
   void WindowClosing() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+
+  // content::WebContentsDelegate:
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

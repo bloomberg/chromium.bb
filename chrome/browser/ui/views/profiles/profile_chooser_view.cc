@@ -708,6 +708,13 @@ bool ProfileChooserView::AcceleratorPressed(
   return true;
 }
 
+bool ProfileChooserView::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Suppresses the context menu because some features, such as inspecting
+  // elements, are not appropriate in a bubble.
+  return true;
+}
+
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == users_button_) {
@@ -1447,6 +1454,7 @@ views::View* ProfileChooserView::CreateGaiaSigninView() {
   Profile* profile = browser_->profile();
   views::WebView* web_view = new views::WebView(profile);
   web_view->LoadInitialURL(url);
+  web_view->GetWebContents()->SetDelegate(this);
   web_view->SetPreferredSize(
       gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight));
   content::RenderWidgetHostView* rwhv =

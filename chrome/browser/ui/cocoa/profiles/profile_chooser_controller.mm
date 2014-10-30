@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
@@ -49,6 +51,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -246,6 +249,50 @@ bool HasAuthError(Profile* profile) {
 }
 
 }  // namespace
+
+// Custom WebContentsDelegate that allows handling of hotkeys and suppresses
+// the context menu.
+class GaiaWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  GaiaWebContentsDelegate() {}
+  ~GaiaWebContentsDelegate() override {}
+
+ private:
+  // content::WebContentsDelegate:
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+
+  DISALLOW_COPY_AND_ASSIGN(GaiaWebContentsDelegate);
+};
+
+bool GaiaWebContentsDelegate::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Suppresses the context menu because some features, such as inspecting
+  // elements, are not appropriate in a bubble.
+  return true;
+}
+
+void GaiaWebContentsDelegate::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
+    return;
+
+  int chrome_command_id = [BrowserWindowUtils getCommandId:event];
+
+  bool is_text_editing_command =
+      (event.modifiers & blink::WebInputEvent::MetaKey) &&
+      (event.windowsKeyCode == ui::VKEY_A ||
+       event.windowsKeyCode == ui::VKEY_V);
+
+  // TODO(guohui): maybe should add an accelerator for the back button.
+  if (chrome_command_id == IDC_CLOSE_WINDOW || chrome_command_id == IDC_EXIT ||
+      is_text_editing_command) {
+    [[NSApp mainMenu] performKeyEquivalent:event.os_event];
+  }
+}
 
 // Class that listens to changes to the OAuth2Tokens for the active profile,
 // changes to the avatar menu model or browser close notifications.
@@ -1069,6 +1116,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (void)cleanUpEmbeddedViewContents {
   webContents_.reset();
+  webContentsDelegate_.reset();
 }
 
 - (id)initWithBrowser:(Browser*)browser
@@ -1907,6 +1955,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   webContents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(browser_->profile())));
+
+  webContentsDelegate_.reset(new GaiaWebContentsDelegate());
+  webContents_->SetDelegate(webContentsDelegate_.get());
   webContents_->GetController().LoadURL(url,
                                         content::Referrer(),
                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,

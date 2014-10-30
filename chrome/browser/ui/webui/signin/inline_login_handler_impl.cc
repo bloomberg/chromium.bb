@@ -236,15 +236,6 @@ InlineLoginHandlerImpl::InlineLoginHandlerImpl()
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
-bool InlineLoginHandlerImpl::HandleContextMenu(
-    const content::ContextMenuParams& params) {
-#ifndef NDEBUG
-  return false;
-#else
-  return true;
-#endif
-}
-
 void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
@@ -279,8 +270,6 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   const GURL& current_url = contents->GetURL();
   std::string is_constrained;
   net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
-  if (is_constrained == "1")
-    contents->SetDelegate(this);
 
   content::WebContentsObserver::Observe(contents);
 
