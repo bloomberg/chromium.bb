@@ -15,6 +15,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace syncer {
 
@@ -22,6 +23,9 @@ namespace {
 
 // Prefix for records containing attachment data.
 const char kDataPrefix[] = "data-";
+
+// Prefix for records containing attachment metadata.
+const char kMetadataPrefix[] = "metadata-";
 
 const char kDatabaseMetadataKey[] = "database-metadata";
 
@@ -36,16 +40,29 @@ leveldb::WriteOptions MakeWriteOptions() {
   return write_options;
 }
 
-leveldb::Status ReadStoreMetadata(
-    leveldb::DB* db,
-    attachment_store_pb::AttachmentStoreMetadata* metadata) {
-  std::string data_str;
+leveldb::ReadOptions MakeDataReadOptions() {
   leveldb::ReadOptions read_options;
+  // Attachment content is typically large and only read once. Don't cache it on
+  // db level.
   read_options.fill_cache = false;
   read_options.verify_checksums = true;
+  return read_options;
+}
+
+leveldb::ReadOptions MakeMetadataReadOptions() {
+  leveldb::ReadOptions read_options;
+  read_options.fill_cache = true;
+  read_options.verify_checksums = true;
+  return read_options;
+}
+
+leveldb::Status ReadStoreMetadata(
+    leveldb::DB* db,
+    attachment_store_pb::StoreMetadata* metadata) {
+  std::string data_str;
 
   leveldb::Status status =
-      db->Get(read_options, kDatabaseMetadataKey, &data_str);
+      db->Get(MakeMetadataReadOptions(), kDatabaseMetadataKey, &data_str);
   if (!status.ok())
     return status;
   if (!metadata->ParseFromString(data_str))
@@ -55,7 +72,7 @@ leveldb::Status ReadStoreMetadata(
 
 leveldb::Status WriteStoreMetadata(
     leveldb::DB* db,
-    const attachment_store_pb::AttachmentStoreMetadata& metadata) {
+    const attachment_store_pb::StoreMetadata& metadata) {
   std::string data_str;
 
   metadata.SerializeToString(&data_str);
@@ -79,27 +96,15 @@ void OnDiskAttachmentStore::Read(const AttachmentIdList& ids,
   scoped_ptr<AttachmentMap> result_map(new AttachmentMap());
   scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList());
 
-  leveldb::ReadOptions read_options;
-  // Attachment content is typically large and only read once. Don't cache it on
-  // db level.
-  read_options.fill_cache = false;
-  read_options.verify_checksums = true;
-
   AttachmentIdList::const_iterator iter = ids.begin();
   const AttachmentIdList::const_iterator end = ids.end();
   for (; iter != end; ++iter) {
-    const std::string key = MakeDataKeyFromAttachmentId(*iter);
-    std::string data_str;
-    leveldb::Status status = db_->Get(read_options, key, &data_str);
-    if (!status.ok()) {
-      DVLOG(1) << "DB::Get failed: status=" << status.ToString();
+    scoped_ptr<Attachment> attachment = ReadSingleAttachment(*iter);
+    if (attachment) {
+      result_map->insert(std::make_pair(*iter, *attachment));
+    } else {
       unavailable_attachments->push_back(*iter);
-      continue;
     }
-    scoped_refptr<base::RefCountedMemory> data =
-        base::RefCountedString::TakeString(&data_str);
-    Attachment attachment = Attachment::CreateWithId(*iter, data);
-    result_map->insert(std::make_pair(*iter, attachment));
   }
 
   Result result_code =
@@ -118,40 +123,11 @@ void OnDiskAttachmentStore::Write(const AttachmentList& attachments,
   DCHECK(db_);
   Result result_code = SUCCESS;
 
-  leveldb::ReadOptions read_options;
-  read_options.fill_cache = false;
-  read_options.verify_checksums = true;
-
-  leveldb::WriteOptions write_options = MakeWriteOptions();
-
   AttachmentList::const_iterator iter = attachments.begin();
   const AttachmentList::const_iterator end = attachments.end();
   for (; iter != end; ++iter) {
-    const std::string key = MakeDataKeyFromAttachmentId(iter->GetId());
-
-    std::string data_str;
-    // TODO(pavely): crbug/424304 This read is expensive. When I add metadata
-    // records this read will target metadata record instead of payload record.
-    leveldb::Status status = db_->Get(read_options, key, &data_str);
-    if (status.ok()) {
-      // Entry exists, don't overwrite.
-      continue;
-    } else if (!status.IsNotFound()) {
-      // Entry exists but failed to read.
-      DVLOG(1) << "DB::Get failed: status=" << status.ToString();
+    if (!WriteSingleAttachment(*iter))
       result_code = UNSPECIFIED_ERROR;
-      continue;
-    }
-    DCHECK(status.IsNotFound());
-
-    scoped_refptr<base::RefCountedMemory> data = iter->GetData();
-    leveldb::Slice data_slice(data->front_as<char>(), data->size());
-    status = db_->Put(write_options, key, data_slice);
-    if (!status.ok()) {
-      // Failed to write.
-      DVLOG(1) << "DB::Put failed: status=" << status.ToString();
-      result_code = UNSPECIFIED_ERROR;
-    }
   }
   callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result_code));
 }
@@ -165,12 +141,15 @@ void OnDiskAttachmentStore::Drop(const AttachmentIdList& ids,
   AttachmentIdList::const_iterator iter = ids.begin();
   const AttachmentIdList::const_iterator end = ids.end();
   for (; iter != end; ++iter) {
-    const std::string key = MakeDataKeyFromAttachmentId(*iter);
-    leveldb::Status status = db_->Delete(write_options, key);
+    leveldb::WriteBatch write_batch;
+    write_batch.Delete(MakeDataKeyFromAttachmentId(*iter));
+    write_batch.Delete(MakeMetadataKeyFromAttachmentId(*iter));
+
+    leveldb::Status status = db_->Write(write_options, &write_batch);
     if (!status.ok()) {
       // DB::Delete doesn't check if record exists, it returns ok just like
       // AttachmentStore::Drop should.
-      DVLOG(1) << "DB::Delete failed: status=" << status.ToString();
+      DVLOG(1) << "DB::Write failed: status=" << status.ToString();
       result_code = UNSPECIFIED_ERROR;
     }
   }
@@ -199,7 +178,7 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
 
   db.reset(db_raw);
 
-  attachment_store_pb::AttachmentStoreMetadata metadata;
+  attachment_store_pb::StoreMetadata metadata;
   status = ReadStoreMetadata(db.get(), &metadata);
   if (!status.ok() && !status.IsNotFound()) {
     DVLOG(1) << "ReadStoreMetadata failed: status=" << status.ToString();
@@ -227,9 +206,72 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
   return SUCCESS;
 }
 
+scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
+    const AttachmentId& attachment_id) {
+  scoped_ptr<Attachment> attachment;
+
+  const std::string key = MakeDataKeyFromAttachmentId(attachment_id);
+  std::string data_str;
+  leveldb::Status status = db_->Get(MakeDataReadOptions(), key, &data_str);
+  if (status.ok()) {
+    scoped_refptr<base::RefCountedMemory> data =
+        base::RefCountedString::TakeString(&data_str);
+    attachment.reset(
+        new Attachment(Attachment::CreateWithId(attachment_id, data)));
+  } else {
+    DVLOG(1) << "DB::Get failed: status=" << status.ToString();
+  }
+  return attachment.Pass();
+}
+
+bool OnDiskAttachmentStore::WriteSingleAttachment(
+    const Attachment& attachment) {
+  const std::string metadata_key =
+      MakeMetadataKeyFromAttachmentId(attachment.GetId());
+  const std::string data_key = MakeDataKeyFromAttachmentId(attachment.GetId());
+
+  std::string metadata_str;
+  leveldb::Status status =
+      db_->Get(MakeMetadataReadOptions(), metadata_key, &metadata_str);
+  if (status.ok()) {
+    // Entry exists, don't overwrite.
+    return true;
+  } else if (!status.IsNotFound()) {
+    // Entry exists but failed to read.
+    DVLOG(1) << "DB::Get failed: status=" << status.ToString();
+    return false;
+  }
+  DCHECK(status.IsNotFound());
+
+  leveldb::WriteBatch write_batch;
+  // Write metadata.
+  attachment_store_pb::RecordMetadata metadata;
+  metadata.set_attachment_size(attachment.GetData()->size());
+  metadata_str = metadata.SerializeAsString();
+  write_batch.Put(metadata_key, metadata_str);
+  // Write data.
+  scoped_refptr<base::RefCountedMemory> data = attachment.GetData();
+  leveldb::Slice data_slice(data->front_as<char>(), data->size());
+  write_batch.Put(data_key, data_slice);
+
+  status = db_->Write(MakeWriteOptions(), &write_batch);
+  if (!status.ok()) {
+    // Failed to write.
+    DVLOG(1) << "DB::Write failed: status=" << status.ToString();
+    return false;
+  }
+  return true;
+}
+
 std::string OnDiskAttachmentStore::MakeDataKeyFromAttachmentId(
     const AttachmentId& attachment_id) {
   std::string key = kDataPrefix + attachment_id.GetProto().unique_id();
+  return key;
+}
+
+std::string OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(
+    const AttachmentId& attachment_id) {
+  std::string key = kMetadataPrefix + attachment_id.GetProto().unique_id();
   return key;
 }
 

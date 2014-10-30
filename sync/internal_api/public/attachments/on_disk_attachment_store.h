@@ -47,7 +47,18 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
   Result OpenOrCreate(const base::FilePath& path);
 
  private:
-  std::string MakeDataKeyFromAttachmentId(const AttachmentId& attachment_id);
+  friend class OnDiskAttachmentStoreSpecificTest;
+
+  // Reads single attachment from store. Returns nullptr in case of errors.
+  scoped_ptr<Attachment> ReadSingleAttachment(
+      const AttachmentId& attachment_id);
+  // Writes single attachment to store. Returns false in case of errors.
+  bool WriteSingleAttachment(const Attachment& attachment);
+
+  static std::string MakeDataKeyFromAttachmentId(
+      const AttachmentId& attachment_id);
+  static std::string MakeMetadataKeyFromAttachmentId(
+      const AttachmentId& attachment_id);
 
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
   scoped_ptr<leveldb::DB> db_;

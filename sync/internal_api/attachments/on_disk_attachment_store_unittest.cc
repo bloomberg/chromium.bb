@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/api/attachments/attachment_store.h"
+#include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -109,6 +109,28 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
     return content;
   }
 
+  void VerifyAttachmentRecordsPresent(const base::FilePath& path,
+                                      const AttachmentId& attachment_id,
+                                      bool expect_records_present) {
+    scoped_ptr<leveldb::DB> db = OpenLevelDB(path);
+
+    std::string metadata_key =
+        OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(attachment_id);
+    std::string data_key =
+        OnDiskAttachmentStore::MakeDataKeyFromAttachmentId(attachment_id);
+    std::string data;
+    leveldb::Status s = db->Get(leveldb::ReadOptions(), data_key, &data);
+    if (expect_records_present)
+      EXPECT_TRUE(s.ok());
+    else
+      EXPECT_TRUE(s.IsNotFound());
+    s = db->Get(leveldb::ReadOptions(), metadata_key, &data);
+    if (expect_records_present)
+      EXPECT_TRUE(s.ok());
+    else
+      EXPECT_TRUE(s.IsNotFound());
+  }
+
   void RunLoop() {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -211,7 +233,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
 
   // AttachmentStore should create metadata record.
   std::string data = ReadStoreMetadataRecord(db_path);
-  attachment_store_pb::AttachmentStoreMetadata metadata;
+  attachment_store_pb::StoreMetadata metadata;
   EXPECT_TRUE(metadata.ParseFromString(data));
   EXPECT_EQ(metadata.schema_version(), 1);
 
@@ -242,6 +264,53 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   RunLoop();
   EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
   EXPECT_EQ(store_.get(), nullptr);
+}
+
+TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  base::FilePath db_path =
+      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
+
+  // Create attachment store.
+  AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
+  AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(),
+      base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+
+  // Write two attachments.
+  std::string some_data;
+  AttachmentList attachments;
+  some_data = "data1";
+  attachments.push_back(
+      Attachment::Create(base::RefCountedString::TakeString(&some_data)));
+  some_data = "data2";
+  attachments.push_back(
+      Attachment::Create(base::RefCountedString::TakeString(&some_data)));
+  store_->Write(attachments,
+                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                           base::Unretained(this),
+                           &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+
+  // Delete one of written attachments.
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(attachments[0].GetId());
+  store_->Drop(attachment_ids,
+               base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                          base::Unretained(this),
+                          &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+  store_ = nullptr;
+  RunLoop();
+
+  // Verify that attachment store contains only records for second attachment.
+  VerifyAttachmentRecordsPresent(db_path, attachments[0].GetId(), false);
+  VerifyAttachmentRecordsPresent(db_path, attachments[1].GetId(), true);
 }
 
 }  // namespace syncer
