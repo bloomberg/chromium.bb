@@ -165,6 +165,28 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   autocomplete_manager_->OnFormSubmitted(form);
 }
 
+// Tests that text entered into fields specifying autocomplete="off" is not sent
+// to the WebDatabase to be saved.
+TEST_F(AutocompleteHistoryManagerTest, FieldWithAutocompleteOff) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
+
+  // Field specifying autocomplete="off".
+  FormFieldData field;
+  field.label = ASCIIToUTF16("Something esoteric");
+  field.name = ASCIIToUTF16("esoterica");
+  field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
+  field.form_control_type = "text";
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+
+  EXPECT_CALL(*web_data_service_.get(), AddFormFields(_)).Times(0);
+  autocomplete_manager_->OnFormSubmitted(form);
+}
+
 namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {

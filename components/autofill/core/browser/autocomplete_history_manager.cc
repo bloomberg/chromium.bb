@@ -126,6 +126,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   //  - non-empty name
   //  - non-empty value
   //  - text field
+  //  - autocomplete is not disabled
   //  - value is not a credit card number
   //  - value is not a SSN
   std::vector<FormFieldData> values;
@@ -135,6 +136,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
     if (!iter->value.empty() &&
         !iter->name.empty() &&
         IsTextField(*iter) &&
+        iter->should_autocomplete &&
         !autofill::IsValidCreditCardNumber(iter->value) &&
         !autofill::IsSSN(iter->value)) {
       values.push_back(*iter);
