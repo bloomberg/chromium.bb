@@ -94,13 +94,6 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
           blink::WebEmbeddedWorkerStartData::WaitForDebugger :
           blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
 
-  // TODO(michaeln): delete setting this deprecated member once blink
-  // stops reading it.
-  start_data.startMode =
-      params.wait_for_debugger ?
-          blink::WebEmbeddedWorkerStartModePauseOnStart :
-          blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
-
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), params.embedded_worker_id);
 }
