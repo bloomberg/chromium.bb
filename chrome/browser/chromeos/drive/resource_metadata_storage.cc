@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
+#include <map>
+#include <set>
+
 #include "base/bind.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -922,7 +926,7 @@ FileError ResourceMetadataStorage::GetHeader(ResourceMetadataHeader* header) {
 bool ResourceMetadataStorage::CheckValidity() {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  // Perform read with checksums verification enalbed.
+  // Perform read with checksums verification enabled.
   leveldb::ReadOptions options;
   options.verify_checksums = true;
 
@@ -955,90 +959,101 @@ bool ResourceMetadataStorage::CheckValidity() {
     return false;
   }
 
-  // Check all entries.
-  size_t num_entries_with_parent = 0;
-  size_t num_child_entries = 0;
-  ResourceEntry entry;
-  std::string serialized_entry;
-  std::string child_id;
+  // First scan. Remember relationships between IDs.
+  typedef base::hash_map<std::string, std::string> KeyToIdMapping;
+  KeyToIdMapping local_id_to_resource_id_map;
+  KeyToIdMapping child_key_to_local_id_map;
+  std::set<std::string> resource_entries;
+  std::string first_resource_entry_key;
   for (it->Next(); it->Valid(); it->Next()) {
-    // Count child entries.
     if (IsChildEntryKey(it->key())) {
-      ++num_child_entries;
+      child_key_to_local_id_map[it->key().ToString()] = it->value().ToString();
       continue;
     }
 
-    // Check if resource-ID-to-local-ID mapping is stored correctly.
     if (IsIdEntryKey(it->key())) {
-      leveldb::Status status = resource_map_->Get(
-          options, it->value(), &serialized_entry);
-      // Resource-ID-to-local-ID mapping without entry for the local ID is ok.
-      if (status.IsNotFound())
-        continue;
-      // When the entry exists, its resource ID must be consistent.
-      const bool ok = status.ok() &&
-          entry.ParseFromString(serialized_entry) &&
-          !entry.resource_id().empty() &&
-          leveldb::Slice(GetIdEntryKey(entry.resource_id())) == it->key();
-      if (!ok) {
-        DLOG(ERROR) << "Broken ID entry. status = " << status.ToString();
+      const auto mapping_it =
+          local_id_to_resource_id_map.find(it->key().ToString());
+      // Check that no local ID is associated with more than one resource ID.
+      if (mapping_it != local_id_to_resource_id_map.end()) {
+        DLOG(ERROR) << "Broken ID entry.";
         RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ID_ENTRY);
         return false;
       }
+      local_id_to_resource_id_map[it->value().ToString()] =
+          GetResourceIdFromIdEntryKey(it->key());
       continue;
     }
 
-    // Check if stored data is broken.
+    // Remember the key of the first resource entry record, so the second scan
+    // can start from this point.
+    if (first_resource_entry_key.empty())
+      first_resource_entry_key = it->key().ToString();
+
+    resource_entries.insert(it->key().ToString());
+  }
+
+  // Second scan. Verify relationships and resource entry correctness.
+  size_t num_entries_with_parent = 0;
+  ResourceEntry entry;
+  for (it->Seek(first_resource_entry_key); it->Valid(); it->Next()) {
+    if (IsChildEntryKey(it->key()))
+      continue;
+
     if (!entry.ParseFromArray(it->value().data(), it->value().size())) {
-      DLOG(ERROR) << "Broken entry detected";
+      DLOG(ERROR) << "Broken entry detected.";
       RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ENTRY);
       return false;
     }
 
-    if (leveldb::Slice(entry.local_id()) != it->key()) {
-      DLOG(ERROR) << "Wrong local ID.";
-      RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_INVALID_LOCAL_ID);
+    // Resource-ID-to-local-ID mapping without entry for the local ID is OK,
+    // but if it exists, then the resource ID must be consistent.
+    const auto mapping_it =
+        local_id_to_resource_id_map.find(it->key().ToString());
+    if (mapping_it != local_id_to_resource_id_map.end() &&
+        entry.resource_id() != mapping_it->second) {
+      DLOG(ERROR) << "Broken ID entry.";
+      RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_ID_ENTRY);
       return false;
     }
 
+    // If the parent is referenced, then confirm that it exists and check the
+    // parent-child relationships.
     if (!entry.parent_local_id().empty()) {
-      // Check if the parent entry is stored.
-      leveldb::Status status = resource_map_->Get(
-          options,
-          leveldb::Slice(entry.parent_local_id()),
-          &serialized_entry);
-      if (!status.ok()) {
-        DLOG(ERROR) << "Can't get parent entry. status = " << status.ToString();
+      const auto mapping_it = resource_entries.find(entry.parent_local_id());
+      if (mapping_it == resource_entries.end()) {
+        DLOG(ERROR) << "Parent entry not found.";
         RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_INVALID_PARENT_ID);
         return false;
       }
 
       // Check if parent-child relationship is stored correctly.
-      status = resource_map_->Get(
-          options,
-          leveldb::Slice(GetChildEntryKey(entry.parent_local_id(),
-                                          entry.base_name())),
-          &child_id);
-      if (!status.ok() || leveldb::Slice(child_id) != it->key()) {
-        DLOG(ERROR) << "Child map is broken. status = " << status.ToString();
+      const auto child_mapping_it = child_key_to_local_id_map.find(
+          GetChildEntryKey(entry.parent_local_id(), entry.base_name()));
+      if (child_mapping_it == child_key_to_local_id_map.end() ||
+          leveldb::Slice(child_mapping_it->second) != it->key()) {
+        DLOG(ERROR) << "Child map is broken.";
         RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_BROKEN_CHILD_MAP);
         return false;
       }
       ++num_entries_with_parent;
     }
   }
+
   if (!it->status().ok()) {
     DLOG(ERROR) << "Error during checking resource map. status = "
                 << it->status().ToString();
     RecordCheckValidityFailure(CHECK_VALIDITY_FAILURE_ITERATOR_ERROR);
     return false;
   }
-  if (num_child_entries != num_entries_with_parent) {
-    DLOG(ERROR) << "Child entry count mismatch";
+
+  if (child_key_to_local_id_map.size() != num_entries_with_parent) {
+    DLOG(ERROR) << "Child entry count mismatch.";
     RecordCheckValidityFailure(
         CHECK_VALIDITY_FAILURE_CHILD_ENTRY_COUNT_MISMATCH);
     return false;
   }
+
   return true;
 }
 
