@@ -304,6 +304,7 @@ class CC_EXPORT ResourceProvider {
     ResourceProvider::Resource* resource_;
     SkBitmap sk_bitmap_;
     scoped_ptr<SkCanvas> sk_canvas_;
+    base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
   };
@@ -323,6 +324,7 @@ class CC_EXPORT ResourceProvider {
     gfx::GpuMemoryBuffer* gpu_memory_buffer_;
     gfx::Size size_;
     ResourceFormat format_;
+    base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
@@ -338,6 +340,7 @@ class CC_EXPORT ResourceProvider {
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
+    base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGr);
   };

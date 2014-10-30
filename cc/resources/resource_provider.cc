@@ -728,7 +728,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     resource->pixels = NULL;
   }
   if (resource->gpu_memory_buffer) {
-    DCHECK(resource->origin != Resource::External);
+    DCHECK(resource->origin == Resource::Internal);
     delete resource->gpu_memory_buffer;
     resource->gpu_memory_buffer = NULL;
   }
@@ -1030,6 +1030,7 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
 }
 
 ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->UnlockForWrite(resource_);
 }
 
@@ -1048,6 +1049,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ~ScopedWriteLockGpuMemoryBuffer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->UnlockForWrite(resource_);
   if (!gpu_memory_buffer_)
     return;
@@ -1093,11 +1095,13 @@ ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
 }
 
 ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   resource_provider_->UnlockForWrite(resource_);
 }
 
 SkSurface* ResourceProvider::ScopedWriteLockGr::GetSkSurface(
     bool use_distance_field_text) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(resource_->locked_for_write);
 
   // If the surface doesn't exist, or doesn't have the correct dff setting,
