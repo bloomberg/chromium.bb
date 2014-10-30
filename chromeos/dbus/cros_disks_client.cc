@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
+#include "chromeos/dbus/fake_cros_disks_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -454,188 +455,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
   DISALLOW_COPY_AND_ASSIGN(CrosDisksClientImpl);
 };
 
-// A stub implementaion of CrosDisksClient.
-class CrosDisksClientStubImpl : public CrosDisksClient {
- public:
-  CrosDisksClientStubImpl()
-      : weak_ptr_factory_(this) {}
-
-  virtual ~CrosDisksClientStubImpl() {}
-
-  // CrosDisksClient overrides:
-  virtual void Init(dbus::Bus* bus) override {}
-  virtual void Mount(const std::string& source_path,
-                     const std::string& source_format,
-                     const std::string& mount_label,
-                     const base::Closure& callback,
-                     const base::Closure& error_callback) override {
-    // This stub implementation only accepts archive mount requests.
-    const MountType type = MOUNT_TYPE_ARCHIVE;
-
-    const base::FilePath mounted_path = GetArchiveMountPoint().Append(
-        base::FilePath::FromUTF8Unsafe(mount_label));
-
-    // Already mounted path.
-    if (mounted_to_source_path_map_.count(mounted_path.value()) != 0) {
-      FinishMount(MOUNT_ERROR_PATH_ALREADY_MOUNTED, source_path, type,
-                  std::string(), callback);
-      return;
-    }
-
-    // Perform fake mount.
-    base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
-        FROM_HERE,
-        base::Bind(&PerformFakeMount, source_path, mounted_path),
-        base::Bind(&CrosDisksClientStubImpl::ContinueMount,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   source_path,
-                   type,
-                   callback,
-                   mounted_path));
-  }
-
-  virtual void Unmount(const std::string& device_path,
-                       UnmountOptions options,
-                       const base::Closure& callback,
-                       const base::Closure& error_callback) override {
-    // Not mounted.
-    if (mounted_to_source_path_map_.count(device_path) == 0) {
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
-      return;
-    }
-
-    mounted_to_source_path_map_.erase(device_path);
-
-    // Remove the directory created in Mount().
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::DeleteFile),
-                   base::FilePath::FromUTF8Unsafe(device_path),
-                   true /* recursive */),
-        callback,
-        true /* task_is_slow */);
-  }
-
-  virtual void EnumerateAutoMountableDevices(
-      const EnumerateAutoMountableDevicesCallback& callback,
-      const base::Closure& error_callback) override {
-    std::vector<std::string> device_paths;
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, device_paths));
-  }
-
-  virtual void EnumerateMountEntries(
-      const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback) override {
-    std::vector<MountEntry> entries;
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, entries));
-  }
-
-  virtual void Format(const std::string& device_path,
-                      const std::string& filesystem,
-                      const base::Closure& callback,
-                      const base::Closure& error_callback) override {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
-  }
-
-  virtual void GetDeviceProperties(
-      const std::string& device_path,
-      const GetDevicePropertiesCallback& callback,
-      const base::Closure& error_callback) override {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
-  }
-
-  virtual void SetMountEventHandler(
-      const MountEventHandler& mount_event_handler) override {
-    mount_event_handler_ = mount_event_handler;
-  }
-
-  virtual void SetMountCompletedHandler(
-      const MountCompletedHandler& mount_completed_handler) override {
-    mount_completed_handler_ = mount_completed_handler;
-  }
-
-  virtual void SetFormatCompletedHandler(
-      const FormatCompletedHandler& format_completed_handler) override {
-    format_completed_handler_ = format_completed_handler;
-  }
-
- private:
-  // Performs file actions for Mount().
-  static MountError PerformFakeMount(const std::string& source_path,
-                                     const base::FilePath& mounted_path) {
-    // Check the source path exists.
-    if (!base::PathExists(base::FilePath::FromUTF8Unsafe(source_path))) {
-      DLOG(ERROR) << "Source does not exist at " << source_path;
-      return MOUNT_ERROR_INVALID_PATH;
-    }
-
-    // Just create an empty directory and shows it as the mounted directory.
-    if (!base::CreateDirectory(mounted_path)) {
-      DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
-      return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
-    }
-
-    // Put a dummy file.
-    const base::FilePath dummy_file_path =
-        mounted_path.Append("SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt");
-    const std::string dummy_file_content = "This is a dummy file.";
-    const int write_result = base::WriteFile(
-        dummy_file_path, dummy_file_content.data(), dummy_file_content.size());
-    if (write_result != static_cast<int>(dummy_file_content.size())) {
-      DLOG(ERROR) << "Failed to put a dummy file at "
-                  << dummy_file_path.value();
-      return MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
-    }
-
-    return MOUNT_ERROR_NONE;
-  }
-
-  // Part of Mount() implementation.
-  void ContinueMount(const std::string& source_path,
-                     MountType type,
-                     const base::Closure& callback,
-                     const base::FilePath& mounted_path,
-                     MountError mount_error) {
-    if (mount_error != MOUNT_ERROR_NONE) {
-      FinishMount(mount_error, source_path, type, std::string(), callback);
-      return;
-    }
-    mounted_to_source_path_map_[mounted_path.value()] = source_path;
-    FinishMount(MOUNT_ERROR_NONE, source_path, type,
-                mounted_path.AsUTF8Unsafe(), callback);
-  }
-
-  // Runs |callback| and sends MountCompleted signal.
-  // Part of Mount() implementation.
-  void FinishMount(MountError error,
-                   const std::string& source_path,
-                   MountType type,
-                   const std::string& mounted_path,
-                   const base::Closure& callback) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
-    if (!mount_completed_handler_.is_null()) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(mount_completed_handler_,
-                     MountEntry(error, source_path, type, mounted_path)));
-    }
-  }
-
-  // Mounted path to source path map.
-  std::map<std::string, std::string> mounted_to_source_path_map_;
-
-  MountEventHandler mount_event_handler_;
-  MountCompletedHandler mount_completed_handler_;
-  FormatCompletedHandler format_completed_handler_;
-
-  base::WeakPtrFactory<CrosDisksClientStubImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosDisksClientStubImpl);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -822,7 +641,7 @@ CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new CrosDisksClientImpl();
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new CrosDisksClientStubImpl();
+  return new FakeCrosDisksClient();
 }
 
 // static

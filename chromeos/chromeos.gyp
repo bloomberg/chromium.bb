@@ -122,6 +122,8 @@
       'dbus/fake_bluetooth_profile_service_provider.h',
       'dbus/fake_cras_audio_client.cc',
       'dbus/fake_cras_audio_client.h',
+      'dbus/fake_cros_disks_client.cc',
+      'dbus/fake_cros_disks_client.h',
       'dbus/fake_cryptohome_client.cc',
       'dbus/fake_cryptohome_client.h',
       'dbus/fake_debug_daemon_client.cc',
@@ -574,8 +576,6 @@
       ],
       # If you edit the file list of this target, please edit BUILD.gn as well.
       'sources': [
-        'dbus/fake_cros_disks_client.cc',
-        'dbus/fake_cros_disks_client.h',
         'dbus/fake_power_manager_client.cc',
         'dbus/fake_power_manager_client.h',
         'dbus/fake_session_manager_client.cc',

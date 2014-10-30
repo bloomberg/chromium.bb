@@ -5,10 +5,62 @@
 #include "chromeos/dbus/fake_cros_disks_client.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/task_runner_util.h"
+#include "base/threading/worker_pool.h"
 
 namespace chromeos {
+
+namespace {
+
+// Performs fake mounting by creating a directory with a dummy file.
+MountError PerformFakeMount(const std::string& source_path,
+                            const base::FilePath& mounted_path) {
+  // Just create an empty directory and shows it as the mounted directory.
+  if (!base::CreateDirectory(mounted_path)) {
+    DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
+    return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
+  }
+
+  // Put a dummy file.
+  const base::FilePath dummy_file_path =
+      mounted_path.Append("SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt");
+  const std::string dummy_file_content = "This is a dummy file.";
+  const int write_result = base::WriteFile(
+      dummy_file_path, dummy_file_content.data(), dummy_file_content.size());
+  if (write_result != static_cast<int>(dummy_file_content.size())) {
+    DLOG(ERROR) << "Failed to put a dummy file at "
+                << dummy_file_path.value();
+    return MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
+  }
+
+  return MOUNT_ERROR_NONE;
+}
+
+// Continuation of Mount().
+void DidMount(const CrosDisksClient::MountCompletedHandler&
+              mount_completed_handler,
+              const std::string& source_path,
+              MountType type,
+              const base::Closure& callback,
+              const base::FilePath& mounted_path,
+              MountError mount_error) {
+  // Tell the caller of Mount() that the mount request was accepted.
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
+
+  // Tell the caller of Mount() that the mount completed.
+  if (!mount_completed_handler.is_null()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(mount_completed_handler,
+                   MountEntry(mount_error, source_path, type,
+                              mounted_path.AsUTF8Unsafe())));
+  }
+}
+
+}  // namespace
 
 FakeCrosDisksClient::FakeCrosDisksClient()
     : unmount_call_count_(0),
@@ -28,6 +80,23 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& mount_label,
                                 const base::Closure& callback,
                                 const base::Closure& error_callback) {
+  // This fake implementation only accepts archive mount requests.
+  const MountType type = MOUNT_TYPE_ARCHIVE;
+
+  const base::FilePath mounted_path = GetArchiveMountPoint().Append(
+      base::FilePath::FromUTF8Unsafe(mount_label));
+  mounted_paths_.insert(mounted_path);
+
+  base::PostTaskAndReplyWithResult(
+      base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
+      FROM_HERE,
+      base::Bind(&PerformFakeMount, source_path, mounted_path),
+      base::Bind(&DidMount,
+                 mount_completed_handler_,
+                 source_path,
+                 type,
+                 callback,
+                 mounted_path));
 }
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
@@ -36,6 +105,18 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
                                   const base::Closure& error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+
+  // Remove the dummy mounted directory if it exists.
+  if (mounted_paths_.count(base::FilePath::FromUTF8Unsafe(device_path)) > 0) {
+    mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path));
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&base::DeleteFile),
+                   base::FilePath::FromUTF8Unsafe(device_path),
+                   true /* recursive */),
+        callback,
+        true /* task_is_slow */);
+  }
 
   unmount_call_count_++;
   last_unmount_device_path_ = device_path;

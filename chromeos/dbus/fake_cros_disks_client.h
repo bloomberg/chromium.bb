@@ -5,27 +5,34 @@
 #ifndef CHROMEOS_DBUS_FAKE_CROS_DISKS_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CROS_DISKS_CLIENT_H_
 
+#include <set>
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
 
 // A fake implementation of CrosDiskeClient. This class provides a fake behavior
 // and the user of this class can raise a fake mouse events.
-class FakeCrosDisksClient : public CrosDisksClient {
+class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
  public:
   FakeCrosDisksClient();
   virtual ~FakeCrosDisksClient();
 
   // CrosDisksClient overrides
   virtual void Init(dbus::Bus* bus) override;
+
+  // Performs fake mounting for archive files. Instead of actually extracting
+  // contents of archive files, this function creates a directory that
+  // contains a dummy file.
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
                      const std::string& mount_label,
                      const base::Closure& callback,
                      const base::Closure& error_callback) override;
+  // Deletes the directory created in Mount().
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
                        const base::Closure& callback,
@@ -122,6 +129,7 @@ class FakeCrosDisksClient : public CrosDisksClient {
   std::string last_format_device_path_;
   std::string last_format_filesystem_;
   bool format_success_;
+  std::set<base::FilePath> mounted_paths_;
 };
 
 }  // namespace chromeos
