@@ -65,6 +65,16 @@ def IterateXmlElements(node):
       yield child_node_element
 
 
+def ParseAndReportErrors(filename):
+  try:
+    return minidom.parse(filename)
+  except Exception:
+    import traceback
+    traceback.print_exc()
+    sys.stderr.write('Failed to parse XML file: %s\n' % filename)
+    sys.exit(1)
+
+
 def AssertNotDeprecatedAttribute(name, value, filename):
   """Raises an exception if the given attribute is deprecated."""
   msg = None
@@ -100,7 +110,7 @@ def HasStyleResource(dom):
 def ErrorIfStyleResourceExistsInDir(input_dir):
   """If a style resource is in input_dir, raises an exception."""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    dom = minidom.parse(input_filename)
+    dom = ParseAndReportErrors(input_filename)
     if HasStyleResource(dom):
       raise Exception('error: style file ' + input_filename +
                       ' should be under ' + input_dir +
@@ -177,7 +187,7 @@ def GenerateV14LayoutResource(input_filename, output_v14_filename,
   don't do anything. If not, write the generated resource to
   output_v14_filename, and copy the original resource to output_v17_filename.
   """
-  dom = minidom.parse(input_filename)
+  dom = ParseAndReportErrors(input_filename)
   is_modified = GenerateV14LayoutResourceDom(dom, input_filename)
 
   if is_modified:
@@ -196,7 +206,7 @@ def GenerateV14StyleResource(input_filename, output_v14_filename):
   It's mostly a simple replacement, s/Start/Left s/End/Right,
   on the attribute names.
   """
-  dom = minidom.parse(input_filename)
+  dom = ParseAndReportErrors(input_filename)
   GenerateV14StyleResourceDom(dom, input_filename)
 
   # Write the generated resource.
@@ -231,7 +241,7 @@ def VerifyV14ResourcesInDir(input_dir, resource_type):
                         ' Pre-v17 resources should not include it because it '
                         'can cause crashes on certain devices. Please refer to '
                         'http://crbug.com/243952 for the details.')
-    dom = minidom.parse(input_filename)
+    dom = ParseAndReportErrors(input_filename)
     if resource_type in ('layout', 'xml'):
       if GenerateV14LayoutResourceDom(dom, input_filename, False):
         raise Exception(exception_message)
@@ -244,7 +254,7 @@ def AssertNoDeprecatedAttributesInDir(input_dir, resource_type):
   """Raises an exception if resources in input_dir have deprecated attributes,
   e.g., paddingLeft, paddingRight"""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
-    dom = minidom.parse(input_filename)
+    dom = ParseAndReportErrors(input_filename)
     if resource_type in ('layout', 'xml'):
       GenerateV14LayoutResourceDom(dom, input_filename)
     elif resource_type == 'values':
