@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/NotImplemented.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "wtf/Assertions.h"
@@ -71,8 +72,10 @@ void WaitUntilObserver::willDispatchEvent()
     incrementPendingActivity();
 }
 
-void WaitUntilObserver::didDispatchEvent()
+void WaitUntilObserver::didDispatchEvent(bool errorOccurred)
 {
+    if (errorOccurred)
+        m_hasError = true;
     decrementPendingActivity();
 }
 

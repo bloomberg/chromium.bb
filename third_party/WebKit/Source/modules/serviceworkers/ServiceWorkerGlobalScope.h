@@ -46,6 +46,7 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClients;
 class ServiceWorkerThread;
+class WaitUntilObserver;
 class WorkerThreadStartupData;
 
 class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
@@ -76,6 +77,9 @@ public:
     // EventTarget
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
     virtual const AtomicString& interfaceName() const override;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
+
+    void dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event>, WaitUntilObserver*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
@@ -94,6 +98,8 @@ private:
     OwnPtr<FetchManager> m_fetchManager;
     PersistentWillBeMember<CacheStorage> m_caches;
     bool m_didEvaluateScript;
+    bool m_hadErrorInTopLevelEventHandler;
+    unsigned m_eventNestingLevel;
 };
 
 } // namespace blink

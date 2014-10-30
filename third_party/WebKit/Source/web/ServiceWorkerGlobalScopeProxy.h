@@ -42,6 +42,7 @@ namespace blink {
 
 class ConsoleMessage;
 class Document;
+class ServiceWorkerGlobalScope;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerRequest;
@@ -92,7 +93,7 @@ private:
 
     WebServiceWorkerContextClient& m_client;
 
-    WorkerGlobalScope* m_workerGlobalScope;
+    ServiceWorkerGlobalScope* m_workerGlobalScope;
 };
 
 } // namespace blink

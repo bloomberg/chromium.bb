@@ -28,7 +28,7 @@ public:
 
     // Must be called before and after dispatching the event.
     void willDispatchEvent();
-    void didDispatchEvent();
+    void didDispatchEvent(bool errorOccurred);
 
     // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.

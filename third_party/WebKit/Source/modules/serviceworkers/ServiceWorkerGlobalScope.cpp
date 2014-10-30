@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/events/Event.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -46,6 +47,7 @@
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
+#include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
@@ -66,6 +68,8 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOrigin, workerClients)
     , m_fetchManager(adoptPtr(new FetchManager(this)))
     , m_didEvaluateScript(false)
+    , m_hadErrorInTopLevelEventHandler(false)
+    , m_eventNestingLevel(0)
 {
 }
 
@@ -188,6 +192,26 @@ bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, P
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerGlobalScope;
+}
+
+bool ServiceWorkerGlobalScope::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+{
+    m_eventNestingLevel++;
+    bool result = WorkerGlobalScope::dispatchEvent(event.get());
+    if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2 && !event->defaultPrevented())
+        m_hadErrorInTopLevelEventHandler = true;
+    m_eventNestingLevel--;
+    return result;
+}
+
+void ServiceWorkerGlobalScope::dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event> event, WaitUntilObserver* observer)
+{
+    ASSERT(m_eventNestingLevel == 0);
+    m_hadErrorInTopLevelEventHandler = false;
+
+    observer->willDispatchEvent();
+    dispatchEvent(event);
+    observer->didDispatchEvent(m_hadErrorInTopLevelEventHandler);
 }
 
 void ServiceWorkerGlobalScope::trace(Visitor* visitor)

@@ -45,6 +45,7 @@
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorkerRequest.h"
@@ -69,18 +70,16 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Install, eventID);
-    observer->willDispatchEvent();
-    m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
-    observer->didDispatchEvent();
+    RefPtrWillBeRawPtr<Event> event(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
+    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Activate, eventID);
-    observer->willDispatchEvent();
-    m_workerGlobalScope->dispatchEvent(ExtendableEvent::create(EventTypeNames::activate, EventInit(), observer));
-    observer->didDispatchEvent();
+    RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, EventInit(), observer));
+    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
@@ -147,7 +146,7 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& mes
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
     ASSERT(!m_workerGlobalScope);
-    m_workerGlobalScope = workerGlobalScope;
+    m_workerGlobalScope = static_cast<ServiceWorkerGlobalScope*>(workerGlobalScope);
     m_client.workerContextStarted(this);
 }
 
