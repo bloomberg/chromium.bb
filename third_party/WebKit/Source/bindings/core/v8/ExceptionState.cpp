@@ -99,7 +99,7 @@ void ExceptionState::throwTypeError(const String& message)
     ASSERT(m_isolate);
     m_code = V8TypeError;
     m_message = message;
-    setException(V8ThrowException::createTypeError(addExceptionContext(message), m_isolate));
+    setException(V8ThrowException::createTypeError(m_isolate, addExceptionContext(message)));
 }
 
 void ExceptionState::throwRangeError(const String& message)
@@ -107,7 +107,7 @@ void ExceptionState::throwRangeError(const String& message)
     ASSERT(m_isolate);
     m_code = V8RangeError;
     m_message = message;
-    setException(V8ThrowException::createRangeError(addExceptionContext(message), m_isolate));
+    setException(V8ThrowException::createRangeError(m_isolate, addExceptionContext(message)));
 }
 
 void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)

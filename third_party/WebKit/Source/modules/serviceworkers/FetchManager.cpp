@@ -329,7 +329,7 @@ void FetchManager::Loader::failed()
     m_failed = true;
     ScriptState* state = m_resolver->scriptState();
     ScriptState::Scope scope(state);
-    m_resolver->reject(V8ThrowException::createTypeError("Failed to fetch", state->isolate()));
+    m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
     notifyFinished();
 }
 

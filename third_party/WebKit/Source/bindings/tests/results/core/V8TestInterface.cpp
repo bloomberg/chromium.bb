@@ -1164,7 +1164,7 @@ static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v
     LocalDOMWindow* window;
     {
         if (info.Length() > 0 && !V8Window::hasInstance(info[0], info.GetIsolate())) {
-            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Window'."), info.GetIsolate())));
+            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Window'."))));
             return;
         }
         window = toDOMWindow(info[0], info.GetIsolate());

@@ -18,7 +18,7 @@ namespace blink {
 ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
 {
     if (m_bodyUsed)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("Already read", scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Already read"));
 
     // When the main thread sends a V8::TerminateExecution() signal to a worker
     // thread, any V8 API on the worker thread starts returning an empty

@@ -308,7 +308,7 @@ v8SetReturnValueNull(info);
 exceptionState.throwTypeError({{error_message}});
 {{throw_from_exception_state(method)}};
 {% elif method.idl_type == 'Promise' %}
-v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError({{type_error_message(method, error_message)}}, info.GetIsolate())));
+v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}})));
 {% else %}
 V8ThrowException::throwTypeError({{type_error_message(method, error_message)}}, info.GetIsolate());
 {% endif %}{# method.has_exception_state #}

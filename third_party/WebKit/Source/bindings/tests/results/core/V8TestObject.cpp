@@ -6628,7 +6628,7 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
     Dictionary arg1;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."), info.GetIsolate())));
+            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodWithoutExceptionState", "TestObject", "parameter 1 ('arg1') is not an object."))));
             return;
         }
         arg1 = Dictionary(info[0], info.GetIsolate());

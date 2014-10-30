@@ -80,12 +80,12 @@ void setArityTypeError(ExceptionState& exceptionState, const char* valid, unsign
 
 v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned provided, v8::Isolate* isolate)
 {
-    return V8ThrowException::createTypeError(ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, provided)), isolate);
+    return V8ThrowException::createTypeError(isolate, ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, provided)));
 }
 
 v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned provided, v8::Isolate* isolate)
 {
-    return V8ThrowException::createTypeError(ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, provided)), isolate);
+    return V8ThrowException::createTypeError(isolate, ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, provided)));
 }
 
 void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned provided)

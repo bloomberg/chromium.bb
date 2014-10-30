@@ -98,7 +98,7 @@ CacheStorage* ServiceWorkerGlobalScope::caches(ExecutionContext* context)
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request)
 {
     if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
     // "Let |r| be the associated request of the result of invoking the initial
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
@@ -106,7 +106,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
     Request* r = Request::create(this, request, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
     }
     return m_fetchManager->fetch(scriptState, r->request());
 }
@@ -114,7 +114,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request* request, const Dictionary& requestInit)
 {
     if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
     // "Let |r| be the associated request of the result of invoking the initial
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
@@ -122,7 +122,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
     Request* r = Request::create(this, request, requestInit, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
     }
     return m_fetchManager->fetch(scriptState, r->request());
 }
@@ -130,7 +130,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, Request*
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring)
 {
     if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
     // "Let |r| be the associated request of the result of invoking the initial
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
@@ -138,7 +138,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     Request* r = Request::create(this, urlstring, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
     }
     return m_fetchManager->fetch(scriptState, r->request());
 }
@@ -146,7 +146,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const String& urlstring, const Dictionary& requestInit)
 {
     if (!m_fetchManager)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError("ServiceWorkerGlobalScope is shutting down.", scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "ServiceWorkerGlobalScope is shutting down."));
     // "Let |r| be the associated request of the result of invoking the initial
     // value of Request as constructor with |input| and |init| as arguments. If
     // this throws an exception, reject |p| with it."
@@ -154,7 +154,7 @@ ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const St
     Request* r = Request::create(this, urlstring, requestInit, exceptionState);
     if (exceptionState.hadException()) {
         // FIXME: We should throw the caught error.
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(exceptionState.message(), scriptState->isolate()));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), exceptionState.message()));
     }
     return m_fetchManager->fetch(scriptState, r->request());
 }

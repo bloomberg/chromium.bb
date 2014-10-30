@@ -54,9 +54,9 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     if (ec == V8GeneralError)
         return V8ThrowException::createGeneralError(isolate, sanitizedMessage);
     if (ec == V8TypeError)
-        return V8ThrowException::createTypeError(sanitizedMessage, isolate);
+        return V8ThrowException::createTypeError(isolate, sanitizedMessage);
     if (ec == V8RangeError)
-        return V8ThrowException::createRangeError(sanitizedMessage, isolate);
+        return V8ThrowException::createRangeError(isolate, sanitizedMessage);
     if (ec == V8SyntaxError)
         return V8ThrowException::createSyntaxError(isolate, sanitizedMessage);
     if (ec == V8ReferenceError)
@@ -99,25 +99,25 @@ v8::Handle<v8::Value> V8ThrowException::throwGeneralError(v8::Isolate* isolate, 
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createTypeError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::TypeError(v8String(isolate, message.isNull() ? "Type error" : message));
 }
 
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createRangeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createRangeError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::RangeError(v8String(isolate, message.isNull() ? "Range error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwRangeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwRangeError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createRangeError(message, isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createRangeError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 

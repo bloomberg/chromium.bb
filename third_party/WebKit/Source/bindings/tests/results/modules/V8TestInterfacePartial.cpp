@@ -101,7 +101,7 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
     Document* document;
     {
         if (info.Length() > 0 && !V8Document::hasInstance(info[0], info.GetIsolate())) {
-            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Document'."), info.GetIsolate())));
+            v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("promiseMethodPartialOverload", "TestInterface", "parameter 1 is not of type 'Document'."))));
             return;
         }
         document = V8Document::toImpl(v8::Handle<v8::Object>::Cast(info[0]));
