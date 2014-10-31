@@ -163,7 +163,7 @@ FileType.types = [
   },
   {
     type: 'document', name: 'HTML_DOCUMENT_FILE_TYPE',
-    subtype: 'HTML', pattern: /\.(html?|mht|mhtml)$/i
+    subtype: 'HTML', pattern: /\.(html?|mht(ml)?|shtml|xht(ml)?)$/i
   },
   {
     type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',

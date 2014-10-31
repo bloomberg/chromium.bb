@@ -75,6 +75,9 @@
         "filesystem:*.html",
         "filesystem:*.mht",
         "filesystem:*.mhtml",
+        "filesystem:*.shtml",
+        "filesystem:*.xht",
+        "filesystem:*.xhtml",
         "filesystem:*.svg",
         "filesystem:*.txt"
       ]

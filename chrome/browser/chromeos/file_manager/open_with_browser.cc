@@ -52,6 +52,9 @@ const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
   FILE_PATH_LITERAL(".htm"),
   FILE_PATH_LITERAL(".mhtml"),
   FILE_PATH_LITERAL(".mht"),
+  FILE_PATH_LITERAL(".xhtml"),
+  FILE_PATH_LITERAL(".xht"),
+  FILE_PATH_LITERAL(".shtml"),
   FILE_PATH_LITERAL(".svg"),
 };
 
