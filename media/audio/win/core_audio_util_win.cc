@@ -359,12 +359,12 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   ScopedComPtr<IConnector> connector;
   ScopedCoMem<WCHAR> filter_id;
   if (FAILED(device->Activate(__uuidof(IDeviceTopology), CLSCTX_ALL, NULL,
-             topology.ReceiveVoid()) ||
+             topology.ReceiveVoid())) ||
       // For our purposes checking the first connected device should be enough
       // and if there are cases where there are more than one device connected
       // we're not sure how to handle that anyway. So we pass 0.
       FAILED(topology->GetConnector(0, connector.Receive())) ||
-      FAILED(connector->GetDeviceIdConnectedTo(&filter_id)))) {
+      FAILED(connector->GetDeviceIdConnectedTo(&filter_id))) {
     DLOG(ERROR) << "Failed to get the device identifier of the audio device";
     return std::string();
   }
