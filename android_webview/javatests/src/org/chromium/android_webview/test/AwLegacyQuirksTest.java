@@ -273,12 +273,10 @@ public class AwLegacyQuirksTest extends AwTestBase {
         ensureScaleBecomes(1.0f, awContents);
     }
 
-    /*
+    // This should not be run in software mode. crbug.com/428355.
+    @DisableHardwareAccelerationForTest
     @MediumTest
     @Feature({"AndroidWebView"})
-    This test suddenly becae flaky. See: http://crbug.com/428355
-    */
-    @DisabledTest
     public void testNoUserScalableQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
