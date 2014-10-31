@@ -71,6 +71,9 @@ void NinjaCopyTargetWriter::WriteCopyRules(
       GetNinjaRulePrefixForToolchain(settings_) +
       Toolchain::ToolTypeToName(Toolchain::TYPE_COPY);
 
+  OutputFile input_dep =
+      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+
   // Note that we don't write implicit deps for copy steps. "copy" only
   // depends on the output files themselves, rather than having includes
   // (the possibility of generated #includes is the main reason for implicit
@@ -92,6 +95,11 @@ void NinjaCopyTargetWriter::WriteCopyRules(
   //
   // Moreover, doing this assumes that the copy step is always a simple
   // locally run command, so there is no need for a toolchain dependency.
+  //
+  // Note that there is the need in some cases for order-only dependencies
+  // where a command might need to make sure something else runs before it runs
+  // to avoid conflicts. Such cases should be avoided where possible, but
+  // sometimes that's not possible.
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];
 
@@ -104,6 +112,10 @@ void NinjaCopyTargetWriter::WriteCopyRules(
     path_output_.WriteFile(out_, output_file);
     out_ << ": " << tool_name << " ";
     path_output_.WriteFile(out_, input_file);
+    if (!input_dep.value().empty()) {
+      out_ << " || ";
+      path_output_.WriteFile(out_, input_dep);
+    }
     out_ << std::endl;
   }
 }

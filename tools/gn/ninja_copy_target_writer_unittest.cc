@@ -10,7 +10,7 @@
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 
-// Tests mutliple files with an output pattern and no toolchain dependency.
+// Tests multiple files with an output pattern and no toolchain dependency.
 TEST(NinjaCopyTargetWriter, Run) {
   TestWithScope setup;
   Err err;
@@ -68,6 +68,36 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
       "build output.out: copy ../../foo/input1.txt\n"
       "\n"
       "build obj/foo/bar.stamp: stamp output.out\n";
+  std::string out_str = out.str();
+  EXPECT_EQ(expected_linux, out_str);
+}
+
+TEST(NinjaCopyTargetWriter, OrderOnlyDeps) {
+  TestWithScope setup;
+  Err err;
+
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  target.set_output_type(Target::COPY_FILES);
+  target.sources().push_back(SourceFile("//foo/input1.txt"));
+  target.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/{{source_name_part}}.out");
+  target.inputs().push_back(SourceFile("//foo/script.py"));
+  target.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaCopyTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expected_linux[] =
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py\n"
+      "build input1.out: copy ../../foo/input1.txt || "
+          "obj/foo/bar.inputdeps.stamp\n"
+      "\n"
+      "build obj/foo/bar.stamp: stamp input1.out\n";
   std::string out_str = out.str();
   EXPECT_EQ(expected_linux, out_str);
 }
