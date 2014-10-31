@@ -1221,12 +1221,6 @@ crbug.com/30536 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-c
 crbug.com/30536 [ XP ] http/tests/security/video-cross-origin-readback.html [ Timeout ]
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/22.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/27.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/28.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/29.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/30.html [ Failure ]
-crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/36.html [ Failure ]
 
 crbug.com/411779 [ Win7 ] http/tests/serviceworker/fetch.html [ Slow ]
 
