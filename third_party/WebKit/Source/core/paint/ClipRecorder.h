@@ -29,6 +29,9 @@ private:
 
     IntRect m_clipRect;
     Vector<RoundedRect> m_roundedRectClips;
+#ifndef NDEBUG
+    virtual WTF::String asDebugString() const override;
+#endif
 };
 
 class EndClipDisplayItem : public DisplayItem {

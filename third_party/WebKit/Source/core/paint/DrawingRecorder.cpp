@@ -44,4 +44,13 @@ DrawingRecorder::~DrawingRecorder()
     m_renderer->view()->viewDisplayList().add(drawingItem.release());
 }
 
+#ifndef NDEBUG
+WTF::String DrawingDisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\", location: [%f,%f]}",
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
+        m_location.x(), m_location.y());
+}
+#endif
+
 } // namespace blink

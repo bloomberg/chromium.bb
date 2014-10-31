@@ -19,10 +19,13 @@ public:
     const FloatPoint& location() const { return m_location; }
 
 private:
+    virtual void replay(GraphicsContext*);
+
     RefPtr<SkPicture> m_picture;
     FloatPoint m_location;
-
-    virtual void replay(GraphicsContext*);
+#ifndef NDEBUG
+    virtual WTF::String asDebugString() const override;
+#endif
 };
 
 

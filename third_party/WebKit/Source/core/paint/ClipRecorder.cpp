@@ -58,4 +58,13 @@ ClipRecorder::~ClipRecorder()
     }
 }
 
+#ifndef NDEBUG
+WTF::String ClipDisplayItem::asDebugString() const
+{
+    return String::format("{%s, type: \"%s\", clipRect: [%d,%d,%d,%d]}",
+        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
+        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height());
+}
+#endif
+
 } // namespace blink

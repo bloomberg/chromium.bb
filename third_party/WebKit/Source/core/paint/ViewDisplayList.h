@@ -58,6 +58,12 @@ public:
     Type type() const { return m_id.type; }
     bool idsEqual(const DisplayItem& other) const { return m_id.renderer == other.m_id.renderer && m_id.type == other.m_id.type; }
 
+#ifndef NDEBUG
+    static WTF::String typeAsDebugString(DisplayItem::Type);
+    static WTF::String rendererDebugString(RenderObject*);
+    virtual WTF::String asDebugString() const;
+#endif
+
 protected:
     DisplayItem(RenderObject* renderer, Type type)
     {
@@ -81,6 +87,10 @@ public:
     const PaintList& paintList();
     void add(WTF::PassOwnPtr<DisplayItem>);
     void invalidate(const RenderObject*);
+
+#ifndef NDEBUG
+    void showDebugData() const;
+#endif
 
 private:
     bool isRepaint(PaintList::iterator, const DisplayItem&);
