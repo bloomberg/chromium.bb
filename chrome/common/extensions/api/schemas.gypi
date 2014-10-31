@@ -70,6 +70,7 @@
       'page_capture.json',
       'permissions.json',
       'preferences_private.json',
+      'printer_provider.idl',
       'push_messaging.idl',
       'reading_list_private.json',
       'screenlock_private.idl',

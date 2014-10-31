@@ -137,6 +137,7 @@ class APIPermission {
     kPower,
     kPreferencesPrivate,
     kPrincipalsPrivate,
+    kPrinterProvider,
     kPrivacy,
     kProcesses,
     kProxy,

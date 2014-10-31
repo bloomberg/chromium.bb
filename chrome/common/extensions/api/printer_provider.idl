@@ -1,0 +1,80 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This API exposes events used by print manager to query printers controlled
+// by extensions, to query capabilities of them and to submit print jobs to
+// these printers.
+namespace printerProvider {
+  // Error codes used by providing extensions in response to requests.
+  enum PrintError {
+    // Operation completed successfully.
+    OK,
+
+    // General failure.
+    FAILED,
+
+    // Print ticket is invalid. For example, ticket is inconsistent with
+    // capabilities or extension is not able to handle all settings from the
+    // ticket.
+    INVALID_TICKET,
+
+    // Document is invalid. For example, data may be corrupted or the format is
+    // incompatible with the Extension.
+    INVALID_DATA
+  };
+
+  // Printer description for $(ref:onGetPrintersRequested) event.
+  dictionary PrinterInfo {
+    // Unique ID of printer.
+    DOMString id;
+
+    // Human readable display name of printer.
+    DOMString name;
+
+    // Human readable description of printer.
+    DOMString? description;
+  };
+
+  // Parameters of $(ref:onPrintRequested).
+  dictionary PrintJob {
+    // ID of the printer to submit the job.
+    DOMString printerId;
+
+    // print ticket in CJT format described at
+    // https://developers.google.com/cloud-print/docs/cdd#cjt
+    object ticket;
+
+    // Content type of the document. Supported formats are "application/pdf" and
+    // "image/pwg-raster".
+    DOMString contentType;
+
+    // Buffer with document to printer. Format must match |contentType|.
+    ArrayBuffer document;
+  };
+
+  callback PrintersCallback = void(PrinterInfo[] printerInfo);
+  callback CapabilitiesCallback = void(object capabilities);
+  callback PrintCallback = void(PrintError result);
+
+  interface Events {
+    // Event fired when print manager requests printers provided by extension.
+    // |resultCallback| : callback to return printer list. Every listener must
+    // call callback exactly once.
+    static void onGetPrintersRequested(PrintersCallback resultCallback);
+
+    // Event fired when print manager requests printer capabilities.
+    // |printerId| : unique ID of the printer.
+    // |resultCallback| : callback to return device capabilities in CDD format
+    // as described at https://developers.google.com/cloud-print/docs/cdd#cdd.
+    // The receiving listener must call callback exectly once.
+    static void onGetCapabilityRequested(DOMString printerId,
+                                         CapabilitiesCallback resultCallback);
+
+    // Event fired when print manager requests printing.
+    // |printJob| : parameters of printing request.
+    static void onPrintRequested(PrintJob printJob,
+                                 PrintCallback resultCallback);
+  };
+};
+
