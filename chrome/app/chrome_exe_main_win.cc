@@ -95,7 +95,7 @@ typedef enum MONITOR_DPI_TYPE {
 
 // Win8.1 supports monitor-specific DPI scaling.
 bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
-  typedef BOOL(WINAPI *SetProcessDpiAwarenessPtr)(PROCESS_DPI_AWARENESS);
+  typedef HRESULT(WINAPI *SetProcessDpiAwarenessPtr)(PROCESS_DPI_AWARENESS);
   SetProcessDpiAwarenessPtr set_process_dpi_awareness_func =
       reinterpret_cast<SetProcessDpiAwarenessPtr>(
           GetProcAddress(GetModuleHandleA("user32.dll"),
