@@ -99,6 +99,15 @@ ScopedJavaLocalRef<jstring> WebContentsAndroid::GetVisibleURL(
       env, web_contents_->GetVisibleURL().spec());
 }
 
+bool WebContentsAndroid::IsLoading(JNIEnv* env, jobject obj) const {
+  return web_contents_->IsLoading();
+}
+
+bool WebContentsAndroid::IsLoadingToDifferentDocument(JNIEnv* env,
+                                                      jobject obj) const {
+  return web_contents_->IsLoadingToDifferentDocument();
+}
+
 void WebContentsAndroid::Stop(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }

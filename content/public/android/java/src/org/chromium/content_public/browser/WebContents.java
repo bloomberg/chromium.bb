@@ -24,6 +24,17 @@ public interface WebContents {
     String getVisibleUrl();
 
     /**
+     * @return Whether this WebContents is loading a resource.
+     */
+    boolean isLoading();
+
+    /**
+     * @return Whether this WebContents is loading and and the load is to a different top-level
+     *         document (rather than being a navigation within the same document).
+     */
+    boolean isLoadingToDifferentDocument();
+
+    /**
      * Stop any pending navigation.
      */
     void stop();

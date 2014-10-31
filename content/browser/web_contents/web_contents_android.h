@@ -41,6 +41,10 @@ class CONTENT_EXPORT WebContentsAndroid
                                                       jobject obj) const;
   base::android::ScopedJavaLocalRef<jstring> GetVisibleURL(JNIEnv* env,
                                                            jobject obj) const;
+
+  bool IsLoading(JNIEnv* env, jobject obj) const;
+  bool IsLoadingToDifferentDocument(JNIEnv* env, jobject obj) const;
+
   void Stop(JNIEnv* env, jobject obj);
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;

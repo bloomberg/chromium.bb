@@ -64,6 +64,16 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @Override
+    public boolean isLoading() {
+        return nativeIsLoading(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public boolean isLoadingToDifferentDocument() {
+        return nativeIsLoadingToDifferentDocument(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public void stop() {
         nativeStop(mNativeWebContentsAndroid);
     }
@@ -244,6 +254,8 @@ import org.chromium.content_public.browser.WebContents;
 
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
+    private native boolean nativeIsLoading(long nativeWebContentsAndroid);
+    private native boolean nativeIsLoadingToDifferentDocument(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
     private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);
     private native void nativeOnHide(long nativeWebContentsAndroid);
