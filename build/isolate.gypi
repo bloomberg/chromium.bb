@@ -91,6 +91,7 @@
         '--config-variable', 'use_openssl=<(use_openssl)',
         '--config-variable', 'target_arch=<(target_arch)',
         '--config-variable', 'use_ozone=<(use_ozone)',
+        '--config-variable', 'disable_nacl=<(disable_nacl)',
       ],
       'conditions': [
         # Note: When gyp merges lists, it appends them to the old value.

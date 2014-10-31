@@ -54,11 +54,7 @@
           '../third_party/simplejson/',
           '../third_party/tlslite/',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_test_data/',
           '<(PRODUCT_DIR)/peerconnection_server<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/pnacl/',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
-          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
           '<(PRODUCT_DIR)/pseudo_locales/',
           '<(PRODUCT_DIR)/pyproto/',
           '<(PRODUCT_DIR)/remoting/unittests/',
@@ -76,15 +72,32 @@
         'read_only': 1,
       },
     }],
+    ['disable_nacl==0 and (OS=="linux" or OS=="mac" or OS=="win")', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/nacl_test_data/',
+          '<(PRODUCT_DIR)/pnacl/',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
+        ],
+        'read_only': 1,
+      },
+    }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'files': [
           '../third_party/bidichecker/',
+        ],
+      },
+    }],
+    ['disable_nacl==0 and (OS=="linux" or OS=="win")', {
+      'variables': {
+        'files': [
           '<(PRODUCT_DIR)/mock_nacl_gdb<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
-    [('(OS=="linux" or OS=="mac" or OS=="win") and '
+    [('disable_nacl==0 and (OS=="linux" or OS=="mac" or OS=="win") and '
          '(target_arch=="x64" or target_arch=="ia32")'), {
       'variables': {
         'files': [
@@ -92,14 +105,14 @@
         ],
       },
     }],
-    ['OS=="linux" and target_arch=="ia32"', {
+    ['disable_nacl==0 and OS=="linux" and target_arch=="ia32"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_nonsfi.nmf',
         ],
       },
     }],
-    ['OS=="linux" and target_arch=="arm"', {
+    ['disable_nacl==0 and OS=="linux" and target_arch=="arm"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_arm.nexe',
@@ -107,7 +120,8 @@
         ],
       },
     }],
-    ['OS=="win" or ((OS=="linux" or OS=="mac") and target_arch=="x64")', {
+    ['disable_nacl==0 and (OS=="win" or '
+         '((OS=="linux" or OS=="mac") and target_arch=="x64"))', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib64/',
@@ -117,7 +131,8 @@
         ],
       },
     }],
-    ['(OS=="mac" or OS=="linux" or OS=="win") and target_arch=="ia32"', {
+    ['disable_nacl==0 and target_arch=="ia32" and'
+         '(OS=="mac" or OS=="linux" or OS=="win")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib32/',

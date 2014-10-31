@@ -8,10 +8,16 @@
         'files': [
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
-          '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
         ],
       },
+    }],
+    ['disable_nacl==0 and OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/nacl_helper<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/nacl_helper_bootstrap<(EXECUTABLE_SUFFIX)',
+        ]
+      }
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
@@ -34,14 +40,15 @@
         ],
       },
     }],
-    ['OS=="win" or (OS=="linux" and target_arch=="x64")', {
+    ['disable_nacl==0 and '
+         '(OS=="win" or (OS=="linux" and target_arch=="x64"))', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         ],
       },
     }],
-    ['OS=="linux" and target_arch=="arm"', {
+    ['disable_nacl==0 and OS=="linux" and target_arch=="arm"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
@@ -78,9 +85,15 @@
     ['OS=="win" and target_arch=="ia32"', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/wow_helper.exe',
+        ],
+      },
+    }],
+    ['disable_nacl==0 and OS=="win" and target_arch=="ia32"', {
+      'variables': {
+        'files': [
           '<(PRODUCT_DIR)/nacl64.exe',
           '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-          '<(PRODUCT_DIR)/wow_helper.exe',
         ],
       },
     }],
