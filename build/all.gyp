@@ -156,7 +156,7 @@
             }],
           ],
         }],
-        ['OS=="mac" or OS=="ios" or OS=="win"', {
+        ['use_openssl==0 and (OS=="mac" or OS=="ios" or OS=="win")', {
           'dependencies': [
             '../third_party/nss/nss.gyp:*',
            ],

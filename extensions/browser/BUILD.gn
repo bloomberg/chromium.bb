@@ -19,6 +19,7 @@ source_set("browser") {
     "//components/web_cache/browser",
     "//components/web_modal",
     "//content/public/browser",
+    "//crypto:platform",
     "//extensions/common",
     "//extensions/common/api",
     "//extensions/common/api:api_registration",

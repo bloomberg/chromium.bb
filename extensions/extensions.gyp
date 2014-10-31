@@ -806,21 +806,26 @@
           'sources': [
             'browser/api/cast_channel/cast_auth_util_openssl.cc',
           ],
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
         }, {
           'sources': [
             # cast_auth_util_nss.cc uses NSS functions.
             'browser/api/cast_channel/cast_auth_util_nss.cc',
           ],
-        }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-          'dependencies': [
-            '../build/linux/system.gyp:ssl',
-          ],
-        }],
-        ['OS == "mac" or OS == "ios" or OS == "win"', {
-          'dependencies': [
-            '../third_party/nss/nss.gyp:nspr',
-            '../third_party/nss/nss.gyp:nss',
+          'conditions': [
+            ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+              'dependencies': [
+                '../build/linux/system.gyp:ssl',
+              ],
+            }],
+            ['OS == "mac" or OS == "ios" or OS == "win"', {
+              'dependencies': [
+                '../third_party/nss/nss.gyp:nspr',
+                '../third_party/nss/nss.gyp:nss',
+              ],
+            }],
           ],
         }],
       ],
