@@ -63,7 +63,6 @@ class ATHENA_EXPORT AthenaStartPageView
     gfx::Rect controls;
     float system_info_opacity;
     float logo_opacity;
-    float background_opacity;
 
     LayoutData();
   };
@@ -109,10 +108,6 @@ class ATHENA_EXPORT AthenaStartPageView
   views::View* logo_;
   app_list::SearchBoxView* search_box_view_;
   app_list::SearchResultListView* search_results_view_;
-
-  // Do not use views::Background but a views::View with ui::Layer for gradient
-  // background opacity update and animation.
-  views::View* background_;
 
   // The expected height of |search_results_view_|
   int search_results_height_;

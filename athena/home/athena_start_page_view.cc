@@ -163,9 +163,7 @@ namespace athena {
 const char AthenaStartPageView::kViewClassName[] = "AthenaStartPageView";
 
 AthenaStartPageView::LayoutData::LayoutData()
-    : system_info_opacity(1.0f),
-      logo_opacity(1.0f),
-      background_opacity(1.0f) {
+    : system_info_opacity(1.0f), logo_opacity(1.0f) {
 }
 
 AthenaStartPageView::AthenaStartPageView(
@@ -173,16 +171,6 @@ AthenaStartPageView::AthenaStartPageView(
     : delegate_(view_delegate),
       layout_state_(0.0f),
       weak_factory_(this) {
-  background_ = new views::View();
-  // Vertical gradient background for the time being.
-  // TODO(mukai): replace by the actual one.
-  background_->set_background(
-      views::Background::CreateVerticalGradientBackground(SK_ColorLTGRAY,
-                                                          SK_ColorWHITE));
-  background_->SetPaintToLayer(true);
-  background_->SetFillsBoundsOpaquely(false);
-  AddChildView(background_);
-
   system_info_view_ =
       SystemUI::Get()->CreateSystemInfoView(SystemUI::COLOR_SCHEME_DARK);
   system_info_view_->SetPaintToLayer(true);
@@ -303,7 +291,6 @@ AthenaStartPageView::LayoutData AthenaStartPageView::CreateBottomBounds(
 
   state.system_info_opacity = 0.0f;
   state.logo_opacity = 0.0f;
-  state.background_opacity = 0.9f;
   return state;
 }
 
@@ -325,7 +312,6 @@ AthenaStartPageView::LayoutData AthenaStartPageView::CreateCenteredBounds(
 
   state.system_info_opacity = 1.0f;
   state.logo_opacity = 1.0f;
-  state.background_opacity = 1.0f;
   return state;
 }
 
@@ -446,12 +432,6 @@ void AthenaStartPageView::Layout() {
       layout_state_, bottom_bounds.controls, centered_bounds.controls));
   search_box_container_->SetBoundsRect(gfx::Tween::RectValueBetween(
       layout_state_, bottom_bounds.search_box, centered_bounds.search_box));
-
-  background_->SetBoundsRect(bounds());
-  background_->layer()->SetOpacity(gfx::Tween::FloatValueBetween(
-      layout_state_,
-      bottom_bounds.background_opacity,
-      centered_bounds.background_opacity));
 }
 
 bool AthenaStartPageView::OnKeyPressed(const ui::KeyEvent& key_event) {

@@ -127,10 +127,18 @@ class HomeCardView : public views::WidgetDelegateView,
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
                HomeCardGestureManager::Delegate* gesture_delegate)
-      : minimized_background_(new views::View()),
-        drag_indicator_(new views::View()),
+      : background_(new views::View),
         main_view_(new AthenaStartPageView(view_delegate)),
+        minimized_background_(new views::View()),
+        drag_indicator_(new views::View()),
         gesture_delegate_(gesture_delegate) {
+    background_->set_background(
+        views::Background::CreateVerticalGradientBackground(SK_ColorLTGRAY,
+                                                            SK_ColorWHITE));
+    background_->SetPaintToLayer(true);
+    background_->SetFillsBoundsOpaquely(false);
+    AddChildView(background_);
+
     // Ideally AppListMainView should be used here and have AthenaStartPageView
     // as its child view, so that custom pages and apps grid are available in
     // the home card.
@@ -163,12 +171,28 @@ class HomeCardView : public views::WidgetDelegateView,
       main_view_->SetLayoutState(1.0f - progress);
     else if (to_state == HomeCard::VISIBLE_CENTERED)
       main_view_->SetLayoutState(progress);
+
+    float background_opacity = 1.0f;
     if (from_state == HomeCard::VISIBLE_MINIMIZED ||
         to_state == HomeCard::VISIBLE_MINIMIZED) {
-      minimized_background_->layer()->SetOpacity(
-          (to_state == HomeCard::VISIBLE_MINIMIZED) ? progress
-                                                    : (1.0f - progress));
+      background_opacity = (from_state == HomeCard::VISIBLE_MINIMIZED)
+                               ? progress
+                               : (1.0f - progress);
     }
+    background_->layer()->SetOpacity(background_opacity);
+    minimized_background_->layer()->SetOpacity(1.0f - background_opacity);
+
+    int background_height = kHomeCardHeight;
+    if (from_state == HomeCard::VISIBLE_CENTERED ||
+        to_state == HomeCard::VISIBLE_CENTERED) {
+      gfx::Rect window_bounds = GetWidget()->GetWindowBoundsInScreen();
+      background_height = window_bounds.height() - window_bounds.y();
+    }
+    gfx::Transform background_transform;
+    background_transform.Scale(
+        SK_MScalar1,
+        SkIntToMScalar(background_height) / SkIntToMScalar(height()));
+    background_->layer()->SetTransform(background_transform);
 
     gfx::Rect from_bounds = GetDragIndicatorBounds(from_state);
     gfx::Rect to_bounds = GetDragIndicatorBounds(to_state);
@@ -181,16 +205,32 @@ class HomeCardView : public views::WidgetDelegateView,
 
   void SetStateWithAnimation(HomeCard::State state,
                              gfx::Tween::Type tween_type) {
-    float minimized_target_opacity_for_state =
+    float minimized_opacity =
         (state == HomeCard::VISIBLE_MINIMIZED) ? 1.0f : 0.0f;
-    if (minimized_target_opacity_for_state !=
+    if (minimized_opacity !=
         minimized_background_->layer()->GetTargetOpacity()) {
       ui::ScopedLayerAnimationSettings settings(
           minimized_background_->layer()->GetAnimator());
       settings.SetTweenType(gfx::Tween::EASE_IN);
-      minimized_background_->layer()->SetOpacity(
-          minimized_target_opacity_for_state);
+      minimized_background_->layer()->SetOpacity(minimized_opacity);
     }
+
+    gfx::Transform background_transform;
+    if (state != HomeCard::VISIBLE_CENTERED) {
+      background_transform.Scale(
+          SK_MScalar1,
+          SkIntToMScalar(kHomeCardHeight) / SkIntToMScalar(height()));
+    }
+    float background_opacity = 1.0f - minimized_opacity;
+    if (background_->layer()->GetTargetTransform() != background_transform ||
+        background_->layer()->GetTargetOpacity() != background_opacity) {
+      ui::ScopedLayerAnimationSettings settings(
+          background_->layer()->GetAnimator());
+      settings.SetTweenType(tween_type);
+      background_->layer()->SetTransform(background_transform);
+      background_->layer()->SetOpacity(background_opacity);
+    }
+
     if (state == HomeCard::VISIBLE_CENTERED)
       main_view_->RequestFocusOnSearchBox();
     else
@@ -245,6 +285,7 @@ class HomeCardView : public views::WidgetDelegateView,
 
   void Layout() override {
     gfx::Rect contents_bounds = GetContentsBounds();
+    background_->SetBoundsRect(contents_bounds);
     main_view_->SetBoundsRect(contents_bounds);
     minimized_background_->SetBoundsRect(contents_bounds);
     drag_indicator_->SetBoundsRect(
@@ -261,9 +302,10 @@ class HomeCardView : public views::WidgetDelegateView,
       HomeCard::Get()->SetState(HomeCard::VISIBLE_CENTERED);
   }
 
+  views::View* background_;
+  AthenaStartPageView* main_view_;
   views::View* minimized_background_;
   views::View* drag_indicator_;
-  AthenaStartPageView* main_view_;
   HomeCard::State state_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
