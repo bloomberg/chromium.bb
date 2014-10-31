@@ -1,0 +1,50 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Allows control of focused window in app_shell
+namespace shell.window {
+
+  dictionary RequestInfo {
+    // The id of the app making the request.
+    DOMString appId;
+  };
+
+  dictionary ShowInfo {
+    // The id of the app to show.
+    DOMString? appId;
+
+    // The name of the app to show.
+    DOMString? appName;
+  };
+
+  interface Functions {
+    // Bring the specified app to the foreground.  Can only be called by the
+    // master app.  In showInfo, one of appId or appName must be provided.
+    static void showApp(ShowInfo showInfo);
+
+    // Request the current app be brought to the foreground.  The request will
+    // be forwarded to the master app.
+    static void requestShow();
+
+    // Request the current app be hidden.  The request will be forwarded to the
+    // master app.
+    static void requestHide();
+  };
+
+  interface Events {
+    // Fired when an app requests to be shown.  Only the master app can receive
+    // this.
+    static void onShowRequest(RequestInfo info);
+
+    // Fired when an app requests to be hidden.  Only the master app can receive
+    // this.
+    static void onHideRequest(RequestInfo info);
+
+    // Fired when this app is shown.
+    static void onShow();
+
+    // Fired when this app is hidden.
+    static void onHide();
+  };
+};

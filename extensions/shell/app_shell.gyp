@@ -51,6 +51,8 @@
         'app/shell_main_delegate.h',
         'browser/api/identity/identity_api.cc',
         'browser/api/identity/identity_api.h',
+        'browser/api/shell_window/shell_window_api.cc',
+        'browser/api/shell_window/shell_window_api.h',
         'browser/default_shell_browser_main_delegate.cc',
         'browser/default_shell_browser_main_delegate.h',
         'browser/desktop_controller.cc',
@@ -239,6 +241,7 @@
       'sources': [
         '../test/extensions_unittests_main.cc',
         'browser/api/identity/identity_api_unittest.cc',
+        'browser/api/shell_window/shell_window_api_unittest.cc',
         'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',

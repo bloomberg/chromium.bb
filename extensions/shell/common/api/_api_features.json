@@ -12,5 +12,10 @@
     "channel": "dev",
     "contexts": ["blessed_extension"],
     "extension_types": ["platform_app"]
+  },
+  "shell.window": {
+    "channel": "dev",
+    "contexts": ["blessed_extension"],
+    "extension_types": ["platform_app"]
   }
 }
