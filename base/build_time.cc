@@ -16,7 +16,7 @@ Time GetBuildTime() {
   //
   // __DATE__ is exactly "Mmm DD YYYY".
   // __TIME__ is exactly "hh:mm:ss".
-#if defined(DONT_EMBED_BUILD_METADATA)
+#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
   const char kDateTime[] = "Sep 02 2008 08:00:00 PST";
 #else
   const char kDateTime[] = __DATE__ " " __TIME__ " PST";

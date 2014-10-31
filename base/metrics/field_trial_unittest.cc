@@ -4,6 +4,7 @@
 
 #include "base/metrics/field_trial.h"
 
+#include "base/build_time.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -30,10 +31,10 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
       base::FieldTrial::SESSION_RANDOMIZED, default_group_number);
 }
 
-int GetLastYear() {
-  Time last_year_time = Time::NowFromSystemTime() - TimeDelta::FromDays(365);
+int OneYearBeforeBuildTime() {
+  Time one_year_before_build_time = GetBuildTime() - TimeDelta::FromDays(365);
   Time::Exploded exploded;
-  last_year_time.LocalExplode(&exploded);
+  one_year_before_build_time.LocalExplode(&exploded);
   return exploded.year;
 }
 
@@ -249,7 +250,7 @@ TEST_F(FieldTrialTest, DisableProbability) {
   // Create a field trail that has expired.
   int default_group_number = -1;
   FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      name, 1000000000, default_group_name, GetLastYear(), 1, 1,
+      name, 1000000000, default_group_name, OneYearBeforeBuildTime(), 1, 1,
       FieldTrial::SESSION_RANDOMIZED,
       &default_group_number);
   trial->AppendGroup(loser, 999999999);  // 99.9999999% chance of being chosen.

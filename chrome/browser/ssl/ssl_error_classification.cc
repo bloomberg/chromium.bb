@@ -353,18 +353,26 @@ float SSLErrorClassification::CalculateScoreEnvironments() const {
 }
 
 bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
+#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
+  return false;
+#else
   base::Time build_time = base::GetBuildTime();
   if (time_now < build_time - base::TimeDelta::FromDays(2))
     return true;
   return false;
+#endif
 }
 
 bool SSLErrorClassification::IsUserClockInTheFuture(
     const base::Time& time_now) {
+#if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
+  return false;
+#else
   base::Time build_time = base::GetBuildTime();
   if (time_now > build_time + base::TimeDelta::FromDays(365))
     return true;
   return false;
+#endif
 }
 
 bool SSLErrorClassification::MaybeWindowsLacksSHA256Support() {

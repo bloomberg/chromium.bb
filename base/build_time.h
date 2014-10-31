@@ -18,6 +18,9 @@ namespace base {
 //
 // Also, since __TIME__ doesn't include a timezone, this value should only be
 // considered accurate to a day.
+//
+// NOTE: This function is disabled except for the official builds, by default
+// the date returned is "Sep 02 2008 08:00:00 PST".
 Time BASE_EXPORT GetBuildTime();
 
 }  // namespace base

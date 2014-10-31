@@ -308,11 +308,10 @@
       # on compile-only bots).
       'fastbuild%': 0,
 
-      # Set to 1 to not store any build metadata (this isn't working yet but
-      # this flag will help us to get there). See http://crbug.com/314403.
-      # TODO(sebmarchand): Update this comment once this flag guarantee that
-      #     there's no build metadata in the build artifacts.
-      'dont_embed_build_metadata%': 0,
+      # Set to 1 to not store any build metadata, e.g. ifdef out all __DATE__
+      # and __TIME__. Set to 0 to reenable the use of these macros in the code
+      # base. See http://crbug.com/314403.
+      'dont_embed_build_metadata%': 1,
 
       # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
       # This is useful for parallel compilation tools which can't support /Zi.
@@ -1499,6 +1498,14 @@
     'ozone_platform_test%': 0,
 
     'conditions': [
+      ['buildtype=="Official"', {
+        # Continue to embed build meta data in Official builds, basically the
+        # time it was built.
+        # TODO(maruel): This decision should be revisited because having an
+        # official deterministic build has high value too but MSVC toolset can't
+        # generate anything deterministic with WPO enabled AFAIK.
+        'dont_embed_build_metadata%': 0,
+      }],
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
         'syzygy_optimize%': 1,
