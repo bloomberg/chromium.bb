@@ -926,6 +926,18 @@ class _PaygenBuild(object):
     Args:
       suite_name: The name of the test suite.
     """
+    # Because of crbug.com/383481, if we run delta updates against
+    # a source payload earlier than R38, the DUTs assigned to the
+    # test may fail when rebooting.  The failed devices can be hard
+    # to recover.  The bug affects spring and skate, but as of this
+    # writing, only spring is still losing devices.
+    #
+    # So, until it's all sorted, we're going to skip testing on
+    # spring devices.
+    if self._archive_board == 'daisy_spring':
+      logging.info('Skipping payload autotest for board %s',
+                   self._archive_board)
+      return
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     if self._run_on_builder:
       try:
