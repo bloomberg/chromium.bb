@@ -74,36 +74,41 @@ html[dir=rtl] .user-image-pane {
   top: 1px;
 }
 
+.pod .indicator-container {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  height: 32px;
+  left: 8px;
+  position: absolute;
+  top: 8px;
+}
+
+html[dir=rtl] .pod .indicators {
+  left: auto;
+  right: 8px;
+}
+
+.pod .indicator {
+  background-position: center;
+  background-repeat: no-repeat;
+  display: none;
+  float: left;
+  height: 32px;
+  width: 32px;
+}
+
 .pod.locked .locked-indicator {
   background-image: -webkit-image-set(
       url('chrome://theme/IDR_ICON_PROFILES_LOCKED') 1x,
       url('chrome://theme/IDR_ICON_PROFILES_LOCKED@2x') 2x);
-  height: 31px;
-  left: 8px;
-  position: absolute;
-  top: 8px;
-  width: 31px;
-}
-
-html[dir=rtl] .pod.locked .locked-indicator {
-  left: auto;
-  right: 8px;
+  display: initial;
 }
 
 .pod.supervised-user .supervised-indicator {
   background-image: -webkit-image-set(
       url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED') 1x,
       url('chrome://theme/IDR_ICON_PROFILES_SUPERVISED@2x') 2x);
-  height: 31px;
-  left: 8px;
-  position: absolute;
-  top: 8px;
-  width: 31px;
-}
-
-html[dir=rtl] .pod.supervised-user .supervised-indicator {
-  left: auto;
-  right: 8px;
+  display: initial;
 }
 
 .main-pane {
