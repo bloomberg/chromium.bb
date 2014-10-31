@@ -37,6 +37,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/LengthFunctions.h"
+#include "platform/graphics/DisplayList.h"
 
 namespace blink {
 
@@ -127,6 +128,8 @@ void RenderSVGImage::layout()
     }
 
     if (m_needsBoundariesUpdate) {
+        m_bufferedForeground.clear();
+
         m_paintInvalidationBoundingBox = m_objectBoundingBox;
         SVGRenderSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 
@@ -147,11 +150,6 @@ void RenderSVGImage::layout()
 void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     SVGImagePainter(*this).paint(paintInfo);
-}
-
-void RenderSVGImage::invalidateBufferedForeground()
-{
-    m_bufferedForeground.clear();
 }
 
 bool RenderSVGImage::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
@@ -193,7 +191,7 @@ void RenderSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
     m_objectBoundingBox = FloatRect();
     updateImageViewport();
 
-    invalidateBufferedForeground();
+    m_bufferedForeground.clear();
 
     setShouldDoFullPaintInvalidation();
 }

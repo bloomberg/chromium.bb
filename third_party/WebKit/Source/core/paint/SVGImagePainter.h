@@ -21,7 +21,6 @@ public:
     void paint(PaintInfo&);
 
 private:
-    bool bufferForeground(PaintInfo&);
     // Assumes the PaintInfo context has had all local transforms applied.
     void paintForeground(PaintInfo&);
 

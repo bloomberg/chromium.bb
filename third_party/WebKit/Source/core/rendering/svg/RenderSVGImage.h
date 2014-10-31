@@ -25,10 +25,10 @@
 #define RenderSVGImage_h
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
-#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 
+class DisplayList;
 class RenderImageResource;
 class SVGImageElement;
 
@@ -45,7 +45,7 @@ public:
     RenderImageResource* imageResource() { return m_imageResource.get(); }
 
     virtual const AffineTransform& localToParentTransform() const override { return m_localTransform; }
-    OwnPtr<ImageBuffer>& bufferedForeground() { return m_bufferedForeground; }
+    RefPtr<DisplayList>& bufferedForeground() { return m_bufferedForeground; }
 
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
@@ -64,7 +64,6 @@ private:
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
     bool forceNonUniformScaling(SVGImageElement*) const;
-    void invalidateBufferedForeground();
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
@@ -77,7 +76,7 @@ private:
     FloatRect m_paintInvalidationBoundingBox;
     OwnPtr<RenderImageResource> m_imageResource;
 
-    OwnPtr<ImageBuffer> m_bufferedForeground;
+    RefPtr<DisplayList> m_bufferedForeground;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGImage, isSVGImage());

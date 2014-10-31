@@ -14,6 +14,8 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGImageElement.h"
+#include "platform/graphics/DisplayList.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -27,8 +29,8 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
         || !m_renderSVGImage.imageResource()->hasImage())
         return;
 
-    FloatRect boundingBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
-    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(boundingBox, m_renderSVGImage.localToParentTransform(), paintInfo))
+    FloatRect invalBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
+    if (!SVGRenderSupport::paintInfoIntersectsPaintInvalidationRect(invalBox, m_renderSVGImage.localToParentTransform(), paintInfo))
         return;
 
     PaintInfo childPaintInfo(paintInfo);
@@ -36,59 +38,30 @@ void SVGImagePainter::paint(PaintInfo& paintInfo)
 
     childPaintInfo.applyTransform(m_renderSVGImage.localToParentTransform(), &stateSaver);
 
-    if (!m_renderSVGImage.objectBoundingBox().isEmpty()) {
+    FloatRect boundingBox = m_renderSVGImage.objectBoundingBox();
+    if (!boundingBox.isEmpty()) {
         // SVGRenderingContext may taint the state - make sure we're always saving.
         stateSaver.saveIfNeeded();
 
         SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
         if (renderingContext.isRenderingPrepared()) {
-            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() == BR_STATIC && bufferForeground(childPaintInfo))
-                return;
+            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
+                paintForeground(childPaintInfo);
+            } else {
+                RefPtr<DisplayList>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+                if (!bufferedForeground) {
+                    childPaintInfo.context->beginRecording(boundingBox);
+                    paintForeground(childPaintInfo);
+                    bufferedForeground = childPaintInfo.context->endRecording();
+                }
 
-            paintForeground(childPaintInfo);
+                childPaintInfo.context->drawDisplayList(bufferedForeground.get());
+            }
         }
     }
 
     if (m_renderSVGImage.style()->outlineWidth())
-        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(boundingBox));
-}
-
-static IntSize estimateBufferSize(const AffineTransform& transform, const IntSize& boundingBox)
-{
-    // This is supposed to be the exact same calculation as GraphicsContext::createRasterBuffer performs.
-    int estimatedWidth = static_cast<int>(ceil(boundingBox.width() * transform.xScale()));
-    int estimatedHeight = static_cast<int>(ceil(boundingBox.height() * transform.yScale()));
-    return IntSize(estimatedWidth, estimatedHeight);
-}
-
-bool SVGImagePainter::bufferForeground(PaintInfo& paintInfo)
-{
-    FloatRect boundingBox = m_renderSVGImage.objectBoundingBox();
-    OwnPtr<ImageBuffer>& imageBuffer = m_renderSVGImage.bufferedForeground();
-    IntSize expandedBoundingBox = expandedIntSize(boundingBox.size());
-
-    // Invalidate an existing buffer if the scale is not correct.
-    if (imageBuffer) {
-        IntSize estimatedBufferSize = estimateBufferSize(paintInfo.context->getCTM(), expandedBoundingBox);
-        if (estimatedBufferSize != imageBuffer->size())
-            imageBuffer.clear();
-    }
-
-    // Create a new buffer and paint the foreground into it.
-    if (!imageBuffer) {
-        imageBuffer = paintInfo.context->createRasterBuffer(expandedBoundingBox);
-        if (!imageBuffer)
-            return false;
-
-        GraphicsContext* bufferedRenderingContext = imageBuffer->context();
-        bufferedRenderingContext->translate(-boundingBox.x(), -boundingBox.y());
-        PaintInfo bufferedInfo(paintInfo);
-        bufferedInfo.context = bufferedRenderingContext;
-        paintForeground(bufferedInfo);
-    }
-
-    paintInfo.context->drawImageBuffer(imageBuffer.get(), boundingBox);
-    return true;
+        ObjectPainter(m_renderSVGImage).paintOutline(childPaintInfo, IntRect(invalBox));
 }
 
 void SVGImagePainter::paintForeground(PaintInfo& paintInfo)
