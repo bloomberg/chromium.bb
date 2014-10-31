@@ -66,8 +66,10 @@ make_names("bindings_modules_generated_event_target_modules_names") {
 compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_static = modules_static_idl_files
   sources_generated = modules_generated_dependency_idl_files
-  output_file =
+  interfaces_info_file =
     "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
+  component_wide_info_file =
+    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
   deps = [
     ":modules_core_global_constructors_idls",
     ":modules_global_constructors_idls",

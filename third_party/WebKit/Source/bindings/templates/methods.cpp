@@ -238,7 +238,7 @@ if (!{{method.cpp_value}})
 {{cpp_value}};
 {% elif method.is_constructor %}
 {{method.cpp_type}} impl = {{cpp_value}};
-{% elif method.use_local_result and not method.union_arguments %}
+{% elif method.use_local_result %}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
 {# Post-call #}
@@ -251,8 +251,6 @@ if (exceptionState.hadException()) {
 {# Set return value #}
 {% if method.is_constructor %}
 {{generate_constructor_wrapper(method)}}
-{%- elif method.union_arguments %}
-{{union_type_method_call_and_set_return_value(method)}}
 {%- elif v8_set_return_value %}
 {% if method.is_explicit_nullable %}
 if (result.isNull())
@@ -273,31 +271,6 @@ else
    http://crbug.com/353484 #}
 if (info.Length() >= {{argument_index}} + 1 && listener && !impl->toNode())
     {{hidden_dependency_action}}(info.GetIsolate(), info.Holder(), info[{{argument_index}}], {{v8_class}}::eventListenerCacheIndex);
-{% endif %}
-{% endmacro %}
-
-
-{######################################}
-{% macro union_type_method_call_and_set_return_value(method) %}
-{% for argument in method.union_arguments %}
-{{argument.cpp_type}} {{argument.cpp_value}}{{argument.cpp_type_initializer}};
-{% endfor %}
-{{method.cpp_value}};
-{% if method.is_null_expression %}{# used by getters #}
-if ({{method.is_null_expression}})
-    return;
-{% endif %}
-{% for argument in method.union_arguments %}
-if ({{argument.null_check_value}}) {
-    {{argument.v8_set_return_value}};
-    return;
-}
-{% endfor %}
-{# Fall back to null if none of the union members results are returned #}
-{% if method.is_null_expression %}
-ASSERT_NOT_REACHED();
-{% else %}
-v8SetReturnValueNull(info);
 {% endif %}
 {% endmacro %}
 

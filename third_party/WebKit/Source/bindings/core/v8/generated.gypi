@@ -5,6 +5,10 @@
 {
   'variables': {
     'bindings_core_v8_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/core/v8',
+    'bindings_core_v8_generated_union_type_files': [
+      '<(bindings_core_v8_output_dir)/UnionTypesCore.cpp',
+      '<(bindings_core_v8_output_dir)/UnionTypesCore.h',
+    ],
 
     'conditions': [
       ['OS=="win" and buildtype=="Official"', {

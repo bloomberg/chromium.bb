@@ -68,6 +68,7 @@ class CDATASection;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CanvasRenderingContext2D;
+class CanvasRenderingContext2DOrWebGLRenderingContext;
 class Chrome;
 class Comment;
 class ConsoleMessage;
@@ -845,7 +846,7 @@ public:
     void cancelFocusAppearanceUpdate();
 
     // Extension for manipulating canvas drawing contexts for use in CSS
-    void getCSSCanvasContext(const String& type, const String& name, int width, int height, RefPtrWillBeRawPtr<CanvasRenderingContext2D>&, RefPtrWillBeRawPtr<WebGLRenderingContext>&);
+    void getCSSCanvasContext(const String& type, const String& name, int width, int height, CanvasRenderingContext2DOrWebGLRenderingContext&);
     HTMLCanvasElement& getCSSCanvasElement(const String& name);
 
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }

@@ -198,8 +198,10 @@
       'cache_directory': '<(bindings_modules_output_dir)/../scripts',
       'static_idl_files': '<(modules_static_idl_files)',
       'generated_idl_files': '<(modules_generated_idl_files)',
-      'output_file':
+      'interfaces_info_file':
         '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
+      'component_info_file':
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
     },
     'includes': ['../../bindings/scripts/interfaces_info_individual.gypi'],
   },

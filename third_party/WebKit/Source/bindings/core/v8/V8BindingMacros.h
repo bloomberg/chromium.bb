@@ -135,6 +135,11 @@ namespace blink {
     if (UNLIKELY(!var.prepare()))          \
         return;
 
+#define TOSTRING_VOID_EXCEPTIONSTATE(type, var, value, exceptionState) \
+    type var(value);                                                   \
+    if (UNLIKELY(!var.prepare(exceptionState)))                        \
+        return;
+
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
     type var(value);                               \
     if (UNLIKELY(!var.prepare()))                  \

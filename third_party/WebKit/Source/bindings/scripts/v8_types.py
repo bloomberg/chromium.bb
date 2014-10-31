@@ -192,6 +192,9 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return cpp_template_type(ptr_type, implemented_as_class)
     if idl_type.is_dictionary:
         return base_idl_type
+    if idl_type.is_union_type:
+        return idl_type.name
+
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
 
@@ -220,23 +223,11 @@ def cpp_type_initializer(idl_type):
     return ' = nullptr'
 
 
-def cpp_type_union(idl_type, extended_attributes=None, raw_type=False):
-    # FIXME: Need to revisit the design of union support.
-    # http://crbug.com/240176
-    return None
-
-
-def cpp_type_initializer_union(idl_type):
-    return (member_type.cpp_type_initializer for member_type in idl_type.member_types)
-
-
 # Allow access as idl_type.cpp_type if no arguments
 IdlTypeBase.cpp_type = property(cpp_type)
 IdlTypeBase.cpp_type_initializer = property(cpp_type_initializer)
 IdlTypeBase.cpp_type_args = cpp_type
-IdlUnionType.cpp_type = property(cpp_type_union)
-IdlUnionType.cpp_type_initializer = property(cpp_type_initializer_union)
-IdlUnionType.cpp_type_args = cpp_type_union
+IdlUnionType.cpp_type_initializer = ''
 
 
 IdlArrayOrSequenceType.native_array_element_type = property(
@@ -484,6 +475,7 @@ def v8_conversion_needs_exception_state(idl_type):
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True
+IdlUnionType.v8_conversion_needs_exception_state = True
 
 
 TRIVIAL_CONVERSIONS = frozenset([
@@ -568,7 +560,8 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False):
+# FIXME: this function should be refactored, as this takes too many flags.
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False, needs_exception_state_for_string=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
     # FIXME: Support union type.
@@ -594,7 +587,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
         if idl_type.v8_conversion_needs_exception_state:
             macro = 'TONATIVE_DEFAULT_EXCEPTIONSTATE' if used_in_private_script else 'TONATIVE_VOID_EXCEPTIONSTATE'
-        elif return_promise:
+        elif return_promise or needs_exception_state_for_string:
             macro = 'TOSTRING_VOID_EXCEPTIONSTATE'
         else:
             macro = 'TOSTRING_DEFAULT' if used_in_private_script else 'TOSTRING_VOID'
@@ -684,12 +677,8 @@ def v8_conversion_type(idl_type, extended_attributes):
     """
     extended_attributes = extended_attributes or {}
 
-    # FIXME: Support union type.
-    if idl_type.is_union_type:
-        return ''
-
-    if idl_type.is_dictionary:
-        return 'IDLDictionary'
+    if idl_type.is_dictionary or idl_type.is_union_type:
+        return 'DictionaryOrUnion'
 
     # Array or sequence types
     native_array_element_type = idl_type.native_array_element_type
@@ -757,7 +746,8 @@ V8_SET_RETURN_VALUE = {
     'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, WTF::getPtr({cpp_value}))',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, WTF::getPtr({cpp_value}), {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
-    'IDLDictionary': 'v8SetReturnValue(info, result)',
+    # Union types or dictionaries
+    'DictionaryOrUnion': 'v8SetReturnValue(info, result)',
 }
 
 
@@ -789,19 +779,10 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
     return statement
 
 
-def v8_set_return_value_union(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False):
-    # FIXME: Need to revisit the design of union support.
-    # http://crbug.com/240176
-    return None
-
-
 IdlTypeBase.v8_set_return_value = v8_set_return_value
-IdlUnionType.v8_set_return_value = v8_set_return_value_union
 
 IdlType.release = property(lambda self: self.is_interface_type)
-IdlUnionType.release = property(
-    lambda self: [member_type.is_interface_type
-                  for member_type in self.member_types])
+IdlUnionType.release = False
 
 
 CPP_VALUE_TO_V8_VALUE = {
@@ -828,7 +809,8 @@ CPP_VALUE_TO_V8_VALUE = {
     # General
     'array': 'v8Array({cpp_value}, {creation_context}, {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
-    'IDLDictionary': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    # Union types or dictionaries
+    'DictionaryOrUnion': 'toV8({cpp_value}, {creation_context}, {isolate})',
 }
 
 

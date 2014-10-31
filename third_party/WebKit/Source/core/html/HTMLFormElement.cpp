@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
@@ -830,7 +831,7 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>& returnValue0, RefPtrWillBeRawPtr<Element>& returnValue1)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement& returnValue)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
@@ -849,12 +850,12 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RefPtrWillB
     ASSERT(!elements.isEmpty());
 
     if (elements.size() == 1) {
-        returnValue1 = elements.at(0);
+        returnValue.setElement(elements.at(0));
         return;
     }
 
     bool onlyMatchImg = !elements.isEmpty() && isHTMLImageElement(*elements.first());
-    returnValue0 = radioNodeList(name, onlyMatchImg);
+    returnValue.setRadioNodeList(radioNodeList(name, onlyMatchImg));
 }
 
 void HTMLFormElement::setDemoted(bool demoted)

@@ -54,6 +54,7 @@
       '<@(bindings_modules_v8_files)',
       '<@(bindings_modules_v8_generated_aggregate_files)',
       '<@(bindings_modules_v8_generated_partial_aggregate_files)',
+      '<@(bindings_modules_v8_generated_union_type_files)',
       '<(bindings_modules_v8_output_dir)/initPartialInterfacesInModules.cpp',
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.

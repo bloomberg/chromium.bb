@@ -30,6 +30,7 @@
 namespace blink {
 
 class ExceptionState;
+class NodeListOrElement;
 
 class HTMLOptionsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
@@ -46,7 +47,7 @@ public:
     void setSelectedIndex(int);
 
     void setLength(unsigned, ExceptionState&);
-    void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>&, RefPtrWillBeRawPtr<Element>&);
+    void namedGetter(const AtomicString& name, NodeListOrElement&);
     bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
 
     bool elementMatches(const HTMLElement&) const;

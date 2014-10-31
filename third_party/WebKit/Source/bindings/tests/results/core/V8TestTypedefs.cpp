@@ -8,6 +8,7 @@
 #include "V8TestTypedefs.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -182,18 +183,9 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const
 static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
-    RefPtr<TestInterfaceImplementation> result0 = nullptr;
-    RefPtr<TestInterfaceEmpty> result1 = nullptr;
-    impl->testInterfaceOrTestInterfaceEmptyMethod(result0, result1);
-    if (result0) {
-        v8SetReturnValue(info, result0.release());
-        return;
-    }
-    if (result1) {
-        v8SetReturnValue(info, result1.release());
-        return;
-    }
-    v8SetReturnValueNull(info);
+    TestInterfaceOrTestInterfaceEmpty result;
+    impl->testInterfaceOrTestInterfaceEmptyMethod(result);
+    v8SetReturnValue(info, result);
 }
 
 static void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -206,18 +198,9 @@ static void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::Func
 static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
-    String result0;
-    Nullable<double> result1;
-    impl->domStringOrDoubleMethod(result0, result1);
-    if (!result0.isNull()) {
-        v8SetReturnValueString(info, result0, info.GetIsolate());
-        return;
-    }
-    if (result1) {
-        v8SetReturnValue(info, result1.get());
-        return;
-    }
-    v8SetReturnValueNull(info);
+    StringOrDouble result;
+    impl->domStringOrDoubleMethod(result);
+    v8SetReturnValue(info, result);
 }
 
 static void domStringOrDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

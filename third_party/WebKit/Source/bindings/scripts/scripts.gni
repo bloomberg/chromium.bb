@@ -27,7 +27,8 @@ idl_compiler_files = get_path_info(_gypi.idl_compiler_files, "abspath")
 #   sources_static = list of IDL files to pass as inputs
 #   sources_generated = list of generated IDL files to pass as inputs
 #   component_dir = name if subdirectory (one word, no slashes) of component.
-#   output_file = pickle file to write
+#   interfaces_info_file = output pickle file for interfaces info.
+#   component_wide_info_file = output pickle file for component wide info.
 #   deps = dependencies
 #
 # FIXME: Note the static/generated split is for consistency with GYP. This
@@ -51,7 +52,8 @@ template("compute_interfaces_info_individual") {
     ] + invoker.sources_static + invoker.sources_generated
 
     outputs = [
-      invoker.output_file
+      invoker.interfaces_info_file,
+      invoker.component_wide_info_file,
     ]
 
     args = [
@@ -59,7 +61,9 @@ template("compute_interfaces_info_individual") {
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--idl-files-list", rebase_path(file_list, root_build_dir),
       "--interfaces-info-file",
-      rebase_path(invoker.output_file, root_build_dir),
+      rebase_path(invoker.interfaces_info_file, root_build_dir),
+      "--component-info-file",
+      rebase_path(invoker.component_wide_info_file, root_build_dir),
       "--write-file-only-if-changed=1",
       "--",
     ] + rebase_path(invoker.sources_generated, root_build_dir)
@@ -179,13 +183,17 @@ template("idl_compiler") {
   }
 }
 
-# Runs the idl_compiler to generate IDL dictionary impl files.
+# Runs the idl_compiler to generate IDL dictionary and union impl files.
 #
 # Parameters:
 #   sources = a list of IDL files to process
 #   outputs = a list of files to write to
-template("idl_dictionary") {
-  output_dir = "$root_gen_dir/blink/"
+#   output_dir = the directory to put the output files
+#   component_wide_info = a filename of pickle file which contains component
+#     wide information
+#   target_component = component to generate code for
+template("idl_impl") {
+  dictionary_impl_output_dir = "$root_gen_dir/blink/"
 
   action(target_name) {
     script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
@@ -199,19 +207,27 @@ template("idl_dictionary") {
       "--cache-dir",
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--output-dir",
-      rebase_path(output_dir, root_build_dir),
+      rebase_path(invoker.output_dir, root_build_dir),
+      "--impl-output-dir",
+      rebase_path(dictionary_impl_output_dir, root_build_dir),
       "--interfaces-info",
       rebase_path("$bindings_modules_output_dir/InterfacesInfoModules.pickle",
                   root_build_dir),
+      "--component-info",
+      rebase_path(invoker.component_wide_info, root_build_dir),
+      "--target-component",
+      invoker.target_component,
       "--write-file-only-if-changed=1",
-      "--generate-dictionary-impl",
+      "--generate-impl",
       rebase_path(idl_files_list, root_build_dir),
     ]
 
     deps = [
       # FIXME: should be interfaces_info_core (w/o modules)
       # http://crbug.com/358074
+      "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
       "//third_party/WebKit/Source/bindings/modules:interfaces_info",
+      "//third_party/WebKit/Source/bindings/modules:interfaces_info_individual_modules",
       "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
       "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
     ]

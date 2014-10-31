@@ -15,7 +15,7 @@ write_file(core_idl_with_modules_dependency_files_list,
 # bindings_modules_generated in modules/v8/generated.gyp
 group("bindings_modules_generated") {
   deps = [
-    ":bindings_modules_dictionary_impl_generated",
+    ":bindings_modules_impl_generated",
     ":bindings_modules_v8_generated_aggregate",
     ":bindings_modules_v8_generated_individual",
     ":bindings_modules_v8_generated_init_partial",
@@ -41,10 +41,15 @@ idl_compiler("bindings_modules_v8_generated_individual") {
   target_component = "modules"
 }
 
-# bindings_modules_dictionary_impl_generated in modules/v8/generated.gyp
-idl_dictionary("bindings_modules_dictionary_impl_generated") {
+# bindings_modules_impl_generated in modules/v8/generated.gyp
+idl_impl("bindings_modules_impl_generated") {
   sources = modules_dictionary_idl_files
-  outputs = generated_modules_dictionary_files
+  outputs = bindings_modules_generated_union_type_files +
+    generated_modules_dictionary_files
+  output_dir = bindings_modules_v8_output_dir
+  target_component = "modules"
+  component_wide_info =
+    "$bindings_modules_output_dir/ComponentInfoModules.pickle"
 }
 
 # bindings_modules_generated_individual in modules/v8/generated.gyp

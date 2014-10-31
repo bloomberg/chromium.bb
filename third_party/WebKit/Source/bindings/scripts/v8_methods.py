@@ -62,6 +62,10 @@ def use_local_result(method):
             idl_type.is_explicit_nullable)
 
 
+def use_output_parameter_for_result(idl_type):
+    return idl_type.is_dictionary or idl_type.is_union_type
+
+
 def method_context(interface, method, is_visible=True):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
@@ -178,8 +182,7 @@ def method_context(interface, method, is_visible=True):
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
-        'union_arguments': idl_type.union_arguments,
-        'use_output_parameter_for_result': idl_type.is_dictionary,
+        'use_output_parameter_for_result': use_output_parameter_for_result(idl_type),
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
@@ -296,11 +299,6 @@ def cpp_value(interface, method, number_of_arguments):
         cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
 
-    this_union_arguments = method.idl_type and method.idl_type.union_arguments
-    if this_union_arguments:
-        cpp_arguments.extend([member_argument['cpp_value']
-                              for member_argument in this_union_arguments])
-
     if 'ImplementedInPrivateScript' in method.extended_attributes:
         if method.idl_type.name != 'void':
             cpp_arguments.append('&result')
@@ -309,9 +307,10 @@ def cpp_value(interface, method, number_of_arguments):
          has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
         cpp_arguments.append('exceptionState')
 
-    # If a method returns an IDL dictionary, the return value is passed
-    # as an argument to impl classes.
-    if method.idl_type and method.idl_type.is_dictionary:
+    # If a method returns an IDL dictionary or union type, the return value is
+    # passed as an argument to impl classes.
+    idl_type = method.idl_type
+    if idl_type and use_output_parameter_for_result(idl_type):
         cpp_arguments.append('result')
 
     if method.name == 'Constructor':
@@ -402,40 +401,6 @@ def property_attributes(method):
     return property_attributes_list
 
 
-def union_member_argument_context(idl_type, index):
-    """Returns a context of union member for argument."""
-    this_cpp_value = 'result%d' % index
-    this_cpp_type = idl_type.cpp_type
-    this_cpp_type_initializer = idl_type.cpp_type_initializer
-    cpp_return_value = this_cpp_value
-
-    if not idl_type.cpp_type_has_null_value:
-        this_cpp_type = v8_types.cpp_template_type('Nullable', this_cpp_type)
-        this_cpp_type_initializer = ''
-        cpp_return_value = '%s.get()' % this_cpp_value
-
-    if idl_type.is_string_type:
-        null_check_value = '!%s.isNull()' % this_cpp_value
-    else:
-        null_check_value = this_cpp_value
-
-    return {
-        'cpp_type': this_cpp_type,
-        'cpp_type_initializer': this_cpp_type_initializer,
-        'cpp_value': this_cpp_value,
-        'null_check_value': null_check_value,
-        'v8_set_return_value': idl_type.v8_set_return_value(
-            cpp_value=cpp_return_value,
-            release=idl_type.release),
-    }
-
-
-def union_arguments(idl_type):
-    return [union_member_argument_context(member_idl_type, index)
-            for index, member_idl_type
-            in enumerate(idl_type.member_types)]
-
-
 def argument_default_cpp_value(argument):
     if argument.idl_type.is_dictionary:
         return None
@@ -443,8 +408,6 @@ def argument_default_cpp_value(argument):
         return None
     return argument.idl_type.literal_cpp_value(argument.default_value)
 
-IdlTypeBase.union_arguments = None
-IdlUnionType.union_arguments = property(union_arguments)
 IdlArgument.default_cpp_value = property(argument_default_cpp_value)
 
 

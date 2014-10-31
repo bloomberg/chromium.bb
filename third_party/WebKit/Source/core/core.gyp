@@ -200,6 +200,7 @@
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
         '<@(bindings_core_v8_generated_aggregate_files)',
+        '<@(bindings_core_v8_generated_union_type_files)',
 
         # Additional .cpp files for HashTools.h
         '<(blink_core_output_dir)/CSSPropertyNames.cpp',

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/HTMLAllCollection.h"
 
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/Element.h"
 #include "core/dom/StaticNodeList.h"
 
@@ -65,7 +66,7 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     return 0;
 }
 
-void HTMLAllCollection::namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>& returnValue0, RefPtrWillBeRawPtr<Element>& returnValue1)
+void HTMLAllCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -74,13 +75,13 @@ void HTMLAllCollection::namedGetter(const AtomicString& name, RefPtrWillBeRawPtr
         return;
 
     if (namedItems.size() == 1) {
-        returnValue1 = namedItems.at(0);
+        returnValue.setElement(namedItems.at(0));
         return;
     }
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    returnValue0 = StaticElementList::adopt(namedItems);
+    returnValue.setNodeList(StaticElementList::adopt(namedItems));
 }
 
 } // namespace blink

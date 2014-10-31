@@ -6,7 +6,7 @@
 #include "core/animation/Animation.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationTestHelper.h"
@@ -253,12 +253,11 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     RefPtrWillBeRawPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedWithDuration = animationWithDuration->timing();
-    Nullable<double> numberDuration;
-    String stringDuration;
-    specifiedWithDuration->getDuration("duration", numberDuration, stringDuration);
-    EXPECT_FALSE(numberDuration.isNull());
-    EXPECT_EQ(2.5, numberDuration.get());
-    EXPECT_TRUE(stringDuration.isNull());
+    DoubleOrString duration;
+    specifiedWithDuration->getDuration("duration", duration);
+    EXPECT_TRUE(duration.isDouble());
+    EXPECT_EQ(2.5, duration.getAsDouble());
+    EXPECT_FALSE(duration.isString());
 
 
     v8::Handle<v8::Object> timingInputNoDuration = v8::Object::New(m_isolate);
@@ -267,12 +266,11 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     RefPtrWillBeRawPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedNoDuration = animationNoDuration->timing();
-    Nullable<double> numberDuration2;
-    String stringDuration2;
-    specifiedNoDuration->getDuration("duration", numberDuration2, stringDuration2);
-    EXPECT_TRUE(numberDuration2.isNull());
-    EXPECT_FALSE(stringDuration2.isNull());
-    EXPECT_EQ("auto", stringDuration2);
+    DoubleOrString duration2;
+    specifiedNoDuration->getDuration("duration", duration2);
+    EXPECT_FALSE(duration2.isDouble());
+    EXPECT_TRUE(duration2.isString());
+    EXPECT_EQ("auto", duration2.getAsString());
 }
 
 TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
@@ -326,20 +324,18 @@ TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
 
-    Nullable<double> numberDuration;
-    String stringDuration;
-    specified->getDuration("duration", numberDuration, stringDuration);
-    EXPECT_TRUE(numberDuration.isNull());
-    EXPECT_FALSE(stringDuration.isNull());
-    EXPECT_EQ("auto", stringDuration);
+    DoubleOrString duration;
+    specified->getDuration("duration", duration);
+    EXPECT_FALSE(duration.isDouble());
+    EXPECT_TRUE(duration.isString());
+    EXPECT_EQ("auto", duration.getAsString());
 
     specified->setDuration("duration", 2.5);
-    Nullable<double> numberDuration2;
-    String stringDuration2;
-    specified->getDuration("duration", numberDuration2, stringDuration2);
-    EXPECT_FALSE(numberDuration2.isNull());
-    EXPECT_EQ(2.5, numberDuration2.get());
-    EXPECT_TRUE(stringDuration2.isNull());
+    DoubleOrString duration2;
+    specified->getDuration("duration", duration2);
+    EXPECT_TRUE(duration2.isDouble());
+    EXPECT_EQ(2.5, duration2.getAsDouble());
+    EXPECT_FALSE(duration2.isString());
 }
 
 TEST_F(AnimationAnimationTest, TimeToEffectChange)

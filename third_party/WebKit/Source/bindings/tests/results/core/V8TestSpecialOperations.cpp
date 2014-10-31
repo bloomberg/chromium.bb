@@ -8,6 +8,7 @@
 #include "V8TestSpecialOperations.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
@@ -46,18 +47,9 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
     }
-    RefPtrWillBeRawPtr<Node> result0 = nullptr;
-    RefPtrWillBeRawPtr<NodeList> result1 = nullptr;
-    impl->getItem(name, result0, result1);
-    if (result0) {
-        v8SetReturnValue(info, result0.release());
-        return;
-    }
-    if (result1) {
-        v8SetReturnValue(info, result1.release());
-        return;
-    }
-    v8SetReturnValueNull(info);
+    NodeOrNodeList result;
+    impl->getItem(name, result);
+    v8SetReturnValue(info, result);
 }
 
 static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -71,20 +63,11 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 {
     TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    RefPtrWillBeRawPtr<Node> result0 = nullptr;
-    RefPtrWillBeRawPtr<NodeList> result1 = nullptr;
-    impl->getItem(propertyName, result0, result1);
-    if (!(result0 || result1))
+    NodeOrNodeList result;
+    impl->getItem(propertyName, result);
+    if (result.isNull())
         return;
-    if (result0) {
-        v8SetReturnValue(info, result0.release());
-        return;
-    }
-    if (result1) {
-        v8SetReturnValue(info, result1.release());
-        return;
-    }
-    ASSERT_NOT_REACHED();
+    v8SetReturnValue(info, result);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

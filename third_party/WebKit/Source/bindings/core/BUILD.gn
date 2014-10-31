@@ -12,8 +12,10 @@ visibility = [ "//third_party/WebKit/*" ]
 compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources_static = core_static_idl_files
   sources_generated = core_generated_idl_files
-  output_file =
+  interfaces_info_file =
     "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
+  component_wide_info_file =
+    "$bindings_core_output_dir/ComponentInfoCore.pickle"
   deps = [
     "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
   ]

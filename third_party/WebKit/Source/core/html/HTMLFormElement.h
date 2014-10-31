@@ -39,6 +39,7 @@ class GenericEventQueue;
 class HTMLFormControlElement;
 class HTMLFormControlsCollection;
 class HTMLImageElement;
+class RadioNodeListOrElement;
 
 class HTMLFormElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
@@ -117,7 +118,7 @@ public:
     const FormAssociatedElement::List& associatedElements() const;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElements();
 
-    void anonymousNamedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>&, RefPtrWillBeRawPtr<Element>&);
+    void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
 
 private:
     explicit HTMLFormElement(Document&);

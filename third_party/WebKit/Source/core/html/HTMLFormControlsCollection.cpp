@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/html/HTMLFormControlsCollection.h"
 
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFieldSetElement.h"
@@ -192,7 +193,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>& radioNodeList, RefPtrWillBeRawPtr<Element>& element)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNodeListOrElement& returnValue)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
     this->namedItems(name, namedItems);
@@ -201,11 +202,11 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RefPtrWil
         return;
 
     if (namedItems.size() == 1) {
-        element = namedItems.at(0);
+        returnValue.setElement(namedItems.at(0));
         return;
     }
 
-    radioNodeList = ownerNode().radioNodeList(name);
+    returnValue.setRadioNodeList(ownerNode().radioNodeList(name));
 }
 
 void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)

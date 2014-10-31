@@ -30,6 +30,8 @@
 
 namespace blink {
 
+class NodeListOrElement;
+
 class HTMLAllCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -37,7 +39,7 @@ public:
     virtual ~HTMLAllCollection();
 
     Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
-    void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>&, RefPtrWillBeRawPtr<Element>&);
+    void namedGetter(const AtomicString& name, NodeListOrElement&);
 
 private:
     explicit HTMLAllCollection(ContainerNode&);

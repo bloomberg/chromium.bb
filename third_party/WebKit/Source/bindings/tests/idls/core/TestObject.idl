@@ -352,7 +352,8 @@ interface TestObject {
     // Union types
     (TestInterfaceGarbageCollected or DOMString) testInterfaceGarbageCollectedOrDOMStringMethod();
     (TestInterfaceWillBeGarbageCollected or TestDictionary) testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod();
-    (sequence<long> or DOMString[] or unrestricted double) longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethod();
+    (boolean or DOMString or unrestricted double) booleanOrDOMStringOrUnrestrictedDoubleMethod();
+    (TestInterface or long) testInterfaceOrLongMethod();
     // Currently only used on interface type arguments
     void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types

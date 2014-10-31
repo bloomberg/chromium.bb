@@ -1044,11 +1044,8 @@ def interface_length(interface, constructors):
 
 def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
-        if idl_type.is_union_type:
-            notnull = ' || '.join([
-                    member_argument['null_check_value']
-                    for member_argument in idl_type.union_arguments])
-            return '!(%s)' % notnull
+        if v8_methods.use_output_parameter_for_result(idl_type):
+            return 'result.isNull()'
         if idl_type.name == 'String':
             return 'result.isNull()'
         if idl_type.is_interface_type:
@@ -1058,16 +1055,15 @@ def property_getter(getter, cpp_arguments):
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
+    use_output_parameter_for_result = v8_methods.use_output_parameter_for_result(idl_type)
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'impl->%s' % cpp_name(getter)
 
     if is_raises_exception:
         cpp_arguments.append('exceptionState')
-    union_arguments = idl_type.union_arguments
-    if union_arguments:
-        cpp_arguments.extend([member_argument['cpp_value']
-                              for member_argument in union_arguments])
+    if use_output_parameter_for_result:
+        cpp_arguments.append('result')
 
     cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
@@ -1086,7 +1082,7 @@ def property_getter(getter, cpp_arguments):
         'is_null_expression': is_null_expression(idl_type),
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(getter),
-        'union_arguments': union_arguments,
+        'use_output_parameter_for_result': use_output_parameter_for_result,
         'v8_set_return_value': idl_type.v8_set_return_value('result', extended_attributes=extended_attributes, script_wrappable='impl', release=idl_type.release),
     }
 

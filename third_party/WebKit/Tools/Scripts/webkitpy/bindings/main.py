@@ -40,7 +40,7 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
                                             os.pardir, os.pardir, 'Source'))
 sys.path.append(source_path)  # for Source/bindings imports
 
-from bindings.scripts.code_generator_v8 import CodeGeneratorUnionTypeContainers
+from bindings.scripts.code_generator_v8 import CodeGeneratorUnionType
 import bindings.scripts.compute_interfaces_info_individual
 from bindings.scripts.compute_interfaces_info_individual import InterfaceInfoCollector
 import bindings.scripts.compute_interfaces_info_overall
@@ -133,6 +133,9 @@ def generate_interface_dependencies(output_directory):
         # To avoid this issue, we need to clear relative_dir here.
         for value in info['interfaces_info'].itervalues():
             value['relative_dir'] = ''
+        # Merge component-wide information.
+        component_info = info_collector.get_component_info_as_dict()
+        info.update(component_info)
         return info
 
     # We compute interfaces info for *all* IDL files, not just test IDL
@@ -258,7 +261,7 @@ def bindings_tests(output_directory, verbose):
         return True
 
     def generate_union_type_containers(output_directory, component):
-        generator = CodeGeneratorUnionTypeContainers(
+        generator = CodeGeneratorUnionType(
             interfaces_info, cache_dir=None, output_dir=output_directory,
             target_component=component)
         outputs = generator.generate_code(union_types[component])

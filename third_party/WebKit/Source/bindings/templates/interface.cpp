@@ -149,7 +149,6 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 
 {##############################################################################}
-{% from 'methods.cpp' import union_type_method_call_and_set_return_value %}
 {% block named_property_getter %}
 {% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
@@ -168,10 +167,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {% if getter.union_arguments %}
-    {{union_type_method_call_and_set_return_value(getter) | indent}}
+    {% if getter.use_output_parameter_for_result %}
+    {{getter.cpp_type}} result;
+    {{getter.cpp_value}};
     {% else %}
     {{getter.cpp_type}} result = {{getter.cpp_value}};
+    {% endif %}
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
         return;
@@ -179,7 +180,6 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if ({{getter.is_null_expression}})
         return;
     {{getter.v8_set_return_value}};
-    {% endif %}
 }
 
 {% endif %}

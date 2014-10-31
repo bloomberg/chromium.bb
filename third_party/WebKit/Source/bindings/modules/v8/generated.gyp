@@ -109,23 +109,24 @@
   },
 ################################################################################
   {
-    # GN version: //third_party/WebKit/Source/bindings/modules/v8:bindings_modules_dictionary_impl_generated
+    # GN version: //third_party/WebKit/Source/bindings/modules/v8:bindings_modules_impl_generated
     # http://crbug.com/358074; See comments on
     # 'bindings_core_v8_generated_individual' target
-    'target_name': 'bindings_modules_dictionary_impl_generated',
+    'target_name': 'bindings_modules_impl_generated',
     'type': 'none',
     'hard_dependency': 1,
     'dependencies': [
       '<(bindings_scripts_dir)/scripts.gyp:cached_jinja_templates',
       '<(bindings_scripts_dir)/scripts.gyp:cached_lex_yacc_tables',
       '../../modules/generated.gyp:interfaces_info',
+      '../../modules/generated.gyp:interfaces_info_individual_modules',
     ],
     'sources': [
       '<@(modules_dictionary_idl_files)',
     ],
     'actions': [{
       'action_name': 'idl_dictionary',
-      # See comment on bindings_core_dictionary_impl_generated
+      # See comment on bindings_core_impl_generated
       'explicit_idl_action': 1,
       'msvs_cygwin_shell': 0,
       'inputs': [
@@ -135,8 +136,10 @@
         '<@(idl_compiler_files)',
         '<(bindings_dir)/IDLExtendedAttributes.txt',
         '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
       ],
       'outputs': [
+        '<@(bindings_modules_v8_generated_union_type_files)',
         '<@(generated_modules_dictionary_files)',
       ],
       'action': [
@@ -145,12 +148,18 @@
         '--cache-dir',
         '<(bindings_scripts_output_dir)',
         '--output-dir',
+        '<(bindings_modules_v8_output_dir)',
+        '--impl-output-dir',
         '<(SHARED_INTERMEDIATE_DIR)/blink/',
         '--interfaces-info',
         '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
+        '--component-info',
+        '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
+        '--target-component',
+        'modules',
         '--write-file-only-if-changed',
         '<(write_file_only_if_changed)',
-        '--generate-dictionary-impl',
+        '--generate-impl',
         '<(modules_dictionary_idl_files_list)',
       ],
       'message': 'Generating modules IDL dictionary impl classes',
@@ -281,7 +290,7 @@
     'target_name': 'bindings_modules_v8_generated',
     'type': 'none',
     'dependencies': [
-      'bindings_modules_dictionary_impl_generated',
+      'bindings_modules_impl_generated',
       'bindings_modules_v8_generated_aggregate',
       'bindings_modules_v8_generated_individual',
       'bindings_modules_v8_generated_init_partial',
