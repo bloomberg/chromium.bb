@@ -5219,11 +5219,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="DomainReliability.UploadResponseCode">
+<histogram name="DomainReliability.UploadNetError" enum="NetErrorCodes">
   <owner>ttuttle@chromium.org</owner>
   <summary>
-    The response code returned by the Domain Reliability collector when a report
-    is uploaded.
+    The network error code (or OK if none) returned by the URLFetcher when a
+    Domain Reliability report is uploaded.
+  </summary>
+</histogram>
+
+<histogram name="DomainReliability.UploadResponseCode" enum="HttpResponseCode">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The HTTP response code returned by the Domain Reliability collector when a
+    report is uploaded.
   </summary>
 </histogram>
 

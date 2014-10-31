@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -93,13 +94,36 @@ class DomainReliabilityUploaderImpl
     UploadCallbackMap::iterator callback_it = upload_callbacks_.find(fetcher);
     DCHECK(callback_it != upload_callbacks_.end());
 
-    VLOG(1) << "Upload finished with " << fetcher->GetResponseCode();
+    int net_error;
+    {
+      const net::URLRequestStatus& status = fetcher->GetStatus();
+      switch (status.status()) {
+        case net::URLRequestStatus::SUCCESS:
+          net_error = net::OK;
+          break;
+        case net::URLRequestStatus::CANCELED:
+          net_error = net::ERR_ABORTED;
+          break;
+        case net::URLRequestStatus::FAILED:
+          net_error = status.error();
+          break;
+        default:
+          NOTREACHED();
+          net_error = net::ERR_FAILED;
+          break;
+      }
+    }
+    int http_response_code = fetcher->GetResponseCode();
+
+    VLOG(1) << "Upload finished with net error " << net_error <<
+               " and HTTP response code " << http_response_code;
 
     UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadResponseCode",
-                                fetcher->GetResponseCode());
+                                http_response_code);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadNetError",
+                                -net_error);
 
-    bool success = fetcher->GetResponseCode() == 200;
-    callback_it->second.Run(success);
+    callback_it->second.Run(http_response_code == 200);
 
     delete callback_it->first;
     upload_callbacks_.erase(callback_it);
