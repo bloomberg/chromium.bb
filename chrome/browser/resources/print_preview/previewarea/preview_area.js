@@ -519,6 +519,7 @@ cr.define('print_preview', function() {
       this.overlayEl_.classList.toggle(
           PreviewArea.Classes_.INVISIBLE,
           !visible);
+      this.overlayEl_.setAttribute('aria-hidden', !visible);
 
       // Hide/show all controls that will overlap when the overlay is visible.
       var marginControls = this.getElement().getElementsByClassName(
