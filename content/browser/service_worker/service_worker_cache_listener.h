@@ -100,15 +100,19 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   // Cache callbacks
   void OnCacheMatchCallback(
       int request_id,
+      const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheKeysCallback(int request_id,
+                           const scoped_refptr<ServiceWorkerCache>& cache,
                            ServiceWorkerCache::ErrorType error,
                            scoped_ptr<ServiceWorkerCache::Requests> requests);
   void OnCacheDeleteCallback(int request_id,
+                             const scoped_refptr<ServiceWorkerCache>& cache,
                              ServiceWorkerCache::ErrorType error);
   void OnCachePutCallback(int request_id,
+                          const scoped_refptr<ServiceWorkerCache>& cache,
                           ServiceWorkerCache::ErrorType error,
                           scoped_ptr<ServiceWorkerResponse> response,
                           scoped_ptr<storage::BlobDataHandle> blob_data_handle);

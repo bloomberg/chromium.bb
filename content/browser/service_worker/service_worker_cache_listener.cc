@@ -183,7 +183,8 @@ void ServiceWorkerCacheListener::OnCacheMatch(
   cache->Match(scoped_request.Pass(),
                base::Bind(&ServiceWorkerCacheListener::OnCacheMatchCallback,
                           weak_factory_.GetWeakPtr(),
-                          request_id));
+                          request_id,
+                          cache));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatchAll(
@@ -212,7 +213,8 @@ void ServiceWorkerCacheListener::OnCacheKeys(
 
   cache->Keys(base::Bind(&ServiceWorkerCacheListener::OnCacheKeysCallback,
                          weak_factory_.GetWeakPtr(),
-                         request_id));
+                         request_id,
+                         cache));
 }
 
 void ServiceWorkerCacheListener::OnCacheBatch(
@@ -246,7 +248,8 @@ void ServiceWorkerCacheListener::OnCacheBatch(
     cache->Delete(scoped_request.Pass(),
                   base::Bind(&ServiceWorkerCacheListener::OnCacheDeleteCallback,
                              weak_factory_.GetWeakPtr(),
-                             request_id));
+                             request_id,
+                             cache));
     return;
   }
 
@@ -263,7 +266,8 @@ void ServiceWorkerCacheListener::OnCacheBatch(
                scoped_response.Pass(),
                base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,
                           weak_factory_.GetWeakPtr(),
-                          request_id));
+                          request_id,
+                          cache));
 
     return;
   }
@@ -347,6 +351,7 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
 
 void ServiceWorkerCacheListener::OnCacheMatchCallback(
     int request_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
@@ -364,6 +369,7 @@ void ServiceWorkerCacheListener::OnCacheMatchCallback(
 
 void ServiceWorkerCacheListener::OnCacheKeysCallback(
     int request_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerCache::Requests> requests) {
   if (error != ServiceWorkerCache::ErrorTypeOK) {
@@ -387,6 +393,7 @@ void ServiceWorkerCacheListener::OnCacheKeysCallback(
 
 void ServiceWorkerCacheListener::OnCacheDeleteCallback(
     int request_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error) {
   if (error != ServiceWorkerCache::ErrorTypeOK) {
     Send(ServiceWorkerMsg_CacheBatchError(
@@ -400,6 +407,7 @@ void ServiceWorkerCacheListener::OnCacheDeleteCallback(
 
 void ServiceWorkerCacheListener::OnCachePutCallback(
     int request_id,
+    const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
