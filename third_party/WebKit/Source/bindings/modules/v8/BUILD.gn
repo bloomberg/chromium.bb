@@ -75,7 +75,7 @@ action("bindings_modules_v8_generated_init_partial") {
 
   inputs = [
     core_idl_with_modules_dependency_files_list,
-    "$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+    "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
   ]
   outputs = [ bindings_modules_generated_init_partial_interfaces_file ]
 

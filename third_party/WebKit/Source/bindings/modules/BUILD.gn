@@ -67,7 +67,7 @@ compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources_static = modules_static_idl_files
   sources_generated = modules_generated_dependency_idl_files
   interfaces_info_file =
-    "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle"
+    "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
   component_wide_info_file =
     "$bindings_modules_output_dir/ComponentInfoModules.pickle"
   deps = [
@@ -82,10 +82,10 @@ action("interfaces_info") {
 
   inputs = [
     "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
-    "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle",
+    "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle",
   ]
   outputs = [
-    "$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+    "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
   ]
 
   args = [
@@ -95,10 +95,10 @@ action("interfaces_info") {
         "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
         root_build_dir),
     rebase_path(
-        "$bindings_modules_output_dir/InterfacesInfoModulesIndividual.pickle",
+        "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle",
         root_build_dir),
     rebase_path(
-        "$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+        "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
         root_build_dir),
   ]
 

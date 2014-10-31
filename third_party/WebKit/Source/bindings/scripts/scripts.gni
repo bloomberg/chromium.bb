@@ -140,7 +140,7 @@ template("idl_compiler") {
       # [ImplementedAs]) changes, we rebuild all files, since we're not
       # computing dependencies file-by-file in the build.
       # This data is generally stable.
-      "$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+      "$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
     ]
     # Further, if any dependency (partial interface or implemented
     # interface) changes, rebuild everything, since every IDL potentially
@@ -163,7 +163,7 @@ template("idl_compiler") {
       "--output-dir",
       rebase_path(output_dir, root_build_dir),
       "--interfaces-info",
-      rebase_path("$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+      rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
                   root_build_dir),
       "--write-file-only-if-changed=1",  # Always true for Ninja.
       "--target-component",
@@ -211,7 +211,7 @@ template("idl_impl") {
       "--impl-output-dir",
       rebase_path(dictionary_impl_output_dir, root_build_dir),
       "--interfaces-info",
-      rebase_path("$bindings_modules_output_dir/InterfacesInfoModules.pickle",
+      rebase_path("$bindings_modules_output_dir/InterfacesInfoOverall.pickle",
                   root_build_dir),
       "--component-info",
       rebase_path(invoker.component_wide_info, root_build_dir),

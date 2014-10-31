@@ -199,7 +199,7 @@
       'static_idl_files': '<(modules_static_idl_files)',
       'generated_idl_files': '<(modules_generated_idl_files)',
       'interfaces_info_file':
-        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoOverallIndividual.pickle',
       'component_info_file':
         '<(bindings_modules_output_dir)/ComponentInfoModules.pickle',
     },
@@ -216,10 +216,10 @@
     'variables': {
       'input_files': [
         '<(bindings_core_output_dir)/InterfacesInfoCoreIndividual.pickle',
-        '<(bindings_modules_output_dir)/InterfacesInfoModulesIndividual.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoOverallIndividual.pickle',
       ],
       'output_file':
-        '<(bindings_modules_output_dir)/InterfacesInfoModules.pickle',
+        '<(bindings_modules_output_dir)/InterfacesInfoOverall.pickle',
     },
     'includes': ['../../bindings/scripts/interfaces_info_overall.gypi'],
   },
