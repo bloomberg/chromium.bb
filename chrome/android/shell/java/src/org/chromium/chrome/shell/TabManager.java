@@ -190,6 +190,14 @@ public class TabManager extends LinearLayout {
         mTabModelSelector.toggleTabSwitcher();
     }
 
+    public boolean isTabSwitcherVisible() {
+        return mTabModelSelector.isTabSwitcherVisible();
+    }
+
+    public void hideTabSwitcher() {
+        mTabModelSelector.hideTabSwitcher();
+    }
+
     /**
      * Opens a URL in the current tab if one exists, or in a new tab otherwise.
      * @param url The URL to open.

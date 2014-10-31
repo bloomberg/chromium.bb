@@ -137,7 +137,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
         }
     }
 
-    private boolean isTabSwitcherVisible() {
+    public boolean isTabSwitcherVisible() {
         return mTabModelWrapper != null && mTabModelWrapper.getParent() == mParent;
     }
 }
