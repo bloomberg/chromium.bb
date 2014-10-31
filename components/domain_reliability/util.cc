@@ -42,6 +42,7 @@ const struct NetErrorMapping {
   const char* beacon_status;
 } net_error_map[] = {
   { net::OK, "ok" },
+  { net::ERR_ABORTED, "aborted" },
   { net::ERR_TIMED_OUT, "tcp.connection.timed_out" },
   { net::ERR_CONNECTION_CLOSED, "tcp.connection.closed" },
   { net::ERR_CONNECTION_RESET, "tcp.connection.reset" },
