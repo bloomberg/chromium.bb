@@ -254,7 +254,7 @@ def AbsolutePath(path, filename, root):
         return absolute_path
     return None
 
-def ParseDir(path, root, require_license_file=True):
+def ParseDir(path, root, require_license_file=True, optional_keys=None):
     """Examine a third_party/foo component and extract its metadata."""
 
     # Parse metadata fields out of README.chromium.
@@ -266,9 +266,8 @@ def ParseDir(path, root, require_license_file=True):
         "License": None,            # Software license.
         }
 
-    # Relative path to a file containing some html we're required to place in
-    # about:credits.
-    optional_keys = ["Required Text", "License Android Compatible"]
+    if optional_keys is None:
+        optional_keys = []
 
     if path in SPECIAL_CASES:
         metadata.update(SPECIAL_CASES[path])
@@ -311,13 +310,6 @@ def ParseDir(path, root, require_license_file=True):
                                "or add a 'License File:' line to "
                                "README.chromium with the appropriate path.")
         metadata["License File"] = license_path
-
-    if "Required Text" in metadata:
-        required_path = AbsolutePath(path, metadata["Required Text"], root)
-        if required_path is not None:
-            metadata["Required Text"] = required_path
-        else:
-            raise LicenseError("Required text file listed but not found.")
 
     return metadata
 
@@ -412,7 +404,7 @@ def GenerateCredits():
         """Expand a template with variables like {{foo}} using a
         dictionary of expansions."""
         for key, val in env.items():
-            if escape and not key.endswith("_unescaped"):
+            if escape:
                 val = cgi.escape(val)
             template = template.replace('{{%s}}' % key, val)
         return template
@@ -435,11 +427,7 @@ def GenerateCredits():
             'name': metadata['Name'],
             'url': metadata['URL'],
             'license': open(metadata['License File'], 'rb').read(),
-            'license_unescaped': '',
         }
-        if 'Required Text' in metadata:
-            required_text = open(metadata['Required Text'], 'rb').read()
-            env["license_unescaped"] = required_text
         entries.append(EvaluateTemplate(entry_template, env))
 
     file_template = open(os.path.join(root, 'chrome', 'browser', 'resources',

@@ -69,7 +69,8 @@ def GetIncompatibleDirectories():
       continue
     try:
       metadata = licenses.ParseDir(directory, REPOSITORY_ROOT,
-                                   require_license_file=False)
+                                   require_license_file=False,
+                                   optional_keys=['License Android Compatible'])
     except licenses.LicenseError as e:
       print 'Got LicenseError while scanning ' + directory
       raise
