@@ -118,10 +118,11 @@ class FFmpegInitializer {
   DISALLOW_COPY_AND_ASSIGN(FFmpegInitializer);
 };
 
+static base::LazyInstance<FFmpegInitializer>::Leaky g_lazy_instance =
+    LAZY_INSTANCE_INITIALIZER;
 void FFmpegGlue::InitializeFFmpeg() {
-  static base::LazyInstance<FFmpegInitializer>::Leaky li =
-      LAZY_INSTANCE_INITIALIZER;
-  CHECK(li.Get().initialized());
+  // Get() will invoke the FFmpegInitializer constructor once.
+  CHECK(g_lazy_instance.Get().initialized());
 }
 
 FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol)
