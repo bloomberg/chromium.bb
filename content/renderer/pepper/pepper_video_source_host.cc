@@ -224,7 +224,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   const uint8* src_v = frame->data(media::VideoFrame::kVPlane) +
                        (center * vert_crop + horiz_crop) / 2;
 
-  libyuv::I420ToBGRA(src_y,
+  libyuv::I420ToARGB(src_y,
                      frame->stride(media::VideoFrame::kYPlane),
                      src_u,
                      frame->stride(media::VideoFrame::kUPlane),

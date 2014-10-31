@@ -73,7 +73,7 @@ void PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO(
   new_frame_callback_.Run(frame, format, base::TimeTicks());
 }
 
-PpFrameWriter::PpFrameWriter() : endian_(UNKNOWN) {
+PpFrameWriter::PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter ctor";
 }
 
@@ -157,46 +157,16 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
       MediaStreamVideoSource::kUnknownFrameRate,
       media::PIXEL_FORMAT_YV12);
 
-  // TODO(magjed): Remove this and always use libyuv::ARGBToI420 when
-  // crbug/426020 is fixed.
-  // Due to a change in endianness, we try to determine it from the data.
-  // The alpha channel is always 255. It is unlikely for other color channels to
-  // be 255, so we will most likely break on the first few pixels in the first
-  // frame.
-  const uint8* row_ptr = src_data;
-  // Note that we only do this if endian_ is still UNKNOWN.
-  for (int y = 0; y < height && endian_ == UNKNOWN; ++y) {
-    for (int x = 0; x < width; ++x) {
-      if (row_ptr[x * 4 + 0] != 255) {  // First byte is not Alpha => XXXA.
-        endian_ = XXXA;
-        break;
-      }
-      if (row_ptr[x * 4 + 3] != 255) {  // Fourth byte is not Alpha => AXXX.
-        endian_ = AXXX;
-        break;
-      }
-    }
-    row_ptr += src_stride;
-  }
-  if (endian_ == UNKNOWN) {
-    LOG(WARNING) << "PpFrameWriter::FrameWriterDelegate::DeliverFrameOnIO - "
-                 << "Could not determine endianness.";
-  }
-  // libyuv specifies fourcc/channel ordering the same as webrtc. That is why
-  // the naming is reversed compared to PixelEndian and PP_ImageDataFormat which
-  // describes the memory layout from the lowest address to the highest.
-  auto xxxxToI420 =
-      (endian_ == AXXX) ? &libyuv::BGRAToI420 : &libyuv::ARGBToI420;
-  xxxxToI420(src_data,
-             src_stride,
-             new_frame->data(media::VideoFrame::kYPlane),
-             new_frame->stride(media::VideoFrame::kYPlane),
-             new_frame->data(media::VideoFrame::kUPlane),
-             new_frame->stride(media::VideoFrame::kUPlane),
-             new_frame->data(media::VideoFrame::kVPlane),
-             new_frame->stride(media::VideoFrame::kVPlane),
-             width,
-             height);
+  libyuv::ARGBToI420(src_data,
+                     src_stride,
+                     new_frame->data(media::VideoFrame::kYPlane),
+                     new_frame->stride(media::VideoFrame::kYPlane),
+                     new_frame->data(media::VideoFrame::kUPlane),
+                     new_frame->stride(media::VideoFrame::kUPlane),
+                     new_frame->data(media::VideoFrame::kVPlane),
+                     new_frame->stride(media::VideoFrame::kVPlane),
+                     width,
+                     height);
 
   delegate_->DeliverFrame(new_frame, format);
 }

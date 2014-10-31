@@ -60,18 +60,10 @@ class CONTENT_EXPORT PpFrameWriter
   void StopSourceImpl() override;
 
  private:
-  // Endian in memory order, e.g. AXXX stands for uint8 pixel[4] = {A, x, x, x};
-  enum PixelEndian {
-    UNKNOWN,
-    AXXX,
-    XXXA,
-  };
-
   media::VideoFramePool frame_pool_;
 
   class FrameWriterDelegate;
   scoped_refptr<FrameWriterDelegate> delegate_;
-  PixelEndian endian_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameWriter);
 };
