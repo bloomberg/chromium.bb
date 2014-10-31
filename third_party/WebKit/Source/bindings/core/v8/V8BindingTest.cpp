@@ -118,6 +118,11 @@ TEST_F(V8ValueTraitsTest, nullType)
     CHECK_TOV8VALUE("null", V8NullType());
 }
 
+TEST_F(V8ValueTraitsTest, nullptrType)
+{
+    CHECK_TOV8VALUE("null", nullptr);
+}
+
 TEST_F(V8ValueTraitsTest, undefinedType)
 {
     CHECK_TOV8VALUE("undefined", V8UndefinedType());

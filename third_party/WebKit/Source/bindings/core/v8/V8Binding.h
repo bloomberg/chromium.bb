@@ -464,6 +464,17 @@ struct V8ValueTraits<char*> {
 };
 
 template<>
+struct V8ValueTraits<std::nullptr_t> {
+    static inline v8::Handle<v8::Value> toV8Value(std::nullptr_t null, v8::Handle<v8::Object> object, v8::Isolate* isolate)
+    {
+        // Note: toV8Value(nullptr) returns null and
+        // toV8Value(static_cast<const char*>(nullptr)) returns an empty string.
+        // See V8ValueTraits<const char*>.
+        return v8::Null(isolate);
+    }
+};
+
+template<>
 struct V8ValueTraits<int> {
     static inline v8::Handle<v8::Value> toV8Value(const int& value, v8::Handle<v8::Object>, v8::Isolate* isolate)
     {
