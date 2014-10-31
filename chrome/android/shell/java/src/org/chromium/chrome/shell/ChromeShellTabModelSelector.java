@@ -34,13 +34,16 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
     private final TabModelOrderController mOrderController;
 
     private AccessibilityTabModelWrapper mTabModelWrapper;
+    private TabManager mTabManager;
 
     public ChromeShellTabModelSelector(
-            WindowAndroid window, ContentVideoViewClient videoViewClient, ViewGroup parent) {
+            WindowAndroid window, ContentVideoViewClient videoViewClient, ViewGroup parent,
+            TabManager tabManager) {
         mWindow = window;
         mContentVideoViewClient = videoViewClient;
         mParent = parent;
         mOrderController = new TabModelOrderController(this);
+        mTabManager = tabManager;
 
         TabModelDelegate tabModelDelegate = new TabModelDelegate() {
             @Override
@@ -93,7 +96,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
             }
         };
         ChromeShellTab tab = new ChromeShellTab(
-                mParent.getContext(), loadUrlParams.getUrl(), mWindow, client);
+                mParent.getContext(), loadUrlParams.getUrl(), mWindow, client, mTabManager);
         int index = mOrderController.determineInsertionIndex(type, tab);
         TabModel tabModel = getCurrentModel();
         tabModel.addTab(tab, index, type);
@@ -140,4 +143,5 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
     public boolean isTabSwitcherVisible() {
         return mTabModelWrapper != null && mTabModelWrapper.getParent() == mParent;
     }
+
 }

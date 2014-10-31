@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -27,6 +28,7 @@ public class ChromeShellTab extends Tab {
     // Tab state
     private boolean mIsLoading;
     private boolean mIsFullscreen = false;
+    private TabManager mTabManager;
 
     /**
      * @param context           The Context the view is running in.
@@ -35,12 +37,13 @@ public class ChromeShellTab extends Tab {
      * @param contentViewClient The client for the {@link ContentViewCore}s of this Tab.
      */
     public ChromeShellTab(Context context, String url, WindowAndroid window,
-            ContentViewClient contentViewClient) {
+            ContentViewClient contentViewClient, TabManager tabManager) {
         super(false, context, window);
         initialize();
         initContentViewCore();
         setContentViewClient(contentViewClient);
         loadUrlWithSanitization(url);
+        mTabManager = tabManager;
     }
 
     /**
@@ -108,6 +111,11 @@ public class ChromeShellTab extends Tab {
             @Override
             public void onOpenImageUrl(String url, Referrer referrer) {
                 loadUrlWithSanitization(url);
+            }
+
+            @Override
+            public void onOpenInNewTab(String url, Referrer referrer) {
+                mTabManager.createTab(url, TabLaunchType.FROM_LINK);
             }
         });
     }
