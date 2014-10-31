@@ -389,8 +389,6 @@ void WebViewGuest::GuestReady() {
     web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
         SK_ColorTRANSPARENT);
   }
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnGuestReady();
 }
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
