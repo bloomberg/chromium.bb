@@ -1,4 +1,4 @@
-This folder contains clang-format binaries. The binaries will be automatically
+This folder contains clang-format scripts. The binaries will be automatically
 downloaded from Google Storage by gclient runhooks for the current platform.
 
 For a walkthrough on how to maintain these binaries:
