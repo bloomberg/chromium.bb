@@ -14,6 +14,7 @@
 #include "mojo/application_manager/application_loader.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
@@ -115,18 +116,33 @@ class ApplicationManager::ShellImpl : public InterfaceImpl<Shell> {
   DISALLOW_COPY_AND_ASSIGN(ShellImpl);
 };
 
-struct ApplicationManager::ContentHandlerConnection {
+class ApplicationManager::ContentHandlerConnection : public ErrorHandler {
+ public:
   ContentHandlerConnection(ApplicationManager* manager,
-                           const GURL& content_handler_url) {
+                           const GURL& content_handler_url)
+      : manager_(manager), content_handler_url_(content_handler_url) {
     ServiceProviderPtr service_provider;
-    BindToProxy(&service_provider_impl, &service_provider);
+    WeakBindToProxy(&service_provider_impl_, &service_provider);
     manager->ConnectToApplication(
         content_handler_url, GURL(), service_provider.Pass());
-    mojo::ConnectToService(service_provider_impl.client(), &content_handler);
+    mojo::ConnectToService(service_provider_impl_.client(), &content_handler_);
+    content_handler_.set_error_handler(this);
   }
 
-  StubServiceProvider service_provider_impl;
-  ContentHandlerPtr content_handler;
+  ContentHandler* content_handler() { return content_handler_.get(); }
+
+  GURL content_handler_url() { return content_handler_url_; }
+
+ private:
+  // ErrorHandler implementation:
+  void OnConnectionError() override { manager_->OnContentHandlerError(this); }
+
+  ApplicationManager* manager_;
+  GURL content_handler_url_;
+  StubServiceProvider service_provider_impl_;
+  ContentHandlerPtr content_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentHandlerConnection);
 };
 
 // static
@@ -161,6 +177,7 @@ ApplicationManager::~ApplicationManager() {
 
 void ApplicationManager::TerminateShellConnections() {
   STLDeleteValues(&url_to_shell_impl_);
+  STLDeleteElements(&content_shell_impls_);
 }
 
 // static
@@ -224,14 +241,10 @@ void ApplicationManager::RegisterLoadedApplication(
     shell_impl = iter->second;
   } else {
     MessagePipe pipe;
-    URLToArgsMap::const_iterator args_it = url_to_args_.find(url);
-    Array<String> args;
-    if (args_it != url_to_args_.end())
-      args = Array<String>::From(args_it->second);
     shell_impl = WeakBindToPipe(new ShellImpl(this, url), pipe.handle1.Pass());
     url_to_shell_impl_[url] = shell_impl;
     *shell_handle = pipe.handle0.Pass();
-    shell_impl->client()->Initialize(args.Pass());
+    shell_impl->client()->Initialize(GetArgsForURL(url));
   }
 
   ConnectToClient(shell_impl, url, requestor_url, service_provider.Pass());
@@ -253,10 +266,16 @@ void ApplicationManager::LoadWithContentHandler(
     url_to_content_handler_[content_handler_url] = connection;
   }
 
-  InterfaceRequest<ServiceProvider> spir;
-  spir.Bind(service_provider.PassMessagePipe());
-  connection->content_handler->OnConnect(
-      requestor_url.spec(), url_response.Pass(), spir.Pass());
+  ShellPtr shell_proxy;
+  ShellImpl* shell_impl =
+      WeakBindToProxy(new ShellImpl(this, content_url), &shell_proxy);
+  content_shell_impls_.insert(shell_impl);
+  shell_impl->client()->Initialize(GetArgsForURL(content_url));
+
+  connection->content_handler()->StartApplication(shell_proxy.Pass(),
+                                                  url_response.Pass());
+  ConnectToClient(
+      shell_impl, content_url, requestor_url, service_provider.Pass());
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
@@ -298,7 +317,14 @@ ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
 
 void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
   // Called from ~ShellImpl, so we do not need to call Destroy here.
+  auto content_shell_it = content_shell_impls_.find(shell_impl);
+  if (content_shell_it != content_shell_impls_.end()) {
+    delete (*content_shell_it);
+    content_shell_impls_.erase(content_shell_it);
+    return;
+  }
   const GURL url = shell_impl->url();
+  // Remove the shell.
   URLToShellImplMap::iterator it = url_to_shell_impl_.find(url);
   DCHECK(it != url_to_shell_impl_.end());
   delete it->second;
@@ -308,6 +334,16 @@ void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
     loader->OnApplicationError(this, url);
   if (delegate_)
     delegate_->OnApplicationError(url);
+}
+
+void ApplicationManager::OnContentHandlerError(
+    ContentHandlerConnection* content_handler) {
+  // Remove the mapping to the content handler.
+  auto it =
+      url_to_content_handler_.find(content_handler->content_handler_url());
+  DCHECK(it != url_to_content_handler_.end());
+  delete it->second;
+  url_to_content_handler_.erase(it);
 }
 
 ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
@@ -321,5 +357,12 @@ ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
   stub_sp->GetRemoteServiceProvider()->ConnectToService(interface_name,
                                                         pipe.handle1.Pass());
   return pipe.handle0.Pass();
+}
+
+Array<String> ApplicationManager::GetArgsForURL(const GURL& url) {
+  URLToArgsMap::const_iterator args_it = url_to_args_.find(url);
+  if (args_it != url_to_args_.end())
+    return Array<String>::From(args_it->second);
+  return Array<String>();
 }
 }  // namespace mojo

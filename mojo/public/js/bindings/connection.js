@@ -12,7 +12,7 @@ define("mojo/public/js/bindings/connection", [
     if (routerFactory === undefined)
       routerFactory = router.Router;
     this.router_ = new routerFactory(handle, connectorFactory);
-    this.remote = new remoteFactory(this.router_);
+    this.remote = remoteFactory && new remoteFactory(this.router_);
     this.local = localFactory && new localFactory(this.remote);
     this.router_.setIncomingReceiver(this.local);
 

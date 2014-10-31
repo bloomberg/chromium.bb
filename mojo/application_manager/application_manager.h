@@ -6,6 +6,7 @@
 #define MOJO_APPLICATION_MANAGER_APPLICATION_MANAGER_H_
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -108,7 +109,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   void TerminateShellConnections();
 
  private:
-  struct ContentHandlerConnection;
+  class ContentHandlerConnection;
   class LoadCallbacksImpl;
   class ShellImpl;
 
@@ -141,6 +142,12 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
 
   // Removes a ShellImpl when it encounters an error.
   void OnShellImplError(ShellImpl* shell_impl);
+  //
+  // Removes a ContentHandler when it encounters an error.
+  void OnContentHandlerError(ContentHandlerConnection* content_handler);
+
+  // Returns the arguments for the given url.
+  Array<String> GetArgsForURL(const GURL& url);
 
   Delegate* delegate_;
   // Loader management.
@@ -152,6 +159,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   URLToShellImplMap url_to_shell_impl_;
   URLToContentHandlerMap url_to_content_handler_;
   URLToArgsMap url_to_args_;
+  std::set<ShellImpl*> content_shell_impls_;
 
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 

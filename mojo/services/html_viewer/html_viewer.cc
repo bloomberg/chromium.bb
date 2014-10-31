@@ -37,28 +37,21 @@ class HTMLViewer;
 
 class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  public:
-  ContentHandlerImpl(Shell* shell,
-                     scoped_refptr<base::MessageLoopProxy> compositor_thread,
+  ContentHandlerImpl(scoped_refptr<base::MessageLoopProxy> compositor_thread,
                      WebMediaPlayerFactory* web_media_player_factory)
-      : shell_(shell),
-        compositor_thread_(compositor_thread),
+      : compositor_thread_(compositor_thread),
         web_media_player_factory_(web_media_player_factory) {}
   ~ContentHandlerImpl() override {}
 
  private:
   // Overridden from ContentHandler:
-  void OnConnect(
-      const mojo::String& requestor_url,
-      URLResponsePtr response,
-      InterfaceRequest<ServiceProvider> service_provider_request) override {
+  void StartApplication(ShellPtr shell, URLResponsePtr response) override {
     new HTMLDocumentView(response.Pass(),
-                         service_provider_request.Pass(),
-                         shell_,
+                         shell.Pass(),
                          compositor_thread_,
                          web_media_player_factory_);
   }
 
-  Shell* shell_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
   WebMediaPlayerFactory* web_media_player_factory_;
 
@@ -75,7 +68,6 @@ class HTMLViewer : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {
-    shell_ = app->shell();
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
 #if !defined(COMPONENT_BUILD)
@@ -110,13 +102,12 @@ class HTMLViewer : public ApplicationDelegate,
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ContentHandler> request) override {
     BindToRequest(
-        new ContentHandlerImpl(shell_, compositor_thread_.message_loop_proxy(),
+        new ContentHandlerImpl(compositor_thread_.message_loop_proxy(),
                                web_media_player_factory_.get()),
         &request);
   }
 
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
-  Shell* shell_;
   base::Thread compositor_thread_;
   scoped_ptr<WebMediaPlayerFactory> web_media_player_factory_;
 

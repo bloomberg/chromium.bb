@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
+#include "mojo/services/public/cpp/geometry/geometry_util.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
@@ -23,17 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-
-// TODO(jam): move these somewhere else so they can be shared?
-
-inline bool operator==(const Rect& lhs, const Rect& rhs) {
-  return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width &&
-         lhs.height == lhs.height;
-}
-
-inline bool operator!=(const Rect& lhs, const Rect& rhs) {
-  return !(lhs == rhs);
-}
 
 namespace {
 

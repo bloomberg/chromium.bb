@@ -161,22 +161,35 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   DCHECK(endpoints_[port]);
   DCHECK_EQ(endpoints_[port]->GetType(), MessagePipeEndpoint::kTypeLocal);
 
+  // The local peer is already closed, so just make a |ChannelEndpoint| that'll
+  // send the already-queued messages.
+  if (!endpoints_[GetPeerPort(port)]) {
+    scoped_refptr<ChannelEndpoint> channel_endpoint(new ChannelEndpoint(
+        nullptr,
+        0,
+        static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get())
+            ->message_queue()));
+    endpoints_[port]->Close();
+    endpoints_[port].reset();
+    return channel_endpoint;
+  }
+
   // TODO(vtl): Allowing this case is a temporary hack. It'll set up a
   // |MessagePipe| with two proxy endpoints, which will then act as a proxy
   // (rather than trying to connect the two ends directly).
   DLOG_IF(WARNING,
-          !!endpoints_[GetPeerPort(port)] &&
-              endpoints_[GetPeerPort(port)]->GetType() !=
-                  MessagePipeEndpoint::kTypeLocal)
+          endpoints_[GetPeerPort(port)]->GetType() !=
+              MessagePipeEndpoint::kTypeLocal)
       << "Direct message pipe passing across multiple channels not yet "
          "implemented; will proxy";
 
   scoped_ptr<MessagePipeEndpoint> old_endpoint(endpoints_[port].Pass());
-  scoped_refptr<ChannelEndpoint> channel_endpoint(
-      new ChannelEndpoint(this, port));
+  scoped_refptr<ChannelEndpoint> channel_endpoint(new ChannelEndpoint(
+      this,
+      port,
+      static_cast<LocalMessagePipeEndpoint*>(old_endpoint.get())
+          ->message_queue()));
   endpoints_[port].reset(new ProxyMessagePipeEndpoint(channel_endpoint.get()));
-  channel_endpoint->TakeMessages(static_cast<LocalMessagePipeEndpoint*>(
-                                     old_endpoint.get())->message_queue());
   old_endpoint->Close();
 
   return channel_endpoint;

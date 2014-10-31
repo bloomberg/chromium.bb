@@ -12,15 +12,15 @@
 namespace mojo {
 namespace system {
 
-ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe, unsigned port)
+ChannelEndpoint::ChannelEndpoint(MessagePipe* message_pipe,
+                                 unsigned port,
+                                 MessageInTransitQueue* message_queue)
     : message_pipe_(message_pipe), port_(port), channel_(nullptr) {
-  DCHECK(message_pipe_.get());
+  DCHECK(message_pipe_.get() || message_queue);
   DCHECK(port_ == 0 || port_ == 1);
-}
 
-void ChannelEndpoint::TakeMessages(MessageInTransitQueue* message_queue) {
-  DCHECK(paused_message_queue_.IsEmpty());
-  paused_message_queue_.Swap(message_queue);
+  if (message_queue)
+    paused_message_queue_.Swap(message_queue);
 }
 
 bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
@@ -45,9 +45,6 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
 }
 
 void ChannelEndpoint::DetachFromMessagePipe() {
-  // TODO(vtl): Once |message_pipe_| is under |lock_|, we should null it out
-  // here. For now, get the channel to do so for us.
-
   {
     base::AutoLock locker(lock_);
     DCHECK(message_pipe_.get());
@@ -83,6 +80,13 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
   while (!paused_message_queue_.IsEmpty()) {
     LOG_IF(WARNING, !WriteMessageNoLock(paused_message_queue_.GetMessage()))
         << "Failed to write enqueue message to channel";
+  }
+
+  if (!message_pipe_.get()) {
+    channel_->DetachEndpoint(this, local_id_, remote_id_);
+    channel_ = nullptr;
+    local_id_ = ChannelEndpointId();
+    remote_id_ = ChannelEndpointId();
   }
 }
 

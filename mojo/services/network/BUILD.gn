@@ -4,7 +4,7 @@
 
 # GYP version: mojo/mojo_services.gypi:mojo_network_service
 shared_library("network") {
-  output_name = "mojo_network_service"
+  output_name = "network_service"
 
   deps = [
     ":lib",

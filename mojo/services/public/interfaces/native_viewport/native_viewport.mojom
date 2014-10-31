@@ -19,6 +19,11 @@ interface NativeViewport {
   Close();
   SetSize(Size size);
   SubmittedFrame(SurfaceId surface_id);
+  SetEventDispatcher(NativeViewportEventDispatcher dispatcher);
+};
+
+interface NativeViewportEventDispatcher {
+  OnEvent(Event event) => ();
 };
 
 interface NativeViewportClient {
@@ -26,7 +31,6 @@ interface NativeViewportClient {
   // called.
   OnSizeChanged(Size size);
   OnDestroyed();
-  OnEvent(Event event) => ();
 };
 
 }

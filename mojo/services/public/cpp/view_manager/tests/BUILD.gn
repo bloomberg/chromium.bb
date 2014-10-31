@@ -20,6 +20,7 @@ test("mojo_view_manager_lib_unittests") {
     "//mojo/application_manager",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
+    "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/shell:test_support",
     "//mojo/services/public/interfaces/view_manager",

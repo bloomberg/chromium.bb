@@ -61,4 +61,20 @@ const MojoLogger* Environment::GetDefaultLogger() {
   return g_default_logger;
 }
 
+// static
+void Environment::InstantiateDefaultRunLoop() {
+  assert(!RunLoop::current());
+  // Not leaked: accessible from |RunLoop::current()|.
+  RunLoop* run_loop = new RunLoop();
+  MOJO_ALLOW_UNUSED_LOCAL(run_loop);
+  assert(run_loop == RunLoop::current());
+}
+
+// static
+void Environment::DestroyDefaultRunLoop() {
+  assert(RunLoop::current());
+  delete RunLoop::current();
+  assert(!RunLoop::current());
+}
+
 }  // namespace mojo

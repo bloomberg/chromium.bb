@@ -17,6 +17,10 @@ class ApplicationImpl;
 
 namespace test {
 
+// Access the shell handle shared by multiple test application instances.
+ScopedMessagePipeHandle PassShellHandle();
+void SetShellHandle(ScopedMessagePipeHandle handle);
+
 // A GTEST base class for application testing executed in mojo_shell.
 class ApplicationTestBase : public testing::Test {
  public:

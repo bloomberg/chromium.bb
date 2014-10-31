@@ -32,6 +32,14 @@ class Environment {
   static const MojoAsyncWaiter* GetDefaultAsyncWaiter();
   static const MojoLogger* GetDefaultLogger();
 
+  // These instantiate and destroy an environment-specific run loop for the
+  // current thread, allowing |GetDefaultAsyncWaiter()| to be used. (The run
+  // loop itself should be accessible via thread-local storage, using methods
+  // specific to the run loop implementation.) Creating and destroying nested
+  // run loops is not supported.
+  static void InstantiateDefaultRunLoop();
+  static void DestroyDefaultRunLoop();
+
  private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(Environment);
 };

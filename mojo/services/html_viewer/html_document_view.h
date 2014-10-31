@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/application/lazy_interface_ptr.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
+#include "mojo/public/cpp/bindings/interface_impl.h"
+#include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
@@ -29,7 +32,8 @@ class View;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
-class HTMLDocumentView : public blink::WebViewClient,
+class HTMLDocumentView : public mojo::InterfaceImpl<mojo::Application>,
+                         public blink::WebViewClient,
                          public blink::WebFrameClient,
                          public ViewManagerDelegate,
                          public ViewObserver {
@@ -43,13 +47,17 @@ class HTMLDocumentView : public blink::WebViewClient,
   //
   // |shell| is the Shell connection for this mojo::Application.
   HTMLDocumentView(URLResponsePtr response,
-                   InterfaceRequest<ServiceProvider> service_provider_request,
-                   Shell* shell,
+                   ShellPtr shell,
                    scoped_refptr<base::MessageLoopProxy> compositor_thread,
                    WebMediaPlayerFactory* web_media_player_factory);
   virtual ~HTMLDocumentView();
 
  private:
+  // Application methods:
+  void AcceptConnection(const String& requestor_url,
+                        ServiceProviderPtr provider) override;
+  void Initialize(Array<String> args) override;
+
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
 
@@ -102,8 +110,9 @@ class HTMLDocumentView : public blink::WebViewClient,
   void Load(URLResponsePtr response);
 
   URLResponsePtr response_;
+  ServiceProviderImpl exported_services_;
   scoped_ptr<ServiceProvider> embedder_service_provider_;
-  Shell* shell_;
+  ShellPtr shell_;
   LazyInterfacePtr<NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   View* root_;

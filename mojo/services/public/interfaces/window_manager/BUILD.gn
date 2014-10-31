@@ -13,6 +13,7 @@ mojom("window_manager") {
 
   deps = [
     "//mojo/public/interfaces/application",
+    "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/input_events",
   ]
 }
