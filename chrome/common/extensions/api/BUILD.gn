@@ -5,6 +5,8 @@
 import("//build/json_schema_api.gni")
 import("schemas.gni")
 
+assert(enable_extensions)
+
 # GYP version: chrome/common/extensions/api/api.gyp:chrome_api
 json_schema_api("api") {
   schemas = true
@@ -23,14 +25,12 @@ json_schema_api("api_registration") {
     # include generated headers from these targets.
     # TODO(brettw) this should be made unnecessary if possible.
     ":api",
+    "//components/copresence/proto",
     "//components/metrics/proto",
     "//skia",
     "//sync",
     "//ui/accessibility:ax_gen",
   ]
-  if (!is_ios && !is_android) {
-   deps += ["//components/copresence/proto"]
-  }
   if (is_chromeos) {
     # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO(GYP)
   }

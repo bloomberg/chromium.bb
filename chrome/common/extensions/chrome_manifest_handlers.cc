@@ -37,7 +37,6 @@ namespace extensions {
 
 void RegisterChromeManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
-#if defined(ENABLE_EXTENSIONS)
   (new AboutPageHandler)->Register();
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
@@ -69,7 +68,6 @@ void RegisterChromeManifestHandlers() {
   (new UpdateURLHandler)->Register();
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
-#endif
 }
 
 }  // namespace extensions

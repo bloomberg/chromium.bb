@@ -95,9 +95,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
     extensions::ModuleSystem* module_system,
     extensions::ScriptContext* context) {
-#if !defined(ENABLE_EXTENSIONS)
-  return;
-#endif
   module_system->RegisterNativeHandler(
       "app",
       scoped_ptr<NativeHandler>(

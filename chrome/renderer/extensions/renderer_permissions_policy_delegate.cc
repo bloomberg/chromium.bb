@@ -39,22 +39,18 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     return true;
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(::switches::kSigninProcess)) {
     if (error)
       *error = errors::kCannotScriptSigninPage;
     return false;
   }
 
-// TODO(thestig): Remove scaffolding once this file no longer builds with
-// extensions disabled.
-#if defined(ENABLE_EXTENSIONS)
-  if (dispatcher_->IsExtensionActive(extensions::kWebStoreAppId)) {
+  if (dispatcher_->IsExtensionActive(kWebStoreAppId)) {
     if (error)
       *error = errors::kCannotScriptGallery;
     return false;
   }
-#endif
 
   return true;
 }

@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
@@ -15,8 +16,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/common_resources.h"
+#include "chrome/grit/extensions_api_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
@@ -38,14 +41,6 @@
 #include "extensions/grit/extensions_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-
-// TODO(thestig): Remove these #defines. This file should not be built when
-// extensions are disabled.
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/api/generated_schemas.h"
-#include "chrome/grit/extensions_api_resources.h"
-#include "extensions/common/api/generated_schemas.h"
-#endif
 
 namespace extensions {
 
@@ -85,9 +80,7 @@ void ChromeExtensionsClient::Initialize() {
   // thread runs in-process.
   if (!ManifestHandler::IsRegistrationFinalized()) {
     RegisterCommonManifestHandlers();
-#if defined(ENABLE_EXTENSIONS)
     RegisterChromeManifestHandlers();
-#endif
     ManifestHandler::FinalizeRegistration();
   }
 
@@ -234,31 +227,22 @@ bool ChromeExtensionsClient::IsScriptableURL(
 
 bool ChromeExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
-#if defined(ENABLE_EXTENSIONS)
   // Test from most common to least common.
   return api::GeneratedSchemas::IsGenerated(name) ||
          core_api::GeneratedSchemas::IsGenerated(name);
-#else
-  return false;
-#endif
 }
 
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
     const std::string& name) const {
-#if defined(ENABLE_EXTENSIONS)
   // Test from most common to least common.
   if (api::GeneratedSchemas::IsGenerated(name))
     return api::GeneratedSchemas::Get(name);
 
   return core_api::GeneratedSchemas::Get(name);
-#else
-  return base::StringPiece();
-#endif
 }
 
 void ChromeExtensionsClient::RegisterAPISchemaResources(
     ExtensionAPI* api) const {
-#if defined(ENABLE_EXTENSIONS)
   api->RegisterSchemaResource("accessibilityPrivate",
                               IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE);
   api->RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
@@ -283,7 +267,6 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
   api->RegisterSchemaResource("types.private",
                               IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
   api->RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {

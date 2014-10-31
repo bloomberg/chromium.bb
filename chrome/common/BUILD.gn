@@ -104,7 +104,6 @@ static_library("common") {
         gypi_values.chrome_common_extensions_sources,
         ".", "//chrome")
     deps += [
-      "//device/bluetooth",  # TODO(thestig) Still needed? Not in gyp version.
       "//device/usb",
       "//chrome/common/extensions/api",
       "//extensions/common",

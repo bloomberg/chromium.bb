@@ -1482,7 +1482,6 @@ void ExtensionSettingsHandler::GetAppWindowPagesForExtensionProfile(
 
 ExtensionUninstallDialog*
 ExtensionSettingsHandler::GetExtensionUninstallDialog() {
-#if !defined(OS_ANDROID)
   if (!extension_uninstall_dialog_.get()) {
     Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
@@ -1492,9 +1491,6 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
                                          this));
   }
   return extension_uninstall_dialog_.get();
-#else
-  return NULL;
-#endif  // !defined(OS_ANDROID)
 }
 
 void ExtensionSettingsHandler::OnReinstallComplete(

@@ -132,34 +132,23 @@
       'cast_streaming_udp_transport.idl',
     ],
 
+    'non_compiled_schema_files': [
+      '<@(main_non_compiled_schema_files)',
+    ],
+    'schema_dependencies': [
+      '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
+    ],
+    'schema_files': [
+      '<@(main_schema_files)',
+    ],
+    'schema_include_rules': [
+      '<@(main_schema_include_rules)',
+    ],
+
     'chromium_code': 1,
     # Disable schema compiler to generate model extension API code.
     # Only register the extension functions in extension system.
     'conditions': [
-      # TODO(thestig): Remove this file from non-extensions build so the
-      # conditional and else branch goes away.
-      # Do the same for chrome/common/extensions/api/schemas.gni.
-      ['enable_extensions==1', {
-        'non_compiled_schema_files': [
-          '<@(main_non_compiled_schema_files)',
-        ],
-        'schema_dependencies': [
-          '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
-        ],
-        'schema_files': [
-          '<@(main_schema_files)',
-        ],
-        'schema_include_rules': [
-          '<@(main_schema_include_rules)',
-        ],
-      }, {  # enable_extensions==0
-        'non_compiled_schema_files': [
-        ],
-        'schema_dependencies': [
-        ],
-        'schema_files': [
-        ],
-      }],
       ['chromeos==1', {
         'schema_files': [
           '<@(chromeos_schema_files)',
@@ -172,7 +161,7 @@
           }],
         ],
       }],
-      ['enable_extensions==1 and enable_webrtc==1', {
+      ['enable_webrtc==1', {
         'schema_files': [
           '<@(webrtc_schema_files)',
         ],

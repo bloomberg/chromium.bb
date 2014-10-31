@@ -25,12 +25,8 @@ ExtensionFrameHelper::~ExtensionFrameHelper() {
 void ExtensionFrameHelper::WillReleaseScriptContext(
     v8::Handle<v8::Context> context,
     int world_id) {
-// TODO(thestig): Remove scaffolding once this file no longer builds with
-// extensions disabled.
-#if defined(ENABLE_EXTENSIONS)
   extension_dispatcher_->WillReleaseScriptContext(
       render_frame()->GetWebFrame(), context, world_id);
-#endif
 }
 
 bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
