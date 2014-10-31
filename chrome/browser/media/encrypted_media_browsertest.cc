@@ -465,8 +465,7 @@ INSTANTIATE_TEST_CASE_P(MSE_ClearKey_Prefixed,
                         Combine(Values(kPrefixedClearKeyKeySystem),
                                 Values(MSE),
                                 Values(PREFIXED)));
-// http://crbug.com/402766
-INSTANTIATE_TEST_CASE_P(DISABLED_MSE_ClearKey,
+INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
                         EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem),
                                 Values(MSE),
