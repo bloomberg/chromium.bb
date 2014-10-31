@@ -626,12 +626,12 @@ VolumeItem.prototype.isRemovable_ = function() {
  */
 VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
   icon.classList.add('volume-icon');
-  if (volumeInfo.volumeType === 'provided') {
+  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
     var backgroundImage = '-webkit-image-set(' +
         'url(chrome://extension-icon/' + volumeInfo.extensionId +
-            '/24/1) 1x, ' +
+            '/16/1) 1x, ' +
         'url(chrome://extension-icon/' + volumeInfo.extensionId +
-            '/48/1) 2x);';
+            '/32/1) 2x);';
     // The icon div is not yet added to DOM, therefore it is impossible to
     // use style.backgroundImage.
     icon.setAttribute(

@@ -511,5 +511,5 @@ tree:focus .tree-item[selected] > .tree-row >
 
 list:focus li[selected] [volume-type-icon='provided'],
 tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='provided']{
-  -webkit-filter: invert(100%) grayscale(100%) brightness(200%);
+  -webkit-filter: contrast(0) brightness(200%);
 }
