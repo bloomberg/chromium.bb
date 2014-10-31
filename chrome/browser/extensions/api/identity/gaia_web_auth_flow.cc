@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -44,6 +45,10 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
       "origin=chrome-extension://%s/&"
       "redirect_uri=%s:/%s&"
       "hl=%s";
+  // Additional parameters to pass if device_id is enabled.
+  const char kOAuth2AuthorizeFormatDeviceIdAddendum[] =
+      "&device_id=%s&"
+      "device_type=chrome";
 
   std::vector<std::string> scopes(token_key->scopes.begin(),
                                   token_key->scopes.end());
@@ -51,19 +56,31 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
   base::SplitString(oauth2_client_id, '.', &client_id_parts);
   std::reverse(client_id_parts.begin(), client_id_parts.end());
   redirect_scheme_ = JoinString(client_id_parts, '.');
+  std::string signin_scoped_device_id;
+  // profile_ can be nullptr in unittests.
+  SigninClient* signin_client =
+      profile_ ? ChromeSigninClientFactory::GetForProfile(profile_) : nullptr;
+  if (signin_client)
+    signin_scoped_device_id = signin_client->GetSigninScopedDeviceId();
 
   redirect_path_prefix_ = base::StringPrintf(kOAuth2RedirectPathFormat,
                                              token_key->extension_id.c_str());
 
-  auth_url_ =
-      GaiaUrls::GetInstance()->oauth2_auth_url().Resolve(base::StringPrintf(
-          kOAuth2AuthorizeFormat,
-          oauth2_client_id.c_str(),
-          net::EscapeUrlEncodedData(JoinString(scopes, ' '), true).c_str(),
-          token_key->extension_id.c_str(),
-          redirect_scheme_.c_str(),
-          token_key->extension_id.c_str(),
-          locale.c_str()));
+  std::string oauth2_authorize_params = base::StringPrintf(
+      kOAuth2AuthorizeFormat,
+      oauth2_client_id.c_str(),
+      net::EscapeUrlEncodedData(JoinString(scopes, ' '), true).c_str(),
+      token_key->extension_id.c_str(),
+      redirect_scheme_.c_str(),
+      token_key->extension_id.c_str(),
+      locale.c_str());
+  if (!signin_scoped_device_id.empty()) {
+    oauth2_authorize_params += base::StringPrintf(
+        kOAuth2AuthorizeFormatDeviceIdAddendum,
+        net::EscapeUrlEncodedData(signin_scoped_device_id, true).c_str());
+  }
+  auth_url_ = GaiaUrls::GetInstance()->oauth2_auth_url().Resolve(
+      oauth2_authorize_params);
 }
 
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {
