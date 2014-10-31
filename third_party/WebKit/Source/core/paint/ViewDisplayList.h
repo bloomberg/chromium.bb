@@ -19,7 +19,7 @@ class RenderLayer;
 class DisplayItem {
 public:
     enum Type {
-        // The Drawing types must be kept in sync with PaintPhase.
+        // DisplayItem types must be kept in sync with PaintPhase.
         DrawingPaintPhaseBlockBackground = 0,
         DrawingPaintPhaseChildBlockBackground = 1,
         DrawingPaintPhaseChildBlockBackgrounds = 2,

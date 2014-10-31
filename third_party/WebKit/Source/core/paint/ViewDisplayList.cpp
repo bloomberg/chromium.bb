@@ -15,6 +15,10 @@
 
 namespace blink {
 
+// DisplayItem types must be kept in sync with PaintPhase.
+COMPILE_ASSERT((unsigned)DisplayItem::DrawingPaintPhaseBlockBackground == (unsigned)PaintPhaseBlockBackground, DisplayItem_Type_should_stay_in_sync);
+COMPILE_ASSERT((unsigned)DisplayItem::DrawingPaintPhaseClippingMask == (unsigned)PaintPhaseClippingMask, DisplayItem_Type_should_stay_in_sync);
+
 const PaintList& ViewDisplayList::paintList()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
