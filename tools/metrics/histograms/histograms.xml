@@ -28087,6 +28087,563 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ResourcePrefetchPredictor.DbStringTooLong">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    A boolean that used to indicate a corner case when certain resources are not
+    written to the Predictor database becuase their URLs are too long. We
+    monitor this number to ensure that we do not discard too many resources.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.HavePredictionsForUrl">
+  <obsolete>
+    Deprecated 08/2012. Replaced with ResourcePrefetchPredictorNavigationEvent.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    A boolean that indicates if the speculative resource prefetch predictor has
+    predictions for a Navigation. This is updated on each navigations and helps
+    us determine the coverage of the predictor.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.HavePrefetchResults">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    A boolean that used to indicate a corner case when we may not have prefetch
+    results even though prefetching is enabled and predictions are present,
+    because another navigation in the same tab canceled the prefetching of the
+    previous load.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.HistoryVisitCountForUrl">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The visit count of a URL in the history database, measured when the onload
+    fires for the URL. Helpful in figuring out what visit count should be used
+    to start learning about a URL.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Assuming a fixed number (25 or 50) of URLs could be prefetched max, how many
+    would be available for prefetch (after we apply our heuristics for picking
+    subresources to prefetch for a navigation).
+
+    This stat is recorded when the predictor uses the host of the main frame url
+    as the key for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the cache restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the host of the main frame url
+    as the key for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the network restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the host of the main frame url
+    as the key for prediction.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Similar to ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork but
+    as a percent of the total number of resources the page actually fetched from
+    the network. This depcits the major gains that we can get.
+
+    This stat is recorded when the predictor uses the host of the main frame url
+    as the key for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page not used
+    by the page, restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the host of the main frame url
+    as the key for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchCancelled"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    prefetches cancelled as a percentage of the total number of resources that
+    the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchFailed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    prefetches failed as a percentage of the total number of resources that the
+    predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheNotUsed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from cache while prefetching but were not
+    requested by the page, as a percentage of the total number of resources that
+    the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromCache"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from cache while prefetching and also came
+    from the cache when the page requested it, as a percentage of the total
+    number of resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from cache while prefetching but came from
+    the network when the page requested it, as a percentage of the total number
+    of resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkNotUsed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from network while prefetching but were not
+    requested by the page, as a percentage of the total number of resources that
+    the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromCache"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from network while prefetching but came from
+    the cache when the page requested it, as a percentage of the total number of
+    resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of
+    successful prefetches that came from cache while prefetching and also came
+    from the network when the page requested it, as a percentage of the total
+    number of resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchNotStarted"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of resources
+    that were prefetchable but were not prefetched as a percentage of
+    prefetchable resources.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.HostTableHostCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The count of number of unique hosts in the HostTable, i.e. the number of
+    hosts that the database has prediction data for. This data is useful for
+    determining the recall/precision as a function of the number of hosts that
+    need to be tracked by the database. Measured at startup.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.HostTableRowCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The count of number of rows in the HostTable. This is effecively the number
+    of (host, resource URL) pairs in the database. This is measured at startup
+    and used to get an estimate of the data size.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.MainFrameRequestStats"
+    enum="ResourcePrefetchPredictorMainFrameRequestStats">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records stats about main frame navigations. Records the total number of
+    requests/responses/redirects for main frame urls along with the numbers for
+    how often the predictor can process such events. This is useful to figure
+    out what percentange of requests are handled by the predictor and also for
+    sanity checking the other stats.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.NavigationEvent"
+    enum="ResourcePrefetchPredictorNavigationEvent">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records stats about various interesting events such as - request start,
+    response start, redirect, onload, etc during the load of a main frame.
+    Essential for understanding the complete life of a navigation request start
+    to the onload fire and the events that occur in between.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.NavigationStatus"
+    enum="ResourcePrefetchPredictorNavigationStatus">
+  <obsolete>
+    Deprecated 08/2012. Replaced with ResourcePrefetchPredictorNavigationEvent.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The status of various navigations from the view point of the 'onload' event.
+    Since we measure the prediction accuracy and learn navigation subresources
+    on the onload event, it is useful to know how many of the navigations are
+    abandoned before 'onload' fires.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.PredictedPrefetchCount">
+  <obsolete>
+    Deprecated 01/2013. Replaced with specific ones for Url and Host.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Assuming a fixed number of URLs could be prefetched max, how many would be
+    available for prefetch (after we apply our heuristics for picking
+    subresources to prefetch for a navigation).
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.PredictedPrefetchFromCache">
+  <obsolete>
+    Deprecated 01/2013. Replaced with specific ones for Url and Host.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the cache restricted to some max predictions.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.PredictedPrefetchFromNetwork">
+  <obsolete>
+    Deprecated 01/2013. Replaced with specific ones for Url and Host.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the network restricted to some max predictions.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork">
+  <obsolete>
+    Deprecated 01/2013. Replaced with specific ones for Url and Host.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Similar to ResourcePrefetchPredictor.Predicted.PrefetchFromNetwork but as a
+    percent of the total number of resources the page actually fetched from the
+    network. This depcits the major gains that we can get.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.PredictedPrefetchMisses">
+  <obsolete>
+    Deprecated 01/2013. Replaced with specific ones for Url and Host.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page not used
+    by the page, restricted to some max predictions.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.ReportingEvent"
+    enum="ResourcePrefetchPredictorReportingEvent">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records stats about various interesting events such as - when partial or all
+    of history is cleared. It will include events which do not necessarily
+    happen during a navigation (which are reported in
+    ResourcePrefetchPredictor.NavigationEvent).
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.RequestStats"
+    enum="ResourcePrefetchPredictorRequestStats">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Records stats about requests, redirects, and responses observed by the
+    ResourcePrefetchPredictorObserver. These stats are useful as a baseline for
+    other stats.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.ResourceStatus">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The distribution of the reasons for which subresources are ignored during
+    prefetching. This helps us prioritze reasons we should further investigate
+    to increase coverage. This is reported as a bit map and every status will be
+    a bitwise or of the underlying reasons.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Assuming a fixed number of URLs could be prefetched max (25 or 50), how many
+    would be available for prefetch (after we apply our heuristics for picking
+    subresources to prefetch for a navigation).
+
+    This stat is recorded when the predictor uses the main frame url as the key
+    for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the cache restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the main frame url as the key
+    for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page and served
+    from the network restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the main frame url as the key
+    for prediction.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Similar to ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork but as
+    a percent of the total number of resources the page actually fetched from
+    the network. This depcits the major gains that we can get.
+
+    This stat is recorded when the predictor uses the main frame url as the key
+    for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    When we have predictions for a navigation, we measure the accuracy of the
+    predictions against the actual resources downloaded. This histogram gives
+    the distribution of the predictions that were fetched by the page not used
+    by the page, restricted to some max predictions (25 or 50).
+
+    This stat is recorded when the predictor uses the main frame url as the key
+    for prediction.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchCancelled"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of prefetches
+    cancelled as a percentage of the total number of resources that the
+    predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchFailed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of prefetches
+    failed as a percentage of the total number of resources that the predictor
+    tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheNotUsed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from cache while prefetching but were not requested by
+    the page, as a percentage of the total number of resources that the
+    predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromCache"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from cache while prefetching and also came from the
+    cache when the page requested it, as a percentage of the total number of
+    resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from cache while prefetching but came from the network
+    when the page requested it, as a percentage of the total number of resources
+    that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkNotUsed"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from network while prefetching but were not requested
+    by the page, as a percentage of the total number of resources that the
+    predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromCache"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from network while prefetching but came from the cache
+    when the page requested it, as a percentage of the total number of resources
+    that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromNetwork"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on the main frame URL, the percentage of successful
+    prefetches that came from cache while prefetching and also came from the
+    network when the page requested it, as a percentage of the total number of
+    resources that the predictor tried to prefetch.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchNotStarted"
+    units="percentage">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    For prefetching based on host of main frame URL, the percentage of resources
+    that were prefetchable but were not prefetched as a percentage of
+    prefetchable resources.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.UrlTableMainFrameUrlCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The count of number of unique main frame urls in the UrlTable, i.e. the
+    number of webpages that the database has prediction data for. This data is
+    useful for determining the recall/precision as a function of the number of
+    webpages that need to be tracked by the database. Measured at startup.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The count of number of unique main frame urls that are deleted from the URL
+    table at startup because they are no longer in history. Essential to figure
+    out how much data we are loosing out.
+  </summary>
+</histogram>
+
+<histogram
+    name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistoryPercent">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Same as ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory
+    but recording percentage of URLs in the table rather than absolute numbers.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.UrlTableRowCount">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The count of number of rows in the UrlTable. This is effecively the number
+    of (main frame URL, resource URL) pairs in the database. This is measured at
+    startup and used to get an estimate of the data size.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.EnabledSettingChanged" enum="BooleanEnabled">
   <owner>feng@chromium.org</owner>
   <summary>
@@ -51536,6 +52093,50 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Has client"/>
 </enum>
 
+<enum name="ResourcePrefetchPredictorMainFrameRequestStats" type="int">
+  <int value="0" label="MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS"/>
+  <int value="1" label="MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS"/>
+  <int value="2" label="MAIN_FRAME_REQUEST_STATS_TOTAL_REDIRECTS"/>
+  <int value="3" label="MAIN_FRAME_REQUEST_STATS_PROCESSED_REDIRECTS"/>
+  <int value="4" label="MAIN_FRAME_REQUEST_STATS_TOTAL_RESPONSES"/>
+  <int value="5" label="MAIN_FRAME_REQUEST_STATS_PROCESSED_RESPONSES"/>
+</enum>
+
+<enum name="ResourcePrefetchPredictorNavigationEvent" type="int">
+  <int value="0" label="NAVIGATION_EVENT_REQUEST_STARTED"/>
+  <int value="1" label="NAVIGATION_EVENT_REQUEST_REDIRECTED"/>
+  <int value="2" label="NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL"/>
+  <int value="3" label="NAVIGATION_EVENT_REQUEST_EXPIRED"/>
+  <int value="4" label="NAVIGATION_EVENT_RESPONSE_STARTED"/>
+  <int value="5" label="NAVIGATION_EVENT_ONLOAD"/>
+  <int value="6" label="NAVIGATION_EVENT_ONLOAD_EMPTY_URL"/>
+  <int value="7" label="NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL"/>
+  <int value="8" label="NAVIGATION_EVENT_ONLOAD_TRACKED_URL"/>
+  <int value="9" label="NAVIGATION_EVENT_SHOULD_TRACK_URL"/>
+  <int value="10" label="NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL"/>
+  <int value="11" label="NAVIGATION_EVENT_URL_TABLE_FULL"/>
+  <int value="12" label="NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL"/>
+  <int value="13" label="NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL"/>
+</enum>
+
+<enum name="ResourcePrefetchPredictorNavigationStatus" type="int">
+  <int value="0" label="NAVIGATION_STATUS_COMPLETE"/>
+  <int value="1" label="NAVIGATION_STATUS_COMPLETE_ABANDONED"/>
+  <int value="2" label="NAVIGATION_STATUS_ABANDONED"/>
+</enum>
+
+<enum name="ResourcePrefetchPredictorReportingEvent" type="int">
+  <int value="0" label="REPORTING_EVENT_ALL_HISTORY_CLEARED"/>
+  <int value="1" label="REPORTING_EVENT_PARTIAL_HISTORY_CLEARED"/>
+</enum>
+
+<enum name="ResourcePrefetchPredictorRequestStats" type="int">
+  <int value="0" label="REQUEST_STATS_TOTAL_RESPONSES"/>
+  <int value="1" label="REQUEST_STATS_TOTAL_PROCESSED_RESPONSES"/>
+  <int value="2" label="REQUEST_STATS_NO_RESOURCE_REQUEST_INFO"/>
+  <int value="3" label="REQUEST_STATS_NO_RENDER_VIEW_ID_FROM_REQUEST_INFO"/>
+</enum>
+
 <enum name="ResourceType" type="int">
   <int value="0" label="Main resource"/>
   <int value="1" label="Image"/>
@@ -57927,6 +58528,66 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Undefined" label="For unknown or undefined events."/>
   <affected-histogram name="Event.Latency.Renderer"/>
   <affected-histogram name="Event.Latency.Renderer2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorPredictedStatsVariedMax">
+  <suffix name="25"
+      label="Covers statistics when the maximum subresources that can be
+             prefetched is set to 25."/>
+  <suffix name="50"
+      label="Covers statistics when the maximum subresources that can be
+             prefetched is set to 50."/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchCount"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache_PercentOfTotalPrefetched"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork_PercentOfTotalPrefetched"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses_PercentOfTotalPrefetched"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchCount"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache_PercentOfTotalPrefetched"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork_PercentOfTotalPrefetched"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses_Count"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses_PercentOfTotalPrefetched"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorPredictedStatTypes">
+  <suffix name="Count" label="Predicted accuracy stats as the raw numbers."/>
+  <suffix name="PercentOfTotalPrefetched"
+      label="Predicted accuracy stats as percent of total resources
+             prefetched."/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork"/>
+  <affected-histogram
+      name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">
