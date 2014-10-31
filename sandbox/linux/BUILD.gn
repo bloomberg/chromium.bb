@@ -143,6 +143,8 @@ component("seccomp_bpf") {
     "bpf_dsl/bpf_dsl_forward.h",
     "bpf_dsl/bpf_dsl_impl.h",
     "bpf_dsl/cons.h",
+    "bpf_dsl/dump_bpf.cc",
+    "bpf_dsl/dump_bpf.h",
     "bpf_dsl/policy.cc",
     "bpf_dsl/policy.h",
     "bpf_dsl/policy_compiler.cc",

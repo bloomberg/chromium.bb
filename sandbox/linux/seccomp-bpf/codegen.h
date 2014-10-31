@@ -63,10 +63,6 @@ class SANDBOX_EXPORT CodeGen {
   CodeGen();
   ~CodeGen();
 
-  // This is a helper method that can be used for debugging purposes. It is
-  // not normally called.
-  static void PrintProgram(const Program& program);
-
   // Create a new instruction. Instructions form a DAG. The instruction objects
   // are owned by the CodeGen object. They do not need to be explicitly
   // deleted.

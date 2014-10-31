@@ -29,6 +29,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
@@ -495,7 +496,7 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
 
     const char* err = NULL;
     if (!Verifier::VerifyBPF(&compiler, *program, *policy_, &err)) {
-      CodeGen::PrintProgram(*program);
+      bpf_dsl::DumpBPF::PrintProgram(*program);
       SANDBOX_DIE(err);
     }
   }
