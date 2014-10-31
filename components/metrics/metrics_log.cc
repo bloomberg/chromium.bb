@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
+#include "base/build_time.h"
 #include "base/cpu.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -156,13 +157,8 @@ uint64 MetricsLog::Hash(const std::string& value) {
 // static
 int64 MetricsLog::GetBuildTime() {
   static int64 integral_build_time = 0;
-  if (!integral_build_time) {
-    base::Time time;
-    static const char kDateTime[] = __DATE__ " " __TIME__ " GMT";
-    bool result = base::Time::FromString(kDateTime, &time);
-    DCHECK(result);
-    integral_build_time = static_cast<int64>(time.ToTimeT());
-  }
+  if (!integral_build_time)
+    integral_build_time = static_cast<int64>(base::GetBuildTime().ToTimeT());
   return integral_build_time;
 }
 
