@@ -230,6 +230,8 @@ extern const char kSpeechSynthesisExtensionId[];
 extern const char kWallpaperManagerId[];
 // The extension id of the first run dialog application.
 extern const char kFirstRunDialogId[];
+// The extension id of the new ZIP unpacker extension.
+extern const char kZIPUnpackerExtensionId[];
 #endif
 
 // What causes an extension to be installed? Used in histograms, so don't
