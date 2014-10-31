@@ -37,6 +37,18 @@ public interface NavigationTransitionDelegate {
     /**
      * Notifies that a navigation transition is started for a given frame.
      * @param frameId A positive, non-zero integer identifying the navigating frame.
+     * @param cssSelector The CSS selector, which is to be used by Activity Transitions
+     *                    or applied to the transition layer's markup later.
      */
-    public void didStartNavigationTransitionForFrame(long frameId);
+    public void didStartNavigationTransitionForFrame(long frameId, String cssSelector);
+
+    /**
+     * Add transition element's name, position and size.
+     * @param name The name of the transition element.
+     * @param x The x position of the transition element.
+     * @param y The y position of the transition element.
+     * @param width The width of the transition element.
+     * @param height The height of the transition element.
+     */
+    public void addNavigationTransitionElements(String name, int x, int y, int width, int height);
 }

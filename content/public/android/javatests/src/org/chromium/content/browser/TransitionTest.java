@@ -67,7 +67,12 @@ public class TransitionTest extends ContentShellTestBase {
         }
 
         @Override
-        public void didStartNavigationTransitionForFrame(long frameId) {
+        public void didStartNavigationTransitionForFrame(long frameId, String cssSelector) {
+        }
+
+        @Override
+        public void addNavigationTransitionElements(
+                String name, int x, int y, int width, int height) {
         }
 
         public boolean getDidCallDefer() {

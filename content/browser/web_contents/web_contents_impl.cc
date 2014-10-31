@@ -2456,11 +2456,12 @@ void WebContentsImpl::DidStartProvisionalLoad(
 }
 
 void WebContentsImpl::DidStartNavigationTransition(
-    RenderFrameHostImpl* render_frame_host) {
+    RenderFrameHostImpl* render_frame_host,
+    const TransitionLayerData& transition_data) {
 #if defined(OS_ANDROID)
   int render_frame_id = render_frame_host->GetRoutingID();
   GetWebContentsAndroid()->DidStartNavigationTransitionForFrame(
-      render_frame_id);
+      render_frame_id, transition_data);
 #endif
 }
 

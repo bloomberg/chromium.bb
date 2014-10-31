@@ -1227,14 +1227,15 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 
 void RenderMessageFilter::OnAddNavigationTransitionData(
     FrameHostMsg_AddNavigationTransitionData_Params params) {
+  if (params.elements.size() > TransitionRequestManager::kMaxNumOfElements)
+    return;
   TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
       render_process_id_,
       params.render_frame_id,
       params.allowed_destination_host_pattern,
       params.selector,
       params.markup,
-      params.names,
-      params.rects);
+      params.elements);
 }
 
 void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
