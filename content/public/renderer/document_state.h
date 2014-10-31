@@ -161,11 +161,6 @@ class CONTENT_EXPORT DocumentState
     was_fetched_via_proxy_ = value;
   }
 
-  net::HostPortPair proxy_server() const { return proxy_server_; }
-  void set_proxy_server(net::HostPortPair proxy_server) {
-    proxy_server_ = proxy_server;
-  }
-
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -209,7 +204,6 @@ class CONTENT_EXPORT DocumentState
   bool was_alternate_protocol_available_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_fetched_via_proxy_;
-  net::HostPortPair proxy_server_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;

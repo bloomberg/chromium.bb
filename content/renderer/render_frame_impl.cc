@@ -2953,8 +2953,6 @@ void RenderFrameImpl::didReceiveResponse(
         extra_data->connection_info());
     document_state->set_was_fetched_via_proxy(
         extra_data->was_fetched_via_proxy());
-    document_state->set_proxy_server(
-        extra_data->proxy_server());
   }
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);

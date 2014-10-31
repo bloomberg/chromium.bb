@@ -132,7 +132,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_fetch_start)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_fetch_ready)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_fetch_end)
-  IPC_STRUCT_TRAITS_MEMBER(proxy_server)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)

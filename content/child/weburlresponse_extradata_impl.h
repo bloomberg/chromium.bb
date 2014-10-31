@@ -35,15 +35,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
     was_fetched_via_proxy_ = was_fetched_via_proxy;
   }
 
-  // The proxy server used if this request was loaded via an explicit proxy
-  // (HTTP, SOCKS, etc).
-  net::HostPortPair proxy_server() const {
-    return proxy_server_;
-  }
-  void set_proxy_server(net::HostPortPair proxy_server) {
-    proxy_server_ = proxy_server;
-  }
-
   /// Flag whether this request was loaded via the SPDY protocol or not.
   // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
   bool was_fetched_via_spdy() const {
@@ -91,7 +82,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   std::string npn_negotiated_protocol_;
   bool is_ftp_directory_listing_;
   bool was_fetched_via_proxy_;
-  net::HostPortPair proxy_server_;
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
