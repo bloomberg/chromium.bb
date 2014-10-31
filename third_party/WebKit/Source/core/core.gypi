@@ -1618,6 +1618,7 @@
             'rendering/FixedTableLayout.h',
             'rendering/FloatingObjects.cpp',
             'rendering/FloatingObjects.h',
+            'rendering/FloatToLayoutUnit.h',
             'rendering/FlowThreadController.cpp',
             'rendering/FlowThreadController.h',
             'rendering/GraphicsContextAnnotator.cpp',

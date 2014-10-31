@@ -33,6 +33,7 @@
   'variables': {
     'feature_defines': [
       'ENABLE_OPENTYPE_VERTICAL=1',
+      'ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
