@@ -104,6 +104,10 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 [ Mac Win ] virtual/textblob/svg/text/text-with-geometric-precision.svg [ WontFix ]
 
+# This test is specific to Android. Because long pressing on disabled/readonly input/textarea
+# won't trigger text selection on Linux/Mac/Windows platforms, hence we need to skip it.
+[ Linux Mac Win ] editing/selection/readonly-disabled-text-selection.html [ WontFix ]
+
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
 [ Linux Win Android ] virtual/antialiasedtext/fast/text/aat-morx.html [ WontFix ]

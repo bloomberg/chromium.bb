@@ -2322,7 +2322,11 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
         IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
         HitTestResult result = hitTestResultAtPoint(hitTestPoint);
         Node* innerNode = result.innerNode();
-        if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
+        if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode()
+#if OS(ANDROID)
+            || innerNode->canStartSelection()
+#endif
+            )) {
             selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
             if (m_frame->selection().isRange()) {
                 focusDocumentView();
