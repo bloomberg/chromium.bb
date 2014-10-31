@@ -13,6 +13,7 @@ grit("theme_resources") {
     "grit/theme_resources_map.h",
     "theme_resources_100_percent.pak",
     "theme_resources_200_percent.pak",
+    "theme_resources_300_percent.pak",
   ]
 
   deps = [

@@ -21,6 +21,7 @@ grit("resources") {
     "grit/renderer_resources.h",
     "renderer_resources_100_percent.pak",
     "renderer_resources_200_percent.pak",
+    "renderer_resources_300_percent.pak",
   ]
 }
 
