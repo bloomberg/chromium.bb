@@ -1,0 +1,18 @@
+IDL union types unittests
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Tests for method arguments
+PASS unionTypesTest.doubleOrStringArg(3.14) is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrStringArg("foo") is "string is passed: foo"
+PASS unionTypesTest.doubleOrStringArg(undefined) is "string is passed: undefined"
+PASS unionTypesTest.doubleOrStringArg(null) is "string is passed: null"
+PASS unionTypesTest.doubleOrStringArg({}) is "string is passed: [object Object]"
+PASS unionTypesTest.doubleOrStringArg([]) is "string is passed: "
+PASS typeof unionTypesTest.doubleOrStringArg(new Date) is "string"
+PASS unionTypesTest.doubleOrStringArg() threw exception TypeError: Failed to execute 'doubleOrStringArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

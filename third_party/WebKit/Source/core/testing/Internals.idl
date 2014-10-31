@@ -289,4 +289,5 @@
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, Dictionary options);
 
     DictionaryTest dictionaryTest();
+    UnionTypesTest unionTypesTest();
 };

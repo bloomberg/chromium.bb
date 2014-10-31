@@ -48,7 +48,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
     {# FIXME: We don't follow the spec on handling null and undefined at this
        moment. Should be fixed once we implement all necessary conversion steps
        below. #}
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     {# The numbers in the following comments refer to the steps described in
@@ -65,9 +65,9 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
     {% endfor %}
     {% if container.dictionary_type %}
     {# 12. Dictionaries #}
-    {# FIXME: This should be "object but not Date or RegExp". Add checks when
-       we implement conversions for Date and RegExp. #}
-    if (v8Value->IsObject()) {
+    {# FIXME: This should also check "object but not Date or RegExp". Add checks
+       when we implement conversions for Date and RegExp. #}
+    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
         {{container.dictionary_type.cpp_local_type}} cppValue = V8{{container.dictionary_type.type_name}}::toImpl(isolate, v8Value, exceptionState);
         if (!exceptionState.hadException())
             impl.set{{container.dictionary_type.type_name}}(cppValue);

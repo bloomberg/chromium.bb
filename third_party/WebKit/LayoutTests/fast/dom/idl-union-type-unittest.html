@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('IDL union types unittests');
+
+if (window.internals) {
+    var unionTypesTest = internals.unionTypesTest();
+    debug('Tests for method arguments');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg(3.14)', 'double is passed: 3.14');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg("foo")', 'string is passed: foo');
+    // The conversion rule prefers string over double, hence a value which
+    // is neither double nor string will be converted using ToString().
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg(undefined)', 'string is passed: undefined');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg(null)', 'string is passed: null');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg({})', 'string is passed: [object Object]');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArg([])', 'string is passed: ');
+    // ToString(Date) can contain timezone, so we can't specify the expectation.
+    // Just check that doubleOrStringArg() doesn't throw an exception.
+    shouldBeEqualToString('typeof unionTypesTest.doubleOrStringArg(new Date)', 'string');
+    shouldThrow('unionTypesTest.doubleOrStringArg()');
+}
+</script>

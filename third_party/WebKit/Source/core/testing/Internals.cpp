@@ -126,6 +126,7 @@
 #include "core/testing/MockPagePopupDriver.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
+#include "core/testing/UnionTypesTest.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/Cursor.h"
 #include "platform/Language.h"
@@ -1792,6 +1793,11 @@ PrivateScriptTest* Internals::privateScriptTest() const
 DictionaryTest* Internals::dictionaryTest() const
 {
     return DictionaryTest::create();
+}
+
+UnionTypesTest* Internals::unionTypesTest() const
+{
+    return UnionTypesTest::create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

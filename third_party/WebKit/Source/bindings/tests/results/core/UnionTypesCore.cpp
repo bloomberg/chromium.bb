@@ -71,7 +71,7 @@ void BooleanOrStringOrUnrestrictedDouble::setUnrestrictedDouble(double value)
 
 void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (v8Value->IsBoolean()) {
@@ -151,7 +151,7 @@ void NodeOrNodeList::trace(Visitor* visitor)
 
 void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, NodeOrNodeList& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (V8Node::hasInstance(v8Value, isolate)) {
@@ -217,7 +217,7 @@ void StringOrDouble::setDouble(double value)
 
 void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, StringOrDouble& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (v8Value->IsNumber()) {
@@ -288,7 +288,7 @@ void TestInterfaceGarbageCollectedOrString::trace(Visitor* visitor)
 
 void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
@@ -354,7 +354,7 @@ void TestInterfaceOrLong::setLong(int value)
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceOrLong& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -426,7 +426,7 @@ void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(PassRefPtr<TestInt
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
@@ -497,7 +497,7 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::trace(Visitor* visitor
 
 void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, ExceptionState& exceptionState)
 {
-    if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
+    if (v8Value.IsEmpty())
         return;
 
     if (V8TestInterfaceWillBeGarbageCollected::hasInstance(v8Value, isolate)) {
@@ -506,7 +506,7 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
         return;
     }
 
-    if (v8Value->IsObject()) {
+    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
         TestDictionary cppValue = V8TestDictionary::toImpl(isolate, v8Value, exceptionState);
         if (!exceptionState.hadException())
             impl.setTestDictionary(cppValue);

@@ -510,7 +510,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     # Simple types
     idl_type = idl_type.preprocessed_type
     add_includes_for_type(idl_type)
-    base_idl_type = idl_type.base_type
+    base_idl_type = idl_type.name if idl_type.is_union_type else idl_type.base_type
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
@@ -527,7 +527,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
-    elif idl_type.is_dictionary:
+    elif idl_type.is_dictionary or idl_type.is_union_type:
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif needs_type_check:
         cpp_expression_format = (
@@ -564,10 +564,6 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
 def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name=None, needs_type_check=True, index=None, declare_variable=True, isolate='info.GetIsolate()', used_in_private_script=False, return_promise=False, needs_exception_state_for_string=False):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
 
-    # FIXME: Support union type.
-    if idl_type.is_union_type:
-        return '/* no V8 -> C++ conversion for IDL union type: %s */' % idl_type.name
-
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
@@ -576,7 +572,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, needs_type_check, index, isolate)
 
-    if idl_type.is_dictionary:
+    if idl_type.is_dictionary or idl_type.is_union_type:
         return 'TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(%s, exceptionState)' % cpp_value
 
     if idl_type.is_string_type or idl_type.v8_conversion_needs_exception_state:

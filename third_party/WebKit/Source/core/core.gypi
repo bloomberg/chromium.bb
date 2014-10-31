@@ -3458,6 +3458,7 @@
           'testing/PrivateScriptTest.idl',
           'testing/RefCountedScriptWrappable.idl',
           'testing/TypeConversions.idl',
+          'testing/UnionTypesTest.idl',
         ],
         # testing IDL files that have partial interfaces in modules.
         'webcore_testing_idl_with_modules_dependency_files': [
@@ -3506,6 +3507,8 @@
             'testing/TypeConversions.h',
             'testing/URLTestHelpers.cpp',
             'testing/URLTestHelpers.h',
+            'testing/UnionTypesTest.cpp',
+            'testing/UnionTypesTest.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
         ],
