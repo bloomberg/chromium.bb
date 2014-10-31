@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "extensions/common/extension.h"
@@ -338,7 +339,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
       "extension_3", base::Bind(&AddFileWatchCallback));
 
   // event_router->addFileWatch create some tasks which are performed on message
-  // loop. Wait until they are done.
+  // loop of BrowserThread::FILE. Wait until they are done.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+  // We also wait the UI thread here, since some tasks which are performed above
+  // message loop back results to the UI thread.
   base::RunLoop().RunUntilIdle();
 
   // When /a is deleted (1 and 2 is notified).
@@ -377,6 +381,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
       "extension_3");
 
   // event_router->removeFileWatch create some tasks which are performed on
-  // message loop. wait until they are done.
-  base::RunLoop().RunUntilIdle();
+  // message loop of BrowserThread::FILE. Wait until they are done.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
