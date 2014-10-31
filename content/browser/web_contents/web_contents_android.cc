@@ -338,26 +338,10 @@ void WebContentsAndroid::DidDeferAfterResponseStarted(
   }
 }
 
-void WebContentsAndroid::DidStartNavigationTransitionForFrame(
-    int64 frame_id,
-    const TransitionLayerData& transition_data) {
+void WebContentsAndroid::DidStartNavigationTransitionForFrame(int64 frame_id) {
   JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jstring> jstring_css_selector(
-      ConvertUTF8ToJavaString(env, transition_data.css_selector));
-
   Java_WebContentsImpl_didStartNavigationTransitionForFrame(
-      env, obj_.obj(), frame_id, jstring_css_selector.obj());
-
-  std::vector<TransitionElement>::const_iterator it =
-      transition_data.elements.begin();
-  for (; it != transition_data.elements.end(); ++it) {
-    ScopedJavaLocalRef<jstring> jstring_name(ConvertUTF8ToJavaString(env,
-                                                                     it->name));
-    Java_WebContentsImpl_addNavigationTransitionElements(
-        env, obj_.obj(), jstring_name.obj(),
-        it->rect.x(), it->rect.y(), it->rect.width(), it->rect.height());
-  }
+      env, obj_.obj(), frame_id);
 }
 
 void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,

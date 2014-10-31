@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/transition_element.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -34,7 +33,8 @@ struct TransitionLayerData {
 
   std::string markup;
   std::string css_selector;
-  std::vector<TransitionElement> elements;
+  std::vector<std::string> names;
+  std::vector<gfx::Rect> rects;
   scoped_refptr<net::HttpResponseHeaders> response_headers;
   GURL request_url;
 };
@@ -57,11 +57,10 @@ class TransitionRequestManager {
       std::vector<GURL>& entering_stylesheets,
       const GURL& resolve_address);
 
-  // Get pending transition request data from RenderFrameHost specified by the
-  // given IDs and return true if the data exists. For web to web transition, we
-  // will have to delay the response until the embedder resumes the request if
-  // the data exists.
-  CONTENT_EXPORT bool GetPendingTransitionRequest(
+  // Returns whether the RenderFrameHost specified by the given IDs currently
+  // has any pending transition request data. If so, we will have to delay the
+  // response until the embedder resumes the request.
+  CONTENT_EXPORT bool HasPendingTransitionRequest(
       int render_process_id,
       int render_frame_id,
       const GURL& request_url,
@@ -75,17 +74,14 @@ class TransitionRequestManager {
       const std::string& allowed_destination_host_pattern,
       const std::string& css_selector,
       const std::string& markup,
-      const std::vector<TransitionElement>& elements);
+      const std::vector<std::string>& names,
+      const std::vector<gfx::Rect>& rects);
   CONTENT_EXPORT void AddPendingTransitionRequestDataForTesting(
       int render_process_id,
       int render_frame_id);
 
   CONTENT_EXPORT void ClearPendingTransitionRequestData(int render_process_id,
                                                         int render_frame_id);
-
-  // The maximum number of elements is meant to avoid passing arbitrarily large
-  // amount of objects across the IPC boundary.
-  static const int kMaxNumOfElements = 1024;
 
  private:
   class TransitionRequestData {
@@ -95,7 +91,8 @@ class TransitionRequestManager {
     void AddEntry(const std::string& allowed_destination_host_pattern,
                   const std::string& selector,
                   const std::string& markup,
-                  const std::vector<TransitionElement>& elements);
+                  const std::vector<std::string>& names,
+                  const std::vector<gfx::Rect>& rects);
     bool FindEntry(const GURL& request_url,
                     TransitionLayerData* transition_data);
 
@@ -107,12 +104,14 @@ class TransitionRequestManager {
       std::string allowed_destination_host_pattern;
       std::string css_selector;
       std::string markup;
-      std::vector<TransitionElement> elements;
+      std::vector<std::string> names;
+      std::vector<gfx::Rect> rects;
 
       AllowedEntry(const std::string& allowed_destination_host_pattern,
                    const std::string& css_selector,
                    const std::string& markup,
-                   const std::vector<TransitionElement>& elements);
+                   const std::vector<std::string>& names,
+                   const std::vector<gfx::Rect>& rects);
       ~AllowedEntry();
     };
     std::vector<AllowedEntry> allowed_entries_;

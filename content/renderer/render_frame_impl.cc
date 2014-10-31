@@ -2555,10 +2555,11 @@ void RenderFrameImpl::addNavigationTransitionData(
       allowed_destination_host_pattern.utf8();
   params.selector = selector.utf8();
   params.markup = markup.utf8();
-  params.elements.resize(web_names.size());
   for (size_t i = 0; i < web_names.size(); i++) {
-    params.elements[i].name = web_names[i].utf8();
-    params.elements[i].rect = gfx::Rect(web_rects[i]);
+    params.names.push_back(web_names[i].utf8());
+  }
+  for (size_t i = 0; i < web_rects.size(); i++) {
+    params.rects.push_back(gfx::Rect(web_rects[i]));
   }
 
   Send(new FrameHostMsg_AddNavigationTransitionData(params));

@@ -481,8 +481,7 @@ class CONTENT_EXPORT WebContentsImpl
                                bool is_error_page,
                                bool is_iframe_srcdoc) override;
   void DidStartNavigationTransition(
-      RenderFrameHostImpl* render_frame_host,
-      const TransitionLayerData& transition_data) override;
+      RenderFrameHostImpl* render_frame_host) override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)

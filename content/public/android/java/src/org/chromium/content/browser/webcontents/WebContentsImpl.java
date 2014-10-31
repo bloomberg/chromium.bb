@@ -228,18 +228,9 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @CalledByNative
-    private void didStartNavigationTransitionForFrame(long frameId, String cssSelector) {
+    private void didStartNavigationTransitionForFrame(long frameId) {
         if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.didStartNavigationTransitionForFrame(
-                    frameId, cssSelector);
-        }
-    }
-
-    @CalledByNative
-    private void addNavigationTransitionElements(String name, int x, int y, int width, int height) {
-        if (mNavigationTransitionDelegate != null) {
-            mNavigationTransitionDelegate.addNavigationTransitionElements(
-                    name, x, y, width, height);
+            mNavigationTransitionDelegate.didStartNavigationTransitionForFrame(frameId);
         }
     }
 

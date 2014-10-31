@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 
 #include "base/strings/string16.h"
-#include "content/browser/transition_request_manager.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "ui/base/page_transition_types.h"
@@ -36,8 +35,7 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // The |render_frame_host| started a transition-flagged navigation.
   virtual void DidStartNavigationTransition(
-      RenderFrameHostImpl* render_frame_host,
-      const TransitionLayerData& transition_data) {}
+      RenderFrameHostImpl* render_frame_host) {}
 
   // A provisional load in |render_frame_host| failed.
   virtual void DidFailProvisionalLoadWithError(

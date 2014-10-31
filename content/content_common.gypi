@@ -125,7 +125,6 @@
       'public/common/three_d_api_types.h',
       'public/common/top_controls_state.h',
       'public/common/top_controls_state_list.h',
-      'public/common/transition_element.h',
       'public/common/url_constants.cc',
       'public/common/url_constants.h',
       'public/common/url_fetcher.h',

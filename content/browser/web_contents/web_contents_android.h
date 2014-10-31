@@ -65,9 +65,7 @@ class CONTENT_EXPORT WebContentsAndroid
   bool WillHandleDeferAfterResponseStarted();
 
   // This method is invoked when a navigation transition has started.
-  void DidStartNavigationTransitionForFrame(
-      int64 frame_id,
-      const TransitionLayerData& transition_data);
+  void DidStartNavigationTransitionForFrame(int64 frame_id);
 
   void OnHide(JNIEnv* env, jobject obj);
   void OnShow(JNIEnv* env, jobject obj);

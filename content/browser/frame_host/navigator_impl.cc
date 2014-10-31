@@ -255,16 +255,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
         delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
     }
 
-    if (delegate_ && is_transition_navigation) {
-      TransitionLayerData transition_data;
-      TransitionRequestManager::GetInstance()->GetPendingTransitionRequest(
-          render_frame_host->GetProcess()->GetID(),
-          render_frame_host->GetRoutingID(),
-          validated_url,
-          &transition_data);
-      delegate_->DidStartNavigationTransition(render_frame_host,
-                                              transition_data);
-    }
+    if (delegate_ && is_transition_navigation)
+      delegate_->DidStartNavigationTransition(render_frame_host);
   }
 
   if (delegate_) {

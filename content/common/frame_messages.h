@@ -19,7 +19,6 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
-#include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
@@ -89,19 +88,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(rect)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_BEGIN(FrameHostMsg_AddNavigationTransitionData_Params)
-  IPC_STRUCT_MEMBER(int, render_frame_id)
-  IPC_STRUCT_MEMBER(std::string, allowed_destination_host_pattern)
-  IPC_STRUCT_MEMBER(std::string, selector)
-  IPC_STRUCT_MEMBER(std::string, markup)
-  IPC_STRUCT_MEMBER(std::vector<content::TransitionElement>, elements)
-IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // Error code as reported in the DidFailProvisionalLoad callback.
@@ -274,6 +260,15 @@ IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
 
   // If not empty, which frame to navigate.
   IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(FrameHostMsg_AddNavigationTransitionData_Params)
+  IPC_STRUCT_MEMBER(int, render_frame_id)
+  IPC_STRUCT_MEMBER(std::string, allowed_destination_host_pattern)
+  IPC_STRUCT_MEMBER(std::string, selector)
+  IPC_STRUCT_MEMBER(std::string, markup)
+  IPC_STRUCT_MEMBER(std::vector<std::string>, names)
+  IPC_STRUCT_MEMBER(std::vector<gfx::Rect>, rects)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
