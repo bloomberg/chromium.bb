@@ -469,12 +469,14 @@ class Builder(object):
           RemoveFile(out)
           return
         except WindowsError, inst:
-          retry += 1
           if retry > 5:
             raise
           self.Log('WindowsError %s while removing %s retry=%d' %
                    (inst, out, retry))
-        time.sleep(1)
+        sleep_time = 2**retry
+        sleep_time = sleep_time if sleep_time < 10 else 10
+        time.sleep(sleep_time)
+        retry += 1
 
   def FixWindowsPath(self, path):
     # The windows version of the nacl toolchain returns badly
