@@ -19,8 +19,6 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/history/core/browser/history_types.h"
 
-class FaviconService;
-
 // This class is JNI implementation of
 // org.chromium.chrome.database.SqliteCursor, it uses the AndroidStatement to
 // iterate among the result rows. This is not thread safe, all methods should
@@ -75,8 +73,7 @@ class SQLiteCursor {
       JNIEnv* env,
       const std::vector<std::string>& column_names,
       history::AndroidStatement* statement,
-      AndroidHistoryProviderService* service,
-      FaviconService* favicon_service);
+      AndroidHistoryProviderService* service);
 
   static bool RegisterSqliteCursor(JNIEnv* env);
 
@@ -132,8 +129,7 @@ class SQLiteCursor {
   // take the ownership of |statement|.
   SQLiteCursor(const std::vector<std::string>& column_names,
                history::AndroidStatement* statement,
-               AndroidHistoryProviderService* service,
-               FaviconService* favicon_service);
+               AndroidHistoryProviderService* service);
 
   virtual ~SQLiteCursor();
 
@@ -177,8 +173,6 @@ class SQLiteCursor {
   const std::vector<std::string> column_names_;
 
   AndroidHistoryProviderService* service_;
-
-  FaviconService* favicon_service_;
 
   // Live on UI thread.
   scoped_ptr<base::CancelableTaskTracker> tracker_;

@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "components/history/core/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
@@ -52,10 +51,8 @@ ScopedJavaLocalRef<jobject> SQLiteCursor::NewJavaSqliteCursor(
     JNIEnv* env,
     const std::vector<std::string>& column_names,
     history::AndroidStatement* statement,
-    AndroidHistoryProviderService* service,
-    FaviconService* favicon_service) {
-  SQLiteCursor* cursor = new SQLiteCursor(column_names, statement, service,
-                                          favicon_service);
+    AndroidHistoryProviderService* service) {
+  SQLiteCursor* cursor = new SQLiteCursor(column_names, statement, service);
   return Java_SQLiteCursor_create(env, reinterpret_cast<intptr_t>(cursor));
 }
 
@@ -148,14 +145,12 @@ void SQLiteCursor::Destroy(JNIEnv* env, jobject obj) {
 
 SQLiteCursor::SQLiteCursor(const std::vector<std::string>& column_names,
                            history::AndroidStatement* statement,
-                           AndroidHistoryProviderService* service,
-                           FaviconService* favicon_service)
+                           AndroidHistoryProviderService* service)
     : position_(-1),
       event_(false, false),
       statement_(statement),
       column_names_(column_names),
       service_(service),
-      favicon_service_(favicon_service),
       count_(-1),
       test_observer_(NULL) {
 }
@@ -206,7 +201,7 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tracker_.get())
     tracker_.reset(new base::CancelableTaskTracker());
-  favicon_service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
+  service_->GetLargestRawFaviconForID(id, callback, tracker_.get());
 }
 
 void SQLiteCursor::OnFaviconData(

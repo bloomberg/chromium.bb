@@ -1303,7 +1303,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
   // Creates and returns org.chromium.chrome.browser.database.SQLiteCursor
   // Java object.
   return SQLiteCursor::NewJavaSqliteCursor(env, columns_name, statement,
-             service_.get(), favicon_service_.get());
+             service_.get());
 }
 
 // Updates the bookmarks with the given column values. The value is not given if
@@ -1439,7 +1439,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
   // Creates and returns org.chromium.chrome.browser.database.SQLiteCursor
   // Java object.
   return SQLiteCursor::NewJavaSqliteCursor(env, columns_name, statement,
-             service_.get(), favicon_service_.get());
+             service_.get());
 }
 
 // Updates the search terms with the given column values. The value is not
