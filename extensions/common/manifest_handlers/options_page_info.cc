@@ -144,6 +144,7 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
       }
       if (options_ui->chrome_style.get())
         chrome_style = *options_ui->chrome_style;
+      open_in_tab = false;
       if (options_ui->open_in_tab.get())
         open_in_tab = *options_ui->open_in_tab;
     }

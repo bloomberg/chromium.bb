@@ -14,7 +14,56 @@ using namespace extensions;
 
 namespace errors = extensions::manifest_errors;
 
+namespace {
+
 class OptionsPageManifestTest : public ChromeManifestTest {
+ protected:
+  // Tests how the options_ui manifest key affects the open-in-tab and
+  // chromes-style behaviour.
+  testing::AssertionResult TestOptionsUIChromeStyleAndOpenInTab() {
+    // Explicitly specifying true in the manifest for options_ui.chrome_style
+    // and options_ui.open_in_tab sets them both to true.
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess("options_ui_flags_true.json");
+    EXPECT_TRUE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+    EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+    // Explicitly specifying false in the manifest for options_ui.chrome_style
+    // and options_ui.open_in_tab sets them both to false.
+    extension = LoadAndExpectSuccess("options_ui_flags_false.json");
+    EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+    EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+    // Specifying an options_ui key but neither options_ui.chrome_style nor
+    // options_ui.open_in_tab uses the default values: false for open-in-tab,
+    // false for use-chrome-style.
+    extension = LoadAndExpectSuccess("options_ui_page_basic.json");
+    EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+    EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+    // This extension has both options_page and options_ui specified. The
+    // options_ui key should take precedence.
+    extension = LoadAndExpectSuccess("options_ui_page_with_legacy_page.json");
+    EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+    EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+
+    return testing::AssertionSuccess();
+  }
+
+  // Tests how the options_page manifest key affects the open-in-tab and
+  // chromes-style behaviour.
+  testing::AssertionResult TestOptionsPageChromeStyleAndOpenInTab(
+      bool expect_open_in_tab) {
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess("init_valid_options.json");
+    EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
+    if (expect_open_in_tab) {
+      EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+    } else {
+      EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+    }
+    return testing::AssertionSuccess();
+  }
 };
 
 TEST_F(OptionsPageManifestTest, OptionsPageInApps) {
@@ -65,61 +114,29 @@ TEST_F(OptionsPageManifestTest, OptionsUIPage) {
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_WARNING);
 }
 
-// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields with
-// the flag enabled. This makes open_in_tab default to true if unspecified.
+// Runs TestOptionsUIChromeStyleAndOpenInTab with and without the
+// embedded-extension-options flag. The results should always be the same.
 TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTab) {
-  FeatureSwitch::ScopedOverride enable_flag(
-      FeatureSwitch::embedded_extension_options(), true);
-
-  // Explicitly specifying true in the manifest for options_ui.chrome_style and
-  // options_ui.open_in_tab sets them both to true.
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("options_ui_flags_true.json");
-  EXPECT_TRUE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  // Explicitly specifying false in the manifest for options_ui.chrome_style
-  // and options_ui.open_in_tab sets them both to false.
-  extension = LoadAndExpectSuccess("options_ui_flags_false.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  // Specifying an options_ui key but neither options_ui.chrome_style nor
-  // options_ui.open_in_tab uses the default values: false for open-in-tab,
-  // false for use-chrome-style.
-  extension = LoadAndExpectSuccess("options_ui_page_basic.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  // Likewise specifying no options_ui key at all.
-  extension = LoadAndExpectSuccess("init_valid_options.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-}
-
-// Tests for the options_ui.chrome_style and options_ui.open_in_tab fields when
-// the flag for embedded extension options is turned off. This makes
-// open_in_tab default to false.
-TEST_F(OptionsPageManifestTest, OptionsUIChromeStyleAndOpenInTabNoFlag) {
   ASSERT_FALSE(FeatureSwitch::embedded_extension_options()->IsEnabled());
-
-  // These conditions are the same as OptionsUIChromeStyleAndOpenInTab, except
-  // when the flag is off the default for open-in-tab is true.
-
-  scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("options_ui_flags_true.json");
-  EXPECT_TRUE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  extension = LoadAndExpectSuccess("options_ui_flags_false.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_FALSE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  extension = LoadAndExpectSuccess("options_ui_page_basic.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
-
-  extension = LoadAndExpectSuccess("init_valid_options.json");
-  EXPECT_FALSE(OptionsPageInfo::ShouldUseChromeStyle(extension.get()));
-  EXPECT_TRUE(OptionsPageInfo::ShouldOpenInTab(extension.get()));
+  EXPECT_TRUE(TestOptionsUIChromeStyleAndOpenInTab());
+  {
+    FeatureSwitch::ScopedOverride enable_flag(
+        FeatureSwitch::embedded_extension_options(), true);
+    EXPECT_TRUE(TestOptionsUIChromeStyleAndOpenInTab());
+  }
 }
+
+// Runs TestOptionsPageChromeStyleAndOpenInTab with and without the
+// embedded-extension-options flag. The default value of open-in-tab differs
+// depending on the flag's value.
+TEST_F(OptionsPageManifestTest, OptionsPageChromeStyleAndOpenInTab) {
+  ASSERT_FALSE(FeatureSwitch::embedded_extension_options()->IsEnabled());
+  EXPECT_TRUE(TestOptionsPageChromeStyleAndOpenInTab(true));
+  {
+    FeatureSwitch::ScopedOverride enable_flag(
+        FeatureSwitch::embedded_extension_options(), true);
+    EXPECT_TRUE(TestOptionsPageChromeStyleAndOpenInTab(false));
+  }
+}
+
+}  // namespace
