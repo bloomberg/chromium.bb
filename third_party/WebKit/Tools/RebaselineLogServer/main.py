@@ -27,9 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import datetime
+import json
 import logging
+import sys
 import webapp2
 
+from google.appengine.api import mail
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import template
 from google.appengine.ext.db import BadRequestError
@@ -47,70 +50,99 @@ from google.appengine.ext.db import BadRequestError
 
 LOG_PARAM = "log"
 NEW_ENTRY_PARAM = "newentry"
-# FIXME: no_needs_rebaseline is never used anymore. Remove support for it.
-# Instead, add UI to logs.html to collapse short entries.
-NO_NEEDS_REBASELINE_PARAM = "noneedsrebaseline"
 NUM_LOGS_PARAM = "numlogs"
 BEFORE_PARAM = "before"
+COMMAND_PARAM = "command"
 
+SENDER_ADDRESS = "bot@blinkrebaseline.appspotmail.com"
+REBASELINES_LIST_ADDRESS = "blink-rebaselines@chromium.org"
 
 class LogEntry(ndb.Model):
     content = ndb.TextProperty()
     date = ndb.DateTimeProperty(auto_now_add=True)
-    is_no_needs_rebaseline = ndb.BooleanProperty()
+
+
+class SendMailCommand(object):
+    def execute(self, command_data):
+        if "to" not in command_data or "subject" not in command_data or "body" not in command_data:
+            return "Malformed command JSON"
+        to = command_data["to"]
+        subject = command_data["subject"]
+        body = command_data["body"]
+        htmlbody = command_data["htmlbody"] if "htmlbody" in command_data else body
+        mail.send_mail(sender=SENDER_ADDRESS,
+                       to=to,
+                       reply_to="@".join(["apavlov", "chromium.org"]),
+                       cc=REBASELINES_LIST_ADDRESS,
+                       subject="Auto-rebaseline bot: " + subject,
+                       body=body,
+                       html=htmlbody)
+        return "Sent mail to %s (%s)" % (to, subject)
+
+
+COMMANDS = {
+    "sendmail": SendMailCommand()
+}
 
 
 def logs_query():
     return LogEntry.query().order(-LogEntry.date)
 
 
+def execute_command(command_data):
+    if not command_data:
+        return "ERROR: No command data"
+
+    if "name" not in command_data:
+        return "Command is missing a name: %s" % json.dumps(command_data)
+
+    name = command_data["name"]
+    command = COMMANDS.get(name)
+    if not command:
+        return "Command %s is unknown"
+    try:
+        return command.execute(command_data)
+    except Exception as e:
+        return "Exception caught when executing command '%s'" % name
+
+
 class UpdateLog(webapp2.RequestHandler):
     def post(self):
         new_log_data = self.request.POST.get(LOG_PARAM)
+
+        command_json = self.request.POST.get(COMMAND_PARAM)
+        command_data = json.loads(command_json) if command_json else None
+
+        command_output = ""
+        if command_data is not None:
+            command_output = "\n" + execute_command(command_data)
+            new_log_data += command_output
+
         # This entry is set to on whenever a new auto-rebaseline run is going to
         # start logging entries. If this is not on, then the log will get appended
         # to the most recent log entry.
         new_entry = self.request.POST.get(NEW_ENTRY_PARAM) == "on"
-        # The case of no NeedsRebaseline lines in TestExpectations is special-cased
-        # to always overwrite the previous noneedsrebaseline entry in the log to
-        # avoid cluttering the log with useless empty posts. It just updates the
-        # date of the entry so that users can see that rebaseline-o-matic is still
-        # running.
-        # FIXME: no_needs_rebaseline is never used anymore. Remove support for it.
-        no_needs_rebaseline = self.request.POST.get(NO_NEEDS_REBASELINE_PARAM) == "on"
 
         out = "Wrote new log entry."
-        if not new_entry or no_needs_rebaseline:
+        if not new_entry:
             log_entries = logs_query().fetch(1)
             if log_entries:
                 log_entry = log_entries[0]
                 log_entry.date = datetime.datetime.now()
-                if no_needs_rebaseline:
-                    # Don't write out a new log entry for repeated no_needs_rebaseline cases.
-                    # The repeated entries just add noise to the logs.
-                    if log_entry.is_no_needs_rebaseline:
-                        out = "Overwrote existing no needs rebaseline log."
-                    else:
-                        out = "Wrote new no needs rebaseline log."
-                        new_entry = True
-                        new_log_data = ""
-                elif log_entry.is_no_needs_rebaseline:
-                    out = "Previous entry was a no need rebaseline log. Writing a new log."
-                    new_entry = True
-                else:
-                    out = "Added to existing log entry."
-                    log_entry.content = log_entry.content + "\n" + new_log_data
+                log_entry.content = log_entry.content + "\n" + new_log_data
+                out = "Added to existing log entry."
 
         if new_entry or not log_entries:
-            log_entry = LogEntry(content=new_log_data, is_no_needs_rebaseline=no_needs_rebaseline)
+            log_entry = LogEntry(content=new_log_data)
 
         try:
             log_entry.put()
         except BadRequestError:
             out = "Created new log entry because the previous one exceeded the max length."
-            LogEntry(content=new_log_data, is_no_needs_rebaseline=no_needs_rebaseline).put()
+            LogEntry(content=new_log_data, date=datetime.datetime.now()).put()
 
-        self.response.out.write(out)
+        self.response.headers.add_header("Content-Type", "text/plain")
+        self.response.out.write(out + command_output)
 
 
 class UploadForm(webapp2.RequestHandler):
@@ -120,7 +152,7 @@ class UploadForm(webapp2.RequestHandler):
             "set_no_needs_rebaseline_url": "/noneedsrebaselines",
             "log_param": LOG_PARAM,
             "new_entry_param": NEW_ENTRY_PARAM,
-            "no_needs_rebaseline_param": NO_NEEDS_REBASELINE_PARAM,
+            "command_param": COMMAND_PARAM
         }))
 
 
