@@ -40,6 +40,7 @@
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
@@ -2020,8 +2021,11 @@ LayoutRect RenderBlock::blockSelectionGap(const RenderBlock* rootBlock, const La
         return LayoutRect();
 
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(logicalLeft, logicalTop, logicalWidth, logicalHeight));
-    if (paintInfo)
-        paintInfo->context->fillRect(alignSelectionRectToDevicePixels(gapRect), selectionBackgroundColor());
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
+    }
     return gapRect;
 }
 
@@ -2036,8 +2040,11 @@ LayoutRect RenderBlock::logicalLeftSelectionGap(const RenderBlock* rootBlock, co
         return LayoutRect();
 
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
-    if (paintInfo)
-        paintInfo->context->fillRect(alignSelectionRectToDevicePixels(gapRect), selObj->selectionBackgroundColor());
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+    }
     return gapRect;
 }
 
@@ -2052,8 +2059,11 @@ LayoutRect RenderBlock::logicalRightSelectionGap(const RenderBlock* rootBlock, c
         return LayoutRect();
 
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
-    if (paintInfo)
-        paintInfo->context->fillRect(alignSelectionRectToDevicePixels(gapRect), selObj->selectionBackgroundColor());
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+    }
     return gapRect;
 }
 

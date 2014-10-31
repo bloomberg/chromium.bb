@@ -92,7 +92,7 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     return "Unknown";
 }
 
-WTF::String DisplayItem::rendererDebugString(RenderObject* renderer)
+WTF::String DisplayItem::rendererDebugString(const RenderObject* renderer)
 {
     if (renderer && renderer->node())
         return String::format("nodeName: \"%s\", renderer: \"%p\"", renderer->node()->nodeName().utf8().data(), renderer);

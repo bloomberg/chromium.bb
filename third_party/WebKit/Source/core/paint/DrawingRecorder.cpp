@@ -21,7 +21,7 @@ void DrawingDisplayItem::replay(GraphicsContext* context)
 static bool s_inDrawingRecorder = false;
 #endif
 
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, const RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
     : m_context(context)
     , m_renderer(renderer)
     , m_phase(phase)

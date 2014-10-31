@@ -54,27 +54,30 @@ public:
 
     virtual void replay(GraphicsContext*) = 0;
 
-    RenderObject* renderer() const { return m_id.renderer; }
+    const RenderObject* renderer() const { return m_id.renderer; }
     Type type() const { return m_id.type; }
     bool idsEqual(const DisplayItem& other) const { return m_id.renderer == other.m_id.renderer && m_id.type == other.m_id.type; }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
-    static WTF::String rendererDebugString(RenderObject*);
+    static WTF::String rendererDebugString(const RenderObject*);
     virtual WTF::String asDebugString() const;
 #endif
 
 protected:
-    DisplayItem(RenderObject* renderer, Type type)
-    {
-        m_id.renderer = renderer;
-        m_id.type = type;
-    }
+    DisplayItem(const RenderObject* renderer, Type type)
+        : m_id(renderer, type)
+    { }
 
 private:
     struct Id {
-        RenderObject* renderer;
-        Type type;
+        Id(const RenderObject* r, Type t)
+            : renderer(r)
+            , type(t)
+        { }
+
+        const RenderObject* renderer;
+        const Type type;
     } m_id;
 };
 
