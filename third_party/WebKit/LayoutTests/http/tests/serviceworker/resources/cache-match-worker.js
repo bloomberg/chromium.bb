@@ -86,6 +86,14 @@ var vary_entries = {
 };
 
 prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match('not-present-in-the-cache')
+      .then(function(result) {
+          assert_equals(result, undefined,
+                        'Cache.match failures should resolve with undefined.');
+        });
+  }, 'Cache.match failure');
+
+prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll(simple_entries.a.request.url)
       .then(function(result) {
           assert_array_objects_equals(result, [simple_entries.a.response],
@@ -340,11 +348,11 @@ cache_test(function(cache) {
             result, response,
             'Cache.match should return a Response object that has the same ' +
             'properties as the stored response.');
+          return cache.match(response.url);
         })
-      .then(function() {
-          return assert_promise_rejects(
-            cache.match(response.url),
-            'NotFoundError',
+      .then(function(result) {
+          assert_equals(
+            result, undefined,
             'Cache.match should not match cache entry based on response URL.');
         });
   }, 'Cache.match with Request and Response objects with different URLs');

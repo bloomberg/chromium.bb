@@ -274,7 +274,8 @@ TEST_F(ServiceWorkerCacheTest, Basics)
 
     cache = Cache::create(testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorNotFound));
     matchPromise = cache->match(scriptState(), url, options);
-    EXPECT_EQ("NotFoundError: Entry was not found.", getRejectString(matchPromise));
+    ScriptValue scriptValue = getResolveValue(matchPromise);
+    EXPECT_TRUE(scriptValue.isUndefined());
 
     cache = Cache::create(testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorExists));
     matchPromise = cache->match(scriptState(), url, options);

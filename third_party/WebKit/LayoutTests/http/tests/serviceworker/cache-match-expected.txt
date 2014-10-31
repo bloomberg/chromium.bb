@@ -1,36 +1,37 @@
 This is a testharness.js-based test.
 PASS Service Worker: Cache.match and Cache.matchAll 
+PASS Cache.match failure 
 FAIL Cache.matchAll with URL undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:89:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:97:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 PASS Cache.match with URL 
 FAIL Cache.matchAll with Request undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:105:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:113:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 PASS Cache.match with Request 
 FAIL Cache.matchAll with new Request undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:122:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:130:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 PASS Cache.match with new Request 
 PASS Cache.match with Request containing non-empty body 
 FAIL Cache.matchAll with ignoreSearch option (request with no search parameters) undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:165:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:173:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with ignoreSearch option (request with search parameter) undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:182:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:190:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with request containing hash undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:198:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:206:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with string fragment "http" as query undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:211:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:219:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with prefixMatch option undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:221:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:229:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with prefixMatch option undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:236:18
-    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:399:20)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:244:18
+    at http://127.0.0.1:8000/serviceworker/resources/cache-match-worker.js:407:20)
 FAIL Cache.matchAll with responses containing "Vary" header assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
 FAIL Cache.match with responses containing "Vary" header assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
 FAIL Cache.matchAll with "ignoreVary" parameter assert_unreached: Test setup failed: Entry already exists. Reached unreachable code
