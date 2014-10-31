@@ -34,6 +34,15 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
 }
 
 {% endfor %}
+{% if container.needs_trace %}
+void {{container.cpp_class}}::trace(Visitor* visitor)
+{
+    {% for member in container.members if member.is_traceable %}
+    visitor->trace(m_{{member.cpp_name}});
+    {% endfor %}
+}
+
+{% endif %}
 void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
 {
     {# FIXME: We don't follow the spec on handling null and undefined at this

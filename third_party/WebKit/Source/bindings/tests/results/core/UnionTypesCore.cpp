@@ -143,6 +143,12 @@ void NodeOrNodeList::setNodeList(PassRefPtrWillBeRawPtr<NodeList> value)
     m_type = SpecificTypeNodeList;
 }
 
+void NodeOrNodeList::trace(Visitor* visitor)
+{
+    visitor->trace(m_node);
+    visitor->trace(m_nodeList);
+}
+
 void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, NodeOrNodeList& impl, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty() || isUndefinedOrNull(v8Value))
@@ -273,6 +279,11 @@ void TestInterfaceGarbageCollectedOrString::setString(String value)
     ASSERT(isNull());
     m_string = value;
     m_type = SpecificTypeString;
+}
+
+void TestInterfaceGarbageCollectedOrString::trace(Visitor* visitor)
+{
+    visitor->trace(m_testInterfaceGarbageCollected);
 }
 
 void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceGarbageCollectedOrString& impl, ExceptionState& exceptionState)
@@ -477,6 +488,11 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestDictionary(Test
     ASSERT(isNull());
     m_testDictionary = value;
     m_type = SpecificTypeTestDictionary;
+}
+
+void TestInterfaceWillBeGarbageCollectedOrTestDictionary::trace(Visitor* visitor)
+{
+    visitor->trace(m_testInterfaceWillBeGarbageCollected);
 }
 
 void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, ExceptionState& exceptionState)

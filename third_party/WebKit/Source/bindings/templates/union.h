@@ -30,6 +30,10 @@ public:
     void set{{member.type_name}}({{member.rvalue_cpp_type}});
 
     {% endfor %}
+    {% if container.needs_trace %}
+    void trace(Visitor*);
+
+    {% endif %}
 private:
     enum SpecificTypes {
         SpecificTypeNone,

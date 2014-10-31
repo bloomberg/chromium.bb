@@ -80,6 +80,8 @@ public:
     PassRefPtrWillBeRawPtr<NodeList> getAsNodeList();
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
+    void trace(Visitor*);
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -157,6 +159,8 @@ public:
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString();
     void setString(String);
+
+    void trace(Visitor*);
 
 private:
     enum SpecificTypes {
@@ -274,6 +278,8 @@ public:
     bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
     TestDictionary getAsTestDictionary();
     void setTestDictionary(TestDictionary);
+
+    void trace(Visitor*);
 
 private:
     enum SpecificTypes {
