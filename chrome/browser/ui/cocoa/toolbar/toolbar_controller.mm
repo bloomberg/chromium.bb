@@ -90,6 +90,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
 - (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
+- (void)browserActionsContainerWillDrag:(NSNotification*)notification;
 - (void)browserActionsContainerDragged:(NSNotification*)notification;
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
@@ -591,6 +592,11 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
               containerView:browserActionsContainerView_]);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
+           selector:@selector(browserActionsContainerWillDrag:)
+               name:kBrowserActionGrippyWillDragNotification
+             object:browserActionsController_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
            selector:@selector(browserActionsContainerDragged:)
                name:kBrowserActionGrippyDraggingNotification
              object:browserActionsController_];
@@ -637,6 +643,18 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification {
   [browserActionsController_ resizeContainerAndAnimate:YES];
   [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:YES];
+}
+
+- (void)browserActionsContainerWillDrag:(NSNotification*)notification {
+  CGFloat deltaX = [[notification.userInfo objectForKey:kTranslationWithDelta]
+      floatValue];
+  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
+  BOOL locationBarWillBeAtMinSize =
+      (locationBarWidth + deltaX) <= kMinimumLocationBarWidth;
+
+  // Prevent the |browserActionsContainerView_| from dragging if the width of
+  // location bar will reach the minimum.
+  [browserActionsContainerView_ setCanDragLeft:!locationBarWillBeAtMinSize];
 }
 
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification {

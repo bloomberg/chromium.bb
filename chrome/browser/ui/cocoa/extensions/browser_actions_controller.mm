@@ -119,6 +119,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
 
+// Sends a notification for the toolbar to determine whether the container can
+// translate with a delta on x-axis.
+- (void)containerWillTranslateOnX:(NSNotification*)notification;
+
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
 - (void)actionButtonDragging:(NSNotification*)notification;
@@ -304,6 +308,11 @@ class ExtensionServiceObserverBridge
         addObserver:self
            selector:@selector(containerDragFinished:)
                name:kBrowserActionGrippyDragFinishedNotification
+             object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerWillTranslateOnX:)
+               name:kBrowserActionGrippyWillDragNotification
              object:containerView_];
     // Listen for a finished drag from any button to make sure each open window
     // stays in sync.
@@ -668,6 +677,13 @@ class ExtensionServiceObserverBridge
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragFinishedNotification
                     object:self];
+}
+
+- (void)containerWillTranslateOnX:(NSNotification*)notification {
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionGrippyWillDragNotification
+                    object:self
+                  userInfo:notification.userInfo];
 }
 
 - (void)actionButtonDragging:(NSNotification*)notification {

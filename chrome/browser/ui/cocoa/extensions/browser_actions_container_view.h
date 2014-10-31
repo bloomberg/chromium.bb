@@ -16,6 +16,12 @@ extern NSString* const kBrowserActionGrippyDraggingNotification;
 // Sent when a user-initiated drag to resize the container has finished.
 extern NSString* const kBrowserActionGrippyDragFinishedNotification;
 
+// Sent before the dragging will resize the container.
+extern NSString* const kBrowserActionGrippyWillDragNotification;
+
+// Key which is used to notify the translation with delta.
+extern NSString* const kTranslationWithDelta;
+
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.
 @interface BrowserActionsContainerView : NSView {
