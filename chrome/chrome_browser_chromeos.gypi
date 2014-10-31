@@ -269,6 +269,8 @@
         'browser/chromeos/file_system_provider/fileapi/file_stream_writer.h',
         'browser/chromeos/file_system_provider/fileapi/provider_async_file_util.cc',
         'browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h',
+        'browser/chromeos/file_system_provider/fileapi/watcher_manager.cc',
+        'browser/chromeos/file_system_provider/fileapi/watcher_manager.h',
         'browser/chromeos/file_system_provider/mount_path_util.cc',
         'browser/chromeos/file_system_provider/mount_path_util.h',
         'browser/chromeos/file_system_provider/notification_manager.cc',

@@ -9,7 +9,9 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -49,6 +51,12 @@ struct Subscriber {
 
   // Whether the subscriber should be restored after shutdown or not.
   bool persistent;
+
+  // Callback to be called for each watcher notification. It's optional, but
+  // not allowed for persistent watchers. In case of persistent subscribers,
+  // the notification should be handled using observers, as the callback can't
+  // be restored after shutdown.
+  storage::WatcherManager::NotificationCallback notification_callback;
 };
 
 // Represents a watcher on a file system.

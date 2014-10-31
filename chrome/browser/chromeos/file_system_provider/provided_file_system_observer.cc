@@ -7,7 +7,8 @@
 namespace chromeos {
 namespace file_system_provider {
 
-ProvidedFileSystemObserver::Change::Change() : change_type(CHANGED) {
+ProvidedFileSystemObserver::Change::Change()
+    : change_type(storage::WatcherManager::CHANGED) {
 }
 
 ProvidedFileSystemObserver::Change::~Change() {

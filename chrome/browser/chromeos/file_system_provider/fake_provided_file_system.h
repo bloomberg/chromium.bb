@@ -18,6 +18,8 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -131,7 +133,9 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      const storage::WatcherManager::NotificationCallback&
+          notification_callback) override;
   virtual void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
@@ -144,7 +148,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
   virtual bool Notify(const base::FilePath& entry_path,
                       bool recursive,
-                      ProvidedFileSystemObserver::ChangeType change_type,
+                      storage::WatcherManager::ChangeType change_type,
                       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
                       const std::string& tag) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;

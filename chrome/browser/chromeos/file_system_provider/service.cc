@@ -347,7 +347,7 @@ void Service::OnRequestUnmountStatus(
 
 void Service::OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
                                const Watcher& watcher,
-                               ChangeType change_type,
+                               storage::WatcherManager::ChangeType change_type,
                                const Changes& changes,
                                const base::Closure& callback) {
   callback.Run();

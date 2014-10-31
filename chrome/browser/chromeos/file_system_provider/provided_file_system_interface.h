@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
 class EventRouter;
@@ -177,13 +178,16 @@ class ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests adding a watcher on an entry. |recursive| must not be true for
-  // files.
+  // files. |callback| is optional, but it can't be used for persistent
+  // watchers.
   virtual AbortCallback AddWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      const storage::WatcherManager::NotificationCallback&
+          notification_callback) = 0;
 
   // Requests removing a watcher, which is immediately deleted from the internal
   // list, hence the operation is not abortable.
@@ -199,7 +203,7 @@ class ProvidedFileSystemInterface {
   // TODO(mtomasz): Replace [entry_path, recursive] with a watcher id.
   virtual bool Notify(const base::FilePath& entry_path,
                       bool recursive,
-                      ProvidedFileSystemObserver::ChangeType change_type,
+                      storage::WatcherManager::ChangeType change_type,
                       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
                       const std::string& tag) = 0;
 

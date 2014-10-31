@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 using chromeos::file_system_provider::MountOptions;
 using chromeos::file_system_provider::ProvidedFileSystemInfo;
@@ -36,18 +37,18 @@ const char kInvalidNotificationErrorMessage[] = "The notification is invalid.";
 
 // Converts the change type from the IDL type to a native type. |changed_type|
 // must be specified (not CHANGE_TYPE_NONE).
-ProvidedFileSystemObserver::ChangeType ParseChangeType(
+storage::WatcherManager::ChangeType ParseChangeType(
     const api::file_system_provider::ChangeType& change_type) {
   switch (change_type) {
     case api::file_system_provider::CHANGE_TYPE_CHANGED:
-      return ProvidedFileSystemObserver::CHANGED;
+      return storage::WatcherManager::CHANGED;
     case api::file_system_provider::CHANGE_TYPE_DELETED:
-      return ProvidedFileSystemObserver::DELETED;
+      return storage::WatcherManager::DELETED;
     default:
       break;
   }
   NOTREACHED();
-  return ProvidedFileSystemObserver::CHANGED;
+  return storage::WatcherManager::CHANGED;
 }
 
 // Convert the change from the IDL type to a native type. The reason IDL types

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -142,7 +143,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      const storage::WatcherManager::NotificationCallback&
+          notification_callback) override;
   virtual void RemoveWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
@@ -155,7 +158,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
   virtual bool Notify(const base::FilePath& entry_path,
                       bool recursive,
-                      ProvidedFileSystemObserver::ChangeType change_type,
+                      storage::WatcherManager::ChangeType change_type,
                       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
                       const std::string& tag) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
@@ -169,10 +172,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Called when adding a watcher is completed with either success or en error.
   void OnAddWatcherCompleted(
-      const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
-      bool persistent,
+      const Subscriber& subscriber,
       const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result);
 
@@ -181,7 +183,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   void OnNotifyCompleted(
       const base::FilePath& entry_path,
       bool recursive,
-      ProvidedFileSystemObserver::ChangeType change_type,
+      storage::WatcherManager::ChangeType change_type,
       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
       const std::string& last_tag,
       const std::string& tag);

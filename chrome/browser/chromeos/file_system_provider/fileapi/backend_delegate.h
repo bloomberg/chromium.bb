@@ -50,6 +50,7 @@ class BackendDelegate : public chromeos::FileSystemBackendDelegate {
 
  private:
   scoped_ptr<storage::AsyncFileUtil> async_file_util_;
+  scoped_ptr<storage::WatcherManager> watcher_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BackendDelegate);
 };

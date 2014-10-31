@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace extensions {
 class ExtensionRegistry;
@@ -132,7 +133,7 @@ class Service : public KeyedService,
   virtual void OnWatcherChanged(
       const ProvidedFileSystemInfo& file_system_info,
       const Watcher& watcher,
-      ProvidedFileSystemObserver::ChangeType change_type,
+      storage::WatcherManager::ChangeType change_type,
       const ProvidedFileSystemObserver::Changes& changes,
       const base::Closure& callback) override;
   virtual void OnWatcherTagUpdated(

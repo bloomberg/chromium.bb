@@ -369,18 +369,27 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::AddWatcher(
     const base::FilePath& entry_path,
     bool recursive,
     bool persistent,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
   // TODO(mtomasz): Wrap the entire method body with an asynchronous queue to
   // avoid races.
-  if (persistent && !file_system_info_.supports_notify_tag()) {
-    OnAddWatcherCompleted(origin,
-                          entry_path,
+  if (persistent && (!file_system_info_.supports_notify_tag() ||
+                     !notification_callback.is_null())) {
+    OnAddWatcherCompleted(entry_path,
                           recursive,
-                          persistent,
+                          Subscriber(),
                           callback,
                           base::File::FILE_ERROR_INVALID_OPERATION);
     return AbortCallback();
   }
+
+  // Create a candidate subscriber. This could be done in OnAddWatcherCompleted,
+  // but base::Bind supports only up to 7 arguments.
+  Subscriber subscriber;
+  subscriber.origin = origin;
+  subscriber.persistent = persistent;
+  subscriber.notification_callback = notification_callback;
 
   const WatcherKey key(entry_path, recursive);
   const Watchers::const_iterator it = watchers_.find(key);
@@ -388,10 +397,9 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::AddWatcher(
     const bool exists =
         it->second.subscribers.find(origin) != it->second.subscribers.end();
     OnAddWatcherCompleted(
-        origin,
         entry_path,
         recursive,
-        persistent,
+        subscriber,
         callback,
         exists ? base::File::FILE_ERROR_EXISTS : base::File::FILE_OK);
     return AbortCallback();
@@ -406,17 +414,15 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::AddWatcher(
           recursive,
           base::Bind(&ProvidedFileSystem::OnAddWatcherCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
-                     origin,
                      entry_path,
                      recursive,
-                     persistent,
+                     subscriber,
                      callback))));
 
   if (!request_id) {
-    OnAddWatcherCompleted(origin,
-                          entry_path,
+    OnAddWatcherCompleted(entry_path,
                           recursive,
-                          persistent,
+                          subscriber,
                           callback,
                           base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -498,12 +504,12 @@ void ProvidedFileSystem::RemoveObserver(ProvidedFileSystemObserver* observer) {
 bool ProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
-    ProvidedFileSystemObserver::ChangeType change_type,
+    storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag) {
   const WatcherKey key(entry_path, recursive);
-  const Watchers::iterator it = watchers_.find(key);
-  if (it == watchers_.end())
+  const auto& watcher_it = watchers_.find(key);
+  if (watcher_it == watchers_.end())
     return false;
 
   // The tag must be provided if and only if it's explicitly supported.
@@ -521,13 +527,22 @@ bool ProvidedFileSystem::Notify(
                                  recursive,
                                  change_type,
                                  base::Passed(&changes),
-                                 it->second.last_tag,
+                                 watcher_it->second.last_tag,
                                  tag)));
 
+  // Call all notification callbacks (if any).
+  for (const auto& subscriber_it : watcher_it->second.subscribers) {
+    const storage::WatcherManager::NotificationCallback& notification_callback =
+        subscriber_it.second.notification_callback;
+    if (!notification_callback.is_null())
+      notification_callback.Run(change_type);
+  }
+
+  // Notify all observers.
   FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
                     observers_,
                     OnWatcherChanged(file_system_info_,
-                                     it->second,
+                                     watcher_it->second,
                                      change_type,
                                      changes_ref,
                                      auto_updater->CreateCallback()));
@@ -557,10 +572,9 @@ void ProvidedFileSystem::Abort(
 }
 
 void ProvidedFileSystem::OnAddWatcherCompleted(
-    const GURL& origin,
     const base::FilePath& entry_path,
     bool recursive,
-    bool persistent,
+    const Subscriber& subscriber,
     const storage::AsyncFileUtil::StatusCallback& callback,
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
@@ -575,11 +589,11 @@ void ProvidedFileSystem::OnAddWatcherCompleted(
     return;
   }
 
+  // TODO(mtomasz): Add a queue to prevent races.
   Watcher* const watcher = &watchers_[key];
   watcher->entry_path = entry_path;
   watcher->recursive = recursive;
-  watcher->subscribers[origin].origin = origin;
-  watcher->subscribers[origin].persistent |= persistent;
+  watcher->subscribers[subscriber.origin] = subscriber;
 
   FOR_EACH_OBSERVER(ProvidedFileSystemObserver,
                     observers_,
@@ -591,7 +605,7 @@ void ProvidedFileSystem::OnAddWatcherCompleted(
 void ProvidedFileSystem::OnNotifyCompleted(
     const base::FilePath& entry_path,
     bool recursive,
-    ProvidedFileSystemObserver::ChangeType change_type,
+    storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> /* changes */,
     const std::string& last_tag,
     const std::string& tag) {
@@ -618,7 +632,7 @@ void ProvidedFileSystem::OnNotifyCompleted(
                     OnWatcherTagUpdated(file_system_info_, it->second));
 
   // If the watched entry is deleted, then remove the watcher.
-  if (change_type == ProvidedFileSystemObserver::DELETED) {
+  if (change_type == storage::WatcherManager::DELETED) {
     // Make a copy, since the |it| iterator will get invalidated on the last
     // subscriber.
     Subscribers subscribers = it->second.subscribers;

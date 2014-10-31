@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "storage/browser/fileapi/watcher_manager.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -24,9 +25,6 @@ class ProvidedFileSystemObserver {
  public:
   struct Change;
 
-  // Type of a change to a watched entry.
-  enum ChangeType { CHANGED, DELETED };
-
   // Lust of changes.
   typedef std::vector<Change> Changes;
 
@@ -36,7 +34,7 @@ class ProvidedFileSystemObserver {
     ~Change();
 
     base::FilePath entry_path;
-    ChangeType change_type;
+    storage::WatcherManager::ChangeType change_type;
   };
 
   // Called when a watched entry is changed, including removals. |callback|
@@ -45,7 +43,7 @@ class ProvidedFileSystemObserver {
   // called. The reference to |changes| is valid at least as long as |callback|.
   virtual void OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
                                 const Watcher& watcher,
-                                ChangeType change_type,
+                                storage::WatcherManager::ChangeType change_type,
                                 const Changes& changes,
                                 const base::Closure& callback) = 0;
 

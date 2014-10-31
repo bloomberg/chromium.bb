@@ -326,7 +326,9 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::AddWatcher(
     const base::FilePath& entry_watcher,
     bool recursive,
     bool persistent,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
   // TODO(mtomasz): Implement it once needed.
   return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
 }
@@ -368,7 +370,7 @@ void FakeProvidedFileSystem::RemoveObserver(
 bool FakeProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
-    ProvidedFileSystemObserver::ChangeType change_type,
+    storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag) {
   NOTREACHED();

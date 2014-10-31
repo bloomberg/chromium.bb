@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
+#include "chrome/browser/chromeos/file_system_provider/fileapi/watcher_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -32,7 +33,9 @@ const int kWriterBufferSize = 512 * 1024;  // 512KB.
 }  // namespace
 
 BackendDelegate::BackendDelegate()
-    : async_file_util_(new internal::ProviderAsyncFileUtil) {}
+    : async_file_util_(new internal::ProviderAsyncFileUtil),
+      watcher_manager_(new WatcherManager) {
+}
 
 BackendDelegate::~BackendDelegate() {}
 
@@ -73,8 +76,9 @@ scoped_ptr<storage::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
 
 storage::WatcherManager* BackendDelegate::GetWatcherManager(
     const storage::FileSystemURL& url) {
-  NOTIMPLEMENTED();
-  return NULL;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
+  return watcher_manager_.get();
 }
 
 void BackendDelegate::GetRedirectURLForContents(

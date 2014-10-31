@@ -14,6 +14,7 @@ namespace file_system_provider {
 
 class FileSystemInterface;
 
+// TODO(mtomasz): Remove this namespace.
 namespace internal {
 
 // The implementation of storage::AsyncFileUtil for provided file systems. It is
