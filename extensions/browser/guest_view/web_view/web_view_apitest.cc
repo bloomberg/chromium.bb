@@ -161,12 +161,10 @@ void WebViewAPITest::RunTest(const std::string& test_name,
 
   ExtensionTestMessageListener done_listener("TEST_PASSED", false);
   done_listener.set_failure_message("TEST_FAILED");
-  if (!content::ExecuteScript(
-          embedder_web_contents_,
-          base::StringPrintf("runTest('%s')", test_name.c_str()))) {
-    LOG(ERROR) << "Unable to start test.";
-    return;
-  }
+  ASSERT_TRUE(content::ExecuteScript(
+      embedder_web_contents_,
+      base::StringPrintf("runTest('%s')", test_name.c_str())))
+      << "Unable to start test.";
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 

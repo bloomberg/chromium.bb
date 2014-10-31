@@ -201,6 +201,7 @@
         '../browser/api/sockets_tcp/sockets_tcp_apitest.cc',
         '../browser/api/sockets_udp/sockets_udp_apitest.cc',
         '../browser/api/usb/usb_apitest.cc',
+        '../browser/guest_view/app_view/app_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_apitest.h',
         '../browser/guest_view/web_view/web_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_media_access_apitest.cc',
