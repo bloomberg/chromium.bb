@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -26,10 +24,15 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
 #include "grit/components_strings.h"
+#include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/keyboard/keyboard_controller.h"
+
+#if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#endif
 
 namespace {
 
@@ -272,7 +275,7 @@ void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
   AccessibilityManager::Get()->ToggleSpokenFeedback(
-      ash::A11Y_NOTIFICATION_NONE);
+      ui::A11Y_NOTIFICATION_NONE);
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(

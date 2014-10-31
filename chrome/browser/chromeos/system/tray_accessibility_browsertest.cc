@@ -294,10 +294,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowTrayIcon) {
 
   // Toggling spoken feedback changes the visibillity of the icon.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Toggling high contrast the visibillity of the icon.
@@ -325,12 +325,12 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowTrayIcon) {
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(IsTrayIconVisible());
@@ -362,10 +362,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
 
   // Toggling spoken feedback changes the visibillity of the menu.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(CanCreateMenuItem());
 
   // Toggling high contrast changes the visibillity of the menu.
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableAutoclick(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DISABLED_ShowMenu) {
   AccessibilityManager::Get()->EnableAutoclick(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -432,10 +432,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
 
   // The menu remains visible regardless of toggling spoken feedback.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // The menu remains visible regardless of toggling high contrast.
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableAutoclick(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest,
   AccessibilityManager::Get()->EnableAutoclick(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -500,10 +500,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
 
   // The menu remains visible regardless of toggling spoken feedback.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // The menu remains visible regardless of toggling high contrast.
@@ -530,14 +530,14 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   AccessibilityManager::Get()->EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
 
   // Enabling spoken feedback should show the notification.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_SHOW);
+      true, ui::A11Y_NOTIFICATION_SHOW);
   EXPECT_EQ(CHROMEVOX_ENABLED, GetNotificationText());
 
   // Connecting a braille display when spoken feedback is already enabled
@@ -581,7 +581,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
   EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   EXPECT_FALSE(IsNotificationShown());
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_SHOW);
+      false, ui::A11Y_NOTIFICATION_SHOW);
   EXPECT_FALSE(IsNotificationShown());
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 
   // Enabling spoken feedback.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 
   // Disabling spoken feedback.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
@@ -799,7 +799,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 
   // Enabling all of the a11y features.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   AccessibilityManager::Get()->EnableHighContrast(true);
   SetMagnifierEnabled(true);
   AccessibilityManager::Get()->EnableLargeCursor(true);
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 
   // Disabling all of the a11y features.
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      false, ash::A11Y_NOTIFICATION_NONE);
+      false, ui::A11Y_NOTIFICATION_NONE);
   AccessibilityManager::Get()->EnableHighContrast(false);
   SetMagnifierEnabled(false);
   AccessibilityManager::Get()->EnableLargeCursor(false);

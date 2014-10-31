@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -40,6 +39,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_manager/user.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#include "ui/chromeos/accessibility_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "url/gurl.h"
@@ -159,7 +159,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kAccessibilityScreenMagnifierType,
-      ash::kDefaultMagnifierType,
+      ui::kDefaultMagnifierType,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kAccessibilityScreenMagnifierScale,

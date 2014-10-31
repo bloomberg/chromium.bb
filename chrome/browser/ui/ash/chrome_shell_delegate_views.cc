@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/accessibility_delegate.h"
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/media_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/chromeos/accessibility_types.h"
 
 namespace {
 
@@ -78,7 +78,7 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
   bool IsSpokenFeedbackEnabled() const override { return false; }
 
   void ToggleSpokenFeedback(
-      ash::AccessibilityNotificationVisibility notify) override {}
+      ui::AccessibilityNotificationVisibility notify) override {}
 
   void SetLargeCursorEnabled(bool enalbed) override {}
 
@@ -86,7 +86,7 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
 
   void SetMagnifierEnabled(bool enabled) override {}
 
-  void SetMagnifierType(ash::MagnifierType type) override {}
+  void SetMagnifierType(ui::MagnifierType type) override {}
 
   bool IsMagnifierEnabled() const override { return false; }
 
@@ -94,8 +94,8 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
 
   bool IsAutoclickEnabled() const override { return false; }
 
-  ash::MagnifierType GetMagnifierType() const override {
-    return ash::kDefaultMagnifierType;
+  ui::MagnifierType GetMagnifierType() const override {
+    return ui::kDefaultMagnifierType;
   }
 
   void SaveScreenMagnifierScale(double scale) override {}
@@ -114,10 +114,10 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
 
   bool IsVirtualKeyboardEnabled() const override { return false; }
 
-  void TriggerAccessibilityAlert(ash::AccessibilityAlert alert) override {}
+  void TriggerAccessibilityAlert(ui::AccessibilityAlert alert) override {}
 
-  ash::AccessibilityAlert GetLastAccessibilityAlert() override {
-    return ash::A11Y_ALERT_NONE;
+  ui::AccessibilityAlert GetLastAccessibilityAlert() override {
+    return ui::A11Y_ALERT_NONE;
   }
 
   void PlayEarcon(int sound_key) override {}

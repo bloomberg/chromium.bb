@@ -178,7 +178,7 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
 #endif
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
-    AccessibilityNotificationVisibility notify) {
+    ui::AccessibilityNotificationVisibility notify) {
   FOR_EACH_OBSERVER(
       AccessibilityObserver,
       accessibility_observers_,

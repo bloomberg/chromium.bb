@@ -37,11 +37,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/chromeos/accessibility_types.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -773,7 +773,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kDeviceLoginScreenDefaultScreenMagnifierType,
           NULL,
           0,
-          ash::MAGNIFIER_FULL,
+          ui::MAGNIFIER_FULL,
           false)));
   // TODO(binjin): Remove LegacyPoliciesDeprecatingPolicyHandler for these two
   // policies once deprecation of legacy power management policies is done.

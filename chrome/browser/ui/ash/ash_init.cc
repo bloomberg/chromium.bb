@@ -77,12 +77,12 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   DCHECK(chromeos::MagnificationManager::Get());
   bool magnifier_enabled =
       chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
-  ash::MagnifierType magnifier_type =
+  ui::MagnifierType magnifier_type =
       chromeos::MagnificationManager::Get()->GetMagnifierType();
   shell->magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_FULL);
+      SetEnabled(magnifier_enabled && magnifier_type == ui::MAGNIFIER_FULL);
   shell->partial_magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_PARTIAL);
+      SetEnabled(magnifier_enabled && magnifier_type == ui::MAGNIFIER_PARTIAL);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {

@@ -46,7 +46,7 @@ class MagnificationManagerImpl : public MagnificationManager,
         magnifier_type_pref_handler_(prefs::kAccessibilityScreenMagnifierType),
         magnifier_scale_pref_handler_(
             prefs::kAccessibilityScreenMagnifierScale),
-        type_(ash::kDefaultMagnifierType),
+        type_(ui::kDefaultMagnifierType),
         enabled_(false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -68,7 +68,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     return enabled_;
   }
 
-  virtual ash::MagnifierType GetMagnifierType() const override {
+  virtual ui::MagnifierType GetMagnifierType() const override {
     return type_;
   }
 
@@ -81,7 +81,7 @@ class MagnificationManagerImpl : public MagnificationManager,
     prefs->CommitPendingWrite();
   }
 
-  virtual void SetMagnifierType(ash::MagnifierType type) override {
+  virtual void SetMagnifierType(ui::MagnifierType type) override {
     if (!profile_)
       return;
 
@@ -152,7 +152,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
     enabled_ = enabled;
 
-    if (type_ == ash::MAGNIFIER_FULL) {
+    if (type_ == ui::MAGNIFIER_FULL) {
       ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
           enabled_);
     } else {
@@ -161,11 +161,11 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
   }
 
-  virtual void SetMagnifierTypeInternal(ash::MagnifierType type) {
+  virtual void SetMagnifierTypeInternal(ui::MagnifierType type) {
     if (type_ == type)
       return;
 
-    type_ = ash::MAGNIFIER_FULL;  // (leave out for full magnifier)
+    type_ = ui::MAGNIFIER_FULL;  // (leave out for full magnifier)
   }
 
   void UpdateMagnifierFromPrefs() {
@@ -177,9 +177,9 @@ class MagnificationManagerImpl : public MagnificationManager,
     const int type_integer = profile_->GetPrefs()->GetInteger(
         prefs::kAccessibilityScreenMagnifierType);
 
-    ash::MagnifierType type = ash::kDefaultMagnifierType;
-    if (type_integer > 0 && type_integer <= ash::kMaxMagnifierType) {
-      type = static_cast<ash::MagnifierType>(type_integer);
+    ui::MagnifierType type = ui::kDefaultMagnifierType;
+    if (type_integer > 0 && type_integer <= ui::kMaxMagnifierType) {
+      type = static_cast<ui::MagnifierType>(type_integer);
     } else if (type_integer == 0) {
       // Type 0 is used to disable the screen magnifier through policy. As the
       // magnifier type is irrelevant in this case, it is OK to just fall back
@@ -200,7 +200,7 @@ class MagnificationManagerImpl : public MagnificationManager,
         ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
         enabled_,
         type_,
-        ash::A11Y_NOTIFICATION_NONE);
+        ui::A11Y_NOTIFICATION_NONE);
 
 #if defined(OS_CHROMEOS)
     if (AccessibilityManager::Get()) {
@@ -251,7 +251,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   AccessibilityManager::PrefHandler magnifier_type_pref_handler_;
   AccessibilityManager::PrefHandler magnifier_scale_pref_handler_;
 
-  ash::MagnifierType type_;
+  ui::MagnifierType type_;
   bool enabled_;
 
   content::NotificationRegistrar registrar_;

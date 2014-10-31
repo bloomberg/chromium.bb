@@ -59,7 +59,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
     ash::AccessibilityDelegate* ad =
         ash::Shell::GetInstance()->accessibility_delegate();
     if (on != ad->IsSpokenFeedbackEnabled())
-      ad->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
+      ad->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   }
 
   base::TimeDelta Now() {

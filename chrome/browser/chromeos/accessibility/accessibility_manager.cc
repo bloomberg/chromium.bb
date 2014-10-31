@@ -4,14 +4,6 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
-#include "ash/audio/sounds.h"
-#include "ash/autoclick/autoclick_controller.h"
-#include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
-#include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,7 +19,6 @@
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -66,6 +57,18 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+
+#if !defined(USE_ATHENA)
+#include "ash/audio/sounds.h"
+#include "ash/autoclick/autoclick_controller.h"
+#include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/shell.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#endif
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -246,17 +249,17 @@ void UnloadChromeVoxExtension(Profile* profile) {
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     AccessibilityNotificationType notification_type,
     bool enabled,
-    ash::AccessibilityNotificationVisibility notify)
+    ui::AccessibilityNotificationVisibility notify)
   : notification_type(notification_type),
     enabled(enabled),
-    magnifier_type(ash::kDefaultMagnifierType),
+    magnifier_type(ui::kDefaultMagnifierType),
     notify(notify) {}
 
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     AccessibilityNotificationType notification_type,
     bool enabled,
-    ash::MagnifierType magnifier_type,
-    ash::AccessibilityNotificationVisibility notify)
+    ui::MagnifierType magnifier_type,
+    ui::AccessibilityNotificationVisibility notify)
   : notification_type(notification_type),
     enabled(enabled),
     magnifier_type(magnifier_type),
@@ -339,9 +342,13 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       autoclick_enabled_(false),
+#if defined(USE_ATHENA)
+      autoclick_delay_ms_(400),
+#else
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
+#endif
       virtual_keyboard_enabled_(false),
-      spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
+      spoken_feedback_notification_(ui::A11Y_NOTIFICATION_NONE),
       should_speak_chrome_vox_announcements_on_user_screen_(true),
       system_sounds_enabled_(false),
       braille_display_connected_(false),
@@ -386,7 +393,7 @@ AccessibilityManager::~AccessibilityManager() {
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_MANAGER_SHUTDOWN,
       false,
-      ash::A11Y_NOTIFICATION_NONE);
+      ui::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
 }
@@ -452,7 +459,7 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
       enabled,
-      ash::A11Y_NOTIFICATION_NONE);
+      ui::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
 #if !defined(USE_ATHENA)
@@ -511,7 +518,7 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
 
 void AccessibilityManager::EnableSpokenFeedback(
     bool enabled,
-    ash::AccessibilityNotificationVisibility notify) {
+    ui::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
 #if !defined(USE_ATHENA)
@@ -526,7 +533,7 @@ void AccessibilityManager::EnableSpokenFeedback(
   pref_service->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
   pref_service->CommitPendingWrite();
 
-  spoken_feedback_notification_ = ash::A11Y_NOTIFICATION_NONE;
+  spoken_feedback_notification_ = ui::A11Y_NOTIFICATION_NONE;
 }
 
 void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
@@ -646,7 +653,7 @@ bool AccessibilityManager::IsSpokenFeedbackEnabled() {
 }
 
 void AccessibilityManager::ToggleSpokenFeedback(
-    ash::AccessibilityNotificationVisibility notify) {
+    ui::AccessibilityNotificationVisibility notify) {
   EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), notify);
 }
 
@@ -674,7 +681,7 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
       enabled,
-      ash::A11Y_NOTIFICATION_NONE);
+      ui::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
 
@@ -702,13 +709,15 @@ void AccessibilityManager::OnLocaleChanged() {
   // If the system locale changes and spoken feedback is enabled,
   // reload ChromeVox so that it switches its internal translations
   // to the new language.
-  EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
-  EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
+  EnableSpokenFeedback(false, ui::A11Y_NOTIFICATION_NONE);
+  EnableSpokenFeedback(true, ui::A11Y_NOTIFICATION_NONE);
 }
 
 void AccessibilityManager::PlayEarcon(int sound_key) {
+#if !defined(USE_ATHENA)
   DCHECK(sound_key < chromeos::SOUND_COUNT);
   ash::PlaySystemSoundIfSpokenFeedback(sound_key);
+#endif
 }
 
 bool AccessibilityManager::IsHighContrastEnabled() {
@@ -796,7 +805,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
       enabled,
-      ash::A11Y_NOTIFICATION_NONE);
+      ui::A11Y_NOTIFICATION_NONE);
 
   NotifyAccessibilityStatusChanged(details);
 
@@ -954,9 +963,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateVirtualKeyboardFromPref();
 }
 
+#if !defined(USE_ATHENA)
 void AccessibilityManager::ActiveUserChanged(const std::string& user_id) {
   SetProfile(ProfileManager::GetActiveUserProfile());
 }
+#endif
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
@@ -1005,14 +1016,16 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
                         IsVirtualKeyboardEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosStickyKeys", IsStickyKeysEnabled());
+#if !defined(USE_ATHENA)
   if (MagnificationManager::Get()) {
     uint32 type = MagnificationManager::Get()->IsMagnifierEnabled() ?
                       MagnificationManager::Get()->GetMagnifierType() : 0;
     // '0' means magnifier is disabled.
     UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
                               type,
-                              ash::kMaxMagnifierType + 1);
+                              ui::kMaxMagnifierType + 1);
   }
+#endif
   if (profile_) {
     const PrefService* const prefs = profile_->GetPrefs();
     UMA_HISTOGRAM_BOOLEAN(
@@ -1058,10 +1071,12 @@ void AccessibilityManager::Observe(
       // Ensure ChromeVox makes announcements at the start of new sessions.
       should_speak_chrome_vox_announcements_on_user_screen_ = true;
 
+#if !defined(USE_ATHENA)
       // Add a session state observer to be able to monitor session changes.
       if (!session_state_observer_.get() && ash::Shell::HasInstance())
         session_state_observer_.reset(
             new ash::ScopedSessionStateObserver(this));
+#endif
       break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Update |profile_| when exiting a session or shutting down.
@@ -1090,14 +1105,14 @@ void AccessibilityManager::OnBrailleDisplayStateChanged(
     const DisplayState& display_state) {
   braille_display_connected_ = display_state.available;
   if (braille_display_connected_) {
-    EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_SHOW);
+    EnableSpokenFeedback(true, ui::A11Y_NOTIFICATION_SHOW);
   }
   UpdateBrailleImeState();
 
   AccessibilityStatusEventDetails details(
       ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED,
       braille_display_connected_,
-      ash::A11Y_NOTIFICATION_SHOW);
+      ui::A11Y_NOTIFICATION_SHOW);
   NotifyAccessibilityStatusChanged(details);
 }
 
@@ -1114,9 +1129,11 @@ void AccessibilityManager::OnBrailleKeyEvent(const KeyEvent& event) {
 }
 
 void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
+#if !defined(USE_ATHENA)
   // Do any setup work needed immediately after ChromeVox actually loads.
   if (system_sounds_enabled_)
     ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_ENABLED);
+#endif
 
   ExtensionAccessibilityEventRouter::GetInstance()->
       OnChromeVoxLoadStateChanged(profile_,
@@ -1129,9 +1146,11 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
 }
 
 void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
+#if !defined(USE_ATHENA)
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   if (system_sounds_enabled_)
     ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_DISABLED);
+#endif
   // Clear the accessibility focus ring.
   AccessibilityFocusRingController::GetInstance()->SetFocusRing(
       std::vector<gfx::Rect>());

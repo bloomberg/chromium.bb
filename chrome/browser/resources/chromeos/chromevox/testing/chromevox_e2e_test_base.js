@@ -45,14 +45,14 @@ ChromeVoxE2ETest.prototype = {
     GEN_BLOCK(function() {/*!
   if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
     chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false,
-        ash::A11Y_NOTIFICATION_NONE);
+        ui::A11Y_NOTIFICATION_NONE);
   }
 
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),
           true,
-          ash::A11Y_NOTIFICATION_NONE);
+          ui::A11Y_NOTIFICATION_NONE);
   WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
     */});
   },

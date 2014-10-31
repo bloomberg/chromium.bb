@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/content_support/gpu_support_impl.h"
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"

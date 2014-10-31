@@ -36,7 +36,7 @@ class ASH_EXPORT AccessibilityObserver {
 
   // Notifies when accessibilty mode changes.
   virtual void OnAccessibilityModeChanged(
-      AccessibilityNotificationVisibility notify) = 0;
+      ui::AccessibilityNotificationVisibility notify) = 0;
 };
 
 
@@ -123,7 +123,7 @@ class TrayAccessibility : public TrayImageItem,
 
   // Overridden from AccessibilityObserver.
   void OnAccessibilityModeChanged(
-      AccessibilityNotificationVisibility notify) override;
+      ui::AccessibilityNotificationVisibility notify) override;
 
   views::View* default_;
   tray::AccessibilityPopupView* detailed_popup_;

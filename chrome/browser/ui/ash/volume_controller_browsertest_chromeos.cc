@@ -171,7 +171,7 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
   void EnableSpokenFeedback(bool enabled) {
     chromeos::AccessibilityManager* manager =
         chromeos::AccessibilityManager::Get();
-    manager->EnableSpokenFeedback(enabled, ash::A11Y_NOTIFICATION_NONE);
+    manager->EnableSpokenFeedback(enabled, ui::A11Y_NOTIFICATION_NONE);
   }
 
   bool is_sound_initialized() const {

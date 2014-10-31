@@ -273,7 +273,7 @@ WindowSelector::WindowSelector(const WindowList& windows,
   HideAndTrackNonOverviewWindows();
   // Send an a11y alert.
   shell->accessibility_delegate()->TriggerAccessibilityAlert(
-      A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+      ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
 }

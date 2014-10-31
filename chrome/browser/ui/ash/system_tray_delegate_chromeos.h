@@ -194,7 +194,7 @@ class SystemTrayDelegateChromeOS
   void OnLanguageRemapSearchKeyToChanged();
 
   void OnAccessibilityModeChanged(
-      ash::AccessibilityNotificationVisibility notify);
+      ui::AccessibilityNotificationVisibility notify);
 
   void UpdatePerformanceTracing();
 

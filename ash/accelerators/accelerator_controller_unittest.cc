@@ -1040,12 +1040,12 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 
   // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(
       GetController()->Process(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_FALSE(
       GetController()->Process(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 
   EXPECT_FALSE(
@@ -1055,12 +1055,12 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 
   // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(
       GetController()->Process(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_FALSE(
       GetController()->Process(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
+  delegate->ToggleSpokenFeedback(ui::A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
 }
 
@@ -1447,10 +1447,11 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
       ash::Shell::GetInstance()->accessibility_delegate();
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
     EXPECT_TRUE(
         GetController()->PerformAction(kActionsNeedingWindow[i], dummy));
-    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
+              ui::A11Y_ALERT_WINDOW_NEEDED);
   }
 
   // Make sure we don't alert if we do have a window.
@@ -1458,9 +1459,10 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
-    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    EXPECT_NE(delegate->GetLastAccessibilityAlert(),
+              ui::A11Y_ALERT_WINDOW_NEEDED);
   }
 
   // Don't alert if we have a minimized window either.
@@ -1468,9 +1470,10 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     GetController()->PerformAction(WINDOW_MINIMIZE, dummy);
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    delegate->TriggerAccessibilityAlert(ui::A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
-    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    EXPECT_NE(delegate->GetLastAccessibilityAlert(),
+              ui::A11Y_ALERT_WINDOW_NEEDED);
   }
 }
 

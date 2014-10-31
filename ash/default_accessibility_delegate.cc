@@ -12,11 +12,11 @@ DefaultAccessibilityDelegate::DefaultAccessibilityDelegate()
     : spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
-      screen_magnifier_type_(kDefaultMagnifierType),
+      screen_magnifier_type_(ui::kDefaultMagnifierType),
       large_cursor_enabled_(false),
       autoclick_enabled_(false),
       virtual_keyboard_enabled_(false),
-      accessibility_alert_(A11Y_ALERT_NONE) {
+      accessibility_alert_(ui::A11Y_ALERT_NONE) {
 }
 
 DefaultAccessibilityDelegate::~DefaultAccessibilityDelegate() {}
@@ -37,7 +37,7 @@ void DefaultAccessibilityDelegate::SetMagnifierEnabled(bool enabled) {
   screen_magnifier_enabled_ = enabled;
 }
 
-void DefaultAccessibilityDelegate::SetMagnifierType(MagnifierType type) {
+void DefaultAccessibilityDelegate::SetMagnifierType(ui::MagnifierType type) {
   screen_magnifier_type_ = type;
 }
 
@@ -45,7 +45,7 @@ bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
 }
 
-MagnifierType DefaultAccessibilityDelegate::GetMagnifierType() const {
+ui::MagnifierType DefaultAccessibilityDelegate::GetMagnifierType() const {
   return screen_magnifier_type_;
 }
 
@@ -90,7 +90,7 @@ void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {
 }
 
 void DefaultAccessibilityDelegate::ToggleSpokenFeedback(
-    AccessibilityNotificationVisibility notify) {
+    ui::AccessibilityNotificationVisibility notify) {
   spoken_feedback_enabled_ = !spoken_feedback_enabled_;
 }
 
@@ -102,11 +102,12 @@ double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
 }
 
 void DefaultAccessibilityDelegate::TriggerAccessibilityAlert(
-    AccessibilityAlert alert) {
+    ui::AccessibilityAlert alert) {
   accessibility_alert_ = alert;
 }
 
-AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
+ui::AccessibilityAlert
+DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
   return accessibility_alert_;
 }
 

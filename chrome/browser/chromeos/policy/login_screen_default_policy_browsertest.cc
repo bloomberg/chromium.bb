@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "ash/magnifier/magnifier_constants.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/chromeos/accessibility_types.h"
 
 namespace em = enterprise_management;
 
@@ -326,14 +326,14 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierEnabled,
                                   base::FundamentalValue(true));
   VerifyPrefFollowsRecommendation(prefs::kAccessibilityScreenMagnifierType,
-                                  base::FundamentalValue(ash::MAGNIFIER_FULL));
+                                  base::FundamentalValue(ui::MAGNIFIER_FULL));
 
   // Verify that the full-screen magnifier is enabled.
   chromeos::MagnificationManager* magnification_manager =
       chromeos::MagnificationManager::Get();
   ASSERT_TRUE(magnification_manager);
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
-  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
+  EXPECT_EQ(ui::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
       chromeos::MagnificationManager::Get();
   ASSERT_TRUE(magnification_manager);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
-  EXPECT_EQ(ash::kDefaultMagnifierType,
+  EXPECT_EQ(ui::kDefaultMagnifierType,
             magnification_manager->GetMagnifierType());
 }
 

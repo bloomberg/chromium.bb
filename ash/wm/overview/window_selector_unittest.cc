@@ -268,10 +268,10 @@ TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
       ash::Shell::GetInstance()->accessibility_delegate();
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_NE(delegate->GetLastAccessibilityAlert(),
-            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+            ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
   ToggleOverview();
   EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
-            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+            ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 }
 
 // Tests entering overview mode with two windows and selecting one by clicking.

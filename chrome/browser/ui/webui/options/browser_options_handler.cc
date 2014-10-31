@@ -100,7 +100,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -121,6 +120,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "policy/policy_constants.h"
+#include "ui/chromeos/accessibility_types.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -570,13 +570,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   scoped_ptr<base::ListValue> magnifier_list(new base::ListValue);
 
   scoped_ptr<base::ListValue> option_full(new base::ListValue);
-  option_full->AppendInteger(ash::MAGNIFIER_FULL);
+  option_full->AppendInteger(ui::MAGNIFIER_FULL);
   option_full->AppendString(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL));
   magnifier_list->Append(option_full.release());
 
   scoped_ptr<base::ListValue> option_partial(new base::ListValue);
-  option_partial->AppendInteger(ash::MAGNIFIER_PARTIAL);
+  option_partial->AppendInteger(ui::MAGNIFIER_PARTIAL);
   option_partial->Append(new base::StringValue(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL)));
   magnifier_list->Append(option_partial.release());

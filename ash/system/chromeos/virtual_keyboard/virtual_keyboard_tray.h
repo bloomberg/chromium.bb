@@ -39,7 +39,7 @@ class VirtualKeyboardTray : public TrayBackgroundView,
 
   // AccessibilityObserver:
   virtual void OnAccessibilityModeChanged(
-      AccessibilityNotificationVisibility notify) override;
+      ui::AccessibilityNotificationVisibility notify) override;
 
  private:
   views::ImageButton* button_;  // Not owned.

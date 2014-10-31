@@ -37,13 +37,13 @@ class MagnificationManager {
   virtual bool IsMagnifierEnabled() const = 0;
 
   // Returns the current type of the screen magnifier.
-  virtual ash::MagnifierType GetMagnifierType() const = 0;
+  virtual ui::MagnifierType GetMagnifierType() const = 0;
 
   // Enables the screen magnifier.
   virtual void SetMagnifierEnabled(bool enabled) = 0;
 
   // Changes the type of the screen magnifier.
-  virtual void SetMagnifierType(ash::MagnifierType type) = 0;
+  virtual void SetMagnifierType(ui::MagnifierType type) = 0;
 
   // Saves the magnifier scale to the pref.
   virtual void SaveScreenMagnifierScale(double scale) = 0;

@@ -15,7 +15,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -40,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(USE_ATHENA)
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #endif
 
@@ -65,6 +65,7 @@ void InitAfterSessionStart() {
 #endif
 }
 
+#if !defined(USE_ATHENA)
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
   AccessibilityDelegateImpl() {}
@@ -82,7 +83,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   }
 
   virtual void ToggleSpokenFeedback(
-      ash::AccessibilityNotificationVisibility notify) override {
+      ui::AccessibilityNotificationVisibility notify) override {
     DCHECK(chromeos::AccessibilityManager::Get());
     chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
   }
@@ -97,7 +98,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
   }
 
-  virtual void SetMagnifierType(ash::MagnifierType type) override {
+  virtual void SetMagnifierType(ui::MagnifierType type) override {
     DCHECK(chromeos::MagnificationManager::Get());
     return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
   }
@@ -107,7 +108,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  virtual ash::MagnifierType GetMagnifierType() const override {
+  virtual ui::MagnifierType GetMagnifierType() const override {
     DCHECK(chromeos::MagnificationManager::Get());
     return chromeos::MagnificationManager::Get()->GetMagnifierType();
   }
@@ -172,18 +173,18 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   }
 
   virtual void TriggerAccessibilityAlert(
-      ash::AccessibilityAlert alert) override {
+      ui::AccessibilityAlert alert) override {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile) {
       switch (alert) {
-        case ash::A11Y_ALERT_WINDOW_NEEDED: {
+        case ui::A11Y_ALERT_WINDOW_NEEDED: {
           AccessibilityAlertInfo event(
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           SendControlAccessibilityNotification(
               ui::AX_EVENT_ALERT, &event);
           break;
         }
-        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
+        case ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
           AccessibilityAlertInfo event(
               profile, l10n_util::GetStringUTF8(
                   IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
@@ -191,14 +192,14 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
               ui::AX_EVENT_ALERT, &event);
           break;
         }
-        case ash::A11Y_ALERT_NONE:
+        case ui::A11Y_ALERT_NONE:
           break;
       }
     }
   }
 
-  virtual ash::AccessibilityAlert GetLastAccessibilityAlert() override {
-    return ash::A11Y_ALERT_NONE;
+  virtual ui::AccessibilityAlert GetLastAccessibilityAlert() override {
+    return ui::A11Y_ALERT_NONE;
   }
 
   virtual void PlayEarcon(int sound_key) override {
@@ -213,6 +214,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
+#endif
 
 }  // anonymous namespace
 
@@ -238,7 +240,11 @@ ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
+#if defined(USE_ATHENA)
+  return nullptr;
+#else
   return new AccessibilityDelegateImpl;
+#endif
 }
 
 ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {

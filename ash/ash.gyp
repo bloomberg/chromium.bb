@@ -167,7 +167,6 @@
       'keyboard_uma_event_filter.h',
       'magnifier/magnification_controller.cc',
       'magnifier/magnification_controller.h',
-      'magnifier/magnifier_constants.h',
       'magnifier/partial_magnification_controller.cc',
       'magnifier/partial_magnification_controller.h',
       'metrics/user_metrics_recorder.cc',

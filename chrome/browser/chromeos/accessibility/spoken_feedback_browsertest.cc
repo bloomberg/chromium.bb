@@ -120,7 +120,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
     AccessibilityManager::Get()->EnableSpokenFeedback(
-        true, ash::A11Y_NOTIFICATION_NONE);
+        true, ui::A11Y_NOTIFICATION_NONE);
     EXPECT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
     DisableEarcons();
   }
@@ -144,7 +144,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
              "</script>"));
     EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
     AccessibilityManager::Get()->EnableSpokenFeedback(
-        true, ash::A11Y_NOTIFICATION_NONE);
+        true, ui::A11Y_NOTIFICATION_NONE);
 
     // Block until we get "ready".
     while (speech_monitor_.GetNextUtterance() != "ready") {
@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   gfx::NativeWindow window = widget->GetNativeWindow();
 
   AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
+      true, ui::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
 
   EXPECT_EQ("Select your language:", speech_monitor_.GetNextUtterance());

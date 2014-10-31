@@ -173,10 +173,10 @@ void SetUpCrasAndEnableChromeVox(int volume_percent, bool mute_on) {
   // is disabled.
   cras->SetOutputVolumePercent(volume_percent);
   cras->SetOutputMute(mute_on);
-  a11y->EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
+  a11y->EnableSpokenFeedback(false, ui::A11Y_NOTIFICATION_NONE);
 
   // Spoken feedback is enabled.
-  a11y->EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
+  a11y->EnableSpokenFeedback(true, ui::A11Y_NOTIFICATION_NONE);
   base::RunLoop().RunUntilIdle();
 }
 

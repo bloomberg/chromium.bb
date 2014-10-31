@@ -30,7 +30,7 @@ class ASH_EXPORT AshTouchExplorationManager
 
   // AccessibilityObserver overrides:
   virtual void OnAccessibilityModeChanged(
-      AccessibilityNotificationVisibility notify) override;
+      ui::AccessibilityNotificationVisibility notify) override;
 
   // TouchExplorationControllerDelegate overrides:
   virtual void SetOutputLevel(int volume) override;

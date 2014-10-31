@@ -103,7 +103,7 @@ void VirtualKeyboardTray::ButtonPressed(views::Button* sender,
 }
 
 void VirtualKeyboardTray::OnAccessibilityModeChanged(
-    AccessibilityNotificationVisibility notify) {
+    ui::AccessibilityNotificationVisibility notify) {
   SetVisible(Shell::GetInstance()->accessibility_delegate()->
       IsVirtualKeyboardEnabled());
 }

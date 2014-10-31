@@ -61,6 +61,7 @@
         'UI_CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'accessibility_types.h',
         'network/network_connect.cc',
         'network/network_connect.h',
         'network/network_icon.cc',

@@ -13,8 +13,6 @@
         'browser/chromeos/accessibility/accessibility_manager.h',
         'browser/chromeos/accessibility/accessibility_util.cc',
         'browser/chromeos/accessibility/accessibility_util.h',
-        'browser/chromeos/accessibility/magnification_manager.cc',
-        'browser/chromeos/accessibility/magnification_manager.h',
         'browser/chromeos/app_mode/app_session_lifetime.cc',
         'browser/chromeos/app_mode/app_session_lifetime.h',
         'browser/chromeos/app_mode/app_launch_utils.cc',
@@ -938,6 +936,8 @@
         'browser/supervised_user/chromeos/supervised_user_password_service_factory.h',
     ],
     'browser_chromeos_non_athena_sources': [
+        'browser/chromeos/accessibility/magnification_manager.cc',
+        'browser/chromeos/accessibility/magnification_manager.h',
         'browser/chromeos/app_mode/kiosk_external_updater.cc',
         'browser/chromeos/app_mode/kiosk_external_updater.h',
         'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
