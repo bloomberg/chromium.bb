@@ -1288,9 +1288,9 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
       minimum_duts=0, timeout=2*HWTestConfig.DEFAULT_HW_TEST_TIMEOUT),
 )
 
-chrome_pfq.add_config('daisy_spring-chrome-pfq',
+chrome_pfq.add_config('daisy_skate-chrome-pfq',
   non_testable_builder,
-  boards=['daisy_spring'],
+  boards=['daisy_skate'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
