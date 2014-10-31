@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Proof for verifying that 16bit xadd is added to the 32 bit DFA."""
+"""Proof for verifying that 16bit cmpxchg is added to the 32 bit DFA."""
 
 import proof_tools
 from proof_tools_templates import LockedRegWithRegOrMem16bit
 
 
 def Validate(trie_diffs, bitness):
-  """Validate the trie_diffs adds 16 bit xadd to 32bit mode."""
+  """Validate the trie_diffs adds 16 bit cmpxchg to 32bit mode."""
   # No instructions should be removed for 32/64 bit DFAs.
   # No instructions should be added for 64 bit DFA because it already
   # contains 16 bit cmpxchg instruction.
   if bitness == 32:
-    expected_adds = LockedRegWithRegOrMem16bit(mnemonic_name='xadd',
+    expected_adds = LockedRegWithRegOrMem16bit(mnemonic_name='cmpxchg',
                                                bitness=bitness)
   else:
     expected_adds = set()

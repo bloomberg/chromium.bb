@@ -205,17 +205,13 @@ cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 #  cmpxchg G E, 0x0f 0xb0, lock
 # For consistency with the production validators:
 #  * treat both explicit arguments as read-write
-#  * drop support for the 16-bit version
 # Note1: "cmpxchg" indeed writes to two arguments, but these areguments are
 #  implicit %al/%ax/%eax/%rax and second explicit argument.  First explicit
 #  argument is read-only.
-# Note2: the former 32- and 64-bit validators treat "cmpxchg" inconsistently:
-#  http://code.google.com/p/nativeclient/issues/detail?id=2974
-#
 # "cmpxchg" is not marked as nacl-amd64-zero-extends because it conditionally
 # writes to different destinations.
 cmpxchg &Gb Eb, 0x0f 0xb0, lock
-cmpxchg &Gw Ew, data16 0x0f 0xb1, norexw lock nacl-ia32-forbidden
+cmpxchg &Gw Ew, data16 0x0f 0xb1, norexw lock
 cmpxchg &Gd Ed, 0x0f 0xb1, norexw lock
 cmpxchg &Gq Eq, rexw 0x0f 0xb1, amd64 lock
 cmpxchg &Gq Eq, data16 rexw 0x0f 0xb1, amd64 lock nacl-forbidden

@@ -2335,7 +2335,7 @@
 
       <state id="77">
       <state_actions>x x 0</state_actions>
-      <trans_list length="60">
+      <trans_list length="62">
         <t>0 15 x 0</t>
         <t>16 17 32 x</t>
         <t>18 19 59 x</t>
@@ -2374,7 +2374,9 @@
         <t>173 173 1 x</t>
         <t>174 174 x 0</t>
         <t>175 175 1 x</t>
-        <t>176 181 x 0</t>
+        <t>176 176 x 0</t>
+        <t>177 177 1 x</t>
+        <t>178 181 x 0</t>
         <t>182 183 1 x</t>
         <t>184 187 x 0</t>
         <t>188 191 1 x</t>
@@ -3707,8 +3709,10 @@
 
       <state id="120">
       <state_actions>x x 0</state_actions>
-      <trans_list length="3">
-        <t>0 192 x 0</t>
+      <trans_list length="5">
+        <t>0 176 x 0</t>
+        <t>177 177 115 x</t>
+        <t>178 192 x 0</t>
         <t>193 193 115 x</t>
         <t>194 255 x 0</t>
       </trans_list>
