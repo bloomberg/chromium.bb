@@ -81,7 +81,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   // Helper method to send socket create message and start read.
   void OnOpen();
-  void DoSendSocketCreateMsg();
+  bool DoSendSocketCreateMsg();
 
   P2PHostAndIPEndPoint remote_address_;
 

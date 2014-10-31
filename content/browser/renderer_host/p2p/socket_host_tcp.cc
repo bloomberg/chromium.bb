@@ -234,11 +234,14 @@ void P2PSocketHostTcpBase::OnOpen() {
                  << kSendSocketBufferSize;
   }
 
-  DoSendSocketCreateMsg();
+  if (!DoSendSocketCreateMsg())
+    return;
+
+  DCHECK_EQ(state_, STATE_OPEN);
   DoRead();
 }
 
-void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
+bool P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
   DCHECK(socket_.get());
 
   net::IPEndPoint local_address;
@@ -247,7 +250,7 @@ void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
     LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get local"
                << " address: " << result;
     OnError();
-    return;
+    return false;
   }
 
   VLOG(1) << "Local address: " << local_address.ToString();
@@ -258,7 +261,7 @@ void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
     LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get peer"
                << " address: " << result;
     OnError();
-    return;
+    return false;
   }
   VLOG(1) << "Remote address: " << remote_address.ToString();
   if (remote_address_.ip_address.address().empty()) {
@@ -272,6 +275,7 @@ void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
   // packets sent before that by the application.
   message_sender_->Send(new P2PMsg_OnSocketCreated(
       id_, local_address, remote_address));
+  return true;
 }
 
 void P2PSocketHostTcpBase::DoRead() {
