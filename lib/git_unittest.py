@@ -208,6 +208,39 @@ class ProjectCheckoutTest(cros_test_lib.TestCase):
     self.assertFalse(self.fake_versioned_unpatchable.IsPatchable())
 
 
+class RawDiffTest(cros_test_lib.MockTestCase):
+  """Tests for git.RawDiff function."""
+
+  def testRawDiff(self):
+    """Test the parsing of the git.RawDiff function."""
+
+    diff_output = '''
+:100644 100644 ac234b2... 077d1f8... M\tchromeos-base/chromeos-chrome/Manifest
+:100644 100644 9e5d11b... 806bf9b... R099\tchromeos-base/chromeos-chrome/chromeos-chrome-40.0.2197.0_rc-r1.ebuild\tchromeos-base/chromeos-chrome/chromeos-chrome-40.0.2197.2_rc-r1.ebuild
+:100644 100644 70d6e94... 821c642... M\tchromeos-base/chromeos-chrome/chromeos-chrome-9999.ebuild
+:100644 100644 be445f9... be445f9... R100\tchromeos-base/chromium-source/chromium-source-40.0.2197.0_rc-r1.ebuild\tchromeos-base/chromium-source/chromium-source-40.0.2197.2_rc-r1.ebuild
+'''
+    result = cros_build_lib.CommandResult(output=diff_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    entries = git.RawDiff('foo', 'bar')
+    self.assertEqual(entries,
+      [('100644', '100644', 'ac234b2', '077d1f8', 'M', None,
+        'chromeos-base/chromeos-chrome/Manifest', None),
+       ('100644', '100644', '9e5d11b', '806bf9b', 'R', '099',
+        'chromeos-base/chromeos-chrome/'
+        'chromeos-chrome-40.0.2197.0_rc-r1.ebuild',
+        'chromeos-base/chromeos-chrome/'
+        'chromeos-chrome-40.0.2197.2_rc-r1.ebuild'),
+       ('100644', '100644', '70d6e94', '821c642', 'M', None,
+        'chromeos-base/chromeos-chrome/chromeos-chrome-9999.ebuild', None),
+       ('100644', '100644', 'be445f9', 'be445f9', 'R', '100',
+        'chromeos-base/chromium-source/'
+        'chromium-source-40.0.2197.0_rc-r1.ebuild',
+        'chromeos-base/chromium-source/'
+        'chromium-source-40.0.2197.2_rc-r1.ebuild')])
+
+
 class GitPushTest(cros_test_lib.MockTestCase):
   """Tests for git.GitPush function."""
 

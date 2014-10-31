@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import errno
 import hashlib
 import logging
@@ -75,6 +76,10 @@ GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
 
 DEFAULT_RETRY_INTERVAL = 3
 DEFAULT_RETRIES = 5
+
+
+class GitException(Exception):
+  """An exception related to git."""
 
 
 class RemoteRef(object):
@@ -1065,6 +1070,44 @@ def Commit(git_repo, message, amend=False):
   log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
   match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
   return match.group('ID') if match else None
+
+
+_raw_diff_components = ('src_mode', 'dst_mode', 'src_sha', 'dst_sha',
+                        'status', 'score', 'src_file', 'dst_file')
+# RawDiffEntry represents a line of raw formatted git diff output.
+RawDiffEntry = collections.namedtuple('RawDiffEntry', _raw_diff_components)
+
+
+# This regular expression pulls apart a line of raw formatted git diff output.
+DIFF_RE = re.compile(
+    r':(?P<src_mode>[0-7]*) (?P<dst_mode>[0-7]*) '
+     '(?P<src_sha>[0-9a-f]*)(\.)* (?P<dst_sha>[0-9a-f]*)(\.)* '
+     '(?P<status>[ACDMRTUX])(?P<score>[0-9]+)?\t'
+     '(?P<src_file>[^\t]+)\t?(?P<dst_file>[^\t]+)?')
+
+
+def RawDiff(path, target):
+  """Return the parsed raw format diff of target
+
+  Args:
+    path: Path to the git repository to diff in.
+    target: The target to diff.
+
+  Returns:
+    A list of RawDiffEntry's.
+  """
+  entries = []
+
+  cmd = ['diff', '-M', '--raw', target]
+  diff = RunGit(path, cmd).output
+  diff_lines = diff.strip().split('\n')
+  for line in diff_lines:
+    match = DIFF_RE.match(line)
+    if not match:
+      raise GitException('Failed to parse diff output: %s' % line)
+    entries.append(RawDiffEntry(*match.group(*_raw_diff_components)))
+
+  return entries
 
 
 def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
