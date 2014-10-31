@@ -166,11 +166,8 @@ void CdmSessionAdapter::OnSessionExpirationUpdate(
 }
 
 void CdmSessionAdapter::OnSessionReady(const std::string& web_session_id) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
-  if (session)
-    session->OnSessionReady();
+  // Ready events not used by unprefixed EME.
+  // TODO(jrummell): Remove when prefixed EME removed.
 }
 
 void CdmSessionAdapter::OnSessionClosed(const std::string& web_session_id) {
@@ -186,11 +183,8 @@ void CdmSessionAdapter::OnSessionError(
     media::MediaKeys::Exception exception_code,
     uint32 system_code,
     const std::string& error_message) {
-  WebContentDecryptionModuleSessionImpl* session = GetSession(web_session_id);
-  DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
-                             << web_session_id;
-  if (session)
-    session->OnSessionError(exception_code, system_code, error_message);
+  // Error events not used by unprefixed EME.
+  // TODO(jrummell): Remove when prefixed EME removed.
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(

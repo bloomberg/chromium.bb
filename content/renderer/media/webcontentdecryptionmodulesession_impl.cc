@@ -184,35 +184,12 @@ void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
   client_->expirationChanged(new_expiry_time.ToJsTime());
 }
 
-void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
-  client_->ready();
-}
-
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
   if (is_closed_)
     return;
 
   is_closed_ = true;
   client_->close();
-}
-
-void WebContentDecryptionModuleSessionImpl::OnSessionError(
-    media::MediaKeys::Exception exception_code,
-    uint32 system_code,
-    const std::string& error_message) {
-  // Convert |exception_code| back to MediaKeyErrorCode if possible.
-  // TODO(jrummell): Update this conversion when promises flow
-  // back into blink:: (as blink:: will have its own error definition).
-  switch (exception_code) {
-    case media::MediaKeys::CLIENT_ERROR:
-      client_->error(Client::MediaKeyErrorCodeClient, system_code);
-      break;
-    default:
-      // This will include all other CDM4 errors and any error generated
-      // by CDM5 or later.
-      client_->error(Client::MediaKeyErrorCodeUnknown, system_code);
-      break;
-  }
 }
 
 blink::WebContentDecryptionModuleResult::SessionStatus

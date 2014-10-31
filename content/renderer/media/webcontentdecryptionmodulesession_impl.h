@@ -63,11 +63,7 @@ class WebContentDecryptionModuleSessionImpl
                         const GURL& destination_url);
   void OnSessionKeysChange(bool has_additional_usable_key);
   void OnSessionExpirationUpdate(const base::Time& new_expiry_time);
-  void OnSessionReady();
   void OnSessionClosed();
-  void OnSessionError(media::MediaKeys::Exception exception_code,
-                      uint32 system_code,
-                      const std::string& error_message);
 
  private:
   // Called when a new session is created.
