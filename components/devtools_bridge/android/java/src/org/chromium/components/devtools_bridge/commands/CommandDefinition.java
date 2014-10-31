@@ -13,14 +13,14 @@ import java.util.Map;
  */
 public abstract class CommandDefinition {
     private final String mName;
-    private final List<ParamDefinition> mInParams;
+    private final List<ParamDefinition<?>> mInParams;
 
-    public CommandDefinition(String name, List<ParamDefinition> inParams) {
+    public CommandDefinition(String name, List<ParamDefinition<?>> inParams) {
         mName = name;
         mInParams = inParams;
     }
 
-    public Iterable<ParamDefinition> inParams() {
+    public Iterable<ParamDefinition<?>> inParams() {
         return mInParams;
     }
 

@@ -111,7 +111,7 @@ final class Commands {
         }
 
         @Override
-        protected ParamDefinition resultDefinition() {
+        protected ParamDefinition<String> resultDefinition() {
             return PARAM_ANSWER;
         }
     }
@@ -149,7 +149,7 @@ final class Commands {
         }
 
         @Override
-        protected ParamDefinition resultDefinition() {
+        protected ParamDefinition<List<String>> resultDefinition() {
             return PARAM_SERVER_CANDIDATES;
         }
     }
@@ -185,12 +185,12 @@ final class Commands {
         }
 
         @Override
-        protected ParamDefinition resultDefinition() {
+        protected ParamDefinition<String> resultDefinition() {
             return PARAM_ANSWER;
         }
     }
 
-    private static List<ParamDefinition> params(ParamDefinition... values) {
+    private static List<ParamDefinition<?>> params(ParamDefinition<?>... values) {
         return Collections.unmodifiableList(Arrays.asList(values));
     }
 }
