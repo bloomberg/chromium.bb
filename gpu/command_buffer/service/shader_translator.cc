@@ -73,21 +73,15 @@ void GetNameHashingInfo(ShHandle compiler, NameMap* name_map) {
     return;
   name_map->clear();
 
-  size_t hashed_names_count = 0;
-  ShGetInfo(compiler, SH_HASHED_NAMES_COUNT, &hashed_names_count);
-  if (hashed_names_count == 0)
-    return;
+  typedef std::map<std::string, std::string> NameMapANGLE;
+  const NameMapANGLE* angle_map = ShGetNameHashingMap(compiler);
+  DCHECK(angle_map);
 
-  size_t name_max_len = 0, hashed_name_max_len = 0;
-  ShGetInfo(compiler, SH_NAME_MAX_LENGTH, &name_max_len);
-  ShGetInfo(compiler, SH_HASHED_NAME_MAX_LENGTH, &hashed_name_max_len);
-
-  scoped_ptr<char[]> name(new char[name_max_len]);
-  scoped_ptr<char[]> hashed_name(new char[hashed_name_max_len]);
-
-  for (size_t i = 0; i < hashed_names_count; ++i) {
-    ShGetNameHashingEntry(compiler, i, name.get(), hashed_name.get());
-    (*name_map)[hashed_name.get()] = name.get();
+  for (NameMapANGLE::const_iterator iter = angle_map->begin();
+       iter != angle_map->end(); ++iter) {
+    // Note that in ANGLE, the map is (original_name, hash);
+    // here, we want (hash, original_name).
+    (*name_map)[iter->second] = iter->first;
   }
 }
 
@@ -158,20 +152,13 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
   {
     TRACE_EVENT0("gpu", "ShCompile");
     const char* const shader_strings[] = { shader_source.c_str() };
-    success = !!ShCompile(
+    success = ShCompile(
         compiler_, shader_strings, 1, GetCompileOptions());
   }
   if (success) {
+    // Get translated shader.
     if (translated_source) {
-      translated_source->clear();
-      // Get translated shader.
-      size_t obj_code_len = 0;
-      ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
-      if (obj_code_len > 1) {
-        scoped_ptr<char[]> buffer(new char[obj_code_len]);
-        ShGetObjectCode(compiler_, buffer.get());
-        *translated_source = std::string(buffer.get(), obj_code_len - 1);
-      }
+      *translated_source = ShGetObjectCode(compiler_);
     }
     // Get info for attribs, uniforms, and varyings.
     GetAttributes(compiler_, attrib_map);
@@ -183,14 +170,7 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
 
   // Get info log.
   if (info_log) {
-    info_log->clear();
-    size_t info_log_len = 0;
-    ShGetInfo(compiler_, SH_INFO_LOG_LENGTH, &info_log_len);
-    if (info_log_len > 1) {
-      scoped_ptr<char[]> buffer(new char[info_log_len]);
-      ShGetInfoLog(compiler_, buffer.get());
-      *info_log = std::string(buffer.get(), info_log_len - 1);
-    }
+    *info_log = ShGetInfoLog(compiler_);
   }
 
   return success;
@@ -199,17 +179,9 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
 std::string ShaderTranslator::GetStringForOptionsThatWouldAffectCompilation()
     const {
   DCHECK(compiler_ != NULL);
-
-  size_t resource_len = 0;
-  ShGetInfo(compiler_, SH_RESOURCES_STRING_LENGTH, &resource_len);
-  DCHECK(resource_len > 1);
-  scoped_ptr<char[]> resource_str(new char[resource_len]);
-
-  ShGetBuiltInResourcesString(compiler_, resource_len, resource_str.get());
-
   return std::string(":CompileOptions:" +
          base::IntToString(GetCompileOptions())) +
-         std::string(resource_str.get());
+         ShGetBuiltInResourcesString(compiler_);
 }
 
 void ShaderTranslator::AddDestructionObserver(

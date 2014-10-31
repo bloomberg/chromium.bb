@@ -1195,7 +1195,7 @@ bool Program::CheckVaryingsPacking(
   return ShCheckVariablesWithinPackingLimits(
       static_cast<int>(manager_->max_varying_vectors()),
       variables.get(),
-      combined_map.size()) == 1;
+      combined_map.size());
 }
 
 static uint32 ComputeOffset(const void* start, const void* position) {
