@@ -164,6 +164,7 @@ public:
     virtual void setUseWideViewport(bool) override;
     virtual void setV8CacheOptions(V8CacheOptions) override;
     virtual void setV8ScriptStreamingEnabled(bool) override;
+    virtual void setV8ScriptStreamingMode(V8ScriptStreamingMode) override;
     virtual void setValidationMessageTimerMagnification(int) override;
     virtual void setViewportEnabled(bool) override;
     virtual void setViewportMetaEnabled(bool) override;

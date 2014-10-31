@@ -732,4 +732,9 @@ void WebSettingsImpl::setV8ScriptStreamingEnabled(bool enabled)
     m_settings->setV8ScriptStreamingEnabled(enabled);
 }
 
+void WebSettingsImpl::setV8ScriptStreamingMode(V8ScriptStreamingMode mode)
+{
+    m_settings->setV8ScriptStreamingMode(static_cast<blink::ScriptStreamingMode>(mode));
+}
+
 } // namespace blink
