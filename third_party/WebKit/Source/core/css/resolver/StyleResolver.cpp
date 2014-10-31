@@ -585,13 +585,18 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     if (baseRenderStyle) {
         state.setStyle(RenderStyle::clone(baseRenderStyle));
-    } else if (state.parentStyle()) {
-        state.setStyle(RenderStyle::create());
-        state.style()->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
+        if (!state.parentStyle())
+            state.setParentStyle(defaultStyleForElement());
     } else {
-        state.setStyle(defaultStyleForElement());
-        state.setParentStyle(RenderStyle::clone(state.style()));
+        if (state.parentStyle()) {
+            state.setStyle(RenderStyle::create());
+            state.style()->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
+        } else {
+            state.setStyle(defaultStyleForElement());
+            state.setParentStyle(RenderStyle::clone(state.style()));
+        }
     }
+
     // contenteditable attribute (implemented by -webkit-user-modify) should
     // be propagated from shadow host to distributed node.
     if (state.distributedToInsertionPoint()) {
@@ -759,6 +764,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     ASSERT(document().frame());
     ASSERT(document().settings());
     ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
+    ASSERT(state.parentStyle());
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
