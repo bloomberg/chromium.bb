@@ -96,7 +96,6 @@ bool FileWriter::hasPendingActivity() const
 void FileWriter::write(Blob* data, ExceptionState& exceptionState)
 {
     ASSERT(writer());
-    ASSERT(data);
     ASSERT(m_truncateLength == -1);
     if (m_readyState == WRITING) {
         setError(FileError::INVALID_STATE_ERR, exceptionState);
