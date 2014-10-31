@@ -28,6 +28,7 @@
 #include "core/rendering/compositing/GraphicsLayerTreeBuilder.h"
 
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
 #include "core/rendering/RenderPart.h"
@@ -50,8 +51,13 @@ static bool shouldAppendLayer(const RenderLayer& layer)
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
     Node* node = layer.renderer()->node();
-    if (node && isHTMLMediaElement(*node) && toHTMLMediaElement(node)->isFullscreen())
-        return false;
+    if (node && isHTMLVideoElement(*node)) {
+        HTMLVideoElement* element = toHTMLVideoElement(node);
+        // For WebRTC, video frame contains all the data and no hardware surface is used.
+        // We should always append the layer in this case.
+        if (element->isFullscreen() && !HTMLMediaElement::isMediaStreamURL(element->sourceURL().string()))
+            return false;
+    }
     return true;
 }
 

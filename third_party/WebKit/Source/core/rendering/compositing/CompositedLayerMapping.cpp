@@ -33,6 +33,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorNodeIds.h"
@@ -731,8 +732,8 @@ void CompositedLayerMapping::updateMainGraphicsLayerGeometry(const IntRect& rela
     // non-compositing visible layers.
     bool contentsVisible = m_owningLayer.hasVisibleContent() || hasVisibleNonCompositingDescendant(&m_owningLayer);
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer()->isVideo()) {
-        HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer()->node());
-        if (mediaElement->isFullscreen())
+        HTMLVideoElement* videoElement = toHTMLVideoElement(renderer()->node());
+        if (videoElement->isFullscreen() && !HTMLMediaElement::isMediaStreamURL(videoElement->sourceURL().string()))
             contentsVisible = false;
     }
     m_graphicsLayer->setContentsVisible(contentsVisible);

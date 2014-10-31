@@ -59,6 +59,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -69,7 +70,10 @@
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/testing/NullExecutionContext.h"
 #include "core/testing/URLTestHelpers.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/DragImage.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -6292,6 +6296,36 @@ TEST_F(WebFrameTest, FullscreenSubframe)
     webViewImpl->layout();
     EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalWidth().toInt());
     EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalHeight().toInt());
+}
+
+TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
+{
+    RuntimeEnabledFeatures::setOverlayFullscreenVideoEnabled(true);
+    FakeCompositingWebViewClient client;
+    registerMockedHttpURLLoad("fullscreen_video.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_video.html", true, 0, &client, configurePinchVirtualViewport);
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    client.m_screenInfo.rect.width = viewportWidth;
+    client.m_screenInfo.rect.height = viewportHeight;
+    webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
+    webViewImpl->layout();
+
+    // Fake the video element as MediaStream
+    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
+    MediaStreamRegistry::registry().registerURL(0, toKURL(m_baseURL + "test.webm"), MediaStream::create(context.get()));
+    Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
+    UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
+    Element* videoFullscreen = document->getElementById("video");
+    Fullscreen::from(*document).requestFullscreen(*videoFullscreen, Fullscreen::PrefixedRequest);
+    webViewImpl->didEnterFullScreen();
+    webViewImpl->layout();
+
+    // Verify that the video layer is visible in fullscreen.
+    RenderLayer* renderLayer =  videoFullscreen->renderer()->enclosingLayer();
+    GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
+    EXPECT_TRUE(graphicsLayer->contentsAreVisible());
 }
 
 TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
