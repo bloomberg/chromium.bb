@@ -989,7 +989,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/rules-wit
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/unsplittable-inline-block.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/break-properties.html [ Skip ]
-crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/vertical-rl/composited-relpos-overlapping-will-change.html [ ImageOnlyFailure ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/float-paginate-complex.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/float-paginate.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/float-truncation.html [ Skip ]

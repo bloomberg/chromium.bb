@@ -537,21 +537,21 @@ public:
     virtual LayoutUnit offsetTop() const override;
 
     LayoutPoint flipForWritingModeForChild(const RenderBox* child, const LayoutPoint&) const;
-    LayoutUnit flipForWritingMode(LayoutUnit position) const
+    LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN
     {
         // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
         return logicalHeight() - position;
     }
-    LayoutPoint flipForWritingMode(const LayoutPoint& position) const
+    LayoutPoint flipForWritingMode(const LayoutPoint& position) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
         return isHorizontalWritingMode() ? LayoutPoint(position.x(), height() - position.y()) : LayoutPoint(width() - position.x(), position.y());
     }
     LayoutPoint flipForWritingModeIncludingColumns(const LayoutPoint&) const;
-    LayoutSize flipForWritingMode(const LayoutSize& offset) const
+    LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return offset;
@@ -566,7 +566,7 @@ public:
         else
             rect.setX(width() - rect.maxX());
     }
-    FloatPoint flipForWritingMode(const FloatPoint& position) const
+    FloatPoint flipForWritingMode(const FloatPoint& position) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;

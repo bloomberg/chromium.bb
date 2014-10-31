@@ -128,8 +128,7 @@ LayoutSize RenderMultiColumnFlowThread::columnOffset(const LayoutPoint& point) c
     if (!hasValidRegionInfo())
         return LayoutSize(0, 0);
 
-    LayoutPoint flowThreadPoint(point);
-    flipForWritingMode(flowThreadPoint);
+    LayoutPoint flowThreadPoint = flipForWritingMode(point);
     LayoutUnit blockOffset = isHorizontalWritingMode() ? flowThreadPoint.y() : flowThreadPoint.x();
     RenderMultiColumnSet* columnSet = columnSetAtBlockOffset(blockOffset);
     if (!columnSet)
