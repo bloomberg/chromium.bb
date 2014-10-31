@@ -704,14 +704,17 @@
     "test_policy": {
       "ExtensionSettings": {
         "abcdefghijklmnopabcdefghijklmnop" : {
-          "installation_mode": "allowed"
+          "installation_mode": "allowed",
+          "blocked_permissions": ["history"]
         },
         "bcdefghijklmnopabcdefghijklmnopa" : {
           "installation_mode": "force_installed",
-          "update_url": "http://example.com/update_url"
+          "update_url": "http://example.com/update_url",
+          "allowed_permissions": ["downloads"]
         },
         "*": {
           "installation_mode": "blocked",
+          "blocked_permissions": ["downloads", "bookmarks"],
           "install_sources": ["http://company-intranet/chromeapps"],
           "allowed_types": ["hosted_app"]
         }

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
@@ -23,11 +26,26 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }  // namespace
 
 class ExperimentalApiTest : public ExtensionApiTest {
-public:
- void SetUpCommandLine(CommandLine* command_line) override {
+ public:
+  void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
+};
+
+class ExtensionApiTestWithManagementPolicy : public ExtensionApiTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy_provider_.SetAutoRefresh();
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+  }
+
+ protected:
+  policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PermissionsFail) {
@@ -125,6 +143,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsRetainGesture) {
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional_retain_gesture"))
+      << message_;
+}
+
+// Test that optional permissions blocked by enterprise policy will be denied
+// automatically.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
+                       OptionalPermissionsPolicyBlocked) {
+  // Set enterprise policy to block some API permissions.
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddBlockedPermission("*", "management");
+  }
+  // Set auto confirm UI flag.
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+  EXPECT_TRUE(RunExtensionTest("permissions/optional_policy_blocked"))
       << message_;
 }
 

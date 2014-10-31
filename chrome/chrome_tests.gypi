@@ -377,6 +377,8 @@
       'browser/extensions/extension_install_ui_browsertest.cc',
       'browser/extensions/extension_javascript_url_apitest.cc',
       'browser/extensions/extension_loading_browsertest.cc',
+      'browser/extensions/extension_management_test_util.cc',
+      'browser/extensions/extension_management_test_util.h',
       'browser/extensions/extension_messages_apitest.cc',
       'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_resource_request_policy_apitest.cc',

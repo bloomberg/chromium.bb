@@ -137,9 +137,9 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
-  management_policy_->RegisterProvider(
+  management_policy_->RegisterProviders(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
-          ->GetProvider());
+          ->GetProviders());
 
 #if defined(OS_CHROMEOS)
   if (device_local_account_management_policy_provider_) {

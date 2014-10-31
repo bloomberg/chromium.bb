@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/json/json_parser.h"
@@ -14,9 +15,12 @@
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
+#include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -36,14 +40,18 @@ const char kExampleDictPreference[] =
     "{"
     "  \"abcdefghijklmnopabcdefghijklmnop\": {"  // kTargetExtension
     "    \"installation_mode\": \"allowed\","
+    "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
     "  },"
     "  \"bcdefghijklmnopabcdefghijklmnopa\": {"  // kTargetExtension2
     "    \"installation_mode\": \"force_installed\","
     "    \"update_url\": \"http://example.com/update_url\","
+    "    \"allowed_permissions\": [\"fileSystem\", \"bookmarks\"],"
     "  },"
     "  \"cdefghijklmnopabcdefghijklmnopab\": {"  // kTargetExtension3
     "    \"installation_mode\": \"normal_installed\","
     "    \"update_url\": \"http://example.com/update_url\","
+    "    \"allowed_permissions\": [\"fileSystem\", \"downloads\"],"
+    "    \"blocked_permissions\": [\"fileSystem\", \"history\"],"
     "  },"
     "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
     "    \"installation_mode\": \"blocked\","
@@ -52,6 +60,7 @@ const char kExampleDictPreference[] =
     "    \"installation_mode\": \"blocked\","
     "    \"install_sources\": [\"*://foo.com/*\"],"
     "    \"allowed_types\": [\"theme\", \"user_script\"],"
+    "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
     "  },"
     "}";
 
@@ -126,6 +135,11 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   ExtensionAdminPolicyTest() {}
   ~ExtensionAdminPolicyTest() override {}
 
+  void SetUpPolicyProvider() {
+    provider_.reset(
+        new StandardManagementPolicyProvider(extension_management_.get()));
+  }
+
   void CreateExtension(Manifest::Location location) {
     base::DictionaryValue values;
     CreateExtensionFromValues(location, &values);
@@ -161,12 +175,13 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
   bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
  protected:
+  scoped_ptr<StandardManagementPolicyProvider> provider_;
   scoped_refptr<Extension> extension_;
 };
 
 bool ExtensionAdminPolicyTest::BlacklistedByDefault(
     const base::ListValue* blacklist) {
-  InitPrefService();
+  SetUpPolicyProvider();
   if (blacklist)
     SetPref(true, pref_names::kInstallDenyList, blacklist->DeepCopy());
   return extension_management_->BlacklistedByDefault();
@@ -179,7 +194,7 @@ bool ExtensionAdminPolicyTest::UserMayLoad(
     const base::ListValue* allowed_types,
     const Extension* extension,
     base::string16* error) {
-  InitPrefService();
+  SetUpPolicyProvider();
   if (blacklist)
     SetPref(true, pref_names::kInstallDenyList, blacklist->DeepCopy());
   if (whitelist)
@@ -188,21 +203,19 @@ bool ExtensionAdminPolicyTest::UserMayLoad(
     SetPref(true, pref_names::kInstallForceList, forcelist->DeepCopy());
   if (allowed_types)
     SetPref(true, pref_names::kAllowedTypes, allowed_types->DeepCopy());
-  return extension_management_->GetProvider()->UserMayLoad(extension, error);
+  return provider_->UserMayLoad(extension, error);
 }
 
 bool ExtensionAdminPolicyTest::UserMayModifySettings(const Extension* extension,
                                                      base::string16* error) {
-  InitPrefService();
-  return extension_management_->GetProvider()->UserMayModifySettings(extension,
-                                                                     error);
+  SetUpPolicyProvider();
+  return provider_->UserMayModifySettings(extension, error);
 }
 
 bool ExtensionAdminPolicyTest::MustRemainEnabled(const Extension* extension,
                                                  base::string16* error) {
-  InitPrefService();
-  return extension_management_->GetProvider()->MustRemainEnabled(extension,
-                                                                 error);
+  SetUpPolicyProvider();
+  return provider_->MustRemainEnabled(extension, error);
 }
 
 // Verify that preference controlled by legacy ExtensionInstallSources policy is
@@ -235,7 +248,7 @@ TEST_F(ExtensionManagementServiceTest, LegacyAllowedTypes) {
   const std::vector<Manifest::Type>& allowed_types =
       ReadGlobalSettings()->allowed_types;
   ASSERT_TRUE(ReadGlobalSettings()->has_restricted_allowed_types);
-  EXPECT_TRUE(allowed_types.size() == 2);
+  EXPECT_EQ(allowed_types.size(), 2u);
   EXPECT_FALSE(std::find(allowed_types.begin(),
                          allowed_types.end(),
                          Manifest::TYPE_EXTENSION) != allowed_types.end());
@@ -337,6 +350,32 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_TRUE(std::find(allowed_types.begin(),
                         allowed_types.end(),
                         Manifest::TYPE_USER_SCRIPT) != allowed_types.end());
+
+  // Verifies blocked permission list settings.
+  APIPermissionSet api_permission_set;
+  api_permission_set.clear();
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kDownloads);
+  EXPECT_EQ(api_permission_set,
+            extension_management_->GetBlockedAPIPermissions(kOtherExtension));
+
+  api_permission_set.clear();
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kDownloads);
+  api_permission_set.insert(APIPermission::kBookmark);
+  EXPECT_EQ(api_permission_set,
+            extension_management_->GetBlockedAPIPermissions(kTargetExtension));
+
+  api_permission_set.clear();
+  api_permission_set.insert(APIPermission::kDownloads);
+  EXPECT_EQ(api_permission_set,
+            extension_management_->GetBlockedAPIPermissions(kTargetExtension2));
+
+  api_permission_set.clear();
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kHistory);
+  EXPECT_EQ(api_permission_set,
+            extension_management_->GetBlockedAPIPermissions(kTargetExtension3));
 }
 
 // Tests functionality of new preference as to deprecate legacy

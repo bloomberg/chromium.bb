@@ -61,6 +61,10 @@ void ManagementPolicy::UnregisterProvider(Provider* provider) {
   providers_.erase(provider);
 }
 
+void ManagementPolicy::RegisterProviders(std::vector<Provider*> providers) {
+  providers_.insert(providers.begin(), providers.end());
+}
+
 bool ManagementPolicy::UserMayLoad(const Extension* extension,
                                    base::string16* error) const {
   return ApplyToProviderList(

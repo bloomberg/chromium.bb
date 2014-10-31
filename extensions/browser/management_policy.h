@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "extensions/common/extension.h"
@@ -91,6 +92,9 @@ class ManagementPolicy {
   // the caller. Providers do not need to be unregistered on shutdown.
   void RegisterProvider(Provider* provider);
   void UnregisterProvider(Provider* provider);
+
+  // Like RegisterProvider(), but registers multiple providers instead.
+  void RegisterProviders(std::vector<Provider*> providers);
 
   // Returns true if the user is permitted to install, load, and run the given
   // extension. If not, |error| may be set to an appropriate message.

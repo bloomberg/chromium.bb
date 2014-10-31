@@ -1750,8 +1750,19 @@
                     'enum': ['blocked', 'allowed', 'force_installed', 'normal_installed']
                   },
                   'update_url': { 'type': 'string' },
-                }
-              }
+                  'blocked_permissions': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string',
+                      'pattern': '^[a-z][a-zA-Z.]*$',
+                    },
+                    'id': 'ListOfPermissions',
+                  },
+                  'allowed_permissions': {
+                    '$ref': 'ListOfPermissions',
+                  },
+                },
+              },
             },
             'properties': {
               '*': {
@@ -1761,15 +1772,18 @@
                     'type': 'string',
                     'enum': ['blocked', 'allowed']
                   },
+                  'blocked_permissions': {
+                    '$ref': 'ListOfPermissions',
+                  },
                   'install_sources': {
                     '$ref': 'ExtensionInstallSources',
                   },
                   'allowed_types': {
                     '$ref': 'ExtensionAllowedTypes',
                   },
-                }
-              }
-            }
+                },
+              },
+            },
           },
           'future': True,
           'supported_on': ['chrome.*:40-', 'chrome_os:40-'],
@@ -1780,13 +1794,16 @@
           'example_value': {
             'abcdefghijklmnopabcdefghijklmnop' : {
               'installation_mode': 'allowed',
+              'blocked_permissions': ['history'],
             },
             'bcdefghijklmnopabcdefghijklmnopa' : {
               'installation_mode': 'force_installed',
               'update_url': 'http://example.com/update_url',
+              'allowed_permissions': ['downloads'],
             },
             '*': {
               'installation_mode': 'blocked',
+              'blocked_permissions': ['downloads', 'bookmarks'],
               'install_sources': ['http://company-intranet/chromeapps'],
               'allowed_types': ['hosted_app'],
             },
@@ -1808,6 +1825,10 @@
           The default "installation_mode" can be configured for the "*" extension. Only the "allowed" and "blocked" values can be used in this case.
 
           If the mode is set to "force_installed" or "normal_installed" then an "update_url" must be configured too. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
+
+          "blocked_permissions": maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3">https://developer.chrome.com/extensions/declare_permissions</ph>. This setting also can be configured for "*" extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
+
+          "allowed_permissions": similar to "blocked_permissions", but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for "*" extension. Note that this setting doesn't give granted permissions to extensions automatically.
 
           The following settings can be used only for the default "*" configuration:
 

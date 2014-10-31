@@ -1709,6 +1709,23 @@ void ExtensionService::OnExtensionInstalled(
 
 void ExtensionService::OnExtensionManagementSettingsChanged() {
   error_controller_->ShowErrorIfNeeded();
+
+  // Revokes blocked permissions from active_permissions for all extensions.
+  extensions::ExtensionManagement* settings =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile());
+  CHECK(settings);
+  scoped_ptr<ExtensionSet> all_extensions(
+      registry_->GenerateInstalledExtensionsSet());
+  for (const auto& extension : *all_extensions.get()) {
+    if (!settings->IsPermissionSetAllowed(
+            extension->id(),
+            extension->permissions_data()->active_permissions())) {
+      extensions::PermissionsUpdater(profile()).RemovePermissions(
+          extension.get(),
+          settings->GetBlockedPermissions(extension->id()).get());
+    }
+  }
+
   CheckManagementPolicy();
 }
 

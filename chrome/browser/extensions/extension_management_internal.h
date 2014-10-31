@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/permissions/api_permission_set.h"
 
 namespace base {
 class DictionaryValue;
@@ -42,6 +43,8 @@ struct IndividualSettings {
   // management preference and |scope| represents the applicable range of the
   // settings, a single extension, a group of extensions or default settings.
   // Note that in case of parsing errors, |this| will NOT be left untouched.
+  // This method is required to be called in order of ParsingScope, i.e. first
+  // SCOPE_DEFAULT, then SCOPE_INDIVIDUAL.
   bool Parse(const base::DictionaryValue* dict, ParsingScope scope);
 
   // Extension installation mode. Setting this to INSTALLATION_FORCED or
@@ -54,6 +57,17 @@ struct IndividualSettings {
   // settings will take value from default settings.
   ExtensionManagement::InstallationMode installation_mode;
   std::string update_url;
+
+  // Permissions settings for extensions. These settings won't grant permissions
+  // to extensions automatically. Instead, these settings will provide a list of
+  // blocked permissions for each extension. That is, if an extension requires a
+  // permission which has been blacklisted, this extension will not be allowed
+  // to load. And if it contains a blocked permission as optional requirement,
+  // it will be allowed to load (of course, with permission granted from user if
+  // necessary), but conflicting permissions will be dropped. These settings
+  // will merge from the default settings, and unspecified settings will take
+  // value from default settings.
+  APIPermissionSet blocked_permissions;
 
  private:
   DISALLOW_ASSIGN(IndividualSettings);

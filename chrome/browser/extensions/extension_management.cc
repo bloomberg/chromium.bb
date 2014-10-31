@@ -6,17 +6,18 @@
 
 #include <algorithm>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/permissions_based_management_policy_provider.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
 
@@ -49,10 +52,16 @@ ExtensionManagement::ExtensionManagement(PrefService* pref_service)
   // before first call to Refresh(), so in order to resolve this, Refresh() must
   // be called in the initialization of ExtensionManagement.
   Refresh();
-  provider_.reset(new StandardManagementPolicyProvider(this));
+  providers_.push_back(new StandardManagementPolicyProvider(this));
+  providers_.push_back(new PermissionsBasedManagementPolicyProvider(this));
 }
 
 ExtensionManagement::~ExtensionManagement() {
+}
+
+void ExtensionManagement::Shutdown() {
+  pref_change_registrar_.RemoveAll();
+  pref_service_ = nullptr;
 }
 
 void ExtensionManagement::AddObserver(Observer* observer) {
@@ -63,8 +72,9 @@ void ExtensionManagement::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-ManagementPolicy::Provider* ExtensionManagement::GetProvider() const {
-  return provider_.get();
+std::vector<ManagementPolicy::Provider*> ExtensionManagement::GetProviders()
+    const {
+  return providers_.get();
 }
 
 bool ExtensionManagement::BlacklistedByDefault() const {
@@ -142,6 +152,31 @@ bool ExtensionManagement::IsAllowedManifestType(
       global_settings_->allowed_types;
   return std::find(allowed_types.begin(), allowed_types.end(), manifest_type) !=
          allowed_types.end();
+}
+
+const APIPermissionSet& ExtensionManagement::GetBlockedAPIPermissions(
+    const ExtensionId& id) const {
+  return ReadById(id)->blocked_permissions;
+}
+
+scoped_refptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
+    const ExtensionId& id) const {
+  // Only api permissions are supported currently.
+  return scoped_refptr<const PermissionSet>(
+      new PermissionSet(GetBlockedAPIPermissions(id),
+                        ManifestPermissionSet(),
+                        URLPatternSet(),
+                        URLPatternSet()));
+}
+
+bool ExtensionManagement::IsPermissionSetAllowed(
+    const ExtensionId& id,
+    scoped_refptr<const PermissionSet> perms) const {
+  for (const auto& blocked_api : GetBlockedAPIPermissions(id)) {
+    if (perms->HasAPIPermission(blocked_api->id()))
+      return false;
+  }
+  return true;
 }
 
 void ExtensionManagement::Refresh() {
@@ -301,6 +336,8 @@ const base::Value* ExtensionManagement::LoadPreference(
     const char* pref_name,
     bool force_managed,
     base::Value::Type expected_type) {
+  if (!pref_service_)
+    return nullptr;
   const PrefService::Preference* pref =
       pref_service_->FindPreference(pref_name);
   if (pref && !pref->IsDefaultValue() &&
@@ -309,7 +346,7 @@ const base::Value* ExtensionManagement::LoadPreference(
     if (value && value->IsType(expected_type))
       return value;
   }
-  return NULL;
+  return nullptr;
 }
 
 void ExtensionManagement::OnExtensionPrefChanged() {

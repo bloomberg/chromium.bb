@@ -89,9 +89,9 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   state_store_.reset(new StateStore(profile_, value_store.Pass()));
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   management_policy_.reset(new ManagementPolicy());
-  management_policy_->RegisterProvider(
+  management_policy_->RegisterProviders(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
-          ->GetProvider());
+          ->GetProviders());
   runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,

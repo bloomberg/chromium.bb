@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/permissions.h"
@@ -30,6 +31,8 @@ namespace helpers = permissions_api_helpers;
 
 namespace {
 
+const char kBlockedByEnterprisePolicy[] =
+    "Permissions are blocked by enterprise policy.";
 const char kCantRemoveRequiredPermissionsError[] =
     "You cannot remove required permissions.";
 const char kNotInOptionalPermissionsError[] =
@@ -177,6 +180,15 @@ bool PermissionsRequestFunction::RunAsync() {
   if (!PermissionsParser::GetOptionalPermissions(extension())
            ->Contains(*requested_permissions_.get())) {
     error_ = kNotInOptionalPermissionsError;
+    return false;
+  }
+
+  // Automatically declines api permissions requests, which are blocked by
+  // enterprise policy.
+  if (!ExtensionManagementFactory::GetForBrowserContext(GetProfile())
+           ->IsPermissionSetAllowed(extension()->id(),
+                                    requested_permissions_)) {
+    error_ = kBlockedByEnterprisePolicy;
     return false;
   }
 

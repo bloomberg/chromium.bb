@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 
+#include <vector>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -33,6 +37,9 @@ struct IndividualSettings;
 struct GlobalSettings;
 
 }  // namespace internal
+
+class APIPermissionSet;
+class PermissionSet;
 
 // Tracks the management policies that affect extensions and provides interfaces
 // for observing and obtaining the global settings for all extensions, as well
@@ -65,12 +72,15 @@ class ExtensionManagement : public KeyedService {
   explicit ExtensionManagement(PrefService* pref_service);
   ~ExtensionManagement() override;
 
+  // KeyedService implementations:
+  void Shutdown() override;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Get the ManagementPolicy::Provider controlled by extension management
-  // policy settings.
-  ManagementPolicy::Provider* GetProvider() const;
+  // Get the list of ManagementPolicy::Provider controlled by extension
+  // management policy settings.
+  std::vector<ManagementPolicy::Provider*> GetProviders() const;
 
   // Checks if extensions are blacklisted by default, by policy. When true,
   // this means that even extensions without an ID should be blacklisted (e.g.
@@ -98,6 +108,17 @@ class ExtensionManagement : public KeyedService {
   // Returns true if an extension with manifest type |manifest_type| is
   // allowed to be installed.
   bool IsAllowedManifestType(Manifest::Type manifest_type) const;
+
+  // Returns the list of blocked API permissions for the extension |id|.
+  const APIPermissionSet& GetBlockedAPIPermissions(const ExtensionId& id) const;
+
+  // Returns blocked permission set for extension |id|.
+  scoped_refptr<const PermissionSet> GetBlockedPermissions(
+      const ExtensionId& id) const;
+
+  // Returns true if every permission in |perms| is allowed for extension |id|.
+  bool IsPermissionSetAllowed(const ExtensionId& id,
+                              scoped_refptr<const PermissionSet> perms) const;
 
  private:
   typedef base::ScopedPtrHashMap<ExtensionId, internal::IndividualSettings>
@@ -153,7 +174,7 @@ class ExtensionManagement : public KeyedService {
 
   ObserverList<Observer, true> observer_list_;
   PrefChangeRegistrar pref_change_registrar_;
-  scoped_ptr<ManagementPolicy::Provider> provider_;
+  ScopedVector<ManagementPolicy::Provider> providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagement);
 };

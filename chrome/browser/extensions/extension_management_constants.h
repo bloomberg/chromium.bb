@@ -20,6 +20,9 @@ extern const char kBlocked[];
 extern const char kForceInstalled[];
 extern const char kNormalInstalled[];
 
+extern const char kBlockedPermissions[];
+extern const char kAllowedPermissions[];
+
 extern const char kUpdateUrl[];
 extern const char kInstallSources[];
 extern const char kAllowedTypes[];

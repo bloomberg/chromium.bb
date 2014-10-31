@@ -67,12 +67,64 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     }
   }
 
+  // Parses the blocked permission settings.
+  const base::ListValue* list_value = nullptr;
+  base::string16 error;
+
+  // If applicable, inherit from global block list and remove all explicitly
+  // allowed permissions.
+  if (scope != SCOPE_DEFAULT &&
+      dict->GetListWithoutPathExpansion(schema_constants::kAllowedPermissions,
+                                        &list_value)) {
+    // It is assumed that Parse() is already called for SCOPE_DEFAULT and
+    // settings specified for |this| is initialized by copying from default
+    // settings, including the |blocked_permissions| setting here.
+    // That is, |blocked_permissions| should be the default block permissions
+    // list settings here.
+    APIPermissionSet globally_blocked_permissions = blocked_permissions;
+    APIPermissionSet explicitly_allowed_permissions;
+    // Reuses code for parsing API permissions from manifest. But note that we
+    // only support list of strings type.
+    if (!APIPermissionSet::ParseFromJSON(
+            list_value,
+            APIPermissionSet::kDisallowInternalPermissions,
+            &explicitly_allowed_permissions,
+            &error,
+            nullptr)) {
+      // There might be unknown permissions, warn and just ignore them;
+      LOG(WARNING) << error;
+    }
+    APIPermissionSet::Difference(globally_blocked_permissions,
+                                 explicitly_allowed_permissions,
+                                 &blocked_permissions);
+  }
+
+  // Then add all newly blocked permissions to the list.
+  if (dict->GetListWithoutPathExpansion(schema_constants::kBlockedPermissions,
+                                        &list_value)) {
+    // The |blocked_permissions| might be the result of the routines above,
+    // or remains the same as default block permissions settings.
+    APIPermissionSet permissions_to_merge_from = blocked_permissions;
+    APIPermissionSet permissions_parsed;
+    if (!APIPermissionSet::ParseFromJSON(
+            list_value,
+            APIPermissionSet::kDisallowInternalPermissions,
+            &permissions_parsed,
+            &error,
+            nullptr)) {
+      LOG(WARNING) << error;
+    }
+    APIPermissionSet::Union(
+        permissions_to_merge_from, permissions_parsed, &blocked_permissions);
+  }
+
   return true;
 }
 
 void IndividualSettings::Reset() {
   installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
   update_url.clear();
+  blocked_permissions.clear();
 }
 
 GlobalSettings::GlobalSettings() {

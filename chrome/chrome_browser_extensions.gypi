@@ -734,6 +734,8 @@
       'browser/extensions/pending_extension_info.h',
       'browser/extensions/pending_extension_manager.cc',
       'browser/extensions/pending_extension_manager.h',
+      'browser/extensions/permissions_based_management_policy_provider.cc',
+      'browser/extensions/permissions_based_management_policy_provider.h',
       'browser/extensions/permissions_updater.cc',
       'browser/extensions/permissions_updater.h',
       'browser/extensions/plugin_manager.cc',

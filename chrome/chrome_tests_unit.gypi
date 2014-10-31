@@ -423,6 +423,7 @@
       'browser/extensions/menu_manager_unittest.cc',
       'browser/extensions/pack_extension_unittest.cc',
       'browser/extensions/permission_messages_unittest.cc',
+      'browser/extensions/permissions_based_management_policy_provider_unittest.cc',
       'browser/extensions/permissions_updater_unittest.cc',
       'browser/extensions/policy_handlers_unittest.cc',
       'browser/extensions/sandboxed_unpacker_unittest.cc',
