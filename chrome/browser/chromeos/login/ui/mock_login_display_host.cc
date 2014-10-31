@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 
-#include "chrome/test/base/ui_test_utils.h"
-
 namespace chromeos {
 
 MockLoginDisplayHost::MockLoginDisplayHost() {

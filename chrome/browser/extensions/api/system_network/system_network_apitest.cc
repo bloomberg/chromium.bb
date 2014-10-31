@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/api/system_network/system_network_api.h"
 #include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"

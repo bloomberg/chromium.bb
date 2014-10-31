@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"

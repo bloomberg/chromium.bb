@@ -6,7 +6,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/ui_test_utils.h"
 
 class TestBackgroundModeManager : public BackgroundModeManager {
  public:
