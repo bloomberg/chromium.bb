@@ -545,6 +545,7 @@ class TempNameGen(object):
     return
 
   def ValidatePathLength(self, temp, imtype):
+    temp = os.path.normpath(temp) if temp else temp
     # If the temp name is too long, just pick a random one instead.
     if not CheckPathLength(temp, exit_on_failure=False):
       # imtype is sometimes just an extension, and sometimes a compound
@@ -851,7 +852,7 @@ class DriverChain(object):
 
   def __init__(self, input, output, namegen):
     self.input = input
-    self.output = output
+    self.output = os.path.normpath(output) if output else output
     self.steps = []
     self.namegen = namegen
 
@@ -859,12 +860,14 @@ class DriverChain(object):
     # If we're compiling for a single file, then we use
     # TempNameForInput. If there are multiple files
     # (e.g. linking), then we use TempNameForOutput.
-    if isinstance(input, str):
+    if isinstance(self.input, str):
       self.use_names_for_input = True
-      CheckPathLength(input)
+      self.input = os.path.normpath(self.input) if self.input else self.input
+      CheckPathLength(self.input)
     else:
       self.use_names_for_input = False
-      for path in input:
+      self.input = [os.path.normpath(p) if p else p for p in self.input]
+      for path in self.input:
         CheckPathLength(path)
     CheckPathLength(output)
 
