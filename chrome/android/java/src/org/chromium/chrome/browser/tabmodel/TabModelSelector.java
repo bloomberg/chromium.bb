@@ -116,6 +116,13 @@ public interface TabModelSelector {
     void closeAllTabs();
 
     /**
+     * Close all tabs across all tab models
+     * @param uponExit true iff the tabs are being closed upon application exit (after user presses
+     *                 the system back button)
+     */
+    void closeAllTabs(boolean uponExit);
+
+    /**
      * Get total tab count across all tab models
      */
     int getTotalTabCount();

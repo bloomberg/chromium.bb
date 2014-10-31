@@ -127,7 +127,14 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     @Override
     public void closeAllTabs() {
-        for (int i = 0; i < getModels().size(); i++) getModelAt(i).closeAllTabs();
+        closeAllTabs(false);
+    }
+
+    @Override
+    public void closeAllTabs(boolean uponExit) {
+        for (int i = 0; i < getModels().size(); i++) {
+            getModelAt(i).closeAllTabs(!uponExit, uponExit);
+        }
     }
 
     @Override
