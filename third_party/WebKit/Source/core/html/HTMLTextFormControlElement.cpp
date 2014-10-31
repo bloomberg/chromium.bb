@@ -186,10 +186,7 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 void HTMLTextFormControlElement::select()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    RefPtrWillBeRawPtr<HTMLTextFormControlElement> protector(this);
-    if (isFocusable())
-        document().page()->focusController().setFocusedElement(this, document().frame());
-    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, ChangeSelection);
+    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
@@ -359,12 +356,12 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
 
+    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this))
+        return;
+
     LocalFrame* frame = document().frame();
     HTMLElement* innerEditor = innerEditorElement();
     if (!frame || !innerEditor)
-        return;
-
-    if (selectionOption == NotChangeSelection && document().focusedElement() != this)
         return;
 
     Position startPosition = positionForIndex(innerEditor, start);
@@ -386,7 +383,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection.setWithoutValidation(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
+    frame->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
 }
 
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const

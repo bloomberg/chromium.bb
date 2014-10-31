@@ -45,6 +45,8 @@ public:
     // Option of setSelectionRange.
     enum SelectionOption {
         ChangeSelection,
+        ChangeSelectionAndFocus,
+        ChangeSelectionIfFocused,
         NotChangeSelection
     };
 

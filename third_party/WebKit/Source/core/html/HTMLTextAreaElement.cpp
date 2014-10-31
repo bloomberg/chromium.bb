@@ -351,11 +351,11 @@ void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior e
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value)
 {
-    setValueCommon(value, DispatchNoEvent, ChangeSelection);
+    setValueCommon(value, DispatchNoEvent, SetSeletion);
     m_isDirty = false;
 }
 
-void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventBehavior eventBehavior, SelectionOption selectionOption)
+void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventBehavior eventBehavior, SetValueCommonOption setValueOption)
 {
     // Code elsewhere normalizes line endings added by the user via the keyboard or pasting.
     // We normalize line endings coming from JavaScript here.
@@ -368,12 +368,12 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     // FIXME: Simple early return doesn't match the Firefox ever.
     // Remove these lines.
     if (normalizedValue == value()) {
-        if (selectionOption == ChangeSelection) {
+        if (setValueOption == SetSeletion) {
             setNeedsValidityCheck();
             if (isFinishedParsingChildren()) {
                 // Set the caret to the end of the text value except for initialize.
                 unsigned endOfString = m_value.length();
-                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotChangeSelection);
+                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, ChangeSelectionIfFocused);
             }
         }
         return;
@@ -390,7 +390,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     if (isFinishedParsingChildren()) {
         // Set the caret to the end of the text value except for initialize.
         unsigned endOfString = m_value.length();
-        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotChangeSelection);
+        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, ChangeSelectionIfFocused);
     }
 
     notifyFormStateChanged();
