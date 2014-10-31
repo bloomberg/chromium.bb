@@ -256,6 +256,18 @@
 #define GL_GPU_DISJOINT_EXT               0x8FBB
 #endif
 
+#ifndef GL_KHR_robustness
+#define GL_KHR_robustness 1
+#define GL_CONTEXT_ROBUST_ACCESS_KHR      0x90F3
+#define GL_LOSE_CONTEXT_ON_RESET_KHR      0x8252
+#define GL_GUILTY_CONTEXT_RESET_KHR       0x8253
+#define GL_INNOCENT_CONTEXT_RESET_KHR     0x8254
+#define GL_UNKNOWN_CONTEXT_RESET_KHR      0x8255
+#define GL_RESET_NOTIFICATION_STRATEGY_KHR 0x8256
+#define GL_NO_RESET_NOTIFICATION_KHR      0x8261
+#define GL_CONTEXT_LOST_KHR               0x0507
+#endif /* GL_KHR_robustness */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

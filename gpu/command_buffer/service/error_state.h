@@ -59,6 +59,7 @@ class Logger;
 
 class GPU_EXPORT ErrorStateClient {
  public:
+  virtual void OnContextLostError() = 0;
   // GL_OUT_OF_MEMORY can cause side effects such as losing the context.
   virtual void OnOutOfMemoryError() = 0;
 };

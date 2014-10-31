@@ -442,9 +442,14 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
   DCHECK(virtual_context->IsCurrent(surface));
 
   if (switched_contexts || virtual_context != current_context_) {
-    // There should be no errors from the previous context leaking into the
-    // new context.
-    DCHECK_EQ(glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+#if DCHECK_IS_ON
+    GLenum error = glGetErrorFn();
+    // Accepting a context loss error here enables using debug mode to work on
+    // context loss handling in virtual context mode.
+    // There should be no other errors from the previous context leaking into
+    // the new context.
+    DCHECK(error == GL_NO_ERROR || error == GL_CONTEXT_LOST_KHR);
+#endif
 
     // Set all state that is different from the real state
     GLApi* temp = GetCurrentGLApi();

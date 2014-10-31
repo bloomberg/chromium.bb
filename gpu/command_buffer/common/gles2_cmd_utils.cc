@@ -23,7 +23,8 @@ enum GLErrorBit {
   kInvalidValue = (1 << 1),
   kInvalidOperation = (1 << 2),
   kOutOfMemory = (1 << 3),
-  kInvalidFrameBufferOperation = (1 << 4)
+  kInvalidFrameBufferOperation = (1 << 4),
+  kContextLost = (1 << 5)
 };
 }
 
@@ -564,6 +565,8 @@ uint32 GLES2Util::GLErrorToErrorBit(uint32 error) {
       return gl_error_bit::kOutOfMemory;
     case GL_INVALID_FRAMEBUFFER_OPERATION:
       return gl_error_bit::kInvalidFrameBufferOperation;
+    case GL_CONTEXT_LOST_KHR:
+      return gl_error_bit::kContextLost;
     default:
       NOTREACHED();
       return gl_error_bit::kNoError;
@@ -582,6 +585,8 @@ uint32 GLES2Util::GLErrorBitToGLError(uint32 error_bit) {
       return GL_OUT_OF_MEMORY;
     case gl_error_bit::kInvalidFrameBufferOperation:
       return GL_INVALID_FRAMEBUFFER_OPERATION;
+    case gl_error_bit::kContextLost:
+      return GL_CONTEXT_LOST_KHR;
     default:
       NOTREACHED();
       return GL_NO_ERROR;

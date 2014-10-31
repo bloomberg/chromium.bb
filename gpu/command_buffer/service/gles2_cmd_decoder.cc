@@ -682,6 +682,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void OnTextureRefDetachedFromFramebuffer(TextureRef* texture) override;
 
   // Overriden from ErrorStateClient.
+  void OnContextLostError() override;
   void OnOutOfMemoryError() override;
 
   // Ensure Renderbuffer corresponding to last DoBindRenderbuffer() is bound.
@@ -2642,6 +2643,7 @@ bool GLES2DecoderImpl::Initialize(
 
   has_robustness_extension_ =
       context->HasExtension("GL_ARB_robustness") ||
+      context->HasExtension("GL_KHR_robustness") ||
       context->HasExtension("GL_EXT_robustness");
 
   if (!InitializeShaderTranslator()) {
@@ -9734,6 +9736,23 @@ void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
     return;
   }
 
+  if (workarounds().use_virtualized_gl_contexts) {
+    // If the context is virtual, the real context being guilty does not ensure
+    // that the virtual context is guilty.
+    if (reset_status == GL_GUILTY_CONTEXT_RESET_ARB) {
+      reset_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
+    }
+  } else if (reset_status == GL_UNKNOWN_CONTEXT_RESET_ARB &&
+      has_robustness_extension_) {
+    // If the reason for the call was a GL error, we can try to determine the
+    // reset status more accurately.
+    GLenum driver_status = glGetGraphicsResetStatusARB();
+    if (driver_status == GL_GUILTY_CONTEXT_RESET_ARB ||
+        driver_status == GL_INNOCENT_CONTEXT_RESET_ARB) {
+      reset_status = driver_status;
+    }
+  }
+
   // Marks this context as lost.
   reset_status_ = reset_status;
   current_decoder_error_ = error::kLostContext;
@@ -11225,10 +11244,13 @@ void GLES2DecoderImpl::OnTextureRefDetachedFromFramebuffer(
   DoDidUseTexImageIfNeeded(texture, texture->target());
 }
 
+void GLES2DecoderImpl::OnContextLostError() {
+  group_->LoseContexts(GL_UNKNOWN_CONTEXT_RESET_ARB);
+}
+
 void GLES2DecoderImpl::OnOutOfMemoryError() {
   if (lose_context_when_out_of_memory_) {
     group_->LoseContexts(GL_UNKNOWN_CONTEXT_RESET_ARB);
-    LoseContext(GL_GUILTY_CONTEXT_RESET_ARB);
   }
 }
 
