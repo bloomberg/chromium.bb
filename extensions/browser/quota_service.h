@@ -45,7 +45,6 @@ class QuotaService : public base::NonThreadSafe {
   // Some concrete heuristics (declared below) that ExtensionFunctions can
   // use to help the service make decisions about quota violations.
   class TimedLimit;
-  class SustainedLimit;
 
   QuotaService();
   virtual ~QuotaService();
@@ -214,24 +213,6 @@ class QuotaService::TimedLimit : public QuotaLimitHeuristic {
   TimedLimit(const Config& config, BucketMapper* map, const std::string& name)
       : QuotaLimitHeuristic(config, map, name) {}
   bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
-};
-
-// A per-item heuristic to limit the number of events that can occur in a
-// period of time over a sustained longer interval. E.g "no more than two
-// events per minute, sustained over 10 minutes".
-class QuotaService::SustainedLimit : public QuotaLimitHeuristic {
- public:
-  SustainedLimit(const base::TimeDelta& sustain,
-                 const Config& config,
-                 BucketMapper* map,
-                 const std::string& name);
-  bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
-
- private:
-  // Specifies how long exhaustion of buckets is allowed to continue before
-  // denying requests.
-  const int64 repeat_exhaustion_allowance_;
-  int64 num_available_repeat_exhaustions_;
 };
 
 }  // namespace extensions

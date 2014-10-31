@@ -193,8 +193,9 @@
             "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
-            "value": 10,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
+            "value": 1000000,
+            "deprecated": "The storage.sync API no longer has a sustained write operation quota.",
+            "description": ""
           }
         }
       },

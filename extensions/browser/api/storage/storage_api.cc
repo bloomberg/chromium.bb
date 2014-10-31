@@ -158,18 +158,6 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
       longLimitConfig,
       new QuotaLimitHeuristic::SingletonBucketMapper(),
       "MAX_WRITE_OPERATIONS_PER_HOUR"));
-
-  // A max of 10 operations per minute, sustained over 10 minutes.
-  QuotaLimitHeuristic::Config shortLimitConfig = {
-    // See storage.json for current value.
-    core_api::storage::sync::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
-    base::TimeDelta::FromMinutes(1)
-  };
-  heuristics->push_back(new QuotaService::SustainedLimit(
-      base::TimeDelta::FromMinutes(10),
-      shortLimitConfig,
-      new QuotaLimitHeuristic::SingletonBucketMapper(),
-      "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"));
 };
 
 }  // namespace
