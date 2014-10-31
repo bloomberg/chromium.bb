@@ -164,7 +164,22 @@ cr.define('hotword', function() {
       if (!this.isEligibleUrl_(tab.url))
         return;
 
-      chrome.tabs.executeScript(tab.id, {'file': 'audio_client.js'});
+      chrome.tabs.executeScript(
+          tab.id,
+          {'file': 'audio_client.js'},
+          function(results) {
+            if (chrome.runtime.lastError) {
+              // Ignore this error. For new tab pages, even though the URL is
+              // reported to be chrome://newtab/, the actual URL is a
+              // country-specific google domain. Since we don't have permission
+              // to inject on every page, an error will happen when the user is
+              // in an unsupported country.
+              //
+              // The property still needs to be accessed so that the error
+              // condition is cleared. If it isn't, exectureScript will log an
+              // error the next time it is called.
+            }
+          });
     },
 
     /**
