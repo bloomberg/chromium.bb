@@ -148,7 +148,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Creates a RenderFrame in the renderer process.  Only called for
   // cross-process subframe navigations in --site-per-process.
-  bool CreateRenderFrame(int parent_routing_id);
+  bool CreateRenderFrame(int parent_routing_id, int proxy_routing_id);
 
   // Returns whether the RenderFrame in the renderer process has been created
   // and still has a connection.  This is valid for all frames.

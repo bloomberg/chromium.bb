@@ -337,13 +337,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   EXPECT_NE(site_instance,
             child->current_frame_host()->GetSiteInstance());
 
-  // TODO(japhet): This currently causes an assertion in the renderer process.
-  // Enable when the assertion is fixed.
-  //NavigateFrameToURL(child, http_url);
-  //EXPECT_EQ(http_url, observer.navigation_url());
-  //EXPECT_TRUE(observer.navigation_succeeded());
-  //EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-  //          child->current_frame_host()->GetSiteInstance());
+  // Navigate back to the parent's origin and ensure we return to the
+  // parent's process.
+  NavigateFrameToURL(child, http_url);
+  EXPECT_EQ(http_url, observer.navigation_url());
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
 }
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.

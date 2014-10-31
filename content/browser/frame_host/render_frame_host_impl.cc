@@ -551,7 +551,8 @@ BrowserAccessibility* RenderFrameHostImpl::AccessibilityGetParentFrame() {
   return manager->GetFromID(parent_node_id);
 }
 
-bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
+bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
+                                            int proxy_routing_id) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::CreateRenderFrame");
   DCHECK(!IsRenderFrameLive()) << "Creating frame twice";
 
@@ -564,7 +565,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
 
   DCHECK(GetProcess()->HasConnection());
 
-  Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id));
+  Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id, proxy_routing_id));
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
   // this path is only used for out-of-process iframes.  Main frame RenderFrames

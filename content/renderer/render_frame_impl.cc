@@ -498,24 +498,37 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
 }
 
 // static
-void RenderFrameImpl::CreateFrame(int routing_id, int parent_routing_id) {
+void RenderFrameImpl::CreateFrame(int routing_id,
+                                  int parent_routing_id,
+                                  int proxy_routing_id) {
   // TODO(nasko): For now, this message is only sent for subframes, as the
   // top level frame is created when the RenderView is created through the
   // ViewMsg_New IPC.
   CHECK_NE(MSG_ROUTING_NONE, parent_routing_id);
 
-  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(parent_routing_id);
+  blink::WebLocalFrame* web_frame;
+  RenderFrameImpl* render_frame;
+  if (proxy_routing_id == MSG_ROUTING_NONE) {
+    RenderFrameProxy* parent_proxy =
+        RenderFrameProxy::FromRoutingID(parent_routing_id);
+    // If the browser is sending a valid parent routing id, it should already
+    // be created and registered.
+    CHECK(parent_proxy);
+    blink::WebRemoteFrame* parent_web_frame = parent_proxy->web_frame();
 
-  // If the browser is sending a valid parent routing id, it should already be
-  // created and registered.
-  CHECK(proxy);
-  blink::WebRemoteFrame* parent_web_frame = proxy->web_frame();
-
-  // Create the RenderFrame and WebLocalFrame, linking the two.
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::Create(proxy->render_view(), routing_id);
-  blink::WebLocalFrame* web_frame =
-      parent_web_frame->createLocalChild("", render_frame);
+    // Create the RenderFrame and WebLocalFrame, linking the two.
+    render_frame =
+        RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
+    web_frame = parent_web_frame->createLocalChild("", render_frame);
+  } else {
+    RenderFrameProxy* proxy =
+        RenderFrameProxy::FromRoutingID(proxy_routing_id);
+    CHECK(proxy);
+    render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
+    web_frame = blink::WebLocalFrame::create(render_frame);
+    render_frame->proxy_routing_id_ = proxy_routing_id;
+    web_frame->initializeToReplaceRemoteFrame(proxy->web_frame());
+  }
   render_frame->SetWebFrame(web_frame);
   render_frame->Initialize();
 }
@@ -548,6 +561,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       is_swapped_out_(false),
       render_frame_proxy_(NULL),
       is_detaching_(false),
+      proxy_routing_id_(MSG_ROUTING_NONE),
       cookie_jar_(this),
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
@@ -2230,6 +2244,14 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
+
+  if (proxy_routing_id_ != MSG_ROUTING_NONE) {
+    RenderFrameProxy* proxy =
+        RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+    CHECK(proxy);
+    proxy->web_frame()->swap(frame_);
+    proxy_routing_id_ = MSG_ROUTING_NONE;
+  }
 
   // When we perform a new navigation, we need to update the last committed
   // session history entry with state for the page we are leaving. Do this

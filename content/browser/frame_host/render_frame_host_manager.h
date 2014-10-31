@@ -123,7 +123,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
         bool for_main_frame_navigation) = 0;
     virtual bool CreateRenderFrameForRenderManager(
         RenderFrameHost* render_frame_host,
-        int parent_routing_id) = 0;
+        int parent_routing_id,
+        int proxy_routing_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
@@ -430,6 +431,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       bool dest_is_view_source_mode,
       SiteInstance* current_instance,
       bool force_browsing_instance_swap);
+
+  // Determines the appropriate url to use as the current url for SiteInstance
+  // selection.
+  const GURL& GetCurrentURLForSiteInstance(
+      SiteInstance* current_instance,
+      NavigationEntry* current_entry);
 
   // Creates a new RenderFrameHostImpl for the |new_instance| while respecting
   // the opener route if needed and stores it in pending_render_frame_host_.

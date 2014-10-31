@@ -935,18 +935,6 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     // compare against the last non-interstitial entry.
     current_entry = controller.GetEntryAtOffset(-1);
   }
-  // If there is no last non-interstitial entry (and current_instance already
-  // has a site), then we must have been opened from another tab.  We want
-  // to compare against the URL of the page that opened us, but we can't
-  // get to it directly.  The best we can do is check against the site of
-  // the SiteInstance.  This will be correct when we intercept links and
-  // script-based navigations, but for now, it could place some pages in a
-  // new process unnecessarily.  We should only hit this case if a page tries
-  // to open a new tab to an interstitial-inducing URL, and then navigates
-  // the page to a different same-site URL.  (This seems very unlikely in
-  // practice.)
-  const GURL& current_url = (current_entry) ? current_entry->GetURL() :
-      current_instance->GetSiteURL();
 
   // View-source URLs must use a new SiteInstance and BrowsingInstance.
   // We don't need a swap when going from view-source to a debug URL like
@@ -962,6 +950,8 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)
+  const GURL& current_url =
+      GetCurrentURLForSiteInstance(current_instance, current_entry);
   if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
       !current_site_instance->HasWrongProcessForURL(dest_url)) {
     return current_instance;
@@ -973,6 +963,33 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // SiteInstance), so that it is ref counted.  This will happen in
   // CreateRenderView.
   return current_instance->GetRelatedSiteInstance(dest_url);
+}
+
+const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
+    SiteInstance* current_instance, NavigationEntry* current_entry) {
+  // If this is a subframe that is potentially out of process from its parent,
+  // don't consider using current_entry's url for SiteInstance selection, since
+  // current_entry's url is for the main frame and may be in a different site
+  // than this frame.
+  // TODO(creis): Remove this when we can check the FrameNavigationEntry's url.
+  // See http://crbug.com/369654
+  if (!frame_tree_node_->IsMainFrame() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+    return frame_tree_node_->current_url();
+
+  // If there is no last non-interstitial entry (and current_instance already
+  // has a site), then we must have been opened from another tab.  We want
+  // to compare against the URL of the page that opened us, but we can't
+  // get to it directly.  The best we can do is check against the site of
+  // the SiteInstance.  This will be correct when we intercept links and
+  // script-based navigations, but for now, it could place some pages in a
+  // new process unnecessarily.  We should only hit this case if a page tries
+  // to open a new tab to an interstitial-inducing URL, and then navigates
+  // the page to a different same-site URL.  (This seems very unlikely in
+  // practice.)
+  if (current_entry)
+    return current_entry->GetURL();
+  return current_instance->GetSiteURL();
 }
 
 void RenderFrameHostManager::CreateRenderFrameHostForNewSiteInstance(
@@ -1192,13 +1209,28 @@ bool RenderFrameHostManager::InitRenderFrame(
     return true;
 
   int parent_routing_id = MSG_ROUTING_NONE;
+  int proxy_routing_id = MSG_ROUTING_NONE;
   if (frame_tree_node_->parent()) {
     parent_routing_id = frame_tree_node_->parent()->render_manager()->
         GetRoutingIdForSiteInstance(render_frame_host->GetSiteInstance());
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }
+  // Check whether there is an existing proxy for this frame in this
+  // SiteInstance. If there is, the new RenderFrame needs to be able to find
+  // the proxy it is replacing, so that it can fully initialize itself.
+  // NOTE: This is the only time that a RenderFrameProxyHost can be in the same
+  // SiteInstance as its RenderFrameHost. This is only the case until the
+  // RenderFrameHost commits, at which point it will replace and delete the
+  // RenderFrameProxyHost.
+  RenderFrameProxyHost* existing_proxy =
+      GetRenderFrameProxyHost(render_frame_host->GetSiteInstance());
+  if (existing_proxy) {
+    proxy_routing_id = existing_proxy->GetRoutingID();
+    CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
+  }
   return delegate_->CreateRenderFrameForRenderManager(render_frame_host,
-                                                      parent_routing_id);
+                                                      parent_routing_id,
+                                                      proxy_routing_id);
 }
 
 int RenderFrameHostManager::GetRoutingIdForSiteInstance(

@@ -104,12 +104,16 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Creates a new RenderFrame with |routing_id| as a child of the RenderFrame
   // identified by |parent_routing_id| or as the top-level frame if the latter
-  // is MSG_ROUTING_NONE. It creates the Blink WebLocalFrame and inserts it in
-  // the proper place in the frame tree.
+  // is MSG_ROUTING_NONE. If |proxy_routing_id| is MSG_ROUTING_NONE, it creates
+  // the Blink WebLocalFrame and inserts it in the proper place in the frame
+  // tree. Otherwise, the frame is semi-orphaned until it commits, at which
+  // point it replaces the proxy identified by |proxy_routing_id|.
   // Note: This is called only when RenderFrame is being created in response to
   // IPC message from the browser process. All other frame creation is driven
   // through Blink and Create.
-  static void CreateFrame(int routing_id, int parent_routing_id);
+  static void CreateFrame(int routing_id,
+                          int parent_routing_id,
+                          int proxy_routing_id);
 
   // Returns the RenderFrameImpl for the given routing ID.
   static RenderFrameImpl* FromRoutingID(int routing_id);
@@ -673,6 +677,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrame. See https://crbug.com/357747.
   RenderFrameProxy* render_frame_proxy_;
   bool is_detaching_;
+
+  // If this frame was created to replace a proxy, this will store the routing
+  // id of the proxy to replace at commit-time, at which time it will be
+  // cleared.
+  // TODO(creis): Remove this after switching to PlzNavigate.
+  int proxy_routing_id_;
 
 #if defined(ENABLE_PLUGINS)
   // Current text input composition text. Empty if no composition is in
