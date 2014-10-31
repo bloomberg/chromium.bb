@@ -26,7 +26,7 @@ class TestAudioOutputStream : public media::AudioOutputStream {
       : default_frame_count_(default_frame_count),
         max_frame_count_(max_frame_count),
         gather_callback_(gather_callback),
-        callback_(NULL) {
+        callback_(nullptr) {
     caller_loop_ = base::MessageLoop::current();
   }
 
@@ -73,7 +73,7 @@ namespace copresence {
 class AudioPlayerTest : public testing::Test,
                         public base::SupportsWeakPtr<AudioPlayerTest> {
  public:
-  AudioPlayerTest() : buffer_index_(0), player_(NULL) {
+  AudioPlayerTest() : buffer_index_(0), player_(nullptr) {
     if (!media::AudioManager::Get())
       media::AudioManager::CreateForTesting();
   }
@@ -94,7 +94,7 @@ class AudioPlayerTest : public testing::Test,
     if (!player_)
       return;
     player_->Finalize();
-    player_ = NULL;
+    player_ = nullptr;
   }
 
   void PlayAndVerifySamples(

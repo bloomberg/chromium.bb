@@ -29,7 +29,7 @@ namespace copresence {
 // Public methods.
 
 AudioPlayerImpl::AudioPlayerImpl()
-    : is_playing_(false), stream_(NULL), frame_index_(0) {
+    : is_playing_(false), stream_(nullptr), frame_index_(0) {
 }
 
 AudioPlayerImpl::~AudioPlayerImpl() {
@@ -87,7 +87,7 @@ void AudioPlayerImpl::InitializeOnAudioThread() {
     LOG(ERROR) << "Failed to open an output stream.";
     if (stream_) {
       stream_->Close();
-      stream_ = NULL;
+      stream_ = nullptr;
     }
     return;
   }
@@ -131,7 +131,7 @@ void AudioPlayerImpl::StopAndCloseOnAudioThread() {
   if (is_playing_)
     stream_->Stop();
   stream_->Close();
-  stream_ = NULL;
+  stream_ = nullptr;
 
   is_playing_ = false;
 }

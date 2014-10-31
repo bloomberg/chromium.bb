@@ -85,7 +85,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   }
 
   net::URLRequestContextGetter* GetRequestContext() const override {
-    return NULL;
+    return nullptr;
   }
 
   const std::string GetPlatformVersionString() const override {
@@ -100,14 +100,14 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return auth_token_;
   }
 
-  WhispernetClient* GetWhispernetClient() override { return NULL; }
+  WhispernetClient* GetWhispernetClient() override { return nullptr; }
 
  protected:
   void InvokeReportResponseHandler(int status_code,
                                    const std::string& response) {
     rpc_handler_.ReportResponseHandler(
         base::Bind(&RpcHandlerTest::CaptureStatus, base::Unretained(this)),
-        NULL,
+        nullptr,
         status_code,
         response);
   }

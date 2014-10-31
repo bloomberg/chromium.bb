@@ -72,7 +72,7 @@ scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
   }
 
   if (active_directives_.empty())
-    return make_scoped_ptr<AudioDirective>(NULL);
+    return scoped_ptr<AudioDirective>().Pass();
 
   return make_scoped_ptr(new AudioDirective(active_directives_.front()));
 }

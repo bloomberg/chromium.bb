@@ -53,8 +53,8 @@ void ProcessSamples(
 
 AudioRecorderImpl::AudioRecorderImpl()
     : is_recording_(false),
-      stream_(NULL),
-      temp_conversion_buffer_(NULL),
+      stream_(nullptr),
+      temp_conversion_buffer_(nullptr),
       total_buffer_frames_(0),
       buffer_frame_index_(0) {
 }
@@ -132,7 +132,7 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
     LOG(ERROR) << "Failed to open an input stream.";
     if (stream_) {
       stream_->Close();
-      stream_ = NULL;
+      stream_ = nullptr;
     }
     return;
   }
@@ -165,7 +165,7 @@ void AudioRecorderImpl::StopAndCloseOnAudioThread() {
 
   StopOnAudioThread();
   stream_->Close();
-  stream_ = NULL;
+  stream_ = nullptr;
 }
 
 void AudioRecorderImpl::FinalizeOnAudioThread() {
@@ -234,7 +234,7 @@ double AudioRecorderImpl::ProvideInput(media::AudioBus* dest,
   DCHECK(temp_conversion_buffer_);
   DCHECK_LE(temp_conversion_buffer_->frames(), dest->frames());
   temp_conversion_buffer_->CopyTo(dest);
-  temp_conversion_buffer_ = NULL;
+  temp_conversion_buffer_ = nullptr;
   return 1.0;
 }
 

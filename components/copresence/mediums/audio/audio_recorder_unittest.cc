@@ -23,7 +23,7 @@ class TestAudioInputStream : public media::AudioInputStream {
   TestAudioInputStream(const media::AudioParameters& params,
                        const std::vector<float*> channel_data,
                        size_t samples)
-      : callback_(NULL), params_(params) {
+      : callback_(nullptr), params_(params) {
     buffer_ = media::AudioBus::CreateWrapper(2);
     for (size_t i = 0; i < channel_data.size(); ++i)
       buffer_->SetChannelData(i, channel_data[i]);
@@ -73,7 +73,7 @@ namespace copresence {
 
 class AudioRecorderTest : public testing::Test {
  public:
-  AudioRecorderTest() : total_samples_(0), recorder_(NULL) {
+  AudioRecorderTest() : total_samples_(0), recorder_(nullptr) {
     if (!media::AudioManager::Get())
       media::AudioManager::CreateForTesting();
   }
@@ -121,7 +121,7 @@ class AudioRecorderTest : public testing::Test {
     if (!recorder_)
       return;
     recorder_->Finalize();
-    recorder_ = NULL;
+    recorder_ = nullptr;
   }
 
   void RecordAndVerifySamples() {

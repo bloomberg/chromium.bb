@@ -40,15 +40,15 @@ const int kMaxSamples = 10000;
 
 // Public methods.
 
-AudioManagerImpl::AudioManagerImpl() : recorder_(NULL) {
+AudioManagerImpl::AudioManagerImpl() : recorder_(nullptr) {
   // TODO(rkc): Move all of these into initializer lists once it is allowed.
   playing_[AUDIBLE] = false;
   playing_[INAUDIBLE] = false;
   recording_[AUDIBLE] = false;
   recording_[INAUDIBLE] = false;
 
-  player_[AUDIBLE] = NULL;
-  player_[INAUDIBLE] = NULL;
+  player_[AUDIBLE] = nullptr;
+  player_[INAUDIBLE] = nullptr;
 }
 
 void AudioManagerImpl::Initialize(const DecodeSamplesCallback& decode_cb,

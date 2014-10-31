@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::IsNull;
 
 namespace copresence {
 
@@ -25,7 +27,7 @@ class AudioDirectiveListTest : public testing::Test {
 TEST_F(AudioDirectiveListTest, Basic) {
   const base::TimeDelta kTtl = base::TimeDelta::FromSeconds(9999);
 
-  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
+  EXPECT_THAT(directive_list_->GetActiveDirective(), IsNull());
 
   directive_list_->AddDirective("op_id1", kTtl);
   directive_list_->AddDirective("op_id2", kTtl * 3);
@@ -53,7 +55,7 @@ TEST_F(AudioDirectiveListTest, AddDirectiveMultiple) {
   directive_list_->RemoveDirective("op_id2");
   EXPECT_EQ("op_id1", directive_list_->GetActiveDirective()->op_id);
   directive_list_->RemoveDirective("op_id1");
-  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
+  EXPECT_THAT(directive_list_->GetActiveDirective(), IsNull());
 }
 
 TEST_F(AudioDirectiveListTest, RemoveDirectiveMultiple) {
@@ -74,7 +76,7 @@ TEST_F(AudioDirectiveListTest, RemoveDirectiveMultiple) {
   directive_list_->RemoveDirective("op_id2");
   EXPECT_EQ("op_id1", directive_list_->GetActiveDirective()->op_id);
   directive_list_->RemoveDirective("op_id1");
-  EXPECT_EQ(NULL, directive_list_->GetActiveDirective().get());
+  EXPECT_THAT(directive_list_->GetActiveDirective(), IsNull());
 }
 
 }  // namespace copresence
