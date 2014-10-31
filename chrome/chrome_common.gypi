@@ -57,7 +57,6 @@
       'common/icon_with_badge_image_source.h',
       'common/ini_parser.cc',
       'common/ini_parser.h',
-      'common/instant_restricted_id_cache.h',
       'common/instant_types.cc',
       'common/instant_types.h',
       'common/localized_error.cc',

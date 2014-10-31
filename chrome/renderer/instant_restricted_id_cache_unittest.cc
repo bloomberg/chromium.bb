@@ -5,7 +5,8 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "chrome/common/instant_restricted_id_cache.h"
+
+#include "chrome/renderer/instant_restricted_id_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

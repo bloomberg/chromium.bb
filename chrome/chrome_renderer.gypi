@@ -55,6 +55,7 @@
       'renderer/custom_menu_commands.h',
       'renderer/external_extension.cc',
       'renderer/external_extension.h',
+      'renderer/instant_restricted_id_cache.h',
       'renderer/page_load_histograms.cc',
       'renderer/page_load_histograms.h',
       'renderer/plugins/chrome_plugin_placeholder.cc',

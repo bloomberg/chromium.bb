@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_INSTANT_RESTRICTED_ID_CACHE_H_
-#define CHROME_COMMON_INSTANT_RESTRICTED_ID_CACHE_H_
+#ifndef CHROME_RENDERER_INSTANT_RESTRICTED_ID_CACHE_H_
+#define CHROME_RENDERER_INSTANT_RESTRICTED_ID_CACHE_H_
 
 #include <set>
 #include <utility>
@@ -162,4 +162,4 @@ bool InstantRestrictedIDCache<T>::GetItemWithRestrictedID(
   return true;
 }
 
-#endif  // CHROME_COMMON_INSTANT_RESTRICTED_ID_CACHE_H_
+#endif  // CHROME_RENDERER_INSTANT_RESTRICTED_ID_CACHE_H_

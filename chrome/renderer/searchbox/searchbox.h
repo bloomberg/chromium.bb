@@ -9,10 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/common/instant_restricted_id_cache.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
+#include "chrome/renderer/instant_restricted_id_cache.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "ui/base/window_open_disposition.h"

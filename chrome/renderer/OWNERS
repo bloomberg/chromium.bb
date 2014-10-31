@@ -1,3 +1,8 @@
+# Instant/Search files.
+per-file instant_restricted_id_cache*=kmadhusu@chromium.org
+per-file instant_restricted_id_cache*=jered@chromium.org
+per-file instant_restricted_id_cache*=samarth@chromium.org
+
 # Page load metrics.
 per-file page_load_histograms.*=ppi@chromium.org
 per-file page_load_histograms.*=tonyg@chromium.org
