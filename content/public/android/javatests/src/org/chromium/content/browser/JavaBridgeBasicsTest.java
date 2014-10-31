@@ -138,12 +138,12 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
     // Note that this requires that we can pass a JavaScript boolean to Java.
     private void assertRaisesException(String script) throws Throwable {
-        executeJavaScript("try {" +
-                          script + ";" +
-                          "  testController.setBooleanValue(false);" +
-                          "} catch (exception) {" +
-                          "  testController.setBooleanValue(true);" +
-                          "}");
+        executeJavaScript("try {"
+                + script + ";"
+                + "  testController.setBooleanValue(false);"
+                + "} catch (exception) {"
+                + "  testController.setBooleanValue(true);"
+                + "}");
         assertTrue(mTestController.waitForBooleanValue());
     }
 
@@ -461,9 +461,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // Initially, store a reference to the inner object in JS to make sure it's not
         // garbage-collected prematurely.
         assertEquals("object", executeJavaScriptAndGetStringResult(
-                        "(function() { " +
-                        "globalInner = testObject.getInnerObject(); return typeof globalInner; " +
-                        "})()"));
+                        "(function() { "
+                        + "globalInner = testObject.getInnerObject(); return typeof globalInner; "
+                        + "})()"));
         assertTrue(object.mWeakRefForInner.get() != null);
         // Check that returned Java object is being held by the Java bridge, thus it's not
         // collected.  Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
@@ -472,9 +472,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         assertTrue(object.mWeakRefForInner.get() != null);
         // Now dereference the inner object in JS and run GC to collect the interface object.
         assertEquals("true", executeJavaScriptAndGetStringResult(
-                        "(function() { " +
-                        "delete globalInner; gc(); return (typeof globalInner == 'undefined'); " +
-                        "})()"));
+                        "(function() { "
+                        + "delete globalInner; gc(); return (typeof globalInner == 'undefined'); "
+                        + "})()"));
         // Force GC on the Java side again. The bridge had to release the inner object, so it must
         // be collected this time.
         Runtime.getRuntime().gc();
@@ -576,9 +576,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             private int mPrivateField;
         }, "testObject");
         executeJavaScript(
-                "var result = \"\"; " +
-                "for (x in testObject) { result += \" \" + x } " +
-                "testController.setStringValue(result);");
+                "var result = \"\"; "
+                + "for (x in testObject) { result += \" \" + x } "
+                + "testController.setStringValue(result);");
         assertEquals(" equals getClass hashCode method notify notifyAll toString wait",
                 mTestController.waitForStringValue());
     }
@@ -596,8 +596,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             }
         }, "testObject");
         assertEquals("foo", executeJavaScriptAndGetStringResult(
-                "testObject.myGetClass().getMethod('method', null).invoke(testObject, null)" +
-                ".toString()"));
+                "testObject.myGetClass().getMethod('method', null).invoke(testObject, null)"
+                + ".toString()"));
     }
 
     @SmallTest
@@ -628,8 +628,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // getDeclaredMethod() is able to access a private method, but invoke()
         // throws a Java exception.
         assertRaisesException(
-                "testObject.myGetClass().getDeclaredMethod('method', null)." +
-                "invoke(testObject, null)");
+                "testObject.myGetClass().getDeclaredMethod('method', null)."
+                + "invoke(testObject, null)");
     }
 
     @SmallTest
@@ -873,9 +873,9 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
         final String jsObjectKeysTestTemplate = "Object.keys(%s).toString()";
         final String jsForInTestTemplate =
-                "(function(){" +
-                "  var s=[]; for(var m in %s) s.push(m); return s.join(\",\")" +
-                "})()";
+                "(function(){"
+                + "  var s=[]; for(var m in %s) s.push(m); return s.join(\",\")"
+                + "})()";
         final String inspectableObjectName = "testObj1";
         final String nonInspectableObjectName = "testObj2";
 
@@ -908,5 +908,27 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         injectObjectAndReload(new Object(), "testObject");
         assertEquals("function", executeJavaScriptAndGetStringResult("typeof testObject.getClass"));
         assertRaisesException("testObject.getClass()");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testReplaceJavascriptInterface() throws Throwable {
+        class Test {
+            public Test(int value) {
+                mValue = value;
+            }
+            @JavascriptInterface
+            public int getValue() {
+                return mValue;
+            }
+            private int mValue;
+        }
+        injectObjectAndReload(new Test(13), "testObject");
+        assertEquals("13", executeJavaScriptAndGetStringResult("testObject.getValue()"));
+        // The documentation doesn't specify, what happens if the embedder is trying
+        // to inject a different object under the same name. The current implementation
+        // simply replaces the old object with the new one.
+        injectObjectAndReload(new Test(42), "testObject");
+        assertEquals("42", executeJavaScriptAndGetStringResult("testObject.getValue()"));
     }
 }
