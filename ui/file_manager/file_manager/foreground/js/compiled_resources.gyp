@@ -71,6 +71,7 @@
           './file_watcher.js',
           './folder_shortcuts_data_model.js',
           './metadata/metadata_cache.js',
+          './naming_controller.js',
           './navigation_list_model.js',
           './progress_center_item_group.js',
           './search_controller.js',

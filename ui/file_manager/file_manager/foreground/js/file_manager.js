@@ -10,6 +10,7 @@
  * latter is not yet implemented).
  *
  * @constructor
+ * @struct
  */
 function FileManager() {
   // --------------------------------------------------------------------------
@@ -165,6 +166,13 @@ function FileManager() {
    * @private
    */
   this.directoryTree_ = null;
+
+  /**
+   * Naming controller.
+   * @type {NamingController}
+   * @private
+   */
+  this.namingController_ = null;
 
   /**
    * Controller for search UI.
@@ -551,7 +559,7 @@ function FileManager() {
   Object.preventExtensions(this);
 }
 
-FileManager.prototype = {
+FileManager.prototype = /** @struct */ {
   __proto__: cr.EventTarget.prototype,
   /**
    * @return {DirectoryModel}
@@ -1554,6 +1562,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             }
           }.bind(this)
         });
+
+    // Create naming controller.
+    assert(this.ui_.alertDialog);
+    this.namingController_ = new NamingController(
+        this.fileFilter_,
+        this.ui_.alertDialog);
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
@@ -2960,9 +2974,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // TODO(haruki): this.getCurrentDirectoryEntry() might not return the actual
     // parent if the directory content is a search result. Fix it to do proper
     // validation.
-    this.validateFileName_(this.getCurrentDirectoryEntry(),
-                           newName,
-                           validationDone.bind(this));
+    this.namingController_.validateFileName(
+        this.getCurrentDirectoryEntry(),
+        newName,
+        validationDone.bind(this));
   };
 
   /**
@@ -3597,7 +3612,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         throw new Error('Missing filename!');
 
       var directory = this.getCurrentDirectoryEntry();
-      this.validateFileName_(directory, filename, function(isValid) {
+      this.namingController_.validateFileName(
+          directory, filename, function(isValid) {
         if (!isValid)
           return;
 
@@ -3710,30 +3726,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       filterIndex: this.ui_.dialogFooter.selectedFilterIndex
     };
     this.selectFilesAndClose_(singleSelection);
-  };
-
-  /**
-   * Verifies the user entered name for file or folder to be created or
-   * renamed to. See also util.validateFileName.
-   *
-   * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
-   * @param {string} name New file or folder name.
-   * @param {function(boolean)} onDone Function to invoke when user closes the
-   *    warning box or immediatelly if file name is correct. If the name was
-   *    valid it is passed true, and false otherwise.
-   * @private
-   */
-  FileManager.prototype.validateFileName_ = function(
-      parentEntry, name, onDone) {
-    var fileNameErrorPromise = util.validateFileName(
-        parentEntry,
-        name,
-        this.fileFilter_.isFilterHiddenOn());
-    fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
-      this.alert.show(message, onDone.bind(null, false));
-    }.bind(this)).catch(function(error) {
-      console.error(error.stack || error);
-    });
   };
 
   /**
