@@ -17,6 +17,7 @@ enum {
 
 #if defined(OS_LINUX)
   FILE_NACL_HELPER = PATH_START, // Full path to Linux nacl_helper executable.
+  FILE_NACL_HELPER_NONSFI,       // path to nacl_helper_nonsfi executable,
   FILE_NACL_HELPER_BOOTSTRAP,    // ... and nacl_helper_bootstrap executable.
 #endif
 

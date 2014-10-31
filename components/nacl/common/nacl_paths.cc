@@ -4,17 +4,30 @@
 
 #include "components/nacl/common/nacl_paths.h"
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "components/nacl/common/nacl_switches.h"
 
 namespace {
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_LINUX)
 // File name of the nacl_helper and nacl_helper_bootstrap, Linux only.
 const base::FilePath::CharType kInternalNaClHelperFileName[] =
     FILE_PATH_LITERAL("nacl_helper");
+const base::FilePath::CharType kInternalNaClHelperNonSfiFileName[] =
+    FILE_PATH_LITERAL("nacl_helper_nonsfi");
 const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
     FILE_PATH_LITERAL("nacl_helper_bootstrap");
+
+bool GetNaClHelperPath(const base::FilePath::CharType* filename,
+                       base::FilePath* output) {
+  if (!PathService::Get(base::DIR_MODULE, output))
+    return false;
+  *output = output->Append(filename);
+  return true;
+}
+
 #endif
 
 }  // namespace
@@ -22,26 +35,26 @@ const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
 namespace nacl {
 
 bool PathProvider(int key, base::FilePath* result) {
-  base::FilePath cur;
   switch (key) {
 #if defined(OS_LINUX)
     case FILE_NACL_HELPER:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kInternalNaClHelperFileName);
-      break;
+      return GetNaClHelperPath(kInternalNaClHelperFileName, result);
+    case FILE_NACL_HELPER_NONSFI:
+      if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kUseNaClHelperNonSfi)) {
+        // Currently nacl_helper_nonsfi is disabled, so use nacl_helper
+        // in Non-SFI mode instead.
+        // TODO(hidehiko): Remove this code path after nacl_helper_nonsfi
+        // is supported.
+        return GetNaClHelperPath(kInternalNaClHelperFileName, result);
+      }
+      return GetNaClHelperPath(kInternalNaClHelperNonSfiFileName, result);
     case FILE_NACL_HELPER_BOOTSTRAP:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kInternalNaClHelperBootstrapFileName);
-      break;
+      return GetNaClHelperPath(kInternalNaClHelperBootstrapFileName, result);
 #endif
     default:
       return false;
   }
-
-  *result = cur;
-  return true;
 }
 
 // This cannot be done as a static initializer sadly since Visual Studio will

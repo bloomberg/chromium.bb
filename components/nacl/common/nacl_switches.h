@@ -21,6 +21,7 @@ extern const char kNaClGdbScript[];
 extern const char kNaClGdb[];
 extern const char kNaClLoaderNonSfiProcess[];
 extern const char kNaClLoaderProcess[];
+extern const char kUseNaClHelperNonSfi[];
 
 }  // namespace switches
 

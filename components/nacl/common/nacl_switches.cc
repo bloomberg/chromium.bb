@@ -49,4 +49,11 @@ const char kNaClLoaderNonSfiProcess[]       = "nacl-loader-nonsfi";
 // for SFI mode.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 
+// Use nacl_helper_nonsfi executable (the new, newlib-based version of the
+// Non-SFI runtime) to run Non-SFI nexe, instead of nacl_helper executable
+// (which uses the older, glib-based runtime for Non-SFI mode).
+// TODO(hidehiko): Make this default and then remove this flag after
+// nacl_helper_nonsfi is supported.
+const char kUseNaClHelperNonSfi[]           = "use-nacl-helper-nonsfi";
+
 }  // namespace switches
