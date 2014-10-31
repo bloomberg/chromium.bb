@@ -1506,3 +1506,5 @@ crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content-to
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content-to-outscope.html [ Pass Timeout ]
 
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
+
+crbug.com/429126 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container.html [ Failure ]
