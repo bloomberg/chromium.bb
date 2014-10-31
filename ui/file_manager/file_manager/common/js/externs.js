@@ -18,6 +18,15 @@ BackgroundWindow.prototype.background;
  */
 BackgroundWindow.prototype.registerDialog = function(window) {};
 
+/**
+ * @param {Object=} opt_appState App state.
+ * @param {number=} opt_id Window id.
+ * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
+ * @param {function(string)=} opt_callback Completion callback with the App ID.
+ */
+BackgroundWindow.prototype.launchFileManager =
+    function(opt_appState, opt_id, opt_type, opt_callback) {};
+
 
 /**
  * @constructor

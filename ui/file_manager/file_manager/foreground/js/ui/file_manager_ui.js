@@ -7,7 +7,8 @@
  *
  * @param {HTMLElement} element Top level element of Files.app.
  * @param {DialogType} dialogType Dialog type.
- * @constructor.
+ * @constructor
+ * @struct
  */
 function FileManagerUI(element, dialogType) {
   /**
