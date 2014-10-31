@@ -1,0 +1,5 @@
+UNKNOWN_TYPE | paymentMethod |  |  | paymentMethod_1-default
+UNKNOWN_TYPE | cardNumber | Credit card number |  | paymentMethod_1-default
+UNKNOWN_TYPE | sCode | Security Code |  | paymentMethod_1-default
+UNKNOWN_TYPE | cardExpiryMonth |  |  | paymentMethod_1-default
+UNKNOWN_TYPE | cardExpiryYear |  |  | paymentMethod_1-default
