@@ -25,7 +25,6 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
                            int devtools_agent_route_id);
   ~ServiceWorkerVersionInfo();
 
-  bool is_null;
   ServiceWorkerVersion::RunningStatus running_status;
   ServiceWorkerVersion::Status status;
   GURL script_url;

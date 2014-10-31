@@ -1068,25 +1068,34 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   EXPECT_TRUE(entry.mask.installing_changed());
   EXPECT_FALSE(entry.mask.waiting_changed());
   EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_FALSE(entry.info.installing_version.is_null);
-  EXPECT_TRUE(entry.info.waiting_version.is_null);
-  EXPECT_FALSE(entry.info.active_version.is_null);
+  EXPECT_NE(entry.info.installing_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(entry.info.waiting_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_NE(entry.info.active_version.version_id,
+            kInvalidServiceWorkerVersionId);
 
   entry = update_helper->attribute_change_log_[1];
   EXPECT_TRUE(entry.mask.installing_changed());
   EXPECT_TRUE(entry.mask.waiting_changed());
   EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_TRUE(entry.info.installing_version.is_null);
-  EXPECT_FALSE(entry.info.waiting_version.is_null);
-  EXPECT_FALSE(entry.info.active_version.is_null);
+  EXPECT_EQ(entry.info.installing_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_NE(entry.info.waiting_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_NE(entry.info.active_version.version_id,
+            kInvalidServiceWorkerVersionId);
 
   entry = update_helper->attribute_change_log_[2];
   EXPECT_FALSE(entry.mask.installing_changed());
   EXPECT_TRUE(entry.mask.waiting_changed());
   EXPECT_TRUE(entry.mask.active_changed());
-  EXPECT_TRUE(entry.info.installing_version.is_null);
-  EXPECT_TRUE(entry.info.waiting_version.is_null);
-  EXPECT_FALSE(entry.info.active_version.is_null);
+  EXPECT_EQ(entry.info.installing_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(entry.info.waiting_version.version_id,
+            kInvalidServiceWorkerVersionId);
+  EXPECT_NE(entry.info.active_version.version_id,
+            kInvalidServiceWorkerVersionId);
 
   // expected version state transitions:
   // new.installing, new.installed,

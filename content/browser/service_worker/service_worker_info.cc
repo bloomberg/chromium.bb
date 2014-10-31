@@ -10,8 +10,7 @@
 namespace content {
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
-    : is_null(true),
-      running_status(ServiceWorkerVersion::STOPPED),
+    : running_status(ServiceWorkerVersion::STOPPED),
       status(ServiceWorkerVersion::NEW),
       version_id(kInvalidServiceWorkerVersionId),
       process_id(-1),
@@ -27,8 +26,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     int process_id,
     int thread_id,
     int devtools_agent_route_id)
-    : is_null(false),
-      running_status(running_status),
+    : running_status(running_status),
       status(status),
       script_url(script_url),
       version_id(version_id),

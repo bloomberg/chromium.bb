@@ -954,11 +954,9 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
     }
 
     if (it->is_active) {
-      info.active_version.is_null = false;
       info.active_version.status = ServiceWorkerVersion::ACTIVATED;
       info.active_version.version_id = it->version_id;
     } else {
-      info.waiting_version.is_null = false;
       info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
       info.waiting_version.version_id = it->version_id;
     }

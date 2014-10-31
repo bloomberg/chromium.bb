@@ -216,13 +216,15 @@ ListValue* GetRegistrationListValue(
     registration_info->SetString(
         "registration_id", base::Int64ToString(registration.registration_id));
 
-    if (!registration.active_version.is_null) {
+    if (registration.active_version.version_id !=
+        kInvalidServiceWorkerVersionId) {
       DictionaryValue* active_info = new DictionaryValue();
       UpdateVersionInfo(registration.active_version, active_info);
       registration_info->Set("active", active_info);
     }
 
-    if (!registration.waiting_version.is_null) {
+    if (registration.waiting_version.version_id !=
+        kInvalidServiceWorkerVersionId) {
       DictionaryValue* waiting_info = new DictionaryValue();
       UpdateVersionInfo(registration.waiting_version, waiting_info);
       registration_info->Set("waiting", waiting_info);
