@@ -7,7 +7,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/test/render_view_test.h"
-#include "content/renderer/accessibility/renderer_accessibility_complete.h"
+#include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,14 +22,14 @@ using blink::WebDocument;
 
 namespace content {
 
-class TestRendererAccessibilityComplete : public RendererAccessibilityComplete {
+class TestRendererAccessibility : public RendererAccessibility {
  public:
-  explicit TestRendererAccessibilityComplete(RenderFrameImpl* render_frame)
-    : RendererAccessibilityComplete(render_frame) {
+  explicit TestRendererAccessibility(RenderFrameImpl* render_frame)
+    : RendererAccessibility(render_frame) {
   }
 
   void SendPendingAccessibilityEvents() {
-    RendererAccessibilityComplete::SendPendingAccessibilityEvents();
+    RendererAccessibility::SendPendingAccessibilityEvents();
   }
 };
 
@@ -79,7 +79,7 @@ class RendererAccessibilityTest : public RenderViewTest {
 };
 
 TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
-  // The job of RendererAccessibilityComplete is to serialize the
+  // The job of RendererAccessibility is to serialize the
   // accessibility tree built by WebKit and send it to the browser.
   // When the accessibility tree changes, it tries to send only
   // the nodes that actually changed or were reparented. This test
@@ -94,10 +94,9 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
       "</body>";
   LoadHTML(html.c_str());
 
-  // Creating a RendererAccessibilityComplete should sent the tree
-  // to the browser.
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  // Creating a RendererAccessibility should sent the tree to the browser.
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -164,10 +163,9 @@ TEST_F(RendererAccessibilityTest,
   LoadHTML(html.c_str());
   static const int kProxyRoutingId = 13;
 
-  // Creating a RendererAccessibilityComplete should send the tree
-  // to the browser.
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  // Creating a RendererAccessibility should send the tree to the browser.
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
@@ -207,7 +205,7 @@ TEST_F(RendererAccessibilityTest,
 }
 
 TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
-  // Test RendererAccessibilityComplete and make sure it sends the
+  // Test RendererAccessibility and make sure it sends the
   // proper event to the browser when an object in the tree
   // is hidden, but its children are not.
   std::string html =
@@ -221,8 +219,8 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -249,7 +247,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   GetLastAccEvent(&event);
   ASSERT_EQ(2U, event.update.nodes.size());
 
-  // RendererAccessibilityComplete notices that 'C' is being reparented,
+  // RendererAccessibility notices that 'C' is being reparented,
   // so it clears the subtree rooted at 'A', then updates 'A' and then 'C'.
   EXPECT_EQ(node_a.axID(), event.update.node_id_to_clear);
   EXPECT_EQ(node_a.axID(), event.update.nodes[0].id);
@@ -258,7 +256,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
 }
 
 TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
-  // Test RendererAccessibilityComplete and make sure it sends the
+  // Test RendererAccessibility and make sure it sends the
   // proper event to the browser when an object in the tree
   // is shown, causing its own already-visible children to be
   // reparented to it.
@@ -273,8 +271,8 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
@@ -307,7 +305,7 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
 }
 
 TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
-  // Test RendererAccessibilityComplete and make sure it sends the
+  // Test RendererAccessibility and make sure it sends the
   // proper event to the browser when an object in the tree
   // is detached, but its children are not. This can happen when
   // a layout occurs and an anonymous render block is no longer needed.
@@ -317,8 +315,8 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
       "</body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());
 
@@ -378,15 +376,15 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
 }
 
 TEST_F(RendererAccessibilityTest, EventOnObjectNotInTree) {
-  // Test RendererAccessibilityComplete and make sure it doesn't send anything
+  // Test RendererAccessibility and make sure it doesn't send anything
   // if we get a notification from Blink for an object that isn't in the
   // tree, like the scroll area that's the parent of the main document,
   // which we don't expose.
   std::string html = "<body><input></body>";
   LoadHTML(html.c_str());
 
-  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(frame()));
+  scoped_ptr<TestRendererAccessibility> accessibility(
+      new TestRendererAccessibility(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 

@@ -82,8 +82,6 @@
       'renderer/accessibility/blink_ax_tree_source.h',
       'renderer/accessibility/renderer_accessibility.cc',
       'renderer/accessibility/renderer_accessibility.h',
-      'renderer/accessibility/renderer_accessibility_complete.cc',
-      'renderer/accessibility/renderer_accessibility_complete.h',
       'renderer/active_notification_tracker.cc',
       'renderer/active_notification_tracker.h',
       'renderer/android/address_detector.cc',

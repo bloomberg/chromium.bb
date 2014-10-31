@@ -30,7 +30,6 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
-#include "content/renderer/accessibility/renderer_accessibility_complete.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/render_process.h"
@@ -2406,8 +2405,6 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   frame()->OnSetAccessibilityMode(AccessibilityModeTreeOnly);
   ASSERT_EQ(AccessibilityModeTreeOnly, frame()->accessibility_mode());
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
-  ASSERT_EQ(RendererAccessibilityTypeComplete,
-            frame()->renderer_accessibility()->GetType());
 
   frame()->OnSetAccessibilityMode(AccessibilityModeOff);
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
@@ -2416,8 +2413,6 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   frame()->OnSetAccessibilityMode(AccessibilityModeComplete);
   ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
   ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
-  ASSERT_EQ(RendererAccessibilityTypeComplete,
-            frame()->renderer_accessibility()->GetType());
 }
 
 TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
