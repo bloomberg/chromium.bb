@@ -71,7 +71,7 @@ void UmaRecordIndexInitMethod(IndexInitMethod method,
 bool WritePickleFile(Pickle* pickle, const base::FilePath& file_name) {
   File file(
       file_name,
-      File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
+      File::FLAG_CREATE | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
     return false;
 
@@ -222,8 +222,11 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   }
 
   // Atomically rename the temporary index file to become the real one.
-  bool result = base::ReplaceFile(temp_index_filename, index_filename, NULL);
-  DCHECK(result);
+  // TODO(gavinp): DCHECK when not shutting down, since that is very strange.
+  // The rename failing during shutdown is legal because it's legal to begin
+  // erasing a cache as soon as the destructor has been called.
+  if (!base::ReplaceFile(temp_index_filename, index_filename, NULL))
+    return;
 
   if (app_on_background) {
     SIMPLE_CACHE_UMA(TIMES,

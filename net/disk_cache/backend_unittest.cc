@@ -3481,3 +3481,15 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
   cache_.reset();
   // This test passes if we don't leak memory.
 }
+
+// Tests that a SimpleCache doesn't crash when files are deleted very quickly
+// after closing.
+// NOTE: IF THIS TEST IS FLAKY THEN IT IS FAILING. See https://crbug.com/416940
+TEST_F(DiskCacheBackendTest, SimpleCacheDeleteQuickly) {
+  SetSimpleCacheMode();
+  for (int i = 0; i < 100; ++i) {
+    InitCache();
+    cache_.reset();
+    EXPECT_TRUE(CleanupCacheDir());
+  }
+}
