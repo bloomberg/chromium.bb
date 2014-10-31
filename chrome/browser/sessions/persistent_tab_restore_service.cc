@@ -155,19 +155,19 @@ class PersistentTabRestoreService::Delegate
   void ScheduleCommandsForTab(const Tab& tab, int selected_index);
 
   // Creates a window close command.
-  static SessionCommand* CreateWindowCommand(SessionID::id_type id,
-                                             int selected_tab_index,
-                                             int num_tabs,
-                                             base::Time timestamp);
+  static scoped_ptr<SessionCommand> CreateWindowCommand(SessionID::id_type id,
+                                                        int selected_tab_index,
+                                                        int num_tabs,
+                                                        base::Time timestamp);
 
   // Creates a tab close command.
-  static SessionCommand* CreateSelectedNavigationInTabCommand(
+  static scoped_ptr<SessionCommand> CreateSelectedNavigationInTabCommand(
       SessionID::id_type tab_id,
       int32 index,
       base::Time timestamp);
 
   // Creates a restore command.
-  static SessionCommand* CreateRestoredEntryCommand(
+  static scoped_ptr<SessionCommand> CreateRestoredEntryCommand(
     SessionID::id_type entry_id);
 
   // Returns the index to persist as the selected index. This is the same as
@@ -294,7 +294,7 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
   // Mark all the tabs as closed so that we don't attempt to restore them.
   const Entries& entries = tab_restore_service_helper_->entries();
   for (Entries::const_iterator i = entries.begin(); i != entries.end(); ++i)
-    ScheduleCommand(CreateRestoredEntryCommand((*i)->id));
+    ScheduleCommand(CreateRestoredEntryCommand((*i)->id).Pass());
 
   entries_to_write_ = 0;
 
@@ -303,7 +303,7 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
 
   // Schedule a command, otherwise if there are no pending commands Save does
   // nothing.
-  ScheduleCommand(CreateRestoredEntryCommand(1));
+  ScheduleCommand(CreateRestoredEntryCommand(1).Pass());
 }
 
 void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
@@ -317,7 +317,7 @@ void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
   if (static_cast<int>(index) < entries_to_write_)
     entries_to_write_--;
 
-  ScheduleCommand(CreateRestoredEntryCommand(id));
+  ScheduleCommand(CreateRestoredEntryCommand(id).Pass());
 }
 
 void PersistentTabRestoreService::Delegate::OnAddEntry() {
@@ -411,12 +411,12 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
       CreateWindowCommand(window.id,
                           std::min(real_selected_tab, valid_tab_count - 1),
                           valid_tab_count,
-                          window.timestamp));
+                          window.timestamp).Pass());
 
   if (!window.app_name.empty()) {
     ScheduleCommand(CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
                                                     window.id,
-                                                    window.app_name));
+                                                    window.app_name).Pass());
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
@@ -448,28 +448,28 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
   ScheduleCommand(
       CreateSelectedNavigationInTabCommand(tab.id,
                                            valid_count_before_selected,
-                                           tab.timestamp));
+                                           tab.timestamp).Pass());
 
   if (tab.pinned) {
     PinnedStatePayload payload = true;
-    SessionCommand* command =
-        new SessionCommand(kCommandPinnedState, sizeof(payload));
+    scoped_ptr<SessionCommand> command(
+        new SessionCommand(kCommandPinnedState, sizeof(payload)));
     memcpy(command->contents(), &payload, sizeof(payload));
-    ScheduleCommand(command);
+    ScheduleCommand(command.Pass());
   }
 
   if (!tab.extension_app_id.empty()) {
     ScheduleCommand(CreateSetTabExtensionAppIDCommand(
                           kCommandSetExtensionAppID,
                           tab.id,
-                          tab.extension_app_id));
+                          tab.extension_app_id).Pass());
   }
 
   if (!tab.user_agent_override.empty()) {
     ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
                           kCommandSetTabUserAgentOverride,
                           tab.id,
-                          tab.user_agent_override));
+                          tab.user_agent_override).Pass());
   }
 
   // Then write the navigations.
@@ -485,7 +485,8 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 }
 
 // static
-SessionCommand* PersistentTabRestoreService::Delegate::CreateWindowCommand(
+scoped_ptr<SessionCommand>
+PersistentTabRestoreService::Delegate::CreateWindowCommand(
     SessionID::id_type id,
     int selected_tab_index,
     int num_tabs,
@@ -499,14 +500,14 @@ SessionCommand* PersistentTabRestoreService::Delegate::CreateWindowCommand(
   payload.num_tabs = num_tabs;
   payload.timestamp = timestamp.ToInternalValue();
 
-  SessionCommand* command =
-      new SessionCommand(kCommandWindow, sizeof(payload));
+  scoped_ptr<SessionCommand> command(
+      new SessionCommand(kCommandWindow, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-SessionCommand*
+scoped_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
     SessionID::id_type tab_id,
     int32 index,
@@ -515,19 +516,19 @@ PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
   payload.id = tab_id;
   payload.index = index;
   payload.timestamp = timestamp.ToInternalValue();
-  SessionCommand* command =
-      new SessionCommand(kCommandSelectedNavigationInTab, sizeof(payload));
+  scoped_ptr<SessionCommand> command(
+      new SessionCommand(kCommandSelectedNavigationInTab, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-SessionCommand*
+scoped_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateRestoredEntryCommand(
     SessionID::id_type entry_id) {
   RestoredEntryPayload payload = entry_id;
-  SessionCommand* command =
-      new SessionCommand(kCommandRestoredEntry, sizeof(payload));
+  scoped_ptr<SessionCommand> command(
+      new SessionCommand(kCommandRestoredEntry, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }

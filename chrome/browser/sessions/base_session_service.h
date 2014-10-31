@@ -35,6 +35,9 @@ class BaseSessionService {
     TAB_RESTORE
   };
 
+  typedef base::Callback<void(ScopedVector<SessionCommand>)>
+      GetCommandsCallback;
+
   // Creates a new BaseSessionService. After creation you need to invoke
   // Init.
   // |type| gives the type of session service, |path| the path to save files to.
@@ -54,10 +57,9 @@ class BaseSessionService {
   // Returns the backend.
   SessionBackend* backend() const { return backend_.get(); }
 
-  // Returns the set of commands that needed to be scheduled. The commands
-  // in the vector are owned by BaseSessionService, until they are scheduled
-  // on the backend at which point the backend owns the commands.
-  std::vector<SessionCommand*>&  pending_commands() {
+  // Returns the set of commands which were scheduled to be written. Once
+  // committed to the backend, the commands are removed from here.
+  ScopedVector<SessionCommand>& pending_commands() {
     return pending_commands_;
   }
 
@@ -71,7 +73,7 @@ class BaseSessionService {
   // Schedules a command. This adds |command| to pending_commands_ and
   // invokes StartSaveTimer to start a timer that invokes Save at a later
   // time.
-  virtual void ScheduleCommand(SessionCommand* command);
+  virtual void ScheduleCommand(scoped_ptr<SessionCommand> command);
 
   // Starts the timer that invokes Save (if timer isn't already running).
   void StartSaveTimer();
@@ -105,7 +107,7 @@ class BaseSessionService {
   scoped_refptr<SessionBackend> backend_;
 
   // Commands we need to send over to the backend.
-  std::vector<SessionCommand*>  pending_commands_;
+  ScopedVector<SessionCommand> pending_commands_;
 
   // Whether the backend file should be recreated the next time we send
   // over the commands.

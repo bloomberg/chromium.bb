@@ -8,8 +8,6 @@
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
 
-// BaseSessionService ---------------------------------------------------------
-
 namespace {
 
 // Helper used by CreateUpdateTabNavigationCommand(). It writes |str| to
@@ -28,7 +26,7 @@ void WriteStringToPickle(Pickle& pickle, int* bytes_written, int max_bytes,
 
 }  // namespace
 
-SessionCommand* CreateUpdateTabNavigationCommand(
+scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const sessions::SerializedNavigationEntry& navigation) {
@@ -40,10 +38,10 @@ SessionCommand* CreateUpdateTabNavigationCommand(
   static const size_t max_state_size =
       std::numeric_limits<SessionCommand::size_type>::max() - 1024;
   navigation.WriteToPickle(max_state_size, &pickle);
-  return new SessionCommand(command_id, pickle);
+  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
 }
 
-SessionCommand* CreateSetTabExtensionAppIDCommand(
+scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& extension_id) {
@@ -59,10 +57,10 @@ SessionCommand* CreateSetTabExtensionAppIDCommand(
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, extension_id);
 
-  return new SessionCommand(command_id, pickle);
+  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
 }
 
-SessionCommand* CreateSetTabUserAgentOverrideCommand(
+scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& user_agent_override) {
@@ -80,12 +78,13 @@ SessionCommand* CreateSetTabUserAgentOverrideCommand(
   WriteStringToPickle(pickle, &bytes_written, max_user_agent_size,
       user_agent_override);
 
-  return new SessionCommand(command_id, pickle);
+  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
 }
 
-SessionCommand* CreateSetWindowAppNameCommand(SessionID::id_type command_id,
-                                              SessionID::id_type window_id,
-                                              const std::string& app_name) {
+scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
+    SessionID::id_type command_id,
+    SessionID::id_type window_id,
+    const std::string& app_name) {
   // Use pickle to handle marshalling.
   Pickle pickle;
   pickle.WriteInt(window_id);
@@ -98,7 +97,7 @@ SessionCommand* CreateSetWindowAppNameCommand(SessionID::id_type command_id,
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, app_name);
 
-  return new SessionCommand(command_id, pickle);
+  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
 }
 
 bool RestoreUpdateTabNavigationCommand(
@@ -109,9 +108,8 @@ bool RestoreUpdateTabNavigationCommand(
   if (!pickle.get())
     return false;
   PickleIterator iterator(*pickle);
-  return
-      pickle->ReadInt(&iterator, tab_id) &&
-      navigation->ReadFromPickle(&iterator);
+  return pickle->ReadInt(&iterator, tab_id) &&
+         navigation->ReadFromPickle(&iterator);
 }
 
 bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,

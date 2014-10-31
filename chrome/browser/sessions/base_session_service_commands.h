@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "components/sessions/session_id.h"
 
 class SessionCommand;
@@ -17,31 +18,31 @@ class SerializedNavigationEntry;
 
 // These commands create and read common base commands for SessionService and
 // PersistentTabRestoreService.
-// TODO(skuhne): Make ownership cleaner by using scoped_ptr's for return values.
 
 // Creates a SessionCommand that represents a navigation.
-SessionCommand* CreateUpdateTabNavigationCommand(
+scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const sessions::SerializedNavigationEntry& navigation);
 
 // Creates a SessionCommand that represents marking a tab as an application.
-SessionCommand* CreateSetTabExtensionAppIDCommand(
+scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& extension_id);
 
 // Creates a SessionCommand that containing user agent override used by a
 // tab's navigations.
-SessionCommand* CreateSetTabUserAgentOverrideCommand(
+scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& user_agent_override);
 
 // Creates a SessionCommand stores a browser window's app name.
-SessionCommand* CreateSetWindowAppNameCommand(SessionID::id_type command_id,
-                                              SessionID::id_type window_id,
-                                              const std::string& app_name);
+scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
+    SessionID::id_type command_id,
+    SessionID::id_type window_id,
+    const std::string& app_name);
 
 // Converts a SessionCommand previously created by
 // CreateUpdateTabNavigationCommand into a

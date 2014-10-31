@@ -60,8 +60,8 @@ void SessionServiceTestHelper::ReadWindows(
     SessionID::id_type* active_window_id) {
   Time last_time;
   ScopedVector<SessionCommand> read_commands;
-  backend()->ReadLastSessionCommandsImpl(&(read_commands.get()));
-  RestoreSessionFromCommands(read_commands.get(), windows, active_window_id);
+  backend()->ReadLastSessionCommandsImpl(&read_commands);
+  RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
 }
 

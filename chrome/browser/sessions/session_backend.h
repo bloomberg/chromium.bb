@@ -61,8 +61,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   //
   // NOTE: this deletes SessionCommands in commands as well as the supplied
   // vector.
-  void AppendCommands(std::vector<SessionCommand*>* commands,
-                      bool reset_first);
+  void AppendCommands(ScopedVector<SessionCommand>* commands, bool reset_first);
 
   // Invoked from the service to read the commands that make up the last
   // session, invokes ReadLastSessionCommandsImpl to do the work.
@@ -72,9 +71,8 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   // Reads the commands from the last file.
   //
-  // On success, the read commands are added to commands. It is up to the
-  // caller to delete the commands.
-  bool ReadLastSessionCommandsImpl(std::vector<SessionCommand*>* commands);
+  // On success, the read commands are added to commands.
+  bool ReadLastSessionCommandsImpl(ScopedVector<SessionCommand>* commands);
 
   // Deletes the file containing the commands for the last session.
   void DeleteLastSession();
@@ -88,7 +86,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   //
   // On success, the read commands are added to commands. It is up to the
   // caller to delete the commands.
-  bool ReadCurrentSessionCommandsImpl(std::vector<SessionCommand*>* commands);
+  bool ReadCurrentSessionCommandsImpl(ScopedVector<SessionCommand>* commands);
 
  private:
   friend class base::RefCountedThreadSafe<SessionBackend>;
@@ -109,7 +107,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   // Appends the specified commands to the specified file.
   bool AppendCommandsToFile(base::File* file,
-                            const std::vector<SessionCommand*>& commands);
+                            const ScopedVector<SessionCommand>& commands);
 
   const BaseSessionService::SessionType type_;
 

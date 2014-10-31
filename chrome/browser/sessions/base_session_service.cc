@@ -67,10 +67,10 @@ void BaseSessionService::DeleteLastSession() {
       base::Bind(&SessionBackend::DeleteLastSession, backend()));
 }
 
-void BaseSessionService::ScheduleCommand(SessionCommand* command) {
+void BaseSessionService::ScheduleCommand(scoped_ptr<SessionCommand> command) {
   DCHECK(command);
   commands_since_reset_++;
-  pending_commands_.push_back(command);
+  pending_commands_.push_back(command.release());
   StartSaveTimer();
 }
 
@@ -91,14 +91,13 @@ void BaseSessionService::Save() {
   if (pending_commands_.empty())
     return;
 
+  // We create a new ScopedVector which will receive all elements from the
+  // current commands. This will also clear the current list.
   RunTaskOnBackendThread(
       FROM_HERE,
       base::Bind(&SessionBackend::AppendCommands, backend(),
-                 new std::vector<SessionCommand*>(pending_commands_),
+                 new ScopedVector<SessionCommand>(pending_commands_.Pass()),
                  pending_reset_));
-
-  // Backend took ownership of commands.
-  pending_commands_.clear();
 
   if (pending_reset_) {
     commands_since_reset_ = 0;

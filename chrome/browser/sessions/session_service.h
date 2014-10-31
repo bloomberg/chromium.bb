@@ -261,7 +261,7 @@ class SessionService : public BaseSessionService,
       content::WebContents* tab,
       int index_in_window,
       bool is_pinned,
-      std::vector<SessionCommand*>* commands,
+      ScopedVector<SessionCommand>* commands,
       IdToRange* tab_to_available_range);
 
   // Adds commands to create the specified browser, and invokes
@@ -269,7 +269,7 @@ class SessionService : public BaseSessionService,
   // any tabs not in the profile we were created with.
   void BuildCommandsForBrowser(
       Browser* browser,
-      std::vector<SessionCommand*>* commands,
+      ScopedVector<SessionCommand>* commands,
       IdToRange* tab_to_available_range,
       std::set<SessionID::id_type>* windows_to_track);
 
@@ -278,7 +278,7 @@ class SessionService : public BaseSessionService,
   // returns true). All browsers that are tracked are added to windows_to_track
   // (as long as it is non-null).
   void BuildCommandsFromBrowsers(
-      std::vector<SessionCommand*>* commands,
+      ScopedVector<SessionCommand>* commands,
       IdToRange* tab_to_available_range,
       std::set<SessionID::id_type>* windows_to_track);
 
@@ -286,9 +286,8 @@ class SessionService : public BaseSessionService,
   // of the file are recreated from the state of the browser.
   void ScheduleResetCommands();
 
-  // Schedules the specified command. This method takes ownership of the
-  // command.
-  void ScheduleCommand(SessionCommand* command) override;
+  // Schedules the specified command.
+  void ScheduleCommand(scoped_ptr<SessionCommand> command) override;
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();
