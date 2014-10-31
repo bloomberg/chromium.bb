@@ -312,7 +312,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         return;
 
     OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
-    if (!color.alpha() || (!offset.width() && !offset.height() && !blur)) {
+    if (!color.alpha()) {
         if (shadowMode == DrawShadowOnly) {
             // shadow only, but there is no shadow: use an empty draw looper to disable rendering of the source primitive
             setDrawLooper(drawLooperBuilder.release());
