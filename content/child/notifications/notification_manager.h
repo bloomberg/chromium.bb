@@ -52,7 +52,6 @@ class NotificationManager : public blink::WebNotificationManager,
 
   // IPC message handlers.
   void OnShow(int id);
-  void OnError(int id);
   void OnClose(int id);
   void OnClick(int id);
 

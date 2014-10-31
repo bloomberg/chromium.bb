@@ -46,7 +46,6 @@ class NotificationProvider : public RenderFrameObserver,
 
   // IPC handlers.
   void OnDisplay(int id);
-  void OnError(int id);
   void OnClose(int id, bool by_user);
   void OnClick(int id);
   void OnNavigate();

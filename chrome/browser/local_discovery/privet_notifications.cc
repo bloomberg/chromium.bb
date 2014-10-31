@@ -370,10 +370,6 @@ std::string PrivetNotificationDelegate::id() const {
   return kPrivetNotificationID;
 }
 
-void PrivetNotificationDelegate::Error() {
-  LOG(ERROR) << "Error displaying privet notification";
-}
-
 void PrivetNotificationDelegate::ButtonClick(int button_index) {
   if (button_index == 0) {
     ReportPrivetUmaEvent(PRIVET_NOTIFICATION_CLICKED);

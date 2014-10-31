@@ -19,7 +19,6 @@ class PageNotificationDelegate : public DesktopNotificationDelegate {
 
   // DesktopNotificationDelegate implementation.
   void NotificationDisplayed() override;
-  void NotificationError() override;
   void NotificationClosed(bool by_user) override;
   void NotificationClick() override;
 

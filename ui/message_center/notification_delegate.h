@@ -26,10 +26,6 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   // To be called when the desktop notification is actually shown.
   virtual void Display();
 
-  // To be called when the desktop notification cannot be shown due to an
-  // error.
-  virtual void Error();
-
   // To be called when the desktop notification is closed.  If closed by a
   // user explicitly (as opposed to timeout/script), |by_user| should be true.
   virtual void Close(bool by_user);

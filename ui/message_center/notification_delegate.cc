@@ -10,8 +10,6 @@ namespace message_center {
 
 void NotificationDelegate::Display() {}
 
-void NotificationDelegate::Error() {}
-
 void NotificationDelegate::Close(bool by_user) {}
 
 bool NotificationDelegate::HasClickedListener() { return false; }

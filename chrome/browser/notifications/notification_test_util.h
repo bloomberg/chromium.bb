@@ -47,9 +47,6 @@ class LoggingNotificationDelegate : public NotificationDelegate {
   virtual void Display() override {
     Logger::log("notification displayed\n");
   }
-  virtual void Error() override {
-    Logger::log("notification error\n");
-  }
   virtual void Click() override {
     Logger::log("notification clicked\n");
   }

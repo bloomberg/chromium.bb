@@ -47,9 +47,6 @@ class NotificationManager : public NotificationManagerInterface,
   // Invoked when a button on the notification is clicked.
   void OnButtonClick(int button_index);
 
-  // Invoked when the notification failed to show up.
-  void OnError();
-
   // Invoked when the notification got closed either by user or by system.
   void OnClose();
 

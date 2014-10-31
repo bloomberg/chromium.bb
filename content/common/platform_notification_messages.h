@@ -27,10 +27,6 @@ IPC_MESSAGE_ROUTED2(PlatformNotificationMsg_PermissionRequestComplete,
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow,
                      int /* notification_id */)
 
-// Informs the renderer that the notification could not be displayed.
-IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidError,
-                     int /* notification_id */)
-
 // Informs the renderer that the notification has been closed.
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClose,
                      int /* notification_id */)

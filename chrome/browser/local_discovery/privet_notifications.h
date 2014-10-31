@@ -134,7 +134,6 @@ class PrivetNotificationDelegate : public NotificationDelegate {
 
   // NotificationDelegate implementation.
   std::string id() const override;
-  void Error() override;
   void ButtonClick(int button_index) override;
 
  private:

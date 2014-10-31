@@ -101,16 +101,6 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
         rfh->GetRoutingID(), notification_id_));
   }
 
-  void NotificationError() override {
-    RenderFrameHost* rfh =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (!rfh)
-      return;
-
-    rfh->Send(new DesktopNotificationMsg_PostError(
-        rfh->GetRoutingID(), notification_id_));
-  }
-
   void NotificationClosed(bool by_user) override {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id_, render_frame_id_);

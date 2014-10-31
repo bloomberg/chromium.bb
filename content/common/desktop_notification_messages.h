@@ -26,11 +26,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PostDisplay,
                     int /* notification_id */)
 
-// Used to inform the renderer that the browser has encountered an error
-// trying to display a notification.
-IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PostError,
-                    int /* notification_id */)
-
 // Informs the renderer that the one if its notifications has closed.
 IPC_MESSAGE_ROUTED2(DesktopNotificationMsg_PostClose,
                     int /* notification_id */,

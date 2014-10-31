@@ -22,7 +22,6 @@ class QuitWithAppsController : public NotificationDelegate {
 
   // NotificationDelegate interface.
   void Display() override;
-  void Error() override;
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;

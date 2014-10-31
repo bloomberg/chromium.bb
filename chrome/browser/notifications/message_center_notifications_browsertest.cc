@@ -73,7 +73,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
     explicit TestDelegate(const std::string& id) : id_(id) {}
 
     void Display() override { log_ += "Display_"; }
-    void Error() override { log_ += "Error_"; }
     void Close(bool by_user) override {
       log_ += "Close_";
       log_ += ( by_user ? "by_user_" : "programmatically_");

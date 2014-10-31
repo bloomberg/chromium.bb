@@ -72,8 +72,6 @@ QuitWithAppsController::~QuitWithAppsController() {}
 
 void QuitWithAppsController::Display() {}
 
-void QuitWithAppsController::Error() {}
-
 void QuitWithAppsController::Close(bool by_user) {
   if (by_user)
     suppress_for_session_ = true;

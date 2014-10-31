@@ -18,6 +18,7 @@ class NetworkPortalNotificationController {
  public:
   enum NotificationMetric {
     NOTIFICATION_METRIC_DISPLAYED = 0,
+    // TODO(peter): The ERROR metric is not being used anymore, remove it.
     NOTIFICATION_METRIC_ERROR,
     NOTIFICATION_METRIC_COUNT
   };

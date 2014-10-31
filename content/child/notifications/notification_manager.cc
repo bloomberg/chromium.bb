@@ -131,7 +131,6 @@ bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnShow);
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidError, OnError);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnClose);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnClick);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -146,14 +145,6 @@ void NotificationManager::OnShow(int id) {
     return;
 
   iter->second->dispatchShowEvent();
-}
-
-void NotificationManager::OnError(int id) {
-  const auto& iter = active_notifications_.find(id);
-  if (iter == active_notifications_.end())
-    return;
-
-  iter->second->dispatchErrorEvent();
 }
 
 void NotificationManager::OnClose(int id) {

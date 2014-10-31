@@ -25,10 +25,6 @@ void NotificationObjectProxy::Display() {
   delegate_->NotificationDisplayed();
 }
 
-void NotificationObjectProxy::Error() {
-  delegate_->NotificationError();
-}
-
 void NotificationObjectProxy::Close(bool by_user) {
   delegate_->NotificationClosed(by_user);
 }

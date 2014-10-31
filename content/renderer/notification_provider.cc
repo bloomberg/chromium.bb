@@ -118,7 +118,6 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationProvider, message)
     IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostDisplay, OnDisplay);
-    IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostError, OnError);
     IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostClose, OnClose);
     IPC_MESSAGE_HANDLER(DesktopNotificationMsg_PostClick, OnClick);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -137,15 +136,6 @@ void NotificationProvider::OnDisplay(int id) {
   // the page before it was actually displayed to the user.
   if (found)
     notification.dispatchDisplayEvent();
-}
-
-void NotificationProvider::OnError(int id) {
-  WebNotification notification;
-  bool found = manager_.GetNotification(id, &notification);
-  // |found| may be false if the WebNotification went out of scope in
-  // the page before the error occurred.
-  if (found)
-    notification.dispatchErrorEvent(WebString());
 }
 
 void NotificationProvider::OnClose(int id, bool by_user) {
