@@ -10,6 +10,7 @@
 // found using profiler data.
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/profiler/scoped_profile.h"
 
@@ -25,6 +26,14 @@ class BASE_EXPORT ScopedTracker {
   // Enables instrumentation for the remainder of the current process' life. If
   // this function is not called, all profiler instrumentations are no-ops.
   static void Enable();
+
+  // Augments a |callback| with provided |location|. This is useful for
+  // instrumenting cases when we know that a jank is in a callback and there are
+  // many possible callbacks, but they come from a relatively small number of
+  // places. We can instrument these few places and at least know which one
+  // passes the janky callback.
+  static base::Closure TrackCallback(const Location& location,
+                                     const base::Closure& callback);
 
  private:
   const ScopedProfile scoped_profile_;
