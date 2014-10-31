@@ -1,0 +1,31 @@
+These instructions assume you have a full chromeos checkout at
+~/chromiumos/ OR a chromiumos one with crostools access at the root
+of the repo checkout i.e. ~/chromiumos/crostools.
+
+This README covers documentation on how to develop with and test against
+a CIDB instance. Whenever you add or modify a cidb feature you should run
+cidb_integration_test.py (which requires a lock right from the build team --
+please send an email before running this test). Specifically, there are two
+large sets data that can be used for adding tests. Data for these are stored
+in individual json files that are stored in .test_data/. Each series has a
+readme that roughly describes what is in the data.
+
+However, when adding a new test, this may not be sufficient. One thing you can
+do to see what's going on is to login to the test DB where all the data series
+is hosted as part of the test. You can do this by cd'ing to
+crostools/cidb/cidb_test_root and running:
+
+mysql -u `cat user.txt` -h  `cat host.txt` --password=`cat password.txt` \
+  --ssl-ca=server-ca.pem --ssl-cert=client-cert.pem --ssl-key=client-key.pem \
+  cidb
+
+At this point you can run normal SQL. To double check, run `show tables;`
+
+You can then use the data here to create your own integration test to test
+something you added to CIDB.
+
+If for some reason you need to reset the data here (if you manipulated it),
+just re-run the cidb_integration_test. Note this DB is shared against all
+build developers, so play nice!
+
+Please see ./schema.dump.readme for more information on how to read the schema.

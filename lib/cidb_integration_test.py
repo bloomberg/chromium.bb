@@ -229,6 +229,33 @@ class DataSeries0Test(CIDBIntegrationTest):
     self._cl_action_checks(readonly_db)
     self._last_updated_time_checks(readonly_db)
 
+    #| Test get build_status from -- here's the relevant data from
+    # master-paladin
+    #|          id | status |
+    #|         601 | pass   |
+    #|         571 | pass   |
+    #|         541 | fail   |
+    #|         511 | pass   |
+    #|         481 | pass   |
+    # From 1929 because we always go back one build first.
+    last_status = readonly_db.GetLastBuildStatuses('master-paladin', 1)
+    self.assertEqual(len(last_status), 1)
+    last_status = readonly_db.GetLastBuildStatuses('master-paladin', 5)
+    self.assertEqual(len(last_status), 5)
+    # Make sure keys are sorted correctly.
+    build_ids = []
+    for index, status in enumerate(last_status):
+      # Add these to list to confirm they are sorted afterwards correctly.
+      # Should be descending.
+      build_ids.append(status['id'])
+      if index == 2:
+        self.assertEqual(status['status'], 'fail')
+      else:
+        self.assertEqual(status['status'], 'pass')
+
+    # Check the sort order.
+    self.assertEqual(sorted(build_ids, reverse=True), build_ids)
+
   def _last_updated_time_checks(self, db):
     """Sanity checks on the last_updated column."""
     # We should have a diversity of last_updated times. Since the timestamp
