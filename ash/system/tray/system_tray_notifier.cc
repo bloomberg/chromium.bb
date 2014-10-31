@@ -175,6 +175,16 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
     LastWindowClosedObserver* observer) {
   last_window_closed_observers_.RemoveObserver(observer);
 }
+
+void SystemTrayNotifier::AddVirtualKeyboardObserver(
+    VirtualKeyboardObserver* observer) {
+  virtual_keyboard_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveVirtualKeyboardObserver(
+    VirtualKeyboardObserver* observer) {
+  virtual_keyboard_observers_.RemoveObserver(observer);
+}
 #endif
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
@@ -373,6 +383,13 @@ void SystemTrayNotifier::NotifyLastWindowClosed() {
   FOR_EACH_OBSERVER(LastWindowClosedObserver,
                     last_window_closed_observers_,
                     OnLastWindowClosed());
+}
+
+void SystemTrayNotifier::NotifyVirtualKeyboardSuppressionChanged(
+    bool suppressed) {
+  FOR_EACH_OBSERVER(VirtualKeyboardObserver,
+                    virtual_keyboard_observers_,
+                    OnKeyboardSuppressionChanged(suppressed));
 }
 
 #endif  // OS_CHROMEOS

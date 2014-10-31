@@ -340,6 +340,12 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED" desc="The text shown in the tray menu when rotation is set to locked.">
     Rotation locked (Tap here to change)
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_DISABLED" desc="The text shown in the tray menu when the virtual keyboard is disabled.">
+    On-screen keyboard disabled
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED" desc="The text shown in the tray menu when the virtual keyboard is enabled.">
+    On-screen keyboard enabled
+  </message>
   <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">
     Show on-screen keyboard
   </message>

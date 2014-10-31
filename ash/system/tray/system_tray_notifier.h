@@ -29,6 +29,7 @@
 #include "ash/system/chromeos/session/last_window_closed_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/session/session_length_limit_observer.h"
+#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/system/tray/media_security/media_capture_observer.h"
 #include "base/time/time.h"
 #endif
@@ -102,6 +103,9 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddLastWindowClosedObserver(LastWindowClosedObserver* observer);
   void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
+
+  void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
+  void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged(
@@ -142,6 +146,7 @@ class ASH_EXPORT SystemTrayNotifier {
                               const base::string16& helper_name);
   void NotifyScreenShareStop();
   void NotifyLastWindowClosed();
+  void NotifyVirtualKeyboardSuppressionChanged(bool suppressed);
 #endif
 
  private:
@@ -165,6 +170,7 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   ObserverList<ScreenShareObserver> screen_share_observers_;
   ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
+  ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

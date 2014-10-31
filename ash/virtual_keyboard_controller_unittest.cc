@@ -5,6 +5,7 @@
 #include "ash/virtual_keyboard_controller.h"
 
 #include "ash/shell.h"
+#include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
@@ -62,13 +63,48 @@ TEST_F(VirtualKeyboardControllerTest, EnabledDuringMaximizeMode) {
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
-class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest {
+class VirtualKeyboardControllerAutoTest : public VirtualKeyboardControllerTest,
+                                          public VirtualKeyboardObserver {
  public:
+  VirtualKeyboardControllerAutoTest() : notified_(false), suppressed_(false) {}
+  ~VirtualKeyboardControllerAutoTest() override {}
+
   void SetUp() override {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kAutoVirtualKeyboard);
     VirtualKeyboardControllerTest::SetUp();
+    Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
+        this);
   }
+
+  void TearDown() override {
+    Shell::GetInstance()->system_tray_notifier()->RemoveVirtualKeyboardObserver(
+        this);
+    AshTestBase::TearDown();
+  }
+
+  void OnKeyboardSuppressionChanged(bool suppressed) override {
+    notified_ = true;
+    suppressed_ = suppressed;
+  }
+
+  void ResetObserver() {
+    suppressed_ = false;
+    notified_ = false;
+  }
+
+  bool IsVirtualKeyboardSuppressed() { return suppressed_; }
+
+  bool notified() { return notified_; }
+
+ private:
+  // Whether the observer method was called.
+  bool notified_;
+
+  // Whether the keeyboard is suppressed.
+  bool suppressed_;
+
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardControllerAutoTest);
 };
 
 // Tests that the onscreen keyboard is disabled if an internal keyboard is
@@ -107,6 +143,46 @@ TEST_F(VirtualKeyboardControllerAutoTest, DisabledIfNoTouchScreen) {
   // Remove touchscreen. Keyboard should hide.
   UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
+TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(
+      ui::TouchscreenDevice(1,
+                            ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen",
+                            gfx::Size(1024, 768)));
+  UpdateTouchscreenDevices(screens);
+  std::vector<ui::KeyboardDevice> keyboards;
+  keyboards.push_back(ui::KeyboardDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  UpdateKeyboardDevices(keyboards);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Toggle show keyboard. Keyboard should be visible.
+  ResetObserver();
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Toggle show keyboard. Keyboard should be hidden.
+  ResetObserver();
+  Shell::GetInstance()
+      ->virtual_keyboard_controller()
+      ->ToggleIgnoreExternalKeyboard();
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_TRUE(IsVirtualKeyboardSuppressed());
+  // Remove external keyboard. Should be notified that the keyboard is not
+  // suppressed.
+  ResetObserver();
+  UpdateKeyboardDevices(std::vector<ui::KeyboardDevice>());
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(notified());
+  ASSERT_FALSE(IsVirtualKeyboardSuppressed());
 }
 
 }  // namespace test

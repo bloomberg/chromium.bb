@@ -23,7 +23,8 @@ namespace ash {
 VirtualKeyboardController::VirtualKeyboardController()
     : has_external_keyboard_(false),
       has_internal_keyboard_(false),
-      has_touchscreen_(false) {
+      has_touchscreen_(false),
+      ignore_external_keyboard_(false) {
   Shell::GetInstance()->AddShellObserver(this);
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
   UpdateDevices();
@@ -46,6 +47,19 @@ void VirtualKeyboardController::OnMaximizeModeEnded() {
           keyboard::switches::kAutoVirtualKeyboard)) {
     SetKeyboardEnabled(false);
   }
+}
+
+void VirtualKeyboardController::OnTouchscreenDeviceConfigurationChanged() {
+  UpdateDevices();
+}
+
+void VirtualKeyboardController::OnKeyboardDeviceConfigurationChanged() {
+  UpdateDevices();
+}
+
+void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
+  ignore_external_keyboard_ = !ignore_external_keyboard_;
+  UpdateKeyboardEnabled();
 }
 
 void VirtualKeyboardController::UpdateDevices() {
@@ -74,16 +88,6 @@ void VirtualKeyboardController::UpdateDevices() {
   UpdateKeyboardEnabled();
 }
 
-void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
-  keyboard::SetTouchKeyboardEnabled(enabled);
-  if (enabled) {
-    Shell::GetInstance()->CreateKeyboard();
-  } else {
-    if (!keyboard::IsKeyboardEnabled())
-      Shell::GetInstance()->DeactivateKeyboard();
-  }
-}
-
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kAutoVirtualKeyboard)) {
@@ -92,17 +96,23 @@ void VirtualKeyboardController::UpdateKeyboardEnabled() {
                            ->IsMaximizeModeWindowManagerEnabled());
     return;
   }
-  // TODO(rsadam@): Add UI to re-enable suppressed keyboard.
   SetKeyboardEnabled(!has_internal_keyboard_ && has_touchscreen_ &&
-                     !has_external_keyboard_);
+                     (!has_external_keyboard_ || ignore_external_keyboard_));
+  ash::Shell::GetInstance()
+      ->system_tray_notifier()
+      ->NotifyVirtualKeyboardSuppressionChanged(!has_internal_keyboard_ &&
+                                                has_touchscreen_ &&
+                                                has_external_keyboard_);
 }
 
-void VirtualKeyboardController::OnTouchscreenDeviceConfigurationChanged() {
-  UpdateDevices();
-}
-
-void VirtualKeyboardController::OnKeyboardDeviceConfigurationChanged() {
-  UpdateDevices();
+void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
+  keyboard::SetTouchKeyboardEnabled(enabled);
+  if (enabled) {
+    Shell::GetInstance()->CreateKeyboard();
+  } else {
+    if (!keyboard::IsKeyboardEnabled())
+      Shell::GetInstance()->DeactivateKeyboard();
+  }
 }
 
 }  // namespace ash

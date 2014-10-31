@@ -349,8 +349,12 @@
       'system/chromeos/tray_display.h',
       'system/chromeos/tray_tracing.cc',
       'system/chromeos/tray_tracing.h',
+      'system/chromeos/virtual_keyboard/tray_keyboard_lock.cc',
+      'system/chromeos/virtual_keyboard/tray_keyboard_lock.h',
+      'system/chromeos/virtual_keyboard/tray_keyboard_lock_unittest.h',
       'system/chromeos/virtual_keyboard/virtual_keyboard_tray.cc',
       'system/chromeos/virtual_keyboard/virtual_keyboard_tray.h',
+      'system/chromeos/virtual_keyboard/virtual_keyboard_observer.h',
       'system/date/clock_observer.h',
       'system/date/date_default_view.cc',
       'system/date/date_default_view.h',
@@ -721,6 +725,8 @@
       'test/test_volume_control_delegate.h',
       'test/ui_controls_factory_ash.cc',
       'test/ui_controls_factory_ash.h',
+      'test/virtual_keyboard_test_helper.cc',
+      'test/virtual_keyboard_test_helper.h',
     ],
     'ash_shell_lib_sources': [
       '../ui/views/test/test_views_delegate_aura.cc',
@@ -822,6 +828,7 @@
       'system/chromeos/session/tray_session_length_limit_unittest.cc',
       'system/chromeos/supervised/tray_supervised_user_unittest.cc',
       'system/chromeos/tray_display_unittest.cc',
+      'system/chromeos/virtual_keyboard/tray_keyboard_lock_unittest.cc',
       'system/date/date_view_unittest.cc',
       'system/overview/overview_button_tray_unittest.cc',
       'system/tray/media_security/multi_profile_media_tray_item_unittest.cc',
@@ -933,8 +940,6 @@
             # Note: sources list duplicated in GN build.
             "sticky_keys/sticky_keys_controller.cc",
             "sticky_keys/sticky_keys_controller.h",
-            'virtual_keyboard_controller.cc',
-            'virtual_keyboard_controller.h'
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
@@ -979,6 +984,8 @@
             'touch/touch_transformer_controller.h',
             'touch/touchscreen_util.cc',
             'touch/touchscreen_util.h',
+            'virtual_keyboard_controller.cc',
+            'virtual_keyboard_controller.h'
           ],
         }],
       ],

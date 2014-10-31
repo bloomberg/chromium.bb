@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ui/events/input_device_event_observer.h"
 
 namespace ash {
@@ -20,13 +21,17 @@ class ASH_EXPORT VirtualKeyboardController
   ~VirtualKeyboardController() override;
 
   // ShellObserver:
+  // TODO(rsadam@): Remove when autovirtual keyboard flag is on by default.
   virtual void OnMaximizeModeStarted() override;
   virtual void OnMaximizeModeEnded() override;
 
   // ui::InputDeviceObserver:
-  // TODO(rsadam@): Remove when autovirtual keyboard flag is on by default.
   virtual void OnTouchscreenDeviceConfigurationChanged() override;
   virtual void OnKeyboardDeviceConfigurationChanged() override;
+
+  // Toggles whether the presense of an external keyboard should be ignored
+  // when determining whether or not to show the on-screen keyboard.
+  void ToggleIgnoreExternalKeyboard();
 
  private:
   // Updates the list of active input devices.
@@ -44,6 +49,8 @@ class ASH_EXPORT VirtualKeyboardController
   bool has_internal_keyboard_;
   // True if a touchscreen is connected.
   bool has_touchscreen_;
+  // True if the presense of an external keyboard should be ignored.
+  bool ignore_external_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);
 };

@@ -537,6 +537,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
   }
+
+  VirtualKeyboardController* virtual_keyboard_controller() {
+    return virtual_keyboard_controller_.get();
+  }
 #endif  // defined(OS_CHROMEOS)
 
   ShelfModel* shelf_model() {
