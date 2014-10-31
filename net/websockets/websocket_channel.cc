@@ -297,6 +297,7 @@ WebSocketChannel::WebSocketChannel(
       current_send_quota_(0),
       current_receive_quota_(0),
       timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
+      has_received_close_frame_(false),
       received_close_code_(0),
       state_(FRESHLY_CONSTRUCTED),
       notification_sender_(new HandshakeNotificationSender(this)),
@@ -744,7 +745,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       uint16 code = kWebSocketErrorAbnormalClosure;
       std::string reason = "";
       bool was_clean = false;
-      if (received_close_code_ != 0) {
+      if (has_received_close_frame_) {
         code = received_close_code_;
         reason = received_close_reason_;
         was_clean = (result == ERR_CONNECTION_CLOSED);
@@ -844,6 +845,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
 
           if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
             return CHANNEL_DELETED;
+          has_received_close_frame_  = true;
           received_close_code_ = code;
           received_close_reason_ = reason;
           break;
@@ -853,6 +855,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
           // From RFC6455 section 7.1.5: "Each endpoint
           // will see the status code sent by the other end as _The WebSocket
           // Connection Close Code_."
+          has_received_close_frame_  = true;
           received_close_code_ = code;
           received_close_reason_ = reason;
           break;

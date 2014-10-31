@@ -379,6 +379,7 @@ class NET_EXPORT WebSocketChannel {
   // Storage for the status code and reason from the time the Close frame
   // arrives until the connection is closed and they are passed to
   // OnDropChannel().
+  bool has_received_close_frame_;
   uint16 received_close_code_;
   std::string received_close_reason_;
 
