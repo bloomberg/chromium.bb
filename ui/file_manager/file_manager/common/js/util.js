@@ -719,9 +719,9 @@ util.comparePath = function(entry1, entry2) {
  * Checks if the child entry is a descendant of another entry. If the entries
  * point to the same file or directory, then returns false.
  *
- * @param {DirectoryEntry|Object} ancestorEntry The ancestor directory entry.
+ * @param {!DirectoryEntry|!Object} ancestorEntry The ancestor directory entry.
  *     Can be a fake.
- * @param {Entry|Object} childEntry The child entry. Can be a fake.
+ * @param {!Entry|!Object} childEntry The child entry. Can be a fake.
  * @return {boolean} True if the child entry is contained in the ancestor path.
  */
 util.isDescendantEntry = function(ancestorEntry, childEntry) {

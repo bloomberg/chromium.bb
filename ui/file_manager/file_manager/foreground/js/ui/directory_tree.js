@@ -66,7 +66,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
  * @this {(DirectoryItem|VolumeItem|DirectoryTree)}
@@ -74,6 +74,8 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
 DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
+    if (!item.entry)
+      continue;
     if (util.isDescendantEntry(item.entry, entry) ||
         util.isSameEntry(item.entry, entry)) {
       item.selectByEntry(entry);
@@ -164,7 +166,7 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
 /**
  * Calls DirectoryItemTreeBaseMethods.updateSubElementsFromList().
  *
- * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
  */
@@ -316,7 +318,7 @@ DirectoryItem.prototype.updateSubDirectories = function(
  * Searches for the changed directory in the current subtree, and if it is found
  * then updates it.
  *
- * @param {DirectoryEntry} changedDirectoryEntry The entry ot the changed
+ * @param {!DirectoryEntry} changedDirectoryEntry The entry ot the changed
  *     directory.
  */
 DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
@@ -328,6 +330,8 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   // Traverse the entire subtree to find the changed element.
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
+    if (!item.entry)
+      continue;
     if (util.isDescendantEntry(item.entry, changedDirectoryEntry) ||
         util.isSameEntry(item.entry, changedDirectoryEntry)) {
       item.updateItemByEntry(changedDirectoryEntry);
@@ -361,7 +365,8 @@ DirectoryItem.prototype.redrawSubDirectoryList_ = function(recursive) {
 
 /**
  * Select the item corresponding to the given {@code entry}.
- * @param {DirectoryEntry|Object} entry The entry to be selected. Can be a fake.
+ * @param {!DirectoryEntry|!Object} entry The entry to be selected. Can be a
+ *     fake.
  */
 DirectoryItem.prototype.selectByEntry = function(entry) {
   if (util.isSameEntry(entry, this.entry)) {
@@ -452,7 +457,7 @@ VolumeItem.prototype = {
 /**
  * Calls DirectoryItemTreeBaseMethods.updateSubElementsFromList().
  *
- * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
  */
@@ -543,7 +548,7 @@ VolumeItem.prototype.updateSubDirectories = function(recursive) {
  * Searches for the changed directory in the current subtree, and if it is found
  * then updates it.
  *
- * @param {DirectoryEntry} changedDirectoryEntry The entry ot the changed
+ * @param {!DirectoryEntry} changedDirectoryEntry The entry ot the changed
  *     directory.
  */
 VolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
@@ -553,8 +558,8 @@ VolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 
 /**
  * Select the item corresponding to the given entry.
- * @param {DirectoryEntry|Object} entry The directory entry to be selected. Can
- *     be a fake.
+ * @param {!DirectoryEntry|!Object} entry The directory entry to be selected.
+ *     Can be a fake.
  */
 VolumeItem.prototype.selectByEntry = function(entry) {
   // If this volume is drive, find the item to be selected amang children.
@@ -703,7 +708,7 @@ ShortcutItem.prototype = {
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
  */
@@ -745,7 +750,7 @@ ShortcutItem.prototype.handleClick = function(e) {
 
 /**
  * Select the item corresponding to the given entry.
- * @param {DirectoryEntry} entry The directory entry to be selected.
+ * @param {!DirectoryEntry} entry The directory entry to be selected.
  */
 ShortcutItem.prototype.selectByEntry = function(entry) {
   if (util.isSameEntry(entry, this.entry))
@@ -936,7 +941,7 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {DirectoryEntry|Object} entry The entry to be searched for. Can be
+ * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
  *     a fake.
  * @return {boolean} True if the parent item is found.
  */
@@ -1012,8 +1017,8 @@ DirectoryTree.prototype.decorate = function(
 
 /**
  * Select the item corresponding to the given entry.
- * @param {DirectoryEntry|Object} entry The directory entry to be selected. Can
- *     be a fake.
+ * @param {!DirectoryEntry|!Object} entry The directory entry to be selected.
+ *     Can be a fake.
  */
 DirectoryTree.prototype.selectByEntry = function(entry) {
   if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
@@ -1089,7 +1094,7 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
-  if (event.eventType !== 'changed')
+  if (event.eventType !== 'changed' || !event.entry)
     return;
 
   for (var i = 0; i < this.items.length; i++) {
