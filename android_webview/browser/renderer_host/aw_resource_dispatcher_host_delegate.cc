@@ -102,12 +102,8 @@ const char* IoThreadClientThrottle::GetNameForLogging() const {
 
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // TODO(sgurun): This block can be removed when crbug.com/277937 is fixed.
-  if (render_frame_id_ < 1) {
-    // OPTIONS is used for preflighted requests which are generated internally.
-    DCHECK_EQ("OPTIONS", request_->method());
+  if (render_frame_id_ < 1)
     return;
-  }
   DCHECK(render_process_id_);
   *defer = false;
 
