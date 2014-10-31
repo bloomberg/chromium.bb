@@ -3767,6 +3767,14 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerMode
     if (isFullPaintInvalidationReason(invalidationReason))
         return invalidationReason;
 
+    // If the transform is not identity or translation, incremental invalidation is not applicable
+    // because the difference between oldBounds and newBounds doesn't cover all area needing invalidation.
+    // FIXME: Should also consider ancestor transforms since paintInvalidationContainer. crbug.com/426111.
+    if (invalidationReason == PaintInvalidationIncremental
+        && paintInvalidationContainer != this
+        && hasLayer() && layer()->transform() && !layer()->transform()->isIdentityOrTranslation())
+        return PaintInvalidationBoundsChange;
+
     if (!style()->hasBackground() && !style()->hasBoxDecorations())
         return invalidationReason;
 
