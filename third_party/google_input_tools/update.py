@@ -1,8 +1,9 @@
 #!/usr/bin/python
-# Copyright (c) 2014 The Chromium Authors. All rights reserved.             
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import logging
 import optparse
 import os
@@ -13,6 +14,14 @@ import sys
 _BASE_REGEX_STRING = '^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
 require_regex = re.compile(_BASE_REGEX_STRING % 'require')
 provide_regex = re.compile(_BASE_REGEX_STRING % 'provide')
+
+preamble = [
+  '# Copyright 2014 The Chromium Authors. All rights reserved.',
+  '# Use of this source code is governed by a BSD-style license that can be',
+  '# found in the LICENSE file.',
+  '',
+  '# This file is auto-generated using update.py.',
+  '']
 
 # Entry-points required to build a virtual keyboard.
 namespaces = [
@@ -171,19 +180,22 @@ def CopyFile(source, target):
     source: Path to the source file to copy.
     target: Path to the target location to copy the file.
   """
-  print '%s --> %s' % (source, target)
+
   if not os.path.exists(os.path.dirname(target)):
     os.makedirs(os.path.dirname(target))
   shutil.copy(source, target)
 
 
-def UpdateFile(filename, input_source, closure_source):
+def UpdateFile(filename, input_source, closure_source, target_files):
     """Updates files in third_party/google_input_tools.
+
     Args:
       filename: The file to update.
       input_source: Root of the google_input_tools sandbox.
       closure_source: Root of the closure_library sandbox.
+      target_files: List of relative paths to target files.
     """
+
     target = ''
     if filename.startswith(input_source):
       target = os.path.join('src', filename[len(input_source)+1:])
@@ -192,6 +204,22 @@ def UpdateFile(filename, input_source, closure_source):
                             filename[len(closure_source)+1:])
     if len(target) > 0:
       CopyFile(filename, target)
+      target_files.append(os.path.relpath(target, os.getcwd()))
+
+
+def GenerateBuildFile(target_files):
+  """Updates inputview.gypi.
+
+  Args:
+    target_files: List of files required to build inputview.js.
+  """
+
+  sorted_files = sorted(target_files)
+  with open('inputview.gypi', 'w') as file_handle:
+    file_handle.write(os.linesep.join(preamble))
+    json_data = {'variables': {'inputview_sources': sorted_files}}
+    json_str = json.dumps(json_data, indent=2, separators=(',', ': '))
+    file_handle.write(json_str.replace('\"', '\''))
 
 
 def main():
@@ -217,9 +245,6 @@ def main():
   input_path = GetGoogleInputToolsSandboxFromOptions(options)
   closure_library_path = GetClosureLibrarySandboxFromOptions(options)
 
-  print 'iput_path = %s' % input_path
-  print 'closure_library_path = %s' % closure_library_path
-
   if not os.path.isdir(input_path):
     print 'Could not find google-input-tools sandbox.'
     exit(1)
@@ -232,12 +257,14 @@ def main():
                          closure_library_path])
 
   dependencies = set()
-
   for name in namespaces:
     ExtractDependencies(name, providers, requirements, dependencies)
 
+  target_files = []
   for name in dependencies:
-    UpdateFile(name, input_path, closure_library_path)
+    UpdateFile(name, input_path, closure_library_path, target_files)
+
+  GenerateBuildFile(target_files)
 
 if __name__ == '__main__':
   main()

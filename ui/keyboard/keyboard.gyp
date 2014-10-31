@@ -19,7 +19,10 @@
     {
       # GN version: //ui/keyboard:resources
       'target_name': 'keyboard_resources',
-      'dependencies': [ 'keyboard_mojom_bindings', ],
+      'dependencies': [
+        'keyboard_mojom_bindings',
+        '../../third_party/google_input_tools/inputview.gyp:inputview',
+       ],
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard',

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/google_input_tools/closure.gni")
+import("//third_party/google_input_tools/inputview.gni")
 import("//tools/grit/grit_rule.gni")
 
 component("keyboard") {
@@ -78,6 +80,7 @@ grit("resources_grit") {
 
   deps = [
     ":keyboard_mojom_bindings",
+    ":inputview"
   ]
 }
 
@@ -85,6 +88,14 @@ copy("resources") {
   sources = [ "$target_gen_dir/keyboard_resources.pak" ]
   outputs = [ "$root_out_dir/keyboard_resources.pak" ]
   public_deps = [ ":resources_grit" ]
+}
+
+build_closure("inputview") {
+  sources = inputview_sources
+  target = "$target_gen_dir/resources/inputview.js"
+  json_file = "//third_party/google_input_tools/inputview.gypi"
+  json_sources = "variables.inputview_sources"
+  path = rebase_path("//third_party/google_input_tools")
 }
 
 test("keyboard_unittests") {
