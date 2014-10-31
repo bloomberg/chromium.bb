@@ -3582,6 +3582,7 @@
             'fetch/RawResourceTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
             'fetch/ResourceLoaderOptionsTest.cpp',
+            'fileapi/FileListTest.cpp',
             'fileapi/FileTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'frame/SubresourceIntegrityTest.cpp',

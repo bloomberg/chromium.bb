@@ -249,7 +249,7 @@ FileList* FileInputType::createFileList(const Vector<FileChooserFileInfo>& files
         if (files[i].fileSystemURL.isEmpty()) {
             fileList->append(File::createForUserProvidedFile(files[i].path, files[i].displayName));
         } else {
-            fileList->append(File::createForFileSystemFile(files[i].fileSystemURL, files[i].metadata));
+            fileList->append(File::createForFileSystemFile(files[i].fileSystemURL, files[i].metadata, File::IsUserVisible));
         }
     }
     return fileList;

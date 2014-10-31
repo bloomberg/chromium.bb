@@ -199,13 +199,15 @@ File* DOMFileSystemBase::createFile(const FileMetadata& metadata, const KURL& fi
     if (type == FileSystemTypeTemporary || type == FileSystemTypePersistent)
         return File::createForFileSystemFile(metadata.platformPath, name);
 
-    if (!metadata.platformPath.isEmpty()) {
-        // If the platformPath in the returned metadata is given, we create a File object for the path.
-        File::UserVisibility userVisibility = (type == FileSystemTypeExternal) ? File::IsUserVisible : File::IsNotUserVisible;
-        return File::createForFileSystemFile(name, metadata, userVisibility);
-    }
+    const File::UserVisibility userVisibility = (type == FileSystemTypeExternal) ? File::IsUserVisible : File::IsNotUserVisible;
 
-    return File::createForFileSystemFile(fileSystemURL, metadata);
+    if (!metadata.platformPath.isEmpty()) {
+        // If the platformPath in the returned metadata is given, we create a File object for the snapshot path.
+        return File::createForFileSystemFile(name, metadata, userVisibility);
+    } else {
+        // Otherwise we create a File object for the fileSystemURL.
+        return File::createForFileSystemFile(fileSystemURL, metadata, userVisibility);
+    }
 }
 
 void DOMFileSystemBase::getMetadata(const EntryBase* entry, MetadataCallback* successCallback, ErrorCallback* errorCallback, SynchronousType synchronousType)

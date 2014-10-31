@@ -159,9 +159,10 @@ void WebDragData::addItem(const Item& item)
         return;
     case Item::StorageTypeFileSystemFile:
         {
+            // FIXME: The file system URL may refer a user visible file, see http://crbug.com/429077
             FileMetadata fileMetadata;
             fileMetadata.length = item.fileSystemFileSize;
-            m_private->add(File::createForFileSystemFile(item.fileSystemURL, fileMetadata));
+            m_private->add(File::createForFileSystemFile(item.fileSystemURL, fileMetadata, File::IsNotUserVisible));
         }
         return;
     }

@@ -40,7 +40,7 @@ TEST(FileTest, fileSystemFileWithoutNativeSnapshot)
 {
     KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file");
     FileMetadata metadata;
-    File* const file = File::createForFileSystemFile(url, metadata);
+    File* const file = File::createForFileSystemFile(url, metadata, File::IsUserVisible);
     EXPECT_FALSE(file->hasBackingFile());
     EXPECT_TRUE(file->path().isEmpty());
     EXPECT_EQ(url, file->fileSystemURL());
@@ -61,9 +61,9 @@ TEST(FileTest, hsaSameSource)
     KURL urlA(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file-A");
     KURL urlB(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file-B");
     FileMetadata metadata;
-    File* const fileSystemFileA1 = File::createForFileSystemFile(urlA, metadata);
-    File* const fileSystemFileA2 = File::createForFileSystemFile(urlA, metadata);
-    File* const fileSystemFileB = File::createForFileSystemFile(urlB, metadata);
+    File* const fileSystemFileA1 = File::createForFileSystemFile(urlA, metadata, File::IsUserVisible);
+    File* const fileSystemFileA2 = File::createForFileSystemFile(urlA, metadata, File::IsUserVisible);
+    File* const fileSystemFileB = File::createForFileSystemFile(urlB, metadata, File::IsUserVisible);
 
     EXPECT_FALSE(nativeFileA1->hasSameSource(*blobFileA1));
     EXPECT_FALSE(blobFileA1->hasSameSource(*fileSystemFileA1));

@@ -82,9 +82,9 @@ public:
         return new File(name, metadata, userVisibility);
     }
 
-    static File* createForFileSystemFile(const KURL& url, const FileMetadata& metadata)
+    static File* createForFileSystemFile(const KURL& url, const FileMetadata& metadata, UserVisibility userVisibility)
     {
-        return new File(url, metadata);
+        return new File(url, metadata, userVisibility);
     }
 
     KURL fileSystemURL() const { ASSERT(hasValidFileSystemURL()); return m_fileSystemURL; }
@@ -144,7 +144,7 @@ private:
     File(const String& path, const String& name, const String& relativePath, UserVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
     File(const String& name, const FileMetadata&, UserVisibility);
-    File(const KURL& fileSystemURL, const FileMetadata&);
+    File(const KURL& fileSystemURL, const FileMetadata&, UserVisibility);
 
     void invalidateSnapshotMetadata() { m_snapshotSize = -1; }
 
