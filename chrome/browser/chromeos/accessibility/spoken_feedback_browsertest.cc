@@ -297,10 +297,105 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-
   EXPECT_EQ("Shelf,", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Apps,", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("button", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_TAB);
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*, button"));
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (utterance == "button")
+      break;
+  }
+
+  SendKeyPress(ui::VKEY_RETURN);
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
+  EXPECT_EQ("text box", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_DOWN);
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*, button"));
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_SYSTEM_TRAY_BUBBLE));
+  EXPECT_EQ("Status tray,", speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
+                           "Battery is*full."));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*, button"));
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_SYSTEM_TRAY_BUBBLE));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (MatchPattern(utterance, "*, button"))
+      break;
+  }
+
+  // Navigate to Bluetooth sub-menu and open it.
+  while (true) {
+    SendKeyPress(ui::VKEY_TAB);
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (MatchPattern(utterance, "*Bluetooth*, button"))
+      break;
+  }
+  SendKeyPress(ui::VKEY_RETURN);
+
+  // Navigate to return to previous menu button and press it.
+  while (true) {
+    SendKeyPress(ui::VKEY_TAB);
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (MatchPattern(utterance, "Previous menu, button"))
+      break;
+  }
+  SendKeyPress(ui::VKEY_RETURN);
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
+                           "*Bluetooth*, button"));
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ScreenBrightness) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::BRIGHTNESS_UP));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
+                           "Brightness * percent"));
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::BRIGHTNESS_DOWN));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
+                           "Brightness * percent"));
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::VOLUME_UP));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*%,"));
+  EXPECT_EQ("Volume,", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("slider", speech_monitor_.GetNextUtterance());
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
+  EnableChromeVox();
+
+  EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_OVERVIEW));
+  EXPECT_EQ("Alert Entered window overview mode",
+            speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", text box", speech_monitor_.GetNextUtterance());
+
+  SendKeyPress(ui::VKEY_TAB);
+  EXPECT_EQ("about blank, button", speech_monitor_.GetNextUtterance());
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxShiftSearch) {
