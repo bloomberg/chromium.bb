@@ -64,9 +64,7 @@ class Builder(object):
       opts: Options parsed from the command-line.
     """
     builder = None
-    if opts.target_platform == 'cros':
-      builder = CrosBuilder(opts)
-    elif opts.target_platform == 'android':
+    if opts.target_platform == 'android':
       builder = AndroidBuilder(opts)
     elif opts.target_platform == 'android-chrome':
       builder = AndroidChromeBuilder(opts)
@@ -193,111 +191,6 @@ class AndroidChromeBuilder(AndroidBuilder):
     return AndroidBuilder._GetTargets(self) + ['chrome_apk']
 
 
-class CrosBuilder(Builder):
-  """CrosBuilder is used to build and image ChromeOS/Chromium.
-
-  WARNING(qyearsley, 2014-08-15): This hasn't been tested recently.
-  """
-
-  def __init__(self, opts):
-    super(CrosBuilder, self).__init__(opts)
-
-  @staticmethod
-  def ImageToTarget(opts):
-    """Installs latest image to target specified by opts.cros_remote_ip.
-
-    Args:
-      opts: Program options containing cros_board and cros_remote_ip.
-
-    Returns:
-      True if successful.
-    """
-    try:
-      # Keys will most likely be set to 0640 after wiping the chroot.
-      os.chmod(bisect_utils.CROS_SCRIPT_KEY_PATH, 0600)
-      os.chmod(bisect_utils.CROS_TEST_KEY_PATH, 0600)
-      cmd = [bisect_utils.CROS_SDK_PATH, '--', './bin/cros_image_to_target.py',
-             '--remote=%s' % opts.cros_remote_ip,
-             '--board=%s' % opts.cros_board, '--test', '--verbose']
-
-      return_code = bisect_utils.RunProcess(cmd)
-      return not return_code
-    except OSError:
-      return False
-
-  @staticmethod
-  def BuildPackages(opts, depot):
-    """Builds packages for cros.
-
-    Args:
-      opts: Program options containing cros_board.
-      depot: The depot being bisected.
-
-    Returns:
-      True if successful.
-    """
-    cmd = [bisect_utils.CROS_SDK_PATH]
-
-    if depot != 'cros':
-      path_to_chrome = os.path.join(os.getcwd(), '..')
-      cmd += ['--chrome_root=%s' % path_to_chrome]
-
-    cmd += ['--']
-
-    if depot != 'cros':
-      cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
-
-    cmd += ['BUILDTYPE=%s' % opts.target_build_type, './build_packages',
-        '--board=%s' % opts.cros_board]
-    return_code = bisect_utils.RunProcess(cmd)
-
-    return not return_code
-
-  @staticmethod
-  def BuildImage(opts, depot):
-    """Builds test image for cros.
-
-    Args:
-      opts: Program options containing cros_board.
-      depot: The depot being bisected.
-
-    Returns:
-      True if successful.
-    """
-    cmd = [bisect_utils.CROS_SDK_PATH]
-
-    if depot != 'cros':
-      path_to_chrome = os.path.join(os.getcwd(), '..')
-      cmd += ['--chrome_root=%s' % path_to_chrome]
-
-    cmd += ['--']
-
-    if depot != 'cros':
-      cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
-
-    cmd += ['BUILDTYPE=%s' % opts.target_build_type, '--', './build_image',
-        '--board=%s' % opts.cros_board, 'test']
-
-    return_code = bisect_utils.RunProcess(cmd)
-
-    return not return_code
-
-  def Build(self, depot, opts):
-    """Builds targets using options passed into the script.
-
-    Args:
-        depot: Current depot being bisected.
-        opts: The options parsed from the command line.
-
-    Returns:
-        True if build was successful.
-    """
-    if self.BuildPackages(opts, depot):
-      if self.BuildImage(opts, depot):
-        return self.ImageToTarget(opts)
-    return False
-
-
 def SetBuildSystemDefault(build_system, use_goma, goma_dir):
   """Sets up any environment variables needed to build with the specified build
   system.
@@ -344,8 +237,6 @@ def SetupPlatformBuildEnvironment(opts):
   if 'android' in opts.target_platform:
     CopyAndSaveOriginalEnvironmentVars()
     return SetupAndroidBuildEnvironment(opts)
-  elif opts.target_platform == 'cros':
-    return bisect_utils.SetupCrosRepo()
   return True
 
 
@@ -400,7 +291,6 @@ def CopyAndSaveOriginalEnvironmentVars():
   vars_to_remove = [
       'CHROME_SRC',
       'CHROMIUM_GYP_FILE',
-      'GYP_CROSSCOMPILE',
       'GYP_DEFINES',
       'GYP_GENERATORS',
       'GYP_GENERATOR_FLAGS',

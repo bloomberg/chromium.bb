@@ -66,24 +66,6 @@ GCLIENT_CUSTOM_DEPS_V8 = {
 FILE_DEPS_GIT = '.DEPS.git'
 FILE_DEPS = 'DEPS'
 
-REPO_SYNC_COMMAND = ('git checkout -f $(git rev-list --max-count=1 '
-                     '--before=%d remotes/m/master)')
-
-# Paths to CrOS-related files.
-# WARNING(qyearsley, 2014-08-15): These haven't been tested recently.
-CROS_SDK_PATH = os.path.join('..', 'cros', 'chromite', 'bin', 'cros_sdk')
-CROS_TEST_KEY_PATH = os.path.join(
-    '..', 'cros', 'chromite', 'ssh_keys', 'testing_rsa')
-CROS_SCRIPT_KEY_PATH = os.path.join(
-    '..', 'cros', 'src', 'scripts', 'mod_for_test_scripts', 'ssh_keys',
-    'testing_rsa')
-
-REPO_PARAMS = [
-    'https://chrome-internal.googlesource.com/chromeos/manifest-internal/',
-    '--repo-url',
-    'https://git.chromium.org/external/repo.git'
-]
-
 # Bisect working directory.
 BISECT_DIR = 'bisect'
 
@@ -111,7 +93,7 @@ DEPOT_DEPS_NAME = {
         'src': 'src',
         'recurse': True,
         'depends': None,
-        'from': ['cros', 'android-chrome'],
+        'from': ['android-chrome'],
         'viewvc':
             'http://src.chromium.org/viewvc/chrome?view=revision&revision=',
         'deps_var': 'chromium_rev'
@@ -316,58 +298,6 @@ def RunGClient(params, cwd=None):
   """
   cmd = ['gclient'] + params
   return _SubprocessCall(cmd, cwd=cwd)
-
-
-def SetupCrosRepo():
-  """Sets up CrOS repo for bisecting ChromeOS.
-
-  Returns:
-    True if successful, False otherwise.
-  """
-  cwd = os.getcwd()
-  try:
-    os.mkdir('cros')
-  except OSError as e:
-    if e.errno != errno.EEXIST:  # EEXIST means the directory already exists.
-      return False
-  os.chdir('cros')
-
-  cmd = ['init', '-u'] + REPO_PARAMS
-
-  passed = False
-
-  if not _RunRepo(cmd):
-    if not _RunRepo(['sync']):
-      passed = True
-  os.chdir(cwd)
-
-  return passed
-
-
-def _RunRepo(params):
-  """Runs CrOS repo command with specified parameters.
-
-  Args:
-    params: A list of parameters to pass to gclient.
-
-  Returns:
-    The return code of the call (zero indicates success).
-  """
-  cmd = ['repo'] + params
-  return _SubprocessCall(cmd)
-
-
-def RunRepoSyncAtTimestamp(timestamp):
-  """Syncs all git depots to the timestamp specified using repo forall.
-
-  Args:
-    params: Unix timestamp to sync to.
-
-  Returns:
-    The return code of the call.
-  """
-  cmd = ['forall', '-c', REPO_SYNC_COMMAND % timestamp]
-  return _RunRepo(cmd)
 
 
 def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):

@@ -12,7 +12,6 @@ SRC = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir)
 sys.path.append(os.path.join(SRC, 'third_party', 'pymock'))
 
 import bisect_perf_regression
-import bisect_printer
 import bisect_utils
 import mock
 import source_control
@@ -91,7 +90,7 @@ def _MockRunTests(*args, **kwargs):
 def _GetBisectPerformanceMetricsInstance(options_dict):
   """Returns an instance of the BisectPerformanceMetrics class."""
   opts = bisect_perf_regression.BisectOptions.FromDict(options_dict)
-  return bisect_perf_regression.BisectPerformanceMetrics(opts)
+  return bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
 
 
 def _GetExtendedOptions(improvement_dir, fake_first, ignore_confidence=True):
@@ -124,9 +123,7 @@ def _GenericDryRun(options, print_results=False):
         bisect_instance.opts.good_revision, bisect_instance.opts.metric)
 
     if print_results:
-      printer = bisect_printer.BisectPrinter(bisect_instance.opts,
-                                             bisect_instance.depot_registry)
-      printer.FormatAndPrintResults(results)
+      bisect_instance.printer.FormatAndPrintResults(results)
 
     return results
   finally:
@@ -237,7 +234,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     bisect_options = bisect_perf_regression.BisectOptions()
     bisect_options.output_buildbot_annotations = None
     bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
-        bisect_options)
+        bisect_options, os.getcwd())
     bisect_instance.opts.target_platform = target_platform
     git_revision = source_control.ResolveToRevision(
         revision, 'chromium', bisect_utils.DEPOT_DEPS_NAME, 100)
@@ -402,9 +399,6 @@ class DepotDirectoryRegistryTest(unittest.TestCase):
 
   def testReturnsCorrectResultForChrome(self):
     self.assertEqual(self.registry.GetDepotDir('chromium'), '/mock/src')
-
-  def testReturnsCorrectResultForChromeOS(self):
-    self.assertEqual(self.registry.GetDepotDir('cros'), '/mock/src/tools/cros')
 
   def testUsesDepotSpecToInitializeRegistry(self):
     self.assertEqual(self.registry.GetDepotDir('mock_depot'), '/mock/src/foo')

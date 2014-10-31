@@ -4,11 +4,7 @@
 
 """This module contains functions for performing source control operations."""
 
-import os
-
 import bisect_utils
-
-CROS_VERSION_PATTERN = 'new version number from %s'
 
 
 def IsInGitRepository():
@@ -30,10 +26,6 @@ def SyncToRevisionWithGClient(revision):
   return bisect_utils.RunGClient(
       ['sync', '--verbose', '--reset', '--force',
       '--delete_unversioned_trees', '--nohooks', '--revision', revision])
-
-
-def SyncToRevisionWithRepo(timestamp):
-  return bisect_utils.RunRepoSyncAtTimestamp(timestamp)
 
 
 def GetRevisionList(end_revision_hash, start_revision_hash, cwd=None):
@@ -62,8 +54,6 @@ def SyncToRevision(revision, sync_client=None):
     _, return_code = bisect_utils.RunGit(['checkout', revision])
   elif sync_client == 'gclient':
     return_code = SyncToRevisionWithGClient(revision)
-  elif sync_client == 'repo':
-    return_code = SyncToRevisionWithRepo(revision)
   else:
     raise NotImplementedError('Unsupported sync_client: "%s"' % sync_client)
 
@@ -90,9 +80,6 @@ def ResolveToRevision(revision_to_check, depot, depot_deps_dict,
   # Android-chrome is git only, so no need to resolve this to anything else.
   if depot == 'android-chrome':
     return revision_to_check
-
-  if depot == 'cros':
-    return ResolveToRevisionCrOS(revision_to_check, cwd)
 
   # If the given revision can't be parsed as an integer, then it may already
   # be a git commit hash.
@@ -125,31 +112,6 @@ def ResolveToRevision(revision_to_check, depot, depot_deps_dict,
     if log_output:
       git_revision = log_output
       break
-
-  return git_revision
-
-
-def ResolveToRevisionCrOS(revision_to_check, cwd=None):
-  """Return a git commit hash corresponding to the give version or revision.
-
-  TODO(qyearsley): Either verify that this works or delete it.
-  """
-  if bisect_utils.IsStringInt(revision_to_check):
-    return int(revision_to_check)
-
-  cwd = os.getcwd()
-  os.chdir(os.path.join(os.getcwd(), 'src', 'third_party',
-                        'chromiumos-overlay'))
-  pattern = CROS_VERSION_PATTERN % revision_to_check
-  cmd = ['log', '--format=%ct', '-1', '--grep', pattern]
-
-  git_revision = None
-
-  log_output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
-  if log_output:
-    git_revision = log_output
-    git_revision = int(log_output.strip())
-  os.chdir(cwd)
 
   return git_revision
 
