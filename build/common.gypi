@@ -5573,6 +5573,7 @@
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
+                  '-Wno-inconsistent-missing-override', #http://crbug.com/428099
                 ],
               },
             }],
