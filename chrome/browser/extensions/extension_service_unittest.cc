@@ -109,6 +109,7 @@
 #include "extensions/common/value_builder.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
@@ -128,6 +129,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -1325,22 +1327,22 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(0u, loaded_.size());
 
   EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[0]),
-      std::string("Could not load extension from '*'. ") +
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[0]);
 
   EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[1]),
-      std::string("Could not load extension from '*'. ") +
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[1]);
 
   EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[2]),
-      std::string("Could not load extension from '*'. ") +
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kMissingFile)) <<
       base::UTF16ToUTF8(GetErrors()[2]);
 
   EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[3]),
-      std::string("Could not load extension from '*'. ") +
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[3]);
 };

@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/notification_types.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
 
@@ -51,10 +53,11 @@ void ExtensionErrorReporter::ReportLoadError(
       content::Details<const std::string>(&error));
 
   std::string path_str = base::UTF16ToUTF8(extension_path.LossyDisplayName());
-  base::string16 message = base::UTF8ToUTF16(
-      base::StringPrintf("Could not load extension from '%s'. %s",
-                         path_str.c_str(),
-                         error.c_str()));
+  base::string16 message = base::UTF8ToUTF16(base::StringPrintf(
+      "%s %s. %s",
+      l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE).c_str(),
+      path_str.c_str(),
+      error.c_str()));
   ReportError(message, be_noisy);
   FOR_EACH_OBSERVER(Observer,
                     observers_,
@@ -76,10 +79,11 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   LOG(WARNING) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
-    chrome::ShowMessageBox(NULL,
-                           base::ASCIIToUTF16("Extension error"),
-                           message,
-                           chrome::MESSAGE_BOX_TYPE_WARNING);
+    chrome::ShowMessageBox(
+        NULL,
+        l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_ERROR_HEADING),
+        message,
+        chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 }
 
