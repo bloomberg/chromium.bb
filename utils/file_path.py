@@ -13,13 +13,13 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import shutil
 import stat
 import sys
 import unicodedata
 import time
 
-from utils import threading_utils
 from utils import tools
 
 
@@ -207,6 +207,69 @@ if sys.platform == 'win32':
     # drive letter in the case it was given.
     return out[0].upper() + out[1:] + suffix
 
+
+  def enum_processes_win():
+    """Returns all processes on the system that are accessible to this process.
+
+    Returns:
+      Win32_Process COM objects. See
+      http://msdn.microsoft.com/library/aa394372.aspx for more details.
+    """
+    import win32com.client  # pylint: disable=F0401
+    wmi_service = win32com.client.Dispatch('WbemScripting.SWbemLocator')
+    wbem = wmi_service.ConnectServer('.', 'root\\cimv2')
+    return [proc for proc in wbem.ExecQuery('SELECT * FROM Win32_Process')]
+
+
+  def filter_processes_dir_win(processes, root_dir):
+    """Returns all processes which has their main executable located inside
+    root_dir.
+    """
+    def normalize_path(filename):
+      try:
+        return GetLongPathName(unicode(filename)).lower()
+      except:  # pylint: disable=W0702
+        return unicode(filename).lower()
+
+    root_dir = normalize_path(root_dir)
+
+    def process_name(proc):
+      if proc.ExecutablePath:
+        return normalize_path(proc.ExecutablePath)
+      # proc.ExecutablePath may be empty if the process hasn't finished
+      # initializing, but the command line may be valid.
+      if proc.CommandLine is None:
+        return None
+      parsed_line = shlex.split(proc.CommandLine)
+      if len(parsed_line) >= 1 and os.path.isabs(parsed_line[0]):
+        return normalize_path(parsed_line[0])
+      return None
+
+    long_names = ((process_name(proc), proc) for proc in processes)
+
+    return [
+      proc for name, proc in long_names
+      if name is not None and name.startswith(root_dir)
+    ]
+
+
+  def filter_processes_tree_win(processes):
+    """Returns all the processes under the current process."""
+    # Convert to dict.
+    processes = {p.ProcessId: p for p in processes}
+    root_pid = os.getpid()
+    out = {root_pid: processes[root_pid]}
+    while True:
+      found = set()
+      for pid in out:
+        found.update(
+            p.ProcessId for p in processes.itervalues()
+            if p.ParentProcessId == pid)
+      found -= set(out)
+      if not found:
+        break
+      out.update((p, processes[p]) for p in found)
+    return out.values()
 
 elif sys.platform == 'darwin':
 
@@ -798,9 +861,9 @@ def rmtree(root):
   #   undetected by the first technique.
   # This technique is not fool-proof but gets mostly there.
   def get_processes():
-    processes = threading_utils.enum_processes_win()
-    tree_processes = threading_utils.filter_processes_tree_win(processes)
-    dir_processes = threading_utils.filter_processes_dir_win(processes, root)
+    processes = enum_processes_win()
+    tree_processes = filter_processes_tree_win(processes)
+    dir_processes = filter_processes_dir_win(processes, root)
     # Convert to dict to remove duplicates.
     processes = {p.ProcessId: p for p in tree_processes}
     processes.update((p.ProcessId, p) for p in dir_processes)
