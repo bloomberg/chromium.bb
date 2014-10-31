@@ -129,3 +129,8 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   page_set = page_sets.PolymerPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+class SmoothnessToughFastScrollingCases(benchmark.Benchmark):
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughScrollingCasesPageSet
+  options = {'page_label_filter' : 'fastscrolling'}

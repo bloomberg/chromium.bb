@@ -16,6 +16,19 @@ class ToughScrollingCasesPage(page_module.Page):
     action_runner.ScrollPage()
     interaction.End()
 
+class ToughFastScrollingCasesPage(page_module.Page):
+
+  def __init__(self, url, page_set):
+    super(ToughFastScrollingCasesPage, self).__init__(
+      url=url,
+      page_set=page_set,
+      labels=['fastscrolling'])
+
+  def RunSmoothness(self, action_runner):
+    interaction = action_runner.BeginGestureInteraction(
+        'ScrollAction', is_smooth=True)
+    action_runner.ScrollPage(direction='down', speed_in_pixels_per_second=16000)
+    interaction.End()
 
 class ToughScrollingCasesPageSet(page_set_module.PageSet):
 
@@ -41,3 +54,10 @@ class ToughScrollingCasesPageSet(page_set_module.PageSet):
     for url in urls_list:
       self.AddPage(ToughScrollingCasesPage(url, self))
 
+    fast_scrolling_urls_list = [
+      'file://tough_scrolling_cases/lorem_ipsum.html',
+      'file://tough_scrolling_cases/canvas.html',
+    ]
+
+    for url in fast_scrolling_urls_list:
+      self.AddPage(ToughFastScrollingCasesPage(url, self))
