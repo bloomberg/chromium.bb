@@ -215,7 +215,6 @@ bool IsProfileSignedOut(Profile* profile) {
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
 - (void)updateDisplayMessageCenterPrefMenuItem:(NSMenuItem*)item;
 - (void)registerServicesMenuTypesTo:(NSApplication*)app;
-- (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
@@ -225,6 +224,20 @@ bool IsProfileSignedOut(Profile* profile) {
 - (BOOL)shouldQuitWithInProgressDownloads;
 - (void)executeApplication:(id)sender;
 - (void)profileWasRemoved:(const base::FilePath&)profilePath;
+
+// Opens a tab for each GURL in |urls|.
+- (void)openUrls:(const std::vector<GURL>&)urls;
+
+// This class cannot open urls until startup has finished. The urls that cannot
+// be opened are cached in |startupUrls_|. This method must be called exactly
+// once after startup has completed. It opens the urls in |startupUrls_|, and
+// clears |startupUrls_|.
+- (void)openStartupUrls;
+
+// Opens a tab for each GURL in |urls|. If there is exactly one tab open before
+// this method is called, and that tab is the NTP, then this method closes the
+// NTP after all the |urls| have been opened.
+- (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls;
 @end
 
 class AppControllerProfileObserver : public ProfileInfoCacheObserver {
@@ -662,6 +675,15 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (void)openStartupUrls {
+  DCHECK(startupComplete_);
+  [self openUrlsReplacingNTP:startupUrls_];
+  startupUrls_.clear();
+}
+
+- (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls {
+  if (urls.empty())
+    return;
+
   // On Mac, the URLs are passed in via Cocoa, not command line. The Chrome
   // NSApplication is created in MainMessageLoop, and then the shortcut urls
   // are passed in via Apple events. At this point, the first browser is
@@ -669,8 +691,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // before PreMainMessageLoop to capture shortcut URL events, it may cause
   // more problems because it relies on things created in PreMainMessageLoop
   // and may break existing message loop design.
-  if (startupUrls_.empty())
+
+  // If the browser hasn't started yet, just queue up the URLs.
+  if (!startupComplete_) {
+    startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
+  }
 
   // If there's only 1 tab and the tab is NTP, close this NTP tab and open all
   // startup urls in new tabs, because the omnibox will stay focused if we
@@ -684,10 +710,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     startupContent = browser->tab_strip_model()->GetActiveWebContents();
   }
 
-  if (startupUrls_.size()) {
-    [self openUrls:startupUrls_];
-    startupUrls_.clear();
-  }
+  [self openUrls:urls];
 
   if (startupIndex != TabStripModel::kNoTab &&
       startupContent->GetVisibleURL() == GURL(chrome::kChromeUINewTabURL)) {
@@ -1325,9 +1348,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 // StartupBrowserCreator here because on the other platforms, URLs to open come
 // through the ProcessSingleton, and it calls StartupBrowserCreator. It's best
 // to bottleneck the openings through that for uniform handling.
-
 - (void)openUrls:(const std::vector<GURL>&)urls {
-  // If the browser hasn't started yet, just queue up the URLs.
   if (!startupComplete_) {
     startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
@@ -1357,7 +1378,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   std::vector<GURL> gurlVector;
   gurlVector.push_back(gurl);
 
-  [self openUrls:gurlVector];
+  [self openUrlsReplacingNTP:gurlVector];
 }
 
 - (void)application:(NSApplication*)sender
@@ -1369,7 +1390,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     gurlVector.push_back(gurl);
   }
   if (!gurlVector.empty())
-    [self openUrls:gurlVector];
+    [self openUrlsReplacingNTP:gurlVector];
   else
     NOTREACHED() << "Nothing to open!";
 
@@ -1585,7 +1606,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   std::vector<GURL> gurlVector;
   gurlVector.push_back(gurl);
 
-  [self openUrls:gurlVector];
+  [self openUrlsReplacingNTP:gurlVector];
   return YES;
 }
 

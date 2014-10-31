@@ -32,6 +32,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -40,6 +41,35 @@
 namespace {
 
 GURL g_open_shortcut_url = GURL::EmptyGURL();
+
+// Returns an Apple Event that instructs the application to open |url|.
+NSAppleEventDescriptor* AppleEventToOpenUrl(const GURL& url) {
+  NSAppleEventDescriptor* shortcut_event = [[[NSAppleEventDescriptor alloc]
+      initWithEventClass:kASAppleScriptSuite
+                 eventID:kASSubroutineEvent
+        targetDescriptor:nil
+                returnID:kAutoGenerateReturnID
+           transactionID:kAnyTransactionID] autorelease];
+  NSString* url_string = [NSString stringWithUTF8String:url.spec().c_str()];
+  [shortcut_event setParamDescriptor:[NSAppleEventDescriptor
+                                         descriptorWithString:url_string]
+                          forKeyword:keyDirectObject];
+  return shortcut_event;
+}
+
+// Instructs the NSApp's delegate to open |url|.
+void SendAppleEventToOpenUrlToAppController(const GURL& url) {
+  AppController* controller =
+      base::mac::ObjCCast<AppController>([NSApp delegate]);
+  Method get_url =
+      class_getInstanceMethod([controller class], @selector(getUrl:withReply:));
+
+  ASSERT_TRUE(get_url);
+
+  NSAppleEventDescriptor* shortcut_event = AppleEventToOpenUrl(url);
+
+  method_invoke(controller, get_url, shortcut_event, NULL);
+}
 
 }  // namespace
 
@@ -53,28 +83,7 @@ GURL g_open_shortcut_url = GURL::EmptyGURL();
   if (!g_open_shortcut_url.is_valid())
     return;
 
-  AppController* controller =
-      base::mac::ObjCCast<AppController>([NSApp delegate]);
-  Method getUrl = class_getInstanceMethod([controller class],
-      @selector(getUrl:withReply:));
-
-  if (getUrl == nil)
-    return;
-
-  base::scoped_nsobject<NSAppleEventDescriptor> shortcutEvent(
-      [[NSAppleEventDescriptor alloc]
-          initWithEventClass:kASAppleScriptSuite
-                     eventID:kASSubroutineEvent
-            targetDescriptor:nil
-                    returnID:kAutoGenerateReturnID
-               transactionID:kAnyTransactionID]);
-  NSString* url =
-      [NSString stringWithUTF8String:g_open_shortcut_url.spec().c_str()];
-  [shortcutEvent setParamDescriptor:
-      [NSAppleEventDescriptor descriptorWithString:url]
-                         forKeyword:keyDirectObject];
-
-  method_invoke(controller, getUrl, shortcutEvent.get(), NULL);
+  SendAppleEventToOpenUrlToAppController(g_open_shortcut_url);
 }
 
 @end
@@ -358,6 +367,49 @@ IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
   EXPECT_EQ(g_open_shortcut_url,
       browser()->tab_strip_model()->GetActiveWebContents()
           ->GetLastCommittedURL());
+}
+
+class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
+ protected:
+  AppControllerReplaceNTPBrowserTest() {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  }
+
+  void SetUpCommandLine(CommandLine* command_line) override {
+    // If the arg is empty, PrepareTestCommandLine() after this function will
+    // append about:blank as default url.
+    command_line->AppendArg(chrome::kChromeUINewTabURL);
+  }
+};
+
+// Tests that when a GURL is opened after startup, it replaces the NTP.
+IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
+                       ReplaceNTPAfterStartup) {
+  // Ensure that there is exactly 1 tab showing, and the tab is the NTP.
+  GURL ntp(chrome::kChromeUINewTabURL);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(ntp,
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL());
+
+  GURL simple(embedded_test_server()->GetURL("/simple.html"));
+  SendAppleEventToOpenUrlToAppController(simple);
+
+  // Wait for one navigation on the active web contents.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  content::TestNavigationObserver obs(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  obs.Wait();
+
+  EXPECT_EQ(simple,
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL());
 }
 
 }  // namespace
