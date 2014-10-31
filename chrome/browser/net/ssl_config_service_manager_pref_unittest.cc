@@ -127,7 +127,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 }
 
 // Test that without command-line settings for minimum and maximum SSL versions,
-// SSL 3.0 ~ kDefaultSSLVersionMax are enabled.
+// TLS 1.0 ~ kDefaultSSLVersionMax are enabled.
 TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
@@ -148,7 +148,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   config_service->GetSSLConfig(&ssl_config);
   // The default value in the absence of command-line options is that
   // SSL 3.0 ~ kDefaultSSLVersionMax are enabled.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_min);
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
   EXPECT_EQ(net::kDefaultSSLVersionMax, ssl_config.version_max);
 
   // The settings should not be added to the local_state.

@@ -7078,7 +7078,12 @@ class TestSSLConfigService : public SSLConfigService {
         online_rev_checking_(online_rev_checking),
         rev_checking_required_local_anchors_(
             rev_checking_required_local_anchors),
-        fallback_min_version_(0) {}
+        min_version_(kDefaultSSLVersionMin),
+        fallback_min_version_(kDefaultSSLVersionFallbackMin) {}
+
+  void set_min_version(uint16 version) {
+    min_version_ = version;
+  }
 
   void set_fallback_min_version(uint16 version) {
     fallback_min_version_ = version;
@@ -7094,6 +7099,9 @@ class TestSSLConfigService : public SSLConfigService {
     if (fallback_min_version_) {
       config->version_fallback_min = fallback_min_version_;
     }
+    if (min_version_) {
+      config->version_min = min_version_;
+    }
   }
 
  protected:
@@ -7103,6 +7111,7 @@ class TestSSLConfigService : public SSLConfigService {
   const bool ev_enabled_;
   const bool online_rev_checking_;
   const bool rev_checking_required_local_anchors_;
+  uint16 min_version_;
   uint16 fallback_min_version_;
 };
 
@@ -7117,6 +7126,7 @@ class FallbackTestURLRequestContext : public TestURLRequestContext {
                                  false /* online revocation checking */,
                                  false /* require rev. checking for local
                                           anchors */);
+    ssl_config_service->set_min_version(SSL_PROTOCOL_VERSION_SSL3);
     ssl_config_service->set_fallback_min_version(version);
     set_ssl_config_service(ssl_config_service);
   }
@@ -7252,7 +7262,7 @@ TEST_F(HTTPSFallbackTest, SSLv3Fallback) {
       SpawnedTestServer::SSLOptions::TLS_INTOLERANT_ALL;
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectFailure(ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION);
+  ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
 // Tests that the SSLv3 fallback works when explicitly enabled.
@@ -7307,6 +7317,7 @@ TEST_F(HTTPSRequestTest, SSLv3FallbackNoCache) {
     TestDelegate delegate;
     FallbackTestURLRequestContext context(true);
 
+    context.set_fallback_min_version(SSL_PROTOCOL_VERSION_TLS1);
     context.Init();
     scoped_ptr<URLRequest> request(context.CreateRequest(
         test_server.GetURL(std::string()), DEFAULT_PRIORITY, &delegate, NULL));

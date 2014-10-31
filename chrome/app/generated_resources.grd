@@ -9274,6 +9274,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         An SSLv3 fallback was able to handshake with the server, but we no longer accept SSLv3 fallbacks due to new attacks against the protocol. The server needs to be updated to support a minimum of TLS 1.0 and preferably TLS 1.2.
       </message>
 
+      <message name="IDS_ERRORPAGES_HEADING_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Heading in the error page for SSL cipher and version errors.">
+        This webpage is not available
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_SSL_VERSION_OR_CIPHER_MISMATCH" desc="Summary in the error page for SSL cipher and version errors.">
+        A secure connection cannot be established because this site uses an unsupported protocol.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH" desc="The error message displayed for SSL cipher and version errors.">
+        The client and server don't support a common SSL protocol version or cipher suite. This is usually caused when the server needs SSLv3 support, which has been removed.
+      </message>
+
       <message name="IDS_ERRORPAGES_HEADING_PINNING_FAILURE" desc="Title of the error page for a certificate which doesn't match the built-in pins for that name">
         Incorrect certificate for host.
       </message>

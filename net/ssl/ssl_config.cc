@@ -6,7 +6,7 @@
 
 namespace net {
 
-const uint16 kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_SSL3;
+const uint16 kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
 const uint16 kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_2;
 
