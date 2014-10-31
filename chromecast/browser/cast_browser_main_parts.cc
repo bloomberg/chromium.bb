@@ -52,6 +52,11 @@ DefaultCommandLineSwitch g_default_switches[] = {
   { switches::kDisablePlugins, "" },
   // Always enable HTMLMediaElement logs.
   { switches::kBlinkPlatformLogChannels, "Media"},
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_FAMILY)
+  // This is needed for now to enable the egltest Ozone platform to work with
+  // current Linux/NVidia OpenGL drivers.
+  { switches::kIgnoreGpuBlacklist, ""},
+#endif
   { NULL, NULL },  // Termination
 };
 

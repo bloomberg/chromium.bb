@@ -54,7 +54,8 @@ CastContentWindow::CastContentWindow() {}
 CastContentWindow::~CastContentWindow() {
 #if defined(USE_AURA)
   window_tree_host_.reset();
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
+  // We don't delete the screen here to avoid a CHECK failure when
+  // the screen size is queried periodically for metric gathering. b/18101124
 #endif
 }
 
@@ -63,11 +64,19 @@ scoped_ptr<content::WebContents> CastContentWindow::Create(
     content::BrowserContext* browser_context) {
 #if defined(USE_AURA)
   // Aura initialization
-  // TODO(lcwu): We only need a minimal implementation of gfx::screen
+  // TODO(lcwu): We only need a minimal implementation of gfx::Screen
   // and aura's TestScreen will do for us now. We should change to use
   // ozone's screen implementation when it is ready.
-  aura::TestScreen* screen = aura::TestScreen::Create(initial_size);
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
+  gfx::Screen* old_screen =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  if (!old_screen || old_screen->GetPrimaryDisplay().size() != initial_size) {
+    gfx::Screen* new_screen = aura::TestScreen::Create(initial_size);
+    DCHECK(new_screen) << "New screen not created.";
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, new_screen);
+    if (old_screen) {
+      delete old_screen;
+    }
+  }
   CHECK(aura::Env::GetInstance());
   window_tree_host_.reset(
       aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
