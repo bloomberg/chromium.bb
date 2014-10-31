@@ -11,7 +11,7 @@
 #include "net/socket/socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"
+#include "third_party/webrtc/p2p/base/transportchannel.h"
 
 using net::IOBuffer;
 

@@ -17,9 +17,9 @@
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/xmpp/prexmppauth.h"
-#include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 #include "third_party/webrtc/base/thread.h"
+#include "third_party/webrtc/libjingle/xmpp/prexmppauth.h"
+#include "third_party/webrtc/libjingle/xmpp/saslcookiemechanism.h"
 
 const char kDefaultResourceName[] = "chromoting";
 

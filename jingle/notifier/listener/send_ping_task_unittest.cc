@@ -7,8 +7,8 @@
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/xml_element_util.h"
-#include "talk/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webrtc/libjingle/xmpp/jid.h"
 
 namespace buzz {
 class XmlElement;

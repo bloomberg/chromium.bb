@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "third_party/libjingle/source/talk/p2p/base/transportchannel.h"
+#include "third_party/webrtc/p2p/base/transportchannel.h"
 
 namespace jingle_glue {
 

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "talk/xmpp/prexmppauth.h"
+#include "webrtc/libjingle/xmpp/prexmppauth.h"
 
 namespace notifier {
 

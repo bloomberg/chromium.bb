@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "talk/xmpp/xmppclient.h"
+#include "webrtc/libjingle/xmpp/xmppclient.h"
 
 namespace rtc {
 class TaskParent;

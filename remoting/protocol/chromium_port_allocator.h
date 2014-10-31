@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
+#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace net {
 class URLRequestContextGetter;

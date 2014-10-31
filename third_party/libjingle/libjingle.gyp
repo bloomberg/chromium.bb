@@ -13,6 +13,8 @@
     'libjingle_source%': "source",
     'libpeer_target_type%': 'static_library',
     'libpeer_allocator_shim%': 0,
+    'webrtc_p2p': "../webrtc/p2p",
+    'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
   # Most of these settings have been split according to their scope into
   # :jingle_unexported_configs, :jingle_direct_dependent_configs,
@@ -272,8 +274,8 @@
       'includes': [ 'libjingle_common.gypi' ],
       'sources!' : [
         # Compiled as part of libjingle_p2p_constants.
-        '<(libjingle_source)/talk/p2p/base/constants.cc',
-        '<(libjingle_source)/talk/p2p/base/constants.h',
+        '<(webrtc_p2p)/base/constants.cc',
+        '<(webrtc_p2p)/base/constants.h',
       ],
       'dependencies': [
         '<(DEPTH)/third_party/webrtc/base/base.gyp:webrtc_base',
@@ -295,8 +297,8 @@
       'target_name': 'libjingle_p2p_constants',
       'type': 'static_library',
       'sources': [
-        '<(libjingle_source)/talk/p2p/base/constants.cc',
-        '<(libjingle_source)/talk/p2p/base/constants.h',
+        '<(webrtc_p2p)/base/constants.cc',
+        '<(webrtc_p2p)/base/constants.h',
       ],
     },  # target libjingle_p2p_constants
     # GN version: //third_party/libjingle:peerconnection_server
