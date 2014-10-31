@@ -306,20 +306,67 @@ bool ElfLoader::LoadSegments(Error* error) {
         seg_page_start + PAGE_END(file_length));
 
     if (file_length != 0) {
+      const int prot_flags = PFLAGS_TO_PROT(phdr->p_flags);
       void* seg_addr = fd_.Map((void*)seg_page_start,
                                file_length,
-                               PFLAGS_TO_PROT(phdr->p_flags),
+                               prot_flags,
                                MAP_FIXED | MAP_PRIVATE,
                                file_page_start + file_offset_);
       if (seg_addr == MAP_FAILED) {
-        if (errno == EACCES) {
-          error->Format("Could not map segment %d: %s. "
-                        "If you are running L-preview, please upgrade to L.",
-                        i, strerror(errno));
-        } else {
+        if (errno != EACCES || !(prot_flags & PROT_EXEC)) {
+          // We don't have a fallback in this case.
           error->Format("Could not map segment %d: %s", i, strerror(errno));
+          return false;
         }
-        return false;
+
+        // We were unable to map executable code from the file directly.
+        // This can happen because of overly strict SELinux settings prevent
+        // mapping executable code directly. We fallback by copying the
+        // executable code into memory.
+
+        // Cast away the const (we are making the pages writable).
+        seg_addr = (void*)seg_page_start;
+
+        // Add PROT_WRITE to the pages. Note that even though the above Map()
+        // failed these pages have already been mapped MAP_ANONYMOUS by
+        // ReserveAddressSpace, so at this point we just use mprotect.
+        if (mprotect(seg_addr, file_length, prot_flags | PROT_WRITE) == -1) {
+          error->Format("mprotect failed to add PROT_WRITE %d: %s",
+                        i, strerror(errno));
+          return false;
+        }
+
+        // Map the library for READ.
+        void* lib_addr = fd_.Map(NULL,
+                                 file_length,
+                                 PROT_READ,
+                                 MAP_PRIVATE,
+                                 file_page_start + file_offset_);
+        if (lib_addr == MAP_FAILED) {
+          error->Format(
+              "Could not map segment (PROT_READ) %d: %s",
+              i, strerror(errno));
+          return false;
+        }
+
+        // Copy the library into the desired location in memory.
+        memcpy(seg_addr, lib_addr, file_length);
+
+        // Unmap the library.
+        if (munmap(lib_addr, file_length) == -1) {
+          error->Format("Failed to unmap the library segment %d: %s",
+                        i, strerror(errno));
+          return false;
+        }
+
+        if (!(prot_flags & PROT_WRITE)) {
+          // Remove write permissions (PROT_WRITE).
+          if (mprotect(seg_addr, file_length, prot_flags) == -1) {
+            error->Format("mprotect failed to remove PROT_WRITE %d: %s",
+                          i, strerror(errno));
+            return false;
+          }
+        }
       }
     }
 

@@ -51,3 +51,6 @@ Local Modifications:
 - Remove excess newline from the message added above.
 
 - Avoid mixing size_t and uint32_t in Leb128Decoder::Dequeue().
+
+- Add fallback library loading when SELinux blocks EXEC permission.
+
