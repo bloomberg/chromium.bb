@@ -26,12 +26,22 @@ class WatchdogTimer(object):
     """Resets the timeout countdown."""
     self._start_time = time.time()
 
+  def GetElapsed(self):
+    """Returns the elapsed time of the watchdog."""
+    return time.time() - self._start_time
+
+  def GetRemaining(self):
+    """Returns the remaining time of the watchdog."""
+    if self._timeout:
+      return self._timeout - self.GetElapsed()
+    else:
+      return None
+
   def IsTimedOut(self):
     """Whether the watchdog has timed out.
 
     Returns:
       True if the watchdog has timed out, False otherwise.
     """
-    if self._timeout is None:
-      return False
-    return time.time() - self._start_time > self._timeout
+    remaining = self.GetRemaining()
+    return remaining is not None and remaining < 0

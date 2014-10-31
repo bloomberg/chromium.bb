@@ -285,6 +285,14 @@ class _ShellError:
     self.return_code = return_code
 
 
+class _CmdTimeout:
+  def __init__(self, msg=None):
+    if msg is None:
+      self.msg = 'Operation timed out'
+    else:
+      self.msg = msg
+
+
 class DeviceUtilsNewImplTest(unittest.TestCase):
 
   def setUp(self):
@@ -293,7 +301,7 @@ class DeviceUtilsNewImplTest(unittest.TestCase):
     self.adb.__str__ = mock.Mock(return_value=test_serial)
     self.adb.GetDeviceSerial.return_value = test_serial
     self.device = device_utils.DeviceUtils(
-        self.adb, default_timeout=1, default_retries=0)
+        self.adb, default_timeout=10, default_retries=0)
 
   def assertShellCallSequence(self, calls):
     '''Assert that we expect a sequence of calls to adb.Shell.
@@ -305,10 +313,13 @@ class DeviceUtilsNewImplTest(unittest.TestCase):
         or a _ShellError object to raise an AdbShellCommandFailedError.
     '''
     def mk_expected_call(cmd, return_value):
-      expected_args = Args(cmd, expect_rc=0, timeout=1, retries=0)
+      expected_args = Args(cmd, expect_rc=0, timeout=10, retries=0)
       if isinstance(return_value, _ShellError):
         return_value = device_errors.AdbShellCommandFailedError(cmd,
             return_value.return_code, return_value.output, str(self.device))
+      elif isinstance(return_value, _CmdTimeout):
+        return_value = device_errors.CommandTimeoutError(return_value.msg,
+                                                         str(self.device))
       return (expected_args, return_value)
 
     expected_calls = (mk_expected_call(a, r) for a, r in calls)
@@ -325,16 +336,17 @@ class DeviceUtilsHybridImplTest(DeviceUtilsOldImplTest):
     self.device.adb = self.adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
 
 
-class DeviceUtilsIsOnlineTest(DeviceUtilsOldImplTest):
+class DeviceUtilsIsOnlineTest(DeviceUtilsNewImplTest):
 
   def testIsOnline_true(self):
-    with self.assertCalls('adb -s 0123456789abcdef devices',
-                                 '00123456789abcdef  device\r\n'):
-      self.assertTrue(self.device.IsOnline())
+    self.adb.GetState = mock.Mock(return_value='device')
+    self.assertTrue(self.device.IsOnline())
+    self.adb.GetState.assert_called_once_with()
 
   def testIsOnline_false(self):
-    with self.assertCalls('adb -s 0123456789abcdef devices', '\r\n'):
-      self.assertFalse(self.device.IsOnline())
+    self.adb.GetState = mock.Mock(return_value='offline')
+    self.assertFalse(self.device.IsOnline())
+    self.adb.GetState.assert_called_once_with()
 
 
 class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
@@ -375,18 +387,14 @@ class DeviceUtilsEnableRootTest(DeviceUtilsOldImplTest):
         self.device.EnableRoot()
 
 
-class DeviceUtilsIsUserBuildTest(DeviceUtilsOldImplTest):
+class DeviceUtilsIsUserBuildTest(DeviceUtilsNewImplTest):
 
   def testIsUserBuild_yes(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell getprop ro.build.type',
-        'user\r\n'):
+    with self.assertShellCall('getprop ro.build.type', 'user\r\n'):
       self.assertTrue(self.device.IsUserBuild())
 
   def testIsUserBuild_no(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell getprop ro.build.type',
-        'userdebug\r\n'):
+    with self.assertShellCall('getprop ro.build.type', 'userdebug\r\n'):
       self.assertFalse(self.device.IsUserBuild())
 
 
@@ -405,138 +413,151 @@ class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsNewImplTest):
         self.device.GetExternalStoragePath()
 
 
-class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsOldImplTest):
+class DeviceUtilsGetApplicationPathTest(DeviceUtilsNewImplTest):
+
+  def testGetApplicationPath_exists(self):
+    with self.assertShellCall('pm path android',
+                              'package:/path/to/android.apk\n'):
+      self.assertEquals('/path/to/android.apk',
+                        self.device.GetApplicationPath('android'))
+
+  def testGetApplicationPath_notExists(self):
+    with self.assertShellCall('pm path not.installed.app',
+                              ''):
+      self.assertEquals(None,
+                        self.device.GetApplicationPath('not.installed.app'))
+
+  def testGetApplicationPath_fails(self):
+    with self.assertShellCall('pm path android',
+                              'ERROR. Is package manager running?\n'):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.GetApplicationPath('android')
+
+
+class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
 
   def testWaitUntilFullyBooted_succeedsNoWifi(self):
-    with self.assertCallsSequence([
-        # AndroidCommands.WaitForSystemBootCompleted
-        ('adb -s 0123456789abcdef wait-for-device', ''),
-        ('adb -s 0123456789abcdef shell getprop sys.boot_completed', '1\r\n'),
-        # AndroidCommands.WaitForDevicePm
-        ('adb -s 0123456789abcdef wait-for-device', ''),
-        ('adb -s 0123456789abcdef shell pm path android',
-         'package:this.is.a.test.package'),
-        # AndroidCommands.WaitForSdCardReady
-        ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
-         '/fake/storage/path'),
-        ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'",
-         'nothing\r\n')
-        ]):
+    with self.assertShellCallSequence([
+        # sc_card_ready
+        ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        # pm_ready
+        ('pm path android', 'package:this.is.a.test.package\r\n'),
+        # boot_completed
+        ('getprop sys.boot_completed', '1\r\n')]):
       self.device.WaitUntilFullyBooted(wifi=False)
+      self.adb.WaitForDevice.assert_called_once_with()
 
   def testWaitUntilFullyBooted_succeedsWithWifi(self):
-    with self.assertCallsSequence([
-        # AndroidCommands.WaitForSystemBootCompleted
-        ('adb -s 0123456789abcdef wait-for-device', ''),
-        ('adb -s 0123456789abcdef shell getprop sys.boot_completed', '1\r\n'),
-        # AndroidCommands.WaitForDevicePm
-        ('adb -s 0123456789abcdef wait-for-device', ''),
-        ('adb -s 0123456789abcdef shell pm path android',
-         'package:this.is.a.test.package'),
-        # AndroidCommands.WaitForSdCardReady
-        ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
-         '/fake/storage/path'),
-        ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'",
-         'nothing\r\n'),
-        # wait for wifi
-        ("adb -s 0123456789abcdef shell 'dumpsys wifi'", 'Wi-Fi is enabled')]):
+    with self.assertShellCallSequence([
+        # sc_card_ready
+        ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        # pm_ready
+        ('pm path android', 'package:this.is.a.test.package\r\n'),
+        # boot_completed
+        ('getprop sys.boot_completed', '1\r\n'),
+        # wifi_enabled
+        ('dumpsys wifi', 'stuff\r\nWi-Fi is enabled\r\nmore stuff\r\n')]):
       self.device.WaitUntilFullyBooted(wifi=True)
+      self.adb.WaitForDevice.assert_called_once_with()
 
-  def testWaitUntilFullyBooted_bootFails(self):
+  def testWaitUntilFullyBooted_sdCardReadyFails_noPath(self):
+    with self.assertShellCallSequence([
+        # sc_card_ready
+        ('echo $EXTERNAL_STORAGE', '\r\n')]):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.WaitUntilFullyBooted(wifi=False)
+
+  def testWaitUntilFullyBooted_sdCardReadyFails_emptyPath(self):
     with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-          # AndroidCommands.WaitForSystemBootCompleted
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell getprop sys.boot_completed',
-           '0\r\n')]):
+      with self.assertShellCallSequence([
+          # sc_card_ready
+          ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+          ('ls /fake/storage/path', '\r\n'),
+          # sc_card_ready
+          ('ls /fake/storage/path', '\r\n'),
+          # sc_card_ready
+          ('ls /fake/storage/path', _CmdTimeout())]):
         with self.assertRaises(device_errors.CommandTimeoutError):
           self.device.WaitUntilFullyBooted(wifi=False)
 
   def testWaitUntilFullyBooted_devicePmFails(self):
     with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-          # AndroidCommands.WaitForSystemBootCompleted
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell getprop sys.boot_completed',
-           '1\r\n')]
-          # AndroidCommands.WaitForDevicePm
-        + 3 * ([('adb -s 0123456789abcdef wait-for-device', '')]
-             + 24 * [('adb -s 0123456789abcdef shell pm path android', '\r\n')]
-             + [("adb -s 0123456789abcdef shell 'stop'", '\r\n'),
-                ("adb -s 0123456789abcdef shell 'start'", '\r\n')])):
+      with self.assertShellCallSequence([
+          # sc_card_ready
+          ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          # pm_ready
+          ('pm path android', 'Error. Is package manager running?\r\n'),
+          # pm_ready
+          ('pm path android', 'Error. Is package manager running?\r\n'),
+          # pm_ready
+          ('pm path android', _CmdTimeout())]):
         with self.assertRaises(device_errors.CommandTimeoutError):
           self.device.WaitUntilFullyBooted(wifi=False)
 
-  def testWaitUntilFullyBooted_sdCardReadyFails_noPath(self):
+  def testWaitUntilFullyBooted_bootFails(self):
     with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-          # AndroidCommands.WaitForSystemBootCompleted
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell getprop sys.boot_completed',
-           '1\r\n'),
-          # AndroidCommands.WaitForDevicePm
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell pm path android',
-           'package:this.is.a.test.package'),
-          ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'", '\r\n')]):
-        with self.assertRaises(device_errors.CommandFailedError):
-          self.device.WaitUntilFullyBooted(wifi=False)
-
-  def testWaitUntilFullyBooted_sdCardReadyFails_emptyPath(self):
-    with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-          # AndroidCommands.WaitForSystemBootCompleted
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell getprop sys.boot_completed',
-           '1\r\n'),
-          # AndroidCommands.WaitForDevicePm
-          ('adb -s 0123456789abcdef wait-for-device', ''),
-          ('adb -s 0123456789abcdef shell pm path android',
-           'package:this.is.a.test.package'),
-          ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
-           '/fake/storage/path\r\n'),
-          ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'", '')]):
+      with self.assertShellCallSequence([
+          # sc_card_ready
+          ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          # pm_ready
+          ('pm path android', 'package:this.is.a.test.package\r\n'),
+          # boot_completed
+          ('getprop sys.boot_completed', '0\r\n'),
+          # boot_completed
+          ('getprop sys.boot_completed', '0\r\n'),
+          # boot_completed
+          ('getprop sys.boot_completed', _CmdTimeout())]):
         with self.assertRaises(device_errors.CommandTimeoutError):
           self.device.WaitUntilFullyBooted(wifi=False)
 
+  def testWaitUntilFullyBooted_wifiFails(self):
+    with mock.patch('time.sleep'):
+      with self.assertShellCallSequence([
+          # sc_card_ready
+          ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          # pm_ready
+          ('pm path android', 'package:this.is.a.test.package\r\n'),
+          # boot_completed
+          ('getprop sys.boot_completed', '1\r\n'),
+          # wifi_enabled
+          ('dumpsys wifi', 'stuff\r\nmore stuff\r\n'),
+          # wifi_enabled
+          ('dumpsys wifi', 'stuff\r\nmore stuff\r\n'),
+          # wifi_enabled
+          ('dumpsys wifi', _CmdTimeout())]):
+        with self.assertRaises(device_errors.CommandTimeoutError):
+          self.device.WaitUntilFullyBooted(wifi=True)
 
-class DeviceUtilsRebootTest(DeviceUtilsOldImplTest):
+
+class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
 
   def testReboot_nonBlocking(self):
-    with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-            ('adb -s 0123456789abcdef reboot', ''),
-            ('adb -s 0123456789abcdef devices', 'unknown\r\n'),
-            ('adb -s 0123456789abcdef wait-for-device', ''),
-            ('adb -s 0123456789abcdef shell pm path android',
-             'package:this.is.a.test.package'),
-            ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
-             '/fake/storage/path\r\n'),
-            ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'",
-             'nothing\r\n')]):
-        self.device.Reboot(block=False)
+    self.adb.Reboot = mock.Mock()
+    self.device.IsOnline = mock.Mock(return_value=False)
+    self.device.Reboot(block=False)
+    self.adb.Reboot.assert_called_once_with()
+    self.device.IsOnline.assert_called_once_with()
 
   def testReboot_blocking(self):
-    with mock.patch('time.sleep'):
-      with self.assertCallsSequence([
-            ('adb -s 0123456789abcdef reboot', ''),
-            ('adb -s 0123456789abcdef devices', 'unknown\r\n'),
-            ('adb -s 0123456789abcdef wait-for-device', ''),
-            ('adb -s 0123456789abcdef shell pm path android',
-             'package:this.is.a.test.package'),
-            ("adb -s 0123456789abcdef shell 'echo $EXTERNAL_STORAGE'",
-             '/fake/storage/path\r\n'),
-            ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'",
-             'nothing\r\n'),
-            ('adb -s 0123456789abcdef wait-for-device', ''),
-            ('adb -s 0123456789abcdef shell getprop sys.boot_completed',
-             '1\r\n'),
-            ('adb -s 0123456789abcdef wait-for-device', ''),
-            ('adb -s 0123456789abcdef shell pm path android',
-             'package:this.is.a.test.package'),
-            ("adb -s 0123456789abcdef shell 'ls /fake/storage/path'",
-             'nothing\r\n')]):
-        self.device.Reboot(block=True)
+    self.adb.Reboot = mock.Mock()
+    self.device.IsOnline = mock.Mock(return_value=False)
+    with self.assertShellCallSequence([
+        # sc_card_ready
+        ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
+        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        # pm_ready
+        ('pm path android', 'package:this.is.a.test.package\r\n'),
+        # boot_completed
+        ('getprop sys.boot_completed', '1\r\n')]):
+      self.device.Reboot(block=True)
+      self.adb.Reboot.assert_called_once_with()
+      self.device.IsOnline.assert_called_once_with()
+      self.adb.WaitForDevice.assert_called_once_with()
 
 
 class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
@@ -698,11 +719,11 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
       self.assertEquals('some value',
                         self.device.RunShellCommand(cmd, single_line=True))
 
-  def testRunShellCommand_singleLine_failNoLines(self):
-    cmd = 'echo $VALUE'
+  def testRunShellCommand_singleLine_successNoOutput(self):
+    cmd = 'echo -n $VALUE'
     with self.assertShellCall(cmd, ''):
-      with self.assertRaises(device_errors.CommandFailedError):
-        self.device.RunShellCommand(cmd, single_line=True)
+      self.assertEquals('',
+                        self.device.RunShellCommand(cmd, single_line=True))
 
   def testRunShellCommand_singleLine_failTooManyLines(self):
     cmd = 'echo $VALUE'
@@ -1068,7 +1089,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
 
     self.device._GetExternalStoragePathImpl = mock.Mock(
         return_value='/test/device/external_dir')
-    self.device._IsOnlineImpl = mock.Mock(return_value=True)
+    self.device.IsOnline = mock.Mock(return_value=True)
     self.device._RunShellCommandImpl = mock.Mock()
     mock_zip_temp = mock.mock_open()
     mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
@@ -1096,7 +1117,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
 
     self.device._GetExternalStoragePathImpl = mock.Mock(
         return_value='/test/device/external_dir')
-    self.device._IsOnlineImpl = mock.Mock(return_value=True)
+    self.device.IsOnline = mock.Mock(return_value=True)
     self.device._RunShellCommandImpl = mock.Mock()
     mock_zip_temp = mock.mock_open()
     mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
@@ -1483,37 +1504,46 @@ class DeviceUtilsSetJavaAssertsTest(DeviceUtilsOldImplTest):
         self.assertFalse(self.device.SetJavaAsserts(True))
 
 
-class DeviceUtilsGetPropTest(DeviceUtilsOldImplTest):
+class DeviceUtilsGetPropTest(DeviceUtilsNewImplTest):
 
   def testGetProp_exists(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell getprop this.is.a.test.property',
-        'test_property_value\r\n'):
+    with self.assertShellCall('getprop this.is.a.test.property',
+                              'test_property_value\r\n'):
       self.assertEqual('test_property_value',
                        self.device.GetProp('this.is.a.test.property'))
 
   def testGetProp_doesNotExist(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell '
-            'getprop this.property.does.not.exist', ''):
+    with self.assertShellCall('getprop this.property.does.not.exist',
+                              '\r\n'):
       self.assertEqual('', self.device.GetProp('this.property.does.not.exist'))
 
   def testGetProp_cachedRoProp(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell '
-            'getprop ro.build.type', 'userdebug'):
-      self.assertEqual('userdebug', self.device.GetProp('ro.build.type'))
-      self.assertEqual('userdebug', self.device.GetProp('ro.build.type'))
+    with self.assertShellCall('getprop ro.build.type',
+                              'userdebug\r\n'):
+      self.assertEqual('userdebug',
+                       self.device.GetProp('ro.build.type', cache=True))
+      self.assertEqual('userdebug',
+                       self.device.GetProp('ro.build.type', cache=True))
+
+  def testGetProp_retryAndCache(self):
+    with self.assertShellCallSequence([
+        ('getprop ro.build.type', _ShellError()),
+        ('getprop ro.build.type', _ShellError()),
+        ('getprop ro.build.type', 'userdebug\r\n')]):
+      self.assertEqual('userdebug',
+                       self.device.GetProp('ro.build.type',
+                                           cache=True, retries=3))
+      self.assertEqual('userdebug',
+                       self.device.GetProp('ro.build.type',
+                                           cache=True, retries=3))
 
 
-class DeviceUtilsSetPropTest(DeviceUtilsOldImplTest):
+class DeviceUtilsSetPropTest(DeviceUtilsNewImplTest):
 
   def testSetProp(self):
-    with self.assertCalls(
-        'adb -s 0123456789abcdef shell '
-            'setprop this.is.a.test.property "test_property_value"',
-        ''):
-      self.device.SetProp('this.is.a.test.property', 'test_property_value')
+    with self.assertShellCall(
+      "setprop this.is.a.test.property 'test property value'"):
+      self.device.SetProp('this.is.a.test.property', 'test property value')
 
 
 class DeviceUtilsGetPidsTest(DeviceUtilsNewImplTest):

@@ -26,6 +26,7 @@ from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
 from pylib.utils import host_utils
 from pylib.utils import parallelizer
+from pylib.utils import timeout_retry
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3
@@ -108,10 +109,7 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
-    return self._IsOnlineImpl()
-
-  def _IsOnlineImpl(self):
-    return self.old_interface.IsOnline()
+    return self.adb.GetState() == 'device'
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def HasRoot(self, timeout=None, retries=None):
@@ -169,7 +167,7 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._GetPropImpl('ro.build.type') == 'user'
+    return self.build_type == 'user'
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetExternalStoragePath(self, timeout=None, retries=None):
@@ -203,6 +201,25 @@ class DeviceUtils(object):
     return value
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetApplicationPath(self, package, timeout=None, retries=None):
+    """Get the path of the installed apk on the device for the given package.
+
+    Args:
+      package: Name of the package.
+
+    Returns:
+      Path to the apk on the device if it exists, None otherwise.
+    """
+    output = self.RunShellCommand(['pm', 'path', package], single_line=True,
+                                  check_return=True)
+    if not output:
+      return None
+    if not output.startswith('package:'):
+      raise device_errors.CommandFailedError('pm path returned: %r' % output,
+                                             str(self))
+    return output[len('package:'):]
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def WaitUntilFullyBooted(self, wifi=False, timeout=None, retries=None):
     """Wait for the device to fully boot.
 
@@ -220,18 +237,28 @@ class DeviceUtils(object):
       CommandTimeoutError if one of the component waits times out.
       DeviceUnreachableError if the device becomes unresponsive.
     """
-    self._WaitUntilFullyBootedImpl(wifi=wifi, timeout=timeout)
+    def sd_card_ready():
+      return self.RunShellCommand(['ls', self.GetExternalStoragePath()],
+                                    single_line=True, check_return=True)
 
-  def _WaitUntilFullyBootedImpl(self, wifi=False, timeout=None):
-    if timeout is None:
-      timeout = self._default_timeout
-    self.old_interface.WaitForSystemBootCompleted(timeout)
-    self.old_interface.WaitForDevicePm()
-    self.old_interface.WaitForSdCardReady(timeout)
+    def pm_ready():
+      try:
+        return self.GetApplicationPath('android')
+      except device_errors.CommandFailedError:
+        return False
+
+    def boot_completed():
+      return self.GetProp('sys.boot_completed') == '1'
+
+    def wifi_enabled():
+      return 'Wi-Fi is enabled' in self.RunShellCommand(['dumpsys', 'wifi'])
+
+    self.adb.WaitForDevice()
+    timeout_retry.WaitFor(sd_card_ready)
+    timeout_retry.WaitFor(pm_ready)
+    timeout_retry.WaitFor(boot_completed)
     if wifi:
-      while not 'Wi-Fi is enabled' in (
-          self.old_interface.RunShellCommand('dumpsys wifi')):
-        time.sleep(1)
+      timeout_retry.WaitFor(wifi_enabled)
 
   REBOOT_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
   REBOOT_DEFAULT_RETRIES = _DEFAULT_RETRIES
@@ -251,9 +278,14 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    self.old_interface.Reboot()
+    def device_offline():
+      return not self.IsOnline()
+
+    self.adb.Reboot()
+    self._cache = {}
+    timeout_retry.WaitFor(device_offline, wait_period=1, max_tries=5)
     if block:
-      self._WaitUntilFullyBootedImpl(timeout=timeout)
+      self.WaitUntilFullyBooted()
 
   INSTALL_DEFAULT_TIMEOUT = 4 * _DEFAULT_TIMEOUT
   INSTALL_DEFAULT_RETRIES = _DEFAULT_RETRIES
@@ -339,21 +371,21 @@ class DeviceUtils(object):
       env: The environment variables with which the command should be run.
       as_root: A boolean indicating whether the shell command should be run
         with root privileges.
-      single_line: A boolean indicating if a single line of output is expected,
-        and the caller wants to retrieve the value of that line. The default
-        behaviour is to return a list of output lines.
+      single_line: A boolean indicating if only a single line of output is
+        expected.
       timeout: timeout in seconds
       retries: number of retries
 
     Returns:
-      The output of the command either as list of lines or, when single_line is
-        True, the value contained in the single expected line of output.
+      If single_line is False, the output of the command as a list of lines,
+      otherwise, a string with the unique line of output emmited by the command
+      (with the optional newline at the end stripped).
 
     Raises:
       AdbShellCommandFailedError if check_return is True and the exit code of
         the command run on the device is non-zero.
-      CommandFailedError if single_line is True but the output consists of
-        either zero or more than one lines.
+      CommandFailedError if single_line is True but the output contains two or
+        more lines.
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
@@ -392,10 +424,13 @@ class DeviceUtils(object):
 
     output = output.splitlines()
     if single_line:
-      if len(output) != 1:
-        msg = 'exactly one line of output expected, but got: %s'
-        raise device_errors.CommandFailedError(msg % output)
-      return output[0]
+      if not output:
+        return ''
+      elif len(output) == 1:
+        return output[0]
+      else:
+        msg = 'one line of output was expected, but got: %s'
+        raise device_errors.CommandFailedError(msg % output, str(self))
     else:
       return output
 
@@ -619,6 +654,8 @@ class DeviceUtils(object):
       real_device_path = self._RunShellCommandImpl(
           ['realpath', device_path], single_line=True, check_return=True)
     except device_errors.CommandFailedError:
+      real_device_path = None
+    if not real_device_path:
       return [(host_path, device_path)]
 
     # TODO(jbudorick): Move the md5 logic up into DeviceUtils or base
@@ -715,7 +752,7 @@ class DeviceUtils(object):
       finally:
         if zip_proc.is_alive():
           zip_proc.terminate()
-        if self._IsOnlineImpl():
+        if self.IsOnline():
           self._RunShellCommandImpl(['rm', zip_on_device], check_return=True)
 
   @staticmethod
@@ -894,13 +931,18 @@ class DeviceUtils(object):
     """
     return self.old_interface.SetJavaAssertsEnabled(enabled)
 
-  @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetProp(self, property_name, timeout=None, retries=None):
+  @property
+  def build_type(self):
+    """Returns the build type of the system (e.g. userdebug)."""
+    return self.GetProp('ro.build.type', cache=True)
+
+  def GetProp(self, property_name, cache=False, timeout=None, retries=None):
     """Gets a property from the device.
 
     Args:
       property_name: A string containing the name of the property to get from
                      the device.
+      cache: A boolean indicating whether to cache the value of this property.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -910,13 +952,22 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
-    return self._GetPropImpl(property_name)
-
-  def _GetPropImpl(self, property_name):
-    return self.old_interface.system_properties[property_name]
+    cache_key = '_prop:' + property_name
+    if cache and cache_key in self._cache:
+      return self._cache[cache_key]
+    else:
+      # timeout and retries are handled down at run shell, because we don't
+      # want to apply them in the other branch when reading from the cache
+      value = self.RunShellCommand(['getprop', property_name],
+                                   single_line=True, check_return=True,
+                                   timeout=timeout, retries=retries)
+      if cache or cache_key in self._cache:
+        self._cache[cache_key] = value
+      return value
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def SetProp(self, property_name, value, timeout=None, retries=None):
+  def SetProp(self, property_name, value, check=False, timeout=None,
+              retries=None):
     """Sets a property on the device.
 
     Args:
@@ -924,13 +975,25 @@ class DeviceUtils(object):
                      the device.
       value: A string containing the value to set to the property on the
              device.
+      check: A boolean indicating whether to check that the property was
+             successfully set on the device.
       timeout: timeout in seconds
       retries: number of retries
 
     Raises:
+      CommandFailedError if check is true and the property was not correctly
+        set on the device (e.g. because it is not rooted).
       CommandTimeoutError on timeout.
     """
-    self.old_interface.system_properties[property_name] = value
+    self.RunShellCommand(['setprop', property_name, value], check_return=True)
+    if property_name in self._cache:
+      del self._cache[property_name]
+    # TODO(perezju) remove the option and make the check mandatory, but using a
+    # single shell script to both set- and getprop.
+    if check and value != self.GetProp(property_name):
+      raise device_errors.CommandFailedError(
+          'Unable to set property %r on the device to %r'
+          % (property_name, value), str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetABI(self, timeout=None, retries=None):

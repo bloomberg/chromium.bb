@@ -14,6 +14,7 @@ import os
 from pylib import cmd_helper
 from pylib.device import decorators
 from pylib.device import device_errors
+from pylib.utils import timeout_retry
 
 
 _DEFAULT_TIMEOUT = 30
@@ -49,10 +50,11 @@ class AdbWrapper(object):
   @decorators.WithTimeoutAndRetries
   def _RunAdbCmd(cls, arg_list, timeout=None, retries=None, check_error=True):
     cmd = ['adb'] + arg_list
-    exit_code, output = cmd_helper.GetCmdStatusAndOutput(cmd)
+    exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
+      cmd, timeout_retry.CurrentTimeoutThread().GetRemainingTime())
     if exit_code != 0:
       raise device_errors.AdbCommandFailedError(
-          cmd, 'returned non-zero exit code %s, output: %s' %
+          cmd, 'returned non-zero exit code %d and output %r' %
           (exit_code, output))
     # This catches some errors, including when the device drops offline;
     # unfortunately adb is very inconsistent with error reporting so many
