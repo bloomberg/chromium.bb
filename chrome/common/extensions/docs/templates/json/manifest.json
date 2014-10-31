@@ -131,7 +131,14 @@
   },
   "options_page": {
     "documentation": "options.html",
-    "example": "aFile.html"
+    "example": "options.html"
+  },
+  "options_ui": {
+    "documentation": "optionsV2.html",
+    "example": {
+      "page": "options.html",
+      "chrome_style": true
+    }
   },
   "page_action": {
     "documentation": "pageAction.html",
