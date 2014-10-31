@@ -1380,7 +1380,7 @@ AXObject* AXRenderObject::elementAccessibilityHitTest(const IntPoint& point) con
 // High-level accessibility tree access.
 //
 
-AXObject* AXRenderObject::parentObject() const
+AXObject* AXRenderObject::computeParent() const
 {
     if (!m_renderer)
         return 0;
@@ -1406,13 +1406,30 @@ AXObject* AXRenderObject::parentObject() const
     return 0;
 }
 
-AXObject* AXRenderObject::parentObjectIfExists() const
+AXObject* AXRenderObject::computeParentIfExists() const
 {
+    if (!m_renderer)
+        return 0;
+
+    if (ariaRoleAttribute() == MenuBarRole)
+        return axObjectCache()->get(m_renderer->parent());
+
+    // menuButton and its corresponding menu are DOM siblings, but Accessibility needs them to be parent/child
+    if (ariaRoleAttribute() == MenuRole) {
+        AXObject* parent = menuButtonForMenu();
+        if (parent)
+            return parent;
+    }
+
+    RenderObject* parentObj = renderParentObject();
+    if (parentObj)
+        return axObjectCache()->get(parentObj);
+
     // WebArea's parent should be the scroll view containing it.
     if (isWebArea())
         return axObjectCache()->get(m_renderer->frame()->view());
 
-    return axObjectCache()->get(renderParentObject());
+    return 0;
 }
 
 //
@@ -1498,6 +1515,11 @@ void AXRenderObject::addChildren()
     addCanvasChildren();
     addRemoteSVGChildren();
     addInlineTextBoxChildren();
+
+    for (unsigned i = 0; i < m_children.size(); ++i) {
+        if (!m_children[i].get()->cachedParentObject())
+            m_children[i].get()->setParent(this);
+    }
 }
 
 bool AXRenderObject::canHaveChildren() const

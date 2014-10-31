@@ -61,7 +61,7 @@ public:
     virtual bool isLinked() const override { return true; }
     virtual String title() const override;
     virtual String accessibilityDescription() const override;
-    virtual AXObject* parentObject() const override;
+    virtual AXObject* computeParent() const override;
 
     virtual LayoutRect elementRect() const override;
 

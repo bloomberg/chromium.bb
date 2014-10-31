@@ -122,7 +122,7 @@ String AXInlineTextBox::stringValue() const
     return m_inlineTextBox->text();
 }
 
-AXObject* AXInlineTextBox::parentObject() const
+AXObject* AXInlineTextBox::computeParent() const
 {
     if (!m_inlineTextBox || !m_axObjectCache)
         return 0;

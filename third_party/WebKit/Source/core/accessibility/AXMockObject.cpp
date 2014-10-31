@@ -29,7 +29,6 @@
 namespace blink {
 
 AXMockObject::AXMockObject()
-    : m_parent(0)
 {
 }
 

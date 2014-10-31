@@ -58,7 +58,7 @@ PassRefPtr<AXImageMapLink> AXImageMapLink::create()
     return adoptRef(new AXImageMapLink());
 }
 
-AXObject* AXImageMapLink::parentObject() const
+AXObject* AXImageMapLink::computeParent() const
 {
     if (m_parent)
         return m_parent;

@@ -37,17 +37,9 @@ protected:
 public:
     virtual ~AXMockObject();
 
-    virtual void setParent(AXObject* parent) { m_parent = parent; }
-
     // AXObject overrides.
-    virtual AXObject* parentObject() const override { return m_parent; }
+    virtual AXObject* computeParent() const override { return m_parent; }
     virtual bool isEnabled() const override { return true; }
-
-protected:
-    AXObject* m_parent;
-
-    // Must be called when the parent object clears its children.
-    virtual void detachFromParent() override { m_parent = 0; }
 
 private:
     virtual bool isMockObject() const override final { return true; }

@@ -134,6 +134,7 @@ AXObject::AXObject()
     , m_role(UnknownRole)
     , m_lastKnownIsIgnoredValue(DefaultBehavior)
     , m_detached(false)
+    , m_parent(0)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
     , m_cachedLiveRegionRoot(0)
@@ -525,6 +526,28 @@ const AXObject::AccessibilityChildrenVector& AXObject::children()
     return m_children;
 }
 
+AXObject* AXObject::parentObject() const
+{
+    if (m_detached)
+        return 0;
+
+    if (m_parent)
+        return m_parent;
+
+    return computeParent();
+}
+
+AXObject* AXObject::parentObjectIfExists() const
+{
+    if (m_detached)
+        return 0;
+
+    if (m_parent)
+        return m_parent;
+
+    return computeParentIfExists();
+}
+
 AXObject* AXObject::parentObjectUnignored() const
 {
     AXObject* parent;
@@ -564,7 +587,7 @@ void AXObject::updateChildrenIfNecessary()
 
 void AXObject::clearChildren()
 {
-    // Some objects have weak pointers to their parents and those associations need to be detached.
+    // Detach all weak pointers from objects to their parents.
     size_t length = m_children.size();
     for (size_t i = 0; i < length; i++)
         m_children[i]->detachFromParent();

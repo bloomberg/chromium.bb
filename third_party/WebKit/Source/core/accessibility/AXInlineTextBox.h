@@ -53,7 +53,7 @@ public:
     virtual void textCharacterOffsets(Vector<int>&) const override;
     virtual void wordBoundaries(Vector<PlainTextRange>& words) const override;
     virtual LayoutRect elementRect() const override;
-    virtual AXObject* parentObject() const override;
+    virtual AXObject* computeParent() const override;
     virtual AccessibilityTextDirection textDirection() const override;
 
 private:

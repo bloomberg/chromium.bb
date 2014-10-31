@@ -158,8 +158,8 @@ protected:
     virtual LayoutRect elementRect() const override;
 
     // High-level accessibility tree access.
-    virtual AXObject* parentObject() const override;
-    virtual AXObject* parentObjectIfExists() const override;
+    virtual AXObject* computeParent() const override;
+    virtual AXObject* computeParentIfExists() const override;
 
     // Low-level accessibility tree exploration.
     virtual AXObject* firstChild() const override;

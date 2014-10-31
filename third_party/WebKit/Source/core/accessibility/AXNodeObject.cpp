@@ -1348,7 +1348,7 @@ LayoutRect AXNodeObject::elementRect() const
     return boundingBox;
 }
 
-AXObject* AXNodeObject::parentObject() const
+AXObject* AXNodeObject::computeParent() const
 {
     if (!node())
         return 0;
@@ -1360,9 +1360,16 @@ AXObject* AXNodeObject::parentObject() const
     return 0;
 }
 
-AXObject* AXNodeObject::parentObjectIfExists() const
+AXObject* AXNodeObject::computeParentIfExists() const
 {
-    return parentObject();
+    if (!node())
+        return 0;
+
+    Node* parentObj = node()->parentNode();
+    if (parentObj)
+        return axObjectCache()->get(parentObj);
+
+    return 0;
 }
 
 AXObject* AXNodeObject::firstChild() const
@@ -1407,6 +1414,9 @@ void AXNodeObject::addChildren()
 
     for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
         addChild(axObjectCache()->getOrCreate(child));
+
+    for (unsigned i = 0; i < m_children.size(); ++i)
+        m_children[i].get()->setParent(this);
 }
 
 void AXNodeObject::addChild(AXObject* child)

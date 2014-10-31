@@ -67,8 +67,8 @@ private:
 
     virtual FrameView* documentFrameView() const override;
     virtual LayoutRect elementRect() const override;
-    virtual AXObject* parentObject() const override;
-    virtual AXObject* parentObjectIfExists() const override;
+    virtual AXObject* computeParent() const override;
+    virtual AXObject* computeParentIfExists() const override;
 
     AXObject* webAreaObject() const;
     virtual AXObject* firstChild() const override { return webAreaObject(); }

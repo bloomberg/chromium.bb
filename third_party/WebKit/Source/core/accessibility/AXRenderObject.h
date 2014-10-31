@@ -146,8 +146,8 @@ protected:
     virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const override;
 
     // High-level accessibility tree access. Other modules should only use these functions.
-    virtual AXObject* parentObject() const override;
-    virtual AXObject* parentObjectIfExists() const override;
+    virtual AXObject* computeParent() const override;
+    virtual AXObject* computeParentIfExists() const override;
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     virtual AXObject* firstChild() const override;

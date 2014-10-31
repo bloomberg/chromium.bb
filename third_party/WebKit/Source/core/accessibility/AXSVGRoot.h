@@ -41,12 +41,10 @@ public:
     static PassRefPtr<AXSVGRoot> create(RenderObject*);
     virtual ~AXSVGRoot();
 
-    void setParent(AXObject*);
+    void setParent(AXObject*) override;
 
 private:
-    AXObject* m_parent;
-
-    virtual AXObject* parentObject() const override;
+    virtual AXObject* computeParent() const override;
     virtual bool isAXSVGRoot() const override { return true; }
 };
 

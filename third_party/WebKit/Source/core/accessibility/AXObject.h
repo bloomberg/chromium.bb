@@ -301,6 +301,9 @@ public:
     virtual void detach();
     virtual bool isDetached() const;
 
+    // If the parent of this object is known, this can be faster than using computeParent().
+    virtual void setParent(AXObject* parent) { m_parent = parent; }
+
     // The AXObjectCacheImpl that owns this object, and its unique ID within this cache.
     AXObjectCacheImpl* axObjectCache() const;
     AXID axObjectID() const { return m_id; }
@@ -494,9 +497,12 @@ public:
 
     // High-level accessibility tree access. Other modules should only use these functions.
     const AccessibilityChildrenVector& children();
-    virtual AXObject* parentObject() const = 0;
+    AXObject* parentObject() const;
+    AXObject* parentObjectIfExists() const;
+    virtual AXObject* computeParent() const = 0;
+    virtual AXObject* computeParentIfExists() const { return 0; }
+    AXObject* cachedParentObject() const { return m_parent; }
     AXObject* parentObjectUnignored() const;
-    virtual AXObject* parentObjectIfExists() const { return 0; }
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     virtual AXObject* firstChild() const { return 0; }
@@ -509,7 +515,7 @@ public:
     virtual bool needsToUpdateChildren() const { return false; }
     virtual void setNeedsToUpdateChildren() { }
     virtual void clearChildren();
-    virtual void detachFromParent() { }
+    virtual void detachFromParent() { m_parent = 0; }
     virtual AXObject* observableObject() const { return 0; }
     virtual AXObject* scrollBar(AccessibilityOrientation) { return 0; }
 
@@ -591,6 +597,8 @@ protected:
     unsigned getLengthForTextRange() const { return text().length(); }
 
     bool m_detached;
+
+    mutable AXObject* m_parent;
 
     // The following cached attribute values (the ones starting with m_cached*)
     // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().

@@ -214,7 +214,7 @@ FrameView* AXScrollView::documentFrameView() const
     return m_scrollView;
 }
 
-AXObject* AXScrollView::parentObject() const
+AXObject* AXScrollView::computeParent() const
 {
     if (!m_scrollView || !m_scrollView->isFrameView())
         return 0;
@@ -227,7 +227,7 @@ AXObject* AXScrollView::parentObject() const
     return axObjectCache()->getOrCreate(m_scrollView->frame().pagePopupOwner());
 }
 
-AXObject* AXScrollView::parentObjectIfExists() const
+AXObject* AXScrollView::computeParentIfExists() const
 {
     if (!m_scrollView || !m_scrollView->isFrameView())
         return 0;
