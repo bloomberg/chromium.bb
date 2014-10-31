@@ -748,7 +748,6 @@ void RenderFrameImpl::SimulateImeConfirmComposition(
   render_view_->OnImeConfirmComposition(text, replacement_range, false);
 }
 
-
 void RenderFrameImpl::OnImeSetComposition(
     const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
@@ -828,7 +827,7 @@ void RenderFrameImpl::OnImeConfirmComposition(
   pepper_composition_text_.clear();
 }
 
-#endif  // ENABLE_PLUGINS
+#endif  // defined(ENABLE_PLUGINS)
 
 MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
   if (!web_user_media_client_)

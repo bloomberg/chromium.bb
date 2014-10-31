@@ -724,10 +724,6 @@ class CONTENT_EXPORT WebContentsImpl
                       bool success,
                       const base::string16& user_input);
 
-  // Callback function when requesting permission to access the PPAPI broker.
-  // |result| is true if permission was granted.
-  void OnPpapiBrokerPermissionResult(int routing_id, bool result);
-
   bool OnMessageReceived(RenderViewHost* render_view_host,
                          RenderFrameHost* render_frame_host,
                          const IPC::Message& message);
@@ -772,11 +768,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnOpenDateTimeDialog(
       const ViewHostMsg_DateTimeDialogValue_Params& value);
 #endif
-  void OnPepperPluginHung(int plugin_child_id,
-                          const base::FilePath& path,
-                          bool is_hung);
-  void OnPluginCrashed(const base::FilePath& plugin_path,
-                       base::ProcessId plugin_pid);
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
@@ -788,10 +779,22 @@ class CONTENT_EXPORT WebContentsImpl
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
+#if defined(ENABLE_PLUGINS)
+  void OnPepperPluginHung(int plugin_child_id,
+                          const base::FilePath& path,
+                          bool is_hung);
+  void OnPluginCrashed(const base::FilePath& plugin_path,
+                       base::ProcessId plugin_pid);
   void OnRequestPpapiBrokerPermission(int routing_id,
                                       const GURL& url,
                                       const base::FilePath& plugin_path);
+
+  // Callback function when requesting permission to access the PPAPI broker.
+  // |result| is true if permission was granted.
+  void OnPpapiBrokerPermissionResult(int routing_id, bool result);
+
   void OnBrowserPluginMessage(const IPC::Message& message);
+#endif  // defined(ENABLE_PLUGINS)
   void OnDidDownloadImage(int id,
                           int http_status_code,
                           const GURL& image_url,

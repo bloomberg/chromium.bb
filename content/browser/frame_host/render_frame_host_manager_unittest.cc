@@ -550,6 +550,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
     EXPECT_FALSE(observer.favicon_received());
   }
 
+#if defined(ENABLE_PLUGINS)
   // The same logic should apply to RenderFrameHosts as well and routing through
   // swapped out RFH shouldn't be allowed. Use a PluginCrashObserver to check
   // if the IPC message is allowed through or not.
@@ -560,6 +561,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
                         ntp_rfh->GetRoutingID(), base::FilePath(), 0)));
     EXPECT_FALSE(observer.plugin_crashed());
   }
+#endif
 
   // We cannot filter out synchronous IPC messages, because the renderer would
   // be left waiting for a reply.  We pick RunBeforeUnloadConfirm as an example
