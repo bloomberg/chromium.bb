@@ -50,3 +50,7 @@ crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Ti
 
 # Times out on the Mac Debug Oilpan bot; widen expectations from [Pass Crash].
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
+
+# Already a [ Slow ] test, but a little bit slower still on the Windows Oilpan debug bot,
+# causing it to timeout.
+crbug.com/248969 [ Win Debug ] printing/page-count-with-one-word.html [ Timeout ]
