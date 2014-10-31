@@ -10,11 +10,12 @@ namespace internal {
 extern scoped_ptr<PlatformRendererConfig> CreatePlatformRendererConfig();
 }  // namespace internal
 
+static base::LazyInstance<RendererConfig>::Leaky g_platform_config =
+    LAZY_INSTANCE_INITIALIZER;
+
 // static
 RendererConfig* RendererConfig::Get() {
-  static base::LazyInstance<RendererConfig>::Leaky li =
-      LAZY_INSTANCE_INITIALIZER;
-  return li.Pointer();
+  return g_platform_config.Pointer();
 }
 
 ScopedVector<AudioDecoder> RendererConfig::GetAudioDecoders(

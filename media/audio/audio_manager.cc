@@ -14,6 +14,8 @@
 namespace media {
 namespace {
 AudioManager* g_last_created = NULL;
+static base::LazyInstance<FakeAudioLogFactory>::Leaky g_fake_log_factory =
+    LAZY_INSTANCE_INITIALIZER;
 }
 
 // Forward declaration of the platform specific AudioManager factory function.
@@ -35,9 +37,7 @@ AudioManager* AudioManager::Create(AudioLogFactory* audio_log_factory) {
 
 // static
 AudioManager* AudioManager::CreateForTesting() {
-  static base::LazyInstance<FakeAudioLogFactory>::Leaky fake_log_factory =
-      LAZY_INSTANCE_INITIALIZER;
-  return Create(fake_log_factory.Pointer());
+  return Create(g_fake_log_factory.Pointer());
 }
 
 // static
