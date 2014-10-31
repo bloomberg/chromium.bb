@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/metrics_log.h"
@@ -74,6 +75,17 @@ struct SyntheticTrialGroup {
   // able to access it. New code that wishes to use it should be added as a
   // friend class.
   SyntheticTrialGroup(uint32 trial, uint32 group);
+};
+
+// Interface class to observe changes to synthetic trials in MetricsService.
+class SyntheticTrialObserver {
+ public:
+  // Called when the list of synthetic field trial groups has changed.
+  virtual void OnSyntheticTrialsChanged(
+      const std::vector<SyntheticTrialGroup>& groups) = 0;
+
+ protected:
+  virtual ~SyntheticTrialObserver() {}
 };
 
 // See metrics_service.cc for a detailed description.
@@ -210,6 +222,12 @@ class MetricsService : public base::HistogramFlattener {
   // in must not correspond to any real field trial in the code.
   // To use this method, SyntheticTrialGroup should friend your class.
   void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
+
+  // Adds an observer to be notified when the synthetic trials list changes.
+  void AddSyntheticTrialObserver(SyntheticTrialObserver* observer);
+
+  // Removes an existing observer of synthetic trials list changes.
+  void RemoveSyntheticTrialObserver(SyntheticTrialObserver* observer);
 
   // Register the specified |provider| to provide additional metrics into the
   // UMA log. Should be called during MetricsService initialization only.
@@ -358,6 +376,9 @@ class MetricsService : public base::HistogramFlattener {
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
 
+  // Notifies observers on a synthetic trial list change.
+  void NotifySyntheticTrialObservers();
+
   // Returns a list of synthetic field trials that were active for the entire
   // duration of the current log.
   void GetCurrentSyntheticFieldTrials(
@@ -446,6 +467,9 @@ class MetricsService : public base::HistogramFlattener {
 
   // Field trial groups that map to Chrome configuration states.
   SyntheticTrialGroups synthetic_trial_groups_;
+
+  // List of observers of |synthetic_trial_groups_| changes.
+  ObserverList<SyntheticTrialObserver> synthetic_trial_observer_list_;
 
   // Execution phase the browser is in.
   static ExecutionPhase execution_phase_;

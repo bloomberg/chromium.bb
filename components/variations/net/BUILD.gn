@@ -12,6 +12,7 @@ source_set("net") {
   deps = [
     "//base",
     "//components/google/core/browser",
+    "//components/metrics",
     "//components/variations/proto",
     "//net",
   ]

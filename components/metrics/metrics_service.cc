@@ -1138,6 +1138,18 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
   return clean_shutdown_status_ == CLEANLY_SHUTDOWN;
 }
 
+void MetricsService::AddSyntheticTrialObserver(
+    SyntheticTrialObserver* observer) {
+  synthetic_trial_observer_list_.AddObserver(observer);
+  if (!synthetic_trial_groups_.empty())
+    observer->OnSyntheticTrialsChanged(synthetic_trial_groups_);
+}
+
+void MetricsService::RemoveSyntheticTrialObserver(
+    SyntheticTrialObserver* observer) {
+  synthetic_trial_observer_list_.RemoveObserver(observer);
+}
+
 void MetricsService::RegisterSyntheticFieldTrial(
     const SyntheticTrialGroup& trial) {
   for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
@@ -1145,6 +1157,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
       if (synthetic_trial_groups_[i].id.group != trial.id.group) {
         synthetic_trial_groups_[i].id.group = trial.id.group;
         synthetic_trial_groups_[i].start_time = base::TimeTicks::Now();
+        NotifySyntheticTrialObservers();
       }
       return;
     }
@@ -1153,6 +1166,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
   SyntheticTrialGroup trial_group = trial;
   trial_group.start_time = base::TimeTicks::Now();
   synthetic_trial_groups_.push_back(trial_group);
+  NotifySyntheticTrialObservers();
 }
 
 void MetricsService::RegisterMetricsProvider(
@@ -1164,6 +1178,11 @@ void MetricsService::RegisterMetricsProvider(
 void MetricsService::CheckForClonedInstall(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   state_manager_->CheckForClonedInstall(task_runner);
+}
+
+void MetricsService::NotifySyntheticTrialObservers() {
+  FOR_EACH_OBSERVER(SyntheticTrialObserver, synthetic_trial_observer_list_,
+                    OnSyntheticTrialsChanged(synthetic_trial_groups_));
 }
 
 void MetricsService::GetCurrentSyntheticFieldTrials(

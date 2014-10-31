@@ -137,6 +137,20 @@ void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
   UpdateVariationIDsHeaderValue();
 }
 
+void VariationsHttpHeaderProvider::OnSyntheticTrialsChanged(
+    const std::vector<metrics::SyntheticTrialGroup>& groups) {
+  base::AutoLock scoped_lock(lock_);
+
+  synthetic_variation_ids_set_.clear();
+  for (const metrics::SyntheticTrialGroup& group : groups) {
+    const VariationID id =
+        GetGoogleVariationIDFromHashes(GOOGLE_WEB_PROPERTIES, group.id);
+    if (id != EMPTY_ID)
+      synthetic_variation_ids_set_.insert(id);
+  }
+  UpdateVariationIDsHeaderValue();
+}
+
 void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
   base::AutoLock scoped_lock(lock_);
   if (variation_ids_cache_initialized_)
@@ -186,7 +200,8 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
   variation_ids_header_.clear();
 
   if (variation_ids_set_.empty() && default_variation_ids_set_.empty() &&
-      variation_trigger_ids_set_.empty() && default_trigger_id_set_.empty()) {
+      variation_trigger_ids_set_.empty() && default_trigger_id_set_.empty() &&
+      synthetic_variation_ids_set_.empty()) {
     return;
   }
 
@@ -203,26 +218,20 @@ void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
 
   // Merge the two sets of experiment ids.
   std::set<VariationID> all_variation_ids_set = default_variation_ids_set_;
-  for (std::set<VariationID>::const_iterator it = variation_ids_set_.begin();
-       it != variation_ids_set_.end(); ++it) {
-    all_variation_ids_set.insert(*it);
-  }
-  ClientVariations proto;
-  for (std::set<VariationID>::const_iterator it = all_variation_ids_set.begin();
-       it != all_variation_ids_set.end(); ++it) {
-    proto.add_variation_id(*it);
-  }
+  for (VariationID id : variation_ids_set_)
+    all_variation_ids_set.insert(id);
+  for (VariationID id : synthetic_variation_ids_set_)
+    all_variation_ids_set.insert(id);
 
   std::set<VariationID> all_trigger_ids_set = default_trigger_id_set_;
-  for (std::set<VariationID>::const_iterator it =
-           variation_trigger_ids_set_.begin();
-       it != variation_trigger_ids_set_.end(); ++it) {
-    all_trigger_ids_set.insert(*it);
-  }
-  for (std::set<VariationID>::const_iterator it = all_trigger_ids_set.begin();
-       it != all_trigger_ids_set.end(); ++it) {
-    proto.add_trigger_variation_id(*it);
-  }
+  for (VariationID id : variation_trigger_ids_set_)
+    all_trigger_ids_set.insert(id);
+
+  ClientVariations proto;
+  for (VariationID id : all_variation_ids_set)
+    proto.add_variation_id(id);
+  for (VariationID id : all_trigger_ids_set)
+    proto.add_trigger_variation_id(id);
 
   std::string serialized;
   proto.SerializeToString(&serialized);

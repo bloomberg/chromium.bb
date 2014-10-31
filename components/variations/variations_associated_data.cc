@@ -184,15 +184,27 @@ void AssociateGoogleVariationIDForce(IDCollectionKey key,
                                      const std::string& trial_name,
                                      const std::string& group_name,
                                      VariationID id) {
-  GroupMapAccessor::GetInstance()->AssociateID(
-      key, MakeActiveGroupId(trial_name, group_name), id, true);
+  AssociateGoogleVariationIDForceHashes(
+      key, MakeActiveGroupId(trial_name, group_name), id);
+}
+
+void AssociateGoogleVariationIDForceHashes(IDCollectionKey key,
+                                           const ActiveGroupId& active_group,
+                                           VariationID id) {
+  GroupMapAccessor::GetInstance()->AssociateID(key, active_group, id, true);
 }
 
 VariationID GetGoogleVariationID(IDCollectionKey key,
                                  const std::string& trial_name,
                                  const std::string& group_name) {
-  return GroupMapAccessor::GetInstance()->GetID(
+  return GetGoogleVariationIDFromHashes(
       key, MakeActiveGroupId(trial_name, group_name));
+}
+
+VariationID GetGoogleVariationIDFromHashes(
+    IDCollectionKey key,
+    const ActiveGroupId& active_group) {
+  return GroupMapAccessor::GetInstance()->GetID(key, active_group);
 }
 
 bool AssociateVariationParams(

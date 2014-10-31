@@ -71,6 +71,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         'components.gyp:google_core_browser',
+        "components.gyp:metrics",
         'variations',
       ],
       'sources': [

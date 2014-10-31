@@ -623,6 +623,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
         command_line->GetSwitchValueASCII(switches::kForceVariationIds));
     CHECK(result) << "Invalid --" << switches::kForceVariationIds
                   << " list specified.";
+    metrics->AddSyntheticTrialObserver(provider);
   }
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
