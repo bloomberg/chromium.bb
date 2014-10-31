@@ -479,6 +479,73 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   mp3->Close(0);
 }
 
+TEST_F(RemoteMessagePipeTest, CloseBeforeAttachAndRun) {
+  static const char kHello[] = "hello";
+  char buffer[100] = {0};
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  Waiter waiter;
+  HandleSignalsState hss;
+  uint32_t context = 0;
+
+  // Connect message pipes. MP 0, port 1 will be attached to channel 0 and
+  // connected to MP 1, port 0, which will be attached to channel 1. This leaves
+  // MP 0, port 0 and MP 1, port 1 as the "user-facing" endpoints.
+
+  scoped_refptr<ChannelEndpoint> ep0;
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
+
+  // Write to MP 0, port 0.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(kHello),
+                              sizeof(kHello),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Close MP 0, port 0 before it's even been attached to the channel and run.
+  mp0->Close(0);
+
+  BootstrapChannelEndpointNoWait(0, ep0);
+
+  scoped_refptr<ChannelEndpoint> ep1;
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal(&ep1));
+
+  // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
+  // it later, it might already be readable.)
+  waiter.Init();
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
+
+  BootstrapChannelEndpointNoWait(1, ep1);
+
+  // Wait.
+  EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
+  EXPECT_EQ(123u, context);
+  hss = HandleSignalsState();
+  // Note: MP 1, port 1 should definitely should be readable, but it may or may
+  // not appear as writable (there's a race, and it may not have noticed that
+  // the other side was closed yet -- e.g., inserting a sleep here would make it
+  // much more likely to notice that it's no longer writable).
+  mp1->RemoveWaiter(1, &waiter, &hss);
+  EXPECT_TRUE((hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE));
+  EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));
+
+  // Read from MP 1, port 1.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
+  EXPECT_STREQ(kHello, buffer);
+
+  // And MP 1, port 1.
+  mp1->Close(1);
+}
+
 TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   static const char kHello[] = "hello";
   char buffer[100] = {0};

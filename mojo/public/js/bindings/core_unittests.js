@@ -15,6 +15,7 @@ define([
   runWithDataPipe(testReadAndWriteDataPipe);
   runWithDataPipeWithOptions(testNop);
   runWithDataPipeWithOptions(testReadAndWriteDataPipe);
+  testHandleToString();
   gc.collectGarbage();  // should not crash
   this.result = "PASS";
 
@@ -113,6 +114,20 @@ define([
     var memory = new Uint8Array(read.buffer);
     for (var i = 0; i < memory.length; ++i)
       expect(memory[i]).toBe((i * i) & 0xFF);
+  }
+
+  function testHandleToString() {
+    var pipe = core.createDataPipe();
+    expect(pipe.consumerHandle.toString).toBeDefined();
+
+    var openHandleRE = /^\[mojo\:\:Handle \d+\]$/ // e.g. "[mojo::Handle 123]"
+    var openHandleString = pipe.consumerHandle.toString();
+    expect(openHandleString.match(openHandleRE)[0]).toEqual(openHandleString);
+
+    expect(core.close(pipe.producerHandle)).toBe(core.RESULT_OK);
+    expect(core.close(pipe.consumerHandle)).toBe(core.RESULT_OK);
+
+    expect(pipe.consumerHandle.toString()).toEqual("[mojo::Handle null]");
   }
 
 });

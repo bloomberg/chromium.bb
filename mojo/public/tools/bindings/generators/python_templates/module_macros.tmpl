@@ -9,3 +9,31 @@
 {% endfor %}
 ]
 {%- endmacro -%}
+
+{%- macro struct_descriptor(struct) -%}
+{
+{% if struct.constants %}
+  'constants': {
+{%   for constant in struct.constants %}
+    '{{constant|name}}': {{constant.value|expression_to_text}},
+{%   endfor %}
+  },
+{% endif %}
+{% if struct.enums %}
+  'enums': {
+{%   for enum in struct.enums %}
+    '{{enum|name}}': {{enum_values(enum)|indent(6)}},
+{%   endfor %}
+  },
+{% endif %}
+{% if struct.fields %}
+  'fields': [
+{%  for byte in struct.bytes %}
+{%    if byte.packed_fields %}
+    {{byte|field_group}},
+{%    endif %}
+{% endfor %}
+  ],
+{% endif %}
+}
+{%- endmacro -%}

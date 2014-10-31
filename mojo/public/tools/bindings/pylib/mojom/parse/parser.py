@@ -88,7 +88,7 @@ class Parser(object):
     p[0].Append(p[2])
 
   def p_import(self, p):
-    """import : IMPORT STRING_LITERAL"""
+    """import : IMPORT STRING_LITERAL SEMI"""
     # 'eval' the literal to strip the quotes.
     # TODO(vtl): This eval is dubious. We should unquote/unescape ourselves.
     p[0] = ast.Import(eval(p[2]))

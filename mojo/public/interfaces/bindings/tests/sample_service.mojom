@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "sample_import.mojom"
-import "sample_import2.mojom"
+import "sample_import.mojom";
+import "sample_import2.mojom";
 
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
 module sample {

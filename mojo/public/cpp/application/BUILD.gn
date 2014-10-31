@@ -45,3 +45,16 @@ source_set("standalone") {
     "//mojo/public/cpp/utility",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  deps = [
+    ":application",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "application_test_base.h",
+    "lib/application_test_base.cc",
+  ]
+}
