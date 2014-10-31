@@ -950,37 +950,54 @@ def GetInput(prompt):
   return raw_input(prompt)
 
 
-def GetChoice(prompt, options):
+def GetChoice(title, options, group_size=0):
   """Ask user to choose an option from the list.
 
+  When |group_size| is 0, then all items in |options| will be extracted and
+  shown at the same time.  Otherwise, the items will be extracted |group_size|
+  at a time, and then shown to the user.  This makes it easier to support
+  generators that are slow, extremely large, or people usually want to pick
+  from the first few choices.
+
   Args:
-    prompt: The text to display before listing options.
-    options: The list of options to display.
+    title: The text to display before listing options.
+    options: Iterable which provides options to display.
+    group_size: How many options to show before asking the user to choose.
 
   Returns:
-    An integer.
+    An integer of the index in |options| the user picked.
   """
-  prompt = prompt[:]
+  def PromptForChoice(max_choice, more):
+    prompt = 'Please choose an option [0-%d]' % max_choice
+    if more:
+      prompt += ' (Enter for more options)'
+    prompt += ': '
 
+    while True:
+      choice = GetInput(prompt)
+      if more and not choice.strip():
+        return None
+      try:
+        choice = int(choice)
+      except ValueError:
+        print('Input is not an integer')
+        continue
+      if choice < 0 or choice > max_choice:
+        print('Choice %d out of range (0-%d)' % (choice, max_choice))
+        continue
+      return choice
+
+  print(title)
+  max_choice = 0
   for i, opt in enumerate(options):
-    prompt += '\n  [%d]: %s' % (i, opt)
+    if i and group_size and not i % group_size:
+      choice = PromptForChoice(i - 1, True)
+      if choice is not None:
+        return choice
+    print('  [%d]: %s' % (i, opt))
+    max_choice = i
 
-  prompt = '%s\nEnter your choice to continue [0-%d]: ' % (
-      prompt, len(options) - 1)
-
-  while True:
-    try:
-      choice = int(GetInput(prompt))
-    except ValueError:
-      print('Input value is not an integer')
-      continue
-
-    if choice < 0 or choice >= len(options):
-      print('Input value is out of range')
-    else:
-      break
-
-  return choice
+  return PromptForChoice(max_choice, False)
 
 
 def BooleanPrompt(prompt='Do you want to continue?', default=True,

@@ -806,35 +806,34 @@ class YNInteraction():
     self.expected_result = expected_result
 
 
-class TestInput(cros_test_lib.MoxOutputTestCase):
+class TestInput(cros_test_lib.MockOutputTestCase):
   """Tests of input gathering functionality."""
 
   def testGetInput(self):
-    self.mox.StubOutWithMock(__builtin__, 'raw_input')
-
-    prompt = 'Some prompt'
+    """Verify GetInput() basic behavior."""
     response = 'Some response'
-    __builtin__.raw_input(prompt).AndReturn(response)
-    self.mox.ReplayAll()
-
-    self.assertEquals(response, cros_build_lib.GetInput(prompt))
-    self.mox.VerifyAll()
+    self.PatchObject(__builtin__, 'raw_input', return_value=response)
+    self.assertEquals(response, cros_build_lib.GetInput('prompt'))
 
   def testBooleanPrompt(self):
-    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
+    """Verify BooleanPrompt() full behavior."""
+    m = self.PatchObject(cros_build_lib, 'GetInput')
 
-    for value in ('', '', 'yes', 'ye', 'y', 'no', 'n'):
-      cros_build_lib.GetInput(mox.IgnoreArg()).AndReturn(value)
-
-    self.mox.ReplayAll()
+    m.return_value = ''
     self.assertTrue(cros_build_lib.BooleanPrompt())
     self.assertFalse(cros_build_lib.BooleanPrompt(default=False))
+
+    m.return_value = 'yes'
     self.assertTrue(cros_build_lib.BooleanPrompt())
+    m.return_value = 'ye'
     self.assertTrue(cros_build_lib.BooleanPrompt())
+    m.return_value = 'y'
     self.assertTrue(cros_build_lib.BooleanPrompt())
+
+    m.return_value = 'no'
     self.assertFalse(cros_build_lib.BooleanPrompt())
+    m.return_value = 'n'
     self.assertFalse(cros_build_lib.BooleanPrompt())
-    self.mox.VerifyAll()
 
   def testBooleanShellValue(self):
     """Verify BooleanShellValue() inputs work as expected"""
@@ -854,6 +853,39 @@ class TestInput(cros_test_lib.MoxOutputTestCase):
     for v in ('no', 'NO', 'nO', 'n', 'N', '0', 'false', 'False', 'FALSE',):
       self.assertFalse(cros_build_lib.BooleanShellValue(v, True))
       self.assertFalse(cros_build_lib.BooleanShellValue(v, False))
+
+  def testGetChoiceLists(self):
+    """Verify GetChoice behavior w/lists."""
+    m = self.PatchObject(cros_build_lib, 'GetInput')
+
+    m.return_value = '1'
+    ret = cros_build_lib.GetChoice('title', ['a', 'b', 'c'])
+    self.assertEqual(ret, 1)
+
+  def testGetChoiceGenerator(self):
+    """Verify GetChoice behavior w/generators."""
+    m = self.PatchObject(cros_build_lib, 'GetInput')
+
+    m.return_value = '2'
+    ret = cros_build_lib.GetChoice('title', xrange(3))
+    self.assertEqual(ret, 2)
+
+  def testGetChoiceWindow(self):
+    """Verify GetChoice behavior w/group_size set."""
+    m = self.PatchObject(cros_build_lib, 'GetInput')
+
+    cnt = [0]
+    def _Gen():
+      while True:
+        cnt[0] += 1
+        yield 'a'
+
+    m.side_effect = ['\n', '2']
+    ret = cros_build_lib.GetChoice('title', _Gen(), group_size=2)
+    self.assertEqual(ret, 2)
+
+    # Verify we showed the correct number of times.
+    self.assertEqual(cnt[0], 5)
 
 
 class TestContextManagerStack(cros_test_lib.TestCase):
