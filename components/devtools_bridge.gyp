@@ -12,7 +12,6 @@
       },
       'includes': [ '../build/java.gypi' ],
       'dependencies': [
-        '../third_party/android_tools/android_tools.gyp:android_gcm',
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection_javalib',
       ],
     },
