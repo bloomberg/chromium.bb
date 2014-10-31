@@ -337,12 +337,17 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   CheckTitleTest(url, "Title Of Awesomeness");
 }
 
+// Flaky on mac bots. crbug.com/429190
+#if defined(OS_MACOSX)
+#define MAYBE_CrossSiteNavigationErrorPage DISABLED_CrossSiteNavigationErrorPage
+#else
+#define MAYBE_CrossSiteNavigationErrorPage CrossSiteNavigationErrorPage
+#endif
 // Tests that a cross-site navigation to an error page (resulting in the link
 // doctor page) still runs the onunload handler and can support navigations
 // away from the link doctor page.  (Bug 1235537)
-// Flaky: http://crbug.com/100823
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteNavigationErrorPage) {
+                       MAYBE_CrossSiteNavigationErrorPage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/onunload_cookie.html"));
