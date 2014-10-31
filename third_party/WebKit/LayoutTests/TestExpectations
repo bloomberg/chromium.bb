@@ -17,7 +17,6 @@ crbug.com/437743 virtual/slimmingpaint/fast/block/line-layout/selection-highligh
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-font.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs-replaced.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-glyphs.html [ ImageOnlyFailure ]
-crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/block-with-ideographs.xhtml [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/font-replaced.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/font.html [ ImageOnlyFailure ]
 crbug.com/437743 virtual/slimmingpaint/fast/block/lineboxcontain/glyphs.html [ ImageOnlyFailure ]

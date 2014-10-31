@@ -29,6 +29,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderView.h"
@@ -1198,6 +1199,7 @@ void RenderTableCell::paintBoxDecorationBackground(PaintInfo& paintInfo, const L
         return;
 
     LayoutRect paintRect = LayoutRect(paintOffset, pixelSnappedSize());
+    DrawingRecorder recorder(paintInfo.context, this, paintInfo.phase, pixelSnappedIntRect(paintRect));
     BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Normal);
 
     // Paint our cell background.

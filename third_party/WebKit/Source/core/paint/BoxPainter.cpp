@@ -55,7 +55,10 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(PaintInfo& paintInfo, cons
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), paintInfo.context);
 
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, snappedPaintRect);
+    // The document element is specified to paint its background infinitely.
+    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase,
+        m_renderBox.isDocumentElement() ? m_renderBox.view()->backgroundRect(&m_renderBox) : snappedPaintRect);
+
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.

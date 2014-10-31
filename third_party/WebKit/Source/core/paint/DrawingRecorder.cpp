@@ -17,6 +17,10 @@ void DrawingDisplayItem::replay(GraphicsContext* context)
     context->drawPicture(m_picture.get(), m_location);
 }
 
+#if ENABLE(ASSERT)
+static bool s_inDrawingRecorder = false;
+#endif
+
 DrawingRecorder::DrawingRecorder(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
     : m_context(context)
     , m_renderer(renderer)
@@ -26,6 +30,11 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, RenderObject* rendere
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
+#if ENABLE(ASSERT)
+    ASSERT(!s_inDrawingRecorder);
+    s_inDrawingRecorder = true;
+#endif
+
     m_context->beginRecording(clip);
 }
 
@@ -33,6 +42,10 @@ DrawingRecorder::~DrawingRecorder()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
+
+#if ENABLE(ASSERT)
+    s_inDrawingRecorder = false;
+#endif
 
     RefPtr<DisplayList> displayList = m_context->endRecording();
     if (!displayList->picture()->approximateOpCount())

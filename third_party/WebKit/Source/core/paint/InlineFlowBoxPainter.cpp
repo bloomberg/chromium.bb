@@ -6,6 +6,7 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -201,6 +202,8 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(PaintInfo& paintInfo, co
     LayoutPoint adjustedPaintOffset = paintOffset + localRect.location();
 
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
+
+    DrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(paintRect));
 
     // Shadow comes first and is behind the background and border.
     if (!m_inlineFlowBox.boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))

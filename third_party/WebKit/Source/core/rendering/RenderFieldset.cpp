@@ -29,6 +29,7 @@
 #include "core/html/HTMLLegendElement.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -162,6 +163,7 @@ void RenderFieldset::paintBoxDecorationBackground(PaintInfo& paintInfo, const La
     }
 
     BoxDecorationData boxDecorationData(*style(), canRenderBorderImage(), backgroundHasOpaqueTopLayer(), paintInfo.context);
+    DrawingRecorder recorder(paintInfo.context, this, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
 
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)
         BoxPainter::paintBoxShadow(paintInfo, paintRect, style(), Normal);

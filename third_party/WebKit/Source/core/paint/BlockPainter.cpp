@@ -156,16 +156,10 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     // 1. paint background, borders etc
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_renderBlock.style()->visibility() == VISIBLE) {
-        if (m_renderBlock.hasBoxDecorationBackground()) {
-            // The document element is specified to paint its background infinitely.
-            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase,
-                m_renderBlock.isDocumentElement() ? m_renderBlock.view()->backgroundRect(&m_renderBlock) : bounds);
+        if (m_renderBlock.hasBoxDecorationBackground())
             m_renderBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
-        }
-        if (m_renderBlock.hasColumns() && !paintInfo.paintRootBackgroundOnly()) {
-            // FIXME: DrawingRecorder needs to learn to handle this.
+        if (m_renderBlock.hasColumns() && !paintInfo.paintRootBackgroundOnly())
             paintColumnRules(paintInfo, scrolledOffset);
-        }
     }
 
     if (paintPhase == PaintPhaseMask && m_renderBlock.style()->visibility() == VISIBLE) {
@@ -200,30 +194,23 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     // 4. paint floats.
     if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
-        if (m_renderBlock.hasColumns()) {
-            // FIXME: DrawingRecorder needs to learn to handle this.
+        if (m_renderBlock.hasColumns())
             paintColumnContents(paintInfo, scrolledOffset, true);
-        } else {
-            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        else
             m_renderBlock.paintFloats(paintInfo, scrolledOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
-        }
     }
 
     // 5. paint outline.
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_renderBlock.style()->hasOutline() && m_renderBlock.style()->visibility() == VISIBLE) {
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
-        if (!m_renderBlock.style()->outlineStyleIsAuto() || !m_renderBlock.isAnonymousBlockContinuation()) {
-            DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        if (!m_renderBlock.style()->outlineStyleIsAuto() || !m_renderBlock.isAnonymousBlockContinuation())
             m_renderBlock.paintOutline(paintInfo, LayoutRect(paintOffset, m_renderBlock.size()));
-        }
     }
 
     // 6. paint continuation outlines.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines))
         paintContinuationOutlines(paintInfo, paintOffset);
-    }
 
     // 7. paint caret.
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,

@@ -94,7 +94,6 @@ void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layo
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-    DrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, rect);
 }
 

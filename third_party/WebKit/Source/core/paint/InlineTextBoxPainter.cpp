@@ -13,6 +13,7 @@
 #include "core/editing/InputMethodController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -74,6 +75,8 @@ void InlineTextBoxPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintO
         // When only painting the selection, don't bother to paint if there is none.
         return;
     }
+
+    DrawingRecorder recorder(paintInfo.context, &m_inlineTextBox.renderer(), paintInfo.phase, pixelSnappedIntRect(adjustedPaintOffset, logicalVisualOverflow.size()));
 
     if (m_inlineTextBox.truncation() != cNoTruncation) {
         if (m_inlineTextBox.renderer().containingBlock()->style()->isLeftToRightDirection() != m_inlineTextBox.isLeftToRightDirection()) {
