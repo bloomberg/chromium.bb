@@ -1358,10 +1358,6 @@ crbug.com/415039 [ Android ] http/tests/media/media-source/mediasource-play.html
 crbug.com/415039 [ Android ] media/media-load-event.html [ Crash ]
 crbug.com/415039 [ Android ] media/video-autoplay.html [ Crash ]
 
-crbug.com/415089 http/tests/serviceworker/fetch-access-control.html  [ Pass Timeout ]
-crbug.com/415089 http/tests/serviceworker/fetch-access-control-auth.html  [ Pass Timeout ]
-crbug.com/415089 http/tests/serviceworker/fetch-access-control-cors.html  [ Pass Timeout ]
-
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
 
 crbug.com/415872 http/tests/xmlhttprequest/xmlhttprequest-responseXML-abort.html [ Pass Timeout ]
