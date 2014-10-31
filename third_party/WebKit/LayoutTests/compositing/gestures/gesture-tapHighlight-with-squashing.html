@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<html>
-<head>
 <style>
   div {
     border: black solid 1px;
@@ -29,15 +27,21 @@
     background-color: orange;
   }
 
+  .squash-spacer {
+    position: relative;
+    top: 40px;
+  }
+
   .target {
     position: relative;
     top: 80px;
+    height: 10px; width: 100%;
   }
 </style>
 
 <script>
   if (window.testRunner) {
-    testRunner.dumpAsText();
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
   }
 
@@ -53,23 +57,18 @@
 
     if (window.eventSender) {
       eventSender.gestureShowPress(x, y);
-      window.testRunner.notifyDone();
+      window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
     }
   }
 
   window.onload = runTest;
 </script>
-</head>
-<body>
-  <div class='fixed composited'></div>
-  <div class='container'>
-    <div class='composited'></div>
-    <div class='target'>
-      <a href='#' id='targetLink'>Target Link.</a>
-    </div>
-    <div class='filler'></div>
+<div class='fixed composited'></div>
+<div class='container'>
+  <div class='composited'></div>
+  <div class='squash-spacer'></div>
+  <div class='target'>
+    <a href='#' id='targetLink'>Target Link.</a>
   </div>
-
-  This test is successful if it doesn't crash.
-</body>
-</html>
+  <div class='filler'></div>
+</div>

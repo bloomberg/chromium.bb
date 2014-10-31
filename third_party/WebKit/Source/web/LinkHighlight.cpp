@@ -106,16 +106,11 @@ void LinkHighlight::releaseResources()
     m_node.clear();
 }
 
-RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
+void LinkHighlight::attachLinkHighlightToCompositingLayer(const RenderLayerModelObject* paintInvalidationContainer)
 {
-    if (!m_node || !m_node->renderer())
-        return 0;
-
-    RenderLayer* renderLayer = m_node->renderer()->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-
-    ASSERT(renderLayer->compositingState() != NotComposited);
-
-    GraphicsLayer* newGraphicsLayer = renderLayer->graphicsLayerBackingForScrolling();
+    GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBackingForScrolling();
+    if (!newGraphicsLayer)
+        return;
 
     m_clipLayer->setTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
 
@@ -126,15 +121,12 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         m_currentGraphicsLayer = newGraphicsLayer;
         m_currentGraphicsLayer->addLinkHighlight(this);
     }
-
-    return renderLayer;
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, RenderObject* compositedRenderer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, const RenderLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
-    ASSERT(compositedRenderer);
-
+    ASSERT(paintInvalidationContainer);
     for (unsigned i = 0; i < 4; ++i) {
         IntPoint point;
         switch (i) {
@@ -144,9 +136,11 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         case 3: point = roundedIntPoint(targetSpaceQuad.p4()); break;
         }
 
+        // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
         point = targetRenderer->frame()->view()->contentsToWindow(point);
-        point = compositedRenderer->frame()->view()->windowToContents(point);
-        FloatPoint floatPoint = compositedRenderer->absoluteToLocal(point, UseTransforms);
+        point = paintInvalidationContainer->frame()->view()->windowToContents(point);
+        FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
+        RenderLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -183,33 +177,36 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
         for (Node* child = NodeRenderingTraversal::firstChild(&node); child; child = NodeRenderingTraversal::nextSibling(child))
             computeQuads(*child, outQuads);
     } else {
+        // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
         renderer->absoluteQuads(outQuads);
     }
 }
 
-bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositingLayer)
+bool LinkHighlight::computeHighlightLayerPathAndPosition(const RenderLayerModelObject* paintInvalidationContainer)
 {
     if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
         return false;
-
-    ASSERT(compositingLayer);
+    ASSERT(paintInvalidationContainer);
 
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
     computeQuads(*m_node, quads);
     ASSERT(quads.size());
-
-    // Adjust for offset between target graphics layer and the node's renderer.
-    FloatPoint positionAdjust = IntPoint(m_currentGraphicsLayer->offsetFromRenderer());
-
     Path newPath;
+
+    FloatPoint positionAdjustForCompositedScrolling = IntPoint(m_currentGraphicsLayer->offsetFromRenderer());
+
     for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
         FloatQuad absoluteQuad = quads[quadIndex];
-        absoluteQuad.move(-positionAdjust.x(), -positionAdjust.y());
+
+        // FIXME: this hack should not be necessary. It's a consequence of the fact that composited layers for scrolling are represented
+        // differently in Blink than other composited layers.
+        if (paintInvalidationContainer->layer()->needsCompositedScrolling() && m_node->renderer() != paintInvalidationContainer)
+            absoluteQuad.move(-positionAdjustForCompositedScrolling.x(), -positionAdjustForCompositedScrolling.y());
 
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;
-        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->renderer(), compositingLayer->renderer(), transformedQuad);
+        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->renderer(), paintInvalidationContainer, transformedQuad);
 
         // FIXME: for now, we'll only use rounded paths if we have a single node quad. The reason for this is that
         // we may sometimes get a chain of adjacent boxes (e.g. for text nodes) which end up looking like sausage
@@ -319,15 +316,18 @@ void LinkHighlight::updateGeometry()
 
     m_geometryNeedsUpdate = false;
 
-    RenderLayer* compositingLayer = computeEnclosingCompositingLayer();
-    if (compositingLayer && computeHighlightLayerPathAndPosition(compositingLayer)) {
+    bool hasRenderer = m_node && m_node->renderer();
+    const RenderLayerModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
+    if (paintInvalidationContainer)
+        attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
+    if (paintInvalidationContainer && computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {
         // We only need to invalidate the layer if the highlight size has changed, otherwise
         // we can just re-position the layer without needing to repaint.
         m_contentLayer->layer()->invalidate();
 
         if (m_currentGraphicsLayer)
             m_currentGraphicsLayer->addRepaintRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
-    } else if (!m_node || !m_node->renderer()) {
+    } else if (!hasRenderer) {
         clearGraphicsLayerLinkHighlightPointer();
         releaseResources();
     }
