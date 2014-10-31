@@ -191,15 +191,15 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   void RequestScan() const;
 
-  // Request a scan if not scanning and run |callback| when the Scanning state
+  // Requests a scan if not scanning and runs |callback| when the Scanning state
   // for any Device of network type |type| completes.
   void WaitForScan(const std::string& type, const base::Closure& callback);
 
-  // Request a network scan then signal Shill to connect to the best available
-  // networks when completed.
+  // Requests a network scan then signals Shill to connect to the best available
+  // wifi network when completed.
   void ConnectToBestWifiNetwork();
 
-  // Request an update for an existing NetworkState, e.g. after configuring
+  // Requests an update for an existing NetworkState, e.g. after configuring
   // a network. This is a no-op if an update request is already pending. To
   // ensure that a change is picked up, this must be called after Shill
   // acknowledged it (e.g. in the callback of a SetProperties).
@@ -208,11 +208,15 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // properties actually changed.
   void RequestUpdateForNetwork(const std::string& service_path);
 
-  // Clear the last_error value for the NetworkState for |service_path|.
+  // Clears the last_error value for the NetworkState for |service_path|.
   void ClearLastErrorForNetwork(const std::string& service_path);
 
-  // Set the list of devices on which portal check is enabled.
+  // Sets the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
+
+  // Sets the Manager.WakeOnLan property. Note: we do not track this state, we
+  // only set it.
+  void SetWakeOnLanEnabled(bool enabled);
 
   const std::string& GetCheckPortalListForTest() const {
     return check_portal_list_;
@@ -228,7 +232,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
     return default_network_path_;
   }
 
-  // Construct and initialize an instance for testing.
+  // Constructs and initializes an instance for testing.
   static NetworkStateHandler* InitializeForTest();
 
   // Default set of comma separated interfaces on which to enable

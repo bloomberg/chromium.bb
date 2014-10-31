@@ -182,7 +182,20 @@ void ShillPropertyHandler::SetCheckPortalList(
       base::Bind(&base::DoNothing),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
                  "SetCheckPortalList Failed",
-                 "", network_handler::ErrorCallback()));
+                 "Manager",
+                 network_handler::ErrorCallback()));
+}
+
+void ShillPropertyHandler::SetWakeOnLanEnabled(bool enabled) {
+  base::FundamentalValue value(enabled);
+  shill_manager_->SetProperty(
+      shill::kWakeOnLanEnabledProperty,
+      value,
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "SetWakeOnLanEnabled Failed",
+                 "Manager",
+                 network_handler::ErrorCallback()));
 }
 
 void ShillPropertyHandler::RequestScan() const {

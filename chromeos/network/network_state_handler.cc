@@ -378,6 +378,12 @@ void NetworkStateHandler::SetCheckPortalList(
   shill_property_handler_->SetCheckPortalList(check_portal_list);
 }
 
+void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
+  NET_LOG_EVENT("SetWakeOnLanEnabled",
+                base::StringPrintf("%s", enabled ? "true" : "false"));
+  shill_property_handler_->SetWakeOnLanEnabled(enabled);
+}
+
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(
     const std::string& service_path) {
   const NetworkState* network = GetNetworkState(service_path);
