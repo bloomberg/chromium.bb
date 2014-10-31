@@ -717,8 +717,6 @@
       'network/HTTPRequest.h',
       'network/ParsedContentType.cpp',
       'network/ParsedContentType.h',
-      'network/ProxyServer.cpp',
-      'network/ProxyServer.h',
       'network/ResourceError.cpp',
       'network/ResourceError.h',
       'network/FormData.cpp',
