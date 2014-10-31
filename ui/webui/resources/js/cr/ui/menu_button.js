@@ -98,7 +98,7 @@ cr.define('cr.ui', function() {
       switch (e.type) {
         case 'mousedown':
           if (e.currentTarget == this.ownerDocument) {
-            if (e.target instanceof Element && !this.contains(e.target) &&
+            if (e.target instanceof Node && !this.contains(e.target) &&
                 !this.menu.contains(e.target)) {
               this.hideMenu();
             } else {
@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
           this.classList.remove('using-mouse');
           break;
         case 'focus':
-          if (e.target instanceof Element && !this.contains(e.target) &&
+          if (e.target instanceof Node && !this.contains(e.target) &&
               !this.menu.contains(e.target)) {
             this.hideMenu();
             // Show the focus ring on focus - if it's come from a mouse event,
