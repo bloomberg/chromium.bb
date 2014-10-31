@@ -17263,11 +17263,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicDiskCache.APICall" enum="QuicDiskCacheAPICall">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Tracks number of times data read/parse/write API calls of QuicServerInfo to
+    and from disk cache is called.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicDiskCache.EntryState" enum="QuicDiskCacheEntryState">
   <owner>rtenneti@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 10/2014.
+  </obsolete>
   <summary>
     Tracks the opening and closing of disk cache entries. Recorded each time a
     disk cache entry is either opened or closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicDiskCache.FailureReason"
+    enum="QuicDiskCacheFailureReason">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Tracks failure reasons to read/load/write of QuicServerInfo to and from disk
+    cache.
   </summary>
 </histogram>
 
@@ -51706,9 +51726,31 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="Address and port match: IPv6 IPv6"/>
 </enum>
 
+<enum name="QuicDiskCacheAPICall" type="int">
+  <int value="0" label="Start"/>
+  <int value="1" label="WaitForDataReady"/>
+  <int value="2" label="Parse"/>
+  <int value="3" label="WaitForDataReadyCancel"/>
+  <int value="4" label="ReadyToPersist"/>
+  <int value="5" label="Persist"/>
+</enum>
+
 <enum name="QuicDiskCacheEntryState" type="int">
   <int value="0" label="Opened"/>
   <int value="1" label="Closed"/>
+</enum>
+
+<enum name="QuicDiskCacheFailureReason" type="int">
+  <int value="0" label="WAIT_FOR_DATA_READY_INVALID_ARGUMENT_FAILURE"/>
+  <int value="1" label="GET_BACKEND_FAILURE"/>
+  <int value="2" label="OPEN_FAILURE"/>
+  <int value="3" label="CREATE_OR_OPEN_FAILURE"/>
+  <int value="4" label="PARSE_NO_DATA_FAILURE"/>
+  <int value="5" label="PARSE_FAILURE"/>
+  <int value="6" label="READ_FAILURE"/>
+  <int value="7" label="READY_TO_PERSIST_FAILURE"/>
+  <int value="8" label="PERSIST_NO_BACKEND_FAILURE"/>
+  <int value="9" label="WRITE_FAILURE"/>
 </enum>
 
 <enum name="QuicErrorCodes" type="int">
