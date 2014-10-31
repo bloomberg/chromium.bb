@@ -19,6 +19,7 @@ import android.widget.TextView;
 import org.chromium.components.devtools_bridge.apiary.ApiaryClientFactory;
 import org.chromium.components.devtools_bridge.apiary.TestApiaryClientFactory;
 import org.chromium.components.devtools_bridge.ui.GCDRegistrationFragment;
+import org.chromium.components.devtools_bridge.ui.RemoteInstanceListFragment;
 
 /**
  * Activity for testing devtools bridge.
@@ -60,6 +61,7 @@ public class DebugActivity extends Activity {
         getFragmentManager()
                 .beginTransaction()
                 .add(LAYOUT_ID, new TestGCDRegistrationFragment())
+                .add(LAYOUT_ID, new RemoteInstanceListFragment())
                 .commit();
 
         setContentView(mLayout, layoutParam);

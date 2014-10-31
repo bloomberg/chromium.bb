@@ -8,6 +8,10 @@ package org.chromium.components.devtools_bridge.apiary;
  * Implementation of ApiaryClientFactory for manual testing.
  */
 public class TestApiaryClientFactory extends ApiaryClientFactory {
+    public TestGCDClient newTestGCDClient(String oAuthToken) {
+        return new TestGCDClient(mHttpClient, getAPIKey(), oAuthToken);
+    }
+
     @Override
     public String getAPIKey() {
         return "AIzaSyAI1TKbOdqMQ5TltbBT15V5XaIILnDadhI";

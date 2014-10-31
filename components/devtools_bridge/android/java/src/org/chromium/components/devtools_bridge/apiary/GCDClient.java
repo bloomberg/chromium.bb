@@ -12,6 +12,7 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
@@ -33,7 +34,7 @@ public class GCDClient {
     public static final String ENCODING = "UTF-8";
     protected static final String CONTENT_TYPE = "application/json; charset=" + ENCODING;
 
-    private final HttpClient mHttpClient;
+    protected final HttpClient mHttpClient;
     private final String mAPIKey;
     private final String mOAuthToken;
 
@@ -52,7 +53,7 @@ public class GCDClient {
      * have user credentials. If the ticket has been registered it will be associated with the
      * user. Next step is registration ticket patching.
      */
-    public String createRegistrationTicket() throws IOException {
+    public final String createRegistrationTicket() throws IOException {
         assert mOAuthToken != null;
 
         return mHttpClient.execute(
@@ -69,7 +70,7 @@ public class GCDClient {
      * Patching registration ticket. GCD gets device definition including commands metadata,
      * GCM channel description and user-visible instance name.
      */
-    public void patchRegistrationTicket(String ticketId, InstanceDescription description)
+    public final void patchRegistrationTicket(String ticketId, InstanceDescription description)
             throws IOException {
         String content = new MessageWriter().writeTicketPatch(description).close().toString();
 
@@ -82,7 +83,7 @@ public class GCDClient {
      * Finalizing registration. Client must be anonymous (GCD requirement). GCD provides
      * instance credentials needed for handling commands.
      */
-    public InstanceCredential finalizeRegistration(String ticketId) throws IOException {
+    public final InstanceCredential finalizeRegistration(String ticketId) throws IOException {
         return mHttpClient.execute(
                 newHttpPost("/registrationTickets/" + ticketId + "/finalize", ""),
                 new JsonResponseHandler<InstanceCredential>() {
@@ -104,14 +105,21 @@ public class GCDClient {
                 new EmptyResponseHandler());
     }
 
-    private HttpPost newHttpPost(String path, String content) throws UnsupportedEncodingException {
+    protected final HttpGet newHttpGet(String path) {
+        HttpGet request = new HttpGet(buildUrl(path));
+        initializeRequest(request);
+        return request;
+    }
+
+    protected final HttpPost newHttpPost(String path, String content)
+            throws UnsupportedEncodingException {
         HttpPost request = new HttpPost(buildUrl(path));
         setContent(request, content);
         initializeRequest(request);
         return request;
     }
 
-    private HttpPatch newHttpPatch(String path, String content)
+    protected final HttpPatch newHttpPatch(String path, String content)
             throws UnsupportedEncodingException {
         HttpPatch request = new HttpPatch(buildUrl(path));
         setContent(request, content);
@@ -119,7 +127,7 @@ public class GCDClient {
         return request;
     }
 
-    private HttpDelete newHttpDelete(String path) {
+    protected final HttpDelete newHttpDelete(String path) {
         HttpDelete request = new HttpDelete(buildUrl(path));
         initializeRequest(request);
         return request;

@@ -14,7 +14,7 @@ public abstract class ApiaryClientFactory {
 
     public static final String OAUTH_SCOPE = "https://www.googleapis.com/auth/clouddevices";
 
-    private final AndroidHttpClient mHttpClient = AndroidHttpClient.newInstance(USER_AGENT);
+    protected final AndroidHttpClient mHttpClient = AndroidHttpClient.newInstance(USER_AGENT);
 
     /**
      * Creates a new GCD client with auth token.
