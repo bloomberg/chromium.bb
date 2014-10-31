@@ -418,7 +418,19 @@
     {
       'package_name': 'pulseaudio',
       'dependencies=': [],
-      'patch': 'patches/pulseaudio.diff',
+      'conditions': [
+        ['"<(_ubuntu_release)"=="precise"', {
+          'patch': 'patches/pulseaudio.precise.diff',
+        }],
+      ],
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--enable-x11',
+          '--disable-hal-compat',
+          # Disable some ARM-related code that fails compilation. No idea why
+          # this even impacts x86-64 builds.
+          '--disable-neon-opt'
+      ],
       'run_before_build': 'scripts/pulseaudio.sh',
       'jobs': 1,
       'includes': ['standard_instrumented_package_target.gypi'],
