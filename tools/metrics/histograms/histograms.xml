@@ -28108,7 +28108,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.DbStringTooLong">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     A boolean that used to indicate a corner case when certain resources are not
     written to the Predictor database becuase their URLs are too long. We
@@ -28120,7 +28120,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 08/2012. Replaced with ResourcePrefetchPredictorNavigationEvent.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     A boolean that indicates if the speculative resource prefetch predictor has
     predictions for a Navigation. This is updated on each navigations and helps
@@ -28129,7 +28129,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HavePrefetchResults">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     A boolean that used to indicate a corner case when we may not have prefetch
     results even though prefetching is enabled and predictions are present,
@@ -28139,7 +28139,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HistoryVisitCountForUrl">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The visit count of a URL in the history database, measured when the onload
     fires for the URL. Helpful in figuring out what visit count should be used
@@ -28148,7 +28148,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Assuming a fixed number (25 or 50) of URLs could be prefetched max, how many
     would be available for prefetch (after we apply our heuristics for picking
@@ -28160,7 +28160,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromCache">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28173,7 +28173,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28188,7 +28188,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork but
     as a percent of the total number of resources the page actually fetched from
@@ -28200,7 +28200,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PredictedPrefetchMisses">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28214,7 +28214,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchCancelled"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     prefetches cancelled as a percentage of the total number of resources that
@@ -28224,7 +28224,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFailed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     prefetches failed as a percentage of the total number of resources that the
@@ -28234,7 +28234,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheNotUsed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from cache while prefetching but were not
@@ -28245,7 +28245,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromCache"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from cache while prefetching and also came
@@ -28257,7 +28257,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from cache while prefetching but came from
@@ -28268,7 +28268,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkNotUsed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from network while prefetching but were not
@@ -28280,7 +28280,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromCache"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from network while prefetching but came from
@@ -28292,7 +28292,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
     successful prefetches that came from cache while prefetching and also came
@@ -28303,7 +28303,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchNotStarted"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
     that were prefetchable but were not prefetched as a percentage of
@@ -28312,7 +28312,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HostTableHostCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of unique hosts in the HostTable, i.e. the number of
     hosts that the database has prediction data for. This data is useful for
@@ -28322,7 +28322,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.HostTableRowCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of rows in the HostTable. This is effecively the number
     of (host, resource URL) pairs in the database. This is measured at startup
@@ -28332,7 +28332,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.MainFrameRequestStats"
     enum="ResourcePrefetchPredictorMainFrameRequestStats">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Records stats about main frame navigations. Records the total number of
     requests/responses/redirects for main frame urls along with the numbers for
@@ -28344,7 +28344,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.NavigationEvent"
     enum="ResourcePrefetchPredictorNavigationEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Records stats about various interesting events such as - request start,
     response start, redirect, onload, etc during the load of a main frame.
@@ -28358,7 +28358,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 08/2012. Replaced with ResourcePrefetchPredictorNavigationEvent.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The status of various navigations from the view point of the 'onload' event.
     Since we measure the prediction accuracy and learn navigation subresources
@@ -28371,7 +28371,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Assuming a fixed number of URLs could be prefetched max, how many would be
     available for prefetch (after we apply our heuristics for picking
@@ -28383,7 +28383,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28396,7 +28396,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28410,7 +28410,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Predicted.PrefetchFromNetwork but as a
     percent of the total number of resources the page actually fetched from the
@@ -28422,7 +28422,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28433,7 +28433,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.ReportingEvent"
     enum="ResourcePrefetchPredictorReportingEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Records stats about various interesting events such as - when partial or all
     of history is cleared. It will include events which do not necessarily
@@ -28444,7 +28444,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.RequestStats"
     enum="ResourcePrefetchPredictorRequestStats">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Records stats about requests, redirects, and responses observed by the
     ResourcePrefetchPredictorObserver. These stats are useful as a baseline for
@@ -28452,8 +28452,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.ResourceStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+<histogram name="ResourcePrefetchPredictor.ResourceStatus"
+    enum="ResourcePrefetchPredictorResourceStatus">
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The distribution of the reasons for which subresources are ignored during
     prefetching. This helps us prioritze reasons we should further investigate
@@ -28463,7 +28464,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Assuming a fixed number of URLs could be prefetched max (25 or 50), how many
     would be available for prefetch (after we apply our heuristics for picking
@@ -28475,7 +28476,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromCache">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28488,7 +28489,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28503,7 +28504,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork but as
     a percent of the total number of resources the page actually fetched from
@@ -28515,7 +28516,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PredictedPrefetchMisses">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     When we have predictions for a navigation, we measure the accuracy of the
     predictions against the actual resources downloaded. This histogram gives
@@ -28529,7 +28530,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchCancelled"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
     cancelled as a percentage of the total number of resources that the
@@ -28539,7 +28540,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFailed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
     failed as a percentage of the total number of resources that the predictor
@@ -28549,7 +28550,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheNotUsed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from cache while prefetching but were not requested by
@@ -28560,7 +28561,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromCache"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from cache while prefetching and also came from the
@@ -28572,7 +28573,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from cache while prefetching but came from the network
@@ -28583,7 +28584,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkNotUsed"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from network while prefetching but were not requested
@@ -28595,7 +28596,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromCache"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from network while prefetching but came from the cache
@@ -28607,7 +28608,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromNetwork"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
     prefetches that came from cache while prefetching and also came from the
@@ -28618,7 +28619,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchNotStarted"
     units="percentage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
     that were prefetchable but were not prefetched as a percentage of
@@ -28627,7 +28628,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.UrlTableMainFrameUrlCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of unique main frame urls in the UrlTable, i.e. the
     number of webpages that the database has prediction data for. This data is
@@ -28638,7 +28639,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram
     name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of unique main frame urls that are deleted from the URL
     table at startup because they are no longer in history. Essential to figure
@@ -28648,7 +28649,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram
     name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistoryPercent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     Same as ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory
     but recording percentage of URLs in the table rather than absolute numbers.
@@ -28656,7 +28657,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.UrlTableRowCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>zhenw@chromium.org</owner>
   <summary>
     The count of number of rows in the UrlTable. This is effecively the number
     of (main frame URL, resource URL) pairs in the database. This is measured at
@@ -52177,6 +52178,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="REQUEST_STATS_TOTAL_PROCESSED_RESPONSES"/>
   <int value="2" label="REQUEST_STATS_NO_RESOURCE_REQUEST_INFO"/>
   <int value="3" label="REQUEST_STATS_NO_RENDER_VIEW_ID_FROM_REQUEST_INFO"/>
+</enum>
+
+<enum name="ResourcePrefetchPredictorResourceStatus" type="int">
+  <int value="0" label="RESOURCE_STATUS_HANDLED"/>
+  <int value="1" label="RESOURCE_STATUS_NOT_HTTP_PAGE"/>
+  <int value="2" label="RESOURCE_STATUS_NOT_HTTP_RESOURCE"/>
+  <int value="4" label="RESOURCE_STATUS_UNSUPPORTED_MIME_TYPE"/>
+  <int value="8" label="RESOURCE_STATUS_NOT_GET"/>
+  <int value="16" label="RESOURCE_STATUS_URL_TOO_LONG"/>
+  <int value="32" label="RESOURCE_STATUS_NOT_CACHEABLE"/>
+  <int value="64" label="RESOURCE_STATUS_HEADERS_MISSING"/>
 </enum>
 
 <enum name="ResourceType" type="int">
