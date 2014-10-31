@@ -12,6 +12,7 @@
 #include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -111,8 +112,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
       suggestion, type, suggestion, base::string16(), base::string16(),
-      base::string16(), base::string16(), std::string(), std::string(),
-      from_keyword_provider, 0, false, false, base::string16());
+      base::string16(), base::string16(), nullptr, std::string(),
+      std::string(), from_keyword_provider, 0, false, false, base::string16());
   suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(
       NULL, AutocompleteInput(), from_keyword_provider, suggest_result,
@@ -208,6 +209,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.contents_class = suggestion.match_contents_class();
   match.answer_contents = suggestion.answer_contents();
   match.answer_type = suggestion.answer_type();
+  match.answer = SuggestionAnswer::copy(suggestion.answer());
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
     match.RecordAdditionalInfo(
         kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));
@@ -426,10 +428,11 @@ void BaseSearchProvider::AddMatchToMap(
     AutocompleteMatch& more_relevant_match = i.first->second;
     const AutocompleteMatch& less_relevant_match =
         more_relevant_match.duplicate_matches.back();
-    if (!less_relevant_match.answer_type.empty() &&
-        more_relevant_match.answer_type.empty()) {
+    if (less_relevant_match.answer && !more_relevant_match.answer) {
       more_relevant_match.answer_type = less_relevant_match.answer_type;
       more_relevant_match.answer_contents = less_relevant_match.answer_contents;
+      more_relevant_match.answer =
+          SuggestionAnswer::copy(less_relevant_match.answer.get());
     }
   }
 }
@@ -445,10 +448,8 @@ bool BaseSearchProvider::ParseSuggestResults(
       client_->AcceptLanguages(), is_keyword_result, results))
     return false;
 
-  for (std::vector<GURL>::const_iterator it =
-           results->answers_image_urls.begin();
-       it != results->answers_image_urls.end(); ++it)
-    client_->PrefetchImage(*it);
+  for (const GURL& url : results->answers_image_urls)
+    client_->PrefetchImage(url);
 
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;

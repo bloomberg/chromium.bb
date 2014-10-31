@@ -58,6 +58,8 @@
         'omnibox/search_provider.h',
         'omnibox/search_suggestion_parser.cc',
         'omnibox/search_suggestion_parser.h',
+        'omnibox/suggestion_answer.cc',
+        'omnibox/suggestion_answer.h',
         'omnibox/url_prefix.cc',
         'omnibox/url_prefix.h',
       ],

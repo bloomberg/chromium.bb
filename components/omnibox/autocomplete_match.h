@@ -16,6 +16,7 @@
 #include "url/gurl.h"
 
 class AutocompleteProvider;
+class SuggestionAnswer;
 class TemplateURL;
 class TemplateURLService;
 
@@ -317,9 +318,12 @@ struct AutocompleteMatch {
   base::string16 description;
   ACMatchClassifications description_class;
 
+  // TODO(jdonnelly): Remove the first two properties once the downstream
+  // clients are using the SuggestionAnswer.
   // A rich-format version of the display for the dropdown.
   base::string16 answer_contents;
   base::string16 answer_type;
+  scoped_ptr<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set

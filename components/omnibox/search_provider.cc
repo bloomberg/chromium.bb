@@ -25,6 +25,7 @@
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/keyword_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "components/omnibox/url_prefix.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -838,12 +839,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // verbatim, and if so, copy over answer contents.
     base::string16 answer_contents;
     base::string16 answer_type;
+    scoped_ptr<SuggestionAnswer> answer;
     for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
          ++it) {
-      if (!it->answer_contents.empty() &&
-          it->fill_into_edit == trimmed_verbatim) {
+      if (it->answer && it->fill_into_edit == trimmed_verbatim) {
         answer_contents = it->answer_contents;
         answer_type = it->answer_type;
+        answer = SuggestionAnswer::copy(it->answer.get());
         break;
       }
     }
@@ -851,8 +853,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     SearchSuggestionParser::SuggestResult verbatim(
         trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         trimmed_verbatim, base::string16(), base::string16(), answer_contents,
-        answer_type, std::string(), std::string(), false, verbatim_relevance,
-        relevance_from_server, false, trimmed_verbatim);
+        answer_type, answer.Pass(), std::string(), std::string(), false,
+        verbatim_relevance, relevance_from_server, false, trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != NULL, &map);
   }
@@ -874,9 +876,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         SearchSuggestionParser::SuggestResult verbatim(
             trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE,
             trimmed_verbatim, base::string16(), base::string16(),
-            base::string16(), base::string16(), std::string(), std::string(),
-            true, keyword_verbatim_relevance, keyword_relevance_from_server,
-            false, trimmed_verbatim);
+            base::string16(), base::string16(), nullptr, std::string(),
+            std::string(), true, keyword_verbatim_relevance,
+            keyword_relevance_from_server, false, trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
                       did_not_accept_keyword_suggestion, false, true, &map);
       }
@@ -956,12 +958,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
   bool answer_seen = false;
   for (ACMatches::iterator it = matches->begin(); it != matches->end(); ++it) {
-    if (!it->answer_contents.empty()) {
+    if (it->answer) {
       if (!answer_seen) {
         answer_seen = true;
       } else {
         it->answer_contents.clear();
         it->answer_type.clear();
+        it->answer.reset();
       }
     }
   }
@@ -1080,8 +1083,8 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
     SearchSuggestionParser::SuggestResult history_suggestion(
         trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
         trimmed_suggestion, base::string16(), base::string16(),
-        base::string16(), base::string16(), std::string(), std::string(),
-        is_keyword, relevance, false, false, trimmed_input);
+        base::string16(), base::string16(), nullptr, std::string(),
+        std::string(), is_keyword, relevance, false, false, trimmed_input);
     // History results are synchronous; they are received on the last keystroke.
     history_suggestion.set_received_after_last_keystroke(false);
     scored_results.insert(insertion_position, history_suggestion);

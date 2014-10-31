@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/components_scaled_resources.h"
@@ -79,6 +80,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       description_class(match.description_class),
       answer_contents(match.answer_contents),
       answer_type(match.answer_type),
+      answer(SuggestionAnswer::copy(match.answer.get())),
       transition(match.transition),
       is_history_what_you_typed_match(match.is_history_what_you_typed_match),
       type(match.type),
@@ -116,6 +118,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   description_class = match.description_class;
   answer_contents = match.answer_contents;
   answer_type = match.answer_type;
+  answer = SuggestionAnswer::copy(match.answer.get());
   transition = match.transition;
   is_history_what_you_typed_match = match.is_history_what_you_typed_match;
   type = match.type;

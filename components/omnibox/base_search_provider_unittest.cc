@@ -11,6 +11,7 @@
 #include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_scheme_classifier.h"
 #include "components/omnibox/search_suggestion_parser.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -124,6 +125,8 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   base::string16 answer_contents = base::ASCIIToUTF16("some answer content");
   base::string16 answer_type = base::ASCIIToUTF16("2334");
+  scoped_ptr<SuggestionAnswer> answer(new SuggestionAnswer());
+  answer->set_type(2334);
 
   EXPECT_CALL(*provider_, GetInput(_))
       .WillRepeatedly(Return(AutocompleteInput()));
@@ -132,16 +135,17 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
-      base::string16(), base::string16(), base::string16(), std::string(),
-      std::string(), false, 1300, true, false, query);
+      base::string16(), base::string16(), base::string16(), nullptr,
+      std::string(), std::string(), false, 1300, true, false, query);
   provider_->AddMatchToMap(
       more_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
 
   SearchSuggestionParser::SuggestResult less_relevant(
       query, AutocompleteMatchType::SEARCH_SUGGEST, query, base::string16(),
-      base::string16(), answer_contents, answer_type, std::string(),
-      std::string(), false, 850, true, false, query);
+      base::string16(), answer_contents, answer_type,
+      SuggestionAnswer::copy(answer.get()), std::string(), std::string(),
+      false, 850, true, false, query);
   provider_->AddMatchToMap(
       less_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -153,21 +157,27 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 
   EXPECT_EQ(answer_contents, match.answer_contents);
   EXPECT_EQ(answer_type, match.answer_type);
+  EXPECT_TRUE(answer->Equals(*match.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, match.type);
   EXPECT_EQ(1300, match.relevance);
 
   EXPECT_EQ(answer_contents, duplicate.answer_contents);
   EXPECT_EQ(answer_type, duplicate.answer_type);
+  EXPECT_TRUE(answer->Equals(*duplicate.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
   EXPECT_EQ(850, duplicate.relevance);
 
   // Ensure answers are not copied over existing answers.
   map.clear();
   base::string16 answer_contents2 = base::ASCIIToUTF16("different answer");
+  base::string16 answer_type2 = base::ASCIIToUTF16("8242");
+  scoped_ptr<SuggestionAnswer> answer2(new SuggestionAnswer());
+  answer2->set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
-      base::string16(), answer_contents2, answer_type, std::string(),
-      std::string(), false, 1300, true, false, query);
+      base::string16(), answer_contents2, answer_type2,
+      SuggestionAnswer::copy(answer2.get()), std::string(), std::string(),
+      false, 1300, true, false, query);
   provider_->AddMatchToMap(
       more_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -180,13 +190,14 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   duplicate = match.duplicate_matches[0];
 
   EXPECT_EQ(answer_contents2, match.answer_contents);
-  EXPECT_EQ(answer_type, match.answer_type);
+  EXPECT_EQ(answer_type2, match.answer_type);
+  EXPECT_TRUE(answer2->Equals(*match.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, match.type);
   EXPECT_EQ(1300, match.relevance);
 
   EXPECT_EQ(answer_contents, duplicate.answer_contents);
   EXPECT_EQ(answer_type, duplicate.answer_type);
+  EXPECT_TRUE(answer->Equals(*duplicate.answer));
   EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
   EXPECT_EQ(850, duplicate.relevance);
-
 }

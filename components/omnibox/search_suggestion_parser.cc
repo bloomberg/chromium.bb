@@ -8,6 +8,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -65,6 +66,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& annotation,
     const base::string16& answer_contents,
     const base::string16& answer_type,
+    scoped_ptr<SuggestionAnswer> answer,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
     bool from_keyword_provider,
@@ -83,13 +85,47 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
       suggest_query_params_(suggest_query_params),
       answer_contents_(answer_contents),
       answer_type_(answer_type),
+      answer_(answer.Pass()),
       should_prefetch_(should_prefetch) {
   match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());
   ClassifyMatchContents(true, input_text);
 }
 
+SearchSuggestionParser::SuggestResult::SuggestResult(
+    const SuggestResult& result)
+    : Result(result),
+      suggestion_(result.suggestion_),
+      match_contents_prefix_(result.match_contents_prefix_),
+      annotation_(result.annotation_),
+      suggest_query_params_(result.suggest_query_params_),
+      answer_contents_(result.answer_contents_),
+      answer_type_(result.answer_type_),
+      answer_(SuggestionAnswer::copy(result.answer_.get())),
+      should_prefetch_(result.should_prefetch_) {
+}
+
 SearchSuggestionParser::SuggestResult::~SuggestResult() {}
+
+SearchSuggestionParser::SuggestResult&
+    SearchSuggestionParser::SuggestResult::operator=(const SuggestResult& rhs) {
+  if (this == &rhs)
+    return *this;
+
+  // Assign via parent class first.
+  Result::operator=(rhs);
+
+  suggestion_ = rhs.suggestion_;
+  match_contents_prefix_ = rhs.match_contents_prefix_;
+  annotation_ = rhs.annotation_;
+  suggest_query_params_ = rhs.suggest_query_params_;
+  answer_contents_ = rhs.answer_contents_;
+  answer_type_ = rhs.answer_type_;
+  answer_ = SuggestionAnswer::copy(rhs.answer_.get());
+  should_prefetch_ = rhs.should_prefetch_;
+
+  return *this;
+}
 
 void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
@@ -439,7 +475,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 match_contents_prefix;
       base::string16 annotation;
       base::string16 answer_contents;
-      base::string16 answer_type;
+      base::string16 answer_type_str;
+      scoped_ptr<SuggestionAnswer> answer;
       std::string suggest_query_params;
 
       if (suggestion_details) {
@@ -453,15 +490,25 @@ bool SearchSuggestionParser::ParseSuggestResults(
           suggestion_detail->GetString("a", &annotation);
           suggestion_detail->GetString("q", &suggest_query_params);
 
-          // Extract Answers, if provided.
+          // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = NULL;
-          if (suggestion_detail->GetDictionary("ansa", &answer_json)) {
-            match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
-            GetAnswersImageURLs(answer_json, &results->answers_image_urls);
-            std::string contents;
-            base::JSONWriter::Write(answer_json, &contents);
-            answer_contents = base::UTF8ToUTF16(contents);
-            suggestion_detail->GetString("ansb", &answer_type);
+          if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
+              suggestion_detail->GetString("ansb", &answer_type_str)) {
+            answer = SuggestionAnswer::ParseAnswer(answer_json);
+
+            int answer_type = 0;
+            if (answer && base::StringToInt(answer_type_str, &answer_type)) {
+              match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
+
+              answer->set_type(answer_type);
+              answer->AddImageURLsTo(&results->answers_image_urls);
+
+              std::string contents;
+              base::JSONWriter::Write(answer_json, &contents);
+              answer_contents = base::UTF8ToUTF16(contents);
+            } else {
+              answer_type_str = base::string16();
+            }
           }
         }
       }
@@ -471,43 +518,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
       results->suggest_results.push_back(SuggestResult(
           base::CollapseWhitespace(suggestion, false), match_type,
           base::CollapseWhitespace(match_contents, false),
-          match_contents_prefix, annotation, answer_contents, answer_type,
-          suggest_query_params, deletion_url, is_keyword_result, relevance,
-          relevances != NULL, should_prefetch, trimmed_input));
+          match_contents_prefix, annotation, answer_contents, answer_type_str,
+          answer.Pass(), suggest_query_params, deletion_url, is_keyword_result,
+          relevance, relevances != NULL, should_prefetch, trimmed_input));
     }
   }
   results->relevances_from_server = relevances != NULL;
   return true;
-}
-
-// static
-void SearchSuggestionParser::GetAnswersImageURLs(
-    const base::DictionaryValue* answer_json,
-    std::vector<GURL>* urls) {
-  DCHECK(answer_json);
-
-  const base::ListValue* lines = NULL;
-  if (!answer_json->GetList("l", &lines) || !lines || lines->GetSize() == 0)
-    return;
-
-  for (base::ListValue::const_iterator iter = lines->begin();
-       iter != lines->end();
-       ++iter) {
-    const base::DictionaryValue* line = NULL;
-    if (!(*iter)->GetAsDictionary(&line) || !line)
-      continue;
-
-    std::string image_host_and_path;
-    if (!line->GetString("il.i.d", &image_host_and_path) ||
-        image_host_and_path.empty())
-      continue;
-    // Concatenate scheme and host/path using only ':' as separator. This is
-    // due to the results delivering strings of the form '//host/path', which
-    // is web-speak for "use the enclosing page's scheme", but not a valid path
-    // of an URL.
-    GURL image_url(
-        GURL(std::string(url::kHttpsScheme) + ":" + image_host_and_path));
-    if (image_url.is_valid())
-      urls->push_back(image_url);
-  }
 }

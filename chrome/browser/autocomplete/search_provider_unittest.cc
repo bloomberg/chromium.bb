@@ -39,6 +39,7 @@
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/omnibox_switches.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
@@ -3418,8 +3419,8 @@ TEST_F(SearchProviderTest, AnswersCache) {
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   SearchSuggestionParser::SuggestResult suggest_result(
       query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
-      base::string16(), base::string16(), base::string16(), std::string(),
-      std::string(), false, 1200, false, false, query);
+      base::string16(), base::string16(), base::string16(), nullptr,
+      std::string(), std::string(), false, 1200, false, false, query);
   QueryForInput(ASCIIToUTF16("weather l"), false, false);
   provider_->transformed_default_history_results_.push_back(suggest_result);
   answer = provider_->FindAnswersPrefetchData();
@@ -3428,12 +3429,22 @@ TEST_F(SearchProviderTest, AnswersCache) {
 }
 
 TEST_F(SearchProviderTest, RemoveExtraAnswers) {
+  SuggestionAnswer answer1;
+  answer1.set_type(42);
+  SuggestionAnswer answer2;
+  answer2.set_type(1983);
+  SuggestionAnswer answer3;
+  answer3.set_type(423);
+
   ACMatches matches;
   AutocompleteMatch match1, match2, match3, match4, match5;
+  match1.answer = SuggestionAnswer::copy(&answer1);
   match1.answer_contents = base::ASCIIToUTF16("the answer");
   match1.answer_type = base::ASCIIToUTF16("42");
+  match3.answer = SuggestionAnswer::copy(&answer2);
   match3.answer_contents = base::ASCIIToUTF16("not to play");
   match3.answer_type = base::ASCIIToUTF16("1983");
+  match5.answer = SuggestionAnswer::copy(&answer3);
   match5.answer_contents = base::ASCIIToUTF16("a man");
   match5.answer_type = base::ASCIIToUTF16("423");
 
@@ -3446,12 +3457,17 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   SearchProvider::RemoveExtraAnswers(&matches);
   EXPECT_EQ(base::ASCIIToUTF16("the answer"), matches[0].answer_contents);
   EXPECT_EQ(base::ASCIIToUTF16("42"), matches[0].answer_type);
+  EXPECT_TRUE(answer1.Equals(*matches[0].answer));
   EXPECT_TRUE(matches[1].answer_contents.empty());
   EXPECT_TRUE(matches[1].answer_type.empty());
+  EXPECT_FALSE(matches[1].answer);
   EXPECT_TRUE(matches[2].answer_contents.empty());
   EXPECT_TRUE(matches[2].answer_type.empty());
+  EXPECT_FALSE(matches[2].answer);
   EXPECT_TRUE(matches[3].answer_contents.empty());
   EXPECT_TRUE(matches[3].answer_type.empty());
+  EXPECT_FALSE(matches[3].answer);
   EXPECT_TRUE(matches[4].answer_contents.empty());
   EXPECT_TRUE(matches[4].answer_type.empty());
+  EXPECT_FALSE(matches[4].answer);
 }
