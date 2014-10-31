@@ -47,17 +47,29 @@ LocationLine.prototype.show = function(entry) {
   this.entry_ = entry;
   this.showSequence_++;
 
+  // Clear the background image for the icon and the sub type (if any).
+  this.volumeIcon_.removeAttribute('style');
+  this.volumeIcon_.removeAttribute('volume-subtype');
+
   // Updates volume icon.
-  var location = this.volumeManager_.getLocationInfo(entry);
-  if (location && location.rootType && location.isRootEntry) {
+  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  if (locationInfo && locationInfo.rootType && locationInfo.isRootEntry) {
+    if (locationInfo.volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.PROVIDED) {
+      var extensionId = locationInfo.volumeInfo.extensionId;
+      var backgroundImage = '-webkit-image-set(' +
+          'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
+          'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
+      this.volumeIcon_.setAttribute(
+          'style', 'background-image: ' + backgroundImage);
+    }
     this.volumeIcon_.setAttribute(
-        'volume-type-icon', location.rootType);
-    this.volumeIcon_.removeAttribute('volume-subtype');
+        'volume-type-icon', locationInfo.rootType);
   } else {
     this.volumeIcon_.setAttribute(
-        'volume-type-icon', location.volumeInfo.volumeType);
+        'volume-type-icon', locationInfo.volumeInfo.volumeType);
     this.volumeIcon_.setAttribute(
-        'volume-subtype', location.volumeInfo.deviceType || '');
+        'volume-subtype', locationInfo.volumeInfo.deviceType || '');
   }
 
   var queue = new AsyncUtil.Queue();

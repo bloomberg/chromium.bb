@@ -330,7 +330,7 @@ div.splitter {
 
 .dialog-header .volume-icon {
   -webkit-margin-start: 10px;
-  background-position: center 3px;
+  background-position: center center;
   background-repeat: no-repeat;
   flex: none;
   height: 24px;
