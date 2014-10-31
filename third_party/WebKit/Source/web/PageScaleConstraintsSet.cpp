@@ -142,15 +142,17 @@ void PageScaleConstraintsSet::didChangeViewSize(const IntSize& size)
     m_constraintsDirty = true;
 }
 
-IntSize PageScaleConstraintsSet::mainFrameSize(const IntSize& contentsSize) const
+IntSize PageScaleConstraintsSet::mainFrameSize(int contentWidthIncludingScrollbar) const
 {
     // If there's no explicit minimum scale factor set, size the frame so that its width == content width
     // so there's no horizontal scrolling at the minimum scale.
     if (m_pageDefinedConstraints.minimumScale < finalConstraints().minimumScale
         && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
-        && contentsSize.width()
+        && contentWidthIncludingScrollbar
         && m_viewSize.width()) {
-        return expandedIntSize(FloatSize(contentsSize.width(), computeHeightByAspectRatio(contentsSize.width(), m_viewSize)));
+        return expandedIntSize(FloatSize(
+            contentWidthIncludingScrollbar,
+            computeHeightByAspectRatio(contentWidthIncludingScrollbar, m_viewSize)));
     }
 
     // If there is a minimum scale (or there's no content size yet), the frame size should match the viewport

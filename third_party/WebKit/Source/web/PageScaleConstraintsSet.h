@@ -75,7 +75,7 @@ public:
 
     void didChangeViewSize(const IntSize&);
 
-    IntSize mainFrameSize(const IntSize& contentsSize) const;
+    IntSize mainFrameSize(int contentWidthIncludingScrollbar) const;
 
 private:
     PageScaleConstraints computeConstraintsStack() const;

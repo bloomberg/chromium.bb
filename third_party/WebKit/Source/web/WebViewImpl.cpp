@@ -3228,8 +3228,13 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth);
     }
 
-    if (pinchVirtualViewportEnabled())
-        mainFrameImpl()->frameView()->resize(m_pageScaleConstraintsSet.mainFrameSize(contentsSize()));
+    if (pinchVirtualViewportEnabled()) {
+        int contentAndScrollbarWidth = contentsSize().width();
+        if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
+            contentAndScrollbarWidth += view->verticalScrollbar()->width();
+
+        view->resize(m_pageScaleConstraintsSet.mainFrameSize(contentAndScrollbarWidth));
+    }
 
     float newPageScaleFactor = pageScaleFactor();
     if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {
