@@ -112,10 +112,10 @@ void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::
         ASSERT_NOT_REACHED();
         break;
     case Resolved:
-        resolver->Resolve(resolvedValue(resolver->CreationContext()->Global(), m_isolate));
+        resolver->Resolve(resolvedValue(m_isolate, resolver->CreationContext()->Global()));
         break;
     case Rejected:
-        resolver->Reject(rejectedValue(resolver->CreationContext()->Global(), m_isolate));
+        resolver->Reject(rejectedValue(m_isolate, resolver->CreationContext()->Global()));
         break;
     }
 }

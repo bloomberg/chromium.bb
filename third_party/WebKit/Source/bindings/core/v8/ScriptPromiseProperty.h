@@ -72,8 +72,8 @@ public:
 
 private:
     virtual v8::Handle<v8::Object> holder(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
-    virtual v8::Handle<v8::Value> resolvedValue(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
-    virtual v8::Handle<v8::Value> rejectedValue(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
+    virtual v8::Handle<v8::Value> resolvedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) override;
+    virtual v8::Handle<v8::Value> rejectedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) override;
 
     HolderType m_holder;
     ResolvedType m_resolved;
@@ -124,14 +124,14 @@ v8::Handle<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedT
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
-v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
 {
     ASSERT(state() == Resolved);
     return V8ValueTraits<ResolvedType>::toV8Value(m_resolved, creationContext, isolate);
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
-v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
 {
     ASSERT(state() == Rejected);
     return V8ValueTraits<RejectedType>::toV8Value(m_rejected, creationContext, isolate);
