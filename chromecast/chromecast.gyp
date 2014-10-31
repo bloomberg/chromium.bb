@@ -4,6 +4,8 @@
 
 {
   'variables': {
+    'android_support_v13_target%':
+        '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
   },
@@ -336,11 +338,11 @@
           'target_name': 'cast_shell_java',
           'type': 'none',
           'dependencies': [
+            '<(android_support_v13_target)',
             '../base/base.gyp:base_java',
             '../content/content.gyp:content_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
-            '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
