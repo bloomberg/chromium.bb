@@ -503,13 +503,6 @@ VolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
 VolumeManager.TIMEOUT = 15 * 60 * 1000;
 
 /**
- * Queue to run getInstance sequentially.
- * @type {AsyncUtil.Queue}
- * @private
- */
-VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
-
-/**
  * The singleton instance of VolumeManager. Initialized by the first invocation
  * of getInstance().
  * @type {VolumeManager}
@@ -553,6 +546,14 @@ VolumeManager.getInstance = function(opt_callback) {
     VolumeManager.instancePromise_.then(opt_callback);
   return VolumeManager.instancePromise_;
 };
+
+/**
+ * Revokes the singleton instance for testing.
+ */
+VolumeManager.revokeInstanceForTesting = function() {
+  VolumeManager.instancePromise_ = null;
+  VolumeManager.instance_ = null;
+}
 
 /**
  * Initializes mount points.

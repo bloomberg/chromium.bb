@@ -13,17 +13,19 @@ function joinPath(a, b) {
 };
 
 /**
- * Test file system.
+ * Mock class for DOMFileSystem.
  *
- * @param {string} fileSystemId File system ID.
+ * @param {string} volumeId Volume ID.
+ * @param {string} rootURL URL string of root which is used in MockEntry.toURL.
  * @constructor
  */
-function TestFileSystem(fileSystemId) {
-  this.fileSystemId = fileSystemId;
+function MockFileSystem(volumeId, rootURL) {
+  this.name = volumeId;
   this.entries = {};
+  this.rootURL = rootURL;
 };
 
-TestFileSystem.prototype = {
+MockFileSystem.prototype = {
   get root() { return this.entries['/']; }
 };
 
@@ -54,7 +56,7 @@ MockEntry.prototype = {
  * @return {string} Fake URL.
  */
 MockEntry.prototype.toURL = function() {
-  return 'filesystem:' + this.filesystem.fileSystemId + this.fullPath;
+  return this.filesystem.rootURL + this.fullPath;
 };
 
 /**
@@ -212,3 +214,23 @@ MockDirectoryEntry.prototype.getDirectory =
   else
     onSuccess(this.filesystem.entries[fullPath]);
 };
+
+/**
+ * Creates a MockDirectoryReader for the entry.
+ */
+MockDirectoryEntry.prototype.createReader = function() {
+  return new MockDirectoryReader();
+}
+
+/**
+ * Mock class for DirectoryReader.
+ */
+function MockDirectoryReader() {}
+
+/**
+ * Reads entries.
+ * Current implementation just calls success callback.
+ */
+MockDirectoryReader.prototype.readEntries = function(success, error) {
+  success();
+}

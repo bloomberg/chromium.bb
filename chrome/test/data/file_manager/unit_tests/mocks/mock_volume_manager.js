@@ -36,7 +36,8 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
  * @return {VolumeInfo} Created mock VolumeInfo.
  */
 MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
-  var fileSystem = new MockFileSystem(volumeId);
+  var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+  fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '/');
 
   var volumeInfo = new VolumeInfo(
       type,

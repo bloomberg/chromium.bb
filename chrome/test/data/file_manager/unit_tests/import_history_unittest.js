@@ -21,7 +21,7 @@ var GOOGLE_DRIVE = 'Google Drive';
  */
 var SPACE_CLOUD = 'Space Cloud';
 
-/** @type {!TestFileSystem|undefined} */
+/** @type {!MockFileSystem|undefined} */
 var testFileSystem;
 
 /** @type {!MockFileEntry|undefined} */
@@ -35,7 +35,7 @@ var historyLoader;
 
 // Set up the test components.
 function setUp() {
-  testFileSystem = new TestFileSystem('abc-123');
+  testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
   testFileEntry = new MockFileEntry(
       testFileSystem,
       FILE_PATH, {

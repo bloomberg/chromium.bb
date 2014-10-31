@@ -77,7 +77,7 @@ var DIRECTORY_SIZE = -1;
  *     size. If the size is equals to DIRECTORY_SIZE, the entry is derectory.
  */
 function createTestFileSystem(id, entries) {
-  var fileSystem = new TestFileSystem(id);
+  var fileSystem = new MockFileSystem(id, 'filesystem:' + id);
   for (var path in entries) {
     if (entries[path] === DIRECTORY_SIZE) {
       fileSystem.entries[path] = new MockDirectoryEntry(fileSystem, path);
