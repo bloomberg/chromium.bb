@@ -2,6 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The basic usage of the Filter interface is described in the comment at
+// the beginning of filter.h.  If Filter::Factory is passed a vector of
+// size greater than 1, that interface is implemented by a series of filters
+// connected in a chain.  In such a case the first filter
+// in the chain proxies calls to ReadData() so that its return values
+// apply to the entire chain.
+//
+// In a filter chain, the data flows from first filter (held by the
+// caller) down the chain.  When ReadData() is called on any filter
+// except for the last filter, it proxies the call down the chain,
+// filling in the input buffers of subsequent filters if needed (==
+// that filter's last_status() value is FILTER_NEED_MORE_DATA) and
+// available (== the current filter has data it can output).  The last
+// Filter will then output data if possible, and return
+// FILTER_NEED_MORE_DATA if not.  Because the indirection pushes
+// data along the filter chain at each level if it's available and the
+// next filter needs it, a return value of FILTER_NEED_MORE_DATA from the
+// final filter will apply to the entire chain.
+
 #include "net/filter/filter.h"
 
 #include "base/files/file_path.h"
@@ -87,6 +106,9 @@ Filter::FilterStatus Filter::ReadData(char* dest_buffer, int* dest_len) {
     return last_status_;
   if (!next_filter_.get())
     return last_status_ = ReadFilteredData(dest_buffer, dest_len);
+
+  // This filter needs more data, but it's not clear that the rest of
+  // the chain does; delegate the actual status return to the next filter.
   if (last_status_ == FILTER_NEED_MORE_DATA && !stream_data_len())
     return next_filter_->ReadData(dest_buffer, dest_len);
 
@@ -131,6 +153,7 @@ bool Filter::FlushStreamBuffer(int stream_data_len) {
 
   next_stream_data_ = stream_buffer()->data();
   stream_data_len_ = stream_data_len;
+  last_status_ = FILTER_OK;
   return true;
 }
 

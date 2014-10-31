@@ -2,11 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/io_buffer.h"
 #include "net/filter/filter.h"
 #include "net/filter/mock_filter_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+namespace {
+
+class PassThroughFilter : public Filter {
+ public:
+  PassThroughFilter() {}
+
+  FilterStatus ReadFilteredData(char* dest_buffer, int* dest_len) override {
+    return CopyOut(dest_buffer, dest_len);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PassThroughFilter);
+};
+
+}  // namespace
 
 class FilterTest : public testing::Test {
 };
@@ -364,4 +380,68 @@ TEST(FilterTest, SupportedMimeGzip) {
   EXPECT_TRUE(encoding_types.empty());
 }
 
-}  // namespace net
+// Make sure a series of three pass-through filters copies the data cleanly.
+// Regression test for http://crbug.com/418975.
+TEST(FilterTest, ThreeFilterChain) {
+  scoped_ptr<PassThroughFilter> filter1(new PassThroughFilter);
+  scoped_ptr<PassThroughFilter> filter2(new PassThroughFilter);
+  scoped_ptr<PassThroughFilter> filter3(new PassThroughFilter);
+
+  filter1->InitBuffer(32 * 1024);
+  filter2->InitBuffer(32 * 1024);
+  filter3->InitBuffer(32 * 1024);
+
+  filter2->next_filter_ = filter3.Pass();
+  filter1->next_filter_ = filter2.Pass();
+
+  // Initialize the input array with a varying byte sequence.
+  const size_t input_array_size = 64 * 1024;
+  char input_array[input_array_size];
+  size_t read_array_index = 0;
+  for (size_t i = 0; i < input_array_size; i++) {
+    input_array[i] = i % 113;
+  }
+
+  const size_t output_array_size = 4 * 1024;
+  char output_array[output_array_size];
+
+  size_t compare_array_index = 0;
+
+  do {
+    // Read data from the filter chain.
+    int amount_read = output_array_size;
+    Filter::FilterStatus status = filter1->ReadData(output_array, &amount_read);
+    EXPECT_NE(Filter::FILTER_ERROR, status);
+    EXPECT_EQ(0, memcmp(output_array, input_array + compare_array_index,
+                        amount_read));
+    compare_array_index += amount_read;
+
+    // Detect the various indications that data transfer along the chain is
+    // complete.
+    if (Filter::FILTER_DONE == status || Filter::FILTER_ERROR == status ||
+        (Filter::FILTER_OK == status && amount_read == 0) ||
+        (Filter::FILTER_NEED_MORE_DATA == status &&
+         read_array_index == input_array_size))
+      break;
+
+    if (Filter::FILTER_OK == status)
+      continue;
+
+    // Write needed data into the filter chain.
+    ASSERT_EQ(Filter::FILTER_NEED_MORE_DATA, status);
+    ASSERT_NE(0, filter1->stream_buffer_size());
+    size_t amount_to_copy = std::min(
+        static_cast<size_t>(filter1->stream_buffer_size()),
+        input_array_size - read_array_index);
+    memcpy(filter1->stream_buffer()->data(),
+           input_array + read_array_index,
+           amount_to_copy);
+    filter1->FlushStreamBuffer(amount_to_copy);
+    read_array_index += amount_to_copy;
+  } while (true);
+
+  EXPECT_EQ(read_array_index, input_array_size);
+  EXPECT_EQ(compare_array_index, input_array_size);
+}
+
+}  // Namespace net

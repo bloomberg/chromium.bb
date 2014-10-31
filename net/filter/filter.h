@@ -19,10 +19,27 @@
 // To filter a data stream, the caller first gets filter's stream_buffer_
 // through its accessor and fills in stream_buffer_ with pre-filter data, next
 // calls FlushStreamBuffer to notify Filter, then calls ReadFilteredData
-// repeatedly to get all the filtered data. After all data have been fitlered
-// and read out, the caller may fill in stream_buffer_ again. This
+// repeatedly to get all the filtered data. After all data have been filtered
+// and read out, the caller may fill in stream_buffer_ again.  This
 // WriteBuffer-Flush-Read cycle is repeated until reaching the end of data
 // stream.
+//
+// A return of FILTER_OK from ReadData() means that more data is
+// available to a future ReadData() call and data may not be written
+// into stream_buffer().  A return of FILTER_NEED_MORE_DATA from ReadData()
+// indicates that no data will be forthcoming from the filter until
+// it receives more input data, and that the buffer at
+// stream_buffer() may be written to.
+//
+// The filter being complete (no more data to provide) may be indicated
+// by either returning FILTER_DONE or by returning FILTER_OK and indicating
+// zero bytes output; consumers understand both those signals.  Consumers
+// are responsible for not calling ReadData() on a filter after one of these
+// signals have been returned.  Note that some filters may never signal that
+// they are done (e.g. a pass-through filter will always
+// say FILTER_NEED_MORE_DATA), so the consumer will also need to
+// recognize the state of |no_more_input_data_available &&
+// filter->stream_data_len() == 0| as FILTER_DONE.
 //
 // The lifetime of a Filter instance is completely controlled by its caller.
 
@@ -207,6 +224,7 @@ class NET_EXPORT_PRIVATE Filter {
  protected:
   friend class GZipUnitTest;
   friend class SdchFilterChainingTest;
+  FRIEND_TEST_ALL_PREFIXES(FilterTest, ThreeFilterChain);
 
   Filter();
 
