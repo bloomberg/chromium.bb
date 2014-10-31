@@ -515,6 +515,20 @@ PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> HTMLCanvasElement::create
     return surfaceFactory.release();
 }
 
+bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize)
+{
+    if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
+        return true;
+
+    if (!RuntimeEnabledFeatures::displayList2dCanvasEnabled())
+        return false;
+
+    if (shouldAccelerate(deviceSize))
+        return false;
+
+    return true;
+}
+
 PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount)
 {
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
@@ -534,7 +548,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
 
     OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = createSurfaceFactory(deviceSize, msaaSampleCount);
 
-    if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
+    if (shouldUseDisplayList(deviceSize)) {
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
         if (surface->isValid())
             return surface.release();

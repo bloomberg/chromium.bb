@@ -48,7 +48,8 @@ CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DecodeToYUV status=experimental
 DeviceLight status=experimental
-DisplayList2dCanvas
+DisplayList2dCanvas status=stable
+ForceDisplayList2dCanvas
 EncodingAPI status=stable
 EncryptedMedia status=test
 ExecCommandInJavaScript status=test

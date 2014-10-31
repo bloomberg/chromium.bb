@@ -180,6 +180,7 @@ private:
     void createImageBuffer();
     void createImageBufferInternal();
     void clearImageBuffer();
+    bool shouldUseDisplayList(const IntSize& deviceSize);
 
     void resetDirtyRect();
 
