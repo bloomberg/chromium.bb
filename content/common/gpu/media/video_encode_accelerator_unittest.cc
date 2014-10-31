@@ -385,15 +385,10 @@ void H264Validator::ProcessStreamBuffer(const uint8* stream, size_t size) {
         ASSERT_TRUE(seen_sps_);
         ASSERT_TRUE(seen_pps_);
         seen_idr_ = true;
+        keyframe = true;
         // fallthrough
       case media::H264NALU::kNonIDRSlice: {
         ASSERT_TRUE(seen_idr_);
-
-        media::H264SliceHeader shdr;
-        ASSERT_EQ(media::H264Parser::kOk,
-                  h264_parser_.ParseSliceHeader(nalu, &shdr));
-        keyframe = shdr.IsISlice() || shdr.IsSISlice();
-
         if (!frame_cb_.Run(keyframe))
           return;
         break;

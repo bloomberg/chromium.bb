@@ -291,7 +291,7 @@ void VaapiVideoEncodeAccelerator::BeginFrame(bool force_keyframe) {
   else
     current_pic_.type = media::H264SliceHeader::kPSlice;
 
-  if (current_pic_.frame_num % idr_period_ == 0) {
+  if (current_pic_.frame_num % idr_period_ == 0 || force_keyframe) {
     current_pic_.idr = true;
     last_idr_frame_num_ = current_pic_.frame_num;
     ref_pic_list0_.clear();
@@ -304,8 +304,7 @@ void VaapiVideoEncodeAccelerator::BeginFrame(bool force_keyframe) {
   current_pic_.top_field_order_cnt = current_pic_.pic_order_cnt;
   current_pic_.pic_order_cnt_lsb = current_pic_.pic_order_cnt;
 
-  current_encode_job_->keyframe =
-      (current_pic_.type == media::H264SliceHeader::kISlice);
+  current_encode_job_->keyframe = current_pic_.idr;
 
   DVLOGF(4) << "Starting a new frame, type: " << current_pic_.type
             << (force_keyframe ? " (forced keyframe)" : "")
