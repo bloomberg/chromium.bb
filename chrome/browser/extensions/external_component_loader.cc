@@ -32,7 +32,7 @@ ExternalComponentLoader::~ExternalComponentLoader() {}
 // static
 bool ExternalComponentLoader::IsModifiable(const Extension* extension) {
   if (extension->location() == Manifest::EXTERNAL_COMPONENT) {
-    static const char* enhanced_extension_hashes[] = {
+    static const char* const enhanced_extension_hashes[] = {
         "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
         "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
         "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562

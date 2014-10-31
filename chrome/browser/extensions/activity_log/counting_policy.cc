@@ -87,10 +87,10 @@ const ApiList kAlwaysLog[] = {
 
 // Columns in the main database table.  See the file-level comment for a
 // discussion of how data is stored and the meanings of the _x columns.
-const char* kTableContentFields[] = {
+const char* const kTableContentFields[] = {
     "count", "extension_id_x", "time", "action_type", "api_name_x", "args_x",
     "page_url_x", "page_title_x", "arg_url_x", "other_x"};
-const char* kTableFieldTypes[] = {
+const char* const kTableFieldTypes[] = {
     "INTEGER NOT NULL DEFAULT 1", "INTEGER NOT NULL", "INTEGER", "INTEGER",
     "INTEGER", "INTEGER", "INTEGER", "INTEGER", "INTEGER",
     "INTEGER"};
@@ -154,8 +154,8 @@ static const char kUrlTableCleanup[] =
 
 namespace extensions {
 
-const char* CountingPolicy::kTableName = "activitylog_compressed";
-const char* CountingPolicy::kReadViewName = "activitylog_uncompressed";
+const char CountingPolicy::kTableName[] = "activitylog_compressed";
+const char CountingPolicy::kReadViewName[] = "activitylog_uncompressed";
 
 CountingPolicy::CountingPolicy(Profile* profile)
     : ActivityLogDatabasePolicy(
@@ -230,7 +230,7 @@ void CountingPolicy::QueueAction(scoped_refptr<Action> action) {
 
 bool CountingPolicy::FlushDatabase(sql::Connection* db) {
   // Columns that must match exactly for database rows to be coalesced.
-  static const char* matched_columns[] = {
+  static const char* const matched_columns[] = {
       "extension_id_x", "action_type", "api_name_x", "args_x", "page_url_x",
       "page_title_x", "arg_url_x", "other_x"};
   ActionQueue queue;

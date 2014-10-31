@@ -25,9 +25,9 @@ using namespace testing;
 
 namespace {
 
-const char* kTestUsers[] = {"test-user1@gmail.com",
-                            "test-user2@gmail.com",
-                            "test-user3@gmail.com"};
+const char* const kTestUsers[] = {"test-user1@gmail.com",
+                                  "test-user2@gmail.com",
+                                  "test-user3@gmail.com"};
 
 }  // anonymous namespace
 

@@ -18,7 +18,7 @@ namespace chromeos {
 namespace {
 
 // Apps/extensions explicitly whitelisted for use in public sessions.
-const char* kPublicSessionWhitelist[] = {
+const char* const kPublicSessionWhitelist[] = {
     // Public sessions in general:
     "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
     "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher

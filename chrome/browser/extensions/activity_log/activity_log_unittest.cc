@@ -37,7 +37,7 @@ namespace {
 
 const char kExtensionId[] = "abc";
 
-const char* kUrlApiCalls[] = {
+const char* const kUrlApiCalls[] = {
     "HTMLButtonElement.formAction", "HTMLEmbedElement.src",
     "HTMLFormElement.action",       "HTMLFrameElement.src",
     "HTMLHtmlElement.manifest",     "HTMLIFrameElement.src",

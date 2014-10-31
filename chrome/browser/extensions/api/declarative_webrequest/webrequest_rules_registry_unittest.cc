@@ -643,7 +643,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
     GURL("http://fpfc.example.com")  // matching
   };
   // Which rules should match in subsequent test iterations.
-  const char* matchingRuleIds[] = { kRuleId1, kRuleId2 };
+  const char* const matchingRuleIds[] = { kRuleId1, kRuleId2 };
   COMPILE_ASSERT(arraysize(urls) == arraysize(firstPartyUrls),
                  urls_and_firstPartyUrls_need_to_have_the_same_size);
   COMPILE_ASSERT(arraysize(urls) == arraysize(matchingRuleIds),

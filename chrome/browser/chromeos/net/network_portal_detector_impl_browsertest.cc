@@ -31,11 +31,11 @@ namespace chromeos {
 
 namespace {
 
-const char* kNotificationId =
+const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
-const char* kNotificationMetric =
+const char* const kNotificationMetric =
     NetworkPortalNotificationController::kNotificationMetric;
-const char* kUserActionMetric =
+const char* const kUserActionMetric =
     NetworkPortalNotificationController::kUserActionMetric;
 
 const char kTestUser[] = "test-user@gmail.com";

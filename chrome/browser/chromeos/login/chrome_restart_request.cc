@@ -72,7 +72,7 @@ std::string DeriveCommandLine(const GURL& start_url,
                               CommandLine* command_line) {
   DCHECK_NE(&base_command_line, command_line);
 
-  static const char* kForwardSwitches[] = {
+  static const char* const kForwardSwitches[] = {
     ::switches::kDisableAccelerated2dCanvas,
     ::switches::kDisableAcceleratedVideoDecode,
     ::switches::kDisableDelegatedRenderer,

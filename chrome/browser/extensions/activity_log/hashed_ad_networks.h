@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-extern const char* kHashedAdNetworks[];
+extern const char* const kHashedAdNetworks[];
 extern const int kNumHashedAdNetworks;
 
 }  // namespace extensions

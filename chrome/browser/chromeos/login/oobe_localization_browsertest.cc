@@ -35,10 +35,10 @@ namespace chromeos {
 namespace {
 
 // OOBE constants.
-const char* kLocaleSelect = "language-select";
-const char* kKeyboardSelect = "keyboard-select";
+const char kLocaleSelect[] = "language-select";
+const char kKeyboardSelect[] = "keyboard-select";
 
-const char* kUSLayout = "xkb:us::eng";
+const char kUSLayout[] = "xkb:us::eng";
 
 }
 

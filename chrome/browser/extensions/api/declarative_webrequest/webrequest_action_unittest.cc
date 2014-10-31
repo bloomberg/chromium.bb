@@ -558,7 +558,7 @@ TEST(WebRequestActionTest, GetName) {
       " \"lowerPriorityThan\": 123,"
       " \"hasTag\": \"some_tag\""
       "}]";
-  const char* kExpectedNames[] = {
+  const char* const kExpectedNames[] = {
     "declarativeWebRequest.RedirectRequest",
     "declarativeWebRequest.RedirectByRegEx",
     "declarativeWebRequest.SetRequestHeader",

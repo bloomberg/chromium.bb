@@ -51,7 +51,7 @@ const char kMediaStreamSourceTab[] = "tab";
 
 // Whitelisted extensions that do not check for a browser action grant because
 // they provide API's.
-const char* whitelisted_extensions[] = {
+const char* const whitelisted_extensions[] = {
   "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
   "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
   "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging

@@ -18,14 +18,11 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 
-//#include "base/compiler_specific.h"
-//#include "base/logging.h"
-//#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 namespace chromeos {
 namespace {
 
-const char* kTestAccount1 = "user1@test.com";
-const char* kTestAccount2 = "user2@test.com";
+const char kTestAccount1[] = "user1@test.com";
+const char kTestAccount2[] = "user2@test.com";
 
 class WallpaperPrivateApiUnittest : public ash::test::AshTestBase {
  public:

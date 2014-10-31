@@ -25,8 +25,9 @@ namespace constants = activity_log_constants;
 namespace {
 // Obsolete database tables: these should be dropped from the database if
 // found.
-const char* kObsoleteTables[] = {"activitylog_apis", "activitylog_blocked",
-                                 "activitylog_urls"};
+const char* const kObsoleteTables[] = {"activitylog_apis",
+                                       "activitylog_blocked",
+                                       "activitylog_urls"};
 }  // namespace
 
 namespace extensions {

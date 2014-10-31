@@ -20,7 +20,7 @@
 
 namespace extensions {
 
-static const char* kHotwordHelperExtensionId =
+static const char kHotwordHelperExtensionId[] =
     "dnhpdliibojhegemfjheidglijccjfmc";
 
 class HotwordBrowserTest : public ExtensionBrowserTest {

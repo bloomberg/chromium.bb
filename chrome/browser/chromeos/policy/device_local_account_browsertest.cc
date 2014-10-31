@@ -152,7 +152,7 @@ const char kAccountId1[] = "dla1@example.com";
 const char kAccountId2[] = "dla2@example.com";
 const char kDisplayName1[] = "display name 1";
 const char kDisplayName2[] = "display name 2";
-const char* kStartupURLs[] = {
+const char* const kStartupURLs[] = {
   "chrome://policy",
   "chrome://about",
 };
@@ -179,19 +179,19 @@ const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
 const char kExternalData[] = "External data";
 const char kExternalDataURL[] = "http://localhost/external_data";
 
-const char* kSingleRecommendedLocale[] = {
+const char* const kSingleRecommendedLocale[] = {
   "el",
 };
-const char* kRecommendedLocales1[] = {
+const char* const kRecommendedLocales1[] = {
   "pl",
   "et",
   "en-US",
 };
-const char* kRecommendedLocales2[] = {
+const char* const kRecommendedLocales2[] = {
   "fr",
   "nl",
 };
-const char* kInvalidRecommendedLocale[] = {
+const char* const kInvalidRecommendedLocale[] = {
   "xx",
 };
 const char kPublicSessionLocale[] = "de";
@@ -563,7 +563,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         kAccountId1, device_local_account_policy_.GetBlob());
   }
 
-  void SetRecommendedLocales(const char* recommended_locales[],
+  void SetRecommendedLocales(const char* const recommended_locales[],
                              size_t array_size) {
     em::StringListPolicyProto* session_locales_proto =
         device_local_account_policy_.payload().mutable_sessionlocales();

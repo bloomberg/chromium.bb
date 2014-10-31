@@ -55,7 +55,7 @@ const char kSharkRequisition[] = "shark";
 //
 // TODO(mnissler): Move serial_number back to the top once the server side uses
 // the correct serial number.
-const char* kMachineInfoSerialNumberKeys[] = {
+const char* const kMachineInfoSerialNumberKeys[] = {
   "Product_S/N",    // Lumpy/Alex devices
   "serial_number",  // VPD v2+ devices
   "Product_SN",     // Mario

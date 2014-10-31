@@ -43,12 +43,12 @@ enum {
 
 // The names of the JavaScript properties to extract from the proxy_rules.
 // These must be kept in sync with the SCHEME_* constants.
-extern const char* field_name[];
+extern const char* const field_name[];
 
 // The names of the schemes to be used to build the preference value string
 // for manual proxy settings.  These must be kept in sync with the SCHEME_*
 // constants.
-extern const char* scheme_name[];
+extern const char* const scheme_name[];
 
 }  // namespace proxy_api_constants
 }  // namespace extensions

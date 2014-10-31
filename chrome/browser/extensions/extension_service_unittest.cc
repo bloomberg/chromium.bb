@@ -1309,7 +1309,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
             extensions::ContentScriptsInfo::GetContentScripts(
                 loaded_[index].get()).size());
   EXPECT_EQ(Manifest::INTERNAL, loaded_[index]->location());
-};
+}
 
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
@@ -1345,7 +1345,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[3]);
-};
+}
 
 // Test various cases for delayed install because of missing imports.
 TEST_F(ExtensionServiceTest, PendingImports) {
@@ -4260,7 +4260,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW,
              Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
-  const char* extension_id = good_crx;
+  const char* const extension_id = good_crx;
   service()->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
@@ -4299,7 +4299,7 @@ TEST_F(ExtensionServiceTest, ReloadExtension) {
   InitializeEmptyExtensionService();
 
   // Simple extension that should install without error.
-  const char* extension_id = "behllobkkfkfnphdnhnkndlbkcpglgmj";
+  const char extension_id[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
   base::FilePath ext = data_dir()
                            .AppendASCII("good")
                            .AppendASCII("Extensions")
@@ -6476,7 +6476,7 @@ TEST_F(ExtensionServiceTest,
   EXPECT_FALSE(
       registry()->GenerateInstalledExtensionsSet()->Contains(extension_ids[1]));
 }
-#endif // defined(ENABLE_MANAGED_USERS)
+#endif  // defined(ENABLE_MANAGED_USERS)
 
 TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   InitializeEmptyExtensionService();

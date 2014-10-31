@@ -31,8 +31,8 @@ using testing::_;
 namespace em = enterprise_management;
 
 namespace {
-const char* kAttributeOwnerId = "consumer_management.owner_id";
-const char* kTestOwner = "test@chromium.org.test";
+const char kAttributeOwnerId[] = "consumer_management.owner_id";
+const char kTestOwner[] = "test@chromium.org.test";
 }
 
 namespace policy {

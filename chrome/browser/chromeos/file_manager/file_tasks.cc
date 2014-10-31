@@ -112,7 +112,7 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
       task.task_type != file_tasks::TASK_TYPE_FILE_HANDLER)
     return false;
 
-  const char* kBuiltInApps[] = {
+  const char* const kBuiltInApps[] = {
     kFileManagerAppId,
     kVideoPlayerAppId,
     kGalleryAppId,

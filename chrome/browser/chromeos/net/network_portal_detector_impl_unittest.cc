@@ -528,7 +528,7 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
   ASSERT_TRUE(is_state_idle());
 
-  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 101\n\n";
+  const char retry_after[] = "HTTP/1.1 503 OK\nRetry-After: 101\n\n";
 
   ASSERT_TRUE(is_state_idle());
   ASSERT_EQ(0, no_response_result_count());
@@ -549,7 +549,7 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectorRetryAfterIsSmall) {
   ASSERT_TRUE(is_state_idle());
 
-  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 1\n\n";
+  const char retry_after[] = "HTTP/1.1 503 OK\nRetry-After: 1\n\n";
 
   ASSERT_TRUE(is_state_idle());
   ASSERT_EQ(0, no_response_result_count());
@@ -570,7 +570,7 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   ASSERT_TRUE(is_state_idle());
 
   set_delay_till_next_attempt(base::TimeDelta());
-  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 0\n\n";
+  const char retry_after[] = "HTTP/1.1 503 OK\nRetry-After: 0\n\n";
 
   ASSERT_TRUE(is_state_idle());
   ASSERT_EQ(0, no_response_result_count());
@@ -601,7 +601,7 @@ TEST_F(NetworkPortalDetectorImplTest, AllAttemptsFailed) {
   ASSERT_TRUE(is_state_idle());
 
   set_delay_till_next_attempt(base::TimeDelta());
-  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 0\n\n";
+  const char retry_after[] = "HTTP/1.1 503 OK\nRetry-After: 0\n\n";
 
   ASSERT_TRUE(is_state_idle());
   ASSERT_EQ(0, no_response_result_count());

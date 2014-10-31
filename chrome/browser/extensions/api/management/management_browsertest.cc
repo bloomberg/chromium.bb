@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
   extensions::ExtensionUpdater::CheckParams params;
 
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
@@ -522,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
 namespace {
 
-const char* kForceInstallNotEmptyHelp =
+const char kForceInstallNotEmptyHelp[] =
     "A policy may already be controlling the list of force-installed "
     "extensions. Please remove all policy settings from your computer "
     "before running tests. E.g. from /etc/chromium/policies Linux or "
@@ -534,7 +534,7 @@ const char* kForceInstallNotEmptyHelp =
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
 
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
-  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
   extensions::ExtensionUpdater::CheckParams params;
   service->updater()->set_default_check_params(params);
   const size_t size_before = registry->enabled_extensions().size();

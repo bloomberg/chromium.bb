@@ -249,7 +249,7 @@ class ExtensionManagementApiEscalationTest :
                   const std::string& expected_error) {
     scoped_refptr<ManagementSetEnabledFunction> function(
         new ManagementSetEnabledFunction);
-    const char* enabled_string = enabled ? "true" : "false";
+    const char* const enabled_string = enabled ? "true" : "false";
     if (user_gesture)
       function->set_user_gesture(true);
     bool response = util::RunFunction(

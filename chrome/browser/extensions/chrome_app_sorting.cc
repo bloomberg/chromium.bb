@@ -549,7 +549,7 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
   std::vector<std::string> app_ids;
   chromeos::default_app_order::Get(&app_ids);
 #else
-  const char* kDefaultAppOrder[] = {
+  const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     extensions::kWebStoreAppId,
   };

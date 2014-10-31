@@ -20,14 +20,14 @@ namespace extensions {
 namespace {
 
 // Manifest permissions injected into |kManifest|:
-const char* kPermissions[] = {
+const char* const kPermissions[] = {
   "*://*/*",              // ALL
   "http://127.0.0.1/*",   // PARTICULAR
   "http://nowhere.com/*"  // NOWHERE
 };
 
 // Script matchers for injected into |kBackgroundScriptSource|:
-const char* kScriptMatchers[] = {
+const char* const kScriptMatchers[] = {
   "{ pageUrl: { hostContains: '' } }",          // ALL
   "{ pageUrl: { hostEquals: '127.0.0.1' } }",   // PARTICULAR
   "{ pageUrl: { hostEquals: 'nowhere.com' } }"  // NOWHERE

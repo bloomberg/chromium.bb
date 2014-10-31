@@ -24,7 +24,7 @@ namespace {
 
 // Maps prefs::kIncognitoModeAvailability values (0 = enabled, ...)
 // to strings exposed to extensions.
-const char* kIncognitoModeAvailabilityStrings[] = {
+const char* const kIncognitoModeAvailabilityStrings[] = {
   "enabled",
   "disabled",
   "forced"

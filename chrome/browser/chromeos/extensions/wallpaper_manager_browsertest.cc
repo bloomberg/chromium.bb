@@ -18,7 +18,7 @@ using extensions::Extension;
 using extensions::ExtensionRegistry;
 
 namespace {
-const char* kWallpaperManagerExtensionID = "obklkkbkpaoaejdabbfldmcfplpdgolj";
+const char kWallpaperManagerExtensionID[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 }  // namespace
 
 class WallpaperManagerBrowserTest : public extensions::PlatformAppBrowserTest {

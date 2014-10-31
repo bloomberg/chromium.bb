@@ -26,7 +26,7 @@ namespace chromeos {
 
 namespace {
 
-const char* kReportingFlags[] = {
+const char* const kReportingFlags[] = {
   chromeos::kReportDeviceVersionInfo,
   chromeos::kReportDeviceActivityTimes,
   chromeos::kReportDeviceBootMode,

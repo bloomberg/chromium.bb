@@ -16,8 +16,8 @@
 
 using extensions::UmaPolicy;
 
-const char* kGooglePrefix = "ExtensionActivity.Google";
-const char* kNonGooglePrefix = "ExtensionActivity";
+const char kGooglePrefix[] = "ExtensionActivity.Google";
+const char kNonGooglePrefix[] = "ExtensionActivity";
 
 // These tests need to ensure that all of the extension JavaScript completes
 // before the histograms are checked. To accomplish this, the test relies on
@@ -209,14 +209,14 @@ IN_PROC_BROWSER_TEST_F(ActivityLogUmaPolicyTest, DISABLED_MultipleExtensions) {
       LoadExtension(test_data_dir_.AppendASCII("uma_policy"));
   ASSERT_TRUE(ext);
 
-  const char* script2 =
+  const char script2[] =
       "document.createElement('script');"
       "document.createElement('iframe');"
       "document.createElement('div');"
       "document.createElement('embed');"
       "document.createElement('object');";
 
-  const char* manifest =
+  const char manifest[] =
       "{"
       "  \"name\": \"Activity Log UMA Policy Test Extension\","
       "  \"version\": \"0.%s\","
@@ -248,13 +248,13 @@ IN_PROC_BROWSER_TEST_F(ActivityLogUmaPolicyTest, DISABLED_MultipleExtensions) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), GURL("http://www.blocker.com"), 2);
 
-  const char* subset_one[] = {
+  const char* const subset_one[] = {
       "CreatedLink",
       "InnerHtml",
       "DocumentWrite"
   };
 
-  const char* subset_two[] = {
+  const char* const subset_two[] = {
       "ContentScript",
       "CreatedScript",
       "CreatedIframe",
@@ -297,5 +297,4 @@ IN_PROC_BROWSER_TEST_F(ActivityLogUmaPolicyTest, DISABLED_MultipleExtensions) {
         cnn_histogram->SnapshotSamples();
     EXPECT_EQ(1, cnn_samples->GetCount(2));
   }
-
 }

@@ -38,7 +38,7 @@ namespace {
 
 // The "Extensions.PossibleAdInjection2" metric uses different Rappor
 // parameters than the original metric.
-const char* kExtensionAdInjectionRapporMetricName =
+const char kExtensionAdInjectionRapporMetricName[] =
     "Extensions.PossibleAdInjection2";
 
 const char kBlinkSetAttributeEvent[] = "blinkSetAttribute";

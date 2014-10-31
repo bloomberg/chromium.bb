@@ -37,7 +37,7 @@ namespace chromeos {
 namespace {
 
 // List of settings handled by the DeviceSettingsProvider.
-const char* kKnownSettings[] = {
+const char* const kKnownSettings[] = {
   kAccountsPrefAllowGuest,
   kAccountsPrefAllowNewUser,
   kAccountsPrefDeviceLocalAccounts,
@@ -462,7 +462,7 @@ DeviceSettingsProvider::~DeviceSettingsProvider() {
 
 // static
 bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
-  const char** end = kKnownSettings + arraysize(kKnownSettings);
+  const char* const* end = kKnownSettings + arraysize(kKnownSettings);
   return std::find(kKnownSettings, end, name) != end;
 }
 

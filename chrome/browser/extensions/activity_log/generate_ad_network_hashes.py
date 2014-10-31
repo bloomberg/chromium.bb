@@ -52,7 +52,7 @@ _CC_TEMPLATE = '''\
 
 namespace extensions {
 
-const char* kHashedAdNetworks[] = {
+const char* const kHashedAdNetworks[] = {
   %(ad_networks)s
 };
 

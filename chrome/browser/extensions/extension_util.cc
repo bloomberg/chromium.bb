@@ -44,7 +44,7 @@ const char kExtensionAllowedOnAllUrlsPrefName[] =
 // Returns true if |extension_id| for an external component extension should
 // always be enabled in incognito windows.
 bool IsWhitelistedForIncognito(const std::string& extension_id) {
-  static const char* kExtensionWhitelist[] = {
+  static const char* const kExtensionWhitelist[] = {
     "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
     "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
     "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562

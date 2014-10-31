@@ -31,7 +31,7 @@ const char kDefaultAttr[] = "default";
 const char kNameAttr[] = "name";
 const char kImportDefaultOrderAttr[] = "import_default_order";
 
-const char* kDefaultAppOrder[] = {
+const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     extensions::kWebStoreAppId,
     extension_misc::kGoogleSearchAppId,

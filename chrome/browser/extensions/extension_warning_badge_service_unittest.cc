@@ -53,8 +53,8 @@ bool HasBadge(Profile* profile) {
       NULL;
 }
 
-const char* ext1_id = "extension1";
-const char* ext2_id = "extension2";
+const char ext1_id[] = "extension1";
+const char ext2_id[] = "extension2";
 
 }  // namespace
 

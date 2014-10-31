@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
 // Test that an error appears if an extension gets installed server side.
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
-  static const char* extension_id = "pgdpcfcocojkjfbgpiianjngphoopgmo";
+  static const char extension_id[] = "pgdpcfcocojkjfbgpiianjngphoopgmo";
   ExtensionSyncService* sync_service =
       ExtensionSyncService::Get(browser()->profile());
 

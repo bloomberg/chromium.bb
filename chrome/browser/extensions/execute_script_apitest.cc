@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
 // If crashing, mark disabled and update http://crbug.com/67774.
 IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFragmentNavigation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  const char* extension_name = "executescript/fragment";
+  const char extension_name[] = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 

@@ -16,7 +16,7 @@ namespace chromeos {
 
 namespace {
 
-const char* kNotificationId =
+const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
 
 bool HasNotification() {

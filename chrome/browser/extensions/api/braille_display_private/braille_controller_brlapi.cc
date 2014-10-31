@@ -66,7 +66,7 @@ void BrailleControllerImpl::TryLoadLibBrlApi() {
     return;
   // These versions of libbrlapi work the same for the functions we
   // are using.  (0.6.0 adds brlapi_writeWText).
-  static const char* kSupportedVersions[] = {
+  static const char* const kSupportedVersions[] = {
     "libbrlapi.so.0.5",
     "libbrlapi.so.0.6"
   };
@@ -277,7 +277,7 @@ void BrailleControllerImpl::DispatchKeys() {
       VLOG(1) << "BrlAPI error: " << connection_->BrlapiStrError();
       Disconnect();
       return;
-    } else if (result == 0) { // No more data.
+    } else if (result == 0) {  // No more data.
       return;
     }
     scoped_ptr<KeyEvent> event = BrlapiKeyCodeToEvent(code);

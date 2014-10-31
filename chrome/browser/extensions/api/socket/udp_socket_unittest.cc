@@ -50,7 +50,7 @@ TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
 }
 
 TEST(UDPSocketUnitTest, TestUDPMulticastJoinGroup) {
-  const char* kGroup = "237.132.100.17";
+  const char kGroup[] = "237.132.100.17";
   UDPSocket src("abcdefghijklmnopqrst");
   UDPSocket dest("abcdefghijklmnopqrst");
 
@@ -66,7 +66,7 @@ TEST(UDPSocketUnitTest, TestUDPMulticastJoinGroup) {
 }
 
 TEST(UDPSocketUnitTest, TestUDPMulticastTimeToLive) {
-  const char* kGroup = "237.132.100.17";
+  const char kGroup[] = "237.132.100.17";
   UDPSocket socket("abcdefghijklmnopqrst");
   EXPECT_NE(0, socket.SetMulticastTimeToLive(-1));  // Negative TTL shall fail.
   EXPECT_EQ(0, socket.SetMulticastTimeToLive(3));
@@ -74,7 +74,7 @@ TEST(UDPSocketUnitTest, TestUDPMulticastTimeToLive) {
 }
 
 TEST(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
-  const char* kGroup = "237.132.100.17";
+  const char kGroup[] = "237.132.100.17";
   UDPSocket socket("abcdefghijklmnopqrst");
   EXPECT_EQ(0, socket.SetMulticastLoopbackMode(false));
   socket.Connect(kGroup, 13333, base::Bind(&OnConnected));
@@ -110,7 +110,7 @@ static void OnMulticastReadCompleted(bool *packet_received,
 
 TEST(UDPSocketUnitTest, TestUDPMulticastRecv) {
   const int kPort = 9999;
-  const char* const kGroup = "237.132.100.17";
+  const char kGroup[] = "237.132.100.17";
   bool packet_received = false;
   base::MessageLoopForIO io_loop;  // For Read to do its threaded work.
   UDPSocket dest("abcdefghijklmnopqrst");

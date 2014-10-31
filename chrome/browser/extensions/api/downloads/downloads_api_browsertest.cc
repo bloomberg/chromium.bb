@@ -1573,7 +1573,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
 
-  static const char* kUnsafeHeaders[] = {
+  static const char* const kUnsafeHeaders[] = {
     "Accept-chArsEt",
     "accept-eNcoding",
     "coNNection",
@@ -1731,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   LoadExtension("downloads_split");
   GoOnTheRecord();
 
-  static const char* kInvalidURLs[] = {
+  static const char* const kInvalidURLs[] = {
     "foo bar",
     "../hello",
     "/hello",
@@ -2122,7 +2122,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("auth-basic").spec();
   // This is just base64 of 'username:secret'.
-  static const char* kAuthorization = "dXNlcm5hbWU6c2VjcmV0";
+  static const char kAuthorization[] = "dXNlcm5hbWU6c2VjcmV0";
   GoOnTheRecord();
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -2351,7 +2351,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // NOTE: chrome disallows creating HTML5 FileSystem Files in incognito.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_Download_FileSystemURL) {
-  static const char* kPayloadData = "on the record\ndata";
+  static const char kPayloadData[] = "on the record\ndata";
   GoOnTheRecord();
   LoadExtension("downloads_split");
 
@@ -4087,7 +4087,7 @@ TEST(DownloadInterruptReasonEnumsSynced,
   EXPECT_EQ(                                                                 \
       InterruptReasonExtensionToContent(downloads::INTERRUPT_REASON_##name), \
       content::DOWNLOAD_INTERRUPT_REASON_##name);
-#include "content/public/browser/download_interrupt_reason_values.h"
+#include "content/public/browser/download_interrupt_reason_values.h"  // NOLINT
 #undef INTERRUPT_REASON
 }
 

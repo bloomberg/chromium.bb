@@ -12,7 +12,7 @@
 
 namespace extensions {
 
-const char* kHashedAdNetworks[] = {
+const char* const kHashedAdNetworks[] = {
   "00020F0183BABB09",
   "00681CE94851B727",
   "0078BE5CA25F9492",

@@ -330,7 +330,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
     if (FeatureSwitch::easy_off_store_install()->IsEnabled()) {
-      const char* kHistogramName = "Extensions.OffStoreInstallDecisionEasy";
+      const char kHistogramName[] = "Extensions.OffStoreInstallDecisionEasy";
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
                                   NumOffStoreInstallDecision);
@@ -339,7 +339,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
                                   NumOffStoreInstallDecision);
       }
     } else {
-      const char* kHistogramName = "Extensions.OffStoreInstallDecisionHard";
+      const char kHistogramName[] = "Extensions.OffStoreInstallDecisionHard";
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
                                   NumOffStoreInstallDecision);

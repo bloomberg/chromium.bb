@@ -39,7 +39,7 @@ namespace {
 
 // Fake session tabs (used to construct arbitrary device info) and tab IDs
 // (used to construct arbitrary tab info) to use in all tests.
-const char* kSessionTags[] = {"tag0", "tag1", "tag2", "tag3", "tag4"};
+const char* const kSessionTags[] = {"tag0", "tag1", "tag2", "tag3", "tag4"};
 const SessionID::id_type kTabIDs[] = {5, 10, 13, 17};
 
 void BuildSessionSpecifics(const std::string& tag,
@@ -102,10 +102,10 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
     fn->set_extension(extension_.get());
     fn->set_has_callback(has_callback);
     return fn;
-  };
+  }
 
   Browser* browser_;
-  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<Extension> extension_;
 };
 
 void ExtensionSessionsTest::SetUpCommandLine(CommandLine* command_line) {

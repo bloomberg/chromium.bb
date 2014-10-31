@@ -30,7 +30,7 @@ namespace chromeos {
 
 namespace {
 
-const char* kUsers[] = {"a@gmail.com", "b@gmail.com" };
+const char* const kUsers[] = {"a@gmail.com", "b@gmail.com" };
 
 struct BehaviorTestCase {
   const char* primary;
@@ -212,12 +212,13 @@ class MultiProfileUserControllerTest
 
   int user_not_allowed_count_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MultiProfileUserControllerTest);
 };
 
 // Tests that everyone is allowed before a session starts.
 TEST_F(MultiProfileUserControllerTest, AllAllowedBeforeLogin) {
-  const char* kTestCases[] = {
+  const char* const kTestCases[] = {
     MultiProfileUserController::kBehaviorUnrestricted,
     MultiProfileUserController::kBehaviorPrimaryOnly,
     MultiProfileUserController::kBehaviorNotAllowed,
@@ -246,7 +247,7 @@ TEST_F(MultiProfileUserControllerTest, InvalidCacheBecomesDefault) {
 TEST_F(MultiProfileUserControllerTest, CachedBehaviorUpdate) {
   LoginUser(0);
 
-  const char* kTestCases[] = {
+  const char* const kTestCases[] = {
     MultiProfileUserController::kBehaviorUnrestricted,
     MultiProfileUserController::kBehaviorPrimaryOnly,
     MultiProfileUserController::kBehaviorNotAllowed,

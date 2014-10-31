@@ -23,7 +23,7 @@ namespace {
 const char kAttributeOwnerId[] = "consumer_management.owner_id";
 
 // The string of Status enum.
-const char* kStatusString[] = {
+const char* const kStatusString[] = {
   "StatusUnknown",
   "StatusEnrolled",
   "StatusEnrolling",

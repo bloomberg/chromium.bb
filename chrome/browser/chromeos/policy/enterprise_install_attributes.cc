@@ -121,7 +121,7 @@ void EnterpriseInstallAttributes::ReadAttributesIfReady(
         !cryptohome_util::InstallAttributesIsFirstInstall()) {
       device_locked_ = true;
 
-      static const char* kEnterpriseAttributes[] = {
+      static const char* const kEnterpriseAttributes[] = {
         kAttrEnterpriseDeviceId,
         kAttrEnterpriseDomain,
         kAttrEnterpriseMode,

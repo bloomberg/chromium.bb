@@ -37,7 +37,7 @@ namespace {
 
 const char kAccountId[] = "dla1@example.com";
 const char kAccountPassword[] = "letmein";
-const char* kStartupURLs[] = {"chrome://policy", "chrome://about"};
+const char* const kStartupURLs[] = {"chrome://policy", "chrome://about"};
 const char kTestAuthCode[] = "fake-auth-code";
 const char kTestGaiaUberToken[] = "fake-uber-token";
 const char kTestAuthLoginAccessToken[] = "fake-access-token";

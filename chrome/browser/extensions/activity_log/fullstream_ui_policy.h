@@ -53,9 +53,9 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   void DeleteDatabase() override;
 
   // Database table schema.
-  static const char* kTableName;
-  static const char* kTableContentFields[];
-  static const char* kTableFieldTypes[];
+  static const char kTableName[];
+  static const char* const kTableContentFields[];
+  static const char* const kTableFieldTypes[];
   static const int kTableFieldCount;
 
  protected:

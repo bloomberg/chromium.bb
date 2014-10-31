@@ -214,8 +214,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
       FILE_PATH_LITERAL("/plugins/foo.plugin");
   base::FilePath::CharType kBarPath[] =
       FILE_PATH_LITERAL("/plugins/bar.plugin");
-  const char* kFooName = "Foo Plugin";
-  const char* kBarName = "Bar Plugin";
+  const char kFooName[] = "Foo Plugin";
+  const char kBarName[] = "Bar Plugin";
 
   content::PluginService::GetInstance()->RegisterInternalPlugin(
       content::WebPluginInfo(base::ASCIIToUTF16(kFooName),

@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   TestExtensionDir extension_dir;
-  const char* manifest_template =
+  const char manifest_template[] =
       "{"
       "  \"name\": \"Overrides New Tab\","
       "  \"version\": \"%d\","

@@ -35,7 +35,7 @@ bool IsLocaleSupported() {
   // TODO(rogerta): Do this check dynamically once the webstore can expose
   // an API. See http://crbug.com/101357
   const std::string& locale = g_browser_process->GetApplicationLocale();
-  static const char* unsupported_locales[] = {"CN", "TR", "IR"};
+  static const char* const unsupported_locales[] = {"CN", "TR", "IR"};
   for (size_t i = 0; i < arraysize(unsupported_locales); ++i) {
     if (EndsWith(locale, unsupported_locales[i], false)) {
       return false;

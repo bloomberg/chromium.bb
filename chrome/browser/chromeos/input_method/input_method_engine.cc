@@ -39,11 +39,12 @@
 #endif
 
 namespace chromeos {
-const char* kErrorNotActive = "IME is not active";
-const char* kErrorWrongContext = "Context is not active";
-const char* kCandidateNotFound = "Candidate not found";
 
 namespace {
+
+const char kErrorNotActive[] = "IME is not active";
+const char kErrorWrongContext[] = "Context is not active";
+const char kCandidateNotFound[] = "Candidate not found";
 
 // Notifies InputContextHandler that the composition is changed.
 void UpdateComposition(const CompositionText& composition_text,
@@ -620,7 +621,7 @@ void InputMethodEngine::ProcessKeyEvent(
     const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {
 
-  KeyEventDoneCallback *handler = new KeyEventDoneCallback();
+  KeyEventDoneCallback* handler = new KeyEventDoneCallback();
   *handler = callback;
 
   KeyboardEvent ext_event;

@@ -272,7 +272,7 @@ void OomPriorityManager::LogMemoryAndDiscardTab() {
 bool OomPriorityManager::IsReloadableUI(const GURL& url) {
   // There are many chrome:// UI URLs, but only look for the ones that users
   // are likely to have open. Most of the benefit is the from NTP URL.
-  const char* kReloadableUrlPrefixes[] = {
+  const char* const kReloadableUrlPrefixes[] = {
       chrome::kChromeUIDownloadsURL,
       chrome::kChromeUIHistoryURL,
       chrome::kChromeUINewTabURL,

@@ -28,15 +28,15 @@ typedef base::Callback<bool(const void* bytes, size_t size)>
     IsValidMacAddressCallback;
 
 const char kDiskByUuidDirectoryName[] = "/dev/disk/by-uuid";
-const char* kDeviceNames[] = {
+const char* const kDeviceNames[] = {
   "sda1", "hda1", "dm-0", "xvda1", "sda2", "hda2", "dm-1", "xvda2",
 };
 // Fedora 15 uses biosdevname feature where Embedded ethernet uses the
 // "em" prefix and PCI cards use the p[0-9]c[0-9] format based on PCI
 // slot and card information.
-const char* kNetDeviceNamePrefixes[] = {
-   "eth", "em", "en", "wl", "ww", "p0", "p1", "p2", "p3", "p4", "p5", "p6",
-   "p7", "p8", "p9", "wlan"
+const char* const kNetDeviceNamePrefixes[] = {
+  "eth", "em", "en", "wl", "ww", "p0", "p1", "p2", "p3", "p4", "p5", "p6",
+  "p7", "p8", "p9", "wlan"
 };
 
 // Map from device name to disk uuid
@@ -99,7 +99,7 @@ class MacAddressProcessor {
   }
 
   bool ProcessInterface(struct ifaddrs *ifaddr,
-                        const char* prefixes[],
+                        const char* const prefixes[],
                         size_t prefixes_count) {
     const int MAC_LENGTH = 6;
     struct ifreq ifinfo;
@@ -132,7 +132,7 @@ class MacAddressProcessor {
 
  private:
   bool IsValidPrefix(const char* name,
-                     const char* prefixes[],
+                     const char* const prefixes[],
                      size_t prefixes_count) {
     for (size_t i = 0; i < prefixes_count; i++) {
       if (strncmp(prefixes[i], name, strlen(prefixes[i])) == 0)

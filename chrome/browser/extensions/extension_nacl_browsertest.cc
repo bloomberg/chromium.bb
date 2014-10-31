@@ -30,7 +30,7 @@ using extensions::Manifest;
 
 namespace {
 
-const char* kExtensionId = "bjjcibdiodkkeanflmiijlcfieiemced";
+const char kExtensionId[] = "bjjcibdiodkkeanflmiijlcfieiemced";
 
 // This class tests that the Native Client plugin is blocked unless the
 // .nexe is part of an extension from the Chrome Webstore.
@@ -142,7 +142,6 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     CheckPluginsCreated(extension->GetResourceURL("test.html"),
                         expected_to_succeed);
   }
-
 };
 
 // Test that the NaCl plugin isn't blocked for Webstore extensions.

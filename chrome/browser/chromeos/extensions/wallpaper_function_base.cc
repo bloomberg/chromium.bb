@@ -16,7 +16,7 @@ namespace wallpaper_api_util {
 namespace {
 
 // Keeps in sync (same order) with WallpaperLayout enum in header file.
-const char* kWallpaperLayoutArrays[] = {
+const char* const kWallpaperLayoutArrays[] = {
   "CENTER",
   "CENTER_CROPPED",
   "STRETCH",
@@ -25,7 +25,7 @@ const char* kWallpaperLayoutArrays[] = {
 
 const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 
-} // namespace
+}  // namespace
 
 const char kCancelWallpaperMessage[] = "Set wallpaper was canceled.";
 

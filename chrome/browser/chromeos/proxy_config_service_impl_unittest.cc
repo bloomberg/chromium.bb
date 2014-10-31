@@ -204,7 +204,7 @@ const struct TestParams {
   },
 };  // tests
 
-const char* kUserProfilePath = "user_profile";
+const char kUserProfilePath[] = "user_profile";
 
 }  // namespace
 

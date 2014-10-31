@@ -77,7 +77,7 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   net::TestURLRequestContext context;
-  const char* sensitive_urls[] = {
+  const char* const sensitive_urls[] = {
       "http://clients2.google.com",
       "http://clients22.google.com",
       "https://clients2.google.com",
@@ -92,7 +92,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
       "https://chrome.google.com/webstore/"
           "inlineinstall/detail/kcnhkahnjcbndmmehfkdnkjomaanaooo"
   };
-  const char* non_sensitive_urls[] = {
+  const char* const non_sensitive_urls[] = {
       "http://www.google.com/"
   };
   const int kSigninProcessId = 99;
