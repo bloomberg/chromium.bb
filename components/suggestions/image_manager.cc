@@ -66,10 +66,12 @@ void ImageManager::GetImageForURL(
 }
 
 void ImageManager::OnImageFetched(const GURL& url, const SkBitmap* bitmap) {
-  SaveImage(url, *bitmap);
+  if (bitmap)  // |bitmap| can be nullptr if image fetch was unsuccessful.
+    SaveImage(url, *bitmap);
 }
 
 bool ImageManager::GetImageURL(const GURL& url, GURL* image_url) {
+  DCHECK(image_url);
   std::map<GURL, GURL>::iterator it = image_url_map_.find(url);
   if (it == image_url_map_.end()) return false;  // Not found.
   *image_url = it->second;

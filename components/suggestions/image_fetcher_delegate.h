@@ -15,7 +15,8 @@ class ImageFetcherDelegate {
   ImageFetcherDelegate() {}
 
   // Called when an image was fetched. |url| represents the website for which
-  // the image was fetched. |bitmap| is deleted once out of scope.
+  // the image was fetched. |bitmap| stores image data owned by the caller, and
+  // can be nullptr.
   virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap) = 0;
 
  protected:
