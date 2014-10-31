@@ -69,13 +69,27 @@ void DriveAppProvider::SetDriveServiceBridgeForTest(
 void DriveAppProvider::AddUninstalledDriveAppFromSync(
     const std::string& drive_app_id) {
   mapping_->AddUninstalledDriveApp(drive_app_id);
-  UpdateDriveApps();
+
+  // Decouple the operation because this function could be called during
+  // sync processing and UpdateDriveApps could trigger another sync change.
+  // See http://crbug.com/429205
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DriveAppProvider::UpdateDriveApps,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppProvider::RemoveUninstalledDriveAppFromSync(
     const std::string& drive_app_id) {
   mapping_->RemoveUninstalledDriveApp(drive_app_id);
-  UpdateDriveApps();
+
+  // Decouple the operation because this function could be called during
+  // sync processing and UpdateDriveApps could trigger another sync change.
+  // See http://crbug.com/429205
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DriveAppProvider::UpdateDriveApps,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppProvider::UpdateMappingAndExtensionSystem(

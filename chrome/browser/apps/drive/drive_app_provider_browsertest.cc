@@ -567,6 +567,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UninstallChangedFromSync) {
 
   // Uninstall is added from sync and the app is removed.
   provider()->AddUninstalledDriveAppFromSync(kDriveAppId);
+  content::RunAllPendingInMessageLoop();
   WaitForPendingDriveAppConverters();
   chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
   EXPECT_TRUE(chrome_app_id.empty());
@@ -575,6 +576,7 @@ IN_PROC_BROWSER_TEST_F(DriveAppProviderTest, UninstallChangedFromSync) {
 
   // Uninstall is removed from sync and the app is added again.
   provider()->RemoveUninstalledDriveAppFromSync(kDriveAppId);
+  content::RunAllPendingInMessageLoop();
   WaitForPendingDriveAppConverters();
   chrome_app_id = mapping()->GetChromeApp(kDriveAppId);
   EXPECT_FALSE(chrome_app_id.empty());
