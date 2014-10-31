@@ -17,6 +17,17 @@ SurfaceFactory::SurfaceFactory(SurfaceManager* manager,
 }
 
 SurfaceFactory::~SurfaceFactory() {
+  if (!surface_map_.empty()) {
+    LOG(ERROR) << "SurfaceFactory has " << surface_map_.size()
+               << " entries in map on destruction.";
+  }
+  DestroyAll();
+}
+
+void SurfaceFactory::DestroyAll() {
+  for (auto& surface : surface_map_)
+    manager_->DeregisterSurface(surface.first);
+  surface_map_.clear();
 }
 
 void SurfaceFactory::Create(SurfaceId surface_id, const gfx::Size& size) {

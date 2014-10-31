@@ -42,7 +42,10 @@ class SurfaceFactoryTest : public testing::Test {
     factory_.Create(surface_id_, gfx::Size(5, 5));
   }
 
-  virtual ~SurfaceFactoryTest() { factory_.Destroy(surface_id_); }
+  virtual ~SurfaceFactoryTest() {
+    if (!surface_id_.is_null())
+      factory_.Destroy(surface_id_);
+  }
 
   void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                                 size_t num_resource_ids) {
@@ -355,9 +358,8 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
   }
 }
 
-// Tests shutting down the factory with a surface with outstanding refs still in
-// the map.
-TEST_F(SurfaceFactoryTest, DestroyWithResourceRefs) {
+// Tests doing a DestroyAll before shutting down the factory;
+TEST_F(SurfaceFactoryTest, DestroyAll) {
   SurfaceId id(7);
   factory_.Create(id, gfx::Size(1, 1));
 
@@ -369,6 +371,9 @@ TEST_F(SurfaceFactoryTest, DestroyWithResourceRefs) {
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
   factory_.SubmitFrame(id, frame.Pass(), base::Closure());
+
+  surface_id_ = SurfaceId();
+  factory_.DestroyAll();
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
