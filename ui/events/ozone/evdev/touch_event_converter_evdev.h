@@ -30,11 +30,12 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            int id,
                            const EventDeviceInfo& info,
                            const EventDispatchCallback& dispatch);
-  virtual ~TouchEventConverterEvdev();
+  ~TouchEventConverterEvdev() override;
 
   // EventConverterEvdev:
-  virtual bool HasTouchscreen() const override;
-  virtual gfx::Size GetTouchscreenSize() const override;
+  bool HasTouchscreen() const override;
+  gfx::Size GetTouchscreenSize() const override;
+  bool IsInternal() const override;
 
  private:
   friend class MockTouchEventConverterEvdev;
@@ -43,7 +44,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void Init(const EventDeviceInfo& info);
 
   // Overidden from base::MessagePumpLibevent::Watcher.
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
 
   virtual bool Reinitialize();
 
@@ -108,6 +109,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];
+
+  bool is_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };

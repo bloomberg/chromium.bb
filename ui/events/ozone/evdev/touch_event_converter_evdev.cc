@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "ui/events/device_util_linux.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
@@ -93,7 +94,8 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
       callback_(callback),
       syn_dropped_(false),
       is_type_a_(false),
-      current_slot_(0) {
+      current_slot_(0),
+      is_internal_(IsTouchscreenInternal(path)) {
   Init(info);
 }
 
@@ -170,6 +172,10 @@ bool TouchEventConverterEvdev::HasTouchscreen() const {
 
 gfx::Size TouchEventConverterEvdev::GetTouchscreenSize() const {
   return native_size_;
+}
+
+bool TouchEventConverterEvdev::IsInternal() const {
+  return is_internal_;
 }
 
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {

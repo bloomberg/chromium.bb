@@ -42,4 +42,8 @@ gfx::Size EventConverterEvdev::GetTouchscreenSize() const {
   return gfx::Size();
 }
 
+bool EventConverterEvdev::IsInternal() const {
+  return false;
+}
+
 }  // namespace ui

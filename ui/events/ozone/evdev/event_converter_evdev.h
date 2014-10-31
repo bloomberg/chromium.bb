@@ -37,6 +37,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // touchscreen device.
   virtual gfx::Size GetTouchscreenSize() const;
 
+  // Returns true if the converter is used with an internal device.
+  virtual bool IsInternal() const;
+
  protected:
   // base::MessagePumpLibevent::Watcher:
   virtual void OnFileCanWriteWithoutBlocking(int fd) override;

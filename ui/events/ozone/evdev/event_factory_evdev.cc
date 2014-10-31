@@ -13,7 +13,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "ui/events/device_data_manager.h"
-#include "ui/events/device_util_linux.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -303,7 +302,7 @@ void EventFactoryEvdev::NotifyHotplugEventObserver(
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
       InputDeviceType device_type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
-      if (IsTouchscreenInternal(converter.path()))
+      if (converter.IsInternal())
         device_type = InputDeviceType::INPUT_DEVICE_INTERNAL;
 
       touchscreens.push_back(
