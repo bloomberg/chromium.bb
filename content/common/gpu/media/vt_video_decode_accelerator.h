@@ -33,7 +33,9 @@ class VTVideoDecodeAccelerator
     : public media::VideoDecodeAccelerator,
       public base::NonThreadSafe {
  public:
-  explicit VTVideoDecodeAccelerator(CGLContextObj cgl_context);
+  explicit VTVideoDecodeAccelerator(
+      CGLContextObj cgl_context,
+      const base::Callback<bool(void)>& make_context_current);
   ~VTVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
@@ -121,6 +123,7 @@ class VTVideoDecodeAccelerator
   // GPU thread state.
   //
   CGLContextObj cgl_context_;
+  base::Callback<bool(void)> make_context_current_;
   media::VideoDecodeAccelerator::Client* client_;
   bool has_error_;  // client_->NotifyError() called.
   gfx::Size texture_size_;

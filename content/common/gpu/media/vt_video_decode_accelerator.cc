@@ -15,7 +15,6 @@
 #include "content/public/common/content_switches.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/gl/scoped_cgl.h"
 
 using content_common_gpu_media::kModuleVt;
 using content_common_gpu_media::InitializeStubs;
@@ -73,8 +72,11 @@ VTVideoDecodeAccelerator::PendingAction::PendingAction(
 VTVideoDecodeAccelerator::PendingAction::~PendingAction() {
 }
 
-VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(CGLContextObj cgl_context)
+VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
+    CGLContextObj cgl_context,
+    const base::Callback<bool(void)>& make_context_current)
     : cgl_context_(cgl_context),
+      make_context_current_(make_context_current),
       client_(NULL),
       has_error_(false),
       format_(NULL),
@@ -82,6 +84,7 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(CGLContextObj cgl_context)
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_this_factory_(this),
       decoder_thread_("VTDecoderThread") {
+  DCHECK(!make_context_current_.is_null());
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
 }
@@ -533,7 +536,12 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
   if (available_picture_ids_.empty())
     return last_sent_bitstream_id;
 
-  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(cgl_context_);
+  if (!make_context_current_.Run()) {
+    LOG(ERROR) << "Failed to make GL context current";
+    NotifyError(PLATFORM_FAILURE);
+    return last_sent_bitstream_id;
+  }
+
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
   while (!available_picture_ids_.empty() &&
          !decoded_frames_.empty() &&
@@ -554,7 +562,6 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
     if (image_buffer) {
       IOSurfaceRef surface = CVPixelBufferGetIOSurface(image_buffer);
 
-      // TODO(sandersd): Find out why this sometimes fails due to no GL context.
       gfx::ScopedTextureBinder
           texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
       CGLError status = CGLTexImageIOSurface2D(
@@ -584,6 +591,7 @@ int32_t VTVideoDecodeAccelerator::SendPictures(int32_t up_to_bitstream_id) {
     pending_bitstream_ids_.pop();
   }
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
+
   return last_sent_bitstream_id;
 }
 
