@@ -38,28 +38,17 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
   return std::min(websql_error + 30, kResultHistogramSize - 1);
 }
 
-#define UMA_HISTOGRAM_WEBSQL_RESULT(name, is_sync_database, \
-                                    callsite, websql_error, sqlite_error) \
+#define UMA_HISTOGRAM_WEBSQL_RESULT(name, callsite, websql_error, sqlite_error) \
   do { \
     DCHECK(callsite < kCallsiteHistogramSize); \
     int result = DetermineHistogramResult(websql_error, sqlite_error); \
-    if (is_sync_database) { \
-      UMA_HISTOGRAM_ENUMERATION("websql.Sync." name, \
-                                result, kResultHistogramSize); \
-      if (result) { \
-        UMA_HISTOGRAM_ENUMERATION("websql.Sync." name ".ErrorSite", \
-                                  callsite, kCallsiteHistogramSize); \
-      } \
-    } else { \
-      UMA_HISTOGRAM_ENUMERATION("websql.Async." name, \
-                                result, kResultHistogramSize); \
-      if (result) { \
-        UMA_HISTOGRAM_ENUMERATION("websql.Async." name ".ErrorSite", \
-                                  callsite, kCallsiteHistogramSize); \
-      } \
+    UMA_HISTOGRAM_ENUMERATION("websql.Async." name, \
+                              result, kResultHistogramSize); \
+    if (result) { \
+      UMA_HISTOGRAM_ENUMERATION("websql.Async." name ".ErrorSite", \
+                                callsite, kCallsiteHistogramSize); \
     } \
   } while (0)
-
 }  // namespace
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender)
@@ -102,9 +91,8 @@ void WebDatabaseObserverImpl::databaseClosed(
 void WebDatabaseObserverImpl::reportOpenDatabaseResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", is_sync_database, callsite,
+  UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
@@ -112,9 +100,8 @@ void WebDatabaseObserverImpl::reportOpenDatabaseResult(
 void WebDatabaseObserverImpl::reportChangeVersionResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("ChangeVersionResult", is_sync_database, callsite,
+  UMA_HISTOGRAM_WEBSQL_RESULT("ChangeVersionResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
@@ -122,9 +109,8 @@ void WebDatabaseObserverImpl::reportChangeVersionResult(
 void WebDatabaseObserverImpl::reportStartTransactionResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("BeginResult", is_sync_database, callsite,
+  UMA_HISTOGRAM_WEBSQL_RESULT("BeginResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
@@ -132,9 +118,8 @@ void WebDatabaseObserverImpl::reportStartTransactionResult(
 void WebDatabaseObserverImpl::reportCommitTransactionResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("CommitResult", is_sync_database, callsite,
+  UMA_HISTOGRAM_WEBSQL_RESULT("CommitResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
@@ -142,9 +127,8 @@ void WebDatabaseObserverImpl::reportCommitTransactionResult(
 void WebDatabaseObserverImpl::reportExecuteStatementResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("StatementResult", is_sync_database, callsite,
+  UMA_HISTOGRAM_WEBSQL_RESULT("StatementResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
@@ -152,16 +136,11 @@ void WebDatabaseObserverImpl::reportExecuteStatementResult(
 void WebDatabaseObserverImpl::reportVacuumDatabaseResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    bool is_sync_database,
     int sqlite_error) {
   int result = DetermineHistogramResult(-1, sqlite_error);
-  if (is_sync_database) {
-    UMA_HISTOGRAM_ENUMERATION("websql.Sync.VacuumResult",
+  UMA_HISTOGRAM_ENUMERATION("websql.Async.VacuumResult",
                               result, kResultHistogramSize);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("websql.Async.VacuumResult",
-                              result, kResultHistogramSize);
-  }
+
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
 }
 

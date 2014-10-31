@@ -31,32 +31,26 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
   virtual void reportOpenDatabaseResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int callsite, int websql_error, int sqlite_error);
   virtual void reportChangeVersionResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int callsite, int websql_error, int sqlite_error);
   virtual void reportStartTransactionResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int callsite, int websql_error, int sqlite_error);
   virtual void reportCommitTransactionResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int callsite, int websql_error, int sqlite_error);
   virtual void reportExecuteStatementResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int callsite, int websql_error, int sqlite_error);
   virtual void reportVacuumDatabaseResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
-      bool is_sync_database,
       int sqlite_error);
 
   void WaitForAllDatabasesToClose();
