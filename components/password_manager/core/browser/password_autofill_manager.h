@@ -44,11 +44,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Handles a request from the renderer to show a popup with the given
   // |suggestions| from the password manager.
-  void OnShowPasswordSuggestions(
-      const autofill::FormFieldData& field,
-      const gfx::RectF& bounds,
-      const std::vector<base::string16>& suggestions,
-      const std::vector<base::string16>& realms);
+  void OnShowPasswordSuggestions(const autofill::FormFieldData& field,
+                                 const base::string16& typed_username,
+                                 bool show_all,
+                                 const gfx::RectF& bounds);
 
   // Invoked to clear any page specific cached values.
   void Reset();
