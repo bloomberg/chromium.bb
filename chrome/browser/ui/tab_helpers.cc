@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_ANDROID)
@@ -224,7 +225,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // because the connected state may change while this tab is open.  Having a
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
-  if (OneClickSigninHelper::CanOffer(web_contents,
+  if (switches::IsEnableWebBasedSignin() &&
+      OneClickSigninHelper::CanOffer(web_contents,
                                      OneClickSigninHelper::CAN_OFFER_FOR_ALL,
                                      std::string(),
                                      NULL)) {
