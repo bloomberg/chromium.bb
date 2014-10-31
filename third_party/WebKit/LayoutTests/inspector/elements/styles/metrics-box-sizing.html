@@ -79,7 +79,7 @@ function test()
         {
             section = WebInspector.panels.elements.sidebarPanes.metrics;
             section.expand();
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.addSniffer(section._updateThrottler, "_processCompletedForTests", next);
         },
 
         function testInitialBorderBoxMetrics(next)
@@ -111,7 +111,7 @@ function test()
         {
             section = WebInspector.panels.elements.sidebarPanes.metrics;
             section.expand();
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.addSniffer(section._updateThrottler, "_processCompletedForTests", next);
         },
 
         function testInitialContentBoxMetrics(next)

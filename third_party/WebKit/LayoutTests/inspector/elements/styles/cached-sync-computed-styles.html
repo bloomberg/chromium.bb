@@ -20,10 +20,9 @@ function test()
     var backendCallCount = 0;
     var nodeId;
 
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 3000);
-    function onBackendCall(domain, method)
+    function onBackendCall(domain, method, params)
     {
-        if (method === "CSS.getComputedStyleForNode")
+        if (method === "CSS.getComputedStyleForNode" && params.nodeId === nodeId)
             ++backendCallCount;
     }
 
