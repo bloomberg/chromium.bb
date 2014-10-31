@@ -269,6 +269,7 @@
       'PluginPlaceholderImplTest.cpp',
       'PopupContainerTest.cpp',
       'PopupMenuTest.cpp',
+      'WebDragDataTest.cpp',
       'WebNodeTest.cpp',
       # FIXME: Move the tests from web/tests/ to appropriate places.
       # crbug.com/353585
