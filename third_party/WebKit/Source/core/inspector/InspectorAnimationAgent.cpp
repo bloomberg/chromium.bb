@@ -36,6 +36,7 @@ void InspectorAnimationAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorAnimationAgent::clearFrontend()
 {
     m_frontend = nullptr;
+    reset();
 }
 
 void InspectorAnimationAgent::reset()
