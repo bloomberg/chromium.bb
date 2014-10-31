@@ -88,6 +88,8 @@ private:
 
     explicit InspectorLayerTreeAgent(Page*);
 
+    GraphicsLayer* rootGraphicsLayer();
+
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const GraphicsContextSnapshot* snapshotById(ErrorString*, const String& snapshotId);

@@ -34,7 +34,9 @@
 #include "core/inspector/InspectorLayerTreeAgent.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorState.h"
@@ -221,7 +223,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
     buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);
-    gatherGraphicsLayers(compositor->rootGraphicsLayer(), layerIdToNodeIdMap, layers);
+    gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers);
     return layers.release();
 }
 
@@ -268,6 +270,14 @@ RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
     return compositor;
 }
 
+GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer()
+{
+    if (m_page->settings().pinchVirtualViewportEnabled())
+        return m_page->frameHost().pinchViewport().rootGraphicsLayer();
+
+    return renderLayerCompositor()->rootGraphicsLayer();
+}
+
 static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
 {
     if (root->platformLayer()->id() == layerId)
@@ -297,7 +307,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         return 0;
     }
 
-    GraphicsLayer* result = findLayerById(compositor->rootGraphicsLayer(), id);
+    GraphicsLayer* result = findLayerById(rootGraphicsLayer(), id);
     if (!result)
         *errorString = "No layer matching given id found";
     return result;

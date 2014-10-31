@@ -512,6 +512,8 @@ String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)
         name =  "Overlay Scrollbar Horizontal Layer";
     } else if (graphicsLayer == m_overlayScrollbarVertical.get()) {
         name =  "Overlay Scrollbar Vertical Layer";
+    } else if (graphicsLayer == m_rootTransformLayer) {
+        name =  "Root Transform Layer";
     } else {
         ASSERT_NOT_REACHED();
     }
