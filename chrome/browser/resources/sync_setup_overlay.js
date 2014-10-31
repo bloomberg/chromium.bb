@@ -41,7 +41,9 @@ cr.exportPath('options');
  *             typedUrlsEnforced: boolean,
  *             typedUrlsRegistered: boolean,
  *             typedUrlsSynced: boolean,
- *             usePassphrase: boolean}}
+ *             usePassphrase: boolean,
+ *             wifiCredentialsEnforced: (boolean|undefined),
+ *             wifiCredentialsSynced: (boolean|undefined)}}
  */
 var SyncConfig;
 
