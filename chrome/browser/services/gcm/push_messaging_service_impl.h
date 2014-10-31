@@ -11,6 +11,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/push_messaging_status.h"
+#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
 
 class Profile;
 
@@ -57,6 +58,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       int render_frame_id,
       bool user_gesture,
       const content::PushMessagingService::RegisterCallback& callback) override;
+  blink::WebPushPermissionStatus GetPermissionStatus(
+      const GURL& requesting_origin,
+      int renderer_id,
+      int render_frame_id) override;
 
   void SetProfileForTesting(Profile* profile);
 

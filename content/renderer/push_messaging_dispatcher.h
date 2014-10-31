@@ -11,6 +11,7 @@
 #include "content/public/common/push_messaging_status.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebPushClient.h"
+#include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
 
 class GURL;
 
@@ -39,7 +40,10 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   // WebPushClient implementation.
   virtual void registerPushMessaging(
       blink::WebPushRegistrationCallbacks* callbacks,
-      blink::WebServiceWorkerProvider* service_worker_provider);
+      blink::WebServiceWorkerProvider* service_worker_provider);  // override
+  virtual void getPermissionStatus(
+      blink::WebPushPermissionCallback* callback,
+      blink::WebServiceWorkerProvider* service_worker_provider);  // override
 
   void DoRegister(blink::WebPushRegistrationCallbacks* callbacks,
                   blink::WebServiceWorkerProvider* service_worker_provider,
@@ -51,8 +55,14 @@ class PushMessagingDispatcher : public RenderFrameObserver,
 
   void OnRegisterError(int32 callbacks_id, PushRegistrationStatus status);
 
+  void OnPermissionStatus(int32 callback_id,
+                          blink::WebPushPermissionStatus status);
+  void OnPermissionStatusFailure(int32 callback_id);
+
   IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
       registration_callbacks_;
+  IDMap<blink::WebPushPermissionCallback, IDMapOwnPointer>
+      permission_check_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingDispatcher);
 };

@@ -13,6 +13,8 @@
 #include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
+class GURL;
+
 namespace content {
 
 class PushMessagingService;
@@ -36,6 +38,10 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                   bool user_gesture,
                   int service_worker_provider_id);
 
+  void OnPermissionStatusRequest(int render_frame_id,
+                                 int service_worker_provider_id,
+                                 int permission_callback_id);
+
   void DoRegister(int render_frame_id,
                   int callbacks_id,
                   const std::string& sender_id,
@@ -43,6 +49,9 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                   const GURL& origin,
                   int64 service_worker_registration_id);
 
+  void DoPermissionStatusRequest(const GURL& requesting_origin,
+                                 int render_frame_id,
+                                 int callback_id);
   void DidRegister(int render_frame_id,
                    int callbacks_id,
                    const GURL& push_endpoint,

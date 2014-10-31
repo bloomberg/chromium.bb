@@ -48,6 +48,13 @@ void PermissionContextBase::RequestPermission(
                    callback);
 }
 
+ContentSetting PermissionContextBase::GetPermissionStatus(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  return profile_->GetHostContentSettingsMap()->GetContentSetting(
+      requesting_origin, embedding_origin, permission_type_, std::string());
+}
+
 void PermissionContextBase::CancelPermissionRequest(
     content::WebContents* web_contents,
     const PermissionRequestID& id) {

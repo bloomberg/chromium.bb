@@ -30,6 +30,21 @@ namespace gcm {
 
 namespace {
 const int kMaxRegistrations = 1000000;
+
+blink::WebPushPermissionStatus ToPushPermission(ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return blink::WebPushPermissionStatusGranted;
+    case CONTENT_SETTING_BLOCK:
+      return blink::WebPushPermissionStatusDenied;
+    case CONTENT_SETTING_ASK:
+      return blink::WebPushPermissionStatusDefault;
+    default:
+      NOTREACHED();
+      return blink::WebPushPermissionStatusDenied;
+  }
+}
+
 }  // namespace
 
 // static
@@ -232,6 +247,32 @@ void PushMessagingServiceImpl::Register(
                  application_id,
                  sender_id,
                  callback));
+}
+
+blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
+    const GURL& requesting_origin,
+    int renderer_id,
+    int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(renderer_id, render_frame_id);
+
+  // The frame doesn't exist any more, or we received a bad frame id.
+  if (!render_frame_host)
+    return blink::WebPushPermissionStatusDenied;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // The page doesn't exist any more or we got a bad render frame host.
+  if (!web_contents)
+    return blink::WebPushPermissionStatusDenied;
+
+  GURL embedder_origin = web_contents->GetLastCommittedURL().GetOrigin();
+  gcm::PushMessagingPermissionContext* permission_context =
+      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  return ToPushPermission(
+      permission_context->GetPermissionStatus(
+          requesting_origin, embedder_origin));
 }
 
 void PushMessagingServiceImpl::RegisterEnd(
