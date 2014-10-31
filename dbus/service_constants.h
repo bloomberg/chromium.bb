@@ -1764,6 +1764,22 @@ const char kTestICMP[] = "TestICMP";
 const char kTestICMPWithOptions[] = "TestICMPWithOptions";
 const char kLogKernelTaskStates[] = "LogKernelTaskStates";
 const char kUploadCrashes[] = "UploadCrashes";
+const char kRemoveRootfsVerification[] = "RemoveRootfsVerification";
+const char kEnableBootFromUsb[] = "EnableBootFromUsb";
+const char kConfigureSshServer[] = "ConfigureSshServer";
+const char kSetUserPassword[] = "SetUserPassword";
+const char kEnableChromeDevFeatures[] = "EnableChromeDevFeatures";
+const char kQueryDevFeatures[] = "QueryDevFeatures";
+
+// Values.
+enum DevFeatureFlag {
+  DEV_FEATURES_DISABLED = 1 << 0,
+  DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED = 1 << 1,
+  DEV_FEATURE_BOOT_FROM_USB_ENABLED = 1 << 2,
+  DEV_FEATURE_SSH_SERVER_CONFIGURED = 1 << 3,
+  DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET = 1 << 4,
+  DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET = 1 << 5,
+};
 }  // namespace debugd
 
 namespace permission_broker {
