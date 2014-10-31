@@ -4,8 +4,11 @@
 
 #include "net/server/http_server.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -30,7 +33,11 @@ HttpServer::HttpServer(scoped_ptr<ServerSocket> server_socket,
       last_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(server_socket_);
-  DoAcceptLoop();
+  // Start accepting connections in next run loop in case when delegate is not
+  // ready to get callbacks.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&HttpServer::DoAcceptLoop, weak_ptr_factory_.GetWeakPtr()));
 }
 
 HttpServer::~HttpServer() {

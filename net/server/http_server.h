@@ -40,6 +40,10 @@ class HttpServer {
     virtual void OnClose(int connection_id) = 0;
   };
 
+  // Instantiates a http server with |server_socket| which already started
+  // listening, but not accepting.  This constructor schedules accepting
+  // connections asynchronously in case when |delegate| is not ready to get
+  // callbacks yet.
   HttpServer(scoped_ptr<ServerSocket> server_socket,
              HttpServer::Delegate* delegate);
   ~HttpServer();
