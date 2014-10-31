@@ -24974,6 +24974,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Record usage of PPB_Flash.Navigate() Pepper API.</summary>
 </histogram>
 
+<histogram name="Plugin.FlashUsage" enum="FlashUsage">
+  <owner>yzshen@chromium.org</owner>
+  <owner>thestig@chromium.org</owner>
+  <summary>Collects Flash usage data.</summary>
+</histogram>
+
 <histogram name="Plugin.PpapiBrokerLoadErrorCode" units="code">
   <owner>xhwang@chromium.org</owner>
   <summary>The error code of a PPAPI broker load failure.</summary>
@@ -45398,6 +45404,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Rejected because of other headers (e.g., custom headers)."/>
   <int value="14" label="The total number of rejected navigate requests."/>
   <int value="15" label="The total number of navigate requests."/>
+</enum>
+
+<enum name="FlashUsage" type="int">
+  <int value="0" label="Started NPAPI Flash at least once">
+    Number of browser processes that have started at least one NPAPI Flash
+    process during their lifetime.
+  </int>
+  <int value="1" label="Started PPAPI Flash at least once">
+    Number of browser processes that have started at least one PPAPI Flash
+    process during their lifetime.
+  </int>
+  <int value="2" label="Started browser process">
+    Total number of browser processes.
+  </int>
 </enum>
 
 <enum name="FtpDataConnectionError" type="int">
