@@ -122,6 +122,7 @@ void SignedCertificateTimestampsViews::OnPerformAction(
 
 void SignedCertificateTimestampsViews::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  views::DialogDelegateView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this)
     Init();
 }

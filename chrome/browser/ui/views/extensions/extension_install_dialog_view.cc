@@ -754,6 +754,7 @@ void ExtensionInstallDialogView::ContentsChanged() {
 
 void ExtensionInstallDialogView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  views::DialogDelegateView::ViewHierarchyChanged(details);
   // Since we want the links to show up in the same visual row as the accept
   // and cancel buttons, which is provided by the framework, we must add the
   // buttons to the non-client view, which is the parent of this view.

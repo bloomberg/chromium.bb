@@ -210,9 +210,9 @@ ui::ModalType NetworkConfigView::GetModalType() const {
 }
 
 void NetworkConfigView::GetAccessibleState(ui::AXViewState* state) {
+  views::DialogDelegateView::GetAccessibleState(state);
   state->name =
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);
-  state->role = ui::AX_ROLE_DIALOG;
 }
 
 void NetworkConfigView::ButtonPressed(views::Button* sender,
@@ -266,6 +266,7 @@ void NetworkConfigView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   // Can't init before we're inserted into a Container, because we require
   // a HWND to parent native child controls to.
+  views::DialogDelegateView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this) {
     AddChildView(child_config_view_);
   }

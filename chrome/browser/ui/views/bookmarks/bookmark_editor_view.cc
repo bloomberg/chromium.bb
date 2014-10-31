@@ -168,9 +168,9 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void BookmarkEditorView::GetAccessibleState(ui::AXViewState* state) {
+  views::DialogDelegateView::GetAccessibleState(state);
   state->name =
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE);
-  state->role = ui::AX_ROLE_DIALOG;
 }
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,

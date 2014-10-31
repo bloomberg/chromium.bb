@@ -361,6 +361,7 @@ void HungRendererDialogView::TabDestroyed() {
 
 void HungRendererDialogView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  views::DialogDelegateView::ViewHierarchyChanged(details);
   if (!initialized_ && details.is_add && details.child == this && GetWidget())
     Init();
 }

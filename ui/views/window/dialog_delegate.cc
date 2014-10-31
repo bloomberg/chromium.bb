@@ -5,6 +5,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #include "base/logging.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -236,6 +237,17 @@ const Widget* DialogDelegateView::GetWidget() const {
 
 View* DialogDelegateView::GetContentsView() {
   return this;
+}
+
+void DialogDelegateView::GetAccessibleState(ui::AXViewState* state) {
+  state->name = GetDialogTitle();
+  state->role = ui::AX_ROLE_DIALOG;
+}
+
+void DialogDelegateView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this && GetWidget())
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 }  // namespace views

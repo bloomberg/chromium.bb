@@ -271,6 +271,7 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 
 void CollectedCookiesViews::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  views::DialogDelegateView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this)
     Init();
 }
