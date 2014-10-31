@@ -51,7 +51,7 @@ bool NotificationUIManagerAndroid::CancelAllBySourceOrigin(
   return false;
 }
 
-bool NotificationUIManagerAndroid::CancelAllByProfile(Profile* profile) {
+bool NotificationUIManagerAndroid::CancelAllByProfile(ProfileID profile_id) {
   return false;
 }
 

@@ -768,9 +768,6 @@
           'native_memory_pressure_signals%': 1,
           'enable_printing%': 2,
           'enable_task_manager%':0,
-           # Set to 1 once we have a notification system for Android.
-           # http://crbug.com/115320
-          'notifications%': 0,
           'video_hole%': 1,
         }],
 

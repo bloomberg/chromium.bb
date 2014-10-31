@@ -2084,6 +2084,8 @@
             'browser/extensions/webstore_inline_installer_unittest.cc',
             'browser/extensions/webstore_installer_unittest.cc',
             'browser/metrics/extensions_metrics_provider_unittest.cc',
+            'browser/notifications/extension_welcome_notification_unittest.cc',
+            'browser/notifications/notification_conversion_helper_unittest.cc',
             'browser/renderer_context_menu/context_menu_content_type_unittest.cc',
             'browser/search/hotword_service_unittest.cc',
             'browser/signin/easy_unlock_screenlock_state_handler_unittest.cc',
@@ -2647,6 +2649,10 @@
 
             # Android has no windows that have placement info.
             'browser/prefs/browser_ui_prefs_migrator_unittest.cc',
+
+            # Android does not use the Message Center notification system.
+            'browser/notifications/message_center_notifications_unittest.cc',
+            'browser/notifications/message_center_settings_controller_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

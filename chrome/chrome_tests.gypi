@@ -1443,6 +1443,15 @@
             ['exclude', '^browser/extensions/notifications_apitest.cc'],
           ],
         }],
+        ['OS=="android"', {
+          'sources!': [
+            # Android does not use the message center-based Notification system.
+            'browser/notifications/message_center_notifications_browsertest.cc',
+
+            # TODO(peter): Enable the Notification browser tests.
+            'browser/notifications/notification_browsertest.cc',
+          ]
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/controls/webview/webview_tests.gyp:webview_test_support',
