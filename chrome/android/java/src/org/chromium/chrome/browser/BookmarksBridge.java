@@ -373,6 +373,19 @@ public class BookmarksBridge {
     }
 
     /**
+     * Synchronously gets a list of bookmarks that match the specified search query.
+     * @param query Keyword used for searching bookmarks.
+     * @param maxNumberOfResult Maximum number of result to fetch.
+     * @return List of bookmarks that are related to the given query.
+     */
+    public List<BookmarkId> searchBookmarks(String query, int maxNumberOfResult) {
+        List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
+        nativeSearchBookmarks(mNativeBookmarksBridge, bookmarkIds, query,
+                maxNumberOfResult);
+        return bookmarkIds;
+    }
+
+    /**
      * Set title of the given bookmark.
      */
     public void setBookmarkTitle(BookmarkId id, String title) {
@@ -681,6 +694,8 @@ public class BookmarksBridge {
     private native void nativeDeleteBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId);
     private native void nativeMoveBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId,
             BookmarkId newParentId, int index);
+    private native void nativeSearchBookmarks(long nativeBookmarksBridge,
+            List<BookmarkId> bookmarkIds, String query, int maxNumber);
     private native BookmarkId nativeAddBookmark(long nativeBookmarksBridge, BookmarkId parent,
             int index, String title, String url);
     private native void nativeUndo(long nativeBookmarksBridge);

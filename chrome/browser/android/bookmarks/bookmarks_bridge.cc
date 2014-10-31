@@ -20,6 +20,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/undo_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
@@ -651,6 +652,25 @@ void BookmarksBridge::MoveBookmark(JNIEnv* env,
   type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
   bookmark_model_->Move(node, new_parent_node, index);
+}
+
+void BookmarksBridge::SearchBookmarks(JNIEnv* env,
+                                      jobject obj,
+                                      jobject j_list,
+                                      jstring j_query,
+                                      jint max_results) {
+  DCHECK(bookmark_model_->loaded());
+
+  std::vector<bookmarks::BookmarkMatch> results;
+  bookmark_model_->GetBookmarksMatching(
+      base::android::ConvertJavaStringToUTF16(env, j_query),
+      max_results,
+      &results);
+  for (const bookmarks::BookmarkMatch& match : results) {
+    const BookmarkNode* node = match.node;
+    Java_BookmarksBridge_addToBookmarkIdList(
+        env, j_list, node->id(), node->type());
+  }
 }
 
 ScopedJavaLocalRef<jobject> BookmarksBridge::AddBookmark(

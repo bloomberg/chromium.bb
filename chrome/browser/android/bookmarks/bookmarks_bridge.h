@@ -118,6 +118,12 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                                  jobject j_callback_obj,
                                  jobject j_result_obj);
 
+  void SearchBookmarks(JNIEnv* env,
+                       jobject obj,
+                       jobject j_list,
+                       jstring j_query,
+                       jint max_results);
+
   base::android::ScopedJavaLocalRef<jobject> AddFolder(JNIEnv* env,
                                                        jobject obj,
                                                        jobject j_parent_id_obj,
