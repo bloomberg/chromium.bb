@@ -22,6 +22,7 @@
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/url_prefix.h"
 #include "net/base/net_util.h"
+#include "url/url_constants.h"
 
 using bookmarks::BookmarkMatch;
 
@@ -261,10 +262,9 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   // between these high-quality bookmarks.
   //
   // The normalized value is multiplied against the scoring range available,
-  // which is 299.  The 299 is calculated by subtracting the minimum possible
-  // score, 900, from the maximum possible score, 1199.  This product, ranging
-  // from 0 to 299, is added to the minimum possible score, 900, giving the
-  // preliminary score.
+  // which is the difference between the minimum possible score and the maximum
+  // possible score.  This product is added to the minimum possible score to
+  // give the preliminary score.
   //
   // If the preliminary score is less than the maximum possible score, 1199,
   // it can be boosted up to that maximum possible score if the URL referenced
@@ -286,12 +286,19 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
       for_each(bookmark_match.url_match_positions.begin(),
                bookmark_match.url_match_positions.end(),
                ScoringFunctor(bookmark_match.node->url().spec().length()));
-  const double summed_factors = title_position_functor.ScoringFactor() +
+  const double title_match_strength = title_position_functor.ScoringFactor();
+  const double summed_factors = title_match_strength +
       url_position_functor.ScoringFactor();
   const double normalized_sum =
       std::min(summed_factors / (title.size() + 10), 1.0);
-  const int kBaseBookmarkScore = 900;
-  const int kMaxBookmarkScore = 1199;
+  // Bookmarks with javascript scheme ("bookmarklets") that do not have title
+  // matches get a lower base and lower maximum score because returning them
+  // for matches in their (often very long) URL looks stupid and is often not
+  // intended by the user.
+  const bool bookmarklet_without_title_match =
+      url.SchemeIs(url::kJavaScriptScheme) && (title_match_strength == 0.0);
+  const int kBaseBookmarkScore = bookmarklet_without_title_match ? 400 : 900;
+  const int kMaxBookmarkScore = bookmarklet_without_title_match ? 799 : 1199;
   const double kBookmarkScoreRange =
       static_cast<double>(kMaxBookmarkScore - kBaseBookmarkScore);
   match.relevance = static_cast<int>(normalized_sum * kBookmarkScoreRange) +
