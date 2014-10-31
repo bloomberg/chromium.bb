@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -34,6 +36,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/url_pattern.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -132,8 +135,18 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
       const FileBrowserHandler* handler = handler_iter->get();
       if (!handler->MatchesURL(lowercase_url))
         continue;
-
-      results.push_back(handler_iter->get());
+      // Filter out Files app from handling ZIP files via a handler, as it's
+      // now handled by new ZIP unpacker extension based on File System Provider
+      // API.
+      const URLPattern zip_pattern(URLPattern::SCHEME_EXTENSION,
+                                   "chrome-extension://*/*.zip");
+      if (handler->extension_id() == kFileManagerAppId &&
+          zip_pattern.MatchesURL(selected_file_url) &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kDisableNewZIPUnpacker)) {
+        continue;
+      }
+      results.push_back(handler);
     }
   }
   return results;

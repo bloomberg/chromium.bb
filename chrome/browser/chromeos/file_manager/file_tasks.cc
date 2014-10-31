@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -390,6 +391,14 @@ void FindFileHandlerTasks(
         FindFileHandlersForFiles(*extension, path_mime_set);
     if (file_handlers.empty())
       continue;
+
+    // If the new ZIP unpacker is disabled, then hide its handlers, so we don't
+    // show both the legacy one and the new one in Files app for ZIP files.
+    if (extension->id() == extension_misc::kZIPUnpackerExtensionId &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kDisableNewZIPUnpacker)) {
+      continue;
+    }
 
     // Only show the first matching handler from each app.
     const extensions::FileHandlerInfo* file_handler = file_handlers.front();
