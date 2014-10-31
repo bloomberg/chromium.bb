@@ -211,7 +211,6 @@ void LaunchAndWaitForExit(const base::FilePath& exe_path,
   int exit_code = -1;
   bool success = base::WaitForExitCode(scan_reporter_process, &exit_code);
   DCHECK(success);
-  base::CloseProcessHandle(scan_reporter_process);
   scan_reporter_process = base::kNullProcessHandle;
   // It's OK if this doesn't complete, the work will continue on next startup.
   BrowserThread::PostTask(
