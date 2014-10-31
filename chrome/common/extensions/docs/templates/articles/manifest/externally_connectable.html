@@ -19,27 +19,28 @@ If <code>externally_connectable</code> is not declared in your {{platform}}'s ma
 {
   "name": "My externally connectable {{platform}}",
   "externally_connectable": {
-    // Extension and app IDs. If this field is not specified, no extensions or
-    // apps can connect.
+    // Extension and app IDs. If this field is not specified, no
+    // extensions or apps can connect.
     "ids": [
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       ...
-      // Alternatively, to match all extensions and apps, specify only "*".
+      // Alternatively, to match all extensions and apps, specify only
+      // "*".
       "*"
     ],
-    // Match patterns for web pages. Does not affect content scripts. If this
-    // field is not specified, no webpages can connect.
+    // Match patterns for web pages. Does not affect content scripts.
+    // If this field is not specified, no webpages can connect.
     "matches": [
       "https://*.google.com/*",
       "*://*.chromium.org/*",
       ...
     ],
-    // Indicates that the extension would like to make use of the TLS channel
-    // ID of the web page connecting to it. The web page must also opt to send
-    // the TLS channel ID to the extension via setting
-    // <code>includeTlsChannelId</code> to <code>true</code> in
-    // $(ref:runtime.connect)'s connectInfo or $(ref:runtime.sendMessage)'s options.
+    // Indicates that the extension would like to make use of the TLS
+    // channel ID of the web page connecting to it. The web page must
+    // also opt to send the TLS channel ID to the extension via setting
+    // <code>includeTlsChannelId</code> to <code>true</code> in $(ref:runtime.connect)'s connectInfo
+    // or $(ref:runtime.sendMessage)'s options.
     "accepts_tls_channel_id": false
   },
   ...
@@ -48,5 +49,6 @@ If <code>externally_connectable</code> is not declared in your {{platform}}'s ma
 
 <h2 id="reference">Reference</h2>
 <p class="api_reference">
-{{+partials.type type:data/}}
+The externally_connectable manifest key can have the following properties:
+{{+partials.manifest_type type:data/}}
 </p>

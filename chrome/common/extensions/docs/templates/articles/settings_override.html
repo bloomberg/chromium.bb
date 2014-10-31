@@ -77,22 +77,5 @@ http://example.com/page.html) within your extension.</p>
 An extension can override one or more of the following properties in the
 manifest:
 </p>
-
-<ul>
-{{#f:apis.extensions.manifestTypes.byName.ChromeSettingsOverrides.properties}}
-  <li>
-  <p id="{{f.name}}"><b><code>{{f.name}}</code> ({{+partials.variable_type type:f/}})</b></p>
-  <p>{{f.description}}</p>
-  {{?f.properties}}
-    <table>
-    <tr><th>Type</th><th>Attribute</th><th>Description</th></tr>
-    {{+partials.type_item
-       title:f.strings.properties
-       display_name:display_name
-       items:f.properties
-       item_partial:(partials.parameter_full hideParamTOC:true)/}}
-    </table>
-  {{/}}
-{{/}}
-</ul>
-
+{{+partials.manifest_type
+   type:apis.extensions.manifestTypes.byName.ChromeSettingsOverrides /}}
