@@ -1001,7 +1001,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // for a locked profile, we have to show the User Manager instead as the
   // locked profile needs authentication.
   if (IsProfileSignedOut(lastProfile)) {
-    UserManager::Show(lastProfile->GetPath(),
+    UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     return;
@@ -1096,8 +1096,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       }
       break;
     case IDC_TASK_MANAGER:
-      content::RecordAction(UserMetricsAction("TaskManager"));
-      TaskManagerMac::Show();
+      chrome::OpenTaskManager(NULL);
       break;
     case IDC_OPTIONS:
       [self showPreferences:sender];
@@ -1205,7 +1204,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // so we have to show the User Manager as well.
   Profile* lastProfile = [self lastProfile];
   if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile)) {
-    UserManager::Show(lastProfile->GetPath(),
+    UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
   } else {
@@ -1313,6 +1312,15 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   return profile;
 }
 
+// Returns true if a browser window may be opened for the last active profile.
+- (bool)canOpenNewBrowser {
+  Profile* profile = [self safeLastProfileForNewWindows];
+
+  const PrefService* prefs = g_browser_process->local_state();
+  return !profile->IsGuestSession() ||
+         prefs->GetBoolean(prefs::kBrowserGuestModeEnabled);
+}
+
 // Various methods to open URLs that we get in a native fashion. We use
 // StartupBrowserCreator here because on the other platforms, URLs to open come
 // through the ProcessSingleton, and it calls StartupBrowserCreator. It's best
@@ -1374,18 +1382,28 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (Browser* browser = ActivateBrowser([self lastProfile])) {
     // Show options tab in the active browser window.
     chrome::ShowSettings(browser);
-  } else {
+  } else if ([self canOpenNewBrowser]) {
     // No browser window, so create one for the options tab.
     chrome::OpenOptionsWindow([self safeLastProfileForNewWindows]);
+  } else {
+    // No way to create a browser, default to the User Manager.
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS);
   }
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
   if (Browser* browser = ActivateBrowser([self lastProfile])) {
     chrome::ShowAboutChrome(browser);
-  } else {
-    // No browser window, so create one for the about tab.
+  } else if ([self canOpenNewBrowser]) {
+    // No browser window, so create one for the options tab.
     chrome::OpenAboutWindow([self safeLastProfileForNewWindows]);
+  } else {
+    // No way to create a browser, default to the User Manager.
+    UserManager::Show(base::FilePath(),
+                      profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME);
   }
 }
 

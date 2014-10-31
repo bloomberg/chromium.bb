@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -724,11 +725,17 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
   DCHECK(browser);
   DCHECK(browser->window());
   if (url_hash_ == profiles::kUserManagerSelectProfileTaskManager) {
-     base::MessageLoop::current()->PostTask(
-         FROM_HERE, base::Bind(&chrome::ShowTaskManager, browser));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&chrome::OpenTaskManager, browser));
   } else if (url_hash_ == profiles::kUserManagerSelectProfileAboutChrome) {
-     base::MessageLoop::current()->PostTask(
-         FROM_HERE, base::Bind(&chrome::ShowAboutChrome, browser));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&chrome::ShowAboutChrome, browser));
+  } else if (url_hash_ == profiles::kUserManagerSelectProfileChromeSettings) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&chrome::ShowSettings, browser));
+  } else if (url_hash_ == profiles::kUserManagerSelectProfileChromeMemory) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&chrome::ShowMemory, browser));
   }
 
   // This call is last as it deletes this object.

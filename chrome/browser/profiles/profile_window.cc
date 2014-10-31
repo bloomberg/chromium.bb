@@ -168,6 +168,12 @@ void OnUserManagerGuestProfileCreated(
   } else if (profile_open_action ==
              profiles::USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME) {
     page += profiles::kUserManagerSelectProfileAboutChrome;
+  } else if (profile_open_action ==
+             profiles::USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS) {
+    page += profiles::kUserManagerSelectProfileChromeSettings;
+  } else if (profile_open_action ==
+             profiles::USER_MANAGER_SELECT_PROFILE_CHROME_MEMORY) {
+    page += profiles::kUserManagerSelectProfileChromeMemory;
   }
   callback.Run(guest_profile, page);
 }
@@ -189,6 +195,8 @@ namespace profiles {
 const char kUserManagerDisplayTutorial[] = "#tutorial";
 const char kUserManagerSelectProfileTaskManager[] = "#task-manager";
 const char kUserManagerSelectProfileAboutChrome[] = "#about-chrome";
+const char kUserManagerSelectProfileChromeSettings[] = "#chrome-settings";
+const char kUserManagerSelectProfileChromeMemory[] = "#chrome-memory";
 
 void FindOrCreateNewWindowForProfile(
     Profile* profile,
@@ -272,7 +280,7 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
 }
 
 void GuestBrowserCloseSuccess(const base::FilePath& profile_path) {
-  UserManager::Show(profile_path,
+  UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_NO_TUTORIAL,
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 }

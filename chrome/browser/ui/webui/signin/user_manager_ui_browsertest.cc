@@ -1,8 +1,13 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,4 +65,29 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
   // There should be one user pod for each profile.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   EXPECT_EQ(num_pods, static_cast<int>(profile_manager->GetNumberOfProfiles()));
+}
+
+IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
+  std::string user_manager_url = chrome::kChromeUIUserManagerURL;
+  user_manager_url += profiles::kUserManagerSelectProfileAboutChrome;
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), GURL(user_manager_url), 1);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::string16 profile_name =
+      profiles::GetAvatarNameForProfile(browser()->profile()->GetPath());
+
+  std::string launch_js =
+      base::StringPrintf("Oobe.launchUser('', '%s')",
+                         base::UTF16ToUTF8(profile_name).c_str());
+  bool result = content::ExecuteScript(web_contents, launch_js);
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+
+  content::WebContents* about_chrome_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL current_URL = about_chrome_contents->GetVisibleURL();
+  EXPECT_EQ(GURL(chrome::kChromeUIUberURL), current_URL);
 }

@@ -278,6 +278,36 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
   UserManager::Hide();
 }
 
+IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
+                       AboutChromeForcesUserManager) {
+  base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
+
+  // Create the guest profile, and set it as the last used profile so the
+  // app controller can use it on init.
+  CreateAndWaitForGuestProfile();
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, chrome::kGuestProfileDir);
+
+  // Prohibiting guest mode forces the user manager flow for About Chrome.
+  local_state->SetBoolean(prefs::kBrowserGuestModeEnabled, false);
+
+  Profile* guest_profile = [ac lastProfile];
+  EXPECT_EQ(ProfileManager::GetGuestProfilePath(), guest_profile->GetPath());
+  EXPECT_TRUE(guest_profile->IsGuestSession());
+
+  // Tell the browser to open About Chrome.
+  EXPECT_EQ(1u, active_browser_list_->size());
+  [ac orderFrontStandardAboutPanel:NSApp];
+
+  base::RunLoop().RunUntilIdle();
+
+  // No new browser is opened; the User Manager opens instead.
+  EXPECT_EQ(1u, active_browser_list_->size());
+  EXPECT_TRUE(UserManager::IsShowing());
+
+  UserManager::Hide();
+}
+
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerOpenShortcutBrowserTest() {

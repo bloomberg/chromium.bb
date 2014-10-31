@@ -48,6 +48,8 @@ void UserManager::Show(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
     profiles::UserManagerProfileSelected profile_open_action) {
+  DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
+
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
     // If we are showing the User Manager after locking a profile, change the
