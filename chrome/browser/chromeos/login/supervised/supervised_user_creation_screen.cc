@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/shell.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
@@ -38,6 +36,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if !defined(USE_ATHENA)
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shell.h"
+#endif
 
 namespace chromeos {
 
@@ -359,8 +362,10 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
   // during the user image picker step are below it.
+#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
+#endif
 
   controller_->SetManagerProfile(manager_profile);
   if (actor_)

@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
-#include "ash/shell.h"
-#include "ash/wm/lock_state_controller.h"
-#include "ash/wm/lock_state_observer.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +31,11 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
+
+#if !defined(USE_ATHENA)
+#include "ash/wm/lock_state_controller.h"
+#include "ash/wm/lock_state_observer.h"
+#endif
 
 namespace {
 
@@ -80,7 +82,8 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 }
 
 void WebUIScreenLocker::LockScreen() {
-  gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
+  gfx::Rect bounds =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
   LockWindow* lock_window = LockWindow::Create();
@@ -303,6 +306,7 @@ void WebUIScreenLocker::OnLockWindowReady() {
 ////////////////////////////////////////////////////////////////////////////////
 // SessionLockStateObserver override.
 
+#if !defined(USE_ATHENA)
 void WebUIScreenLocker::OnLockStateEvent(
     ash::LockStateObserver::EventType event) {
   if (event == ash::LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED) {
@@ -312,6 +316,7 @@ void WebUIScreenLocker::OnLockStateEvent(
     GetWebUI()->CallJavascriptFunction("cr.ui.Oobe.animateOnceFullyDisplayed");
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetObserver override.
@@ -350,6 +355,7 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::KeyboardStateObserver overrides.
 
+#if !defined(USE_ATHENA)
 void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
   if (keyboard::KeyboardController::GetInstance()) {
     if (activated) {
@@ -363,6 +369,7 @@ void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard::KeyboardControllerObserver overrides.

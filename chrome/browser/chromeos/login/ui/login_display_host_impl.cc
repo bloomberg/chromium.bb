@@ -6,11 +6,6 @@
 
 #include <vector>
 
-#include "ash/audio/sounds.h"
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -42,7 +37,6 @@
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -95,6 +89,15 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_animations.h"
 #include "url/gurl.h"
+
+#if !defined(USE_ATHENA)
+#include "ash/audio/sounds.h"
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
+#endif
 
 #if defined(USE_ATHENA)
 #include "athena/screen/public/screen_manager.h"
@@ -458,10 +461,12 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
 
 void LoginDisplayHostImpl::Finalize() {
   DVLOG(1) << "Session starting";
+#if !defined(USE_ATHENA)
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()->
         desktop_background_controller()->MoveDesktopToUnlockedContainer();
   }
+#endif
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
 
@@ -470,8 +475,10 @@ void LoginDisplayHostImpl::Finalize() {
       ShutdownDisplayHost(false);
       break;
     case ANIMATION_WORKSPACE:
+#if !defined(USE_ATHENA)
       if (ash::Shell::HasInstance())
         ScheduleWorkspaceAnimation();
+#endif
 
       ShutdownDisplayHost(false);
       break;
@@ -573,6 +580,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   // We should emit this signal only at login screen (after reboot or sign out).
   login_view_->set_should_emit_login_prompt_visible(false);
 
+#if !defined(USE_ATHENA)
   // Lock container can be transparent after lock screen animation.
   aura::Window* lock_container = ash::Shell::GetContainer(
       ash::Shell::GetPrimaryRootWindow(),
@@ -581,6 +589,7 @@ void LoginDisplayHostImpl::StartUserAdding(
 
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
+#endif
 
   sign_in_controller_.reset();  // Only one controller in a time.
   sign_in_controller_.reset(new chromeos::ExistingUserController(this));
@@ -848,6 +857,7 @@ void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
   TryToPlayStartupSound();
 }
 
+#if !defined(USE_ATHENA)
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, ash::KeyboardStateObserver:
 // implementation:
@@ -865,6 +875,7 @@ void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(bool activated) {
     }
   }
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, keyboard::KeyboardControllerObserver:
@@ -902,13 +913,15 @@ void LoginDisplayHostImpl::OnDisplayRemoved(const gfx::Display& old_display) {
 
 void LoginDisplayHostImpl::OnDisplayMetricsChanged(const gfx::Display& display,
                                                    uint32_t changed_metrics) {
-  if (display.id() != ash::Shell::GetScreen()->GetPrimaryDisplay().id() ||
+  gfx::Display primary_display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  if (display.id() != primary_display.id() ||
       !(changed_metrics & DISPLAY_METRIC_BOUNDS)) {
     return;
   }
 
   if (GetOobeUI()) {
-    const gfx::Size& size = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
+    const gfx::Size& size = primary_display.size();
     GetOobeUI()->GetCoreOobeActor()->SetClientAreaSize(size.width(),
                                                        size.height());
   }
@@ -942,6 +955,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
 }
 
 void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
+#if !defined(USE_ATHENA)
   if (ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                ash::kShellWindowId_DesktopBackgroundContainer)
           ->children()
@@ -954,6 +968,7 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLoginAnimations))
     ash::Shell::GetInstance()->DoInitialWorkspaceAnimation();
+#endif
 }
 
 void LoginDisplayHostImpl::ScheduleFadeOutAnimation() {
@@ -1053,9 +1068,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
     // crbug.com/405859
     focus_ring_controller_.reset(new FocusRingController);
     focus_ring_controller_->SetVisible(true);
-#endif
 
     keyboard_driven_oobe_key_handler_.reset(new KeyboardDrivenOobeKeyHandler);
+#endif
   }
 
   views::Widget::InitParams params(
@@ -1149,13 +1164,13 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
     return;
   }
 
+#if !defined(USE_ATHENA)
   if (!startup_sound_honors_spoken_feedback_ &&
       !ash::PlaySystemSoundAlways(SOUND_STARTUP)) {
     EnableSystemSoundsForAccessibility();
     return;
   }
 
-#if !defined(USE_ATHENA)
   // crbug.com/408733
   if (startup_sound_honors_spoken_feedback_ &&
       !ash::PlaySystemSoundIfSpokenFeedback(SOUND_STARTUP)) {

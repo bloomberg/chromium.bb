@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,7 +19,8 @@
 namespace chromeos {
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
+  gfx::Rect bounds =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();

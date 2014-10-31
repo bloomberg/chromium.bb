@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -19,6 +17,8 @@
 #include "ui/gfx/size.h"
 
 #if !defined(USE_ATHENA)
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
@@ -66,8 +66,10 @@ void UserAddingScreenImpl::Start() {
 void UserAddingScreenImpl::Cancel() {
   CHECK(IsRunning());
 
+#if !defined(USE_ATHENA)
   // Make sure that system tray is enabled after this flow.
   ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(true);
+#endif
   display_host_->Finalize();
 
 #if !defined(USE_ATHENA)
