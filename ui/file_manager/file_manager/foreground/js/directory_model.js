@@ -1003,10 +1003,12 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // window. Note, that this is a temporary solution for crbug.com/427776.
   if (window.isFocused() &&
       event.added.length === 1 &&
-      event.added[0].volumeType ==
-          VolumeManagerCommon.VolumeType.VOLUME_TYPE_PROVIDED &&
-      event.added[0].displayRoot) {
-    this.changeDirectoryEntry(event.added[0].displayRoot);
+      event.added[0].volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
+    event.added[0].resolveDisplayRoot().then(function(displayRoot) {
+      // Resolving a display root on FSP volumes is instant, despite the
+      // asynchronous call.
+      this.changeDirectoryEntry(event.added[0].displayRoot);
+    }.bind(this));
   }
 };
 
