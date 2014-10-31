@@ -400,7 +400,7 @@ crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applie
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-010.htm [ ImageOnlyFailure ]
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-012.htm [ ImageOnlyFailure ]
 crbug.com/396941 [ Linux Win ] ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [ ImageOnlyFailure ]
-crbug.com/396945 [ Linux Win ] ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
+crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
