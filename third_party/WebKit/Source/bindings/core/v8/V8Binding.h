@@ -67,8 +67,8 @@ const int kMaxRecursionDepth = 22;
 
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
 void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
-v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned provided, v8::Isolate*);
-v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned provided, v8::Isolate*);
+v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const char* method, const char* type, unsigned expected, unsigned provided);
+v8::Local<v8::Value> createMinimumArityTypeErrorForConstructor(v8::Isolate*, const char* type, unsigned expected, unsigned provided);
 void setMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned provided);
 
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();

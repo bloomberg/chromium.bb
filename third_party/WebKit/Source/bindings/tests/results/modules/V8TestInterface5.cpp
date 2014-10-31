@@ -338,7 +338,7 @@ static void TestInterface5ImplementationForceSetAttributeOnThisCallback(v8::Loca
 static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestInterfaceEmptyArg", "TestInterface5", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
+        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodTestInterfaceEmptyArg", "TestInterface5", 1, info.Length()), info.GetIsolate());
         return;
     }
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());

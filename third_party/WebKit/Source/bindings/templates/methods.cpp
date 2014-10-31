@@ -324,9 +324,9 @@ V8ThrowException::throwException({{create_minimum_arity_type_error_without_excep
 {######################################}
 {% macro create_minimum_arity_type_error_without_exception_state(method, number_of_required_arguments) %}
 {% if method.is_constructor %}
-createMinimumArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+createMinimumArityTypeErrorForConstructor(info.GetIsolate(), "{{interface_name}}", {{number_of_required_arguments}}, info.Length())
 {%- else %}
-createMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+createMinimumArityTypeErrorForMethod(info.GetIsolate(), "{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length())
 {%- endif %}
 {%- endmacro %}
 
