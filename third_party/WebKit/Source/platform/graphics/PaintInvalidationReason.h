@@ -15,6 +15,9 @@ enum PaintInvalidationReason {
     PaintInvalidationRectangle,
     // The following reasons will all cause full invalidation of the RenderObject.
     PaintInvalidationFull, // Any unspecified reason of full invalidation.
+    PaintInvalidationStyleChange,
+    PaintInvalidationForcedByLayout,
+    PaintInvalidationCompositingUpdate,
     PaintInvalidationBorderBoxChange,
     PaintInvalidationBoundsChange,
     PaintInvalidationLocationChange,

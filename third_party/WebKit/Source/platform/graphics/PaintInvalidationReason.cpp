@@ -20,6 +20,12 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "invalidate paint rectangle";
     case PaintInvalidationFull:
         return "full";
+    case PaintInvalidationStyleChange:
+        return "style change";
+    case PaintInvalidationForcedByLayout:
+        return "forced by layout";
+    case PaintInvalidationCompositingUpdate:
+        return "compositing update";
     case PaintInvalidationBorderBoxChange:
         return "border box change";
     case PaintInvalidationBoundsChange:

@@ -1295,7 +1295,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 13 in the second.
+        // 32 bits have been used in the first word, and 14 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
@@ -1343,7 +1343,7 @@ private:
         unsigned m_selectionState : 3; // SelectionState
         unsigned m_flowThreadState : 2; // FlowThreadState
         unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
-        unsigned m_fullPaintInvalidationReason : 4; // PaintInvalidationReason
+        unsigned m_fullPaintInvalidationReason : 5; // PaintInvalidationReason
 
     public:
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }

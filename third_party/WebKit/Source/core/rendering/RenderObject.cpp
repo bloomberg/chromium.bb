@@ -3050,13 +3050,32 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
+static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(const DocumentLifecycle& documentLifecycle)
+{
+    switch (documentLifecycle.state()) {
+    case DocumentLifecycle::InStyleRecalc:
+        return PaintInvalidationStyleChange;
+    case DocumentLifecycle::InPreLayout:
+    case DocumentLifecycle::InPerformLayout:
+    case DocumentLifecycle::AfterPerformLayout:
+        return PaintInvalidationForcedByLayout;
+    case DocumentLifecycle::InCompositingUpdate:
+        return PaintInvalidationCompositingUpdate;
+    default:
+        return PaintInvalidationFull;
+    }
+}
+
 void RenderObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reason)
 {
     // Only full invalidation reasons are allowed.
     ASSERT(isFullPaintInvalidationReason(reason));
 
-    if (m_bitfields.fullPaintInvalidationReason() == PaintInvalidationNone)
+    if (m_bitfields.fullPaintInvalidationReason() == PaintInvalidationNone) {
+        if (reason == PaintInvalidationFull)
+            reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
         m_bitfields.setFullPaintInvalidationReason(reason);
+    }
 
     ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
     frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called not during FrameView::updateLayoutAndStyleForPainting().
