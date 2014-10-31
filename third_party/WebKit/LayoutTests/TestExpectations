@@ -153,8 +153,8 @@ crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Fail
 crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
-crbug.com/360889 virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
-crbug.com/360889 virtual/textblob/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
+crbug.com/360889 [ Win ] virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
+crbug.com/360889 [ Win ] virtual/textblob/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 
 crbug.com/418884 [ Win7 ] virtual/antialiasedtext/fast/text/emphasis-combined-text.html [ Failure ]
 
