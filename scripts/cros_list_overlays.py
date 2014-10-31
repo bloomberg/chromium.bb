@@ -25,6 +25,8 @@ def _ParseArguments(argv):
   parser.add_argument('--primary_only', default=False, action='store_true',
                       help='Only return the path to the primary overlay. This '
                            'only makes sense when --board is specified.')
+  parser.add_argument('-a', '--all', default=False, action='store_true',
+                      help='Show all overlays (even common ones).')
 
   opts = parser.parse_args(argv)
   opts.Freeze()
@@ -53,8 +55,9 @@ def main(argv):
 
   # Exclude any overlays in src/third_party, for backwards compatibility with
   # scripts that expected these to not be listed.
-  ignore_prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
-  overlays = [o for o in overlays if not o.startswith(ignore_prefix)]
+  if not opts.all:
+    ignore_prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
+    overlays = [o for o in overlays if not o.startswith(ignore_prefix)]
 
   if opts.board_overlay and os.path.isdir(opts.board_overlay):
     overlays.append(os.path.abspath(opts.board_overlay))
