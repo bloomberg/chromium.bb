@@ -91,12 +91,10 @@ void BaseSessionService::Save() {
   if (pending_commands_.empty())
     return;
 
-  // We create a new ScopedVector which will receive all elements from the
-  // current commands. This will also clear the current list.
   RunTaskOnBackendThread(
       FROM_HERE,
       base::Bind(&SessionBackend::AppendCommands, backend(),
-                 new ScopedVector<SessionCommand>(pending_commands_.Pass()),
+                 base::Passed(&pending_commands_),
                  pending_reset_));
 
   if (pending_reset_) {

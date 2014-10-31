@@ -56,8 +56,7 @@ TEST_F(SessionBackendTest, SimpleReadWrite) {
   struct TestData data = { 1,  "a" };
   SessionCommands commands;
   commands.push_back(CreateCommandFromData(data));
-  backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                          false);
+  backend->AppendCommands(commands.Pass(), false);
   ASSERT_TRUE(commands.empty());
 
   // Read it back in.
@@ -111,12 +110,10 @@ TEST_F(SessionBackendTest, RandomData) {
            j != commands.end(); ++j) {
         AssertCommandEqualsData(data[j - commands.begin()], *j);
       }
-      backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                              false);
+      backend->AppendCommands(commands.Pass(), false);
     }
     commands.push_back(CreateCommandFromData(data[i]));
-    backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                            false);
+    backend->AppendCommands(commands.Pass(), false);
   }
 }
 
@@ -139,8 +136,7 @@ TEST_F(SessionBackendTest, BigData) {
   reinterpret_cast<char*>(big_command->contents())[big_size - 1] = 'z';
   commands.push_back(big_command);
   commands.push_back(CreateCommandFromData(data[1]));
-  backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                          false);
+  backend->AppendCommands(commands.Pass(), false);
 
   backend = NULL;
   backend = new SessionBackend(BaseSessionService::SESSION_RESTORE, path_);
@@ -163,9 +159,9 @@ TEST_F(SessionBackendTest, EmptyCommand) {
   empty_command.command_id = 1;
   scoped_refptr<SessionBackend> backend(
       new SessionBackend(BaseSessionService::SESSION_RESTORE, path_));
-  SessionCommands* empty_commands = new SessionCommands();
-  empty_commands->push_back(CreateCommandFromData(empty_command));
-  backend->AppendCommands(empty_commands, true);
+  SessionCommands empty_commands;
+  empty_commands.push_back(CreateCommandFromData(empty_command));
+  backend->AppendCommands(empty_commands.Pass(), true);
   backend->MoveCurrentSessionToLastSession();
 
   SessionCommands commands;
@@ -183,14 +179,12 @@ TEST_F(SessionBackendTest, Truncate) {
   struct TestData first_data = { 1,  "a" };
   SessionCommands commands;
   commands.push_back(CreateCommandFromData(first_data));
-  backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                          false);
+  backend->AppendCommands(commands.Pass(), false);
 
   // Write another command, this time resetting the file when appending.
   struct TestData second_data = { 2,  "b" };
   commands.push_back(CreateCommandFromData(second_data));
-  backend->AppendCommands(new ScopedVector<SessionCommand>(commands.Pass()),
-                          true);
+  backend->AppendCommands(commands.Pass(), true);
 
   // Read it back in.
   backend = NULL;

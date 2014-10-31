@@ -221,7 +221,7 @@ void SessionBackend::Init() {
 }
 
 void SessionBackend::AppendCommands(
-    ScopedVector<SessionCommand>* commands,
+    ScopedVector<SessionCommand> commands,
     bool reset_first) {
   Init();
   // Make sure and check current_session_file_, if opening the file failed
@@ -232,12 +232,10 @@ void SessionBackend::AppendCommands(
   }
   // Need to check current_session_file_ again, ResetFile may fail.
   if (current_session_file_.get() && current_session_file_->IsValid() &&
-      !AppendCommandsToFile(current_session_file_.get(), *commands)) {
+      !AppendCommandsToFile(current_session_file_.get(), commands)) {
     current_session_file_.reset(NULL);
   }
   empty_file_ = false;
-  // Deleting the ScopedVector will also delete its elements.
-  delete commands;
 }
 
 void SessionBackend::ReadLastSessionCommands(

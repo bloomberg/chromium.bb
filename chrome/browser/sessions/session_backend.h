@@ -58,10 +58,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   // Appends the specified commands to the current file. If reset_first is
   // true the the current file is recreated.
-  //
-  // NOTE: this deletes SessionCommands in commands as well as the supplied
-  // vector.
-  void AppendCommands(ScopedVector<SessionCommand>* commands, bool reset_first);
+  void AppendCommands(ScopedVector<SessionCommand> commands, bool reset_first);
 
   // Invoked from the service to read the commands that make up the last
   // session, invokes ReadLastSessionCommandsImpl to do the work.
