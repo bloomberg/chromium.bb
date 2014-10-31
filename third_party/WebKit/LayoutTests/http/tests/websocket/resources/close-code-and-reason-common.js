@@ -29,7 +29,7 @@ function closeDuringOpen()
 }
 
 var testId = 0;
-var testNum = 7;
+var testNum = 9;
 var sendData = [
     "-", // request close frame without code and reason
     "--", // request close frame with invalid body which size is 1
@@ -37,6 +37,8 @@ var sendData = [
     "1005 foo",  // request close frame with forbidden code 1005 and reason
     "1006 bar",  // request close frame with forbidden code 1006 and reason
     "1015 baz",  // request close frame with forbidden code 1015 and reason
+    "0 good bye", // request close frame with specified code and reason
+    "10 good bye", // request close frame with specified code and reason
     "65535 good bye", // request close frame with specified code and reason
 ];
 var expectedCode = [
@@ -46,6 +48,8 @@ var expectedCode = [
     codeAbnormalClosure,
     codeAbnormalClosure,
     codeAbnormalClosure,
+    0,
+    10,
     65535,
 ];
 var expectedReason = [
@@ -56,6 +60,8 @@ var expectedReason = [
     "''",
     "''",
     "'good bye'",
+    "'good bye'",
+    "'good bye'",
 ];
 var expectedWasClean = [
     true,
@@ -64,6 +70,8 @@ var expectedWasClean = [
     false,
     false,
     false,
+    true,
+    true,
     true,
 ];
 
@@ -91,15 +99,19 @@ WebSocketTest.prototype.onclose = function(event)
 {
     closeEvent = event;
     debug("WebSocketTest.onclose() was called with testId = " + testId + ".");
+
     shouldEvaluateTo("closeEvent.wasClean", expectedWasClean[testId]);
     shouldEvaluateTo("closeEvent.code", expectedCode[testId]);
     shouldEvaluateTo("closeEvent.reason", expectedReason[testId]);
+
+    // Test that the attributes of the CloseEvent are readonly.
     closeEvent.code = 0;
     closeEvent.reason = "readonly";
     closeEvent.wasClean = !closeEvent.wasClean;
     shouldEvaluateTo("closeEvent.wasClean", expectedWasClean[testId]);
     shouldEvaluateTo("closeEvent.code", expectedCode[testId]);
     shouldEvaluateTo("closeEvent.reason", expectedReason[testId]);
+
     clearTimeout(this.timeoutID);
     this.ws = null;
     testId++;
