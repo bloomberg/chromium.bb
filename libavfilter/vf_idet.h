@@ -29,7 +29,7 @@ typedef int (*ff_idet_filter_func)(const uint8_t *a, const uint8_t *b, const uin
 typedef enum {
     TFF,
     BFF,
-    PROGRSSIVE,
+    PROGRESSIVE,
     UNDETERMINED,
 } Type;
 
@@ -50,6 +50,7 @@ typedef struct {
     ff_idet_filter_func filter_line;
 
     const AVPixFmtDescriptor *csp;
+    int eof;
 } IDETContext;
 
 void ff_idet_init_x86(IDETContext *idet, int for_16b);

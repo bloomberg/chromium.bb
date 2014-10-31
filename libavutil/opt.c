@@ -40,20 +40,6 @@
 
 #include <float.h>
 
-#if FF_API_FIND_OPT
-//FIXME order them and do a bin search
-const AVOption *av_find_opt(void *v, const char *name, const char *unit, int mask, int flags)
-{
-    const AVOption *o = NULL;
-
-    while ((o = av_next_option(v, o))) {
-        if (!strcmp(o->name, name) && (!unit || (o->unit && !strcmp(o->unit, unit))) && (o->flags & mask) == flags)
-            return o;
-    }
-    return NULL;
-}
-#endif
-
 #if FF_API_OLD_AVOPTIONS
 const AVOption *av_next_option(void *obj, const AVOption *last)
 {
@@ -627,7 +613,7 @@ int av_opt_set_channel_layout(void *obj, const char *name, int64_t cl, int searc
                "The value set by option '%s' is not a channel layout.\n", o->name);
         return AVERROR(EINVAL);
     }
-    *(int *)(((int64_t *)target_obj) + o->offset) = cl;
+    *(int64_t *)(((uint8_t *)target_obj) + o->offset) = cl;
     return 0;
 }
 
