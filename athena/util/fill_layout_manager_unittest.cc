@@ -29,7 +29,7 @@ TEST(FillLayoutManagerTest, ChildWindowSizedCorrectly) {
   EXPECT_EQ(child->bounds().size().ToString(),
             parent->bounds().size().ToString());
 
-  // Menu and tooltip should not be filled.
+  // Menu, tooltip, and popup should not be filled.
   scoped_ptr<aura::Window> menu(new aura::Window(nullptr));
   menu->SetType(ui::wm::WINDOW_TYPE_MENU);
   menu->SetBounds(gfx::Rect(0, 0, 5, 10));
@@ -49,6 +49,16 @@ TEST(FillLayoutManagerTest, ChildWindowSizedCorrectly) {
   EXPECT_EQ(tooltip->bounds().ToString(), "0,0 5x10");
   tooltip->SetBounds(gfx::Rect(0, 0, 100, 200));
   EXPECT_EQ(tooltip->bounds().ToString(), "0,0 100x200");
+
+  scoped_ptr<aura::Window> popup(new aura::Window(nullptr));
+  popup->SetType(ui::wm::WINDOW_TYPE_POPUP);
+  popup->SetBounds(gfx::Rect(0, 0, 5, 10));
+
+  EXPECT_EQ(popup->bounds().ToString(), "0,0 5x10");
+  parent->AddChild(popup.get());
+  EXPECT_EQ(popup->bounds().ToString(), "0,0 5x10");
+  popup->SetBounds(gfx::Rect(0, 0, 100, 200));
+  EXPECT_EQ(popup->bounds().ToString(), "0,0 100x200");
 }
 
 }  // namespace athena

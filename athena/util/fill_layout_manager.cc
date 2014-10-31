@@ -13,7 +13,8 @@ namespace {
 // TODO(oshima): Implement real window/layout manager. crbug.com/388362.
 bool ShouldFill(aura::Window* window) {
   return window->type() != ui::wm::WINDOW_TYPE_MENU &&
-      window->type() != ui::wm::WINDOW_TYPE_TOOLTIP;
+      window->type() != ui::wm::WINDOW_TYPE_TOOLTIP &&
+      window->type() != ui::wm::WINDOW_TYPE_POPUP;
 }
 
 }  // namespace
