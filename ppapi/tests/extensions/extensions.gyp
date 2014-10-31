@@ -49,5 +49,26 @@
         ],
       },
     },
+    {
+      'target_name': 'ppapi_tests_extensions_packaged_app',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_tests_extensions_packaged_app',
+        # TODO(teravest): Add testing for glibc, pnacl, and nonsfi modes.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/packaged_app',
+        'sources': [
+          'packaged_app/test_packaged_app.cc'
+        ],
+        'test_files': [
+          'packaged_app/controller.js',
+          'packaged_app/index.html',
+          'packaged_app/main.js',
+          'packaged_app/manifest.json',
+        ],
+      },
+    },
   ],
 }

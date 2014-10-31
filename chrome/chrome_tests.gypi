@@ -1975,6 +1975,7 @@
                 '../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries',
+                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',
               ],
               'conditions': [
                 ['chromeos==1', {

@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/ppapi/ppapi_test.h"
-
+#include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
+#include "chrome/test/ppapi/ppapi_test.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "ppapi/shared_impl/test_harness_utils.h"
 
 using content::RenderViewHost;
@@ -1330,3 +1335,37 @@ TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)
 #if defined(OS_CHROMEOS)
 TEST_PPAPI_OUT_OF_PROCESS(OutputProtectionPrivate)
 #endif
+
+class PackagedAppTest : public ExtensionBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() override {
+  }
+
+  void LaunchTestingApp() {
+    base::FilePath data_dir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &data_dir));
+    base::FilePath app_dir = data_dir.AppendASCII("ppapi")
+                                     .AppendASCII("tests")
+                                     .AppendASCII("extensions")
+                                     .AppendASCII("packaged_app")
+                                     .AppendASCII("newlib");
+
+    const extensions::Extension* extension = LoadExtension(app_dir);
+    ASSERT_TRUE(extension);
+
+    AppLaunchParams params(browser()->profile(),
+                           extension,
+                           extensions::LAUNCH_CONTAINER_NONE,
+                           NEW_WINDOW);
+    params.command_line = *CommandLine::ForCurrentProcess();
+    OpenApplication(params);
+  }
+};
+
+// Load a packaged app, and wait for it to successfully post a "hello" message
+// back.
+IN_PROC_BROWSER_TEST_F(PackagedAppTest, SuccessfulLoad) {
+  ExtensionTestMessageListener listener("hello", true);
+  LaunchTestingApp();
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
