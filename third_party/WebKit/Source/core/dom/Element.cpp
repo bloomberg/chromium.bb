@@ -1212,6 +1212,9 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
 KURL Element::baseURI() const
 {
     const AtomicString& baseAttribute = fastGetAttribute(baseAttr);
+    if (!baseAttribute.isEmpty())
+        UseCounter::count(document(), UseCounter::ElementBaseURIFromXMLBase);
+
     KURL base(KURL(), baseAttribute);
     if (!base.protocol().isEmpty())
         return base;
