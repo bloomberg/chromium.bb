@@ -134,7 +134,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 		return NULL;
 
 	source->base.interface = &fd_source_interface;
-	source->base.fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
+	source->base.fd = wl_os_dupfd_cloexec(fd, 0);
 	source->func = func;
 	source->fd = fd;
 
