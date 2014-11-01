@@ -26,6 +26,7 @@
 [
     DoNotCheckConstants,
     ImplementedAs=CSSFilterValue,
+    RuntimeEnabled=CSSValue,
 ] interface WebKitCSSFilterValue : CSSValueList {
 
     // OperationTypes

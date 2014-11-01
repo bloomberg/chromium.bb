@@ -23,6 +23,7 @@
     DependentLifetime,
     NotScriptWrappable,
     WillBeGarbageCollected,
+    RuntimeEnabled=CSSValue,
 ] interface CSSValue {
 
     // UnitTypes

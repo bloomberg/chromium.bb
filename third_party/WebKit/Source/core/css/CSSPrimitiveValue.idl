@@ -18,6 +18,7 @@
  */
 
 [
+    RuntimeEnabled=CSSValue,
 ] interface CSSPrimitiveValue : CSSValue {
 
     // UnitTypes

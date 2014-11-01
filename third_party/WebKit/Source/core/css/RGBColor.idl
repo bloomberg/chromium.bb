@@ -20,7 +20,8 @@
 
 [
     NotScriptWrappable,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
+    RuntimeEnabled=CSSValue,
 ] interface RGBColor {
     readonly attribute CSSPrimitiveValue  red;
     readonly attribute CSSPrimitiveValue  green;

@@ -19,7 +19,8 @@
 
 [
     NotScriptWrappable,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
+    RuntimeEnabled=CSSValue,
 ] interface Rect {
     readonly attribute CSSPrimitiveValue  top;
     readonly attribute CSSPrimitiveValue  right;
