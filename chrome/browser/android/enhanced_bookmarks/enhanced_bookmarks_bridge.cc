@@ -65,7 +65,9 @@ void EnhancedBookmarksBridge::Destroy(JNIEnv*, jobject) {
 ScopedJavaLocalRef<jstring> EnhancedBookmarksBridge::GetBookmarkDescription(
     JNIEnv* env, jobject obj, jlong id, jint type) {
   DCHECK(enhanced_bookmark_model_->loaded());
-  DCHECK_EQ(BookmarkType::BOOKMARK_TYPE_NORMAL, type);
+  if (type != BookmarkType::BOOKMARK_TYPE_NORMAL) {
+    return base::android::ConvertUTF8ToJavaString(env, std::string());
+  }
 
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
       enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
@@ -88,6 +90,23 @@ void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
 
   enhanced_bookmark_model_->SetDescription(
       node, base::android::ConvertJavaStringToUTF8(env, description));
+}
+
+ScopedJavaLocalRef<jobjectArray> EnhancedBookmarksBridge::GetFiltersForBookmark(
+    JNIEnv* env,
+    jobject obj,
+    jlong id,
+    jint type) {
+  DCHECK(enhanced_bookmark_model_->loaded());
+  if (type != BookmarkType::BOOKMARK_TYPE_NORMAL) {
+    return base::android::ToJavaArrayOfStrings(env, std::vector<std::string>());
+  }
+
+  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
+        enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
+  std::vector<std::string> filters =
+      cluster_service_->ClustersForBookmark(node);
+  return base::android::ToJavaArrayOfStrings(env, filters);
 }
 
 void EnhancedBookmarksBridge::GetBookmarksForFilter(JNIEnv* env,
