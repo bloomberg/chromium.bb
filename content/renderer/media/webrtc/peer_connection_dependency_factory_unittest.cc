@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +17,7 @@ class PeerConnectionDependencyFactoryTest : public ::testing::Test {
   }
 
  protected:
+  base::MessageLoop message_loop_;
   scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 

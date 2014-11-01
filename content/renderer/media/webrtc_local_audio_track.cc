@@ -20,11 +20,12 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
     WebRtcLocalAudioTrackAdapter* adapter,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source)
-    : MediaStreamTrack(adapter, true),
+    : MediaStreamTrack(true),
       adapter_(adapter),
       capturer_(capturer),
       webaudio_source_(webaudio_source) {
   DCHECK(capturer.get() || webaudio_source);
+  signal_thread_checker_.DetachFromThread();
 
   adapter_->Initialize(this);
 
@@ -122,7 +123,11 @@ void WebRtcLocalAudioTrack::SetAudioProcessor(
 }
 
 void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  // This method is called from webrtc, on the signaling thread, when the local
+  // description is set and from the main thread from WebMediaPlayerMS::load
+  // (via WebRtcLocalAudioRenderer::Start).
+  DCHECK(main_render_thread_checker_.CalledOnValidThread() ||
+         signal_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::AddSink()";
   base::AutoLock auto_lock(lock_);
 
@@ -140,13 +145,18 @@ void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {
 }
 
 void WebRtcLocalAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  // See AddSink for additional context.  When local audio is stopped from
+  // webrtc, we'll be called here on the signaling thread.
+  DCHECK(main_render_thread_checker_.CalledOnValidThread() ||
+         signal_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::RemoveSink()";
 
-  base::AutoLock auto_lock(lock_);
-
-  scoped_refptr<MediaStreamAudioTrackSink> removed_item = sinks_.Remove(
-      MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink));
+  scoped_refptr<MediaStreamAudioTrackSink> removed_item;
+  {
+    base::AutoLock auto_lock(lock_);
+    removed_item = sinks_.Remove(
+        MediaStreamAudioTrackSink::WrapsMediaStreamSink(sink));
+  }
 
   // Clear the delegate to ensure that no more capture callbacks will
   // be sent to this sink. Also avoids a possible crash which can happen
@@ -212,6 +222,12 @@ void WebRtcLocalAudioTrack::Start() {
   }
 }
 
+void WebRtcLocalAudioTrack::SetEnabled(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (adapter_.get())
+    adapter_->set_enabled(enabled);
+}
+
 void WebRtcLocalAudioTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::Stop()";
@@ -247,6 +263,11 @@ void WebRtcLocalAudioTrack::Stop() {
     (*it)->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateEnded);
     (*it)->Reset();
   }
+}
+
+webrtc::AudioTrackInterface* WebRtcLocalAudioTrack::GetAudioAdapter() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return adapter_.get();
 }
 
 }  // namespace content

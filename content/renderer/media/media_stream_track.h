@@ -25,29 +25,22 @@ namespace content {
 class CONTENT_EXPORT MediaStreamTrack
     : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
-  MediaStreamTrack(
-      const scoped_refptr<webrtc::MediaStreamTrackInterface>& track,
-      bool is_local_track);
+  explicit MediaStreamTrack(bool is_local_track);
   virtual ~MediaStreamTrack();
 
   static MediaStreamTrack* GetTrack(
       const blink::WebMediaStreamTrack& track);
 
-  // If a subclass overrides this method it has to call the base class.
-  virtual void SetEnabled(bool enabled);
+  virtual void SetEnabled(bool enabled) = 0;
 
-  // TODO(xians): Make this pure virtual when Stop[Track] has been
-  // implemented for remote audio tracks.
-  virtual void Stop();
+  virtual void Stop() = 0;
 
+  // TODO(tommi, xians): Remove this method.
   virtual webrtc::AudioTrackInterface* GetAudioAdapter();
 
   bool is_local_track() const { return is_local_track_; }
 
  protected:
-  const scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
-
- private:
   const bool is_local_track_;
 
   base::ThreadChecker thread_checker_;

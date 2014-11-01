@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_REMOTE_VIDEO_SOURCE_H_
 
-#include "base/threading/thread_checker.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -18,11 +19,37 @@ namespace content {
 // to make sure there is no difference between a video track where the source is
 // a local source and a video track where the source is a remote video track.
 class CONTENT_EXPORT MediaStreamRemoteVideoSource
-     : public MediaStreamVideoSource,
-       NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
+     : public MediaStreamVideoSource {
  public:
-  explicit MediaStreamRemoteVideoSource(
-      webrtc::VideoTrackInterface* remote_track);
+  class CONTENT_EXPORT Observer
+      : public base::RefCountedThreadSafe<Observer>,
+        NON_EXPORTED_BASE(public webrtc::ObserverInterface) {
+   public:
+    Observer(const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+             webrtc::VideoTrackInterface* track);
+
+    const scoped_refptr<webrtc::VideoTrackInterface>& track();
+    webrtc::MediaStreamTrackInterface::TrackState state() const;
+
+   private:
+    friend class base::RefCountedThreadSafe<Observer>;
+    ~Observer() override;
+
+    friend class MediaStreamRemoteVideoSource;
+    void SetSource(const base::WeakPtr<MediaStreamRemoteVideoSource>& source);
+
+    // webrtc::ObserverInterface implementation.
+    void OnChanged() override;
+
+    void OnChangedImpl(webrtc::MediaStreamTrackInterface::TrackState state);
+
+    const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+    base::WeakPtr<MediaStreamRemoteVideoSource> source_;
+    const scoped_refptr<webrtc::VideoTrackInterface> track_;
+    webrtc::MediaStreamTrackInterface::TrackState state_;
+  };
+
+  MediaStreamRemoteVideoSource(const scoped_refptr<Observer>& observer);
   virtual ~MediaStreamRemoteVideoSource();
 
  protected:
@@ -44,19 +71,16 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   webrtc::VideoRendererInterface* RenderInterfaceForTest();
 
  private:
-  // webrtc::ObserverInterface implementation.
-  void OnChanged() override;
+  friend class Observer;
+  void OnChanged(webrtc::MediaStreamTrackInterface::TrackState state);
 
-  scoped_refptr<webrtc::VideoTrackInterface> remote_track_;
-  webrtc::MediaStreamTrackInterface::TrackState last_state_;
+  scoped_refptr<Observer> observer_;
 
   // Internal class used for receiving frames from the webrtc track on a
   // libjingle thread and forward it to the IO-thread.
   class RemoteVideoSourceDelegate;
   scoped_refptr<RemoteVideoSourceDelegate> delegate_;
-
-  // Bound to the render thread.
-  base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<MediaStreamRemoteVideoSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRemoteVideoSource);
 };

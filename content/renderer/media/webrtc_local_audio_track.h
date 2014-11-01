@@ -60,9 +60,15 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // should be called only once when audio track is created.
   void Start();
 
+  // Overrides for MediaStreamTrack.
+
+  void SetEnabled(bool enabled) override;
+
   // Stops the local audio track. Called on the main render thread and
   // should be called only once when audio track going away.
   void Stop() override;
+
+  webrtc::AudioTrackInterface* GetAudioAdapter() override;
 
   // Method called by the capturer to deliver the capture data.
   // Called on the capture audio thread.
@@ -88,8 +94,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   typedef TaggedList<MediaStreamAudioTrackSink> SinkList;
 
   // All usage of libjingle is through this adapter. The adapter holds
-  // a reference on this object, but not vice versa.
-  WebRtcLocalAudioTrackAdapter* adapter_;
+  // a pointer to this object, but no reference.
+  const scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_;
 
   // The provider of captured data to render.
   scoped_refptr<WebRtcAudioCapturer> capturer_;
@@ -105,6 +111,8 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Used to DCHECK that some methods are called on the main render thread.
   base::ThreadChecker main_render_thread_checker_;
+  // Tests that methods are called on libjingle's signaling thread.
+  base::ThreadChecker signal_thread_checker_;
 
   // Used to DCHECK that some methods are called on the capture audio thread.
   base::ThreadChecker capture_thread_checker_;

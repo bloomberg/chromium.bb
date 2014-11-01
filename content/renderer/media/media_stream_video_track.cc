@@ -196,7 +196,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const blink::WebMediaConstraints& constraints,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
-    : MediaStreamTrack(NULL, true),
+    : MediaStreamTrack(true),
       frame_deliverer_(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_message_loop(),
                                                     enabled)),
@@ -236,8 +236,6 @@ void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MediaStreamTrack::SetEnabled(enabled);
-
   frame_deliverer_->SetEnabled(enabled);
   for (std::vector<MediaStreamVideoSink*>::const_iterator it = sinks_.begin();
        it != sinks_.end(); ++it) {

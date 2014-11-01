@@ -8,8 +8,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -18,29 +19,76 @@
 
 namespace content {
 
-class RemoteMediaStreamTrackAdapter;
+class RemoteAudioTrackAdapter;
+class RemoteVideoTrackAdapter;
 
 // RemoteMediaStreamImpl serves as a container and glue between remote webrtc
 // MediaStreams and WebKit MediaStreams. For each remote MediaStream received
 // on a PeerConnection a RemoteMediaStreamImpl instance is created and
 // owned by RtcPeerConnection.
-class CONTENT_EXPORT RemoteMediaStreamImpl
-    : NON_EXPORTED_BASE(public webrtc::ObserverInterface),
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class CONTENT_EXPORT RemoteMediaStreamImpl {
  public:
-  explicit RemoteMediaStreamImpl(
+  RemoteMediaStreamImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       webrtc::MediaStreamInterface* webrtc_stream);
-  ~RemoteMediaStreamImpl() override;
+  ~RemoteMediaStreamImpl();
 
   const blink::WebMediaStream& webkit_stream() { return webkit_stream_; }
+  const scoped_refptr<webrtc::MediaStreamInterface>& webrtc_stream() {
+    return observer_->stream();
+  }
 
  private:
-  // webrtc::ObserverInterface implementation.
-  void OnChanged() override;
+  typedef std::vector<scoped_refptr<RemoteAudioTrackAdapter>>
+      RemoteAudioTrackAdapters;
+  typedef std::vector<scoped_refptr<RemoteVideoTrackAdapter>>
+      RemoteVideoTrackAdapters;
 
-  scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
-  ScopedVector<RemoteMediaStreamTrackAdapter> video_track_observers_;
-  ScopedVector<RemoteMediaStreamTrackAdapter> audio_track_observers_;
+  void InitializeOnMainThread(const std::string& label);
+
+  class Observer
+      : NON_EXPORTED_BASE(public webrtc::ObserverInterface),
+        public base::RefCountedThreadSafe<Observer> {
+   public:
+    Observer(const base::WeakPtr<RemoteMediaStreamImpl>& media_stream,
+             const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+             webrtc::MediaStreamInterface* webrtc_stream);
+
+    const scoped_refptr<webrtc::MediaStreamInterface>& stream() const {
+      return webrtc_stream_;
+    }
+
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread() const {
+      return main_thread_;
+    }
+
+    void InitializeOnMainThread(const std::string& label);
+
+   private:
+    friend class base::RefCountedThreadSafe<Observer>;
+    ~Observer() override;
+
+    // webrtc::ObserverInterface implementation.
+    void OnChanged() override;
+
+    void OnChangedOnMainThread(
+        scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,
+        scoped_ptr<RemoteVideoTrackAdapters> video_tracks);
+
+    base::WeakPtr<RemoteMediaStreamImpl> media_stream_;
+    const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+    const scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
+  };
+
+  void OnChanged(scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,
+                 scoped_ptr<RemoteVideoTrackAdapters> video_tracks);
+
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
+  base::WeakPtrFactory<RemoteMediaStreamImpl> weak_factory_;
+  const scoped_refptr<Observer> observer_;  // must be after weak_factory_
+
+  RemoteVideoTrackAdapters video_track_observers_;
+  RemoteAudioTrackAdapters audio_track_observers_;
   blink::WebMediaStream webkit_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamImpl);

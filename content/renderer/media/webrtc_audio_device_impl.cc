@@ -32,12 +32,11 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       is_audio_track_processing_enabled_(
           MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled()) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
-  // TODO(tommi):  This object can be constructed on either the signaling thread
-  // or the main thread.  As is, those threads are one and the same so we don't
-  // detach either thread checkers, but once they're separate, we need to detach
-  // here:
-  //   signaling_thread_checker_.DetachFromThread();
-  //   main_thread_checker_.DetachFromThread();
+  // This object can be constructed on either the signaling thread or the main
+  // thread, so we need to detach these thread checkers here and have them
+  // initialize automatically when the first methods are called.
+  signaling_thread_checker_.DetachFromThread();
+  main_thread_checker_.DetachFromThread();
 
   worker_thread_checker_.DetachFromThread();
 }
@@ -374,8 +373,6 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
 }
 
 bool WebRtcAudioDeviceImpl::Recording() const {
-  DCHECK(!main_thread_checker_.CalledOnValidThread());
-  DCHECK(!signaling_thread_checker_.CalledOnValidThread());
   DCHECK(worker_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   return recording_;
@@ -520,7 +517,6 @@ void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
     const scoped_refptr<WebRtcAudioCapturer>& capturer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
-  // Called on the main render thread.
   DCHECK(capturer.get());
   base::AutoLock auto_lock(lock_);
   capturers_.remove(capturer);
@@ -528,11 +524,12 @@ void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
 
 scoped_refptr<WebRtcAudioCapturer>
 WebRtcAudioDeviceImpl::GetDefaultCapturer() const {
-  // Called on either the signaling thread (during initialization) or worker
-  // thread during capture.
+  // Called on the signaling thread (during initialization), worker
+  // thread during capture or main thread for a WebAudio source.
+  // We can't DCHECK on those three checks here since GetDefaultCapturer
+  // may be the first call and therefore could incorrectly initialize the
+  // thread checkers.
   DCHECK(initialized_);
-  DCHECK(signaling_thread_checker_.CalledOnValidThread() ||
-         worker_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   // Use the last |capturer| which is from the latest getUserMedia call as
   // the default capture device.

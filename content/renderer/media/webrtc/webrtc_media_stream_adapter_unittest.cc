@@ -9,10 +9,12 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -45,12 +47,20 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       audio_source.setExtraData(new MediaStreamAudioSource());
 
       audio_track_vector[0].initialize(audio_source);
-      MediaStreamTrack* native_track =
-          new MediaStreamTrack(
-              WebRtcLocalAudioTrackAdapter::Create(
-                  audio_track_vector[0].id().utf8(), nullptr),
-              true);
-      audio_track_vector[0].setExtraData(native_track);
+      StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock device",
+                                   "mock_device_id");
+      MockMediaConstraintFactory constraint_factory;
+      const blink::WebMediaConstraints constraints =
+          constraint_factory.CreateWebMediaConstraints();
+      scoped_refptr<WebRtcAudioCapturer> capturer(
+          WebRtcAudioCapturer::CreateCapturer(
+              -1, device_info, constraints, nullptr, nullptr));
+      scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+          WebRtcLocalAudioTrackAdapter::Create(
+              audio_track_vector[0].id().utf8(), nullptr));
+      scoped_ptr<WebRtcLocalAudioTrack> native_track(
+          new WebRtcLocalAudioTrack(adapter.get(), capturer, nullptr));
+      audio_track_vector[0].setExtraData(native_track.release());
     }
 
     blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(

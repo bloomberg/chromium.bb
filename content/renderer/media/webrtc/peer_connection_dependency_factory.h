@@ -123,11 +123,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
-  static void AddNativeAudioTrackToBlinkTrack(
-      webrtc::MediaStreamTrackInterface* native_track,
-      const blink::WebMediaStreamTrack& webkit_track,
-      bool is_local_track);
-
   scoped_refptr<base::MessageLoopProxy> GetWebRtcWorkerThread() const;
   scoped_refptr<base::MessageLoopProxy> GetWebRtcSignalingThread() const;
 
@@ -179,6 +174,10 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // creating PeerConnection objects.
   void CreatePeerConnectionFactory();
 
+  void InitializeSignalingThread(
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories,
+      base::WaitableEvent* event);
+
   void InitializeWorkerThread(rtc::Thread** thread,
                               base::WaitableEvent* event);
 
@@ -208,6 +207,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // "current" chrome thread.
   rtc::Thread* signaling_thread_;
   rtc::Thread* worker_thread_;
+  base::Thread chrome_signaling_thread_;
   base::Thread chrome_worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionDependencyFactory);

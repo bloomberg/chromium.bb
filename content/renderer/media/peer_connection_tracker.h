@@ -88,7 +88,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(
       RTCPeerConnectionHandler* pc_handler,
-      const blink::WebRTCSessionDescription& desc, Source source);
+      const std::string& sdp, const std::string& type, Source source);
 
   // Sends an update when Ice candidates are updated.
   virtual void TrackUpdateIce(

@@ -304,15 +304,17 @@ bool PeerConnectionTracker::OnControlMessageReceived(
 void PeerConnectionTracker::OnGetAllStats() {
   DCHECK(main_thread_.CalledOnValidThread());
 
+  const std::string empty_track_id;
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     rtc::scoped_refptr<InternalStatsObserver> observer(
         new rtc::RefCountedObject<InternalStatsObserver>(it->second));
 
+    // The last type parameter is ignored when the track id is empty.
     it->first->GetStats(
         observer,
-        NULL,
-        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug);
+        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
+        empty_track_id, blink::WebMediaStreamSource::TypeAudio);
   }
 }
 
@@ -388,12 +390,8 @@ void PeerConnectionTracker::TrackCreateAnswer(
 
 void PeerConnectionTracker::TrackSetSessionDescription(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebRTCSessionDescription& desc,
-    Source source) {
+    const std::string& sdp, const std::string& type, Source source) {
   DCHECK(main_thread_.CalledOnValidThread());
-  string sdp = base::UTF16ToUTF8(desc.sdp());
-  string type = base::UTF16ToUTF8(desc.type());
-
   string value = "type: " + type + ", sdp: " + sdp;
   SendPeerConnectionUpdate(
       pc_handler,
