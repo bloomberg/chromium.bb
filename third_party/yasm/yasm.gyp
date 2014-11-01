@@ -77,6 +77,21 @@
           '-Wno-incompatible-pointer-types',
         ],
       },
+      'conditions': [
+        ['OS=="win"', {
+          # As of VS 2013 Update 3, building this project with /analyze hits an
+          # internal compiler error on elf-x86-amd64.c in release builds with
+          # the amd64_x86 compiler. This halts the build and prevents subsequent
+          # analysis. Therefore, /analyze is disabled for this project. See this
+          # bug for details:
+          # https://connect.microsoft.com/VisualStudio/feedback/details/1014799/internal-compiler-error-when-using-analyze
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'AdditionalOptions!': [ '/analyze' ]
+            },
+          },
+        }],
+      ],
       'sources': [
          'source/patched-yasm/frontends/yasm/yasm-options.c',
          'source/patched-yasm/frontends/yasm/yasm.c',

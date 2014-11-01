@@ -135,4 +135,7 @@ Instructions for recreating the yasm.gyp file.
      default.  The yasm.gyp build patches this file before invoking it to
      allow specifying an output directory.
 
- 10) If all that's is finished, attempt to build....and cross your fingers.
+ 10) Recreate the 'AdditionalOptions!': [ '/analyze' ] block so that VC++
+     /analyze builds won't fail.
+
+ 11) If all that's is finished, attempt to build....and cross your fingers.
