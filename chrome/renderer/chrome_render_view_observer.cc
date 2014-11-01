@@ -348,7 +348,7 @@ void ChromeRenderViewObserver::DidStopLoading() {
   CapturePageInfoLater(
       false,  // preliminary_capture
       base::TimeDelta::FromMilliseconds(
-          render_view()->GetContentStateImmediately() ?
+          render_view()->IsPageStateSentImmediately() ?
               0 : kDelayForCaptureMs));
 }
 

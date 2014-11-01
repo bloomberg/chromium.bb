@@ -1098,8 +1098,8 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // clearing the page.  We also allow this process to exit if there are no
     // other active RenderFrames in it.
 
-    // Send an UpdateState message before we get swapped out.
-    render_view_->SyncNavigationState();
+    // Send any pending page state messages before we get swapped out.
+    render_view_->FlushPageState();
 
     // If we need a proxy to replace this, create it now so its routing id is
     // registered for receiving IPC messages.
@@ -2253,9 +2253,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   }
 
   // When we perform a new navigation, we need to update the last committed
-  // session history entry with state for the page we are leaving. Do this
-  // before updating the HistoryController state.
-  render_view_->UpdateSessionHistory(frame);
+  // session history entry with any dirty page state for the page we are
+  // leaving. Do this before updating the HistoryController state.
+  render_view_->FlushPageState();
 
   render_view_->history_controller()->UpdateForCommit(this, item, commit_type,
       navigation_state->was_within_same_page());
@@ -2277,12 +2277,12 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
 
-    // Don't update history_page_ids_ (etc) for kSwappedOutURL, since
-    // we don't want to forget the entry that was there, and since we will
-    // never come back to kSwappedOutURL.  Note that we have to call
-    // UpdateSessionHistory and update page_id_ even in this case, so that
-    // the current entry gets a state update and so that we don't send a
-    // state update to the wrong entry when we swap back in.
+    // Don't update history_page_ids_ (etc) for kSwappedOutURL, since we don't
+    // want to forget the entry that was there, and since we will never come
+    // back to kSwappedOutURL.  Note that we have to call FlushPageState and
+    // update page_id_ even in this case, so that the current entry gets a state
+    // update and so that we don't send a state update to the wrong entry when
+    // we swap back in.
     if (GetLoadingUrl() != GURL(kSwappedOutURL)) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
@@ -2305,8 +2305,8 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // per navigation.
     //
     // Note that we need to check if the page ID changed. In the case of a
-    // reload, the page ID doesn't change, and UpdateSessionHistory gets the
-    // previous URL and the current page ID, which would be wrong.
+    // reload, the page ID doesn't change, and FlushPageState gets the previous
+    // URL and the current page ID, which would be wrong.
     if (navigation_state->pending_page_id() != -1 &&
         navigation_state->pending_page_id() != render_view_->page_id_ &&
         !navigation_state->request_committed()) {

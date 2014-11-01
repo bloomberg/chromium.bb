@@ -325,8 +325,8 @@ static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
 // foreground renderer. This means there is a small window of time from which
 // content state is modified and not sent to session restore, but this is
 // better than having to wake up all renderers during shutdown.
-const int kDelaySecondsForContentStateSyncHidden = 5;
-const int kDelaySecondsForContentStateSync = 1;
+const int kHiddenPageStateSendingDelaySeconds = 5;
+const int kPageStateSendingDelaySeconds = 1;
 
 #if defined(OS_ANDROID)
 // Delay between tapping in content and launching the associated android intent.
@@ -649,13 +649,14 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
                    params->hidden,
                    params->never_visible),
       webkit_preferences_(params->webkit_prefs),
-      send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
       opener_suppressed_(false),
       suppress_dialogs_until_swap_out_(false),
+      page_state_sent_immediately_(false),
+      page_state_dirty_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       next_page_id_(params->next_page_id),
@@ -1527,29 +1528,6 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Sends the current history state to the browser so it will be saved before we
-// navigate to a new page.
-void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
-  // If we have a valid page ID at this point, then it corresponds to the page
-  // we are navigating away from.  Otherwise, this is the first navigation, so
-  // there is no past session history to record.
-  if (page_id_ == -1)
-    return;
-  SendUpdateState(history_controller_->GetCurrentEntry());
-}
-
-void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {
-  if (!entry)
-    return;
-
-  // Don't send state updates for kSwappedOutURL.
-  if (entry->root().urlString() == WebString::fromUTF8(kSwappedOutURL))
-    return;
-
-  Send(new ViewHostMsg_UpdateState(
-      routing_id_, page_id_, HistoryEntryToPageState(entry)));
-}
-
 bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   // Before WebKit asks us to show an alert (etc.), it takes care of doing the
   // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
@@ -1899,30 +1877,50 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
   return window_rect;
 }
 
-void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
-  // No need to update state if no page has committed yet.
+void RenderViewImpl::MarkPageStateAsDirty() {
+  // No need to send state if no page has committed yet.
   if (page_id_ == -1)
     return;
 
+  page_state_dirty_ = true;
+
   int delay;
-  if (send_content_state_immediately_)
+  if (page_state_sent_immediately_)
     delay = 0;
   else if (is_hidden())
-    delay = kDelaySecondsForContentStateSyncHidden;
+    delay = kHiddenPageStateSendingDelaySeconds;
   else
-    delay = kDelaySecondsForContentStateSync;
+    delay = kPageStateSendingDelaySeconds;
 
-  if (nav_state_sync_timer_.IsRunning()) {
+  if (page_state_timer_.IsRunning()) {
     // The timer is already running. If the delay of the timer maches the amount
     // we want to delay by, then return. Otherwise stop the timer so that it
     // gets started with the right delay.
-    if (nav_state_sync_timer_.GetCurrentDelay().InSeconds() == delay)
+    if (page_state_timer_.GetCurrentDelay().InSeconds() == delay)
       return;
-    nav_state_sync_timer_.Stop();
+    page_state_timer_.Stop();
   }
 
-  nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                              &RenderViewImpl::SyncNavigationState);
+  page_state_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
+                          &RenderViewImpl::FlushPageState);
+}
+
+void RenderViewImpl::FlushPageState() {
+  if (!page_state_dirty_ || page_id_ == -1 || !webview())
+    return;
+
+  HistoryEntry* entry = history_controller_->GetCurrentEntry();
+  if (!entry)
+    return;
+
+  // Don't send state updates for kSwappedOutURL.
+  if (entry->root().urlString() == WebString::fromUTF8(kSwappedOutURL))
+    return;
+
+  Send(new ViewHostMsg_UpdateState(
+      routing_id_, page_id_, HistoryEntryToPageState(entry)));
+
+  page_state_dirty_ = false;
 }
 
 void RenderViewImpl::setMouseOverURL(const WebURL& url) {
@@ -2408,7 +2406,7 @@ void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
 }
 
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebLocalFrame* frame) {
-  StartNavStateSyncTimerIfNecessary();
+  MarkPageStateAsDirty();
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -2441,7 +2439,7 @@ BrowserPluginManager* RenderViewImpl::GetBrowserPluginManager() {
 }
 
 void RenderViewImpl::didChangeScrollOffset(WebLocalFrame* frame) {
-  StartNavStateSyncTimerIfNecessary();
+  MarkPageStateAsDirty();
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
@@ -2565,8 +2563,8 @@ int RenderViewImpl::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
-bool RenderViewImpl::GetContentStateImmediately() const {
-  return send_content_state_immediately_;
+bool RenderViewImpl::IsPageStateSentImmediately() const {
+  return page_state_sent_immediately_;
 }
 
 blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
@@ -2581,10 +2579,8 @@ void RenderViewImpl::DidStopLoading() {
   main_render_frame_->didStopLoading();
 }
 
-void RenderViewImpl::SyncNavigationState() {
-  if (!webview())
-    return;
-  SendUpdateState(history_controller_->GetCurrentEntry());
+void RenderViewImpl::ForcePageStateFlushForTesting() {
+  FlushPageState();
 }
 
 blink::WebPlugin* RenderViewImpl::GetWebPluginForFind() {

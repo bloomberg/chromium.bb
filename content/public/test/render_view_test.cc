@@ -380,7 +380,7 @@ void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
 
 void RenderViewTest::SendContentStateImmediately() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->set_send_content_state_immediately(true);
+  impl->set_page_state_sent_immediately(true);
 }
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {

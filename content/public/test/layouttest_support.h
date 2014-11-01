@@ -76,7 +76,7 @@ void MockBatteryStatusChanged(const blink::WebBatteryStatus& status);
 int GetLocalSessionHistoryLength(RenderView* render_view);
 
 // Sync the current session history to the browser process.
-void SyncNavigationState(RenderView* render_view);
+void ForcePageStateFlush(RenderView* render_view);
 
 // Sets the focus of the render view depending on |enable|. This only overrides
 // the state of the renderer, and does not sync the focus to the browser
