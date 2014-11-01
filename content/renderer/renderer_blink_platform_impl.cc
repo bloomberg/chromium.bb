@@ -939,6 +939,14 @@ blink::WebGraphicsContext3D*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context) {
+  return createOffscreenGraphicsContext3D(attributes, share_context, NULL);
+}
+
+blink::WebGraphicsContext3D*
+RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    blink::WebGraphicsContext3D* share_context,
+    blink::WebGLInfo* gl_info) {
   if (!RenderThreadImpl::current())
     return NULL;
 
@@ -958,6 +966,15 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+
+  if (gpu_channel_host.get() && gl_info) {
+    const gpu::GPUInfo& gpu_info = gpu_channel_host->gpu_info();
+    gl_info->vendorInfo.assign(blink::WebString::fromUTF8(gpu_info.gl_vendor));
+    gl_info->rendererInfo.assign(
+        blink::WebString::fromUTF8(gpu_info.gl_renderer));
+    gl_info->driverVersion.assign(
+        blink::WebString::fromUTF8(gpu_info.gl_version));
+  }
 
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
   bool lose_context_when_out_of_memory = false;
