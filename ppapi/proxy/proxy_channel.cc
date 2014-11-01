@@ -85,9 +85,5 @@ bool ProxyChannel::Send(IPC::Message* msg) {
   return false;
 }
 
-bool ProxyChannel::SendAndStayLocked(IPC::Message* msg) {
-  return Send(msg);
-}
-
 }  // namespace proxy
 }  // namespace ppapi

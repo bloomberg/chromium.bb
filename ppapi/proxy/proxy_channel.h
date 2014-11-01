@@ -73,8 +73,6 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) override;
 
-  virtual bool SendAndStayLocked(IPC::Message* msg);
-
   // IPC::Listener implementation.
   virtual void OnChannelError() override;
 

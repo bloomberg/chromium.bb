@@ -211,15 +211,6 @@ bool PluginDispatcher::Send(IPC::Message* msg) {
   return SendMessage(msg);
 }
 
-bool PluginDispatcher::SendAndStayLocked(IPC::Message* msg) {
-  TRACE_EVENT2("ppapi proxy", "PluginDispatcher::SendAndStayLocked",
-               "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
-               "Line", IPC_MESSAGE_ID_LINE(msg->type()));
-  if (!msg->is_reply())
-    msg->set_unblock(true);
-  return SendMessage(msg);
-}
-
 bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // We need to grab the proxy lock to ensure that we don't collide with the
   // plugin making pepper calls on a different thread.
