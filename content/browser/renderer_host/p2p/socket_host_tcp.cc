@@ -88,8 +88,8 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
   // socket layer will do the DNS resolve.
   if (remote_address.ip_address.address().empty()) {
     DCHECK(!remote_address.hostname.empty());
-    dest_host_port_pair = net::HostPortPair::FromString(
-        remote_address.hostname);
+    dest_host_port_pair = net::HostPortPair(remote_address.hostname,
+                                            remote_address.ip_address.port());
   } else {
     dest_host_port_pair = net::HostPortPair::FromIPEndPoint(
         remote_address.ip_address);
