@@ -163,14 +163,12 @@ class DevToolsHttpHandlerImpl::BrowserTarget {
         tracing_handler_(new devtools::tracing::TracingHandler(
             devtools::tracing::TracingHandler::Browser)),
         protocol_handler_(new DevToolsProtocolHandlerImpl()) {
-    VLOG(2) << "BrowserTarget::BrowserTarget()";
     protocol_handler_->SetNotifier(
         base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
     protocol_handler_->SetTracingHandler(tracing_handler_.get());
   }
 
   ~BrowserTarget() {
-    VLOG(2) << "BrowserTarget::~BrowserTarget()";
     STLDeleteElements(&handlers_);
   }
 
@@ -702,7 +700,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   std::string browser_prefix = "/devtools/browser";
   size_t browser_pos = request.path.find(browser_prefix);
   if (browser_pos == 0) {
-    VLOG(2) << "OnWebSocketRequestUI: new BrowserTarget";
     BrowserTarget* browser_target = new BrowserTarget(
         thread_->message_loop(), server_.get(), connection_id);
     browser_target->RegisterHandler(
