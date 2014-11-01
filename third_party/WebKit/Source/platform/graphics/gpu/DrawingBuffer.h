@@ -246,7 +246,11 @@ private:
     Platform3DObject m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;
-    TextureInfo m_frontColorBuffer;
+    struct FrontBufferInfo {
+        TextureInfo texInfo;
+        WebExternalTextureMailbox mailbox;
+    };
+    FrontBufferInfo m_frontColorBuffer;
 
     // This is used when we have OES_packed_depth_stencil.
     Platform3DObject m_depthStencilBuffer;

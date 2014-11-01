@@ -297,7 +297,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     ASSERT(!frontColorBufferMailbox->m_parentDrawingBuffer);
     frontColorBufferMailbox->m_parentDrawingBuffer = this;
     *outMailbox = frontColorBufferMailbox->mailbox;
-    m_frontColorBuffer = frontColorBufferMailbox->textureInfo;
+    m_frontColorBuffer = { frontColorBufferMailbox->textureInfo, frontColorBufferMailbox->mailbox };
     return true;
 }
 
@@ -456,10 +456,6 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
 bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
 {
-    GLint textureId = m_colorBuffer.textureId;
-    if (fromFrontBuffer && m_frontColorBuffer.textureId)
-        textureId = m_frontColorBuffer.textureId;
-
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
             commit();
@@ -475,15 +471,21 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
         return false;
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
-    RefPtr<MailboxInfo> bufferMailbox = adoptRef(new MailboxInfo());
-    m_context->genMailboxCHROMIUM(bufferMailbox->mailbox.name);
-    m_context->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, bufferMailbox->mailbox.name);
-    m_context->flush();
+    WebExternalTextureMailbox mailbox;
+    GLint textureId = 0;
+    if (fromFrontBuffer && m_frontColorBuffer.texInfo.textureId) {
+        textureId = m_frontColorBuffer.texInfo.textureId;
+        mailbox = m_frontColorBuffer.mailbox;
+    } else {
+        textureId = m_colorBuffer.textureId;
+        m_context->genMailboxCHROMIUM(mailbox.name);
+        m_context->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox.name);
+        m_context->flush();
+        mailbox.syncPoint = m_context->insertSyncPoint();
+    }
 
-    bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
-
-    context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
-    Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
+    context->waitSyncPoint(mailbox.syncPoint);
+    Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
     bool unpackPremultiplyAlphaNeeded = false;
     bool unpackUnpremultiplyAlphaNeeded = false;
@@ -532,16 +534,10 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     if (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
         return;
 
-    if (!imageBuffer)
+    if (!imageBuffer || !m_frontColorBuffer.texInfo.textureId)
         return;
     Platform3DObject tex = imageBuffer->getBackingTexture();
     if (tex) {
-        RefPtr<MailboxInfo> bufferMailbox = adoptRef(new MailboxInfo());
-        m_context->genMailboxCHROMIUM(bufferMailbox->mailbox.name);
-        m_context->produceTextureDirectCHROMIUM(m_frontColorBuffer.textureId, GL_TEXTURE_2D, bufferMailbox->mailbox.name);
-        m_context->flush();
-
-        bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
         OwnPtr<WebGraphicsContext3DProvider> provider =
             adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
         if (!provider)
@@ -550,22 +546,21 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         if (!context)
             return;
 
-        context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
-        Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
+        context->waitSyncPoint(m_frontColorBuffer.mailbox.syncPoint);
+        Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer.mailbox.name);
         context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture,
             tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
         context->deleteTexture(sourceTexture);
         context->flush();
         m_context->waitSyncPoint(context->insertSyncPoint());
         imageBuffer->didModifyBackingTexture();
-
         return;
     }
 
     Platform3DObject framebuffer = m_context->createFramebuffer();
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     // We don't need to bind a copy of m_frontColorBuffer since the texture parameters are untouched.
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.textureId, 0);
+    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.texInfo.textureId, 0);
 
     paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_actualAttributes.premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
@@ -617,7 +612,7 @@ void DrawingBuffer::beginDestruction()
     setSize(IntSize());
 
     m_colorBuffer = TextureInfo();
-    m_frontColorBuffer = TextureInfo();
+    m_frontColorBuffer = FrontBufferInfo();
     m_multisampleColorBuffer = 0;
     m_depthStencilBuffer = 0;
     m_depthBuffer = 0;
