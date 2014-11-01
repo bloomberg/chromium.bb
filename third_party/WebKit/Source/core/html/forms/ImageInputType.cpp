@@ -25,13 +25,16 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -42,6 +45,7 @@ using namespace HTMLNames;
 
 inline ImageInputType::ImageInputType(HTMLInputElement& element)
     : BaseButtonInputType(element)
+    , m_useFallbackContent(false)
 {
 }
 
@@ -117,8 +121,10 @@ void ImageInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-RenderObject* ImageInputType::createRenderer(RenderStyle*) const
+RenderObject* ImageInputType::createRenderer(RenderStyle* style) const
 {
+    if (m_useFallbackContent)
+        return new RenderBlockFlow(&element());
     RenderImage* image = new RenderImage(&element());
     image->setImageResource(RenderImageResource::create());
     return image;
@@ -126,10 +132,12 @@ RenderObject* ImageInputType::createRenderer(RenderStyle*) const
 
 void ImageInputType::altAttributeChanged()
 {
-    RenderImage* image = toRenderImage(element().renderer());
-    if (!image)
-        return;
-    image->updateAltText();
+    if (element().userAgentShadowRoot()) {
+        Element* text = element().userAgentShadowRoot()->getElementById("alttext");
+        String value = element().altText();
+        if (text && text->textContent() != value)
+            text->setTextContent(element().altText());
+    }
 }
 
 void ImageInputType::srcAttributeChanged()
@@ -139,6 +147,13 @@ void ImageInputType::srcAttributeChanged()
     element().imageLoader()->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
 }
 
+void ImageInputType::valueAttributeChanged()
+{
+    if (m_useFallbackContent)
+        return;
+    BaseButtonInputType::valueAttributeChanged();
+}
+
 void ImageInputType::startResourceLoading()
 {
     BaseButtonInputType::startResourceLoading();
@@ -146,17 +161,12 @@ void ImageInputType::startResourceLoading()
     HTMLImageLoader* imageLoader = element().imageLoader();
     imageLoader->updateFromElement();
 
-    RenderImage* renderer = toRenderImage(element().renderer());
-    if (!renderer)
+    RenderObject* renderer = element().renderer();
+    if (!renderer || !renderer->isRenderImage())
         return;
 
-    RenderImageResource* imageResource = renderer->imageResource();
+    RenderImageResource* imageResource = toRenderImage(renderer)->imageResource();
     imageResource->setImageResource(imageLoader->image());
-
-    // If we have no image at all because we have no src attribute, set
-    // image height and width for the alt text instead.
-    if (!imageLoader->image() && !imageResource->cachedImage())
-        renderer->setImageSizeForAltText();
 }
 
 bool ImageInputType::shouldRespectAlignAttribute()
@@ -235,6 +245,59 @@ bool ImageInputType::hasLegalLinkAttribute(const QualifiedName& name) const
 const QualifiedName& ImageInputType::subResourceAttributeName() const
 {
     return srcAttr;
+}
+
+void ImageInputType::ensureFallbackContent()
+{
+    if (m_useFallbackContent)
+        return;
+    setUseFallbackContent();
+    reattachFallbackContent();
+}
+
+void ImageInputType::setUseFallbackContent()
+{
+    if (m_useFallbackContent)
+        return;
+    m_useFallbackContent = true;
+    if (ShadowRoot* root = element().userAgentShadowRoot())
+        root->removeChildren();
+    createShadowSubtree();
+}
+
+void ImageInputType::ensurePrimaryContent()
+{
+    if (!m_useFallbackContent)
+        return;
+    m_useFallbackContent = false;
+    reattachFallbackContent();
+}
+
+void ImageInputType::reattachFallbackContent()
+{
+    // This can happen inside of attach() in the middle of a recalcStyle so we need to
+    // reattach synchronously here.
+    if (element().document().inStyleRecalc())
+        element().reattach();
+    else
+        element().lazyReattachIfAttached();
+}
+
+void ImageInputType::createShadowSubtree()
+{
+    if (!m_useFallbackContent) {
+        BaseButtonInputType::createShadowSubtree();
+        return;
+    }
+    HTMLImageFallbackHelper::createAltTextShadowTree(element());
+}
+
+PassRefPtr<RenderStyle> ImageInputType::customStyleForRenderer(PassRefPtr<RenderStyle> newStyle)
+{
+    if (!m_useFallbackContent)
+        return newStyle;
+
+    return HTMLImageFallbackHelper::customStyleForAltText(element(), newStyle);
 }
 
 } // namespace blink

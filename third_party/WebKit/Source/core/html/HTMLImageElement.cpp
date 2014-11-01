@@ -32,16 +32,19 @@
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
@@ -84,7 +87,10 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
     , m_intrinsicSizingViewportDependant(false)
+    , m_useFallbackContent(false)
+    , m_isFallbackImage(false)
 {
+    setHasCustomStyleCallbacks();
     if (form && form->inDocument()) {
 #if ENABLE(OILPAN)
         m_form = form;
@@ -235,9 +241,13 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == altAttr) {
-        if (renderer() && renderer()->isImage())
-            toRenderImage(renderer())->updateAltText();
+    if (name == altAttr || name == titleAttr) {
+        if (userAgentShadowRoot()) {
+            Element* text = userAgentShadowRoot()->getElementById("alttext");
+            String value = altText();
+            if (text && text->textContent() != value)
+                text->setTextContent(altText());
+        }
     } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
@@ -247,7 +257,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 }
 
-const AtomicString& HTMLImageElement::altText() const
+String HTMLImageElement::altText() const
 {
     // lets figure out the alt text.. magic stuff
     // http://www.w3.org/TR/1998/REC-html40-19980424/appendix/notes.html#altgen
@@ -313,6 +323,9 @@ RenderObject* HTMLImageElement::createRenderer(RenderStyle* style)
     if (style->hasContent())
         return RenderObject::createObject(this, style);
 
+    if (m_useFallbackContent)
+        return new RenderBlockFlow(this);
+
     RenderImage* image = new RenderImage(this);
     image->setImageResource(RenderImageResource::create());
     image->setImageDevicePixelRatio(m_imageDevicePixelRatio);
@@ -337,13 +350,9 @@ void HTMLImageElement::attach(const AttachContext& context)
         if (renderImageResource->hasImage())
             return;
 
-        // If we have no image at all because we have no src attribute, set
-        // image height and width for the alt text instead.
         if (!imageLoader().image() && !renderImageResource->cachedImage())
-            renderImage->setImageSizeForAltText();
-        else
-            renderImageResource->setImageResource(imageLoader().image());
-
+            return;
+        renderImageResource->setImageResource(imageLoader().image());
     }
 }
 
@@ -366,7 +375,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
     // If we have been inserted from a renderer-less document,
     // our loader may have not fetched the image, so do it now.
     if ((insertionPoint->inDocument() && !imageLoader().image()) || imageWasModified)
-        imageLoader().updateFromElement(ImageLoader::UpdateNormal, m_elementCreatedByParser ? ImageLoader::ForceLoadImmediately : ImageLoader::LoadNormally);
+        imageLoader().updateFromElement(ImageLoader::UpdateNormal);
 
     return HTMLElement::insertedInto(insertionPoint);
 }
@@ -645,6 +654,11 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
         document().mediaQueryMatcher().addViewportListener(m_listener);
     }
     imageLoader().updateFromElement(behavior);
+
+    if (imageLoader().image() || (imageLoader().hasPendingActivity() && !imageSourceURL().isEmpty()))
+        ensurePrimaryContent();
+    else
+        ensureFallbackContent();
 }
 
 const KURL& HTMLImageElement::sourceURL() const
@@ -652,4 +666,49 @@ const KURL& HTMLImageElement::sourceURL() const
     return cachedImage()->response().url();
 }
 
+void HTMLImageElement::didAddUserAgentShadowRoot(ShadowRoot&)
+{
+    HTMLImageFallbackHelper::createAltTextShadowTree(*this);
+}
+
+void HTMLImageElement::ensureFallbackContent()
+{
+    if (m_useFallbackContent || m_isFallbackImage)
+        return;
+    setUseFallbackContent();
+    reattachFallbackContent();
+}
+
+void HTMLImageElement::ensurePrimaryContent()
+{
+    if (!m_useFallbackContent)
+        return;
+    m_useFallbackContent = false;
+    reattachFallbackContent();
+}
+
+void HTMLImageElement::reattachFallbackContent()
+{
+    // This can happen inside of attach() in the middle of a recalcStyle so we need to
+    // reattach synchronously here.
+    if (document().inStyleRecalc())
+        reattach();
+    else
+        lazyReattachIfAttached();
+}
+
+PassRefPtr<RenderStyle> HTMLImageElement::customStyleForRenderer()
+{
+    RefPtr<RenderStyle> newStyle = originalStyleForRenderer();
+
+    if (!m_useFallbackContent)
+        return newStyle;
+    return HTMLImageFallbackHelper::customStyleForAltText(*this, newStyle);
+}
+
+void HTMLImageElement::setUseFallbackContent()
+{
+    m_useFallbackContent = true;
+    ensureUserAgentShadowRoot();
+}
 }

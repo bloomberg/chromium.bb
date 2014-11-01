@@ -504,6 +504,7 @@ TEST_F(ActivityLoggerTest, RequestResource)
         "blinkAddElement | iframe | data:text/html;charset=utf-8,A\n"
         "blinkRequestResource | Main resource | data:text/html;charset=utf-8,A\n"
         "blinkRequestResource | Image | data:text/html;charset=utf-8,B\n"
+        "blinkRequestResource | Image | data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABO0lEQVR4XpWRTytEYRTG3/tHLGQrNfEBpKQkmc8gG0ulxpRsfQ0TTXbI3kZ2ys4tsyBZjN1N8idlYUYaxJzzOKf7ztG1MfN0ens69/x6n/eeYPuo7npS9bCOriXDMQOCTVbO3X+6Wp9mICZWAHqquE1qAA8EQRiFcmYMsQKsAHM2DeKV4qj48ZHB++bHwcXTQ+Mz6u/rABwSIQO0wKW5wuLU8E5yWzlJS7OFvaUJMGelAFkkYici1NIXB4DQbH1JY2ggVoD4N1Kb2AAA149vUmLLxbHaTaNynIJggAz7G7jTyjB5wOv79/LupT47Cu0rcT6S/ai755YUiMM4cgw4/I3ERAaI3y/PiFnYPHOBtfORLKX38AaBERaJbHFeAOY3Eu8ZOYByi7Pl+hzWN+nwWjVB15LhYHXr1PWiH0AYTw4BBjO9AAAAAElFTkSuQmCC\n"
         "blinkAddElement | link | stylesheet | data:text/html;charset=utf-8,C\n"
         "blinkRequestResource | CSS stylesheet | data:text/html;charset=utf-8,C\n"
         "blinkAddElement | script | data:text/html;charset=utf-8,D\n"

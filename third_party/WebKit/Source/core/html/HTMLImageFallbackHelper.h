@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004 Apple Computer, Inc.
+ * Copyright (C) 2014 Robert Hogan <robhogan@chromium.org>.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -20,31 +18,22 @@
  *
  */
 
-#ifndef HTMLImageLoader_h
-#define HTMLImageLoader_h
+#ifndef HTMLImageFallbackHelper_h
+#define HTMLImageFallbackHelper_h
 
-#include "core/loader/ImageLoader.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class HTMLImageLoader final : public ImageLoader {
+class Element;
+class RenderStyle;
+
+class HTMLImageFallbackHelper {
 public:
-    static PassOwnPtrWillBeRawPtr<HTMLImageLoader> create(Element* element)
-    {
-        return adoptPtrWillBeNoop(new HTMLImageLoader(element));
-    }
-    virtual ~HTMLImageLoader();
-
-    virtual void dispatchLoadEvent() override;
-    virtual String sourceURI(const AtomicString&) const override;
-
-    virtual void notifyFinished(Resource*) override;
-
-private:
-    explicit HTMLImageLoader(Element*);
-    virtual void noImageResourceToLoad() override;
+    static void createAltTextShadowTree(Element&);
+    static PassRefPtr<RenderStyle> customStyleForAltText(Element&, PassRefPtr<RenderStyle> newStyle);
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // HTMLImageFallbackHelper_h

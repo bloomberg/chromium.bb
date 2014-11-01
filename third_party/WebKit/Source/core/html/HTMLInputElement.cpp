@@ -128,9 +128,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     setHasCustomStyleCallbacks();
-#endif
 }
 
 PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
@@ -1831,12 +1829,10 @@ bool HTMLInputElement::supportsAutofocus() const
     return m_inputType->isInteractiveContent();
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 {
     return m_inputTypeView->customStyleForRenderer(originalStyleForRenderer());
 }
-#endif
 
 bool HTMLInputElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
 {
@@ -1851,6 +1847,16 @@ void HTMLInputElement::didNotifySubtreeInsertionsToDocument()
 AXObject* HTMLInputElement::popupRootAXObject()
 {
     return m_inputTypeView->popupRootAXObject();
+}
+
+void HTMLInputElement::ensureFallbackContent()
+{
+    m_inputTypeView->ensureFallbackContent();
+}
+
+void HTMLInputElement::ensurePrimaryContent()
+{
+    m_inputTypeView->ensurePrimaryContent();
 }
 
 } // namespace

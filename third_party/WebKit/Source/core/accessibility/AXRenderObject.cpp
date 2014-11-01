@@ -297,6 +297,11 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return ImageRole;
     }
 
+    // This is for the case where the fallback content kicks in.
+    // The normal case should be handled in the case above
+    if (node && node->hasTagName(HTMLNames::imgTag))
+        return ImageRole;
+
     // Note: if JavaScript is disabled, the renderer won't be a RenderHTMLCanvas.
     if (isHTMLCanvasElement(node) && m_renderer->isCanvas())
         return CanvasRole;

@@ -2496,6 +2496,8 @@
             'html/HTMLIFrameElement.cpp',
             'html/HTMLImageElement.cpp',
             'html/HTMLImageElement.h',
+            'html/HTMLImageFallbackHelper.h',
+            'html/HTMLImageFallbackHelper.cpp',
             'html/HTMLImageLoader.cpp',
             'html/HTMLImageLoader.h',
             'html/HTMLInputElement.cpp',

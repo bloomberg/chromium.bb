@@ -99,6 +99,10 @@ public:
     HTMLMenuElement* contextMenu() const;
     void setContextMenu(HTMLMenuElement*);
 
+    virtual void ensureFallbackContent() { }
+    virtual void ensurePrimaryContent() { }
+    virtual String altText() const { return String(); }
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 

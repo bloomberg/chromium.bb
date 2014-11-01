@@ -26,7 +26,6 @@
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"
-#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Logging.h"
@@ -61,17 +60,27 @@ String HTMLImageLoader::sourceURI(const AtomicString& attr) const
     return stripLeadingAndTrailingHTMLSpaces(attr);
 }
 
+void HTMLImageLoader::noImageResourceToLoad()
+{
+    // FIXME: Use fallback content even when there is no alt-text. The only blocker is the large amount of rebaselining it requires.
+    if (!toHTMLElement(element())->altText().isEmpty())
+        toHTMLElement(element())->ensureFallbackContent();
+}
+
 void HTMLImageLoader::notifyFinished(Resource*)
 {
     ImageResource* cachedImage = image();
 
-    RefPtrWillBeRawPtr<Element> element = this->element();
     ImageLoader::notifyFinished(cachedImage);
 
     bool loadError = cachedImage->errorOccurred() || cachedImage->response().httpStatusCode() >= 400;
+    if (loadError)
+        toHTMLElement(element())->ensureFallbackContent();
+    else
+        toHTMLElement(element())->ensurePrimaryContent();
 
-    if (loadError && isHTMLObjectElement(*element))
-        toHTMLObjectElement(element)->renderFallbackContent();
+    if (loadError && isHTMLObjectElement(element()))
+        toHTMLObjectElement(element())->renderFallbackContent();
 }
 
 }
