@@ -150,8 +150,13 @@ class Invoker<IndicesHolder<indices...>, ArgTypes...>
   // so it is guaranteed ArgumentHolders will be initialized (and thus, will
   // extract arguments from Arguments) in the right order.
   Invoker(Arguments* args, int create_flags)
-      : ArgumentHolder<indices, ArgTypes>(args, create_flags)...,
-        args_(args) {}
+      : ArgumentHolder<indices, ArgTypes>(args, create_flags)..., args_(args) {
+    // GCC thinks that create_flags is going unused, even though the
+    // expansion above clearly makes use of it. Per jyasskin@, casting
+    // to void is the commonly accepted way to convince the compiler
+    // that you're actually using a parameter/varible.
+    (void)create_flags;
+  }
 
   bool IsOK() {
     return And(ArgumentHolder<indices, ArgTypes>::ok...);
