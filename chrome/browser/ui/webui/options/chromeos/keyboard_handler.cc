@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 
-#include "ash/new_window_delegate.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -15,6 +13,11 @@
 #include "chromeos/ime/ime_keyboard.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(USE_ATHENA)
+#include "ash/new_window_delegate.h"
+#include "ash/shell.h"
+#endif
 
 namespace {
 const struct ModifierKeysSelectItem {
@@ -156,7 +159,7 @@ void KeyboardHandler::RegisterMessages() {
 }
 
 void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
-#if defined(USE_ATHENA)
+#if !defined(USE_ATHENA)
   // Athena doesn't have ash::Shell and its new_window_delegate so keyboard
   // shortcut overlays are not supported.
   // TODO(mukai): re-enable this.

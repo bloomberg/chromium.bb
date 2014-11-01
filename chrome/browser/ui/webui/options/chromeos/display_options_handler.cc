@@ -145,18 +145,14 @@ base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
 }  // namespace
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
-#if !defined(USE_ATHENA)
   // ash::Shell doesn't exist in Athena.
   // See: http://crbug.com/416961
   ash::Shell::GetInstance()->display_controller()->AddObserver(this);
-#endif
 }
 
 DisplayOptionsHandler::~DisplayOptionsHandler() {
-#if !defined(USE_ATHENA)
   // ash::Shell doesn't exist in Athena.
   ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
-#endif
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
@@ -208,11 +204,9 @@ void DisplayOptionsHandler::GetLocalizedValues(
 
 void DisplayOptionsHandler::InitializePage() {
   DCHECK(web_ui());
-#if !defined(USE_ATHENA)
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.enableDisplayButton",
       base::FundamentalValue(true));
-#endif
 }
 
 void DisplayOptionsHandler::RegisterMessages() {

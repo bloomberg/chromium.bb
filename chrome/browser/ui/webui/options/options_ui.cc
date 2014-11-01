@@ -88,15 +88,18 @@
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/date_time_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/display_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/pointer_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#endif
+
+#if defined(OS_CHROMEOS) && !defined(USE_ATHENA)
+#include "chrome/browser/ui/webui/options/chromeos/display_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 #endif
 
 #if defined(USE_NSS)
@@ -319,16 +322,18 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::BluetoothOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DateTimeOptionsHandler());
+#if !defined(USE_ATHENA)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::DisplayOverscanHandler());
   AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::PowerHandler());
+#endif
+  AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::KeyboardHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::PowerHandler());
 
   chromeos::options::PointerHandler* pointer_handler =
       new chromeos::options::PointerHandler();

@@ -1705,7 +1705,11 @@ void BrowserOptionsHandler::HandleRefreshExtensionControlIndicators(
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::HandleOpenWallpaperManager(
     const base::ListValue* args) {
+#if !defined(USE_ATHENA)
   ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(

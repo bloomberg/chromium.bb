@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
