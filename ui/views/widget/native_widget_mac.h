@@ -105,6 +105,10 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   virtual void EndMoveLoop() override;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) override;
+  virtual void SetVisibilityAnimationDuration(
+      const base::TimeDelta& duration) override;
+  virtual void SetVisibilityAnimationTransition(
+      Widget::VisibilityTransition transition) override;
   virtual ui::NativeTheme* GetNativeTheme() const override;
   virtual void OnRootViewLayout() override;
   virtual bool IsTranslucentWindowOpacitySupported() const override;

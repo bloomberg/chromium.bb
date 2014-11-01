@@ -20,7 +20,6 @@
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-#include "ui/wm/core/window_animations.h"
 
 // This is the number of pixels in the border image interior to the actual
 // border.
@@ -214,8 +213,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // avoid a NULL dereference.
     if (!popup_.get())
       return;
-    wm::SetWindowVisibilityAnimationTransition(
-        popup_->GetNativeView(), wm::ANIMATE_NONE);
+    popup_->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
     if (!popup_.get()) {

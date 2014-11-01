@@ -221,6 +221,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
       Widget::MoveLoopEscapeBehavior escape_behavior) = 0;
   virtual void EndMoveLoop() = 0;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
+  virtual void SetVisibilityAnimationDuration(
+      const base::TimeDelta& duration) = 0;
+  virtual void SetVisibilityAnimationTransition(
+      Widget::VisibilityTransition transition) = 0;
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
   virtual void OnRootViewLayout() = 0;
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;

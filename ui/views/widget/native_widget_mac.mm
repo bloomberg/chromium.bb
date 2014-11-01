@@ -512,6 +512,16 @@ void NativeWidgetMac::SetVisibilityChangedAnimationsEnabled(bool value) {
   NOTIMPLEMENTED();
 }
 
+void NativeWidgetMac::SetVisibilityAnimationDuration(
+    const base::TimeDelta& duration) {
+  NOTIMPLEMENTED();
+}
+
+void NativeWidgetMac::SetVisibilityAnimationTransition(
+    Widget::VisibilityTransition transition) {
+  NOTIMPLEMENTED();
+}
+
 ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
   return ui::NativeTheme::instance();
 }

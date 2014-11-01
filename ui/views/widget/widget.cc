@@ -519,6 +519,14 @@ void Widget::SetVisibilityChangedAnimationsEnabled(bool value) {
   native_widget_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
+void Widget::SetVisibilityAnimationDuration(const base::TimeDelta& duration) {
+  native_widget_->SetVisibilityAnimationDuration(duration);
+}
+
+void Widget::SetVisibilityAnimationTransition(VisibilityTransition transition) {
+  native_widget_->SetVisibilityAnimationTransition(transition);
+}
+
 Widget::MoveLoopResult Widget::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     MoveLoopSource source,

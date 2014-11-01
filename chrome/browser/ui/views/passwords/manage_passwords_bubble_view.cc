@@ -33,7 +33,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/wm/core/window_animations.h"
+#include "ui/views/widget/widget.h"
 
 
 // Helpers --------------------------------------------------------------------
@@ -868,7 +868,6 @@ void ManagePasswordsBubbleView::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_FULLSCREEN_CHANGED);
-  aura::Window* window = GetWidget()->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(window, wm::ANIMATE_NONE);
+  GetWidget()->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
   CloseBubble();
 }

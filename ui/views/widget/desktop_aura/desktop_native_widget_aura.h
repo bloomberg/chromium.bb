@@ -173,6 +173,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
+  void SetVisibilityAnimationDuration(const base::TimeDelta& duration) override;
+  void SetVisibilityAnimationTransition(
+      Widget::VisibilityTransition transition) override;
   ui::NativeTheme* GetNativeTheme() const override;
   void OnRootViewLayout() override;
   bool IsTranslucentWindowOpacitySupported() const override;

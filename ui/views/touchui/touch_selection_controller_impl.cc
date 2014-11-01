@@ -19,7 +19,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/masked_window_targeter.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace {
 
@@ -239,8 +238,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   void SetWidgetVisible(bool visible, bool quick) {
     if (widget_->IsVisible() == visible)
       return;
-    wm::SetWindowVisibilityAnimationDuration(
-        widget_->GetNativeView(),
+    widget_->SetVisibilityAnimationDuration(
         base::TimeDelta::FromMilliseconds(
             quick ? kSelectionHandleQuickFadeDurationMs : 0));
     if (visible)

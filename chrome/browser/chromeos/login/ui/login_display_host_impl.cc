@@ -87,7 +87,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/window_animations.h"
 #include "url/gurl.h"
 
 #if !defined(USE_ATHENA)
@@ -1104,12 +1103,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
 
-  wm::SetWindowVisibilityAnimationDuration(
-      login_window_->GetNativeView(),
+  login_window_->SetVisibilityAnimationDuration(
       base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
-  wm::SetWindowVisibilityAnimationTransition(
-      login_window_->GetNativeView(),
-      wm::ANIMATE_HIDE);
+  login_window_->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
 
   login_window_->AddRemovalsObserver(this);
   login_window_->SetContentsView(login_view_);

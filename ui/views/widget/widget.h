@@ -37,6 +37,10 @@
 #endif
 #endif
 
+namespace base {
+class TimeDelta;
+}
+
 namespace gfx {
 class Canvas;
 class Point;
@@ -131,6 +135,14 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     // Indicates the window should not be hidden.
     MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE,
+  };
+
+  // Type of visibility change transition that should animate.
+  enum VisibilityTransition {
+    ANIMATE_SHOW = 0x1,
+    ANIMATE_HIDE = 0x2,
+    ANIMATE_BOTH = ANIMATE_SHOW | ANIMATE_HIDE,
+    ANIMATE_NONE = 0x4,
   };
 
   struct VIEWS_EXPORT InitParams {
@@ -419,6 +431,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets whether animations that occur when visibility is changed are enabled.
   // Default is true.
   void SetVisibilityChangedAnimationsEnabled(bool value);
+
+  // Sets the duration of visibility change animations.
+  void SetVisibilityAnimationDuration(const base::TimeDelta& duration);
+
+  // Sets the visibility transitions that should animate.
+  // Default behavior is to animate both show and hide.
+  void SetVisibilityAnimationTransition(VisibilityTransition transition);
 
   // Starts a nested message loop that moves the window. This can be used to
   // start a window move operation from a mouse or touch event. This returns
