@@ -1,6 +1,6 @@
 {
   "app": {
-    "documentation": "manifest/app.html",
+    "documentation": "manifest/app",
     "example": {},
     "level": "required"
   },
@@ -9,30 +9,30 @@
     "level": "required"
   },
   "background": {
-    "documentation": "background_pages.html"
+    "documentation": "background_pages"
   },
   "background.persistent": {
-    "documentation": "event_pages.html",
+    "documentation": "event_pages",
     "example": false,
     "level": "recommended"
   },
   "bluetooth": {
-    "documentation": "manifest/bluetooth.html",
+    "documentation": "manifest/bluetooth",
     "example": {
       "uuids": [ "1105", "1006" ]
     }
   },
    "browser_action": {
-    "documentation": "browserAction.html",
+    "documentation": "browserAction",
     "example": {},
     "level": "only_one"
   },
   "chrome_settings_overrides": {
-    "documentation": "settings_override.html",
+    "documentation": "settings_override",
     "example": {}
   },
   "chrome_ui_overrides": {
-    "documentation": "ui_override.html",
+    "documentation": "ui_override",
     "example": {
       "bookmarks_ui": {
         "remove_button": true,
@@ -41,166 +41,182 @@
     }
   },
   "chrome_url_overrides": {
-    "documentation": "override.html",
+    "documentation": "override",
+    "example": {}
+  },
+  "commands": {
+    "documentation": "commands",
     "example": {}
   },
   "content_scripts": {
-    "documentation": "content_scripts.html",
+    "documentation": "content_scripts",
     "example": [{}]
   },
   "content_security_policy": {
-    "documentation": "contentSecurityPolicy.html",
+    "documentation": "contentSecurityPolicy",
     "example": "policyString"
   },
   "default_locale": {
-    "documentation": "manifest/default_locale.html",
+    "documentation": "manifest/default_locale",
     "example": "en",
     "level": "recommended"
   },
   "description": {
-    "documentation": "manifest/description.html",
+    "documentation": "manifest/description",
     "example": "A plain text description",
     "level": "recommended"
   },
+  "devtools_page": {
+    "documentation": "devtools",
+    "example": "devtools.html"
+  },
   "externally_connectable": {
-    "documentation": "manifest/externally_connectable.html",
+    "documentation": "manifest/externally_connectable",
     "example": {
       "matches": ["*://*.example.com/*"]
     }
   },
   "file_browser_handlers": {
-    "documentation": "fileBrowserHandler.html",
+    "documentation": "fileBrowserHandler",
     "example": []
   },
   "file_handlers": {
-    "documentation": "manifest/file_handlers.html",
+    "documentation": "manifest/file_handlers",
     "example": {}
   },
   "homepage_url": {
-    "documentation": "manifest/homepage_url.html",
+    "documentation": "manifest/homepage_url",
     "example": "http://path/to/homepage"
   },
   "icons": {
-    "documentation": "manifest/icons.html",
+    "documentation": "manifest/icons",
     "example": {},
     "level": "recommended"
   },
   "incognito": {
-    "documentation": "manifest/incognito.html",
+    "documentation": "manifest/incognito",
     "example": "spanning or split"
   },
   "key": {
-    "documentation": "manifest/key.html",
+    "documentation": "manifest/key",
     "example": "publicKey"
   },
   "kiosk_enabled": {
-    "documentation": "manifest/kiosk_enabled.html#kiosk_enabled",
+    "documentation": "manifest/kiosk_enabled#kiosk_enabled",
     "example": true
   },
   "kiosk_only": {
-    "documentation": "manifest/kiosk_enabled.html#kiosk_only",
+    "documentation": "manifest/kiosk_enabled#kiosk_only",
     "example": true
   },
   "manifest_version": {
-    "documentation": "manifest/manifest_version.html",
+    "documentation": "manifest/manifest_version",
     "example": 2,
     "level": "required"
   },
   "minimum_chrome_version": {
-    "documentation": "manifest/minimum_chrome_version.html",
+    "documentation": "manifest/minimum_chrome_version",
     "example": "versionString"
   },
   "nacl_modules": {
-    "documentation": "manifest/nacl_modules.html",
+    "documentation": "manifest/nacl_modules",
     "example": []
   },
   "name": {
-    "documentation": "manifest/name.html#name",
+    "documentation": "manifest/name#name",
     "example": "My {{platform}}",
     "level": "required"
   },
   "offline_enabled": {
-    "documentation": "manifest/offline_enabled.html",
+    "documentation": "manifest/offline_enabled",
     "example": true
   },
   "omnibox": {
-    "documentation": "omnibox.html",
+    "documentation": "omnibox",
     "example": {
       "keyword": "aString"
     }
   },
+  "optional_permissions": {
+    "documentation": "permissions",
+    "example": ["tabs"]
+  },
   "options_page": {
-    "documentation": "options.html",
+    "documentation": "options",
     "example": "options.html"
   },
   "options_ui": {
-    "documentation": "optionsV2.html",
+    "documentation": "optionsV2",
     "example": {
       "page": "options.html",
       "chrome_style": true
     }
   },
   "page_action": {
-    "documentation": "pageAction.html",
+    "documentation": "pageAction",
     "example": {},
     "level": "only_one"
   },
   "permissions": {
-    "documentation": "declare_permissions.html",
-    "example": []
+    "documentation": "declare_permissions",
+    "example": ["tabs"]
   },
   "plugins": {
-    "documentation": "npapi.html",
+    "documentation": "npapi",
     "example": []
   },
   "requirements": {
-    "documentation": "manifest/requirements.html",
+    "documentation": "manifest/requirements",
     "example": {}
   },
   "sandbox": {
-    "documentation": "manifest/sandbox.html",
+    "documentation": "manifest/sandbox",
     "example": []
   },
   "short_name": {
-    "documentation": "manifest/name.html#short_name",
+    "documentation": "manifest/name#short_name",
     "example": "Short Name"
   },
   "sockets": {
-    "documentation": "manifest/sockets.html",
+    "documentation": "manifest/sockets",
     "example": {
       "tcp": { "connect": "*" }, "udp": { "send": "*" }
     }
   },
   "storage": {
-    "documentation": "manifest/storage.html",
+    "documentation": "manifest/storage",
     "example": {
       "managed_schema": "schema.json"
     }
   },
   "theme": {
-    "documentation": "themes.html",
+    "documentation": "themes",
     "example": {},
     "level": "only_one"
   },
+  "tts_engine": {
+    "documentation": "ttsEngine",
+    "example": {}
+  },
   "update_url": {
-    "documentation": "autoupdate.html",
+    "documentation": "autoupdate",
     "example": "http://path/to/updateInfo.xml"
   },
   "url_handlers": {
-    "documentation": "manifest/url_handlers.html",
+    "documentation": "manifest/url_handlers",
     "example": {}
   },
   "version": {
-    "documentation": "manifest/version.html",
+    "documentation": "manifest/version",
     "example": "versionString",
     "level": "required"
   },
   "web_accessible_resources": {
-    "documentation": "manifest/web_accessible_resources.html",
+    "documentation": "manifest/web_accessible_resources",
     "example": []
   },
   "webview": {
-    "documentation": "tags/web_view#local_resources",
+    "documentation": "tags/webview#local_resources",
     "example": {}
   }
 }
