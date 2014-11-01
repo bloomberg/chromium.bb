@@ -1850,7 +1850,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
-        This might hurt. Don't say we didn't warn you...
+        This file may be harmful for your computer.
       </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD"
                desc="Lead prompt text for the confirmation dialog asking whether the user really meant to keep a malicious download">
