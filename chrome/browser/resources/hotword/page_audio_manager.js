@@ -431,9 +431,7 @@ cr.define('hotword', function() {
      * @private
      */
     updateListeners_: function() {
-      var enabled = this.stateManager_.isEnabled() &&
-          !this.stateManager_.isAlwaysOnEnabled();
-      if (enabled) {
+      if (this.stateManager_.isSometimesOnEnabled()) {
         this.setupListeners_();
       } else {
         this.removeListeners_();

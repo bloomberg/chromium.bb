@@ -174,8 +174,10 @@ void StartPageService::ToggleSpeechRecognition() {
 
 bool StartPageService::HotwordEnabled() {
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
+    auto prefs = profile_->GetPrefs();
     return HotwordServiceFactory::IsServiceAvailable(profile_) &&
-        profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);
+        (prefs->GetBoolean(prefs::kHotwordSearchEnabled) ||
+         prefs->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled));
   }
 #if defined(OS_CHROMEOS)
   return HotwordServiceFactory::IsServiceAvailable(profile_) &&

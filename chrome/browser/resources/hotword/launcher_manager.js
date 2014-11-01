@@ -23,8 +23,7 @@ cr.define('hotword', function() {
 
     /** @override */
     enabled: function() {
-      return this.stateManager.isEnabled() &&
-          !this.stateManager.isAlwaysOnEnabled();
+      return this.stateManager.isSometimesOnEnabled();
     },
 
     /** @override */
