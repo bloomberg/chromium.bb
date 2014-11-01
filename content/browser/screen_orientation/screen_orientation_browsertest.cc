@@ -32,11 +32,6 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   ScreenOrientationBrowserTest() {
   }
 
-  void SetUpCommandLine(CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   void SetUp() override {
     // Painting has to happen otherwise the Resize messages will be added on top
     // of each other without properly ack-painting which will fail and crash.
@@ -213,6 +208,32 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, LockSmoke) {
 #endif
 
   EXPECT_EQ(expected, shell()->web_contents()->GetLastCommittedURL().ref());
+}
+
+// Check that using screen orientation after a frame is detached doesn't crash
+// the renderer process.
+// This could be a LayoutTest if they were not using a mock screen orientation
+// controller.
+IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
+  GURL test_url = GetTestUrl("screen_orientation",
+                             "screen_orientation_use_after_detach.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+  shell()->LoadURL(test_url);
+
+#if defined(OS_WIN)
+  // Screen Orientation is currently disabled on Windows 8.
+  // When implemented, this test will break, requiring an update.
+  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_WIN8) {
+    EXPECT_EQ(false, ScreenOrientationSupported());
+    return;
+  }
+#endif // defined(OS_WIN)
+
+  navigation_observer.Wait();
+
+  // This is a success if the renderer process did not crash, thus, we end up
+  // here.
 }
 
 } // namespace content

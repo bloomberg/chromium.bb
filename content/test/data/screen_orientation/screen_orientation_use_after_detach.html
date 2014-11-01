@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+window.iframeLoaded = function() {
+  document.location.hash = '#ready';
+
+  var iframe = document.getElementsByTagName('iframe')[0];
+  var oldScreen = iframe.contentWindow.screen;
+
+  iframe.remove();
+
+  oldScreen.orientation.unlock();
+  document.location.hash = '#done';
+}
+
+</script>
+<iframe src='detached-iframe.html'></iframe>
+</body>
+</html>
