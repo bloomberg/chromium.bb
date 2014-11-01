@@ -7,7 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
+#import "chrome/browser/ui/cocoa/tabs/media_indicator_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -106,7 +106,7 @@ class TabControllerTest : public CocoaTest {
     // Check whether subviews should be visible when they are supposed to be,
     // given Tab size and TabRendererData state.
     const TabMediaState indicatorState =
-        [[controller mediaIndicatorView] mediaState];
+        [[controller mediaIndicatorButton] showingMediaState];
     if ([controller mini]) {
       EXPECT_EQ(1, [controller iconCapacity]);
       if (indicatorState != TAB_MEDIA_STATE_NONE) {
@@ -176,7 +176,7 @@ class TabControllerTest : public CocoaTest {
                 (!![controller iconView] && ![[controller iconView] isHidden]));
     EXPECT_TRUE([controller mini] == [[controller tabView] titleHidden]);
     EXPECT_TRUE([controller shouldShowMediaIndicator] ==
-                    ![[controller mediaIndicatorView] isHidden]);
+                    ![[controller mediaIndicatorButton] isHidden]);
     EXPECT_TRUE([controller shouldShowCloseButton] !=
                     [[controller closeButton] isHidden]);
 
@@ -194,11 +194,11 @@ class TabControllerTest : public CocoaTest {
     }
     if ([controller shouldShowIcon] && [controller shouldShowMediaIndicator]) {
       EXPECT_LE(NSMaxX([[controller iconView] frame]),
-                NSMinX([[controller mediaIndicatorView] frame]));
+                NSMinX([[controller mediaIndicatorButton] frame]));
     }
     if ([controller shouldShowMediaIndicator]) {
       const NSRect mediaIndicatorFrame =
-          [[controller mediaIndicatorView] frame];
+          [[controller mediaIndicatorButton] frame];
       if (NSWidth(titleFrame) > 0)
         EXPECT_LE(NSMaxX(titleFrame), NSMinX(mediaIndicatorFrame));
       EXPECT_LE(NSMaxX(mediaIndicatorFrame), NSMaxX(tabFrame));
@@ -207,7 +207,7 @@ class TabControllerTest : public CocoaTest {
     }
     if ([controller shouldShowMediaIndicator] &&
         [controller shouldShowCloseButton]) {
-      EXPECT_LE(NSMaxX([[controller mediaIndicatorView] frame]),
+      EXPECT_LE(NSMaxX([[controller mediaIndicatorButton] frame]),
                 NSMinX([[controller closeButton] frame]));
     }
     if ([controller shouldShowCloseButton]) {
@@ -468,14 +468,14 @@ TEST_F(TabControllerTest, TitleViewLayout) {
 }
 
 // A comprehensive test of the layout and visibility of all elements (favicon,
-// throbber indicators, titile text, audio indicator, and close button) over all
-// relevant combinations of tab state.  This test overlaps with parts of the
-// other tests above.
+// throbber indicators, titile text, media indicator button, and close button)
+// over all relevant combinations of tab state.  This test overlaps with parts
+// of the other tests above.
 // Flaky: https://code.google.com/p/chromium/issues/detail?id=311668
 TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
   static const TabMediaState kMediaStatesToTest[] = {
     TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
-    TAB_MEDIA_STATE_AUDIO_PLAYING
+    TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
   };
 
   NSWindow* const window = test_window();
@@ -484,18 +484,17 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
   base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
-  // Create favicon and media indicator views.  Disable animation in the media
-  // indicator view so that TabController's "what should be shown" logic can be
-  // tested effectively.  If animations were left enabled, the
-  // shouldShowMediaIndicator method would return true during fade-out
-  // transitions.
+  // Create favicon.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::scoped_nsobject<NSImage> favicon(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
-  base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView(
-      [[MediaIndicatorView alloc] init]);
-  [mediaIndicatorView disableAnimations];
-  [controller setMediaIndicatorView:mediaIndicatorView];
+
+  // Trigger TabController to auto-create the MediaIndicatorButton.
+  [controller setMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
+  [controller setMediaState:TAB_MEDIA_STATE_NONE];
+  base::scoped_nsobject<MediaIndicatorButton> mediaIndicatorButton(
+      [[controller mediaIndicatorButton] retain]);
+  ASSERT_TRUE(mediaIndicatorButton.get());
 
   // Perform layout over all possible combinations, checking for correct
   // results.
@@ -514,8 +513,9 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
         // TabController state.
         [controller setMini:(isMiniTab ? YES : NO)];
         [controller setActive:(isActiveTab ? YES : NO)];
-        [[controller mediaIndicatorView] updateIndicator:mediaState];
         [controller setIconImage:favicon];
+        [controller setMediaState:mediaState];
+        [controller updateVisibility];
 
         // Test layout for every width from maximum to minimum.
         NSRect tabFrame = [[controller view] frame];

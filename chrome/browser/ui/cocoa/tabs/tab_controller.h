@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "url/gurl.h"
 
 // The loading/waiting state of the tab.
@@ -20,7 +21,7 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
-@class MediaIndicatorView;
+@class MediaIndicatorButton;
 @class MenuController;
 namespace TabControllerInternal {
 class MenuDelegate;
@@ -43,7 +44,7 @@ class MenuDelegate;
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
   base::scoped_nsobject<SpriteView> iconView_;
-  base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView_;
+  base::scoped_nsobject<MediaIndicatorButton> mediaIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
@@ -78,7 +79,7 @@ class MenuDelegate;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
 @property(readonly, nonatomic) NSView* iconView;
-@property(assign, nonatomic) MediaIndicatorView* mediaIndicatorView;
+@property(readonly, nonatomic) MediaIndicatorButton* mediaIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
@@ -100,6 +101,9 @@ class MenuDelegate;
 // the new image back to position.
 - (void)setIconImage:(NSImage*)image;
 - (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate;
+
+// Sets the current tab media state and updates the views.
+- (void)setMediaState:(TabMediaState)mediaState;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.

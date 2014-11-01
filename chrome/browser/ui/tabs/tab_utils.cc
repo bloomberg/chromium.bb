@@ -234,12 +234,8 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
 }
 
 bool IsTabAudioMutingFeatureEnabled() {
-#if defined(USE_AURA)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabAudioMuting);
-#else
-  return false;
-#endif
 }
 
 bool CanToggleAudioMute(content::WebContents* contents) {

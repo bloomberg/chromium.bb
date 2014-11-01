@@ -1980,15 +1980,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnPackets)
   },
 #endif  // OS_CHROMEOS
-#if defined(USE_AURA)
   {
     "enable-tab-audio-muting",
     IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_NAME,
     IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableTabAudioMuting)
   },
-#endif  // defined(USE_AURA)
   {
     "enable-credential-manager-api",
     IDS_FLAGS_CREDENTIAL_MANAGER_API_NAME,
