@@ -251,6 +251,7 @@ bool DragController::performDrag(DragData* dragData)
         }
         if (preventedDefault) {
             m_documentUnderMouse = nullptr;
+            cancelDrag();
             return true;
         }
     }
