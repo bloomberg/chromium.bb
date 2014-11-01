@@ -17,16 +17,12 @@ import org.chromium.base.VisibleForTesting;
 class BindingManagerImpl implements BindingManager {
     private static final String TAG = "BindingManager";
 
-    // Delay of 1 second used when removing the initial oom binding of a process.
-    private static final long REMOVE_INITIAL_BINDING_DELAY_MILLIS = 1 * 1000;
-
     // Delay of 1 second used when removing temporary strong binding of a process (only on
     // non-low-memory devices).
     private static final long DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS = 1 * 1000;
 
     // These fields allow to override the parameters for testing - see
     // createBindingManagerForTesting().
-    private final long mRemoveInitialBindingDelay;
     private final long mRemoveStrongBindingDelay;
     private final boolean mIsLowMemoryDevice;
 
@@ -53,17 +49,8 @@ class BindingManagerImpl implements BindingManager {
 
         /** Removes the initial service binding. */
         private void removeInitialBinding() {
-            final ChildProcessConnection connection = mConnection;
-            if (connection == null || !connection.isInitialBindingBound()) return;
-
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (connection.isInitialBindingBound()) {
-                        connection.removeInitialBinding();
-                    }
-                }
-            }, mRemoveInitialBindingDelay);
+            if (mConnection == null || !mConnection.isInitialBindingBound()) return;
+            mConnection.removeInitialBinding();
         }
 
         /** Adds a strong service binding. */
@@ -116,8 +103,7 @@ class BindingManagerImpl implements BindingManager {
         }
 
         /**
-         * Sets the visibility of the service, adding or removing the strong binding as needed. This
-         * also removes the initial binding, as the service visibility is now known.
+         * Sets the visibility of the service, adding or removing the strong binding as needed.
          */
         void setInForeground(boolean nextInForeground) {
             if (!mInForeground && nextInForeground) {
@@ -126,8 +112,14 @@ class BindingManagerImpl implements BindingManager {
                 removeStrongBinding();
             }
 
-            removeInitialBinding();
             mInForeground = nextInForeground;
+        }
+
+        /**
+         * Removes the initial binding.
+         */
+        void determinedVisibility() {
+            removeInitialBinding();
         }
 
         /**
@@ -185,16 +177,14 @@ class BindingManagerImpl implements BindingManager {
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
      * Use factory methods to create an instance.
      */
-    private BindingManagerImpl(boolean isLowMemoryDevice, long removeInitialBindingDelay,
-            long removeStrongBindingDelay) {
+    private BindingManagerImpl(boolean isLowMemoryDevice, long removeStrongBindingDelay) {
         mIsLowMemoryDevice = isLowMemoryDevice;
-        mRemoveInitialBindingDelay = removeInitialBindingDelay;
         mRemoveStrongBindingDelay = removeStrongBindingDelay;
     }
 
     public static BindingManagerImpl createBindingManager() {
         return new BindingManagerImpl(SysUtils.isLowEndDevice(),
-                REMOVE_INITIAL_BINDING_DELAY_MILLIS, DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
+                DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
     }
 
     /**
@@ -203,7 +193,7 @@ class BindingManagerImpl implements BindingManager {
      * @param isLowEndDevice true iff the created instance should apply low-end binding policies
      */
     public static BindingManagerImpl createBindingManagerForTesting(boolean isLowEndDevice) {
-        return new BindingManagerImpl(isLowEndDevice, 0, 0);
+        return new BindingManagerImpl(isLowEndDevice, 0);
     }
 
     @Override
@@ -236,6 +226,22 @@ class BindingManagerImpl implements BindingManager {
             managedConnection.setInForeground(inForeground);
             if (inForeground) mLastInForeground = managedConnection;
         }
+    }
+
+    @Override
+    public void determinedVisibility(int pid) {
+        ManagedConnection managedConnection;
+        synchronized (mManagedConnections) {
+            managedConnection = mManagedConnections.get(pid);
+        }
+
+        if (managedConnection == null) {
+            Log.w(TAG, "Cannot call determinedVisibility() - never saw a connection for the pid: "
+                    + Integer.toString(pid));
+            return;
+        }
+
+        managedConnection.determinedVisibility();
     }
 
     @Override

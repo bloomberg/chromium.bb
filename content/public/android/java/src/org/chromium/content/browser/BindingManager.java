@@ -10,13 +10,14 @@ package org.chromium.content.browser;
  * normal conditions (it can still be killed under drastic memory pressure). ChildProcessConnections
  * have two oom bindings: initial binding and strong binding.
  *
- * BindingManager receives calls that signal visibility of each service (setInForeground()) and the
- * entire embedding application (onSentToBackground(), onBroughtToForeground()) and manipulates
- * child process bindings accordingly.
+ * BindingManager receives calls that signal status of each service (setInForeground(),
+ * determinedVisibility()) and the entire embedding application (onSentToBackground(),
+ * onBroughtToForeground()) and manipulates child process bindings accordingly.
  *
  * In particular, BindingManager is responsible for:
- * - removing the initial binding of a service when its visibility is determined for the first time
- * - addition and (possibly delayed) removal of a strong binding when service visibility changes
+ * - adding and removing the strong binding as service visibility changes (setInForeground())
+ * - removing the initial binding of a service when we can start to rely on the visibility signal /
+ *   strong binding exclusively (after determinedVisibility())
  * - dropping the current oom bindings when a new connection is started on a low-memory device
  * - keeping a strong binding on the foreground service while the entire application is in
  *   background
@@ -40,6 +41,13 @@ public interface BindingManager {
      * @param inForeground true iff the service is visibile to the user
      */
     void setInForeground(int pid, boolean inForeground);
+
+    /**
+     * Called when we can begin to rely on the visibility signal only and remove the initial
+     * binding. It's safe to call it multiple times, only the first call matters.
+     * @param pid handle of the service process
+     */
+    void determinedVisibility(int pid);
 
     /**
      * Called when the embedding application is sent to background. We want to maintain a strong

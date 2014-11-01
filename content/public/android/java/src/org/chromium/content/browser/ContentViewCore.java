@@ -705,6 +705,15 @@ public class ContentViewCore
 
         mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
+            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                    String description, String failingUrl) {
+                // Navigation that fails the provisional load will have the strong binding removed
+                // here. One for which the provisional load is commited will have the strong binding
+                // removed in navigationEntryCommitted() below.
+                if (isProvisionalLoad) determinedProcessVisibility();
+            }
+
+            @Override
             public void didNavigateMainFrame(String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation) {
                 if (!isNavigationToDifferentPage) return;
@@ -719,6 +728,19 @@ public class ContentViewCore
                 resetScrollInProgress();
                 // No need to reset gesture detection as the detector will have
                 // been destroyed in the RenderWidgetHostView.
+            }
+
+            @Override
+            public void navigationEntryCommitted() {
+                determinedProcessVisibility();
+            }
+
+            private void determinedProcessVisibility() {
+                // Signal to the process management logic that we can now rely on the process
+                // visibility signal for binding management. Before the navigation commits, its
+                // renderer is considered background even if the pending navigation happens in the
+                // foreground renderer.
+                ChildProcessLauncher.determinedVisibility(getCurrentRenderProcessId());
             }
         };
     }
@@ -1270,7 +1292,6 @@ public class ContentViewCore
      * @return The ID of the renderer process that backs this tab or
      *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
      */
-    @VisibleForTesting
     public int getCurrentRenderProcessId() {
         return nativeGetCurrentRenderProcessId(mNativeContentViewCore);
     }

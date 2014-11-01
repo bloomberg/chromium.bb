@@ -172,13 +172,13 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verifies the binding removal policies for low end devices:
-     * - removal of the initial binding should be delayed
+     * Verifies the strong binding removal policies for low end devices:
+     * - the initial binding should not be affected
      * - removal of a strong binding should be executed synchronously
      */
     @SmallTest
     @Feature({"ProcessManagement"})
-    public void testBindingRemovalOnLowEnd() throws Throwable {
+    public void testStrongBindingRemovalOnLowEnd() throws Throwable {
         // This test applies only to the low-end manager.
         final BindingManagerImpl manager = mLowEndManager;
 
@@ -193,31 +193,27 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Add a strong binding, verify that the initial binding is not removed immediately.
+                // Add a strong binding, verify that the initial binding is not removed.
                 manager.setInForeground(connection.getPid(), true);
                 assertTrue(connection.isStrongBindingBound());
                 assertTrue(connection.isInitialBindingBound());
 
-                // Remove the strong binding, verify that the strong binding is removed immediately.
+                // Remove the strong binding, verify that the strong binding is removed immediately
+                // and that the initial binding is not affected.
                 manager.setInForeground(connection.getPid(), false);
                 assertFalse(connection.isStrongBindingBound());
+                assertTrue(connection.isInitialBindingBound());
             }
         });
-
-        // Wait until the posted unbinding task gets executed and verify that the inital binding was
-        // eventually removed. Note that this works only because the test binding manager has the
-        // unbinding delay set to 0.
-        getInstrumentation().waitForIdleSync();
-        assertFalse(connection.isInitialBindingBound());
     }
 
     /**
-     * Verifies the binding removal policies for high end devices, where the removal of both initial
-     * and strong binding should be delayed.
+     * Verifies the strong binding removal policies for high end devices, where the removal should
+     * be delayed.
      */
     @SmallTest
     @Feature({"ProcessManagement"})
-    public void testBindingRemovalOnHighEnd() throws Throwable {
+    public void testStrongBindingRemovalOnHighEnd() throws Throwable {
         // This test applies only to the high-end manager.
         final BindingManagerImpl manager = mHighEndManager;
 
@@ -231,7 +227,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Add a strong binding, verify that the initial binding is not removed immediately.
+                // Add a strong binding, verify that the initial binding is not removed.
                 manager.setInForeground(connection.getPid(), true);
                 assertTrue(connection.isStrongBindingBound());
                 assertTrue(connection.isInitialBindingBound());
@@ -240,15 +236,40 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
                 // immediately.
                 manager.setInForeground(connection.getPid(), false);
                 assertTrue(connection.isStrongBindingBound());
+                assertTrue(connection.isInitialBindingBound());
             }
         });
 
-        // Wait until the posted unbinding tasks get executed and verify that both bindings were
-        // eventually removed. Note that this works only because the test binding manager has the
-        // unbinding delay set to 0.
+        // Wait until the posted unbinding tasks get executed and verify that the strong binding was
+        // removed while the initial binding is not affected. Note that this works only because the
+        // test binding manager has the unbinding delay set to 0.
         getInstrumentation().waitForIdleSync();
-        assertFalse(connection.isInitialBindingBound());
         assertFalse(connection.isStrongBindingBound());
+        assertTrue(connection.isInitialBindingBound());
+    }
+
+    /**
+     * Verifies that the initial binding is removed after determinedVisibility() is called.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testInitialBindingRemoval() {
+        // This test applies to both low-end and high-end policies.
+        for (ManagerEntry managerEntry : mAllManagers) {
+            BindingManagerImpl manager = managerEntry.mManager;
+            String message = managerEntry.getErrorMessage();
+
+            // Add a connection to the manager.
+            MockChildProcessConnection connection = new MockChildProcessConnection(1);
+            manager.addNewConnection(connection.getPid(), connection);
+
+            // Verify that the initial binding is held.
+            assertTrue(connection.isInitialBindingBound());
+
+            // Call determinedVisibility() and verify that the initial binding was released.
+            manager.determinedVisibility(connection.getPid());
+            assertFalse(connection.isInitialBindingBound());
+        }
     }
 
     /**
@@ -277,6 +298,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
 
             // After initial binding is removed, the connection is no longer oom protected.
             manager.setInForeground(connection.getPid(), false);
+            manager.determinedVisibility(connection.getPid());
             getInstrumentation().waitForIdleSync();
             assertFalse(message, manager.isOomProtected(connection.getPid()));
 

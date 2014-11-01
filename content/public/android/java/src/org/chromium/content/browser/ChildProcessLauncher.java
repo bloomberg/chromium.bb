@@ -307,6 +307,14 @@ public class ChildProcessLauncher {
     }
 
     /**
+     * Called when the renderer commits a navigation. This signals a time at which it is safe to
+     * rely on renderer visibility signalled through setInForeground. See http://crbug.com/421041.
+     */
+    public static void determinedVisibility(int pid) {
+        sBindingManager.determinedVisibility(pid);
+    }
+
+    /**
      * Called when the embedding application is sent to background.
      */
     public static void onSentToBackground() {
