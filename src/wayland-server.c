@@ -260,7 +260,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	len = 0;
 	if (mask & WL_EVENT_READABLE) {
 		len = wl_connection_read(connection);
-		if (len < 0 && errno != EAGAIN) {
+		if (len == 0 || (len < 0 && errno != EAGAIN)) {
 			wl_client_destroy(client);
 			return 1;
 		}
