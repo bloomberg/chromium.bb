@@ -59,7 +59,7 @@ class NSSSSLServerInitSingleton {
   NSSSSLServerInitSingleton() {
     EnsureNSSSSLInit();
 
-    SSL_ConfigServerSessionIDCache(1024, 5, 5, NULL);
+    SSL_ConfigServerSessionIDCache(64, 28800, 28800, NULL);
     g_nss_server_sockets_init = true;
   }
 
@@ -84,7 +84,7 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     crypto::RSAPrivateKey* key,
     const SSLConfig& ssl_config) {
   DCHECK(g_nss_server_sockets_init) << "EnableSSLServerSockets() has not been"
-                                    << "called yet!";
+                                    << " called yet!";
 
   return scoped_ptr<SSLServerSocket>(
       new SSLServerSocketNSS(socket.Pass(), cert, key, ssl_config));
