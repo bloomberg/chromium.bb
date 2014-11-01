@@ -64,9 +64,6 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
-using base::Time;
-using base::TimeDelta;
-
 namespace net {
 
 namespace {
@@ -133,7 +130,6 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       request_(NULL),
       priority_(priority),
       headers_valid_(false),
-      logged_response_time_(false),
       fallback_error_code_(ERR_SSL_INAPPROPRIATE_FALLBACK),
       request_headers_(),
       read_buf_len_(0),
@@ -184,7 +180,6 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
 
   net_log_ = net_log;
   request_ = request_info;
-  start_time_ = base::Time::Now();
 
   if (request_->load_flags & LOAD_DISABLE_CERT_REVOCATION_CHECKING) {
     server_ssl_config_.rev_checking_enabled = false;
@@ -986,12 +981,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  // After we call RestartWithAuth a new response_time will be recorded, and
-  // we need to be cautious about incorrectly logging the duration across the
-  // authentication activity.
-  if (result == OK)
-    LogTransactionConnectedMetrics();
-
   // ERR_CONNECTION_CLOSED is treated differently at this point; if partial
   // response headers were received, we do the best we can to make sense of it
   // and send it back up the stack.
@@ -1116,7 +1105,6 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
 
   // Clean up connection if we are done.
   if (done) {
-    LogTransactionMetrics();
     stream_->Close(!keep_alive);
     // Note: we don't reset the stream here.  We've closed it, but we still
     // need it around so that callers can call methods such as
@@ -1166,72 +1154,6 @@ int HttpNetworkTransaction::DoDrainBodyForAuthRestartComplete(int result) {
   }
 
   return OK;
-}
-
-void HttpNetworkTransaction::LogTransactionConnectedMetrics() {
-  if (logged_response_time_)
-    return;
-
-  logged_response_time_ = true;
-
-  base::TimeDelta total_duration = response_.response_time - start_time_;
-
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Net.Transaction_Connected",
-      total_duration,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
-      100);
-
-  bool reused_socket = stream_->IsConnectionReused();
-  if (!reused_socket) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.Transaction_Connected_New_b",
-        total_duration,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
-        100);
-  }
-
-  // Currently, non-HIGHEST priority requests are frame or sub-frame resource
-  // types.  This will change when we also prioritize certain subresources like
-  // css, js, etc.
-  if (priority_ != HIGHEST) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.Priority_High_Latency_b",
-        total_duration,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
-        100);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.Priority_Low_Latency_b",
-        total_duration,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
-        100);
-  }
-}
-
-void HttpNetworkTransaction::LogTransactionMetrics() const {
-  base::TimeDelta duration = base::Time::Now() -
-                             response_.request_time;
-  if (60 < duration.InMinutes())
-    return;
-
-  base::TimeDelta total_duration = base::Time::Now() - start_time_;
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Net.Transaction_Latency_b", duration,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(10),
-                             100);
-  UMA_HISTOGRAM_CUSTOM_TIMES("Net.Transaction_Latency_Total",
-                             total_duration,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(10), 100);
-
-  if (!stream_->IsConnectionReused()) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.Transaction_Latency_Total_New_Connection",
-        total_duration, base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromMinutes(10), 100);
-  }
 }
 
 int HttpNetworkTransaction::HandleCertificateRequest(int error) {

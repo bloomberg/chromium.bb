@@ -178,12 +178,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   void BuildRequestHeaders(bool using_proxy);
 
-  // Record histogram of time until first byte of header is received.
-  void LogTransactionConnectedMetrics();
-
-  // Record histogram of latency (durations until last byte received).
-  void LogTransactionMetrics() const;
-
   // Writes a log message to help debugging in the field when we block a proxy
   // response to a CONNECT request.
   void LogBlockedTunnelResponse(int response_code) const;
@@ -282,11 +276,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // True if we've validated the headers that the stream parser has returned.
   bool headers_valid_;
 
-  // True if we've logged the time of the first response byte.  Used to
-  // prevent logging across authentication activity where we see multiple
-  // responses.
-  bool logged_response_time_;
-
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
   // fallback_error_code contains the error code that caused the last TLS
@@ -309,9 +298,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // Total number of bytes received on streams for this transaction.
   int64 total_received_bytes_;
-
-  // The time the Start method was called.
-  base::Time start_time_;
 
   // When the transaction started / finished sending the request, including
   // the body, if present.

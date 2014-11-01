@@ -16924,6 +16924,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Priority_High_Latency_b" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from the start of the http transaction until the first byte of the
@@ -16944,6 +16947,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Priority_Low_Latency_b" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from the start of the http transaction until the first byte of the
@@ -18680,16 +18686,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Transaction_Bandwidth" units="KB/s">
+  <obsolete>
+    Discontinued as of 4/12/09
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
-    (discontinued as of 4/12/09) Effective bandwidth in KByte/Second of
-    transactions logged to Transaction_Latency histogram.  Note that only
-    samples durations greater than zero ms, and less than 1 hour are tallied
-    into this ratio.
+    Effective bandwidth in KByte/Second of transactions logged to
+    Transaction_Latency histogram.  Note that only samples durations greater
+    than zero ms, and less than 1 hour are tallied into this ratio.
   </summary>
 </histogram>
 
 <histogram name="Net.Transaction_Connected" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from the when the network transaction is requested, until the first
@@ -18710,6 +18721,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Transaction_Connected_New_b" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     When a new connection is established, the time from the when the network
@@ -18740,6 +18754,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Transaction_Latency_b" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from first byte sent until last byte received by the new network stack.
@@ -18747,6 +18764,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Transaction_Latency_Total" units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from when a network transaction is requested until last byte received
@@ -18756,6 +18776,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.Transaction_Latency_Total_New_Connection"
     units="milliseconds">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     When an existing TCP/IP connection is NOT reused, the time from when a
@@ -18800,6 +18823,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.Transaction_Latency_WinHTTP" units="milliseconds">
+  <obsolete>
+    Deprecated a long time ago.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time from first byte sent until last byte received with old WinHTTP network
