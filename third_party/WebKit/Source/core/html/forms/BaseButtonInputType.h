@@ -41,14 +41,13 @@ protected:
     BaseButtonInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
 
 private:
+    virtual void createShadowSubtree() override;
+    virtual void valueAttributeChanged() override;
     virtual bool shouldSaveAndRestoreFormControlState() const override;
     virtual bool appendFormData(FormDataList&, bool) const override;
     virtual RenderObject* createRenderer(RenderStyle*) const override;
     virtual bool storesValueSeparateFromAttribute() override;
     virtual void setValue(const String&, bool, TextFieldEventBehavior) override;
-protected:
-    virtual void createShadowSubtree() override;
-    virtual void valueAttributeChanged() override;
 };
 
 } // namespace blink

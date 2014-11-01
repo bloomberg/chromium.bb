@@ -37,8 +37,6 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderImage.h"
@@ -471,7 +469,6 @@ void TextIterator::advance()
                     || (m_node && m_node->isHTMLElement()
                     && (isHTMLFormControlElement(toHTMLElement(*m_node))
                     || isHTMLLegendElement(toHTMLElement(*m_node))
-                    || isHTMLImageElement(toElement(*m_node))
                     || isHTMLMeterElement(toHTMLElement(*m_node))
                     || isHTMLProgressElement(toHTMLElement(*m_node)))))) {
                     handledNode = handleReplacedElement();
@@ -834,8 +831,8 @@ bool TextIterator::handleReplacedElement()
     m_positionEndOffset = 1;
     m_singleCharacterBuffer = 0;
 
-    if (m_emitsImageAltText) {
-        m_text = toHTMLElement(m_node)->altText();
+    if (m_emitsImageAltText && renderer->isImage() && renderer->isRenderImage()) {
+        m_text = toRenderImage(renderer)->altText();
         if (!m_text.isEmpty()) {
             m_textLength = m_text.length();
             m_lastCharacter = m_text[m_textLength - 1];
@@ -1412,7 +1409,7 @@ void SimplifiedBackwardsTextIterator::advance()
                 // FIXME: What about CDATA_SECTION_NODE?
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleTextNode();
-            } else if (renderer && (isHTMLImageElement(toElement(*m_node)) || isHTMLInputElement(toElement(*m_node)) || renderer->isRenderPart())) {
+            } else if (renderer && (renderer->isImage() || renderer->isRenderPart())) {
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleReplacedElement();
             } else {

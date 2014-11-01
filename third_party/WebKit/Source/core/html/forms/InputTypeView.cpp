@@ -232,12 +232,4 @@ void ClickHandlingState::trace(Visitor* visitor)
     visitor->trace(checkedRadioButton);
 }
 
-void InputTypeView::ensureFallbackContent()
-{
-}
-
-void InputTypeView::ensurePrimaryContent()
-{
-}
-
 } // namespace blink

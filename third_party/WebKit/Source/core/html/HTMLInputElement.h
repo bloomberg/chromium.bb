@@ -154,7 +154,7 @@ public:
     virtual bool isActivatedSubmit() const override final;
     virtual void setActivatedSubmit(bool flag) override final;
 
-    virtual String altText() const override final;
+    String altText() const;
 
     int maxResults() const { return m_maxResults; }
 
@@ -252,8 +252,6 @@ public:
     AXObject* popupRootAXObject();
     virtual void didNotifySubtreeInsertionsToDocument() override;
 
-    virtual void ensureFallbackContent() override final;
-    virtual void ensurePrimaryContent() override final;
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 
@@ -350,7 +348,9 @@ private:
     RadioButtonGroupScope* radioButtonGroupScope() const;
     void addToRadioButtonGroup();
     void removeFromRadioButtonGroup();
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
+#endif
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 

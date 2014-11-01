@@ -60,6 +60,7 @@ RenderImage::RenderImage(Element* element)
     , m_isGeneratedContent(false)
     , m_imageDevicePixelRatio(1.0f)
 {
+    updateAltText();
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
@@ -88,6 +89,58 @@ void RenderImage::setImageResource(PassOwnPtr<RenderImageResource> imageResource
     m_imageResource->initialize(this);
 }
 
+// Alt text is restricted to this maximum size, in pixels.  These are
+// signed integers because they are compared with other signed values.
+static const float maxAltTextWidth = 1024;
+static const int maxAltTextHeight = 256;
+
+IntSize RenderImage::imageSizeForError(ImageResource* newImage) const
+{
+    ASSERT_ARG(newImage, newImage);
+    ASSERT_ARG(newImage, newImage->imageForRenderer(this));
+
+    IntSize imageSize;
+    if (newImage->willPaintBrokenImage()) {
+        float deviceScaleFactor = blink::deviceScaleFactor(frame());
+        pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
+        imageSize = brokenImageAndImageScaleFactor.first->size();
+        imageSize.scale(1 / brokenImageAndImageScaleFactor.second);
+    } else
+        imageSize = newImage->imageForRenderer(this)->size();
+
+    // imageSize() returns 0 for the error image. We need the true size of the
+    // error image, so we have to get it by grabbing image() directly.
+    return IntSize(paddingWidth + imageSize.width() * style()->effectiveZoom(), paddingHeight + imageSize.height() * style()->effectiveZoom());
+}
+
+// Sets the image height and width to fit the alt text.  Returns true if the
+// image size changed.
+bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
+{
+    IntSize imageSize;
+    if (newImage && newImage->imageForRenderer(this))
+        imageSize = imageSizeForError(newImage);
+    else if (!m_altText.isEmpty() || newImage) {
+        // If we'll be displaying either text or an image, add a little padding.
+        imageSize = IntSize(paddingWidth, paddingHeight);
+    }
+
+    // we have an alt and the user meant it (its not a text we invented)
+    if (!m_altText.isEmpty()) {
+        FontCachePurgePreventer fontCachePurgePreventer;
+
+        const Font& font = style()->font();
+        IntSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
+        imageSize = imageSize.expandedTo(paddedTextSize);
+    }
+
+    if (imageSize == intrinsicSize())
+        return false;
+
+    setIntrinsicSize(imageSize);
+    return true;
+}
+
 void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
     if (documentBeingDestroyed())
@@ -113,7 +166,13 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
         m_didIncrementVisuallyNonEmptyPixelCount = true;
     }
 
-    repaintOrMarkForLayout(rect);
+    bool imageSizeChanged = false;
+
+    // Set image dimensions, taking into account the size of the alt text.
+    if (m_imageResource->errorOccurred() || !newImage)
+        imageSizeChanged = setImageSizeForAltText(m_imageResource->cachedImage());
+
+    paintInvalidationOrMarkForLayout(imageSizeChanged, rect);
 }
 
 void RenderImage::updateIntrinsicSizeIfNeeded(const LayoutSize& newSize)
@@ -132,7 +191,7 @@ void RenderImage::updateInnerContentRect()
         m_imageResource->setContainerSizeForRenderer(containerSize);
 }
 
-void RenderImage::repaintOrMarkForLayout(const IntRect* rect)
+void RenderImage::paintInvalidationOrMarkForLayout(bool imageSizeChangedToAccomodateAltText, const IntRect* rect)
 {
     LayoutSize oldIntrinsicSize = intrinsicSize();
     LayoutSize newIntrinsicSize = m_imageResource->intrinsicSize(style()->effectiveZoom());
@@ -145,7 +204,7 @@ void RenderImage::repaintOrMarkForLayout(const IntRect* rect)
     if (!containingBlock())
         return;
 
-    bool imageSourceHasChangedSize = oldIntrinsicSize != newIntrinsicSize;
+    bool imageSourceHasChangedSize = oldIntrinsicSize != newIntrinsicSize || imageSizeChangedToAccomodateAltText;
     if (imageSourceHasChangedSize)
         setPreferredLogicalWidthsDirty();
 
@@ -236,7 +295,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     paintInvalidationRect.moveBy(-absoluteContentBox().location());
     paintInvalidationRect.inflate(outlineWidth);
 
-    repaintOrMarkForLayout(&paintInvalidationRect);
+    paintInvalidationOrMarkForLayout(false, &paintInvalidationRect);
 }
 
 bool RenderImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const
@@ -317,6 +376,17 @@ bool RenderImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     if (inside)
         result = tempResult;
     return inside;
+}
+
+void RenderImage::updateAltText()
+{
+    if (!node())
+        return;
+
+    if (isHTMLInputElement(*node()))
+        m_altText = toHTMLInputElement(node())->altText();
+    else if (isHTMLImageElement(*node()))
+        m_altText = toHTMLImageElement(node())->altText();
 }
 
 void RenderImage::layout()

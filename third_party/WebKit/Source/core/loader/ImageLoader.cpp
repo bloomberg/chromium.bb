@@ -66,7 +66,8 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
 {
     ASSERT(loader);
     ASSERT(loader->element());
-    if (loader->element()->document().frame() && loader->element()->document().frame()->script().shouldBypassMainWorldCSP())
+    ASSERT(loader->element()->document().frame());
+    if (loader->element()->document().frame()->script().shouldBypassMainWorldCSP())
         return ImageLoader::BypassMainWorldCSP;
     return ImageLoader::DoNotBypassMainWorldCSP;
 }
@@ -268,13 +269,10 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
             crossSiteOrCSPViolationOccured(imageSourceURL);
         else
             clearFailedLoadURL();
-    } else {
-        if (!imageSourceURL.isNull()) {
-            // Fire an error event if the url string is not empty, but the KURL is.
-            m_hasPendingErrorEvent = true;
-            errorEventSender().dispatchEventSoon(this);
-        }
-        noImageResourceToLoad();
+    } else if (!imageSourceURL.isNull()) {
+        // Fire an error event if the url string is not empty, but the KURL is.
+        m_hasPendingErrorEvent = true;
+        errorEventSender().dispatchEventSoon(this);
     }
 
     ImageResource* oldImage = m_image.get();
@@ -319,7 +317,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     updatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
+void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, LoadType loadType)
 {
     AtomicString imageSourceURL = m_element->imageSourceURL();
 
@@ -337,7 +335,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
     }
 
     KURL url = imageSourceToKURL(imageSourceURL);
-    if (shouldLoadImmediately(url)) {
+    if (imageSourceURL.isNull() || url.isNull() || shouldLoadImmediately(url, loadType)) {
         doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior);
         return;
     }
@@ -361,19 +359,14 @@ KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const
     return url;
 }
 
-bool ImageLoader::shouldLoadImmediately(const KURL& url) const
+bool ImageLoader::shouldLoadImmediately(const KURL& url, LoadType loadType) const
 {
-    // We force failed image loads through the asynchronous path so that we can add the shadow DOM
-    // for the alt-text content when style recalc is over and DOM mutation is allowed again.
-    if (!url.isNull()) {
-        Resource* resource = memoryCache()->resourceForURL(url, m_element->document().fetcher()->getCacheIdentifier());
-        if (resource && !resource->errorOccurred())
-            return true;
-    }
     return (m_loadingImageDocument
         || isHTMLObjectElement(m_element)
         || isHTMLEmbedElement(m_element)
-        || url.protocolIsData());
+        || url.protocolIsData()
+        || memoryCache()->resourceForURL(url, m_element->document().fetcher()->getCacheIdentifier())
+        || loadType == ForceLoadImmediately);
 }
 
 void ImageLoader::notifyFinished(Resource* resource)

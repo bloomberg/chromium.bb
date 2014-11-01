@@ -40,14 +40,8 @@ function test()
 
     function step3()
     {
-        var requests = InspectorTest.networkRequests();
-        requests.sort(function(a, b) {return a.url.localeCompare(b.url);});
-        InspectorTest.addResult("resources count = " + requests.length);
-        for (i = 0; i < requests.length; i++) {
-            InspectorTest.addResult(requests[i].url);
-            InspectorTest.addResult("resource.content after requesting content: " + requests[i].content);
-        }
-
+        var request1 = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("resource.content after requesting content: " + request1.content);
 
         InspectorTest.completeTest();
     }

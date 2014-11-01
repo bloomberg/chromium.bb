@@ -41,7 +41,6 @@ namespace blink {
 class ImageInputType final : public BaseButtonInputType {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
 
 private:
     ImageInputType(HTMLInputElement&);
@@ -54,7 +53,6 @@ private:
     virtual void handleDOMActivateEvent(Event*) override;
     virtual void altAttributeChanged() override;
     virtual void srcAttributeChanged() override;
-    virtual void valueAttributeChanged() override;
     virtual void startResourceLoading() override;
     virtual bool shouldRespectAlignAttribute() override;
     virtual bool canBeSuccessfulSubmitButton() override;
@@ -64,15 +62,8 @@ private:
     virtual unsigned width() const override;
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
     virtual const QualifiedName& subResourceAttributeName() const override;
-    virtual void ensureFallbackContent() override;
-    virtual void ensurePrimaryContent() override;
-    virtual void createShadowSubtree() override;
-
-    void reattachFallbackContent();
-    void setUseFallbackContent();
 
     IntPoint m_clickLocation; // Valid only during HTMLFormElement::prepareForSubmission().
-    bool m_useFallbackContent;
 };
 
 } // namespace blink
