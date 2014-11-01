@@ -339,21 +339,36 @@ PictureLayerTilingSet::TilingRange PictureLayerTilingSet::GetTilingRange(
       low_res_range = TilingRange(i, i + 1);
   }
 
+  TilingRange range(0, 0);
   switch (type) {
     case HIGHER_THAN_HIGH_RES:
-      return TilingRange(0, high_res_range.start);
+      range = TilingRange(0, high_res_range.start);
+      break;
     case HIGH_RES:
-      return high_res_range;
+      range = high_res_range;
+      break;
     case BETWEEN_HIGH_AND_LOW_RES:
-      return TilingRange(high_res_range.end, low_res_range.start);
+      // TODO(vmpstr): This code assumes that high res tiling will come before
+      // low res tiling, however there are cases where this assumption is
+      // violated. As a result, it's better to be safe in these situations,
+      // since otherwise we can end up accessing a tiling that doesn't exist.
+      // See crbug.com/429397 for high res tiling appearing after low res
+      // tiling discussion/fixes.
+      if (high_res_range.start <= low_res_range.start)
+        range = TilingRange(high_res_range.end, low_res_range.start);
+      else
+        range = TilingRange(low_res_range.end, high_res_range.start);
+      break;
     case LOW_RES:
-      return low_res_range;
+      range = low_res_range;
+      break;
     case LOWER_THAN_LOW_RES:
-      return TilingRange(low_res_range.end, tilings_.size());
+      range = TilingRange(low_res_range.end, tilings_.size());
+      break;
   }
 
-  NOTREACHED();
-  return TilingRange(0, 0);
+  DCHECK_LE(range.start, range.end);
+  return range;
 }
 
 }  // namespace cc
