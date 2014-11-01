@@ -31829,7 +31829,6 @@
         "paygen_skip_delta_payloads": true,
         "paygen_skip_testing": true,
         "push_image": true,
-        "signer_tests": true,
         "trybot_list": true,
         "upload_symbols": true,
         "useflags": [
