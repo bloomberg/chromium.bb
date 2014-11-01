@@ -436,7 +436,7 @@ void CSSSelector::show() const
 
 CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name, bool hasArguments)
 {
-    CSSSelector::PseudoType pseudoType = nameToPseudoType(name, hasArguments);
+    PseudoType pseudoType = nameToPseudoType(name, hasArguments);
     if (pseudoType != PseudoUnknown)
         return pseudoType;
 
@@ -592,7 +592,7 @@ String CSSSelector::selectorText(const String& rightSide) const
 {
     StringBuilder str;
 
-    if (m_match == CSSSelector::Tag && !m_tagIsForNamespaceRule) {
+    if (m_match == Tag && !m_tagIsForNamespaceRule) {
         if (tagQName().prefix().isNull())
             str.append(tagQName().localName());
         else {
@@ -604,13 +604,13 @@ String CSSSelector::selectorText(const String& rightSide) const
 
     const CSSSelector* cs = this;
     while (true) {
-        if (cs->m_match == CSSSelector::Id) {
+        if (cs->m_match == Id) {
             str.append('#');
             serializeIdentifier(cs->value(), str);
-        } else if (cs->m_match == CSSSelector::Class) {
+        } else if (cs->m_match == Class) {
             str.append('.');
             serializeIdentifier(cs->value(), str);
-        } else if (cs->m_match == CSSSelector::PseudoClass || cs->m_match == CSSSelector::PagePseudoClass) {
+        } else if (cs->m_match == PseudoClass || cs->m_match == PagePseudoClass) {
             str.append(':');
             str.append(cs->value());
 
@@ -658,13 +658,24 @@ String CSSSelector::selectorText(const String& rightSide) const
             default:
                 break;
             }
-        } else if (cs->m_match == CSSSelector::PseudoElement) {
+        } else if (cs->m_match == PseudoElement) {
             str.appendLiteral("::");
             str.append(cs->value());
 
             if (cs->pseudoType() == PseudoContent) {
-                if (cs->relation() == CSSSelector::SubSelector && cs->tagHistory())
+                if (cs->relation() == SubSelector && cs->tagHistory())
                     return cs->tagHistory()->selectorText() + str.toString() + rightSide;
+            } else if (cs->pseudoType() == PseudoCue) {
+                if (cs->selectorList()) {
+                    str.append('(');
+                    const CSSSelector* firstSubSelector = cs->selectorList()->first();
+                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
+                        if (subSelector != firstSubSelector)
+                            str.append(',');
+                        str.append(subSelector->selectorText());
+                    }
+                    str.append(')');
+                }
             }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
@@ -675,58 +686,58 @@ String CSSSelector::selectorText(const String& rightSide) const
             }
             str.append(cs->attribute().localName());
             switch (cs->m_match) {
-            case CSSSelector::AttributeExact:
+            case AttributeExact:
                 str.append('=');
                 break;
-            case CSSSelector::AttributeSet:
+            case AttributeSet:
                 // set has no operator or value, just the attrName
                 str.append(']');
                 break;
-            case CSSSelector::AttributeList:
+            case AttributeList:
                 str.appendLiteral("~=");
                 break;
-            case CSSSelector::AttributeHyphen:
+            case AttributeHyphen:
                 str.appendLiteral("|=");
                 break;
-            case CSSSelector::AttributeBegin:
+            case AttributeBegin:
                 str.appendLiteral("^=");
                 break;
-            case CSSSelector::AttributeEnd:
+            case AttributeEnd:
                 str.appendLiteral("$=");
                 break;
-            case CSSSelector::AttributeContain:
+            case AttributeContain:
                 str.appendLiteral("*=");
                 break;
             default:
                 break;
             }
-            if (cs->m_match != CSSSelector::AttributeSet) {
+            if (cs->m_match != AttributeSet) {
                 serializeString(cs->value(), str);
                 if (cs->attributeMatchType() == CaseInsensitive)
                     str.appendLiteral(" i");
                 str.append(']');
             }
         }
-        if (cs->relation() != CSSSelector::SubSelector || !cs->tagHistory())
+        if (cs->relation() != SubSelector || !cs->tagHistory())
             break;
         cs = cs->tagHistory();
     }
 
     if (const CSSSelector* tagHistory = cs->tagHistory()) {
         switch (cs->relation()) {
-        case CSSSelector::Descendant:
+        case Descendant:
             return tagHistory->selectorText(" " + str.toString() + rightSide);
-        case CSSSelector::Child:
+        case Child:
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
-        case CSSSelector::ShadowDeep:
+        case ShadowDeep:
             return tagHistory->selectorText(" /deep/ " + str.toString() + rightSide);
-        case CSSSelector::DirectAdjacent:
+        case DirectAdjacent:
             return tagHistory->selectorText(" + " + str.toString() + rightSide);
-        case CSSSelector::IndirectAdjacent:
+        case IndirectAdjacent:
             return tagHistory->selectorText(" ~ " + str.toString() + rightSide);
-        case CSSSelector::SubSelector:
+        case SubSelector:
             ASSERT_NOT_REACHED();
-        case CSSSelector::ShadowPseudo:
+        case ShadowPseudo:
             return tagHistory->selectorText(str.toString() + rightSide);
         }
     }
@@ -812,7 +823,7 @@ bool CSSSelector::isCompound() const
     const CSSSelector* subSelector = tagHistory();
 
     while (subSelector) {
-        if (prevSubSelector->relation() != CSSSelector::SubSelector)
+        if (prevSubSelector->relation() != SubSelector)
             return false;
         if (!validateSubSelector(subSelector))
             return false;
