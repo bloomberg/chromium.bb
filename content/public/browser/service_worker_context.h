@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_CONTEXT_H_
 
+#include <set>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
@@ -23,6 +26,15 @@ class ServiceWorkerContext {
 
   typedef base::Callback<void(const std::vector<ServiceWorkerUsageInfo>&
                                   usage_info)> GetUsageInfoCallback;
+
+  // Registers the header name which should not be passed to the ServiceWorker.
+  // Must be called from the IO thread.
+  CONTENT_EXPORT static void AddExcludedHeadersForFetchEvent(
+      const std::set<std::string>& header_names);
+
+  // Returns true if the header name should not be passed to the ServiceWorker.
+  // Must be called from the IO thread.
+  static bool IsExcludedHeaderNameForFetchEvent(const std::string& header_name);
 
   // Equivalent to calling navigator.serviceWorker.register(script_url, {scope:
   // pattern}) from a renderer, except that |pattern| is an absolute URL instead

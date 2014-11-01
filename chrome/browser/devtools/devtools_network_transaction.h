@@ -41,6 +41,9 @@ class DevToolsNetworkControllerHelper;
 // net::ERR_INTERNET_DISCONNECTED result value.
 class DevToolsNetworkTransaction : public net::HttpTransaction {
  public:
+  static const char kDevToolsRequestInitiator[];
+  static const char kDevToolsEmulateNetworkConditionsClientId[];
+
   DevToolsNetworkTransaction(
       DevToolsNetworkController* controller,
       scoped_ptr<net::HttpTransaction> network_transaction);

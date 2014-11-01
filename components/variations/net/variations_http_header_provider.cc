@@ -4,6 +4,8 @@
 
 #include "components/variations/net/variations_http_header_provider.h"
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/base64.h"
@@ -36,6 +38,9 @@ const char* kSuffixesToSetHeadersFor[] = {
   ".ytimg.com",
 };
 
+const char kChromeUMAEnabled[] = "X-Chrome-UMA-Enabled";
+const char kClientData[] = "X-Client-Data";
+
 }  // namespace
 
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
@@ -61,7 +66,7 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     return;
 
   if (uma_enabled)
-    headers->SetHeaderIfMissing("X-Chrome-UMA-Enabled", "1");
+    headers->SetHeaderIfMissing(kChromeUMAEnabled, "1");
 
   // Lazily initialize the header, if not already done, before attempting to
   // transmit it.
@@ -75,8 +80,7 @@ void VariationsHttpHeaderProvider::AppendHeaders(
 
   if (!variation_ids_header_copy.empty()) {
     // Note that prior to M33 this header was named X-Chrome-Variations.
-    headers->SetHeaderIfMissing("X-Client-Data",
-                                variation_ids_header_copy);
+    headers->SetHeaderIfMissing(kClientData, variation_ids_header_copy);
   }
 }
 
@@ -265,6 +269,14 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
 
   return google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                          google_util::ALLOW_NON_STANDARD_PORTS);
+}
+
+std::set<std::string> VariationsHttpHeaderProvider::GetVariationHeaderNames()
+    const {
+  std::set<std::string> headers;
+  headers.insert(kChromeUMAEnabled);
+  headers.insert(kClientData);
+  return headers;
 }
 
 }  // namespace variations

@@ -42,6 +42,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
@@ -271,6 +272,12 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
       user_script_listener_(new extensions::UserScriptListener()),
 #endif
       prerender_tracker_(prerender_tracker) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent,
+                 variations::VariationsHttpHeaderProvider::GetInstance()
+                     ->GetVariationHeaderNames()));
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {

@@ -54,6 +54,9 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // with "t" it will be treated as a trigger experiment id.
   bool SetDefaultVariationIds(const std::string& variation_ids);
 
+  // Returns the HTTP header names which are added in this class.
+  std::set<std::string> GetVariationHeaderNames() const;
+
  private:
   friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
