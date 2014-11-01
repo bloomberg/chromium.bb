@@ -6,13 +6,10 @@
 
 from __future__ import print_function
 
-import errno
 import glob
 import os
 import pwd
-import signal
 import sys
-import time
 import urlparse
 
 from chromite.cbuildbot import constants
@@ -22,6 +19,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import locking
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import process_util
 from chromite.lib import retry_util
 from chromite.lib import toolchain
 
@@ -400,113 +398,7 @@ def _ProxySimSetup(options):
   os.write(parent_writefd, SUCCESS_FLAG)
   os.close(parent_writefd)
 
-  _ExitAsStatus(os.waitpid(pid, 0)[1])
-
-
-def _ExitAsStatus(status):
-  """Exit the same way as |status|.
-
-  If the status field says it was killed by a signal, then we'll do that to
-  ourselves.  Otherwise we'll exit with the exit code.
-
-  See http://www.cons.org/cracauer/sigint.html for more details.
-
-  Args:
-    status: A status as returned by os.wait type funcs.
-  """
-  sig_status = status & 0xff
-  exit_status = (status >> 8) & 0xff
-
-  if sig_status:
-    # Kill ourselves with the same signal.
-    pid = os.getpid()
-    os.kill(pid, sig_status)
-    time.sleep(0.1)
-
-    # Still here?  Maybe the signal was masked.
-    signal.signal(sig_status, signal.SIG_DFL)
-    os.kill(pid, sig_status)
-    time.sleep(0.1)
-
-    # Still here?  Just exit.
-    exit_status = 127
-
-  # Exit with the code we want.
-  sys.exit(exit_status)
-
-
-def _ReapChildren(pid):
-  """Reap all children that get reparented to us until we see |pid| exit.
-
-  Args:
-    pid: The main child to watch for.
-
-  Returns:
-    The wait status of the |pid| child.
-  """
-  pid_status = 0
-
-  while True:
-    try:
-      (wpid, status) = os.wait()
-      if pid == wpid:
-        # Save the status of our main child so we can exit with it below.
-        pid_status = status
-    except OSError as e:
-      if e.errno == errno.ECHILD:
-        break
-      else:
-        raise
-
-  return pid_status
-
-
-def _CreatePidNamespace():
-  """Start a new pid namespace
-
-  This will launch all the right manager processes.  The child that returns
-  will be isolated in a new pid namespace.
-
-  If functionality is not available, then it will return w/out doing anything.
-
-  Returns:
-    The last pid outside of the namespace.
-  """
-  first_pid = os.getpid()
-
-  try:
-    # First create the namespace.
-    namespaces.Unshare(namespaces.CLONE_NEWPID)
-  except OSError as e:
-    if e.errno == errno.EINVAL:
-      # For older kernels, or the functionality is disabled in the config,
-      # return silently.  We don't want to hard require this stuff.
-      return first_pid
-    else:
-      # For all other errors, abort.  They shouldn't happen.
-      raise
-
-  # Now that we're in the new pid namespace, fork.  The parent is the master
-  # of it in the original namespace, so it only monitors the child inside it.
-  # It is only allowed to fork once too.
-  pid = os.fork()
-  if pid:
-    # Reap the children as the parent of the new namespace.
-    _ExitAsStatus(_ReapChildren(pid))
-  else:
-    # The child needs its own proc mount as it'll be different.
-    osutils.Mount('proc', '/proc', 'proc',
-                  osutils.MS_NOSUID | osutils.MS_NODEV | osutils.MS_NOEXEC |
-                  osutils.MS_RELATIME)
-
-    pid = os.fork()
-    if pid:
-      # Watch all of the children.  We need to act as the master inside the
-      # namespace and reap old processes.
-      _ExitAsStatus(_ReapChildren(pid))
-
-  # The grandchild will return and take over the rest of the sdk steps.
-  return first_pid
+  process_util.ExitAsStatus(os.waitpid(pid, 0)[1])
 
 
 def _ReExecuteIfNeeded(argv):
@@ -633,7 +525,7 @@ def main(argv):
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
   if options.ns_pid:
-    first_pid = _CreatePidNamespace()
+    first_pid = namespaces.CreatePidNs()
   else:
     first_pid = None
 

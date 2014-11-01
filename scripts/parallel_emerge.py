@@ -37,7 +37,7 @@ import time
 import traceback
 
 from chromite.lib import cros_build_lib
-from chromite.lib import osutils
+from chromite.lib import process_util
 from chromite.lib import proctitle
 
 # If PORTAGE_USERNAME isn't specified, scrape it from the $HOME variable. On
@@ -1399,7 +1399,7 @@ class EmergeQueue(object):
         try:
           # Wait for the process to exit. When it does, exit with the return
           # value of the subprocess.
-          os._exit(osutils.GetExitStatus(os.waitpid(pid, 0)[1]))
+          os._exit(process_util.GetExitStatus(os.waitpid(pid, 0)[1]))
         except OSError as ex:
           if ex.errno == errno.EINTR:
             continue
