@@ -9,17 +9,18 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/public/copresence_delegate.h"
-#include "components/copresence/public/whispernet_client.h"
-#include "components/copresence/rpc/http_post.h"
 #include "components/copresence/timed_map.h"
 
 namespace copresence {
 
+struct AudioToken;
+class CopresenceDelegate;
 class DirectiveHandler;
+class HttpPost;
 class ReportRequest;
 class RequestHeader;
 class SubscribedMessage;
@@ -33,9 +34,9 @@ class RpcHandler {
   // Report rpc name to send to Apiary.
   static const char kReportRequestRpcName[];
 
-  // Constructor. |delegate| is owned by the caller,
-  // and must be valid as long as the RpcHandler exists.
-  explicit RpcHandler(CopresenceDelegate* delegate);
+  // Constructor. |delegate| and |directive_handler|
+  // are owned by the caller and must outlive the RpcHandler.
+  RpcHandler(CopresenceDelegate* delegate, DirectiveHandler* directive_handler);
 
   virtual ~RpcHandler();
 
@@ -64,10 +65,6 @@ class RpcHandler {
   // Uses all active auth tokens (if any).
   void ReportTokens(const std::vector<AudioToken>& tokens);
 
-  // Create the directive handler and connect it to
-  // the whispernet client specified by the delegate.
-  void ConnectToWhispernet();
-
  private:
   // An HttpPost::ResponseCallback along with an HttpPost object to be deleted.
   // Arguments:
@@ -85,7 +82,7 @@ class RpcHandler {
   // string: The auth token to pass with the request.
   // MessageLite: Contents of POST request to be sent. This needs to be
   //     a (scoped) pointer to ease handling of the abstract MessageLite class.
-  // ResponseCallback: Receives the response to the request.
+  // PostCleanupCallback: Receives the response to the request.
   typedef base::Callback<void(net::URLRequestContextGetter*,
                               const std::string&,
                               const std::string&,
@@ -140,19 +137,16 @@ class RpcHandler {
                     scoped_ptr<google::protobuf::MessageLite> request_proto,
                     const PostCleanupCallback& callback);
 
-  // This method receives the request to encode a token and forwards it to
-  // whispernet, setting the samples return callback to samples_callback.
-  void AudioDirectiveListToWhispernetConnector(
-      const std::string& token,
-      AudioType type,
-      const WhispernetClient::SamplesCallback& samples_callback);
+  // These belong to the caller.
+  CopresenceDelegate* delegate_;
+  DirectiveHandler* directive_handler_;
 
-  CopresenceDelegate* delegate_;  // Belongs to the caller.
   TimedMap<std::string, bool> invalid_audio_token_cache_;
+
+  // TODO(ckehoe): Allow passing this into the constructor for testing.
   PostCallback server_post_callback_;
 
   std::map<std::string, std::string> device_id_by_auth_token_;
-  scoped_ptr<DirectiveHandler> directive_handler_;
   std::set<HttpPost*> pending_posts_;
 
   DISALLOW_COPY_AND_ASSIGN(RpcHandler);

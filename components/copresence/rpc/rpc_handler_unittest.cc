@@ -18,10 +18,14 @@
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
 #include "net/http/http_status_code.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using google::protobuf::MessageLite;
 using google::protobuf::RepeatedPtrField;
+
+using testing::Property;
+using testing::SizeIs;
+using testing::ElementsAre;
 
 namespace copresence {
 
@@ -48,8 +52,8 @@ class FakeDirectiveHandler : public DirectiveHandler {
     return added_directives_;
   }
 
-  void Initialize(const AudioManager::DecodeSamplesCallback& decode_cb,
-                  const AudioManager::EncodeTokenCallback& encode_cb) override {
+  void Start(WhispernetClient* whispernet_client) override {
+    NOTREACHED();
   }
 
   void AddDirective(const Directive& directive) override {
@@ -57,7 +61,11 @@ class FakeDirectiveHandler : public DirectiveHandler {
   }
 
   void RemoveDirectives(const std::string& op_id) override {
-    // TODO(ckehoe): Add a parallel implementation when prod has one.
+    NOTREACHED();
+  }
+
+  const std::string GetCurrentAudioToken(AudioType type) const override {
+    return type == AUDIBLE ? "current audible" : "current inaudible";
   }
 
  private:
@@ -70,7 +78,7 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
 class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
-  RpcHandlerTest() : rpc_handler_(this), status_(SUCCESS) {
+  RpcHandlerTest() : rpc_handler_(this, &directive_handler_), status_(SUCCESS) {
     rpc_handler_.server_post_callback_ =
         base::Bind(&RpcHandlerTest::CaptureHttpPost, base::Unretained(this));
   }
@@ -112,12 +120,6 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
         response);
   }
 
-  FakeDirectiveHandler* InstallFakeDirectiveHandler() {
-    FakeDirectiveHandler* handler = new FakeDirectiveHandler;
-    rpc_handler_.directive_handler_.reset(handler);
-    return handler;
-  }
-
   void SetDeviceIdAndAuthToken(const std::string& device_id,
                                const std::string& auth_token) {
     rpc_handler_.device_id_by_auth_token_[auth_token] = device_id;
@@ -135,6 +137,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   // For rpc_handler_.invalid_audio_token_cache_
   base::MessageLoop message_loop_;
 
+  FakeDirectiveHandler directive_handler_;
   RpcHandler rpc_handler_;
   CopresenceStatus status_;
 
@@ -166,7 +169,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
 TEST_F(RpcHandlerTest, RegisterDevice) {
   EXPECT_FALSE(rpc_handler_.IsRegisteredForToken(""));
   rpc_handler_.RegisterForToken("", RpcHandler::SuccessCallback());
-  EXPECT_EQ(1u, request_protos_.size());
+  EXPECT_THAT(request_protos_, SizeIs(1));
   const RegisterDeviceRequest* registration =
       static_cast<RegisterDeviceRequest*>(request_protos_[0]);
   Identity identity = registration->device_identifiers().registrant();
@@ -175,7 +178,7 @@ TEST_F(RpcHandlerTest, RegisterDevice) {
 
   EXPECT_FALSE(rpc_handler_.IsRegisteredForToken("abc"));
   rpc_handler_.RegisterForToken("abc", RpcHandler::SuccessCallback());
-  EXPECT_EQ(2u, request_protos_.size());
+  EXPECT_THAT(request_protos_, SizeIs(2));
   registration = static_cast<RegisterDeviceRequest*>(request_protos_[1]);
   EXPECT_FALSE(registration->has_device_identifiers());
 }
@@ -206,8 +209,8 @@ TEST_F(RpcHandlerTest, CreateRequestHeader) {
 TEST_F(RpcHandlerTest, ReportTokens) {
   std::vector<AudioToken> test_tokens;
   test_tokens.push_back(AudioToken("token 1", false));
-  test_tokens.push_back(AudioToken("token 2", true));
-  test_tokens.push_back(AudioToken("token 3", false));
+  test_tokens.push_back(AudioToken("token 2", false));
+  test_tokens.push_back(AudioToken("token 3", true));
   AddInvalidToken("token 2");
 
   SetDeviceIdAndAuthToken("ReportTokens Device 1", "");
@@ -216,13 +219,15 @@ TEST_F(RpcHandlerTest, ReportTokens) {
   rpc_handler_.ReportTokens(test_tokens);
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
   EXPECT_EQ(" API Key", api_key_);
-  EXPECT_EQ(2u, request_protos_.size());
+  EXPECT_THAT(request_protos_, SizeIs(2));
   const ReportRequest* report = static_cast<ReportRequest*>(request_protos_[0]);
   RepeatedPtrField<TokenObservation> tokens_sent =
       report->update_signals_request().token_observation();
-  ASSERT_EQ(2, tokens_sent.size());
-  EXPECT_EQ("token 1", tokens_sent.Get(0).token_id());
-  EXPECT_EQ("token 3", tokens_sent.Get(1).token_id());
+  EXPECT_THAT(tokens_sent, ElementsAre(
+      Property(&TokenObservation::token_id, "token 1"),
+      Property(&TokenObservation::token_id, "token 3"),
+      Property(&TokenObservation::token_id, "current audible"),
+      Property(&TokenObservation::token_id, "current inaudible")));
 }
 
 TEST_F(RpcHandlerTest, ReportResponseHandler) {
@@ -259,7 +264,6 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
   update_response->add_directive()->set_subscription_id("Subscription 2");
 
   messages_by_subscription_.clear();
-  FakeDirectiveHandler* directive_handler = InstallFakeDirectiveHandler();
   std::string serialized_proto;
   ASSERT_TRUE(test_response.SerializeToString(&serialized_proto));
   status_ = FAIL;
@@ -267,23 +271,18 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
 
   EXPECT_EQ(SUCCESS, status_);
   EXPECT_TRUE(TokenIsInvalid("bad token"));
-  ASSERT_EQ(2U, messages_by_subscription_.size());
-  ASSERT_EQ(2U, messages_by_subscription_["Subscription 1"].size());
-  ASSERT_EQ(2U, messages_by_subscription_["Subscription 2"].size());
-  EXPECT_EQ("Message A",
-            messages_by_subscription_["Subscription 1"][0].payload());
-  EXPECT_EQ("Message B",
-            messages_by_subscription_["Subscription 2"][0].payload());
-  EXPECT_EQ("Message C",
-            messages_by_subscription_["Subscription 1"][1].payload());
-  EXPECT_EQ("Message C",
-            messages_by_subscription_["Subscription 2"][1].payload());
 
-  ASSERT_EQ(2U, directive_handler->added_directives().size());
-  EXPECT_EQ("Subscription 1",
-            directive_handler->added_directives()[0].subscription_id());
-  EXPECT_EQ("Subscription 2",
-            directive_handler->added_directives()[1].subscription_id());
+  EXPECT_THAT(messages_by_subscription_["Subscription 1"], ElementsAre(
+      Property(&Message::payload, "Message A"),
+      Property(&Message::payload, "Message C")));
+
+  EXPECT_THAT(messages_by_subscription_["Subscription 2"], ElementsAre(
+      Property(&Message::payload, "Message B"),
+      Property(&Message::payload, "Message C")));
+
+  EXPECT_THAT(directive_handler_.added_directives(), ElementsAre(
+      Property(&Directive::subscription_id, "Subscription 1"),
+      Property(&Directive::subscription_id, "Subscription 2")));
 }
 
 }  // namespace copresence

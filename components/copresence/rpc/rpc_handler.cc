@@ -27,6 +27,8 @@
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/copresence_delegate.h"
+#include "components/copresence/public/whispernet_client.h"
+#include "components/copresence/rpc/http_post.h"
 #include "net/http/http_status_code.h"
 
 // TODO(ckehoe): Return error messages for bad requests.
@@ -150,20 +152,26 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
 
 // Public methods
 
-RpcHandler::RpcHandler(CopresenceDelegate* delegate)
+RpcHandler::RpcHandler(CopresenceDelegate* delegate,
+                       DirectiveHandler* directive_handler)
     : delegate_(delegate),
+      directive_handler_(directive_handler),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
           kMaxInvalidTokens),
       server_post_callback_(base::Bind(&RpcHandler::SendHttpPost,
-                                       base::Unretained(this))) {}
+                                       base::Unretained(this))) {
+    DCHECK(delegate_);
+    DCHECK(directive_handler_);
+  }
 
 RpcHandler::~RpcHandler() {
   for (HttpPost* post : pending_posts_) {
     delete post;
   }
 
-  if (delegate_ && delegate_->GetWhispernetClient()) {
+  if (delegate_->GetWhispernetClient()) {
+    // TODO(ckehoe): Use CancelableCallbacks instead.
     delegate_->GetWhispernetClient()->RegisterTokensCallback(
         WhispernetClient::TokensCallback());
     delegate_->GetWhispernetClient()->RegisterSamplesCallback(
@@ -277,27 +285,6 @@ void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
   }
 }
 
-void RpcHandler::ConnectToWhispernet() {
-  // Check if we are already connected.
-  if (directive_handler_)
-    return;
-
-  WhispernetClient* whispernet_client = delegate_->GetWhispernetClient();
-
-  // |directive_handler_| will be destructed with us, so unretained is safe.
-  directive_handler_.reset(new DirectiveHandler);
-  directive_handler_->Initialize(
-      base::Bind(&WhispernetClient::DecodeSamples,
-                 base::Unretained(whispernet_client)),
-      base::Bind(&RpcHandler::AudioDirectiveListToWhispernetConnector,
-                 base::Unretained(this)));
-
-  whispernet_client->RegisterTokensCallback(
-      base::Bind(&RpcHandler::ReportTokens,
-                 // On destruction, this callback will be disconnected.
-                 base::Unretained(this)));
-}
-
 // Private methods
 
 void RpcHandler::RegisterResponseHandler(
@@ -383,12 +370,8 @@ void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,
         response.update_signals_response();
     DispatchMessages(update_response.message());
 
-    if (directive_handler_.get()) {
-      for (const Directive& directive : update_response.directive())
-        directive_handler_->AddDirective(directive);
-    } else {
-      DVLOG(1) << "No directive handler.";
-    }
+    for (const Directive& directive : update_response.directive())
+      directive_handler_->AddDirective(directive);
 
     for (const Token& token : update_response.token()) {
       switch (token.status()) {
@@ -433,9 +416,6 @@ void RpcHandler::ProcessRemovedOperations(const ReportRequest& request) {
 }
 
 void RpcHandler::AddPlayingTokens(ReportRequest* request) {
-  if (!directive_handler_)
-    return;
-
   const std::string& audible_token =
       directive_handler_->GetCurrentAudioToken(AUDIBLE);
   const std::string& inaudible_token =
@@ -472,6 +452,8 @@ void RpcHandler::DispatchMessages(
   }
 }
 
+// TODO(ckehoe): Pass in the version string and
+// group this with the local functions up top.
 RequestHeader* RpcHandler::CreateRequestHeader(
     const std::string& client_name,
     const std::string& device_id) const {
@@ -536,18 +518,6 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
 
   http_post->Start(base::Bind(callback, http_post));
   pending_posts_.insert(http_post);
-}
-
-void RpcHandler::AudioDirectiveListToWhispernetConnector(
-    const std::string& token,
-    AudioType type,
-    const WhispernetClient::SamplesCallback& samples_callback) {
-  DCHECK(type == AUDIBLE || type == INAUDIBLE);
-  WhispernetClient* whispernet_client = delegate_->GetWhispernetClient();
-  if (whispernet_client) {
-    whispernet_client->RegisterSamplesCallback(samples_callback);
-    whispernet_client->EncodeToken(token, type);
-  }
 }
 
 }  // namespace copresence

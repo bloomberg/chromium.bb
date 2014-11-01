@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "components/copresence/public/copresence_delegate.h"
+#include "components/copresence/handlers/directive_handler.h"
+#include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/rpc_handler.h"
 
@@ -37,7 +38,7 @@ scoped_ptr<CopresenceManager> CopresenceManager::Create(
 }
 
 
-// Public methods
+// Public functions.
 
 CopresenceManagerImpl::~CopresenceManagerImpl() {
   whispernet_init_callback_.Cancel();
@@ -57,7 +58,6 @@ void CopresenceManagerImpl::ExecuteReportRequest(
   // Check if we are initialized enough to execute this request.
   // If we haven't seen this auth token yet, we need to register for it.
   // TODO(ckehoe): Queue per device ID instead of globally.
-  DCHECK(rpc_handler_);
   const std::string& auth_token = delegate_->GetAuthToken();
   if (!rpc_handler_->IsRegisteredForToken(auth_token)) {
     std::string token_str = auth_token.empty() ? "(anonymous)" :
@@ -87,18 +87,20 @@ void CopresenceManagerImpl::ExecuteReportRequest(
   }
 }
 
-// Private methods
+
+// Private functions.
 
 CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
-    : init_failed_(false),
+    : delegate_(delegate),
+      pending_init_operations_(0),
       // This callback gets cancelled when we are destroyed.
       whispernet_init_callback_(
           base::Bind(&CopresenceManagerImpl::InitStepComplete,
                      base::Unretained(this),
                      "Whispernet proxy initialization")),
-      pending_init_operations_(0),
-      delegate_(delegate),
-      rpc_handler_(new RpcHandler(delegate)) {
+      init_failed_(false),
+      directive_handler_(new DirectiveHandler),
+      rpc_handler_(new RpcHandler(delegate, directive_handler_.get())) {
   DCHECK(delegate);
   DCHECK(delegate->GetWhispernetClient());
 
@@ -111,9 +113,14 @@ void CopresenceManagerImpl::CompleteInitialization() {
   if (pending_init_operations_)
     return;
 
-  DCHECK(rpc_handler_.get());
-  if (!init_failed_)
-    rpc_handler_->ConnectToWhispernet();
+  if (!init_failed_) {
+    // When RpcHandler is destroyed, it disconnects this callback.
+    // TODO(ckehoe): Use a CancelableCallback instead.
+    delegate_->GetWhispernetClient()->RegisterTokensCallback(
+        base::Bind(&RpcHandler::ReportTokens,
+                   base::Unretained(rpc_handler_.get())));
+    directive_handler_->Start(delegate_->GetWhispernetClient());
+  }
 
   // Not const because SendReportRequest takes ownership of the ReportRequests.
   // This is ok though, as the entire queue is deleted afterwards.

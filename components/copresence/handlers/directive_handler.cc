@@ -4,6 +4,7 @@
 
 #include "components/copresence/handlers/directive_handler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
@@ -11,20 +12,38 @@
 
 namespace copresence {
 
-DirectiveHandler::DirectiveHandler() {}
+// Public functions
 
-void DirectiveHandler::Initialize(
-    const AudioManager::DecodeSamplesCallback& decode_cb,
-    const AudioManager::EncodeTokenCallback& encode_cb) {
-  audio_handler_.reset(new AudioDirectiveHandler());
-  audio_handler_->Initialize(decode_cb, encode_cb);
-}
+DirectiveHandler::DirectiveHandler()
+  : audio_handler_(new AudioDirectiveHandler),
+    whispernet_client_(nullptr) {}
 
-DirectiveHandler::~DirectiveHandler() {
+DirectiveHandler::~DirectiveHandler() {}
+
+void DirectiveHandler::Start(WhispernetClient* whispernet_client) {
+  DCHECK(whispernet_client);
+  whispernet_client_ = whispernet_client;
+
+  // TODO(ckehoe): Just pass Whispernet all the way down to the AudioManager.
+  //               We shouldn't be concerned with these details here.
+  audio_handler_->Initialize(
+      base::Bind(&WhispernetClient::DecodeSamples,
+                 base::Unretained(whispernet_client_)),
+      base::Bind(&DirectiveHandler::EncodeToken,
+                 base::Unretained(this)));
+
+  // Run all the queued directives.
+  for (const auto& op_id : pending_directives_) {
+    for (const Directive& directive : op_id.second) {
+      StartDirective(op_id.first, directive);
+    }
+  }
+  pending_directives_.clear();
 }
 
 void DirectiveHandler::AddDirective(const Directive& directive) {
-  // We only handle Token directives; wifi/ble requests aren't implemented.
+  // We only handle transmit and receive directives.
+  // WiFi and BLE scans aren't implemented.
   DCHECK_EQ(directive.instruction_type(), TOKEN);
 
   std::string op_id;
@@ -37,25 +56,57 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
     return;
   }
 
-  const TokenInstruction& ti = directive.token_instruction();
-  DCHECK(audio_handler_.get()) << "Clients must call Initialize() before "
-                               << "any other DirectiveHandler methods.";
-  // We currently only support audio.
-  if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||
-      ti.medium() == AUDIO_AUDIBLE_DTMF) {
-    audio_handler_->AddInstruction(
-        ti, op_id, base::TimeDelta::FromMilliseconds(directive.ttl_millis()));
+  if (!whispernet_client_) {
+    pending_directives_[op_id].push_back(directive);
+  } else {
+    StartDirective(op_id, directive);
   }
 }
 
 void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
-  DCHECK(audio_handler_.get()) << "Clients must call Initialize() before "
-                               << "any other DirectiveHandler methods.";
-  audio_handler_->RemoveInstructions(op_id);
+  // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
+  if (whispernet_client_) {
+    audio_handler_->RemoveInstructions(op_id);
+  } else {
+    pending_directives_.erase(op_id);
+  }
 }
 
 const std::string DirectiveHandler::GetCurrentAudioToken(AudioType type) const {
-  return audio_handler_->PlayingToken(type);
+  // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
+  return whispernet_client_ ? audio_handler_->PlayingToken(type) : "";
+}
+
+
+// Private functions
+
+void DirectiveHandler::StartDirective(const std::string& op_id,
+                                      const Directive& directive) {
+  const TokenInstruction& ti = directive.token_instruction();
+  if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||
+      ti.medium() == AUDIO_AUDIBLE_DTMF) {
+    audio_handler_->AddInstruction(
+        ti, op_id, base::TimeDelta::FromMilliseconds(directive.ttl_millis()));
+  } else {
+    // We should only get audio directives.
+    NOTREACHED() << "Received directive for unimplemented medium "
+                 << ti.medium();
+  }
+}
+
+// TODO(ckehoe): We don't need to re-register the samples callback
+// every time. Which means this whole function is unnecessary.
+void DirectiveHandler::EncodeToken(
+    const std::string& token,
+    AudioType type,
+    const WhispernetClient::SamplesCallback& samples_callback) {
+  DCHECK(type == AUDIBLE || type == INAUDIBLE);
+  // TODO(ckehoe): This null check shouldn't be necessary.
+  // It's only here for tests.
+  if (whispernet_client_) {
+    whispernet_client_->RegisterSamplesCallback(samples_callback);
+    whispernet_client_->EncodeToken(token, type);
+  }
 }
 
 }  // namespace copresence
