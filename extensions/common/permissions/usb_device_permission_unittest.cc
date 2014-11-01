@@ -27,13 +27,7 @@ TEST(USBDevicePermissionTest, PermissionDataOrder) {
             UsbDevicePermissionData(0x02ad, 0x138c, 0));
 }
 
-#if defined(ENABLE_EXTENSIONS)
-#define MAYBE_PermissionMessage PermissionMessage
-#else
-#define MAYBE_PermissionMessage DISABLED_PermissionMessage
-#endif  // defined(ENABLE_EXTENSIONS)
-
-TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
+TEST(USBDevicePermissionTest, PermissionMessage) {
   const char* const kMessages[] = {
       "Access the USB device PVR Mass Storage from HUMAX Co., Ltd.",
       "Access the USB device from HUMAX Co., Ltd.",

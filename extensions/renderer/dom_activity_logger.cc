@@ -47,7 +47,6 @@ DOMActivityLogger::~DOMActivityLogger() {}
 
 void DOMActivityLogger::AttachToWorld(int world_id,
                                       const std::string& extension_id) {
-#if defined(ENABLE_EXTENSIONS)
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
   if (!blink::hasDOMActivityLogger(world_id,
@@ -57,7 +56,6 @@ void DOMActivityLogger::AttachToWorld(int world_id,
                                 WebString::fromUTF8(extension_id),
                                 logger);
   }
-#endif
 }
 
 void DOMActivityLogger::logGetter(const WebString& api_name,

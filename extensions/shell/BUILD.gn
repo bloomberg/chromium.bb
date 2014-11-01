@@ -4,6 +4,8 @@
 
 import("//tools/grit/grit_rule.gni")
 
+assert(enable_extensions)
+
 grit("resources") {
   source = "app_shell_resources.grd"
   outputs = [

@@ -189,7 +189,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       webrequest_used_(false) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
-      command_line.HasSwitch(extensions::switches::kExtensionProcess) ||
+      command_line.HasSwitch(switches::kExtensionProcess) ||
       command_line.HasSwitch(::switches::kSingleProcess);
 
   if (is_extension_process_) {
@@ -260,10 +260,6 @@ void Dispatcher::DidCreateScriptContext(
     const v8::Handle<v8::Context>& v8_context,
     int extension_group,
     int world_id) {
-#if !defined(ENABLE_EXTENSIONS)
-  return;
-#endif
-
   const Extension* extension =
       GetExtensionFromFrameAndWorld(frame, world_id, false);
   const Extension* effective_extension =
@@ -326,7 +322,7 @@ void Dispatcher::DidCreateScriptContext(
 
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
-  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("denyAppView");
   }
 
@@ -340,7 +336,7 @@ void Dispatcher::DidCreateScriptContext(
             .is_available()) {
       module_system->Require("webViewExperimental");
     }
-  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+  } else if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("denyWebView");
   }
 
@@ -393,10 +389,6 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
     frame->document().insertStyleSheet(WebString::fromUTF8(stylesheet));
   }
 
-  // This preprocessor directive is because this file is still built in Android
-  // builds, but OptionsPageInfo is not. For Android builds, exclude this block
-  // of code to prevent link errors.
-#if defined(ENABLE_EXTENSIONS)
   // If this is an extension options page, and the extension has opted into
   // using Chrome styles, then insert the Chrome extension stylesheet.
   if (extension && extension->is_extension() &&
@@ -407,7 +399,6 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
                                 .GetRawDataResource(IDR_EXTENSION_CSS)
                                 .as_string()));
   }
-#endif
 
   content_watcher_->DidCreateDocumentElement(frame);
 }
@@ -830,8 +821,8 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
   if (is_webkit_initialized_) {
-    extensions::DOMActivityLogger::AttachToWorld(
-        extensions::DOMActivityLogger::kMainWorldId, extension_id);
+    DOMActivityLogger::AttachToWorld(
+        DOMActivityLogger::kMainWorldId, extension_id);
 
     InitOriginPermissions(extension);
   }

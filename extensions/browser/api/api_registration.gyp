@@ -15,16 +15,10 @@
         '../../common/api/schemas.gypi',
       ],
       'dependencies': [
+        '<(DEPTH)/device/serial/serial.gyp:device_serial_mojo',
+        '<(DEPTH)/extensions/common/api/api.gyp:cast_channel_proto',
         '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
-      ],
-      'conditions': [
-        ['enable_extensions==1', {
-          'dependencies': [
-            '<(DEPTH)/device/serial/serial.gyp:device_serial_mojo',
-            '<(DEPTH)/extensions/common/api/api.gyp:cast_channel_proto',
-            '<(DEPTH)/skia/skia.gyp:skia',
-          ],
-        }],
+        '<(DEPTH)/skia/skia.gyp:skia',
       ],
     },
   ],

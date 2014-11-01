@@ -4,6 +4,8 @@
 
 import("//tools/grit/grit_rule.gni")
 
+assert(enable_extensions)
+
 # GYP version: extensions/extensions_strings.gyp:extensions_strings
 grit("strings") {
   # This target is in this directory since it matches the output grit path for

@@ -27,7 +27,6 @@ namespace extensions {
 
 void RegisterCommonManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
-#if defined(ENABLE_EXTENSIONS)
   (new BackgroundManifestHandler)->Register();
   (new BluetoothManifestHandler)->Register();
   (new CSPHandler(false))->Register();
@@ -48,7 +47,6 @@ void RegisterCommonManifestHandlers() {
   (new SocketsManifestHandler)->Register();
   (new WebAccessibleResourcesHandler)->Register();
   (new WebviewHandler)->Register();
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 }  // namespace extensions

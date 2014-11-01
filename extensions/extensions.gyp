@@ -47,6 +47,10 @@
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+        # For Mojo generated headers for generated_api.cc.
+        '../device/serial/serial.gyp:device_serial_mojo',
+        '../device/usb/usb.gyp:device_usb',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
         '../third_party/re2/re2.gyp:re2',
@@ -55,6 +59,7 @@
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '../url/url.gyp:url_lib',
         '../third_party/libxml/libxml.gyp:libxml',
+        'common/api/api.gyp:extensions_api',
         'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
         'extensions_common_constants',
@@ -258,36 +263,6 @@
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
-        ['enable_extensions==1', {
-          'dependencies': [
-            'common/api/api.gyp:extensions_api',
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            # For Mojo generated headers for generated_api.cc.
-            '../device/serial/serial.gyp:device_serial_mojo',
-            '../device/usb/usb.gyp:device_usb',
-          ],
-        }, {  # enable_extensions == 0
-          'sources!': [
-            'common/api/bluetooth/bluetooth_manifest_data.cc',
-            'common/api/bluetooth/bluetooth_manifest_data.h',
-            'common/api/bluetooth/bluetooth_manifest_handler.cc',
-            'common/api/bluetooth/bluetooth_manifest_handler.h',
-            'common/api/bluetooth/bluetooth_manifest_permission.cc',
-            'common/api/bluetooth/bluetooth_manifest_permission.h',
-            'common/api/messaging/message.h',
-            'common/api/sockets/sockets_manifest_data.cc',
-            'common/api/sockets/sockets_manifest_data.h',
-            'common/api/sockets/sockets_manifest_handler.cc',
-            'common/api/sockets/sockets_manifest_handler.h',
-            'common/api/sockets/sockets_manifest_permission.cc',
-            'common/api/sockets/sockets_manifest_permission.h',
-            'common/extension_api.cc',
-            'common/manifest_handlers/externally_connectable.cc',
-            'common/manifest_handlers/externally_connectable.h',
-            'common/manifest_handlers/options_page_info.cc',
-            'common/manifest_handlers/options_page_info.h',
-          ],
-        }],
         ['disable_nacl==0', {
           # NaClModulesHandler does not use any code in NaCl, so no dependency
           # on nacl_common.
@@ -787,19 +762,12 @@
         'browser/warning_set.h',
       ],
       'conditions': [
-        ['enable_extensions==0', {
-          # Exclude all API implementations and the ExtensionsApiClient
-          # interface. Moving an API from src/chrome to src/extensions implies
-          # it can be cleanly disabled with enable_extensions==0.
-          # TODO: Eventually the entire extensions module should not be built
-          # when enable_extensions==0.
-          'sources/': [
-            ['exclude', '^browser/'],
-          ],
+        # This condition exists only because the extensions_common_constants
+        # target is always built and thus this file gets evaluated by GYP.
+        # This does not need to be replicated into extensions/browser/BUILD.gn.
+        ['OS == "ios" or OS == "android"', {
           'dependencies!': [
             '../components/components.gyp:storage_monitor',
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            '../device/serial/serial.gyp:device_serial',
           ],
         }],
         ['use_openssl==1', {

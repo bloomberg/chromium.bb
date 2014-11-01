@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//build/json_schema_api.gni")
 import("schemas.gni")
+
+assert(enable_extensions)
 
 # GYP version: extensions/common/api/api.gyp:extensions_api
 json_schema_api("api") {
@@ -16,12 +19,10 @@ json_schema_api("api_registration") {
   impl_dir = "//extensions/browser/api"
   bundle_registration = true
 
-  deps = [ ":api" ]
-  if (!is_android) {
-    deps += [
-      "//device/serial",
-      "//extensions/common/api/cast_channel:cast_channel_proto",
-      "//skia",
-    ]
-  }
+  deps = [
+    ":api",
+    "//device/serial",
+    "//extensions/common/api/cast_channel:cast_channel_proto",
+    "//skia",
+  ]
 }

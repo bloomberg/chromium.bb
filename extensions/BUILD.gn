@@ -5,6 +5,8 @@
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
+assert(enable_extensions)
+
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
 group("extensions_resources") {
   deps = [
@@ -48,14 +50,10 @@ grit("extensions_renderer_resources") {
   ]
   grit_flags = [ "-E", "mojom_root=" + rebase_path(root_gen_dir) ]
 
-  # TODO(GYP,cjhopman): GYP has this dependency guarded by enable_extensions==1,
-  # but I don't know how that possibly works.
   deps = [
     "//device/serial:serial_mojo",
   ]
 }
-
-if (enable_extensions) {
 
 source_set("test_support") {
   testonly = true
@@ -276,6 +274,4 @@ test("extensions_unittests") {
     ]
   }
 }
-}
-
 }
