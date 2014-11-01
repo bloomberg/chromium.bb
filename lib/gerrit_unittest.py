@@ -270,9 +270,9 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertTrue(helper.IsChangeCommitted(gpatch2.gerrit_number))
 
   @cros_test_lib.NetworkTest()
-  def test010SubmitUsingGit(self):
+  def test010SubmitUsingGit(self, projectName='test010', submitC=True):
     """Tests that we can rebase & submit a change."""
-    project = self.createProject('test010')
+    project = self.createProject(projectName)
 
     # Init the repository first.
     helper = self._GetHelper()
@@ -309,12 +309,18 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertTrue(helper.IsChangeCommitted(gpatchB.gerrit_number))
 
     # Submit patch C and D.
-    self.assertTrue(helper.SubmitChangeUsingGit(gpatchC, clone_path2))
+    if submitC:
+      self.assertTrue(helper.SubmitChangeUsingGit(gpatchC, clone_path2))
     self.assertTrue(helper.SubmitChangeUsingGit(gpatchD, clone_path2))
 
     # Check that C and D are submitted.
     self.assertTrue(helper.IsChangeCommitted(gpatchC.gerrit_number))
     self.assertTrue(helper.IsChangeCommitted(gpatchD.gerrit_number))
+
+  @cros_test_lib.NetworkTest()
+  def test011SubmitStackUsingGit(self):
+    """Test case where we submit C implicitly, via submitting D."""
+    self.test010SubmitUsingGit('test011', submitC=False)
 
 
 if __name__ == '__main__':
