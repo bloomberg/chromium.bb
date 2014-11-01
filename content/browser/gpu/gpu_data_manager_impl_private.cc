@@ -301,6 +301,7 @@ unsigned int GpuDataManagerImplPrivate::GetDisplayCount() const {
 }
 
 gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfo() const {
+  VLOG(2) << "GpuDataManagerImplPrivate::GetGPUInfo()";
   return gpu_info_;
 }
 
@@ -904,6 +905,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       display_count_(0),
       gpu_process_accessible_(true),
       finalized_(false) {
+  VLOG(2) << "GpuDataManagerImplPrivate::GpuDataManagerImplPrivate()";
   DCHECK(owner_);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -922,6 +924,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
+  VLOG(2) << "GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate()";
 #if defined(OS_MACOSX)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
@@ -931,6 +934,8 @@ void GpuDataManagerImplPrivate::InitializeImpl(
     const std::string& gpu_blacklist_json,
     const std::string& gpu_driver_bug_list_json,
     const gpu::GPUInfo& gpu_info) {
+  VLOG(2) << "GpuDataManagerImplPrivate::InitializeImpl()";
+
   const bool log_gpu_control_list_decisions =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLogGpuControlListDecisions);
