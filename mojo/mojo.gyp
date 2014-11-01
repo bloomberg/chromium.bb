@@ -4,7 +4,6 @@
 
 {
   'includes': [
-    'mojo_converters.gypi',
     'mojo_variables.gypi',
   ],
   'targets': [
@@ -17,11 +16,11 @@
         'mojo_application_manager',
         'mojo_application_manager_unittests',
         'mojo_base.gyp:mojo_base',
-        'mojo_geometry_lib',
-        'mojo_input_events_lib',
+        'mojo_geometry_converters.gyp:mojo_geometry_lib',
+        'mojo_input_events_converters.gyp:mojo_input_events_lib',
         'mojo_js_unittests',
-        'mojo_surfaces_lib',
-        'mojo_surfaces_lib_unittests',
+        'mojo_surface_converters.gyp:mojo_surfaces_lib',
+        'mojo_surface_converters.gyp:mojo_surfaces_lib_unittests',
         'services/public/mojo_services_public.gyp:mojo_services_public',
         'public/mojo_public.gyp:mojo_public',
       ],
