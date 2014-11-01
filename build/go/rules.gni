@@ -53,9 +53,8 @@ template("go_test_binary") {
       rebase_path("//", root_build_dir),
       "-I" + rebase_path("//"),
       " -L" + rebase_path(target_out_dir) +
-      " -L" + rebase_path(root_build_dir + "/obj/third_party/libevent") +
       " -l" + static_library_name +
-      " -lstdc++ -lpthread -lm -lglib-2.0 -levent",
+      " -lstdc++ -lpthread -lm -lglib-2.0",
       "test", "-c",
     ] + rebase_path(invoker.sources, build_dir)
   }
