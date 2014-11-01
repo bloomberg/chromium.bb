@@ -280,10 +280,7 @@ void PepperInputHandler::UpdateMouseCursor() {
                                *cursor_image_,
                                cursor_hotspot_);
   } else {
-    // If there is no cursor shape stored, either because the host never
-    // supplied one, or we were previously in mouse-lock mode, then use
-    // a standard arrow pointer.
-    pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_POINTER);
+    pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_NONE);
   }
 }
 
