@@ -131,9 +131,6 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
   }
   glFlush();
 
-  // Disable the fade-in animation as the layer is changed.
-  ScopedCAActionDisabler disabler;
-
   // Set the parameters that will be used to allocate the CALayer to draw the
   // texture into.
   share_group_context_.reset(CGLRetainContext(context));

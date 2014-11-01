@@ -88,7 +88,7 @@ class ImageTransportSurfaceFBO
   // ImageTransportSurface implementation
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
-  void OnResize(gfx::Size size, float scale_factor) override;
+  void OnResize(gfx::Size pixel_size, float scale_factor) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
   void WakeUpGpu() override;
 
@@ -100,7 +100,8 @@ class ImageTransportSurfaceFBO
 
   void AdjustBufferAllocation();
   void DestroyFramebuffer();
-  void CreateFramebuffer();
+  void AllocateOrResizeFramebuffer(
+      const gfx::Size& pixel_size, float scale_factor);
 
   scoped_ptr<StorageProvider> storage_provider_;
 
@@ -116,8 +117,8 @@ class ImageTransportSurfaceFBO
   // Weak pointer to the context that this was last made current to.
   gfx::GLContext* context_;
 
-  gfx::Size size_;
-  gfx::Size rounded_size_;
+  gfx::Size pixel_size_;
+  gfx::Size rounded_pixel_size_;
   float scale_factor_;
 
   // Whether or not we've successfully made the surface current once.
