@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/services/broker_process.h"
+#include "sandbox/linux/syscall_broker/broker_process.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -40,7 +40,9 @@ class BrokerProcessTestHelper {
 
 namespace {
 
-bool NoOpCallback() { return true; }
+bool NoOpCallback() {
+  return true;
+}
 
 }  // namespace
 
@@ -88,10 +90,8 @@ void TestOpenFilePerms(bool fast_check_in_client, int denied_errno) {
   write_whitelist.push_back(kW_WhiteListed);
   write_whitelist.push_back(kRW_WhiteListed);
 
-  BrokerProcess open_broker(denied_errno,
-                            read_whitelist,
-                            write_whitelist,
-                            fast_check_in_client);
+  BrokerProcess open_broker(
+      denied_errno, read_whitelist, write_whitelist, fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
 
   int fd = -1;
@@ -368,10 +368,7 @@ void TestOpenComplexFlags(bool fast_check_in_client) {
   std::vector<std::string> whitelist;
   whitelist.push_back(kCpuInfo);
 
-  BrokerProcess open_broker(EPERM,
-                            whitelist,
-                            whitelist,
-                            fast_check_in_client);
+  BrokerProcess open_broker(EPERM, whitelist, whitelist, fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
   // Test that we do the right thing for O_CLOEXEC and O_NONBLOCK.
   int fd = -1;
@@ -437,8 +434,9 @@ SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
   // descriptors a process can have: it only limits the highest value that can
   // be assigned to newly-created descriptors allocated by the process.)
   const rlim_t fd_limit =
-      1 + *std::max_element(available_fds,
-                            available_fds + arraysize(available_fds));
+      1 +
+      *std::max_element(available_fds,
+                        available_fds + arraysize(available_fds));
 
   // Valgrind doesn't allow changing the hard descriptor limit, so we only
   // change the soft descriptor limit here.

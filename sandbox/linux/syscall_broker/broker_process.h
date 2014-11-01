@@ -10,14 +10,20 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
+#include "sandbox/linux/syscall_broker/broker_policy.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 
+namespace syscall_broker {
+class BrokerClient;
+}
+
 // Create a new "broker" process to which we can send requests via an IPC
-// channel.
+// channel by forking the current process.
 // This is a low level IPC mechanism that is suitable to be called from a
 // signal handler.
 // A process would typically create a broker process before entering
@@ -36,11 +42,11 @@ class SANDBOX_EXPORT BrokerProcess {
   // A file available read-write should be listed in both.
   // |fast_check_in_client| and |quiet_failures_for_tests| are reserved for
   // unit tests, don't use it.
-  explicit BrokerProcess(int denied_errno,
-                         const std::vector<std::string>& allowed_r_files,
-                         const std::vector<std::string>& allowed_w_files,
-                         bool fast_check_in_client = true,
-                         bool quiet_failures_for_tests = false);
+  BrokerProcess(int denied_errno,
+                const std::vector<std::string>& allowed_r_files,
+                const std::vector<std::string>& allowed_w_files,
+                bool fast_check_in_client = true,
+                bool quiet_failures_for_tests = false);
   ~BrokerProcess();
   // Will initialize the broker process. There should be no threads at this
   // point, since we need to fork().
@@ -62,41 +68,17 @@ class SANDBOX_EXPORT BrokerProcess {
   int broker_pid() const { return broker_pid_; }
 
  private:
-  enum IPCCommands {
-    kCommandInvalid = 0,
-    kCommandOpen,
-    kCommandAccess,
-  };
-  int PathAndFlagsSyscall(enum IPCCommands command_type,
-                          const char* pathname,
-                          int flags) const;
-  bool HandleRequest() const;
-  bool HandleRemoteCommand(IPCCommands command_type,
-                           int reply_ipc,
-                           const Pickle& read_pickle,
-                           PickleIterator iter) const;
+  bool initialized_;  // Whether we've been through Init() yet.
+  bool is_child_;     // Whether we're the child (broker process).
+  bool fast_check_in_client_;
+  bool quiet_failures_for_tests_;
+  pid_t broker_pid_;                     // The PID of the broker (child).
+  syscall_broker::BrokerPolicy policy_;  // The sandboxing policy.
+  scoped_ptr<syscall_broker::BrokerClient>
+      broker_client_;  // Can only exist if is_child_ is true.
 
-  void AccessFileForIPC(const std::string& requested_filename,
-                        int mode,
-                        Pickle* write_pickle) const;
-  void OpenFileForIPC(const std::string& requested_filename,
-                      int flags,
-                      Pickle* write_pickle,
-                      std::vector<int>* opened_files) const;
-  bool GetFileNameIfAllowedToAccess(const char*, int, const char**) const;
-  bool GetFileNameIfAllowedToOpen(const char*, int, const char**) const;
-  const int denied_errno_;
-  bool initialized_;               // Whether we've been through Init() yet.
-  bool is_child_;                  // Whether we're the child (broker process).
-  bool fast_check_in_client_;      // Whether to forward a request that we know
-                                   // will be denied to the broker.
-  bool quiet_failures_for_tests_;  // Disable certain error message when
-                                   // testing for failures.
-  pid_t broker_pid_;               // The PID of the broker (child).
-  const std::vector<std::string> allowed_r_files_;  // Files allowed for read.
-  const std::vector<std::string> allowed_w_files_;  // Files allowed for write.
   int ipc_socketpair_;  // Our communication channel to parent or child.
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BrokerProcess);
+  DISALLOW_COPY_AND_ASSIGN(BrokerProcess);
 
   friend class BrokerProcessTestHelper;
 };

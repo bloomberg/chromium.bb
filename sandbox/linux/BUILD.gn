@@ -67,10 +67,10 @@ source_set("sandbox_linux_test_utils") {
 # The main sandboxing test target.
 test("sandbox_linux_unittests") {
   sources = [
-    "services/broker_process_unittest.cc",
     "services/scoped_process_unittest.cc",
     "services/thread_helpers_unittests.cc",
     "services/yama_unittests.cc",
+    "syscall_broker/broker_process_unittest.cc",
     "tests/main.cc",
     "tests/scoped_temporary_file.cc",
     "tests/scoped_temporary_file.h",
@@ -221,8 +221,6 @@ if (is_linux) {
 
 component("sandbox_services") {
   sources = [
-    "services/broker_process.cc",
-    "services/broker_process.h",
     "services/init_process_reaper.cc",
     "services/init_process_reaper.h",
     "services/scoped_process.cc",
@@ -231,6 +229,15 @@ component("sandbox_services") {
     "services/thread_helpers.h",
     "services/yama.h",
     "services/yama.cc",
+    "syscall_broker/broker_client.cc",
+    "syscall_broker/broker_client.h",
+    "syscall_broker/broker_common.h",
+    "syscall_broker/broker_host.cc",
+    "syscall_broker/broker_host.h",
+    "syscall_broker/broker_policy.cc",
+    "syscall_broker/broker_policy.h",
+    "syscall_broker/broker_process.cc",
+    "syscall_broker/broker_process.h",
   ]
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
