@@ -7,7 +7,6 @@ Loaded modules:
     extensions
     host
     main
-    platform
     screencast
     sdk
     toolbox

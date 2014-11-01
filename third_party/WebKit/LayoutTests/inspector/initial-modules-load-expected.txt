@@ -9,7 +9,6 @@ Loaded modules:
     extensions
     host
     main
-    platform
     screencast
     sdk
     toolbox
@@ -25,7 +24,6 @@ Loaded modules:
     extensions
     host
     main
-    platform
     screencast
     sdk
     toolbox
@@ -42,7 +40,6 @@ Loaded modules:
     host
     main
     network
-    platform
     screencast
     sdk
     source_frame
@@ -60,7 +57,6 @@ Loaded modules:
     host
     main
     network
-    platform
     screencast
     sdk
     source_frame
@@ -79,7 +75,6 @@ Loaded modules:
     host
     main
     network
-    platform
     screencast
     sdk
     source_frame
