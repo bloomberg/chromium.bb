@@ -1346,6 +1346,13 @@ TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
   EXPECT_TRUE(tiling->eviction_tiles_cache_valid());
   tiling->RemoveTileAt(0, 0, nullptr);
   EXPECT_FALSE(tiling->eviction_tiles_cache_valid());
+
+  it = PictureLayerTiling::TilingEvictionTileIterator(
+      tiling.get(), SMOOTHNESS_TAKES_PRIORITY,
+      PictureLayerTiling::NOW_AND_REQUIRED_FOR_ACTIVATION);
+  EXPECT_TRUE(tiling->eviction_tiles_cache_valid());
+  tiling->Reset();
+  EXPECT_FALSE(tiling->eviction_tiles_cache_valid());
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {

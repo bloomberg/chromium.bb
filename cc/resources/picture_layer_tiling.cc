@@ -145,6 +145,7 @@ Tile* PictureLayerTiling::CreateTile(int i,
     tile->set_tiling_index(i, j);
     tiles_[key] = tile;
   }
+  eviction_tiles_cache_valid_ = false;
   return tile.get();
 }
 
@@ -486,6 +487,7 @@ void PictureLayerTiling::Reset() {
       recycled_twin->RemoveTileAt(it->first.first, it->first.second, NULL);
   }
   tiles_.clear();
+  eviction_tiles_cache_valid_ = false;
 }
 
 gfx::Rect PictureLayerTiling::ComputeSkewport(
