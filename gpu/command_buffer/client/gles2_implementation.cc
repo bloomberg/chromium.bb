@@ -3953,9 +3953,6 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
     return 0;
   }
 
-  // Flush the command stream to ensure ordering in case the newly
-  // returned image_id has recently been in use with a different buffer.
-  helper_->CommandBufferHelper::Flush();
   int32_t image_id =
       gpu_control_->CreateImage(buffer, width, height, internalformat);
   if (image_id < 0) {
