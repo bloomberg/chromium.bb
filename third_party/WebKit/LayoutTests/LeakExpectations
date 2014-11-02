@@ -50,7 +50,6 @@ crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
 
 crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
 crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
-crbug.com/364417 fast/dom/shadow/drop-event-for-input-in-shadow.html [ Leak ]
 crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
 crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
