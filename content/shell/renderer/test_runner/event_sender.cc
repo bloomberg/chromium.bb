@@ -1361,7 +1361,11 @@ void EventSender::KeyDown(const std::string& code_str,
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;
     event_char.type = WebInputEvent::Char;
-    event_char.keyIdentifier[0] = '\0';
+    // keyIdentifier is an empty string, unless the Enter key was pressed.
+    // This behavior is not standard (keyIdentifier itself is not even a
+    // standard any more), but it matches the actual behavior in Blink.
+    if (code != ui::VKEY_RETURN)
+      event_char.keyIdentifier[0] = '\0';
     view_->handleInputEvent(event_char);
   }
 
