@@ -846,6 +846,11 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              NEEDS_TEST_SERVER);
 }
 
+// There is a problem of missing keyup events with the command key after
+// the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
+// This test is disabled on only the Mac until the problem is resolved.
+// See http://crbug.com/425859 for more information.
+#if !defined(OS_MACOSX)
 // Tests that Ctrl+Click/Cmd+Click on a link fires up the newwindow API.
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_OpenInNewTab) {
   content::WebContents* embedder_web_contents = NULL;
@@ -871,6 +876,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_OpenInNewTab) {
   // Wait for the embedder to receive a 'newwindow' event.
   ASSERT_TRUE(done_listener->WaitUntilSatisfied());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        NewWindow_OpenerDestroyedWhileUnattached) {
