@@ -478,9 +478,47 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     EXPECT_TRUE(m_didFinishLoading);
 }
 
+// Test a cross-origin URL redirect without Access Control set.
+TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
+{
+    KURL url = toKURL("http://www.test.com/RedirectCrossOriginFailure.html");
+    char redirect[] = "http://www.other.com/RedirectCrossOriginFailure.html";  // Cross-origin
+    KURL redirectURL;
+
+    WebURLRequest request;
+    request.initialize();
+    request.setURL(url);
+
+    m_expectedRedirectResponse = WebURLResponse();
+    m_expectedRedirectResponse.initialize();
+    m_expectedRedirectResponse.setMIMEType("text/html");
+    m_expectedRedirectResponse.setHTTPStatusCode(301);
+    m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
+    Platform::current()->unitTestSupport()->registerMockedURL(url, m_expectedRedirectResponse, m_frameFilePath);
+
+    m_expectedNewRequest = WebURLRequest();
+    m_expectedNewRequest.initialize();
+    m_expectedNewRequest.setURL(redirectURL);
+
+    m_expectedResponse = WebURLResponse();
+    m_expectedResponse.initialize();
+    m_expectedResponse.setMIMEType("text/html");
+    m_expectedResponse.setHTTPStatusCode(200);
+    Platform::current()->unitTestSupport()->registerMockedURL(redirectURL, m_expectedResponse, m_frameFilePath);
+
+    m_expectedLoader = createAssociatedURLLoader();
+    EXPECT_TRUE(m_expectedLoader);
+    m_expectedLoader->loadAsynchronously(request, this);
+
+    serveRequests();
+    EXPECT_FALSE(m_willSendRequest);
+    EXPECT_TRUE(m_didReceiveResponse);
+    EXPECT_TRUE(m_didReceiveData);
+    EXPECT_TRUE(m_didFinishLoading);
+}
+
 // Test that a cross origin redirect response without CORS headers fails.
-// Disabled, http://crbug.com/240912 .
-TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFailure)
+TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
 {
     KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
     char redirect[] = "http://www.other.com/RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
@@ -490,7 +528,6 @@ TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFai
     request.initialize();
     request.setURL(url);
 
-    // Create a redirect response without CORS headers.
     m_expectedRedirectResponse = WebURLResponse();
     m_expectedRedirectResponse.initialize();
     m_expectedRedirectResponse.setMIMEType("text/html");
@@ -498,17 +535,28 @@ TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFai
     m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
     Platform::current()->unitTestSupport()->registerMockedURL(url, m_expectedRedirectResponse, m_frameFilePath);
 
+    m_expectedNewRequest = WebURLRequest();
+    m_expectedNewRequest.initialize();
+    m_expectedNewRequest.setURL(redirectURL);
+
+    m_expectedResponse = WebURLResponse();
+    m_expectedResponse.initialize();
+    m_expectedResponse.setMIMEType("text/html");
+    m_expectedResponse.setHTTPStatusCode(200);
+    Platform::current()->unitTestSupport()->registerMockedURL(redirectURL, m_expectedResponse, m_frameFilePath);
+
     WebURLLoaderOptions options;
     options.crossOriginRequestPolicy = WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
     m_expectedLoader = createAssociatedURLLoader(options);
     EXPECT_TRUE(m_expectedLoader);
     m_expectedLoader->loadAsynchronously(request, this);
+
     serveRequests();
-    // We should not receive a notification for the redirect or any response.
+    // We should get a notification about access control check failure.
     EXPECT_FALSE(m_willSendRequest);
     EXPECT_FALSE(m_didReceiveResponse);
-    EXPECT_FALSE(m_didReceiveData);
-    EXPECT_FALSE(m_didFail);
+    EXPECT_TRUE(m_didReceiveData);
+    EXPECT_TRUE(m_didFail);
 }
 
 // Test that a cross origin redirect response with CORS headers that allow the requesting origin succeeds.

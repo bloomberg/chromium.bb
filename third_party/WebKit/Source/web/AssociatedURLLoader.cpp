@@ -263,7 +263,7 @@ void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
 
 void AssociatedURLLoader::ClientAdapter::didFailRedirectCheck()
 {
-    m_loader->cancel();
+    didFail(ResourceError());
 }
 
 void AssociatedURLLoader::ClientAdapter::setDelayedError(const ResourceError& error)
