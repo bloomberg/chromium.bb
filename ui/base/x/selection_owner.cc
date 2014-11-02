@@ -247,7 +247,7 @@ bool SelectionOwner::ProcessTarget(XAtom target,
         // We must send the data back in several chunks due to a limitation in
         // the size of X requests. Notify the selection requestor that the data
         // will be sent incrementally by returning data of type "INCR".
-        int length = it->second->size();
+        long length = it->second->size();
         XChangeProperty(x_display_,
                         requestor,
                         property,
