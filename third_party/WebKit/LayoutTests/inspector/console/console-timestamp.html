@@ -5,7 +5,10 @@
 <script>
 function test()
 {
-    var tzOffset = new Date(Date.now()).getTimezoneOffset() * 60 * 1000;
+    // It is essential that we calculate timezone for this particular moment of time
+    // otherwise the time zone offset could be different because of DST.
+    var baseDate = Date.parse("2014-05-13T16:53:20.123Z");
+    var tzOffset = new Date(baseDate).getTimezoneOffset() * 60 * 1000;
     var baseTimestamp = 1400000000000 + tzOffset;
 
     function addMessageWithFixedTimestamp(messageText, timestamp)
