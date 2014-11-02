@@ -2241,6 +2241,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_APPLICATION_INFO_SIZE_SMALL_LABEL" desc="Text displayed instead of the app or extension's size for apps and extensions that are less than 1 megabyte in size.">
         &lt; 1 MB
       </message>
+      <message name="IDS_APPLICATION_INFO_REVOKE_PERMISSION_ALT_TEXT" desc="Alt text displayed on hover (or in a screen reader) on the icon button that revokes (removes) the permission from this app.">
+        Revoke the permission '<ph name="PERMISSION">$1<ex>Access your USB and Bluetooth devices</ex></ph>'
+      </message>
       <message name="IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT" desc="Text displayed in the Permissions area of the dialog if the app has no permissions.">
         This app requires no special permissions.
       </message>

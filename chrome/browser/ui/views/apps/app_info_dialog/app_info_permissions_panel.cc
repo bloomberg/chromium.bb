@@ -40,10 +40,12 @@ const int kSpacingBetweenTextAndRevokeButton = 15;
 const int kIndentationBeforeNestedBullet = 13;
 
 // Creates a close button that calls |callback| on click and can be placed to
-// the right of a bullet in the permissions list.
+// the right of a bullet in the permissions list. The alt-text is set to a
+// revoke message containing the given |permission_message|.
 class RevokeButton : public views::ImageButton, public views::ButtonListener {
  public:
-  explicit RevokeButton(const base::Closure& callback)
+  explicit RevokeButton(const base::Closure& callback,
+                        base::string16 permission_message)
       : views::ImageButton(this), callback_(callback) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SetImage(views::CustomButton::STATE_NORMAL,
@@ -54,6 +56,12 @@ class RevokeButton : public views::ImageButton, public views::ButtonListener {
              rb.GetImageNamed(IDR_DISABLE_P).ToImageSkia());
     SetBorder(scoped_ptr<views::Border>());
     SetSize(GetPreferredSize());
+
+    // Make the button focusable & give it alt-text so permissions can be
+    // revoked using only the keyboard.
+    SetFocusable(true);
+    SetTooltipText(l10n_util::GetStringFUTF16(
+        IDS_APPLICATION_INFO_REVOKE_PERMISSION_ALT_TEXT, permission_message));
   }
   ~RevokeButton() override {}
 
@@ -139,7 +147,7 @@ class BulletedPermissionsList : public views::View {
                             const base::Closure& revoke_callback) {
     RevokeButton* revoke_button = NULL;
     if (!revoke_callback.is_null())
-      revoke_button = new RevokeButton(revoke_callback);
+      revoke_button = new RevokeButton(revoke_callback, message);
 
     views::Label* permission_label = new views::Label(message);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
