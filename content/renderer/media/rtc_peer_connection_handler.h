@@ -108,7 +108,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   bool InitializeForTest(
       const blink::WebRTCConfiguration& server_configuration,
       const blink::WebMediaConstraints& options,
-      PeerConnectionTracker* peer_connection_tracker);
+      const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker);
 
   // blink::WebRTCPeerConnectionHandler implementation
   virtual bool initialize(
@@ -177,8 +177,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Tells the |client_| to close RTCPeerConnection.
   void CloseClientPeerConnection();
 
-  PeerConnectionTracker* peer_connection_tracker();
-
  protected:
   webrtc::PeerConnectionInterface* native_peer_connection() {
     return native_peer_connection_.get();
@@ -222,7 +220,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   ScopedVector<WebRtcMediaStreamAdapter> local_streams_;
 
-  PeerConnectionTracker* peer_connection_tracker_;
+  base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 
   MediaStreamTrackMetrics track_metrics_;
 

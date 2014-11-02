@@ -171,33 +171,36 @@ static void GetNativeRtcConfiguration(
 
 class SessionDescriptionRequestTracker {
  public:
-  SessionDescriptionRequestTracker(RTCPeerConnectionHandler* handler,
-                                   PeerConnectionTracker::Action action)
-      : handler_(handler), action_(action) {}
+  SessionDescriptionRequestTracker(
+      const base::WeakPtr<RTCPeerConnectionHandler>& handler,
+      const base::WeakPtr<PeerConnectionTracker>& tracker,
+      PeerConnectionTracker::Action action)
+      : handler_(handler), tracker_(tracker), action_(action) {}
 
   void TrackOnSuccess(const webrtc::SessionDescriptionInterface* desc) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    std::string value;
-    if (desc) {
-      desc->ToString(&value);
-      value = "type: " + desc->type() + ", sdp: " + value;
-    }
-    if (handler_->peer_connection_tracker()) {
-      handler_->peer_connection_tracker()->TrackSessionDescriptionCallback(
-          handler_, action_, "OnSuccess", value);
+    if (tracker_ && handler_) {
+      std::string value;
+      if (desc) {
+        desc->ToString(&value);
+        value = "type: " + desc->type() + ", sdp: " + value;
+      }
+      tracker_->TrackSessionDescriptionCallback(
+          handler_.get(), action_, "OnSuccess", value);
     }
   }
 
   void TrackOnFailure(const std::string& error) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (handler_->peer_connection_tracker()) {
-      handler_->peer_connection_tracker()->TrackSessionDescriptionCallback(
-          handler_, action_, "OnFailure", error);
+    if (handler_ && tracker_) {
+      tracker_->TrackSessionDescriptionCallback(
+          handler_.get(), action_, "OnFailure", error);
     }
   }
 
  private:
-  RTCPeerConnectionHandler* handler_;
+  const base::WeakPtr<RTCPeerConnectionHandler> handler_;
+  const base::WeakPtr<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
   base::ThreadChecker thread_checker_;
 };
@@ -210,11 +213,12 @@ class CreateSessionDescriptionRequest
   explicit CreateSessionDescriptionRequest(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       const blink::WebRTCSessionDescriptionRequest& request,
-      RTCPeerConnectionHandler* handler,
+      const base::WeakPtr<RTCPeerConnectionHandler>& handler,
+      const base::WeakPtr<PeerConnectionTracker>& tracker,
       PeerConnectionTracker::Action action)
       : main_thread_(main_thread),
         webkit_request_(request),
-        tracker_(handler, action) {
+        tracker_(handler, tracker, action) {
   }
 
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
@@ -255,11 +259,12 @@ class SetSessionDescriptionRequest
   explicit SetSessionDescriptionRequest(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       const blink::WebRTCVoidRequest& request,
-      RTCPeerConnectionHandler* handler,
+      const base::WeakPtr<RTCPeerConnectionHandler>& handler,
+      const base::WeakPtr<PeerConnectionTracker>& tracker,
       PeerConnectionTracker::Action action)
       : main_thread_(main_thread),
         webkit_request_(request),
-        tracker_(handler, action) {
+        tracker_(handler, tracker, action) {
   }
 
   void OnSuccess() override {
@@ -618,7 +623,6 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       dependency_factory_(dependency_factory),
       frame_(NULL),
       signaling_thread_(signaling_thread),
-      peer_connection_tracker_(NULL),
       num_data_channels_created_(0),
       num_local_candidates_ipv4_(0),
       num_local_candidates_ipv6_(0),
@@ -688,7 +692,7 @@ bool RTCPeerConnectionHandler::initialize(
   DCHECK(frame_);
 
   peer_connection_tracker_ =
-      RenderThreadImpl::current()->peer_connection_tracker();
+      RenderThreadImpl::current()->peer_connection_tracker()->AsWeakPtr();
 
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
@@ -717,7 +721,7 @@ bool RTCPeerConnectionHandler::initialize(
 bool RTCPeerConnectionHandler::InitializeForTest(
     const blink::WebRTCConfiguration& server_configuration,
     const blink::WebMediaConstraints& options,
-    PeerConnectionTracker* peer_connection_tracker) {
+    const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
@@ -742,7 +746,8 @@ void RTCPeerConnectionHandler::createOffer(
 
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
-          base::ThreadTaskRunnerHandle::Get(), request, this,
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_CREATE_OFFER));
 
   RTCMediaConstraints constraints(options);
@@ -760,7 +765,8 @@ void RTCPeerConnectionHandler::createOffer(
 
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
-          base::ThreadTaskRunnerHandle::Get(), request, this,
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_CREATE_OFFER));
 
   RTCMediaConstraints constraints;
@@ -778,7 +784,8 @@ void RTCPeerConnectionHandler::createAnswer(
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
-          base::ThreadTaskRunnerHandle::Get(), request, this,
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_CREATE_ANSWER));
   RTCMediaConstraints constraints(options);
   native_peer_connection_->CreateAnswer(description_request.get(),
@@ -819,7 +826,8 @@ void RTCPeerConnectionHandler::setLocalDescription(
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new rtc::RefCountedObject<SetSessionDescriptionRequest>(
-          base::ThreadTaskRunnerHandle::Get(), request, this,
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION));
 
   // TODO(tommi): Run this on the signaling thread.
@@ -856,7 +864,8 @@ void RTCPeerConnectionHandler::setRemoteDescription(
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new rtc::RefCountedObject<SetSessionDescriptionRequest>(
-          base::ThreadTaskRunnerHandle::Get(), request, this,
+          base::ThreadTaskRunnerHandle::Get(), request,
+          weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION));
   // TODO(tommi): Run this on the signaling thread.
   native_peer_connection_->SetRemoteDescription(set_request.get(), native_desc);
@@ -1217,11 +1226,6 @@ void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
     peer_connection_tracker_->TrackOnRenegotiationNeeded(this);
   if (client_)
     client_->negotiationNeeded();
-}
-
-PeerConnectionTracker* RTCPeerConnectionHandler::peer_connection_tracker() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return peer_connection_tracker_;
 }
 
 void RTCPeerConnectionHandler::OnAddStream(

@@ -221,8 +221,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
     blink::WebRTCConfiguration config;
     blink::WebMediaConstraints constraints;
-    EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints,
-                                               mock_tracker_.get()));
+    EXPECT_TRUE(pc_handler_->InitializeForTest(
+        config, constraints, mock_tracker_.get()->AsWeakPtr()));
 
     mock_peer_connection_ = pc_handler_->native_peer_connection();
     ASSERT_TRUE(mock_peer_connection_);

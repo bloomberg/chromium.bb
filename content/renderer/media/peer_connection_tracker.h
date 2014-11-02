@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -34,7 +35,9 @@ class RTCPeerConnectionHandler;
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
 // from the browser process.
-class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
+class CONTENT_EXPORT PeerConnectionTracker
+    : public RenderProcessObserver,
+      public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
   PeerConnectionTracker();
   ~PeerConnectionTracker() override;
