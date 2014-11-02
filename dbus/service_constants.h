@@ -314,6 +314,8 @@ const char kCheckLiveness[] = "CheckLiveness";
 const char kLockScreen[] = "LockScreen";
 const char kSetDisplayPower[] = "SetDisplayPower";
 const char kSetDisplaySoftwareDimming[] = "SetDisplaySoftwareDimming";
+const char kTakeDisplayOwnership[] = "TakeDisplayOwnership";
+const char kReleaseDisplayOwnership[] = "ReleaseDisplayOwnership";
 // Values
 enum DisplayPowerState {
   DISPLAY_POWER_ALL_ON = 0,
