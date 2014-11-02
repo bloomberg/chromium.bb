@@ -340,7 +340,7 @@ TEST_F(RenderViewImplTest, DISABLED_OnNavStateChanged) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
-  view()->set_page_state_sent_immediately(true);
+  view()->set_send_content_state_immediately(true);
 
   LoadHTML("<input type=\"text\" id=\"elt_text\"></input>");
 
@@ -915,7 +915,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   view()->OnSetInputMethodActive(true);
 
   // Load an HTML page consisting of two input fields.
-  view()->set_page_state_sent_immediately(true);
+  view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -1104,7 +1104,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         // and move the input focus to the <div> element, where we can use
         // IMEs.
         view()->OnSetInputMethodActive(ime_message->enable);
-        view()->set_page_state_sent_immediately(true);
+        view()->set_send_content_state_immediately(true);
         LoadHTML("<html>"
                 "<head>"
                 "</head>"
@@ -1172,7 +1172,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   // This test changes the text direction of the <textarea> element, and
   // writes the values of its 'dir' attribute and its 'direction' property to
   // verify that the text direction is changed.
-  view()->set_page_state_sent_immediately(true);
+  view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -1231,7 +1231,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
   // TODO(hbono): <http://crbug.com/2215> Our WebKit port set |ev.metaKey| to
   // true when pressing an alt key, i.e. the |ev.metaKey| value is not
   // trustworthy. We will check the |ev.metaKey| value when this issue is fixed.
-  view()->set_page_state_sent_immediately(true);
+  view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "<title></title>"
@@ -1518,7 +1518,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
     // This <div> element is used by the EditorClientImpl class to insert
     // characters received through the RenderWidget::OnHandleInputEvent()
     // function.
-    view()->set_page_state_sent_immediately(true);
+    view()->set_send_content_state_immediately(true);
     LoadHTML("<html>"
              "<head>"
              "<title></title>"
@@ -2138,7 +2138,7 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
 
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   view()->OnSetInputMethodActive(true);
-  view()->set_page_state_sent_immediately(true);
+  view()->set_send_content_state_immediately(true);
   LoadHTML("<textarea id=\"test\"></textarea>");
 
   view()->handling_input_event_ = true;

@@ -94,7 +94,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   NSEvent* arrowUpKeyDown = CmdDeadKeyEvent(NSKeyDown, kVK_UpArrow);
 
   // First test when javascript does not eat keypresses -- should scroll.
-  view->set_page_state_sent_immediately(true);
+  view->set_send_content_state_immediately(true);
   LoadHTML(kRawHtml);
   render_thread_->sink().ClearMessages();
 

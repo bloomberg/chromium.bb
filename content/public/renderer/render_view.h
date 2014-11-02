@@ -93,10 +93,10 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
-  // Whether the page state (such as form state, scroll position and page
+  // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
-  virtual bool IsPageStateSentImmediately() const = 0;
+  virtual bool GetContentStateImmediately() const = 0;
 
   // Returns the current visibility of the WebView.
   virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;

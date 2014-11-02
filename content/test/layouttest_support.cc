@@ -151,8 +151,8 @@ int GetLocalSessionHistoryLength(RenderView* render_view) {
       GetLocalSessionHistoryLengthForTesting();
 }
 
-void ForcePageStateFlush(RenderView* render_view) {
-  static_cast<RenderViewImpl*>(render_view)->ForcePageStateFlushForTesting();
+void SyncNavigationState(RenderView* render_view) {
+  static_cast<RenderViewImpl*>(render_view)->SyncNavigationState();
 }
 
 void SetFocusAndActivate(RenderView* render_view, bool enable) {

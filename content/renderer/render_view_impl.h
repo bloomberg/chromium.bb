@@ -206,8 +206,8 @@ class CONTENT_EXPORT RenderViewImpl
     return renderer_preferences_;
   }
 
-  void set_page_state_sent_immediately(bool value) {
-    page_state_sent_immediately_ = value;
+  void set_send_content_state_immediately(bool value) {
+    send_content_state_immediately_ = value;
   }
 
   MouseLockDispatcher* mouse_lock_dispatcher() {
@@ -310,8 +310,9 @@ class CONTENT_EXPORT RenderViewImpl
 
   void GetWindowSnapshot(const WindowSnapshotCallback& callback);
 
-  // Forces the current page state to be flushed to the browser.
-  void ForcePageStateFlushForTesting();
+  // Dispatches the current navigation state to the browser. Called on a
+  // periodic timer so we don't send too many messages.
+  void SyncNavigationState();
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
@@ -464,7 +465,7 @@ class CONTENT_EXPORT RenderViewImpl
                          const gfx::Point& point) const override;
   bool ShouldDisplayScrollbars(int width, int height) const override;
   int GetEnabledBindings() const override;
-  bool IsPageStateSentImmediately() const override;
+  bool GetContentStateImmediately() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;
   void DidStartLoading() override;
   void DidStopLoading() override;
@@ -627,6 +628,9 @@ class CONTENT_EXPORT RenderViewImpl
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
+  void UpdateSessionHistory(blink::WebFrame* frame);
+  void SendUpdateState(HistoryEntry* entry);
+
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
@@ -776,13 +780,8 @@ class CONTENT_EXPORT RenderViewImpl
                      const blink::WebRect& selection_rect,
                      bool final_status_update);
 
-  // Marks the page state as being changed and in need of being sent to the
-  // browser. (It will be sent on a delay, but that doesn't concern callers.)
-  void MarkPageStateAsDirty();
-
-  // If there is a pending page state update that hasn't yet been sent to the
-  // browser, send it to the browser.
-  void FlushPageState();
+  // Starts nav_state_sync_timer_ if it isn't already running.
+  void StartNavStateSyncTimerIfNecessary();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs();
@@ -839,6 +838,11 @@ class CONTENT_EXPORT RenderViewImpl
 
   HostZoomLevels host_zoom_levels_;
 
+  // Whether content state (such as form state, scroll position and page
+  // contents) should be sent to the browser immediately. This is normally
+  // false, but set to true by some tests.
+  bool send_content_state_immediately_;
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
@@ -883,18 +887,8 @@ class CONTENT_EXPORT RenderViewImpl
   // TODO(nasko): Move to RenderFrame, as this is per-frame state.
   scoped_ptr<FrameMsg_Navigate_Params> pending_navigation_params_;
 
-  // Whether the page state (such as form state, scroll position and page
-  // contents) should be sent to the browser immediately. This is normally
-  // false, but is set to true by some tests.
-  bool page_state_sent_immediately_;
-
-  // Whether the page state is dirty (meaning that the browser does not have an
-  // up-to-date copy).
-  bool page_state_dirty_;
-
-  // Timer used to delay the sending of the page state (see
-  // MarkPageStateAsDirty).
-  base::OneShotTimer<RenderViewImpl> page_state_timer_;
+  // Timer used to delay the updating of nav state (see SyncNavigationState).
+  base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;
 
   // Page IDs ------------------------------------------------------------------
   // See documentation in RenderView.

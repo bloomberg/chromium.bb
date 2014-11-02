@@ -107,7 +107,7 @@ class SyncNavigationStateVisitor : public RenderViewVisitor {
   ~SyncNavigationStateVisitor() override {}
 
   bool Visit(RenderView* render_view) override {
-    ForcePageStateFlush(render_view);
+    SyncNavigationState(render_view);
     return true;
   }
  private:
