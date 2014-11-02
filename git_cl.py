@@ -8,6 +8,7 @@
 """A git-command for integrating reviews on Rietveld."""
 
 from distutils.version import LooseVersion
+import base64
 import glob
 import json
 import logging
@@ -22,6 +23,7 @@ import threading
 import urllib2
 import urlparse
 import webbrowser
+import zlib
 
 try:
   import readline  # pylint: disable=F0401,W0611
@@ -2823,25 +2825,11 @@ def CMDformat(parser, args):
 
 def CMDlol(parser, args):
   # This command is intentionally undocumented.
-  print('\n'.join((
-      '             / /',
-      '          (\\/_//`)',
-      '           /   \'/',
-      '          0  0   \\',
-      '         /        \\',
-      '        /    __/   \\',
-      '       /,  _/ \\     \\_',
-      '       `-./ )  |     ~^~^~^~^~^~^~^~\\~.',
-      '           (   /                     \\_}',
-      '              |               /      |',
-      '              ;     |         \\      /',
-      '               \\/ ,/           \\    |',
-      '               / /~~|~|~~~~~~|~|\\   |',
-      '              / /   | |      | | `\\ \\',
-      '             / /    | |      | |   \\ \\',
-      '            / (     | |      | |    \\ \\',
-      '     jgs   /,_)    /__)     /__)   /,_/',
-      '     \'\'\'\'\'"""""\'\'\'""""""\'\'\'""""""\'\'"""""\'\'\'\'\'')))
+  print zlib.decompress(base64.b64decode(
+      'eNptkLEOwyAMRHe+wupCIqW57v0Vq84WqWtXyrcXnCBsmgMJ+/SSAxMZgRB6NzE'
+      'E2ObgCKJooYdu4uAQVffUEoE1sRQLxAcqzd7uK2gmStrll1ucV3uZyaY5sXyDd9'
+      'JAnN+lAXsOMJ90GANAi43mq5/VeeacylKVgi8o6F1SC63FxnagHfJUTfUYdCR/W'
+      'Ofe+0dHL7PicpytKP750Fh1q2qnLVof4w8OZWNY'))
   return 0
 
 
