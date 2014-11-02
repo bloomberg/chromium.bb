@@ -13,4 +13,7 @@ Language: Java
 IndentWidth: 4
 ContinuationIndentWidth: 8
 ColumnLimit: 100
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: true
+Cpp11BracedListStyle: false  # but see http://llvm.org/PR21457
