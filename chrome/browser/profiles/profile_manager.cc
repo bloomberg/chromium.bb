@@ -1202,6 +1202,7 @@ void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
   prefs->SetBoolean(prefs::kSigninAllowed, false);
   prefs->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
   prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
+  prefs->ClearPref(DefaultSearchManager::kDefaultSearchProviderDataPrefName);
   // This can be removed in the future but needs to be present through
   // a release (or two) so that any existing installs get switched to
   // the new state and away from the previous "forced" state.
