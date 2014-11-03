@@ -11,6 +11,7 @@ namespace extensions {
 namespace core_api {
 namespace cast_channel {
 
+class AuthResponse;
 class CastMessage;
 class DeviceAuthMessage;
 
@@ -25,10 +26,11 @@ struct AuthResult {
     ERROR_MESSAGE_ERROR,
     ERROR_NO_RESPONSE,
     ERROR_FINGERPRINT_NOT_FOUND,
-    ERROR_NSS_CERT_PARSING_FAILED,
-    ERROR_NSS_CERT_NOT_SIGNED_BY_TRUSTED_CA,
-    ERROR_NSS_CANNOT_EXTRACT_PUBLIC_KEY,
-    ERROR_NSS_SIGNED_BLOBS_MISMATCH
+    ERROR_CERT_PARSING_FAILED,
+    ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA,
+    ERROR_CANNOT_EXTRACT_PUBLIC_KEY,
+    ERROR_SIGNED_BLOBS_MISMATCH,
+    ERROR_UNEXPECTED_AUTH_LIBRARY_RESULT
   };
 
   // Constructs a AuthResult that corresponds to success.
@@ -59,10 +61,11 @@ struct AuthResult {
 AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
                                       const std::string& peer_cert);
 
-// Parses a DeviceAuthMessage payload from a challenge reply.
-// Returns an AuthResult to indicate success or failure.
-AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
-                            DeviceAuthMessage* auth_message);
+// Auth-library specific implementation of cryptographic signature
+// verification routines. Verifies that |response| contains a
+// valid signed form of |peer_cert|.
+AuthResult VerifyCredentials(const AuthResponse& response,
+                             const std::string& peer_cert);
 
 }  // namespace cast_channel
 }  // namespace core_api

@@ -24,16 +24,19 @@ namespace extensions {
 namespace core_api {
 namespace cast_channel {
 namespace {
+
 typedef scoped_ptr<
     CERTCertificate,
     crypto::NSSDestroyer<CERTCertificate, CERT_DestroyCertificate> >
         ScopedCERTCertificate;
 
+}  // namespace
+
 // Authenticates the given credentials:
-// 1. |signature| verification of |data| using |certificate|.
+// 1. |signature| verification of |peer_cert| using |certificate|.
 // 2. |certificate| is signed by a trusted CA.
 AuthResult VerifyCredentials(const AuthResponse& response,
-                             const std::string& data) {
+                             const std::string& peer_cert) {
   const std::string kErrorPrefix("Failed to verify credentials: ");
   const std::string& certificate = response.client_auth_certificate();
   const std::string& signature = response.signature();
@@ -78,7 +81,7 @@ AuthResult VerifyCredentials(const AuthResponse& response,
   if (!cert.get()) {
     return AuthResult::CreateWithNSSError(
         "Failed to parse certificate.",
-        AuthResult::ERROR_NSS_CERT_PARSING_FAILED, PORT_GetError());
+        AuthResult::ERROR_CERT_PARSING_FAILED, PORT_GetError());
   }
 
   // Check that the certificate is signed by trusted CA.
@@ -87,22 +90,27 @@ AuthResult VerifyCredentials(const AuthResponse& response,
   // SECItem*.
   crypto::ScopedSECKEYPublicKey ca_public_key(
       SECKEY_ImportDERPublicKey(&trusted_ca_key_der, CKK_RSA));
+  if (!ca_public_key) {
+    return AuthResult::CreateWithNSSError(
+        "Failed to import public key from CA certificate.",
+        AuthResult::ERROR_CERT_PARSING_FAILED, PORT_GetError());
+  }
   SECStatus verified = CERT_VerifySignedDataWithPublicKey(
       &cert->signatureWrap, ca_public_key.get(), NULL);
   if (verified != SECSuccess) {
     return AuthResult::CreateWithNSSError(
         "Cert not signed by trusted CA",
-        AuthResult::ERROR_NSS_CERT_NOT_SIGNED_BY_TRUSTED_CA, PORT_GetError());
+        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA, PORT_GetError());
   }
 
   VLOG(1) << "Cert signed by trusted CA";
 
-  // Verify that the |signature| matches |data|.
+  // Verify that the |signature| matches |peer_cert|.
   crypto::ScopedSECKEYPublicKey public_key(CERT_ExtractPublicKey(cert.get()));
   if (!public_key.get()) {
     return AuthResult::CreateWithNSSError(
         "Unable to extract public key from certificate",
-        AuthResult::ERROR_NSS_CANNOT_EXTRACT_PUBLIC_KEY, PORT_GetError());
+        AuthResult::ERROR_CANNOT_EXTRACT_PUBLIC_KEY, PORT_GetError());
   }
   SECItem signature_item;
   signature_item.type = siBuffer;
@@ -110,8 +118,8 @@ AuthResult VerifyCredentials(const AuthResponse& response,
       const_cast<char*>(signature.data()));
   signature_item.len = signature.length();
   verified = VFY_VerifyDataDirect(
-      reinterpret_cast<unsigned char*>(const_cast<char*>(data.data())),
-      data.size(),
+      reinterpret_cast<unsigned char*>(const_cast<char*>(peer_cert.data())),
+      peer_cert.size(),
       public_key.get(),
       &signature_item,
       SEC_OID_PKCS1_RSA_ENCRYPTION,
@@ -120,41 +128,11 @@ AuthResult VerifyCredentials(const AuthResponse& response,
   if (verified != SECSuccess) {
     return AuthResult::CreateWithNSSError(
         "Signed blobs did not match",
-        AuthResult::ERROR_NSS_SIGNED_BLOBS_MISMATCH,
+        AuthResult::ERROR_SIGNED_BLOBS_MISMATCH,
         PORT_GetError());
   }
 
   VLOG(1) << "Signature verification succeeded";
-
-  return AuthResult();
-}
-
-}  // namespace
-
-AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
-                                      const std::string& peer_cert) {
-  if (peer_cert.empty()) {
-    AuthResult result = AuthResult::CreateWithParseError(
-        "Peer cert was empty.", AuthResult::ERROR_PEER_CERT_EMPTY);
-    VLOG(1) << result.error_message;
-    return result;
-  }
-
-  VLOG(1) << "Challenge reply: " << CastMessageToString(challenge_reply);
-  DeviceAuthMessage auth_message;
-  AuthResult result = ParseAuthMessage(challenge_reply, &auth_message);
-  if (!result.success()) {
-    VLOG(1) << result.error_message;
-    return result;
-  }
-
-  const AuthResponse& response = auth_message.response();
-  result = VerifyCredentials(response, peer_cert);
-  if (!result.success()) {
-    VLOG(1) << result.error_message
-            << ", NSS error code: " << result.nss_error_code;
-    return result;
-  }
 
   return AuthResult();
 }

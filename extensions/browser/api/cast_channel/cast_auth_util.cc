@@ -17,35 +17,8 @@ namespace {
 
 const char* const kParseErrorPrefix = "Failed to parse auth message: ";
 
-}  // namespace
-
-AuthResult::AuthResult() : error_type(ERROR_NONE), nss_error_code(0) {
-}
-
-AuthResult::~AuthResult() {
-}
-
-// static
-AuthResult AuthResult::CreateWithParseError(const std::string& error_message,
-                                            ErrorType error_type) {
-  return AuthResult(kParseErrorPrefix + error_message, error_type, 0);
-}
-
-// static
-AuthResult AuthResult::CreateWithNSSError(const std::string& error_message,
-                                          ErrorType error_type,
-                                          int nss_error_code) {
-  return AuthResult(error_message, error_type, nss_error_code);
-}
-
-AuthResult::AuthResult(const std::string& error_message,
-                       ErrorType error_type,
-                       int nss_error_code)
-    : error_message(error_message),
-      error_type(error_type),
-      nss_error_code(nss_error_code) {
-}
-
+// Extracts an embedded DeviceAuthMessage payload from an auth challenge reply
+// message.
 AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
                             DeviceAuthMessage* auth_message) {
   if (challenge_reply.payload_type() != CastMessage_PayloadType_BINARY) {
@@ -76,6 +49,58 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
     return AuthResult::CreateWithParseError(
         "Auth message has no response field", AuthResult::ERROR_NO_RESPONSE);
   }
+  return AuthResult();
+}
+
+}  // namespace
+
+AuthResult::AuthResult() : error_type(ERROR_NONE), nss_error_code(0) {
+}
+
+AuthResult::~AuthResult() {
+}
+
+// static
+AuthResult AuthResult::CreateWithParseError(const std::string& error_message,
+                                            ErrorType error_type) {
+  return AuthResult(kParseErrorPrefix + error_message, error_type, 0);
+}
+
+// static
+AuthResult AuthResult::CreateWithNSSError(const std::string& error_message,
+                                          ErrorType error_type,
+                                          int nss_error_code) {
+  return AuthResult(error_message, error_type, nss_error_code);
+}
+
+AuthResult::AuthResult(const std::string& error_message,
+                       ErrorType error_type,
+                       int nss_error_code)
+    : error_message(error_message),
+      error_type(error_type),
+      nss_error_code(nss_error_code) {
+}
+
+AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
+                                      const std::string& peer_cert) {
+  if (peer_cert.empty()) {
+    AuthResult result = AuthResult::CreateWithParseError(
+        "Peer cert was empty.", AuthResult::ERROR_PEER_CERT_EMPTY);
+    return result;
+  }
+
+  DeviceAuthMessage auth_message;
+  AuthResult result = ParseAuthMessage(challenge_reply, &auth_message);
+  if (!result.success()) {
+    return result;
+  }
+
+  const AuthResponse& response = auth_message.response();
+  result = VerifyCredentials(response, peer_cert);
+  if (!result.success()) {
+    return result;
+  }
+
   return AuthResult();
 }
 

@@ -177,6 +177,9 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
 
 bool CastSocket::VerifyChallengeReply() {
   AuthResult result = AuthenticateChallengeReply(*challenge_reply_, peer_cert_);
+  if (result.success()) {
+    VLOG(1) << result.error_message;
+  }
   logger_->LogSocketChallengeReplyEvent(channel_id_, result);
   return result.success();
 }

@@ -686,6 +686,10 @@ base::StringPiece GetTrustedICAPublicKey(const base::StringPiece& data) {
   AuthorityKeyStore& authority_keys_store = g_authority_keys_store.Get();
   scoped_refptr<net::X509Certificate> ica_cert =
       net::X509Certificate::CreateFromBytes(data.data(), data.size());
+  if (!ica_cert.get()) {
+    LOG(ERROR) << "Invalid ICA certificate.";
+    return "";
+  }
   return authority_keys_store.GetICAPublicKeyFromFingerprint(
       net::X509Certificate::CalculateFingerprint256(
           ica_cert->os_cert_handle()));

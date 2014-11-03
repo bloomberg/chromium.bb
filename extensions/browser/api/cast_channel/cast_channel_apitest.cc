@@ -143,7 +143,7 @@ class CastChannelAPITest : public ExtensionApiTest {
   void CallOnError(extensions::CastChannelAPI* api) {
     cast_channel::LastErrors last_errors;
     last_errors.challenge_reply_error_type =
-        cast_channel::proto::CHALLENGE_REPLY_ERROR_NSS_CERT_PARSING_FAILED;
+        cast_channel::proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED;
     last_errors.nss_error_code = -8164;
     api->OnError(mock_cast_socket_,
                  cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
