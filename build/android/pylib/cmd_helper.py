@@ -115,6 +115,16 @@ def GetCmdOutput(args, cwd=None, shell=False):
   return output
 
 
+def _LogCommand(args, cwd=None):
+  if not isinstance(args, basestring):
+    args = ' '.join(SingleQuote(c) for c in args)
+  if cwd is None:
+    cwd = ''
+  else:
+    cwd = ':' + cwd
+  logging.info('[host]%s> %s', cwd, args)
+
+
 def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   """Executes a subprocess and returns its exit code and output.
 
@@ -129,19 +139,12 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
     The 2-tuple (exit code, output).
   """
   if isinstance(args, basestring):
-    args_repr = args
     if not shell:
       raise Exception('string args must be run with shell=True')
   elif shell:
     raise Exception('array args must be run with shell=False')
-  else:
-    args_repr = ' '.join(map(SingleQuote, args))
 
-  s = '[host]'
-  if cwd:
-    s += ':' + cwd
-  s += '> ' + args_repr
-  logging.info(s)
+  _LogCommand(args, cwd)
   pipe = Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                shell=shell, cwd=cwd)
   stdout, stderr = pipe.communicate()
@@ -177,6 +180,13 @@ def GetCmdStatusAndOutputWithTimeout(args, timeout, cwd=None, shell=False,
     The 2-tuple (exit code, output).
   """
   assert fcntl, 'fcntl module is required'
+  if isinstance(args, basestring):
+    if not shell:
+      raise Exception('string args must be run with shell=True')
+  elif shell:
+    raise Exception('array args must be run with shell=False')
+
+  _LogCommand(args, cwd)
   process = Popen(args, cwd=cwd, shell=shell, stdout=subprocess.PIPE,
                   stderr=subprocess.STDOUT)
   try:
