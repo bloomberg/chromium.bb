@@ -336,6 +336,10 @@ if ragel_involved:
     ('xadd16_proof.py', '64', '20141028.shld_shrd', '20141029.xadd16'),
     ('cmpxchg16_proof.py', '32', '20141029.xadd16', '20141030.cmpxchg16'),
     ('cmpxchg16_proof.py', '64', '20141029.xadd16', '20141030.cmpxchg16'),
+    ('avx1_xmm_ymm_memory_3op_pd_proof.py', '32', '20141030.cmpxchg16',
+     '20141031.avx1_3op_fp_pd'),
+    ('avx1_xmm_ymm_memory_3op_pd_proof.py', '64', '20141030.cmpxchg16',
+     '20141031.avx1_3op_fp_pd'),
   ]
   for proof_file, bitness, old, new in trie_proofs:
     trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
