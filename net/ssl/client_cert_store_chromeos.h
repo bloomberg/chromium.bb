@@ -7,20 +7,36 @@
 
 #include <string>
 
-#include "crypto/scoped_nss_types.h"
-#include "net/cert/nss_profile_filter_chromeos.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/ssl/client_cert_store_nss.h"
 
 namespace net {
 
+class X509Certificate;
+
 class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
  public:
-  // Constructs a ClientCertStore that will return client certs available on
-  // the user's private and public slots. If |use_system_slot| is true, certs on
-  // the system slot will also be returned.
+  class CertFilter {
+   public:
+    virtual ~CertFilter() {}
+
+    // Initializes this filter. Returns true if it finished initialization,
+    // otherwise returns false and calls |callback| once the initialization is
+    // completed.
+    // Must be called at most once.
+    virtual bool Init(const base::Closure& callback) = 0;
+
+    // Returns true if |cert| is allowed to be used as a client certificate
+    // (e.g. for a certain browser context or user).
+    // This is only called once initialization is finished, see Init().
+    virtual bool IsCertAllowed(
+        const scoped_refptr<X509Certificate>& cert) const = 0;
+  };
+
+  // This ClientCertStore will return only client certs that pass the filter
+  // |cert_filter|.
   ClientCertStoreChromeOS(
-      bool use_system_slot,
-      const std::string& username_hash,
+      scoped_ptr<CertFilter> cert_filter,
       const PasswordDelegateFactory& password_delegate_factory);
   virtual ~ClientCertStoreChromeOS();
 
@@ -37,15 +53,11 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
                                   CertificateList* selected_certs) override;
 
  private:
-  void DidGetSystemAndPrivateSlot(const SSLCertRequestInfo* request,
-                                  CertificateList* selected_certs,
-                                  const base::Closure& callback,
-                                  crypto::ScopedPK11Slot system_slot,
-                                  crypto::ScopedPK11Slot private_slot);
+  void CertFilterInitialized(const SSLCertRequestInfo* request,
+                             CertificateList* selected_certs,
+                             const base::Closure& callback);
 
-  bool use_system_slot_;
-  std::string username_hash_;
-  NSSProfileFilterChromeOS profile_filter_;
+  scoped_ptr<CertFilter> cert_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertStoreChromeOS);
 };
