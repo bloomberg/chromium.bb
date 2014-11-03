@@ -29,6 +29,8 @@ namespace hotword_internal {
 // Constants for the hotword field trial.
 extern const char kHotwordFieldTrialName[];
 extern const char kHotwordFieldTrialDisabledGroupName[];
+// String passed to indicate the training state has changed.
+extern const char kHotwordTrainingEnabled[];
 }  // namespace hotword_internal
 
 // Provides an interface for the Hotword component that does voice triggered
@@ -110,13 +112,23 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // at which time we can simply launch the app in the given mode instead of
   // having to check for it here.
   enum LaunchMode {
-    AUDIO_HISTORY_ONLY,
     HOTWORD_ONLY,
     HOTWORD_AND_AUDIO_HISTORY,
-    SPEECH_TRAINING
+    RETRAIN
   };
   void LaunchHotwordAudioVerificationApp(const LaunchMode& launch_mode);
   virtual LaunchMode GetHotwordAudioVerificationLaunchMode();
+
+  // These methods control the speaker training communication between
+  // the Hotword Audio Verification App and the Hotword Extension that
+  // contains the NaCl module.
+  void StartTraining();
+  void FinalizeSpeakerModel();
+  void StopTraining();
+  void NotifyHotwordTriggered();
+
+  // Returns true if speaker training is currently in progress.
+  bool IsTraining();
 
  private:
   // Returns the ID of the extension that may need to be reinstalled.
@@ -140,6 +152,8 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   HotwordClient* client_;
   int error_message_;
   bool reinstall_pending_;
+  // Whether we are currently in the process of training the speaker model.
+  bool training_;
 
   base::WeakPtrFactory<HotwordService> weak_factory_;
 

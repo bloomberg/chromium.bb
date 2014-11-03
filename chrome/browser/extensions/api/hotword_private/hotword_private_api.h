@@ -34,6 +34,10 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
 
   void OnHotwordSessionStopped();
 
+  void OnHotwordTriggered();
+
+  void OnFinalizeSpeakerModel();
+
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
@@ -128,6 +132,45 @@ class HotwordPrivateGetLaunchStateFunction :
 
  protected:
   ~HotwordPrivateGetLaunchStateFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
+};
+
+class HotwordPrivateStartTrainingFunction :
+    public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.startTraining",
+                             HOTWORDPRIVATE_STARTTRAINING)
+
+ protected:
+  ~HotwordPrivateStartTrainingFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
+};
+
+class HotwordPrivateFinalizeSpeakerModelFunction :
+    public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.finalizeSpeakerModel",
+                             HOTWORDPRIVATE_FINALIZESPEAKERMODEL)
+
+ protected:
+  ~HotwordPrivateFinalizeSpeakerModelFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
+};
+
+class HotwordPrivateStopTrainingFunction :
+    public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.stopTraining",
+                             HOTWORDPRIVATE_STOPTRAINING)
+
+ protected:
+  ~HotwordPrivateStopTrainingFunction() override {}
 
   // ExtensionFunction:
   bool RunSync() override;

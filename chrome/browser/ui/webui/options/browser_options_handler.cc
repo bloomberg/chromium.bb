@@ -1670,7 +1670,7 @@ void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
     DCHECK(profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAudioLoggingEnabled));
 
-    launch_mode = HotwordService::SPEECH_TRAINING;
+    launch_mode = HotwordService::RETRAIN;
   } else if (profile->GetPrefs()->GetBoolean(
       prefs::kHotwordAudioLoggingEnabled)) {
     DCHECK(!profile->GetPrefs()->GetBoolean(

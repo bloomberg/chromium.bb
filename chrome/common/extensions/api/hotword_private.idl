@@ -33,6 +33,9 @@
 
     // Whether always-on hotwording is enabled.
     boolean alwaysOnEnabled;
+
+    // Whether training mode is enabled.
+    boolean trainingEnabled;
   };
 
   dictionary LaunchState {
@@ -85,10 +88,21 @@
     // Retrieves the state that the Hotword Audio Verification app was
     // launched in. The result is put into a LaunchState object.
     static void getLaunchState(LaunchStateCallback callback);
+
+    // Starts the speaker model training.
+    static void startTraining(optional GenericDoneCallback callback);
+
+    // Finalizess the speaker model.
+    static void finalizeSpeakerModel(optional GenericDoneCallback callback);
+
+    // Stops the speaker model training.
+    static void stopTraining(optional GenericDoneCallback callback);
   };
 
   interface Events {
-    // Fired when the hotword search enabled preference is changed.
+    // Fired when the hotword detector enabled state should be changed.
+    // This can be from various sources, e.g. a pref change or training
+    // a speaker model.
     static void onEnabledChanged();
 
     // Fired when the browser wants to start a hotword session.
@@ -96,5 +110,11 @@
 
     // Fired when the browser wants to stop the requested hotword session.
     static void onHotwordSessionStopped();
+
+    // Fired when the speaker model should be finalized.
+    static void onFinalizeSpeakerModel();
+
+    // Fired when a hotword has triggered.
+    static void onHotwordTriggered();
   };
 };

@@ -244,6 +244,10 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {
   profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
                                     true);
   EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+
+  listenerNotification.Reset();
+  service()->StartTraining();
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, HotwordSession) {
@@ -269,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, HotwordSession) {
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, GetLaunchStateHotwordOnly) {
   service()->SetHotwordAudioVerificationLaunchMode(
       HotwordService::HOTWORD_ONLY);
-  ExtensionTestMessageListener listener("launchMode: 1", false);
+  ExtensionTestMessageListener listener("launchMode: 0", false);
   ASSERT_TRUE(RunComponentExtensionTest("getLaunchState")) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
@@ -278,7 +282,49 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
     GetLaunchStateHotwordAudioHistory) {
   service()->SetHotwordAudioVerificationLaunchMode(
       HotwordService::HOTWORD_AND_AUDIO_HISTORY);
-  ExtensionTestMessageListener listener("launchMode: 2", false);
+  ExtensionTestMessageListener listener("launchMode: 1", false);
   ASSERT_TRUE(RunComponentExtensionTest("getLaunchState")) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnFinalizeSpeakerModel) {
+  // Trigger the pref registrar.
+  extensions::HotwordPrivateEventService::GetFactoryInstance();
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII(
+          "onFinalizeSpeakerModel")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listenerNotification("notification", false);
+  service()->FinalizeSpeakerModel();
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnHotwordTriggered) {
+  // Trigger the pref registrar.
+  extensions::HotwordPrivateEventService::GetFactoryInstance();
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII(
+          "onHotwordTriggered")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listenerNotification("notification", false);
+  service()->NotifyHotwordTriggered();
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, Training) {
+  EXPECT_FALSE(service()->IsTraining());
+
+  ExtensionTestMessageListener listenerTrue("start training", false);
+  ASSERT_TRUE(RunComponentExtensionTest("startTraining")) << message_;
+  EXPECT_TRUE(listenerTrue.WaitUntilSatisfied());
+  EXPECT_TRUE(service()->IsTraining());
+
+  ExtensionTestMessageListener listenerFalse("stop training", false);
+  ASSERT_TRUE(RunComponentExtensionTest("stopTraining")) << message_;
+  EXPECT_TRUE(listenerFalse.WaitUntilSatisfied());
+  EXPECT_FALSE(service()->IsTraining());
 }

@@ -163,6 +163,8 @@ const char kHotwordFieldTrialName[] = "VoiceTrigger";
 const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
 // Old preference constant.
 const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
+// String passed to indicate the training state has changed.
+const char kHotwordTrainingEnabled[] = "hotword_training_enabled";
 }  // namespace hotword_internal
 
 // static
@@ -190,6 +192,7 @@ HotwordService::HotwordService(Profile* profile)
       client_(NULL),
       error_message_(0),
       reinstall_pending_(false),
+      training_(false),
       weak_factory_(this) {
   extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
   // This will be called during profile initialization which is a good time
@@ -475,6 +478,54 @@ void HotwordService::LaunchHotwordAudioVerificationApp(
 HotwordService::LaunchMode
 HotwordService::GetHotwordAudioVerificationLaunchMode() {
   return hotword_audio_verification_launch_mode_;
+}
+
+void HotwordService::StartTraining() {
+  training_ = true;
+
+  if (!IsServiceAvailable())
+    return;
+
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  if (event_service)
+    event_service->OnEnabledChanged(hotword_internal::kHotwordTrainingEnabled);
+}
+
+void HotwordService::FinalizeSpeakerModel() {
+  if (!IsServiceAvailable())
+    return;
+
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  if (event_service)
+    event_service->OnFinalizeSpeakerModel();
+}
+
+void HotwordService::StopTraining() {
+  training_ = false;
+
+  if (!IsServiceAvailable())
+    return;
+
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  if (event_service)
+    event_service->OnEnabledChanged(hotword_internal::kHotwordTrainingEnabled);
+}
+
+void HotwordService::NotifyHotwordTriggered() {
+  if (!IsServiceAvailable())
+    return;
+
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  if (event_service)
+    event_service->OnHotwordTriggered();
+}
+
+bool HotwordService::IsTraining() {
+  return training_;
 }
 
 void HotwordService::OnHotwordSearchEnabledChanged(

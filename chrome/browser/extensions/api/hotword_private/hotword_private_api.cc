@@ -64,7 +64,9 @@ const char* HotwordPrivateEventService::service_name() {
 void HotwordPrivateEventService::OnEnabledChanged(
     const std::string& pref_name) {
   DCHECK(pref_name == std::string(prefs::kHotwordSearchEnabled) ||
-         pref_name == std::string(prefs::kHotwordAlwaysOnSearchEnabled));
+         pref_name == std::string(prefs::kHotwordAlwaysOnSearchEnabled) ||
+         pref_name == std::string(
+             hotword_internal::kHotwordTrainingEnabled));
   SignalEvent(OnEnabledChanged::kEventName);
 }
 
@@ -74,6 +76,14 @@ void HotwordPrivateEventService::OnHotwordSessionRequested() {
 
 void HotwordPrivateEventService::OnHotwordSessionStopped() {
   SignalEvent(api::hotword_private::OnHotwordSessionStopped::kEventName);
+}
+
+void HotwordPrivateEventService::OnFinalizeSpeakerModel() {
+  SignalEvent(api::hotword_private::OnFinalizeSpeakerModel::kEventName);
+}
+
+void HotwordPrivateEventService::OnHotwordTriggered() {
+  SignalEvent(api::hotword_private::OnHotwordTriggered::kEventName);
 }
 
 void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
@@ -123,10 +133,13 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
 
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
-  if (!hotword_service)
+  if (!hotword_service) {
     result.available = false;
-  else
+  } else {
     result.available = hotword_service->IsServiceAvailable();
+    result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
+    result.training_enabled = hotword_service->IsTraining();
+  }
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
@@ -137,8 +150,6 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   result.experimental_hotword_enabled = command_line->HasSwitch(
       switches::kEnableExperimentalHotwording);
-  if (hotword_service)
-    result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
 
   SetResult(result.ToValue().release());
   return true;
@@ -151,7 +162,9 @@ bool HotwordPrivateSetHotwordSessionStateFunction::RunSync() {
 
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
-  if (hotword_service && hotword_service->client())
+  if (hotword_service &&
+      hotword_service->client() &&
+      !hotword_service->IsTraining())
     hotword_service->client()->OnHotwordStateChanged(params->started);
   return true;
 }
@@ -160,7 +173,9 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (hotword_service) {
-    if (hotword_service->client()) {
+    if (hotword_service->IsTraining()) {
+      hotword_service->NotifyHotwordTriggered();
+    } else if (hotword_service->client()) {
       hotword_service->client()->OnHotwordRecognized();
     } else if (HotwordService::IsExperimentalHotwordingEnabled() &&
                hotword_service->IsAlwaysOnEnabled()) {
@@ -177,19 +192,53 @@ bool HotwordPrivateNotifyHotwordRecognitionFunction::RunSync() {
 }
 
 bool HotwordPrivateGetLaunchStateFunction::RunSync() {
-  api::hotword_private::LaunchState result;
-
   HotwordService* hotword_service =
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (!hotword_service) {
     error_ = hotword_private_constants::kHotwordServiceUnavailable;
     return false;
-  } else {
-    result.launch_mode =
-        hotword_service->GetHotwordAudioVerificationLaunchMode();
   }
 
+  api::hotword_private::LaunchState result;
+  result.launch_mode =
+      hotword_service->GetHotwordAudioVerificationLaunchMode();
   SetResult(result.ToValue().release());
+  return true;
+}
+
+bool HotwordPrivateStartTrainingFunction::RunSync() {
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  }
+
+  hotword_service->StartTraining();
+  return true;
+}
+
+bool HotwordPrivateFinalizeSpeakerModelFunction::RunSync() {
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  }
+
+  hotword_service->FinalizeSpeakerModel();
+  return true;
+}
+
+bool HotwordPrivateStopTrainingFunction::RunSync() {
+  HotwordService* hotword_service =
+      HotwordServiceFactory::GetForProfile(GetProfile());
+  if (!hotword_service) {
+    error_ = hotword_private_constants::kHotwordServiceUnavailable;
+    return false;
+  }
+
+  hotword_service->StopTraining();
   return true;
 }
 
