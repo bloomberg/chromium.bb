@@ -5,14 +5,15 @@
 import("//build/config/arm.gni")
 
 # If fixed point implementation shall be used (otherwise float).
-use_opus_fixed_point = ((is_android || is_chromeos ||
-                         (is_ios && arm_version == 7)) && cpu_arch == "arm")
+use_opus_fixed_point = (cpu_arch == "arm" || cpu_arch == "arm64")
 
 # If ARM optimizations shall be used to accelerate performance.
-use_opus_arm_optimization = use_opus_fixed_point
+use_opus_arm_optimization = (cpu_arch == "arm")
 
 # If OPUS Run Time CPU Detections (RTCD) shall be used.
-use_opus_rtcd = ((is_android || is_chromeos) && cpu_arch == "arm")
+# Based on the conditions in celt/arm/armcpu.c:
+# defined(_MSC_VER) || defined(__linux__).
+use_opus_rtcd = (cpu_arch == "arm" && (is_win || is_android || is_linux))
 
 config("opus_config") {
   include_dirs = [
@@ -81,6 +82,11 @@ source_set("opus") {
     cflags = [
       "-Wno-#pragma-messages",
     ]
+  }
+
+  if (!is_debug && is_posix && (cpu_arch == "arm" || cpu_arch == "arm64")) {
+    configs -= [ "//build/config/compiler:optimize" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
   }
 
   if (use_opus_fixed_point) {
