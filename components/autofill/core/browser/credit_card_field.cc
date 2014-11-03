@@ -75,7 +75,7 @@ FormField* CreditCardField::Parse(AutofillScanner* scanner) {
     if (!credit_card_field->verification_ &&
         ParseFieldSpecifics(scanner,
                             base::UTF8ToUTF16(autofill::kCardCvcRe),
-                            MATCH_DEFAULT | MATCH_TELEPHONE,
+                            MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_PASSWORD,
                             &credit_card_field->verification_)) {
       continue;
     }

@@ -186,6 +186,9 @@ bool FormField::MatchesFormControlType(const std::string& type,
   if ((match_type & MATCH_TEXT_AREA) && type == "textarea")
     return true;
 
+  if ((match_type & MATCH_PASSWORD) && type == "password")
+    return true;
+
   return false;
 }
 
