@@ -528,7 +528,8 @@ Activity::ActivityMediaState WebActivity::GetMediaState() {
 }
 
 aura::Window* WebActivity::GetWindow() {
-  return web_view_->GetWidget()->GetNativeWindow();
+  return web_view_->GetWidget() ? web_view_->GetWidget()->GetNativeWindow()
+                                : nullptr;
 }
 
 content::WebContents* WebActivity::GetWebContents() {
@@ -562,10 +563,6 @@ bool WebActivity::UsesFrame() const {
 
 views::View* WebActivity::GetContentsView() {
   return web_view_;
-}
-
-views::Widget* WebActivity::CreateWidget() {
-  return nullptr;  // Use default widget.
 }
 
 gfx::ImageSkia WebActivity::GetOverviewModeImage() {

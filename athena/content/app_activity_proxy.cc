@@ -52,7 +52,7 @@ Activity::ActivityMediaState AppActivityProxy::GetMediaState() {
 }
 
 aura::Window* AppActivityProxy::GetWindow() {
-  return view_->GetWidget()->GetNativeWindow();
+  return view_->GetWidget() ? view_->GetWidget()->GetNativeWindow() : nullptr;
 }
 
 content::WebContents* AppActivityProxy::GetWebContents() {
@@ -90,10 +90,6 @@ bool AppActivityProxy::UsesFrame() const {
 
 views::View* AppActivityProxy::GetContentsView() {
   return view_;
-}
-
-views::Widget* AppActivityProxy::CreateWidget() {
-  return nullptr;
 }
 
 gfx::ImageSkia AppActivityProxy::GetOverviewModeImage() {

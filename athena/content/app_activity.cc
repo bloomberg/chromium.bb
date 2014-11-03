@@ -93,7 +93,9 @@ Activity::ActivityMediaState AppActivity::GetMediaState() {
 }
 
 aura::Window* AppActivity::GetWindow() {
-  return !web_view_ ? nullptr : web_view_->GetWidget()->GetNativeWindow();
+  return web_view_ && web_view_->GetWidget()
+             ? web_view_->GetWidget()->GetNativeWindow()
+             : nullptr;
 }
 
 content::WebContents* AppActivity::GetWebContents() {
@@ -101,6 +103,10 @@ content::WebContents* AppActivity::GetWebContents() {
 }
 
 void AppActivity::Init() {
+  // Before we remove the proxy, we have to register the activity and
+  // initialize its to move it to the proper activity list location.
+  RegisterActivity();
+
   DCHECK(app_activity_registry_);
   Activity* app_proxy = app_activity_registry_->unloaded_activity_proxy();
   if (app_proxy) {
@@ -135,6 +141,16 @@ void AppActivity::Init() {
     // The proxy should now be deleted.
     DCHECK(!app_activity_registry_->unloaded_activity_proxy());
   }
+
+  // Make sure the content gets properly shown.
+  if (current_state_ == ACTIVITY_VISIBLE) {
+    HideContentProxy();
+  } else if (current_state_ == ACTIVITY_INVISIBLE) {
+    ShowContentProxy();
+  } else {
+    // If not previously specified, we change the state now to invisible..
+    SetCurrentState(ACTIVITY_INVISIBLE);
+  }
 }
 
 SkColor AppActivity::GetRepresentativeColor() const {
@@ -152,23 +168,6 @@ gfx::ImageSkia AppActivity::GetIcon() const {
 
 bool AppActivity::UsesFrame() const {
   return false;
-}
-
-views::Widget* AppActivity::CreateWidget() {
-  // Before we remove the proxy, we have to register the activity and
-  // initialize its to move it to the proper activity list location.
-  RegisterActivity();
-  Init();
-  // Make sure the content gets properly shown.
-  if (current_state_ == ACTIVITY_VISIBLE) {
-    HideContentProxy();
-  } else if (current_state_ == ACTIVITY_INVISIBLE) {
-    ShowContentProxy();
-  } else {
-    // If not previously specified, we change the state now to invisible..
-    SetCurrentState(ACTIVITY_INVISIBLE);
-  }
-  return web_view_->GetWidget();
 }
 
 views::View* AppActivity::GetContentsView() {

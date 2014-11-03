@@ -50,10 +50,6 @@ class ATHENA_EXPORT ActivityViewModel {
   // be deleted by the resource manager.
   virtual views::View* GetContentsView() = 0;
 
-  // Creates a custom widget for the activity. Returns nullptr to use default
-  // implementation.
-  virtual views::Widget* CreateWidget() = 0;
-
   // Returns an image which can be used to represent the activity in e.g. the
   // overview mode. The returned image can have no size if either a view exists
   // or the activity has not yet been loaded or ever been presented. In that

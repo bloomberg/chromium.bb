@@ -45,7 +45,6 @@ class AppActivity : public Activity,
   base::string16 GetTitle() const override;
   gfx::ImageSkia GetIcon() const override;
   bool UsesFrame() const override;
-  views::Widget* CreateWidget() override;
   views::View* GetContentsView() override;
   gfx::ImageSkia GetOverviewModeImage() override;
   void PrepareContentsForOverview() override;

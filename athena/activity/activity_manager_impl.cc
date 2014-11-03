@@ -21,13 +21,15 @@ namespace {
 ActivityManager* instance = nullptr;
 
 views::Widget* CreateWidget(Activity* activity) {
-  ActivityViewModel* view_model = activity->GetActivityViewModel();
-  views::Widget* widget = view_model->CreateWidget();
+  aura::Window* window = activity->GetWindow();
+  views::Widget* widget =
+      window ? views::Widget::GetWidgetForNativeView(window) : nullptr;
   if (widget)
     return widget;
   widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new ActivityWidgetDelegate(view_model);
+  params.delegate =
+      new ActivityWidgetDelegate(activity->GetActivityViewModel());
   widget->Init(params);
   activity->GetActivityViewModel()->Init();
   return widget;

@@ -85,10 +85,6 @@ views::View* SampleActivity::GetContentsView() {
   return contents_view_;
 }
 
-views::Widget* SampleActivity::CreateWidget() {
-  return nullptr;
-}
-
 gfx::ImageSkia SampleActivity::GetOverviewModeImage() {
   return gfx::ImageSkia();
 }

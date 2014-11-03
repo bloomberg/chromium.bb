@@ -64,7 +64,6 @@ class WebActivity : public Activity,
   gfx::ImageSkia GetIcon() const override;
   bool UsesFrame() const override;
   views::View* GetContentsView() override;
-  views::Widget* CreateWidget() override;
   gfx::ImageSkia GetOverviewModeImage() override;
   void PrepareContentsForOverview() override;
   void ResetContentsView() override;

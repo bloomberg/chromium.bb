@@ -61,7 +61,7 @@ class TestAppActivity : public AppActivity {
     return Activity::ACTIVITY_MEDIA_STATE_NONE;
   }
   aura::Window* GetWindow() override {
-    return view_->GetWidget()->GetNativeWindow();
+    return view_->GetWidget() ? view_->GetWidget()->GetNativeWindow() : nullptr;
   }
 
   // ActivityViewModel:
@@ -70,7 +70,6 @@ class TestAppActivity : public AppActivity {
   base::string16 GetTitle() const override { return title_; }
   bool UsesFrame() const override { return true; }
   views::View* GetContentsView() override { return view_; }
-  views::Widget* CreateWidget() override { return nullptr; }
   gfx::ImageSkia GetOverviewModeImage() override { return gfx::ImageSkia(); }
 
  private:
