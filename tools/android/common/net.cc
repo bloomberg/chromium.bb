@@ -25,7 +25,7 @@ int DeferAccept(int socket) {
 
 std::string DumpBinary(const char* buffer, size_t length) {
   std::string result = "[";
-  for (int i = 0; i < length; ++i) {
+  for (size_t i = 0; i < length; ++i) {
     base::StringAppendF(&result, "%02x,",
                         static_cast<unsigned char>(buffer[i]));
   }

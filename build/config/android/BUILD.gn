@@ -18,3 +18,8 @@ config("sdk") {
     ]
   }
 }
+
+config("executable_config") {
+  cflags = [ "-fPIE" ]
+  ldflags = [ "-pie" ]
+}

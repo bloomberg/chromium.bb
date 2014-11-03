@@ -291,7 +291,7 @@ int Socket::GetPort() {
 }
 
 int Socket::ReadNumBytes(void* buffer, size_t num_bytes) {
-  int bytes_read = 0;
+  size_t bytes_read = 0;
   int ret = 1;
   while (bytes_read < num_bytes && ret > 0) {
     ret = Read(static_cast<char*>(buffer) + bytes_read, num_bytes - bytes_read);
@@ -380,7 +380,7 @@ bool Socket::DidReceiveEvent() const {
 }
 
 int Socket::WriteNumBytes(const void* buffer, size_t num_bytes) {
-  int bytes_written = 0;
+  size_t bytes_written = 0;
   int ret = 1;
   while (bytes_written < num_bytes && ret > 0) {
     ret = Write(static_cast<const char*>(buffer) + bytes_written,

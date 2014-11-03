@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
+      # GN version: //tools/android/common
       'target_name': 'android_tools_common',
       'type': 'static_library',
       'toolsets': ['host', 'target'],

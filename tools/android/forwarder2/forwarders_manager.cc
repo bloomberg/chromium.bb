@@ -81,7 +81,7 @@ void ForwardersManager::WaitForEventsOnInternalThread() {
     deletion_notifier_.receiver_fd(),
   };
 
-  for (int i = 0; i < arraysize(notifier_fds); ++i) {
+  for (size_t i = 0; i < arraysize(notifier_fds); ++i) {
     const int notifier_fd = notifier_fds[i];
     DCHECK_GT(notifier_fd, -1);
     FD_SET(notifier_fd, &read_fds);

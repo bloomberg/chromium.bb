@@ -49,9 +49,6 @@ namespace {
 const char kLogFilePath[] = "/tmp/host_forwarder_log";
 const char kDaemonIdentifier[] = "chrome_host_forwarder_daemon";
 
-const char kKillServerCommand[] = "kill-server";
-const char kForwardCommand[] = "forward";
-
 const int kBufSize = 256;
 
 // Needs to be global to be able to be accessed from the signal handler.
@@ -364,14 +361,14 @@ class ClientDelegate : public Daemon::ClientDelegate {
   // Daemon::ClientDelegate:
   virtual void OnDaemonReady(Socket* daemon_socket) override {
     // Send the forward command to the daemon.
-    CHECK_EQ(command_pickle_.size(),
+    CHECK_EQ(static_cast<long>(command_pickle_.size()),
              daemon_socket->WriteNumBytes(command_pickle_.data(),
                                           command_pickle_.size()));
     char buf[kBufSize];
     const int bytes_read = daemon_socket->Read(
         buf, sizeof(buf) - 1 /* leave space for null terminator */);
     CHECK_GT(bytes_read, 0);
-    DCHECK(bytes_read < sizeof(buf));
+    DCHECK(static_cast<size_t>(bytes_read) < sizeof(buf));
     buf[bytes_read] = 0;
     base::StringPiece msg(buf, bytes_read);
     if (msg.starts_with("ERROR")) {

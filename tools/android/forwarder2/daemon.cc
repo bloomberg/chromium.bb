@@ -98,31 +98,6 @@ void SigChildHandler(int signal_number) {
   SIGNAL_SAFE_LOG(ERROR, string_builder.buffer());
 }
 
-// Note that 0 is written to |lock_owner_pid| in case the file is not locked.
-bool GetFileLockOwnerPid(int fd, pid_t* lock_owner_pid) {
-  struct flock lock_info = {};
-  lock_info.l_type = F_WRLCK;
-  lock_info.l_whence = SEEK_CUR;
-  const int ret = HANDLE_EINTR(fcntl(fd, F_GETLK, &lock_info));
-  if (ret < 0) {
-    if (errno == EBADF) {
-      // Assume that the provided file descriptor corresponding to the PID file
-      // was valid until the daemon removed this file.
-      *lock_owner_pid = 0;
-      return true;
-    }
-    PError("fcntl");
-    return false;
-  }
-  if (lock_info.l_type == F_UNLCK) {
-    *lock_owner_pid = 0;
-    return true;
-  }
-  CHECK_EQ(F_WRLCK /* exclusive lock */, lock_info.l_type);
-  *lock_owner_pid = lock_info.l_pid;
-  return true;
-}
-
 scoped_ptr<Socket> ConnectToUnixDomainSocket(
     const std::string& socket_name,
     int tries_count,

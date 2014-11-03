@@ -685,7 +685,11 @@ template("android_library") {
   _base_path = "$target_gen_dir/$target_name"
   _build_config = _base_path + ".build_config"
   _jar_path = _base_path + ".jar"
-  _dex_path = _base_path + ".dex.jar"
+  if (defined(invoker.dex_path)) {
+    _dex_path = invoker.dex_path
+  } else {
+    _dex_path = _base_path + ".dex.jar"
+  }
 
   write_build_config("${target_name}__build_config") {
     type = "android_library"
@@ -1075,6 +1079,7 @@ template("android_apk") {
   }
 
   if (_dist_jar_path != "") {
+    final_deps += [ ":${_template_name}__create_dist_jar" ]
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
     # run. See build/android/pylib/instrumentation/test_jar.py. We should be
     # able to just do that calculation at build time instead.
@@ -1248,6 +1253,7 @@ template("unittest_apk") {
       deps += invoker.deps
     }
     datadeps = [
+      "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
   }

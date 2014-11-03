@@ -25,10 +25,10 @@ const int kBufferSize = 32 * 1024;
 //
 // These objects are used in a pair to handle duplex traffic, as in:
 //
-//                    ------> [BufferedCopier_1] --->
-//                  /                                \
+//                   -------> [BufferedCopier_1] --->
+//                  |                                |
 //      socket_1   *                                  * socket_2
-//                  \                                /
+//                  |                                |
 //                   <------ [BufferedCopier_2] <----
 //
 // When a BufferedCopier is in the READING state (see below), it only listens

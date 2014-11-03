@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //build/android/pylib/devices/commands:chromium_commands
       'target_name': 'chromium_commands',
       'type': 'none',
       'variables': {

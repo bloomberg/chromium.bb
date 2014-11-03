@@ -34,7 +34,6 @@ int ConnectAdbHostSocket(const char* forward_to) {
   // HHHH is the hexidecimal length of the "tcp:port:address" part.
   const size_t kBufferMaxLength = 30;
   const size_t kLengthOfLength = 4;
-  const size_t kAddressMaxLength = kBufferMaxLength - kLengthOfLength;
 
   const char kAddressPrefix[] = { 't', 'c', 'p', ':' };
   size_t address_length = arraysize(kAddressPrefix) + strlen(forward_to);
@@ -89,7 +88,7 @@ int ConnectAdbHostSocket(const char* forward_to) {
     bytes_remaining -= ret;
   }
 
-  const size_t kAdbStatusLength = 4;
+  const int kAdbStatusLength = 4;
   char response[kBufferMaxLength];
   int response_length = HANDLE_EINTR(recv(host_socket, response,
                                           kBufferMaxLength, 0));

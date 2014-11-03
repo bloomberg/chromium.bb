@@ -124,7 +124,7 @@ class ClientDelegate : public Daemon::ClientDelegate {
     const int bytes_read = daemon_socket->Read(
         buf, sizeof(buf) - 1 /* leave space for null terminator */);
     CHECK_GT(bytes_read, 0);
-    DCHECK(bytes_read < sizeof(buf));
+    DCHECK(static_cast<unsigned int>(bytes_read) < sizeof(buf));
     buf[bytes_read] = 0;
     base::StringPiece msg(buf, bytes_read);
     if (msg.starts_with("ERROR")) {
