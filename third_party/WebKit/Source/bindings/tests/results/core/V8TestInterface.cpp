@@ -1774,7 +1774,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterfaceImplementationV8Internal
 
-void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
 {
     TestInterfaceImplementation* impl = scriptWrappableBase->toImpl<TestInterfaceImplementation>();
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
@@ -1785,7 +1785,7 @@ void V8TestInterface::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, 
             referencedName->wrap(creationContext, isolate);
         DOMDataStore::setWrapperReference<V8TestInterface>(wrapper, referencedName, isolate);
     }
-    setObjectGroup(scriptWrappableBase, wrapper, isolate);
+    setObjectGroup(isolate, scriptWrappableBase, wrapper);
 }
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttributes[] = {

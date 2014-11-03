@@ -412,7 +412,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 } // namespace TestInterface2V8Internal
 
-void V8TestInterface2::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
 {
     TestInterface2* impl = scriptWrappableBase->toImpl<TestInterface2>();
     // The ownerNode() method may return a reference or a pointer.
@@ -421,7 +421,7 @@ void V8TestInterface2::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase,
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
-    setObjectGroup(scriptWrappableBase, wrapper, isolate);
+    setObjectGroup(isolate, scriptWrappableBase, wrapper);
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {

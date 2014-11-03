@@ -54,11 +54,11 @@ typedef void (*DerefObjectFunction)(ScriptWrappableBase*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappableBase*);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
-typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase*, const v8::Persistent<v8::Object>&, v8::Isolate*);
+typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappableBase*, const v8::Persistent<v8::Object>&);
 typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
-inline void setObjectGroup(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
 {
     isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(scriptWrappableBase)));
 }
@@ -165,12 +165,12 @@ struct WrapperTypeInfo {
         return toEventTargetFunction(object);
     }
 
-    void visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate) const
+    void visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper) const
     {
         if (!visitDOMWrapperFunction)
-            setObjectGroup(scriptWrappableBase, wrapper, isolate);
+            setObjectGroup(isolate, scriptWrappableBase, wrapper);
         else
-            visitDOMWrapperFunction(scriptWrappableBase, wrapper, isolate);
+            visitDOMWrapperFunction(isolate, scriptWrappableBase, wrapper);
     }
 
     // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a COMPILE_ASSERT() below.

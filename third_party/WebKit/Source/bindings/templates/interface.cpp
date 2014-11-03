@@ -570,7 +570,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% block visit_dom_wrapper %}
 {% if reachable_node_function or set_wrapper_reference_to_list %}
-void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
 {
     {{cpp_class}}* impl = scriptWrappableBase->toImpl<{{cpp_class}}>();
     {% if set_wrapper_reference_to_list %}
@@ -593,7 +593,7 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, con
         return;
     }
     {% endif %}
-    setObjectGroup(scriptWrappableBase, wrapper, isolate);
+    setObjectGroup(isolate, scriptWrappableBase, wrapper);
 }
 
 {% endif %}

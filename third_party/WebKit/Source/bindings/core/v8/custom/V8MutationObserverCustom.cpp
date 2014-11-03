@@ -67,7 +67,7 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
     info.GetReturnValue().Set(wrapper);
 }
 
-void V8MutationObserver::visitDOMWrapper(ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void V8MutationObserver::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper)
 {
     MutationObserver* observer = scriptWrappableBase->toImpl<MutationObserver>();
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > observedNodes = observer->getObservedNodes();

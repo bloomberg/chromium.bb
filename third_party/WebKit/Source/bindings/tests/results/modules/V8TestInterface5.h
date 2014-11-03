@@ -34,7 +34,7 @@ public:
     static void trace(Visitor* visitor, ScriptWrappableBase* scriptWrappableBase)
     {
     }
-    static void visitDOMWrapper(ScriptWrappableBase*, const v8::Persistent<v8::Object>&, v8::Isolate*);
+    static void visitDOMWrapper(v8::Isolate*, ScriptWrappableBase*, const v8::Persistent<v8::Object>&);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
