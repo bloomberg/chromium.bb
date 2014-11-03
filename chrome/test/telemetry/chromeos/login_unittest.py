@@ -47,7 +47,7 @@ class CrOSAutoTest(unittest.TestCase):
     self.assertTrue(browser_to_create)
     options.browser_options.create_browser_with_oobe = True
     options.browser_options.auto_login = auto_login
-    b = browser_to_create.Create()
+    b = browser_to_create.Create(options)
     b.Start()
     return b
 
