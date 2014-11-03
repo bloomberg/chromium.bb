@@ -6,10 +6,15 @@
         display: inline-block;
         content: 'before';
     }
+    #start:after {
+        /* must be an inline-block */
+        display: inline-block;
+        content: 'after';
+    }
 </style>
 
 
-<p>Passes if it doesn't crash and the pseudo exists.</p>
+<p>Passes if it doesn't crash.</p>
 
 <div id="test">
     <span id="before"><!-- no content can be here --></span>
@@ -22,17 +27,18 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 var before = document.getElementById('before');
+var start = document.getElementById('start');
 var test = document.getElementById('test');
 
 // Select from the #start backwards to the start of the line.
 window.getSelection().setBaseAndExtent(document.getElementById('start'));
 window.getSelection().modify('extend', 'backward', 'lineBoundary')
 
-// Replace the selection with a break. This apparently puts two <br>'s before
-// the #before and removes the span with "text" and the #start.
+// Replace the selection with a break. This replaces #before, text,
+// #start with two <br>'s.
 document.designMode = 'on';
 document.execCommand('InsertLineBreak');
 
 // Crash during tear down.
-test.innerHTML = "Pseudo still exists: " + (before.offsetHeight > 0);
+test.innerHTML = "Both pseudos have been removed: " + (before.offsetHeight == 0 && start.offsetHeight == 0);
 </script>
