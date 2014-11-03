@@ -234,8 +234,8 @@ void DomainReliabilityContext::StartUpload() {
           &DomainReliabilityContext::OnUploadComplete,
           weak_factory_.GetWeakPtr()));
 
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadFailover",
-                        collector_index > 0);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadCollectorIndex",
+                              static_cast<int>(collector_index));
   if (!last_upload_time_.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadInterval",
                              upload_time_ - last_upload_time_);

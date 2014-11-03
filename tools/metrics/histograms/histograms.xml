@@ -5193,6 +5193,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomainReliability.UploadCollectorIndex">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The index of the collector that a Domain Reliability upload was sent to.
+    (Later collectors are only used when earlier collectors have failed.)
+  </summary>
+</histogram>
+
 <histogram name="DomainReliability.UploadDuration" units="ms">
   <owner>ttuttle@chromium.org</owner>
   <summary>
@@ -5203,6 +5211,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="DomainReliability.UploadFailover"
     enum="DomainReliability.BooleanFailover">
   <owner>ttuttle@chromium.org</owner>
+  <obsolete>
+    Deprecated 11/2014; see UploadCollectorIndex
+  </obsolete>
   <summary>
     Whether a Domain Reliability upload was sent to a collector other than the
     first one listed in the config. (This only happens when an upload to the
