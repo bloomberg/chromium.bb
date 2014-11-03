@@ -564,6 +564,7 @@
                 ['include', '^network_time/'],
                 ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
+                ['include', '^query_parser/'],
                 ['include', '^search/'],
                 ['include', '^search_engines/'],
                 ['include', '^search_provider_logos/'],
