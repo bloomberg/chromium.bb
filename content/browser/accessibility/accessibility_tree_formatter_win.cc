@@ -207,11 +207,6 @@ base::string16 AccessibilityTreeFormatter::ToString(
   dict.GetString("role", &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
-  base::string16 name_value;
-  dict.GetString("name", &name_value);
-  WriteAttribute(true, base::StringPrintf(L"name='%ls'", name_value.c_str()),
-                 &line);
-
   for (int i = 0; i < arraysize(ALL_ATTRIBUTES); i++) {
     const char* attribute_name = ALL_ATTRIBUTES[i];
     const base::Value* value;
