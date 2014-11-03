@@ -417,22 +417,47 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(end, username_element_.selectionEnd());
   }
 
-  // Checks the message sent to PasswordAutofillManager to build the suggestion
-  // list. |username| is the expected username field value, and |show_all| is
-  // the expected flag for the PasswordAutofillManager, whether to show all
-  // suggestions, or only those starting with |username|.
-  void CheckSuggestions(const std::string& username, bool show_all) {
+  void ExpectOneCredential(const base::string16& username) {
     const IPC::Message* message =
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_ShowPasswordSuggestions::ID);
-    EXPECT_TRUE(message);
-    Tuple4<autofill::FormFieldData, base::string16, bool, gfx::RectF> args;
+    ASSERT_TRUE(message);
+    Tuple4<autofill::FormFieldData,
+           gfx::RectF,
+           std::vector<base::string16>,
+           std::vector<base::string16> > args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
-    EXPECT_EQ(2u, fill_data_.basic_data.fields.size());
-    EXPECT_EQ(fill_data_.basic_data.fields[0].name, args.a.name);
-    EXPECT_EQ(ASCIIToUTF16(username), args.a.value);
-    EXPECT_EQ(ASCIIToUTF16(username), args.b);
-    EXPECT_EQ(show_all, args.c);
+    ASSERT_EQ(1u, args.c.size());
+    EXPECT_TRUE(args.c[0] == username);
+  }
+
+  void ExpectAllCredentials() {
+    std::set<base::string16> usernames;
+    usernames.insert(username1_);
+    usernames.insert(username2_);
+    usernames.insert(username3_);
+    usernames.insert(alternate_username3_);
+
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_ShowPasswordSuggestions::ID);
+    ASSERT_TRUE(message);
+    Tuple4<autofill::FormFieldData,
+           gfx::RectF,
+           std::vector<base::string16>,
+           std::vector<base::string16> > args;
+    AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
+    ASSERT_EQ(4u, args.c.size());
+    std::set<base::string16>::iterator it;
+
+    for (int i = 0; i < 4; i++) {
+      it = usernames.find(args.c[i]);
+      EXPECT_TRUE(it != usernames.end());
+      if (it != usernames.end())
+        usernames.erase(it);
+    }
+
+    EXPECT_TRUE(usernames.empty());
 
     render_thread_->sink().ClearMessages();
   }
@@ -1430,7 +1455,7 @@ TEST_F(PasswordAutofillAgentTest, ClickAndSelect) {
   SimulateOnFillPasswordForm(fill_data_);
   SimulateElementClick(kUsernameName);
   SimulateSuggestionChoice(username_element_);
-  CheckSuggestions(kAliceUsername, true);
+  ExpectAllCredentials();
 
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
@@ -1456,7 +1481,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, false);
-  CheckSuggestions(std::string(), false);
+  ExpectAllCredentials();
 
   // Now simulate a user typing in an unrecognized username and then
   // clicking on the username element. This should also produce a message with
@@ -1465,7 +1490,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, true);
-  CheckSuggestions("baz", true);
+  ExpectAllCredentials();
 
   // Now simulate a user typing in the first letter of the username and then
   // clicking on the username element. While the typing of the first letter will
@@ -1475,7 +1500,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, true);
-  CheckSuggestions(kAliceUsername, true);
+  ExpectAllCredentials();
 }
 
 // The user types in a password, but then just before sending the form off, a

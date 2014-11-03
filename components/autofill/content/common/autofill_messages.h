@@ -285,12 +285,13 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
                     autofill::FormFieldData, /* the user name field */
                     autofill::PasswordFormFillData /* password pairings */)
 
-// Instruct the browser to show a popup with suggestions for the form field.
+// Instruct the browser to show a popup with the following suggestions from the
+// password manager.
 IPC_MESSAGE_ROUTED4(AutofillHostMsg_ShowPasswordSuggestions,
                     autofill::FormFieldData /* the form field */,
-                    base::string16 /* username typed by user */,
-                    bool /* show all suggestions */,
-                    gfx::RectF /* input field bounds, window-relative */)
+                    gfx::RectF /* input field bounds, window-relative */,
+                    std::vector<base::string16> /* suggestions */,
+                    std::vector<base::string16> /* realms */)
 
 // Inform browser of data list values for the curent field.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_SetDataList,
