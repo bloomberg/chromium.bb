@@ -223,9 +223,15 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   ASSERT_FALSE(got_downloads());
 }
 
+// Flaky on mac bots. crbug.com/429190
+#if defined(OS_MACOSX)
+#define MAYBE_CrossSiteOnunloadCookie DISABLED_CrossSiteOnunloadCookie
+#else
+#define MAYBE_CrossSiteOnunloadCookie CrossSiteOnunloadCookie
+#endif
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteOnunloadCookie) {
+                       MAYBE_CrossSiteOnunloadCookie) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
