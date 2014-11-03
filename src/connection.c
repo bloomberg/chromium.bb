@@ -290,7 +290,7 @@ wl_connection_flush(struct wl_connection *connection)
 		msg.msg_namelen = 0;
 		msg.msg_iov = iov;
 		msg.msg_iovlen = count;
-		msg.msg_control = cmsg;
+		msg.msg_control = (clen > 0) ? cmsg : NULL;
 		msg.msg_controllen = clen;
 		msg.msg_flags = 0;
 
