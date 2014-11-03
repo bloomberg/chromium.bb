@@ -163,6 +163,16 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         public void goToNavigationIndex(int index) {
             mNavigatedIndex = index;
         }
+
+        @Override
+        public int getLastCommittedEntryIndex() {
+            return -1;
+        }
+
+        @Override
+        public boolean removeEntryAtIndex(int index) {
+            return false;
+        }
     }
 
     @MediumTest

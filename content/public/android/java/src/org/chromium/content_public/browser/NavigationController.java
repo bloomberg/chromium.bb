@@ -141,4 +141,16 @@ public interface NavigationController {
      *         exists.
      */
     public NavigationEntry getPendingEntry();
+
+    /**
+     * @return The index of the last committed entry.
+     */
+    public int getLastCommittedEntryIndex();
+
+    /**
+     * Removes the entry at the specified |index|.
+     * @return false, if the index is the last committed index or the pending entry. Otherwise this
+     *         call discards any transient or pending entries.
+     */
+    public boolean removeEntryAtIndex(int index);
 }

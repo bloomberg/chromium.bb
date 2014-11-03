@@ -210,6 +210,22 @@ import org.chromium.content_public.browser.NavigationHistory;
         return null;
     }
 
+    @Override
+    public int getLastCommittedEntryIndex() {
+        if (mNativeNavigationControllerAndroid != 0) {
+            return nativeGetLastCommittedEntryIndex(mNativeNavigationControllerAndroid);
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean removeEntryAtIndex(int index) {
+        if (mNativeNavigationControllerAndroid != 0) {
+            return nativeRemoveEntryAtIndex(mNativeNavigationControllerAndroid, index);
+        }
+        return false;
+    }
+
     @CalledByNative
     private static void addToNavigationHistory(Object history, Object navigationEntry) {
         ((NavigationHistory) history).addEntry((NavigationEntry) navigationEntry);
@@ -264,4 +280,7 @@ import org.chromium.content_public.browser.NavigationHistory;
     private native void nativeSetUseDesktopUserAgent(long nativeNavigationControllerAndroid,
             boolean override, boolean reloadOnChange);
     private native NavigationEntry nativeGetPendingEntry(long nativeNavigationControllerAndroid);
+    private native int nativeGetLastCommittedEntryIndex(long nativeNavigationControllerAndroid);
+    private native boolean nativeRemoveEntryAtIndex(long nativeNavigationControllerAndroid,
+            int index);
 }

@@ -77,6 +77,8 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   base::android::ScopedJavaLocalRef<jstring>
       GetOriginalUrlForVisibleNavigationEntry(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
+  int GetLastCommittedEntryIndex(JNIEnv* env, jobject obj);
+  jboolean RemoveEntryAtIndex(JNIEnv* env, jobject obj, jint index);
 
  private:
   NavigationController* navigation_controller_;

@@ -311,4 +311,15 @@ NavigationControllerAndroid::GetPendingEntry(JNIEnv* env, jobject obj) {
       env, entry, navigation_controller_->GetPendingEntryIndex());
 }
 
+jint NavigationControllerAndroid::GetLastCommittedEntryIndex(JNIEnv* env,
+                                                             jobject obj) {
+  return navigation_controller_->GetLastCommittedEntryIndex();
+}
+
+jboolean NavigationControllerAndroid::RemoveEntryAtIndex(JNIEnv* env,
+                                                         jobject obj,
+                                                         jint index) {
+  return navigation_controller_->RemoveEntryAtIndex(index);
+}
+
 }  // namespace content
