@@ -106,6 +106,10 @@ public:
 
     void clear();
     bool isEmpty() const;
+    // Specify whether this path is volatile. Temporary paths that are discarded or
+    // modified after use should be marked as volatile. This is a hint to the device
+    // to not cache this path.
+    void setIsVolatile(bool);
     // Gets the current point of the current path, which is conceptually the final point reached by the path so far.
     // Note the Path can be empty (isEmpty() == true) and still have a current point.
     bool hasCurrentPoint() const;

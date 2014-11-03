@@ -247,6 +247,11 @@ bool Path::isEmpty() const
     return m_path.isEmpty();
 }
 
+void Path::setIsVolatile(bool isVolatile)
+{
+    m_path.setIsVolatile(isVolatile);
+}
+
 bool Path::hasCurrentPoint() const
 {
     return m_path.getPoints(0, 0);
