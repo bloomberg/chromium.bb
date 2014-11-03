@@ -207,21 +207,6 @@ public class ChromePassTest extends CompilerTestCase {
             "});\n");
     }
 
-    public void testCrDefineDoesNothingWithExportedNotAName() throws Exception {
-        test(
-            "cr.define('namespace', function() {\n" +
-            "  return {\n" +
-            "    a: 42\n" +
-            "  };\n" +
-            "});\n",
-            "var namespace = namespace || {};\n" +
-            "cr.define('namespace', function() {\n" +
-            "  return {\n" +
-            "    a: 42\n" +
-            "  };\n" +
-            "});\n");
-    }
-
     public void testCrDefineChangesReferenceToExportedFunction() throws Exception {
         test(
             "cr.define('namespace', function() {\n" +

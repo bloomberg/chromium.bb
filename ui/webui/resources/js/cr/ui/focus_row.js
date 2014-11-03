@@ -144,7 +144,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onFocusin_: function(e) {
-      if (this.boundary_.contains(e.target))
+      if (this.boundary_.contains(assertInstanceof(e.target, Node)))
         this.activeIndex = this.items.indexOf(e.target);
     },
 

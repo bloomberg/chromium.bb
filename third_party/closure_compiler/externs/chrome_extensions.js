@@ -2330,7 +2330,7 @@ chrome.bookmarks = {};
 
 /**
  * @typedef {?{
- *   pareintId: (string|undefined),
+ *   parentId: (string|undefined),
  *   index: (number|undefined),
  *   url: (string|undefined),
  *   title: (string|undefined)
@@ -2338,6 +2338,17 @@ chrome.bookmarks = {};
  * @see https://developer.chrome.com/extensions/bookmarks#method-create
  */
 chrome.bookmarks.CreateDetails;
+
+
+/**
+ * @typedef {?{
+ *   query: (string|undefined),
+ *   url: (string|undefined),
+ *   title: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/bookmarks#method-search
+ */
+chrome.bookmarks.SearchDetails;
 
 
 /**
@@ -2385,7 +2396,7 @@ chrome.bookmarks.getSubTree = function(id, callback) {};
 
 
 /**
- * @param {string} query
+ * @param {string|!chrome.bookmarks.SearchDetails} query
  * @param {function(Array.<BookmarkTreeNode>): void} callback
  * @return {Array.<BookmarkTreeNode>}
  */
@@ -3198,6 +3209,8 @@ chrome.history.onVisited;
 /**
  * @const
  * @see http://developer.chrome.com/apps/identity.html
+ * TODO: replace TokenDetails, InvalidTokenDetails and
+ *     WebAuthFlowDetails with Object.
  */
 chrome.identity = {};
 
@@ -3236,6 +3249,10 @@ chrome.identity.launchWebAuthFlow = function(details, callback) {};
 
 /** @typedef {{url: string, interactive: (boolean|undefined)}} */
 chrome.identity.WebAuthFlowDetails;
+
+
+/** @param {!function(!Object=):void} callback */
+chrome.identity.getProfileUserInfo = function(callback) {};
 
 
 /** @type {!ChromeEvent} */
@@ -5262,20 +5279,36 @@ ChromeKeyboardEvent.prototype.type;
 ChromeKeyboardEvent.prototype.requestId;
 
 
+/** @type {string|undefined} */
+ChromeKeyboardEvent.prototype.extensionId;
+
+
 /** @type {string} */
 ChromeKeyboardEvent.prototype.key;
 
 
-/** @type {boolean} */
+/** @type {string} */
+ChromeKeyboardEvent.prototype.code;
+
+
+/** @type {number|undefined} */
+ChromeKeyboardEvent.prototype.keyCode;
+
+
+/** @type {boolean|undefined} */
 ChromeKeyboardEvent.prototype.altKey;
 
 
-/** @type {boolean} */
+/** @type {boolean|undefined} */
 ChromeKeyboardEvent.prototype.ctrlKey;
 
 
-/** @type {boolean} */
+/** @type {boolean|undefined} */
 ChromeKeyboardEvent.prototype.shiftKey;
+
+
+/** @type {boolean|undefined} */
+ChromeKeyboardEvent.prototype.capsLock;
 
 
 
@@ -6047,14 +6080,6 @@ chrome.notifications.NotificationOptions;
 
 
 /**
- * @typedef {function(string): void}
- * @see http://developer.chrome.com/extensions/notifications.html#method-create
- * @see http://developer.chrome.com/extensions/notifications.html#event-onClicked
- */
-chrome.notifications.StringCallback;
-
-
-/**
  * @typedef {function(boolean): void}
  * @see http://developer.chrome.com/extensions/notifications.html#method-update
  * @see http://developer.chrome.com/extensions/notifications.html#method-clear
@@ -6086,7 +6111,7 @@ chrome.notifications.ButtonCallback;
 /**
  * @param {string} notificationId
  * @param {!chrome.notifications.NotificationOptions} options
- * @param {!chrome.notifications.StringCallback} callback
+ * @param {function(string): void} callback
  * @see http://developer.chrome.com/extensions/notifications.html#method-create
  */
 chrome.notifications.create = function(notificationId, options, callback) {};
@@ -6118,7 +6143,7 @@ chrome.notifications.getAll = function(callback) {};
 
 /**
  * @see http://developer.chrome.com/extensions/notifications.html#method-getPermissionLevel
- * @param {function(string)} callback takes 'granted' or 'denied'
+ * @param {function(string): void} callback takes 'granted' or 'denied'
  */
 chrome.notifications.getPermissionLevel = function(callback) {};
 
@@ -6131,7 +6156,9 @@ chrome.notifications.onClosed;
 
 
 /**
- * @type {!chrome.notifications.ClickedEvent}
+ * The user clicked a non-button area of the notification. Callback receives a
+ * notificationId.
+ * @type {!ChromeStringEvent}
  * @see http://developer.chrome.com/extensions/notifications.html#event-onClicked
  */
 chrome.notifications.onClicked;
@@ -6142,6 +6169,22 @@ chrome.notifications.onClicked;
  * @see http://developer.chrome.com/extensions/notifications.html#event-onButtonClicked
  */
 chrome.notifications.onButtonClicked;
+
+
+/**
+ * Indicates permission level change. Callback should expect 'granted' or
+ * 'denied'.
+ * @type {!ChromeStringEvent}
+ * @see http://developer.chrome.com/extensions/notifications.html#event-onPermissionLevelChanged
+ */
+chrome.notifications.onPermissionLevelChanged;
+
+
+/**
+ * @type {!ChromeEvent}
+ * @see http://developer.chrome.com/extensions/notifications.html#event-onShowSettings
+ */
+chrome.notifications.onShowSettings;
 
 
 
@@ -6176,40 +6219,6 @@ chrome.notifications.ClosedEvent.prototype.hasListener = function(callback) {};
  * @return {boolean}
  */
 chrome.notifications.ClosedEvent.prototype.hasListeners = function() {};
-
-
-
-/**
- * @interface
- * @see http://developer.chrome.com/extensions/notifications.html#event-onClicked
- */
-chrome.notifications.ClickedEvent = function() {};
-
-
-/**
- * @param {!chrome.notifications.StringCallback} callback
- */
-chrome.notifications.ClickedEvent.prototype.addListener = function(callback) {};
-
-
-/**
- * @param {!chrome.notifications.StringCallback} callback
- */
-chrome.notifications.ClickedEvent.prototype.removeListener =
-    function(callback) {};
-
-
-/**
- * @param {!chrome.notifications.StringCallback} callback
- * @return {boolean}
- */
-chrome.notifications.ClickedEvent.prototype.hasListener = function(callback) {};
-
-
-/**
- * @return {boolean}
- */
-chrome.notifications.ClickedEvent.prototype.hasListeners = function() {};
 
 
 

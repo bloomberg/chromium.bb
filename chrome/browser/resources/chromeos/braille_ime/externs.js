@@ -7,15 +7,6 @@
  * @externs
  */
 
-// TODO: Remove the ChromeKeyboardEvent additions when they are included
-// in third_party/closure_compiler/externs/chrome_extensions.js.
-
-/** @type {string} */
-ChromeKeyboardEvent.prototype.code;
-
-/** @type {boolean|undefined} */
-ChromeKeyboardEvent.prototype.capsLock;
-
 /**
  * @type {Object}
  */
