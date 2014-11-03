@@ -16,9 +16,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/blacklist_state.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -27,7 +32,8 @@ class Extension;
 class ExtensionPrefs;
 
 // The blacklist of extensions backed by safe browsing.
-class Blacklist : public content::NotificationObserver,
+class Blacklist : public KeyedService,
+                  public content::NotificationObserver,
                   public base::SupportsWeakPtr<Blacklist> {
  public:
   class Observer {
@@ -70,6 +76,8 @@ class Blacklist : public content::NotificationObserver,
   explicit Blacklist(ExtensionPrefs* prefs);
 
   ~Blacklist() override;
+
+  static Blacklist* Get(content::BrowserContext* context);
 
   // From the set of extension IDs passed in via |ids|, asynchronously checks
   // which are blacklisted and includes them in the resulting map passed

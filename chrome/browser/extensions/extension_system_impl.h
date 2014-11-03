@@ -45,7 +45,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;  // shared
   InfoMap* info_map() override;                                    // shared
   EventRouter* event_router() override;                            // shared
-  Blacklist* blacklist() override;  // shared
   ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;
   QuotaService* quota_service() override;  // shared
@@ -90,7 +89,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
     SharedUserScriptMaster* shared_user_script_master();
-    Blacklist* blacklist();
     InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
@@ -124,7 +122,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // per extension. Managers are instantiated the first time the declarative
     // API is used by an extension to request content scripts.
     ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
-    scoped_ptr<Blacklist> blacklist_;
     scoped_ptr<RuntimeData> runtime_data_;
     // ExtensionService depends on StateStore, Blacklist and RuntimeData.
     scoped_ptr<ExtensionService> extension_service_;

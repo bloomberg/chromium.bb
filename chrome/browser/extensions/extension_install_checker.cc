@@ -114,8 +114,7 @@ void ExtensionInstallChecker::OnRequirementsCheckDone(
 void ExtensionInstallChecker::CheckBlacklistState() {
   DCHECK(extension_.get());
 
-  extensions::Blacklist* blacklist =
-      ExtensionSystem::Get(profile_)->blacklist();
+  extensions::Blacklist* blacklist = Blacklist::Get(profile_);
   blacklist->IsBlacklisted(
       extension_->id(),
       base::Bind(&ExtensionInstallChecker::OnBlacklistStateCheckDone,

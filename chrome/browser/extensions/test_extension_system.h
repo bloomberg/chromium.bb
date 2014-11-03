@@ -66,7 +66,6 @@ class TestExtensionSystem : public ExtensionSystem {
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
   EventRouter* event_router() override;
-  Blacklist* blacklist() override;
   ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;
   QuotaService* quota_service() override;
@@ -92,7 +91,6 @@ class TestExtensionSystem : public ExtensionSystem {
   // A pointer to the TestingValueStore owned by |state_store_|.
   TestingValueStore* value_store_;
   ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
-  scoped_ptr<Blacklist> blacklist_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_system_factory.h"
 
+#include "chrome/browser/extensions/blacklist_factory.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,6 +46,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   DependsOn(policy::ProfilePolicyConnectorFactory::GetInstance());
   DependsOn(ProcessManagerFactory::GetInstance());
   DependsOn(RendererStartupHelperFactory::GetInstance());
+  DependsOn(BlacklistFactory::GetInstance());
 }
 
 ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {

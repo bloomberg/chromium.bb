@@ -29,7 +29,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class Blacklist;
 class ContentVerifier;
 class DeclarativeUserScriptMaster;
 class ErrorConsole;
@@ -92,9 +91,6 @@ class ExtensionSystem : public KeyedService {
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
-
-  // The blacklist is created at startup.
-  virtual Blacklist* blacklist() = 0;
 
   // The ErrorConsole is created at startup.
   virtual ErrorConsole* error_console() = 0;

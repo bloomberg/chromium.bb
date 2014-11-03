@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/blacklist_factory.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -178,6 +179,11 @@ Blacklist::Blacklist(ExtensionPrefs* prefs) {
 }
 
 Blacklist::~Blacklist() {
+}
+
+// static
+Blacklist* Blacklist::Get(content::BrowserContext* context) {
+  return BlacklistFactory::GetForBrowserContext(context);
 }
 
 void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,

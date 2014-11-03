@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/declarative_user_script_master.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -117,8 +116,6 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_,
       profile_->GetPath().AppendASCII(extensions::kRulesStoreName),
       false));
-
-  blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
 
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =
@@ -319,7 +316,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefs::Get(profile_),
-      blacklist_.get(),
+      Blacklist::Get(profile_),
       autoupdate_enabled,
       extensions_enabled,
       &ready_));
@@ -449,10 +446,6 @@ EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
 }
 
-Blacklist* ExtensionSystemImpl::Shared::blacklist() {
-  return blacklist_.get();
-}
-
 ErrorConsole* ExtensionSystemImpl::Shared::error_console() {
   return error_console_.get();
 }
@@ -551,10 +544,6 @@ LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
-}
-
-Blacklist* ExtensionSystemImpl::blacklist() {
-  return shared_->blacklist();
 }
 
 const OneShotEvent& ExtensionSystemImpl::ready() const {

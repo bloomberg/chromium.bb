@@ -87,7 +87,6 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
   value_store_ = value_store.get();
   state_store_.reset(new StateStore(profile_, value_store.Pass()));
-  blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProviders(
       ExtensionManagementFactory::GetForBrowserContext(profile_)
@@ -97,7 +96,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
                                                 command_line,
                                                 install_directory,
                                                 ExtensionPrefs::Get(profile_),
-                                                blacklist_.get(),
+                                                Blacklist::Get(profile_),
                                                 autoupdate_enabled,
                                                 true,
                                                 &ready_));
@@ -145,10 +144,6 @@ void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
 }
 
 EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
-
-Blacklist* TestExtensionSystem::blacklist() {
-  return blacklist_.get();
-}
 
 ErrorConsole* TestExtensionSystem::error_console() {
   return error_console_.get();

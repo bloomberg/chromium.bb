@@ -455,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlockedByPolicy) {
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlacklistedForMalware) {
   // Mock a BLACKLISTED_MALWARE return status.
   extensions::TestBlacklist blacklist_tester(
-      ExtensionSystem::Get(profile())->blacklist());
+      extensions::Blacklist::Get(profile()));
   blacklist_tester.SetBlacklistState(
       kDefaultAppId, extensions::BLACKLISTED_MALWARE, false);
 
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlacklistedForMalware) {
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, BlacklistStateUnknown) {
   // Mock a BLACKLISTED_MALWARE return status.
   extensions::TestBlacklist blacklist_tester(
-      ExtensionSystem::Get(profile())->blacklist());
+      extensions::Blacklist::Get(profile()));
   blacklist_tester.SetBlacklistState(
       kDefaultAppId, extensions::BLACKLISTED_UNKNOWN, false);
 
