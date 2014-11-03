@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#include "base/metrics/sparse_histogram.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
 #include "media/base/data_buffer.h"
@@ -497,11 +496,8 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
                                     bus_number,
                                     number_of_frames,
                                     audio_input->audio_buffer_list());
-  if (result) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
-    NOTREACHED();
+  if (result)
     return result;
-  }
 
   // Deliver recorded data to the consumer as a callback.
   return audio_input->Provide(number_of_frames,

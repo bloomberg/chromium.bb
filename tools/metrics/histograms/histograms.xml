@@ -11721,13 +11721,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
 
-<histogram name="Media.AudioInputCbErrorMac" units="OSStatus">
-  <owner>xians@chromium.org</owner>
-  <summary>
-    Error codes that AudioUnitRender() returns in AUAudioInputStream on Mac.
-  </summary>
-</histogram>
-
 <histogram name="Media.AudioInputController" units="ms">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Measures the time taken for AudioInputController::</summary>
