@@ -802,13 +802,6 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
     return;
   virtual_keyboard_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      enabled,
-      ui::A11Y_NOTIFICATION_NONE);
-
-  NotifyAccessibilityStatusChanged(details);
-
 #if defined(USE_ASH) && !defined(USE_ATHENA)
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
   // Note that there are two versions of the on-screen keyboard. A full layout
@@ -823,6 +816,12 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   else
     ash::Shell::GetInstance()->DeactivateKeyboard();
 #endif
+
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+      enabled,
+      ui::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
 }
 
 bool AccessibilityManager::IsBrailleDisplayConnected() const {
