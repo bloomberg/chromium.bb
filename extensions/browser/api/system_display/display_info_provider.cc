@@ -80,10 +80,10 @@ DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   int64 primary_id = screen->GetPrimaryDisplay().id();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
   DisplayInfo all_displays;
-  for (int i = 0; i < screen->GetNumDisplays(); ++i) {
+  for (const gfx::Display& display : displays) {
     linked_ptr<core_api::system_display::DisplayUnitInfo> unit(
-        CreateDisplayUnitInfo(displays[i], primary_id));
-    UpdateDisplayUnitInfoForPlatform(displays[i], unit.get());
+        CreateDisplayUnitInfo(display, primary_id));
+    UpdateDisplayUnitInfoForPlatform(display, unit.get());
     all_displays.push_back(unit);
   }
   return all_displays;
