@@ -206,18 +206,6 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_path):
   return None
 
 
-# This is copied from build/scripts/common/chromium_utils.py.
-def MaybeMakeDirectory(*path):
-  """Creates an entire path, if it doesn't already exist."""
-  file_path = os.path.join(*path)
-  try:
-    os.makedirs(file_path)
-  except OSError as e:
-    if e.errno != errno.EEXIST:
-      return False
-  return True
-
-
 # This was copied from build/scripts/common/chromium_utils.py.
 def ExtractZip(filename, output_dir, verbose=True):
   """ Extract the zip archive in the output directory."""
@@ -1275,7 +1263,7 @@ class BisectPerformanceMetrics(object):
             'DEPS checkout Failed for chromium revision : [%s]' % chromium_sha)
     return (None, None)
 
-  def _ObtainBuild(self, depot, revision=None):
+  def ObtainBuild(self, depot, revision=None):
     """Obtains a build by either downloading or building directly.
 
     Args:
@@ -1613,6 +1601,8 @@ class BisectPerformanceMetrics(object):
       On success, a tuple containing the results of the performance test.
       Otherwise, a tuple with the error message.
     """
+    logging.info('Running RunTest with rev "%s", command "%s"',
+                 revision, command)
     # Decide which sync program to use.
     sync_client = None
     if depot == 'chromium' or depot == 'android-chrome':
@@ -1640,7 +1630,7 @@ class BisectPerformanceMetrics(object):
     # Obtain a build for this revision. This may be done by requesting a build
     # from another builder, waiting for it and downloading it.
     start_build_time = time.time()
-    build_success = self._ObtainBuild(depot, revision)
+    build_success = self.ObtainBuild(depot, revision)
     if not build_success:
       return ('Failed to build revision: [%s]' % str(revision),
               BUILD_RESULT_FAIL)
@@ -2423,14 +2413,26 @@ def _IsPlatformSupported():
   return os.name in supported
 
 
+def RemoveBuildFiles(build_type):
+  """Removes build files from previous runs."""
+  out_dir = os.path.join('out', build_type)
+  build_dir = os.path.join('build', build_type)
+  logging.info('Removing build files in "%s" and "%s".',
+               os.path.abspath(out_dir), os.path.abspath(build_dir))
+  try:
+    RemakeDirectoryTree(out_dir)
+    RemakeDirectoryTree(build_dir)
+  except Exception as e:
+    raise RuntimeError('Got error in RemoveBuildFiles: %s' % e)
+
+
 def RemakeDirectoryTree(path_to_dir):
   """Removes a directory tree and replaces it with an empty one.
 
   Returns True if successful, False otherwise.
   """
-  if not RemoveDirectoryTree(path_to_dir):
-    return False
-  return MaybeMakeDirectory(path_to_dir)
+  RemoveDirectoryTree(path_to_dir)
+  MaybeMakeDirectory(path_to_dir)
 
 
 def RemoveDirectoryTree(path_to_dir):
@@ -2440,15 +2442,18 @@ def RemoveDirectoryTree(path_to_dir):
       shutil.rmtree(path_to_dir)
   except OSError, e:
     if e.errno != errno.ENOENT:
-      return False
-  return True
+      raise
 
 
-def RemoveBuildFiles(build_type):
-  """Removes build files from previous runs."""
-  out_dir = os.path.join('out', build_type)
-  build_dir = os.path.join('build', build_type)
-  return RemakeDirectoryTree(out_dir) and RemakeDirectoryTree(build_dir)
+# This is copied from build/scripts/common/chromium_utils.py.
+def MaybeMakeDirectory(*path):
+  """Creates an entire path, if it doesn't already exist."""
+  file_path = os.path.join(*path)
+  try:
+    os.makedirs(file_path)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      raise
 
 
 class BisectOptions(object):
@@ -2542,12 +2547,12 @@ class BisectOptions(object):
                        'working_directory and that will be used to perform the '
                        'bisection. This parameter is optional, if it is not '
                        'supplied, the script will work from the current depot.')
-    group.add_argument('--build_preference', type='choice',
+    group.add_argument('--build_preference', type=str,
                        choices=['msvs', 'ninja', 'make'],
                        help='The preferred build system to use. On linux/mac '
                             'the options are make/ninja. On Windows, the '
                             'options are msvs/ninja.')
-    group.add_argument('--target_platform', type='choice', default='chromium',
+    group.add_argument('--target_platform', type=str, default='chromium',
                        choices=['chromium', 'android', 'android-chrome'],
                        help='The target platform. Choices are "chromium" '
                             '(current platform), or "android". If you specify '
@@ -2572,18 +2577,18 @@ class BisectOptions(object):
     group.add_argument('--gs_bucket', default='', dest='gs_bucket',
                        help='Name of Google Storage bucket to upload or '
                             'download build. e.g., chrome-perf')
-    group.add_argument('--target_arch', type='choice', default='ia32',
+    group.add_argument('--target_arch', type=str, default='ia32',
                        dest='target_arch', choices=['ia32', 'x64', 'arm'],
                        help='The target build architecture. Choices are "ia32" '
                             '(default), "x64" or "arm".')
-    group.add_argument('--target_build_type', type='choice', default='Release',
+    group.add_argument('--target_build_type', type=str, default='Release',
                        choices=['Release', 'Debug'],
                        help='The target build type. Choices are "Release" '
                             '(default), or "Debug".')
     group.add_argument('--builder_host', dest='builder_host',
                        help='Host address of server to produce build by '
                             'posting try job request.')
-    group.add_argument('--builder_port', dest='builder_port', type='int',
+    group.add_argument('--builder_port', dest='builder_port', type=int,
                        help='HTTP port of the server to produce build by '
                             'posting try job request.')
 
@@ -2600,7 +2605,7 @@ class BisectOptions(object):
                        action='store_true',
                        help='DEBUG: Don\'t score the confidence of the initial '
                             'good and bad revisions\' test results.')
-    group.add_argument('--debug_fake_first_test_mean', type='int', default='0',
+    group.add_argument('--debug_fake_first_test_mean', type=int, default='0',
                        help='DEBUG: When faking performance tests, return this '
                             'value as the mean of the first performance test, '
                             'and return a mean of 0.0 for further tests.')
@@ -2626,7 +2631,7 @@ class BisectOptions(object):
   def ParseCommandLine(self):
     """Parses the command line for bisect options."""
     parser = self._CreateCommandLineParser()
-    opts, _ = parser.parse_args()
+    opts = parser.parse_args()
 
     try:
       if (not opts.metric and
@@ -2720,9 +2725,7 @@ def main():
       bisect_utils.CreateBisectDirectoryAndSetupDepot(opts, custom_deps)
 
       os.chdir(os.path.join(os.getcwd(), 'src'))
-
-      if not RemoveBuildFiles(opts.target_build_type):
-        raise RuntimeError('Something went wrong removing the build files.')
+      RemoveBuildFiles(opts.target_build_type)
 
     if not _IsPlatformSupported():
       raise RuntimeError('Sorry, this platform isn\'t supported yet.')
@@ -2746,13 +2749,12 @@ def main():
       return 0
     finally:
       bisect_test.PerformCleanup()
-  except RuntimeError, e:
+  except RuntimeError as e:
     if opts.output_buildbot_annotations:
       # The perf dashboard scrapes the "results" step in order to comment on
       # bugs. If you change this, please update the perf dashboard as well.
       bisect_utils.OutputAnnotationStepStart('Results')
-    print 'Error: ', e.message
-    logging.warn('A RuntimeError was caught: %s', e.message)
+    print 'Runtime Error: %s' % e
     if opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
   return 1

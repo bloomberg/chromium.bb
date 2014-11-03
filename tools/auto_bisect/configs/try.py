@@ -28,10 +28,11 @@ BISECT_CONFIG = os.path.join(SCRIPT_DIR, os.path.pardir, 'bisect.cfg')
 PERF_TEST_CONFIG = os.path.join(
     SCRIPT_DIR, os.path.pardir, os.path.pardir, 'run-perf-test.cfg')
 PLATFORM_BOT_MAP = {
-    'linux': ['linux_perf_bot'],
+    'linux': ['linux_perf_bisect'],
     'mac': ['mac_perf_bisect', 'mac_10_9_perf_bisect'],
     'win': ['win_perf_bisect', 'win_8_perf_bisect', 'win_xp_perf_bisect'],
     'android': [
+        'android_gn_perf_bisect',
         'android_nexus4_perf_bisect',
         'android_nexus5_perf_bisect',
         'android_nexus7_perf_bisect',
@@ -46,16 +47,17 @@ def main(argv):
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--full', action='store_true',
                       help='Run each config on all applicable bots.')
-  parser.add_argument('--filter',
-                      help='Filter for config filenames to use. Only configs '
-                           'containing the given substring will be tried.')
-  parser.add_argument('--verbose', '-v', action='store_true')
+  parser.add_argument('configs', nargs='+',
+                      help='One or more sample config files.')
+  parser.add_argument('--verbose', '-v', action='store_true',
+                      help='Output additional debugging information.')
+  parser.add_argument('--dry-run', action='store_true',
+                      help='Don\'t execute "git try" while running.')
   args = parser.parse_args(argv[1:])
   _SetupLogging(args.verbose)
-  source_configs = _SourceConfigs(args.filter)
-  logging.debug('Source configs: %s', source_configs)
+  logging.debug('Source configs: %s', args.configs)
   try:
-    _StartTryJobs(source_configs, args.full)
+    _StartTryJobs(args.configs, args.full, args.dry_run)
   except subprocess.CalledProcessError as error:
     print str(error)
     print error.output
@@ -68,22 +70,12 @@ def _SetupLogging(verbose):
   logging.basicConfig(level=level)
 
 
-def _SourceConfigs(name_filter):
-  """Gets a list of paths to sample configs to try."""
-  files = os.listdir(SCRIPT_DIR)
-  files = [os.path.join(SCRIPT_DIR, name) for name in files]
-  files = [name for name in files if name.endswith('.cfg')]
-  if name_filter:
-    files = [name for name in files if name_filter in name]
-  return files
-
-
-def _StartTryJobs(source_configs, full_mode=False):
+def _StartTryJobs(source_configs, full_mode=False, dry_run=False):
   """Tries each of the given sample configs on one or more try bots."""
   for source_config in source_configs:
     dest_config = _DestConfig(source_config)
     bot_names = _BotNames(source_config, full_mode=full_mode)
-    _StartTry(source_config, dest_config, bot_names)
+    _StartTry(source_config, dest_config, bot_names, dry_run=dry_run)
 
 
 def _DestConfig(source_config):
@@ -104,7 +96,7 @@ def _BotNames(source_config, full_mode=False):
   return [bot_names[0]]
 
 
-def _StartTry(source_config, dest_config, bot_names):
+def _StartTry(source_config, dest_config, bot_names, dry_run=False):
   """Sends a try job with the given config to the given try bots.
 
   Args:
@@ -123,10 +115,10 @@ def _StartTry(source_config, dest_config, bot_names):
   try:
     # Start the try job.
     job_name = 'Automatically-started (%s)' % os.path.basename(source_config)
-    try_command = ['git', 'try', '--svn_repo', SVN_URL, '-n', job_name]
+    try_command = ['git', 'try', '--svn_repo', SVN_URL, '--name', job_name]
     for bot_name in bot_names:
-      try_command.extend(['-b', bot_name])
-    print _Run(try_command)
+      try_command.extend(['--bot', bot_name])
+    print _Run(try_command, dry_run=dry_run)
   finally:
     # Revert the immediately-previous commit which was made just above.
     assert _LastCommitMessage() == AUTO_COMMIT_MESSAGE
@@ -137,7 +129,7 @@ def _LastCommitMessage():
   return _Run(['git', 'log', '--format=%s', '-1']).strip()
 
 
-def _Run(command):
+def _Run(command, dry_run=False):
   """Runs a command in a subprocess.
 
   Args:
@@ -150,6 +142,8 @@ def _Run(command):
     subprocess.CalledProcessError: The return-code was non-zero.
   """
   logging.debug('Running %s', command)
+  if dry_run:
+    return 'Did not run command because this is a dry run.'
   return subprocess.check_output(command)
 
 

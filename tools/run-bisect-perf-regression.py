@@ -248,12 +248,12 @@ def _RunPerformanceTest(config):
   bisect_utils.OutputAnnotationStepStart('Building With Patch')
 
   opts = _CreateBisectOptionsFromConfig(config)
-  b = bisect_perf_regression.BisectPerformanceMetrics(opts)
+  b = bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
 
   if bisect_utils.RunGClient(['runhooks']):
     raise RuntimeError('Failed to run gclient runhooks')
 
-  if not b.BuildCurrentRevision('chromium'):
+  if not b.ObtainBuild('chromium'):
     raise RuntimeError('Patched version failed to build.')
 
   bisect_utils.OutputAnnotationStepClosed()
@@ -282,7 +282,7 @@ def _RunPerformanceTest(config):
   if bisect_utils.RunGClient(['runhooks']):
     raise RuntimeError('Failed to run gclient runhooks')
 
-  if not b.BuildCurrentRevision('chromium'):
+  if not b.ObtainBuild('chromium'):
     raise RuntimeError('Unpatched version failed to build.')
 
   bisect_utils.OutputAnnotationStepClosed()
