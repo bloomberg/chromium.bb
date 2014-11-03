@@ -11,10 +11,6 @@
 #include <limits>
 #include <vector>
 
-#if defined(OS_POSIX)
-#include <utility>  // for pair<>
-#endif
-
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
