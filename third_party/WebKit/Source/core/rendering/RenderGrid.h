@@ -128,6 +128,13 @@ private:
     LayoutUnit gridAreaBreadthForChild(const RenderBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 
     virtual void paintChildren(PaintInfo&, const LayoutPoint&) override;
+    bool needToStretchChildLogicalHeight(const RenderBox&) const;
+    LayoutUnit childIntrinsicHeight(const RenderBox&) const;
+    LayoutUnit childIntrinsicWidth(const RenderBox&) const;
+    LayoutUnit intrinsicLogicalHeightForChild(const RenderBox&) const;
+    LayoutUnit marginLogicalHeightForChild(const RenderBox&) const;
+    LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const RenderBox&) const;
+    void applyStretchAlignmentToChildIfNeeded(RenderBox&, LayoutUnit gridAreaBreadthForChild);
 
 #if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);

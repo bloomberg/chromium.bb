@@ -197,13 +197,19 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
     return NoInherit;
 }
 
-ItemPosition RenderStyle::resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle)
+ItemPosition RenderStyle::resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer)
 {
-    ItemPosition align = childStyle->alignSelf();
     // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (align == ItemPositionAuto)
-        align = (parentStyle->alignItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->alignItems();
-    return align;
+    if (childStyle->alignSelf() == ItemPositionAuto)
+        return (parentStyle->alignItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle->alignItems();
+    return childStyle->alignSelf();
+}
+
+ItemPosition RenderStyle::resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer)
+{
+    if (childStyle->justifySelf() == ItemPositionAuto)
+        return (parentStyle->justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForRenderer : parentStyle->justifyItems();
+    return childStyle->justifySelf();
 }
 
 void RenderStyle::inheritFrom(const RenderStyle* inheritParent, IsAtShadowBoundary isAtShadowBoundary)

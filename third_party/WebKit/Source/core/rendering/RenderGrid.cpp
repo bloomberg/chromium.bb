@@ -624,6 +624,8 @@ LayoutUnit RenderGrid::logicalHeightForChild(RenderBox& child, Vector<GridTrack>
     if (child.style()->logicalHeight().isPercent() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth)
         layoutScope.setNeedsLayout(&child);
 
+    child.clearOverrideLogicalContentHeight();
+
     child.setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
     // If |child| has a percentage logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
@@ -1117,9 +1119,8 @@ void RenderGrid::layoutGridItems()
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
 
-        // FIXME: Grid items should stretch to fill their cells. Once we
-        // implement grid-{column,row}-align, we can also shrink to fit. For
-        // now, just size as if we were a regular child.
+        applyStretchAlignmentToChildIfNeeded(*child, overrideContainingBlockContentLogicalHeight);
+
         child->layoutIfNeeded();
 
 #if ENABLE(ASSERT)
@@ -1237,19 +1238,11 @@ LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox& child) co
     return columnPosition + offsetFromColumnPosition / 2;
 }
 
-static ItemPosition resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle)
-{
-    ItemPosition justify = childStyle->justifySelf();
-    if (justify == ItemPositionAuto)
-        justify = (parentStyle->justifyItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->justifyItems();
-    return justify;
-}
-
 LayoutUnit RenderGrid::columnPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    switch (resolveJustification(style(), child.style())) {
+    switch (RenderStyle::resolveJustification(style(), child.style(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // For orthogonal writing-modes, this computes to 'start'
         // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
@@ -1309,6 +1302,7 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox& child) const
     case ItemPositionAuto:
         break;
     case ItemPositionStretch:
+        return startOfColumnForChild(child);
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:
         // FIXME: Implement the previous values. For now, we always start align the child.
@@ -1357,11 +1351,86 @@ LayoutUnit RenderGrid::centeredRowPositionForChild(const RenderBox& child) const
     return rowPosition + offsetFromRowPosition / 2;
 }
 
+static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const RenderBox& child)
+{
+    LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
+    return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+bool RenderGrid::needToStretchChildLogicalHeight(const RenderBox& child) const
+{
+    if (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch) != ItemPositionStretch)
+        return false;
+
+    return isHorizontalWritingMode() && child.style()->height().isAuto();
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::childIntrinsicHeight(const RenderBox& child) const
+{
+    if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
+        return constrainedChildIntrinsicContentLogicalHeight(child);
+    return child.height();
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::childIntrinsicWidth(const RenderBox& child) const
+{
+    if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
+        return constrainedChildIntrinsicContentLogicalHeight(child);
+    return child.width();
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::intrinsicLogicalHeightForChild(const RenderBox& child) const
+{
+    return isHorizontalWritingMode() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::marginLogicalHeightForChild(const RenderBox& child) const
+{
+    return isHorizontalWritingMode() ? child.marginHeight() : child.marginWidth();
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+LayoutUnit RenderGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const RenderBox& child) const
+{
+    LayoutUnit childLogicalHeight = marginLogicalHeightForChild(child) + intrinsicLogicalHeightForChild(child);
+    return gridAreaBreadthForChild - childLogicalHeight;
+}
+
+// FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
+void RenderGrid::applyStretchAlignmentToChildIfNeeded(RenderBox& child, LayoutUnit gridAreaBreadthForChild)
+{
+    if (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch) != ItemPositionStretch)
+        return;
+
+    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
+    if (child.style()->logicalHeight().isAuto()) {
+        // FIXME: If the child has orthogonal flow, then it already has an override height set, so use it.
+        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
+        if (!hasOrthogonalWritingMode) {
+            LayoutUnit heightBeforeStretching = needToStretchChildLogicalHeight(child) ? constrainedChildIntrinsicContentLogicalHeight(child) : child.logicalHeight();
+            LayoutUnit stretchedLogicalHeight = heightBeforeStretching + availableAlignmentSpaceForChildBeforeStretching(gridAreaBreadthForChild, child);
+            LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, heightBeforeStretching - child.borderAndPaddingLogicalHeight());
+            LayoutUnit desiredLogicalContentHeight = desiredLogicalHeight - child.borderAndPaddingLogicalHeight();
+
+            // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
+            if (desiredLogicalHeight != child.logicalHeight() || !child.hasOverrideHeight() || desiredLogicalContentHeight != child.overrideLogicalContentHeight()) {
+                child.setOverrideLogicalContentHeight(desiredLogicalContentHeight);
+                child.setLogicalHeight(0);
+                child.forceChildLayout();
+            }
+        }
+    }
+}
+
 LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
-
-    switch (RenderStyle::resolveAlignment(style(), child.style())) {
+    switch (RenderStyle::resolveAlignment(style(), child.style(), ItemPositionStretch)) {
     case ItemPositionSelfStart:
         // If orthogonal writing-modes, this computes to 'Start'.
         // FIXME: grid track sizing and positioning does not support orthogonal modes yet.
@@ -1414,7 +1483,6 @@ LayoutUnit RenderGrid::rowPositionForChild(const RenderBox& child) const
     case ItemPositionEnd:
         return endOfRowForChild(child);
     case ItemPositionStretch:
-        // FIXME: Implement the Stretch value. For now, we always start align the child.
         return startOfRowForChild(child);
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:

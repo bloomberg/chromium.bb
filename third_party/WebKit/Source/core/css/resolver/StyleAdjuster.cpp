@@ -301,8 +301,11 @@ void StyleAdjuster::adjustStyleForAlignment(RenderStyle& style, const RenderStyl
     // Flex Containers: 'auto' computes to 'flex-start'.
     // Grid Containers: 'auto' computes to 'start', and 'stretch' behaves like 'start'.
     if ((style.justifyContent() == ContentPositionAuto) && (style.justifyContentDistribution() == ContentDistributionDefault)) {
-        if (style.isDisplayFlexibleBox()) {
-            style.setJustifyContent(ContentPositionFlexStart);
+        if (style.isDisplayFlexibleOrGridBox()) {
+            if (style.isDisplayFlexibleBox())
+                style.setJustifyContent(ContentPositionFlexStart);
+            else
+                style.setJustifyContent(ContentPositionStart);
         }
     }
 }

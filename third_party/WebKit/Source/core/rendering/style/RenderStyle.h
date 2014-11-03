@@ -345,7 +345,8 @@ public:
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
-    static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle);
+    static ItemPosition resolveAlignment(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer);
+    static ItemPosition resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle, ItemPosition resolvedAutoPositionForRenderer);
 
     StyleDifference visualInvalidationDiff(const RenderStyle&) const;
 
