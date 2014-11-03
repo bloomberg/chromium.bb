@@ -54,6 +54,7 @@ from bisect_results import BisectResults
 from bisect_state import BisectState
 import bisect_utils
 import builder
+import query_crbug
 import math_utils
 import request_build
 import source_control
@@ -2134,6 +2135,7 @@ class BisectPerformanceMetrics(object):
     Returns:
       A BisectResults object.
     """
+
     # Choose depot to bisect first
     target_depot = 'chromium'
     if self.opts.target_platform == 'android-chrome':
@@ -2489,6 +2491,7 @@ class BisectOptions(object):
     self.builder_port = None
     self.bisect_mode = bisect_utils.BISECT_MODE_MEAN
     self.improvement_direction = 0
+    self.bug_id = ''
 
   @staticmethod
   def _AddBisectOptionsGroup(parser):
@@ -2536,6 +2539,11 @@ class BisectOptions(object):
                                 bisect_utils.BISECT_MODE_RETURN_CODE],
                        help='The bisect mode. Choices are to bisect on the '
                             'difference in mean, std_dev, or return_code.')
+    group.add_argument('--bug_id', default='',
+                       help='The id for the bug associated with this bisect. ' +
+                            'If this number is given, bisect will attempt to ' +
+                            'verify that the bug is not closed before '
+                            'starting.')
 
   @staticmethod
   def _AddBuildOptionsGroup(parser):
@@ -2547,12 +2555,12 @@ class BisectOptions(object):
                        'working_directory and that will be used to perform the '
                        'bisection. This parameter is optional, if it is not '
                        'supplied, the script will work from the current depot.')
-    group.add_argument('--build_preference', type=str,
+    group.add_argument('--build_preference',
                        choices=['msvs', 'ninja', 'make'],
                        help='The preferred build system to use. On linux/mac '
                             'the options are make/ninja. On Windows, the '
                             'options are msvs/ninja.')
-    group.add_argument('--target_platform', type=str, default='chromium',
+    group.add_argument('--target_platform', default='chromium',
                        choices=['chromium', 'android', 'android-chrome'],
                        help='The target platform. Choices are "chromium" '
                             '(current platform), or "android". If you specify '
@@ -2577,11 +2585,11 @@ class BisectOptions(object):
     group.add_argument('--gs_bucket', default='', dest='gs_bucket',
                        help='Name of Google Storage bucket to upload or '
                             'download build. e.g., chrome-perf')
-    group.add_argument('--target_arch', type=str, default='ia32',
+    group.add_argument('--target_arch', default='ia32',
                        dest='target_arch', choices=['ia32', 'x64', 'arm'],
                        help='The target build architecture. Choices are "ia32" '
                             '(default), "x64" or "arm".')
-    group.add_argument('--target_build_type', type=str, default='Release',
+    group.add_argument('--target_build_type', default='Release',
                        choices=['Release', 'Debug'],
                        help='The target build type. Choices are "Release" '
                             '(default), or "Debug".')
@@ -2711,6 +2719,23 @@ def main():
   try:
     opts = BisectOptions()
     opts.ParseCommandLine()
+
+    if opts.bug_id:
+      if opts.output_buildbot_annotations:
+        bisect_utils.OutputAnnotationStepStart('Checking Issue Tracker')
+      issue_closed = query_crbug.CheckIssueClosed(opts.bug_id)
+      if issue_closed:
+        print 'Aborting bisect because bug is closed'
+      else:
+        print 'Could not confirm bug is closed, proceeding.'
+      if opts.output_buildbot_annotations:
+        bisect_utils.OutputAnnotationStepClosed()
+      if issue_closed:
+        results = BisectResults(abort_reason='the bug is closed.')
+        bisect_test = BisectPerformanceMetrics(opts, os.getcwd())
+        bisect_test.printer.FormatAndPrintResults(results)
+        return 0
+
 
     if opts.extra_src:
       extra_src = bisect_utils.LoadExtraSrc(opts.extra_src)

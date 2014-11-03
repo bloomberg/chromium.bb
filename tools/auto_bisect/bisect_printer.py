@@ -24,6 +24,20 @@ Test Metric: %(metrics)s
 Relative Change: %(change)s
 Estimated Confidence: %(confidence).02f%%"""
 
+# When the bisect was aborted without a bisect failure the following template
+# is used.
+ABORT_REASON_TEMPLATE = """
+===== BISECTION ABORTED =====
+The bisect was aborted because %(abort_reason)s
+Please contact the the team (see below) if you believe this is in error.
+
+Bug ID: %(bug_id)s
+
+Test Command: %(command)s
+Test Metric: %(metric)s
+Good revision: %(good_revision)s
+Bad revision: %(bad_revision)s """
+
 # The perf dashboard specifically looks for the string
 # "Author  : " to parse out who to cc on a bug. If you change the
 # formatting here, please update the perf dashboard as well.
@@ -87,6 +101,10 @@ class BisectPrinter(object):
     Args:
       bisect_results: BisectResult object containing results to be printed.
     """
+    if bisect_results.abort_reason:
+      self._PrintAbortResults(bisect_results.abort_reason)
+      return
+
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Build Status Per Revision')
 
@@ -136,6 +154,22 @@ class BisectPrinter(object):
         revision_states)
     self._PrintTestedCommitsTable(revision_states, first_working_rev,
                                   last_broken_rev, 100, final_step=False)
+
+  def _PrintAbortResults(self, abort_reason):
+
+    if self.opts.output_buildbot_annotations:
+      bisect_utils.OutputAnnotationStepStart('Results')
+    print ABORT_REASON_TEMPLATE % {
+        'abort_reason': abort_reason,
+        'bug_id': self.opts.bug_id or 'NOT SPECIFIED',
+        'command': self.opts.command,
+        'metric': '/'.join(self.opts.metric),
+        'good_revision': self.opts.good_revision,
+        'bad_revision': self.opts.bad_revision,
+    }
+    self._PrintThankYou()
+    if self.opts.output_buildbot_annotations:
+      bisect_utils.OutputAnnotationStepClosed()
 
   @staticmethod
   def _PrintThankYou():

@@ -38,7 +38,7 @@ class BisectResults(object):
   """
 
   def __init__(self, bisect_state=None, depot_registry=None, opts=None,
-               runtime_warnings=None, error=None):
+               runtime_warnings=None, error=None, abort_reason=None):
     """Computes final bisect results after a bisect run is complete.
 
     This constructor should be called in one of the following ways:
@@ -58,7 +58,8 @@ class BisectResults(object):
     """
 
     self.error = error
-    if error is not None:
+    self.abort_reason = abort_reason
+    if error is not None or abort_reason is not None:
       return
 
     assert (bisect_state is not None and depot_registry is not None and
