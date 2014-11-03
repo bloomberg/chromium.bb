@@ -60,7 +60,8 @@ ScopedVector<ToolbarActionViewController> GetToolbarActions(
   // Extension actions come first.
   extensions::ExtensionActionManager* action_manager =
       extensions::ExtensionActionManager::Get(browser->profile());
-  const extensions::ExtensionList& toolbar_items = model->toolbar_items();
+  const extensions::ExtensionList& toolbar_items = model->GetItemOrderForTab(
+      browser->tab_strip_model()->GetActiveWebContents());
   for (const scoped_refptr<const Extension>& extension : toolbar_items) {
     actions.push_back(new ExtensionActionViewController(
         extension.get(),
@@ -125,6 +126,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       resize_area_(NULL),
       chevron_(NULL),
       suppress_chevron_(false),
+      suppress_animation_(false),
+      suppress_layout_(false),
       resize_amount_(0),
       animation_target_size_(0) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
@@ -194,8 +197,22 @@ ToolbarActionView* BrowserActionsContainer::GetViewForExtension(
 }
 
 void BrowserActionsContainer::RefreshToolbarActionViews() {
-  for (ToolbarActionView* view : toolbar_action_views_)
-    view->UpdateState();
+  if (toolbar_action_views_.empty())
+    return;  // Nothing to do.
+
+  // When we do a bulk-refresh of views (such as when we switch tabs), we don't
+  // animate the difference. We only animate when it's a change driven by the
+  // action.
+  base::AutoReset<bool> animation_resetter(&suppress_animation_, true);
+
+  {
+    // Don't layout until the end.
+    base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
+    for (ToolbarActionView* view : toolbar_action_views_)
+      view->UpdateState();
+  }
+
+  ReorderViews();  // Also triggers a layout.
 }
 
 void BrowserActionsContainer::CreateToolbarActionViews() {
@@ -203,15 +220,23 @@ void BrowserActionsContainer::CreateToolbarActionViews() {
   if (!model_)
     return;
 
-  ScopedVector<ToolbarActionViewController> actions =
-      GetToolbarActions(model_, browser_);
-  for (ToolbarActionViewController* controller : actions) {
-    ToolbarActionView* view =
-        new ToolbarActionView(make_scoped_ptr(controller), browser_, this);
-    toolbar_action_views_.push_back(view);
-    AddChildView(view);
+  {
+    // We don't Layout while creating views. Instead, Layout() once at the end.
+    base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
+
+    ScopedVector<ToolbarActionViewController> actions =
+        GetToolbarActions(model_, browser_);
+    for (ToolbarActionViewController* controller : actions) {
+      ToolbarActionView* view =
+          new ToolbarActionView(make_scoped_ptr(controller), browser_, this);
+      toolbar_action_views_.push_back(view);
+      AddChildView(view);
+    }
+    actions.weak_clear();
   }
-  actions.weak_clear();
+
+  Layout();
+  SchedulePaint();
 }
 
 void BrowserActionsContainer::DeleteToolbarActionViews() {
@@ -248,12 +273,10 @@ void BrowserActionsContainer::ExecuteExtensionCommand(
 void BrowserActionsContainer::NotifyActionMovedToOverflow() {
   // When an action is moved to overflow, we shrink the size of the container
   // by 1.
-  int icon_count = model_->GetVisibleIconCount();
+  size_t icon_count = model_->visible_icon_count();
   // Since this happens when an icon moves from the main bar to overflow, we
   // can't possibly have had no visible icons on the main bar.
-  DCHECK_NE(0, icon_count);
-  if (icon_count == -1)
-    icon_count = toolbar_action_views_.size();
+  DCHECK_NE(0u, icon_count);
   model_->SetVisibleIconCount(icon_count - 1);
 }
 
@@ -357,6 +380,9 @@ gfx::Size BrowserActionsContainer::GetMinimumSize() const {
 }
 
 void BrowserActionsContainer::Layout() {
+  if (suppress_layout_)
+    return;
+
   if (toolbar_action_views_.empty()) {
     SetVisible(false);
     return;
@@ -550,7 +576,7 @@ int BrowserActionsContainer::OnPerformDrop(
     if (in_overflow_mode())
       main_container_->NotifyActionMovedToOverflow();
     else  // This is the main container.
-      model_->SetVisibleIconCount(model_->GetVisibleIconCount() + 1);
+      model_->SetVisibleIconCount(model_->visible_icon_count() + 1);
   }
 
   OnDragExited();  // Perform clean up after dragging.
@@ -781,14 +807,13 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
   if (!extensions::ExtensionSystem::Get(profile_)->runtime_data()->
           IsBeingUpgraded(extension)) {
     // We need to resize if either:
-    // - The container is set to display all icons (visible count = -1), or
+    // - The container is set to display all icons, or
     // - The container will need to expand to include the chevron. This can
     //   happen when the container is set to display <n> icons, where <n> is
     //   the number of icons before the new icon. With the new icon, the chevron
     //   will need to be displayed.
-    int model_icon_count = model_->GetVisibleIconCount();
-    if (model_icon_count == -1 ||
-        (static_cast<size_t>(model_icon_count) < toolbar_action_views_.size() &&
+    if (model_->all_icons_visible() ||
+        (model_->visible_icon_count() < toolbar_action_views_.size() &&
          (chevron_ && !chevron_->visible()))) {
       suppress_chevron_ = true;
       Animate(gfx::Tween::LINEAR, GetIconCount());
@@ -880,8 +905,15 @@ bool BrowserActionsContainer::ShowExtensionActionPopup(
 }
 
 void BrowserActionsContainer::ToolbarVisibleCountChanged() {
-  if (GetPreferredWidth() != container_width_)
+  if (GetPreferredWidth() != container_width_) {
     Animate(gfx::Tween::EASE_OUT, GetIconCount());
+  } else if (animation_target_size_ != 0) {
+    // It's possible that we're right where we're supposed to be in terms of
+    // icon count, but that we're also currently resizing. If this is the case,
+    // end the current animation with the current width.
+    animation_target_size_ = container_width_;
+    resize_animation_->Reset();
+  }
 }
 
 void BrowserActionsContainer::ToolbarHighlightModeChanged(
@@ -893,6 +925,12 @@ void BrowserActionsContainer::ToolbarHighlightModeChanged(
   DeleteToolbarActionViews();
   CreateToolbarActionViews();
   Animate(gfx::Tween::LINEAR, GetIconCount());
+}
+
+void BrowserActionsContainer::OnToolbarReorderNecessary(
+    content::WebContents* web_contents) {
+  if (GetCurrentWebContents() == web_contents)
+    ReorderViews();
 }
 
 Browser* BrowserActionsContainer::GetBrowser() {
@@ -980,7 +1018,8 @@ int BrowserActionsContainer::MinimumNonemptyWidth() const {
 void BrowserActionsContainer::Animate(gfx::Tween::Type tween_type,
                                       size_t num_visible_icons) {
   int target_size = IconCountToWidth(num_visible_icons);
-  if (resize_animation_ && !disable_animations_during_testing_) {
+  if (resize_animation_ && !disable_animations_during_testing_ &&
+      !suppress_animation_) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();
@@ -993,20 +1032,58 @@ void BrowserActionsContainer::Animate(gfx::Tween::Type tween_type,
   }
 }
 
+void BrowserActionsContainer::ReorderViews() {
+  extensions::ExtensionList new_order =
+      model_->GetItemOrderForTab(GetCurrentWebContents());
+  if (new_order.empty())
+    return;  // Nothing to do.
+
+#if DCHECK_IS_ON
+  // Make sure the lists are in sync. There should be a view for each action in
+  // the new order.
+  // |toolbar_action_views_| may have more views than actions are present in
+  // |new_order| if there are any component toolbar actions.
+  // TODO(devlin): Change this to DCHECK_EQ when all toolbar actions are shown
+  // in the model.
+  DCHECK_LE(new_order.size(), toolbar_action_views_.size());
+  for (const scoped_refptr<const Extension>& extension : new_order)
+    DCHECK(GetViewForExtension(extension.get()));
+#endif
+
+  // Run through the views and compare them to the desired order. If something
+  // is out of place, find the correct spot for it.
+  for (size_t i = 0; i < new_order.size() - 1; ++i) {
+    if (new_order[i]->id() !=
+            toolbar_action_views_[i]->view_controller()->GetId()) {
+      // Find where the correct view is (it's guaranteed to be after our current
+      // index, since everything up to this point is correct).
+      size_t j = i + 1;
+      while (new_order[i]->id() !=
+                 toolbar_action_views_[j]->view_controller()->GetId())
+        ++j;
+      std::swap(toolbar_action_views_[i], toolbar_action_views_[j]);
+    }
+  }
+
+  // Our visible browser actions may have changed - re-Layout() and check the
+  // size.
+  ToolbarVisibleCountChanged();
+  OnBrowserActionVisibilityChanged();
+}
+
 size_t BrowserActionsContainer::GetIconCount() const {
   if (!model_)
     return 0u;
 
   // Find the absolute value for the model's visible count.
-  int model_visible_size = model_->GetVisibleIconCount();
-  size_t absolute_model_visible_size = model_visible_size == -1 ?
-      model_->toolbar_items().size() : model_visible_size;
+  size_t model_visible_size = model_->GetVisibleIconCountForTab(
+      browser_->tab_strip_model()->GetActiveWebContents());
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON
   // Good time for some sanity checks: We should never try to display more
   // icons than we have, and we should always have a view per item in the model.
   // (The only exception is if this is in initialization.)
-  if (initialized_) {
+  if (initialized_ && !suppress_layout_) {
     size_t num_extension_actions = 0u;
     for (ToolbarActionView* view : toolbar_action_views_) {
       // No component action should ever have a valid extension id, so we can
@@ -1016,13 +1093,12 @@ size_t BrowserActionsContainer::GetIconCount() const {
       if (crx_file::id_util::IdIsValid(view->view_controller()->GetId()))
         ++num_extension_actions;
     }
-    DCHECK_LE(absolute_model_visible_size, num_extension_actions);
+    DCHECK_LE(model_visible_size, num_extension_actions);
     DCHECK_EQ(model_->toolbar_items().size(), num_extension_actions);
   }
 #endif
 
   // The overflow displays any icons not shown by the main bar.
   return in_overflow_mode() ?
-      model_->toolbar_items().size() - absolute_model_visible_size :
-      absolute_model_visible_size;
+      model_->toolbar_items().size() - model_visible_size : model_visible_size;
 }

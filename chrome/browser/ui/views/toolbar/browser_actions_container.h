@@ -285,6 +285,7 @@ class BrowserActionsContainer
                                 bool grant_active_tab) override;
   void ToolbarVisibleCountChanged() override;
   void ToolbarHighlightModeChanged(bool is_highlighting) override;
+  void OnToolbarReorderNecessary(content::WebContents* web_contents) override;
   Browser* GetBrowser() override;
 
   void LoadImages();
@@ -319,12 +320,15 @@ class BrowserActionsContainer
   // case the container wouldn't be shown at all.
   int MinimumNonemptyWidth() const;
 
-  // Animate to the target size (unless testing, in which case we go straight to
-  // the target size).
+  // Animates to the target size (unless testing, in which case we go straight
+  // to the target size).
   void Animate(gfx::Tween::Type type, size_t num_visible_icons);
 
+  // Reorders the views to match the toolbar model for the active tab.
+  void ReorderViews();
+
   // Returns the number of icons that this container should draw. This differs
-  // from the model's GetVisibleIconCount if this container is for the overflow.
+  // from the model's visible_icon_count if this container is for the overflow.
   size_t GetIconCount() const;
 
   // Whether this container is in overflow mode (as opposed to in 'main'
@@ -372,6 +376,14 @@ class BrowserActionsContainer
 
   // Don't show the chevron while animating.
   bool suppress_chevron_;
+
+  // True if we should suppress animation; we typically do this e.g. when
+  // switching tabs changes the state of the icons.
+  bool suppress_animation_;
+
+  // True if we should suppress layout, such as when we are creating or
+  // adjusting a lot of views.
+  bool suppress_layout_;
 
   // This is used while the user is resizing (and when the animations are in
   // progress) to know how wide the delta is between the current state and what
