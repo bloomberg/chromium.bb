@@ -9,6 +9,7 @@ import optparse
 import os
 import re
 import shutil
+import subprocess
 import sys
 
 _BASE_REGEX_STRING = '^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
@@ -43,6 +44,11 @@ namespaces = [
   'i18n.input.chrome.inputview.layouts.util',
   'i18n.input.hwt.util']
 
+# Any additional required files.
+extras = [
+  'common.css',
+  'emoji.css'
+]
 
 def ProcessFile(filename):
   """Extracts provided and required namespaces.
@@ -184,6 +190,11 @@ def CopyFile(source, target):
   if not os.path.exists(os.path.dirname(target)):
     os.makedirs(os.path.dirname(target))
   shutil.copy(source, target)
+  # Ensure correct file permissions.
+  if target.endswith('py'):
+    subprocess.call(['chmod', '+x', target])
+  else:
+    subprocess.call(['chmod', '-x', target])
 
 
 def UpdateFile(filename, input_source, closure_source, target_files):
@@ -220,6 +231,26 @@ def GenerateBuildFile(target_files):
     json_data = {'variables': {'inputview_sources': sorted_files}}
     json_str = json.dumps(json_data, indent=2, separators=(',', ': '))
     file_handle.write(json_str.replace('\"', '\''))
+
+
+def CopyDir(input_path, sub_dir):
+  """Copies all files in a subdirectory of google-input-tools.
+
+  Description:
+    Recursive copy of a directory under google-input-tools.  Used to copy
+    localization and resource files.
+
+  Args:
+    input_path: Path to the google-input-tools-sandbox.
+  """
+  dir = os.path.join(input_path, "chrome", "os", "inputview", sub_dir)
+  for (root, dirs, files) in os.walk(dir):
+    for name in files:
+      filename = os.path.join(root, name)
+      relative_path = filename[len(dir) + 1:]
+      target = os.path.join('src', 'chrome', 'os', 'inputview', sub_dir,
+                       relative_path)
+      CopyFile(filename, target)
 
 
 def main():
@@ -265,6 +296,20 @@ def main():
     UpdateFile(name, input_path, closure_library_path, target_files)
 
   GenerateBuildFile(target_files)
+
+  # Copy resources
+  CopyDir(input_path, "_locales")
+  CopyDir(input_path, "images")
+  CopyDir(input_path, 'config')
+  CopyDir(input_path, 'layouts')
+  CopyDir(input_path, 'sounds')
+
+  # Copy extra support files.
+  for name in extras:
+    source = os.path.join(input_path, 'chrome', 'os', 'inputview', name)
+    target = os.path.join('src', 'chrome', 'os', 'inputview', name)
+    CopyFile(source ,target)
+
 
 if __name__ == '__main__':
   main()

@@ -1,0 +1,128 @@
+.inputview-emoji-switch-recent {
+  background: url('images/recent.png') no-repeat center;
+  background-size: 20px 20px;
+  height: 20px;
+  width: 20px;
+}
+.inputview-emoji-switch-favorits {
+  background: url('images/favorit.png') no-repeat center;
+  background-size: 20px 20px;
+  height: 20px;
+  width: 20px;
+}
+.inputview-emoji-switch-emoji {
+  background: url('images/emoji.png') no-repeat center;
+  background-size: 24px 24px;
+  height: 24px;
+  width: 24px;
+}
+.inputview-emoji-switch-emoticon {
+  background: url('images/emoticon.png') no-repeat center;
+  background-size: 14px 15px;
+  height: 15px;
+  width: 14px;
+}
+.inputview-emoji-switch-symbol {
+  background: url('images/symbol.png') no-repeat center;
+  background-size: 28.5px 14px;
+  height: 14px;
+  width: 28.5px;
+}
+.inputview-emoji-switch-special {
+  background: url('images/special_characters.png') no-repeat center;
+  background-size: 24px 24px;
+  height: 24px;
+  width: 24px;
+}
+.inputview-emoji-switch-flower {
+  background: url('images/flower.png') no-repeat center;
+  background-size: 24px 24px;
+  height: 24px;
+  width: 24px;
+}
+.inputview-emoji-switch-car {
+  background: url('images/car.png') no-repeat center;
+  background-size: 24px 24px;
+  height: 24px;
+  width: 24px;
+}
+.inputview-emoji-switch-triangle {
+  background: url('images/triangle.png') no-repeat center;
+  background-size: 15.5px 12.5px;
+  height: 12.5px;
+  width: 15.5px;
+}
+.inputview-emoji-switch {
+  display: inline-block;
+  opacity: 0.5;
+}
+.inputview-emoji-switch-highlight {
+  opacity: 1;
+}
+.inputview-emoji .inputview-sk {
+  background-color: #ffffff;
+  margin: 25px 0 0 20px;
+  font-size: 20px;
+}
+.inputview-emoji.inputview-element-highlight {
+  background-color: #cccccc;
+}
+.inputview-emoji .inputview-wrapper{
+  background-color: #ffffff;
+  box-shadow: 1px -2px 7px 2px rgba(192, 192, 192, 0.65);
+  margin: 11px 0;
+}
+.inputview-emoji-tabbar {
+  background-color: #ffffff;
+  border-bottom-width:2px;
+  border-bottom-style:solid;
+  border-bottom-color: #cccccc;
+}
+.inputview-emoji-tabbar-key {
+  background-color: #ffffff;
+}
+.inputview-emoji-tabbar-key.inputview-emoji-tabbar-key-highlight {
+  background-color: #ffffff;
+  border-bottom-width:4px;
+  border-bottom-style:solid;
+  border-bottom-color: #777777;
+}
+.inputview-emoji-key {
+  font-size: 40px;
+}
+.inputview-emoji-text {
+  font-size: 30px;
+  text-align: center;
+}
+.inputview-emoji-key.inputview-emoji-key-highlight {
+  background-color: #cccccc;
+}
+.inputview-emoji-back {
+  margin: 1px;
+  font-size: 18px;
+  color: #111111;
+  text-align: center;
+}
+.inputview-emoji .inputview-modifier {
+  font-size: 30px;
+}
+.inputview-emoji .inputview-special-key-bg {
+  background-color: #E9E9E9;
+}
+.inputview-emoji .inputview-special-key-bg.inputview-special-key-highlight {
+  background-color: #cccccc;
+}
+.inputview-emoji .inputview-container {
+  top: 20px;
+}
+.inputview-emoji-tabbar-sk {
+  background-color: #ffffff;
+  font-size: 20px;
+}
+.inputview-indicator {
+  background-color: #777777;
+}
+
+.inputview-indicator-background {
+  display: inline-block;
+}

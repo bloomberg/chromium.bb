@@ -1,0 +1,633 @@
+.inputview-layoutview {
+  position: relative;
+  -webkit-user-select: none;
+}
+.inputview-canvasview,
+.inputview-skv {
+  display: inline-block;
+  overflow: hidden;
+}
+.inputview-sk {
+  margin: 3px 4px 4px 3px;
+  position: relative;
+  background-color: #ffffff;
+}
+.inputview-a11y .inputview-sk {
+  margin: 2px 3px 3px 2px;
+}
+#us-compact-symbol .inputview-sk,
+#us-compact-more .inputview-sk,
+#us-compact-qwerty .inputview-sk {
+  margin: 5px;
+}
+#us-compact-qwerty #Globe {
+  margin: 5px 0 5px 0;
+}
+.inputview-character {
+  position: absolute;
+  text-align: center;
+  color: #999999;
+  font-size: 16px;
+  display: inline-block;
+}
+.inputview-a11y .inputview-character {
+  font-size: 11px;
+}
+.inputview-ch {
+  color: #111111;
+  font-size: 23px;
+}
+.inputview-digit-character.inputview-ch {
+  font-size: 20px;
+}
+.inputview-a11y .inputview-digit-character.inputview-ch {
+  font-size: 16px;
+}
+.inputview-a11y .inputview-ch {
+  font-size: 18px;
+}
+.inputview-vertical {
+  display: inline-block;
+  overflow: hidden;
+}
+.inputview-linear {
+  display: inline-block;
+}
+.inputview-extended-transition {
+  transition: margin-left 0.2s;
+}
+.inputview-linear-border {
+  display:inline-block;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: #dddddd;
+}
+.inputview-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  -webkit-box-shadow: -5px 0 5px #ccc;
+  border: 1px solid #eeeeee;
+  background-color: #EBEBEB;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.inputview-font {
+  font-family: Roboto2, Roboto, Noto Sans, Sans-Serif;
+}
+.inputview-font[lang=am] {
+  font-family: Roboto2, Roboto, Noto Sans Armenian, Sans-Serif;
+}
+.inputview-font[lang=il] {
+  font-family: Roboto2, Roboto, Noto Sans Hebrew, Sans-Serif;
+}
+.inputview-font[lang=jp] {
+  font-family: Roboto2, Roboto, MotoyaG04Gothic, IPAGothic, Sans-Serif;
+}
+.inputview-font[lang=ar] {
+  font-family: Roboto2, Roboto, Noto Arabic Naskh ui, Sans-Serif;
+}
+.inputview-font[lang=bn] {
+  font-family: Roboto2, Roboto, Noto Sans Bengali, Sans-Serif;
+}
+.inputview-font[lang=ethi] {
+  font-family: Roboto2, Roboto, Noto Sans Ethiopic, Sans-Serif;
+}
+.inputview-font[lang=fa] {
+  font-family: Roboto2, Roboto, Noto Arabic Naskh ui, Sans-Serif;
+}
+.inputview-font[lang=gu] {
+  font-family: Roboto2, Roboto, Noto Sans Gujarati, Lohit Gujarati, Sans-Serif;
+}
+.inputview-font[lang=kn] {
+  font-family: Roboto2, Roboto, Noto Sans Kannada, Lohit Kannada, Sans-Serif;
+}
+.inputview-font[lang=ml] {
+  font-family: Roboto2, Roboto, Noto Sans Malayalam, Lohit Malayalam, Sans-Serif;
+}
+.inputview-font[lang=ta] {
+  font-family: Roboto2, Roboto, Noto Sans Tamil, Lohit Tamil, Sans-Serif;
+}
+.inputview-font[lang=te] {
+  font-family: Roboto2, Roboto, Noto Sans Telugu, Lohit Telugu, Sans-Serif;
+}
+.inputview-font[lang=th] {
+  font-family: Roboto2, Roboto, Noto Sans Thai, Sans-Serif;
+}
+.inputview-font[lang=zh-CN] {
+  font-family: Roboto2, Roboto, MYingHeiGB18030, Droid Sans Fallback, Sans-Serif;
+}
+.inputview-font[lang=zh-TW],
+.inputview-font[lang=zh-HK] {
+  font-family: Roboto2, Roboto, MYingHeiB5HK, Droid Sans Fallback, Sans-Serif;
+}
+.inputview-font[lang=kr] {
+  font-family: Roboto2, Roboto, NanumGothic, Sans-Serif;
+}
+.inputview-emoji-font {
+  font-family: Noto Color Emoji, Noto Sans Emoji, Droid Emoji;
+}
+.inputview-modifier {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 16px;
+  text-align: center;
+  position: relative;
+}
+.inputview-a11y .inputview-modifier {
+  font-size: 10px;
+}
+.inputview-menu-list-indicator {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 25px;
+  width: 25%;
+}
+.inputview-checked-menu-list .inputview-menu-list-name {
+  background-image: url('images/check.png');
+  background-position: right 25px center;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  font-weight: bold;
+  padding-right: 50px;
+}
+.inputview-menu-list-name {
+  height: 100%;
+  width: 75%;
+  overflow: hidden;
+}
+.inputview-menu-list-indicator-name {
+  font-weight: bold;
+  height: 100%;
+  text-align: center;
+}
+.inputview-menu-list-indicator-name,
+.inputview-menu-list-name div {
+  line-height: 3;
+}
+.inputview-ime-list-container {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.inputview-ime-list-container .inputview-menu-list-item {
+  border-bottom: solid 1px #cccccc;
+  box-sizing: border-box;
+}
+.inputview-menu-list-item {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  font-size: 16px;
+  width: 100%;
+}
+.inputview-menu-footer-item {
+  position: relative;
+}
+.inputview-menu-footer-item:not(:last-child):after {
+  background-color: #cccccc;
+  content: '';
+  height: 70%;
+  position: absolute;
+  right: 0;
+  top: 15%;
+  width: 1px;
+}
+.inputview-menu-footer-emoji-button {
+  background: url('images/emoji.png') no-repeat center;
+  background-size: 25px;
+  height: 100%;
+}
+.inputview-menu-footer-handwriting-button {
+  background: url('images/pencil.png') no-repeat center;
+  background-size: 25px;
+  height: 100%;
+}
+.inputview-menu-footer-setting-button {
+  background: url('images/setting.png') no-repeat center;
+  background-size: 25px;
+  height: 100%;
+}
+.inputview-menu-footer {
+  -webkit-box-orient: horizontal;
+  background: #f5f5f5;
+  display: -webkit-box;
+}
+.inputview-globe-icon {
+  background: transparent url('images/globe.png') 0 0 / 21px 21px no-repeat;
+  display: inline-block;
+  width: 21px;
+  height: 21px;
+}
+.inputview-menu-view,
+.inputview-altdata-view {
+  position: fixed;
+  z-index: 999;
+  border: 1px solid #ccc;
+  background-color: white;
+  -webkit-box-shadow: 0 0 6px rgba(204, 204, 204, 0.65),
+                      0 0 2px rgba(136, 136, 136, 0.65),
+                      0 0 6px rgba(204, 204, 204, 0.65),
+                      0 0 6px rgba(204, 204, 204, 0.65);
+  cursor: default;
+}
+.inputview-altdata-separator {
+  height: 20px;
+  border-left: 1px solid #ddd;
+  position: relative;
+  display: inline-block;
+}
+.inputview-altdata-key {
+  display: table-cell;
+  font-size: 23px;
+  color: #111111;
+  vertical-align: middle;
+  text-align: center;
+}
+.inputview-a11y .inputview-altdata-key {
+  font-size: 18px;
+}
+.inputview-candidate.inputview-candidate-default {
+  color: #111111;
+}
+.inputview-candidate.inputview-candidate-autocorrect {
+  font-weight: bold;
+  color: #111111;
+}
+.inputview-candidate-view {
+  overflow: hidden;
+  display: table-cell;
+  height: 32px;
+}
+.inputview-candidate-button {
+  float: right;
+}
+.inputview-candidate {
+  display: table-cell;
+  font-size: 18px;
+  color: #555555;
+  vertical-align: middle;
+  text-align: center;
+}
+.inputview-a11y .inputview-candidate {
+  font-size: 12px;
+}
+.inputview-candidate-separator {
+  border-left: 1px solid #ddd;
+  position: relative;
+  display: inline-block;
+}
+.inputview-table-cell {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+.inputview-title {
+  font-size: 16px;
+  color: #AAAAAA;
+}
+.inputview-special-key-name {
+  display: block;
+}
+.inputview-modifier-state-icon {
+  background-image: url('images/modifier-off.png');
+  background-repeat: no-repeat;
+  background-size: 16px 4px;
+  display: inline-block;
+  width: 16px;
+  height: 4px;
+}
+.inputview-modifier-state-icon.inputview-modifier-on {
+  background: url('images/modifier-on.png');
+}
+.inputview-modifier-state-icon.inputview-hold {
+  -webkit-box-shadow: 0 0 5px 1px #397FFB;
+  opacity: 0.9;
+}
+.inputview-altdata-cover {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  opacity: 0.5;
+  z-index: 1;
+}
+.inputview-arrow-key {
+  display: inline-block;
+  height: 13.5px;
+}
+.inputview-up-key {
+  background-image: transparent url('images/up.png') 0 0/16px 13.5px no-repeat;
+  width: 16px;
+}
+.inputview-down-key {
+  background: transparent url('images/down.png') 0 0/16px 13.5px no-repeat;
+  width: 16px;
+}
+.inputview-left-key {
+  background: transparent url('images/left.png') 0 0/9px 13.5px no-repeat;
+  width: 9px;
+}
+.inputview-right-key {
+  background: transparent url('images/right.png') 0 0/9px 13.5px no-repeat;
+  width: 9px;
+}
+.inputview-special-key-bg {
+  background-color: #DDDDDD;
+}
+.inputview-page-up-icon {
+  background: transparent url('images/page_up.png') 0 0 no-repeat;
+  background-size: 10.5px 5.5px;
+  width: 10.5px;
+  height: 5.5px;
+  display: inline-block;
+}
+.inputview-page-down-icon {
+  background: transparent url('images/page_down.png') 0 0 no-repeat;
+  background-size: 10.5px 5.5px;
+  width: 10.5px;
+  height: 5.5px;
+  display: inline-block;
+}
+.inputview-menu-icon {
+  background: transparent url('images/menu.png') 0 0/4px 17px no-repeat;
+  display: inline-block;
+  width: 4px;
+  height: 17px;
+}
+.inputview-hide-keyboard-icon {
+  background: transparent url('images/hide.png') 0 0/20px 14.5px no-repeat;
+  display: inline-block;
+  width: 20px;
+  height: 14.5px;
+}
+.inputview-candidate.inputview-candidate-highlight,
+.inputview-element-highlight {
+  background-color: #dddddd;
+}
+.inputview-menu-footer-item.inputview-element-highlight,
+.inputview-special-key-highlight {
+  background-color: #cccccc;
+}
+.inputview-backspace-icon {
+  background: transparent url('images/backspace.png');
+  background-size: 22.5px 13px;
+  display: inline-block;
+  width: 22.5px;
+  height: 13px;
+}
+.inputview-enter-icon {
+  background: transparent url('images/enter.png');
+  background-size: 18px 13px;
+  display: inline-block;
+  width: 18px;
+  height: 13px;
+}
+
+.inputview-space-icon {
+  background: transparent url('images/space.png');
+  background-size: 22.5px 8px;
+  display: inline-block;
+  width: 22.5px;
+  height: 8px;
+}
+
+.inputview-shift-icon {
+  background: transparent url('images/shift.png');
+  background-size: 18.5px 13px;
+  display: inline-block;
+  width: 18.5px;
+  height: 13px;
+}
+.inputview-tab-icon {
+  background: transparent url('images/tab.png');
+  background-size: 19px 18.5px;
+  display: inline-block;
+  width: 19px;
+  height: 18.5px;
+}
+.inputview-capslock-dot {
+  background-color: #ccc;
+  width: 4px;
+  height: 4px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.inputview-capslock-dot-highlight {
+  background-color: #4285f4;
+}
+.inputview-hint-text {
+  font-size: 16px;
+  color: #999999;
+}
+.inputview-inline-div {
+  display: inline-block;
+}
+.inputview-compact-key {
+  font-size: 28px;
+  color: #111111;
+}
+.inputview-compact-switcher {
+  background: transparent url('images/compact.png');
+  background-size: 19px 14px;
+  display: inline-block;
+  width: 19px;
+  height: 14px;
+}
+.inputview-regular-switcher {
+  background: transparent url('images/regular_size.png');
+  background-size: 19px 14px;
+  display: inline-block;
+  width: 19px;
+  height: 14px;
+}
+
+#Space {
+  color: #bbbbbb;
+  font-size: 18px;
+}
+#Menu {
+  font-weight: bold;
+  margin-left: 0 !important;
+}
+.inputview-a11y #Globe {
+  margin: 2px 0 3px 0;
+}
+#Globe {
+  margin: 3px 0 4px 0;
+}
+#Globe:after {
+  background-color: #cccccc;
+  content: '';
+  height: 50%;
+  position: absolute;
+  right: 0;
+  top: 25%;
+  width: 1px;
+}
+.inputview-candidates-line {
+  border-bottom: 1px #cfcfcf solid;
+}
+.inputview-candidates-top-line {
+  border-top: 1px #cfcfcf solid;
+}
+.inputview-three-candidates {
+  text-align: center;
+  vertical-align: middle;
+}
+.inputview-candiate-ic {
+  display: inline-block;
+}
+
+.inputview-shrink-candidates-icon {
+  background: transparent url('images/hide_candidates.png') 0 0/17px 16.5px no-repeat;
+  height: 17px;
+  width: 16.5px;
+}
+
+.inputview-expand-candidates-icon {
+  background: transparent url('images/show_candidates.png') 0 0/17px 16.5px no-repeat;
+  height: 17px;
+  width: 16.5px;
+}
+
+/**
+ * The following css style is for handwriting panel,
+ * please keep it in the end of the file
+ */
+
+.inputview-handwriting .inputview-wrapper{
+  background-color: #ffffff;
+  box-shadow: 1px -2px 7px 2px rgba(192, 192, 192, 0.65);
+  margin: 11px 0 11px 0;
+}
+
+.inputview-handwriting-switcher {
+  background: url('images/pencil.png');
+  background-size: 19px 19px;
+  display: inline-block;
+  width: 19px;
+  height: 19px;
+}
+
+.inputview-handwriting-back {
+  float: right;
+  font-size: 18px;
+  color: #111111;
+  text-align: center;
+}
+
+.inputview-canvas {
+  cursor: url('images/pencil.png') 8 42, auto;
+}
+
+#leftSideColumn {
+  position: absolute;
+  left: 0;
+}
+
+#rightSideColumn {
+  position: absolute;
+  right: 0;
+}
+.inputview-handwriting .inputview-ch {
+  bottom: 15px !important;
+}
+.inputview-handwriting .inputview-sk {
+  background-color: #E9E9E9;
+  margin: 0 0 10 0;
+  font-size: 20px;
+}
+
+.inputview-handwriting .inputview-element-highlight {
+  background-color: #cccccc;
+}
+
+.inputview-handwriting .inputview-special-key-bg {
+  background-color: #E9E9E9;
+}
+
+.inputview-handwriting .inputview-special-key-highlight {
+  background-color: #cccccc;
+}
+
+.inputview-handwriting #candidateView {
+  background-color: #ffffff;
+  border-bottom: 1px #cfcfcf solid;
+}
+
+.inputview-handwriting-network-error {
+  background: no-repeat url('images/error.png');
+  font-size: 16;
+  padding: 0 0 0 50px;
+  position: absolute;
+  width: 300px;
+  height: 100px;
+}
+
+.inputview-handwriting-privacy-cover {
+  position: relative;
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.inputview-handwriting-privacy-info {
+  position: absolute;
+  width: 300px;
+  height: 100px;
+  z-index: 2;
+}
+
+.inputview-handwriting-privacy-info-hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: all 2s ease;
+}
+
+.inputview-handwriting-privacy-info .inputview-sk {
+  margin-top: 10px;
+}
+
+.inputview-handwriting-privacy-info .inputview-special-key-name {
+  font-size: 16px;
+}
+
+.inputview-jp-ime-switch {
+  text-align: left;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.inputview-switcher-chinese {
+  display: inline-block;
+  background: url('images/english.png') no-repeat center;
+  background-size: 50px 20px;
+  height: 20px;
+  width: 50px;
+}
+.inputview-switcher-english {
+  display: inline-block;
+  background: url('images/chinese.png') no-repeat center;
+  background-size: 50px 20px;
+  height: 20px;
+  width: 50px;
+}
+.inputview-pinyin .inputview-en-switcher-default {
+  display: inline-block;
+  background: url('images/chinese_small.png') no-repeat center;
+  background-size: 40px 16px;
+  height: 16px;
+  width: 40px;
+}
+.inputview-pinyin .inputview-en-switcher-english {
+  display: inline-block;
+  background: url('images/english_small.png') no-repeat center;
+  background-size: 40px 16px;
+  height: 16px;
+  width: 40px;
+}
