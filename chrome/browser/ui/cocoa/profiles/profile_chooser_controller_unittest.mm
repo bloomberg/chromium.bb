@@ -499,6 +499,8 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
   // The preference, not the email, determines whether the profile can lock.
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain, "google.com");
+  // Lock is only available where a supervised user is present.
+  cache->SetSupervisedUserIdOfProfileAtIndex(1, kEmail);
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];

@@ -318,11 +318,25 @@ void LockProfile(Profile* profile) {
 
 bool IsLockAvailable(Profile* profile) {
   DCHECK(profile);
+  if (!switches::IsNewProfileManagement())
+    return false;
+
   const std::string& hosted_domain = profile->GetPrefs()->
       GetString(prefs::kGoogleServicesHostedDomain);
-  return switches::IsNewProfileManagement() &&
-         (hosted_domain == Profile::kNoHostedDomainFound ||
-         hosted_domain == "google.com");
+  // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
+  // prohibited users who use hosted domains (aside from google.com).
+  if (hosted_domain != Profile::kNoHostedDomainFound &&
+      hosted_domain != "google.com") {
+    return false;
+  }
+
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+    if (cache.ProfileIsSupervisedAtIndex(i))
+      return true;
+  }
+  return false;
 }
 
 void CreateGuestProfileForUserManager(
