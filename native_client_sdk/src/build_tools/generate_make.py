@@ -147,10 +147,13 @@ def GenerateManifest(srcroot, dstroot, desc):
   srcpath = os.path.join(SDK_RESOURCE_DIR, 'manifest.json.template')
   dstpath = os.path.join(outdir, 'manifest.json')
   permissions = desc.get('PERMISSIONS', [])
-  socket_permissions = desc.get('SOCKET_PERMISSIONS', [])
   combined_permissions = list(permissions)
+  socket_permissions = desc.get('SOCKET_PERMISSIONS', [])
   if socket_permissions:
     combined_permissions.append({'socket': socket_permissions})
+  filesystem_permissions = desc.get('FILESYSTEM_PERMISSIONS', [])
+  if filesystem_permissions:
+    combined_permissions.append({'fileSystem': filesystem_permissions})
   pretty_permissions = json.dumps(combined_permissions,
                                   sort_keys=True, indent=4)
   replace = {

@@ -43,6 +43,7 @@ examples/index.js
 examples/Makefile
 examples/tutorial/debugging/*
 examples/tutorial/dlopen/*
+examples/tutorial/filesystem_passing/*
 examples/tutorial/load_progress/*
 examples/tutorial/multi_platform/*
 [win]examples/tutorial/make.bat
