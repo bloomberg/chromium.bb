@@ -68,10 +68,11 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.SetKeepEverythingSynced(false);
 
-  // Only bookmarks are enabled by default.
+  // Only bookmarks and device info are enabled by default.
+  syncer::ModelTypeSet expected(syncer::BOOKMARKS, syncer::DEVICE_INFO);
   syncer::ModelTypeSet preferred_types =
       sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
-  EXPECT_TRUE(preferred_types.Equals(syncer::ModelTypeSet(syncer::BOOKMARKS)));
+  EXPECT_TRUE(preferred_types.Equals(expected));
 
   // Simulate an upgrade to delete directives + proxy tabs support. None of the
   // new types or their pref group types should be registering, ensuring they
@@ -164,6 +165,10 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(syncer::FAVICON_IMAGES);
       expected_preferred_types.Put(syncer::FAVICON_TRACKING);
     }
+
+    // Device info is always preferred.
+    expected_preferred_types.Put(syncer::DEVICE_INFO);
+
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_TRUE(expected_preferred_types.Equals(
         sync_prefs.GetPreferredDataTypes(user_types)));
@@ -230,6 +235,19 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
+}
+
+// Device info should always be enabled.
+TEST_F(SyncPrefsTest, DeviceInfo) {
+  SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
+  sync_prefs.SetKeepEverythingSynced(true);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
+  sync_prefs.SetKeepEverythingSynced(false);
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
 }
 
 }  // namespace

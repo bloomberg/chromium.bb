@@ -112,6 +112,10 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
         it.Get() == syncer::SYNCED_NOTIFICATION_APP_INFO)
       continue;
 
+    // Device info cannot be disabled.
+    if (it.Get() == syncer::DEVICE_INFO)
+      continue;
+
     ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
