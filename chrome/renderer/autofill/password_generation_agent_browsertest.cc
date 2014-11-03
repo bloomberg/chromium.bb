@@ -110,6 +110,18 @@ const char kInvalidActionAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
+const char ChangeDetectionScript[] =
+    "<script>"
+    "  firstOnChangeCalled = false;"
+    "  secondOnChangeCalled = false;"
+    "  document.getElementById('first_password').onchange = function() {"
+    "    firstOnChangeCalled = true;"
+    "  };"
+    "  document.getElementById('second_password').onchange = function() {"
+    "    secondOnChangeCalled = true;"
+    "  };"
+    "</script>";
+
 TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   // Don't shown the icon for non account creation forms.
   LoadHTML(kSigninFormHTML);
@@ -143,7 +155,9 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
 
 TEST_F(PasswordGenerationAgentTest, FillTest) {
   // Make sure that we are enabled before loading HTML.
-  LoadHTML(kAccountCreationFormHTML);
+  std::string html = std::string(kAccountCreationFormHTML) +
+      ChangeDetectionScript;
+  LoadHTML(html.c_str());
 
   WebDocument document = GetMainFrame()->document();
   WebElement element =
@@ -167,6 +181,20 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   EXPECT_EQ(password, second_password_element.value());
   EXPECT_TRUE(first_password_element.isAutofilled());
   EXPECT_TRUE(second_password_element.isAutofilled());
+
+  // Make sure onchange events are called.
+  int first_onchange_called = -1;
+  int second_onchange_called = -1;
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          base::ASCIIToUTF16("firstOnChangeCalled ? 1 : 0"),
+          &first_onchange_called));
+  EXPECT_EQ(1, first_onchange_called);
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          base::ASCIIToUTF16("secondOnChangeCalled ? 1 : 0"),
+          &second_onchange_called));
+  EXPECT_EQ(1, second_onchange_called);
 
   // Focus moved to the next input field.
   // TODO(zysxqn): Change this back to the address element once Bug 90224

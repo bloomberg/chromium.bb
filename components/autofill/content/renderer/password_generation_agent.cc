@@ -97,7 +97,7 @@ void CopyValueToAllInputElements(
     std::vector<blink::WebInputElement>* elements) {
   for (std::vector<blink::WebInputElement>::iterator it = elements->begin();
        it != elements->end(); ++it) {
-    it->setValue(value);
+    it->setValue(value, true /* sendEvents */);
   }
 }
 
@@ -256,7 +256,7 @@ void PasswordGenerationAgent::OnPasswordAccepted(
   for (std::vector<blink::WebInputElement>::iterator it =
            password_elements_.begin();
        it != password_elements_.end(); ++it) {
-    it->setValue(password);
+    it->setValue(password, true /* sendEvents */);
     it->setAutofilled(true);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
