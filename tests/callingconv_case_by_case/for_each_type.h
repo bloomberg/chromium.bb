@@ -112,7 +112,12 @@ DO_FOR_TYPE(I32_MEMBER_FUN_PTR_I32)
 extern "C" {
 #endif
 
+/*
+ * TODO(mcgrathr): __m128 is not really supported by arm-nacl-gcc yet.
+ */
+#if !defined(__arm__)
 DO_FOR_TYPE(__m128)
+#endif
 
 #if !defined(NOT_DECLARING_DEFINING) && defined(__cplusplus)
 }
