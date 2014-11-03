@@ -197,7 +197,7 @@ bool ParseFavoritesOrderBlob(
     LPCITEMIDLIST idlist = BinaryReadItemIDList(
       base_offset + kItemIDListOffset, item_size - kItemIDListOffset, blob);
     TCHAR item_filename[MAX_PATH];
-    if (!idlist || FAILED(SHGetPathFromIDList(idlist, item_filename)))
+    if (!idlist || !SHGetPathFromIDList(idlist, item_filename))
       return false;
     base::FilePath item_relative_path =
       path.Append(base::FilePath(item_filename).BaseName());
