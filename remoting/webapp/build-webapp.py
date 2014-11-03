@@ -32,6 +32,7 @@ if __name__ == '__main__':
       os.path.abspath(os.path.join(sys.path[0], '../../google_apis')))
 import google_api_keys
 
+
 def findAndReplace(filepath, findString, replaceString):
   """Does a search and replace on the contents of a file."""
   oldFilename = os.path.basename(filepath) + '.old'
@@ -113,8 +114,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
       pass
   os.mkdir(destination, 0775)
 
-  if buildtype != "Official" and buildtype != "Release" and buildtype != "Dev":
-    raise Exception("Unknown buildtype: " + buildtype);
+  if buildtype != 'Official' and buildtype != 'Release' and buildtype != 'Dev':
+    raise Exception('Unknown buildtype: ' + buildtype)
 
   # Use symlinks on linux and mac for faster compile/edit cycle.
   #
@@ -143,10 +144,10 @@ def buildWebApp(buildtype, version, destination, zip_path,
       shutil.copy2(current_file, destination_file)
 
   # Copy all the locales, preserving directory structure
-  destination_locales = os.path.join(destination, "_locales")
-  os.mkdir(destination_locales , 0775)
-  remoting_locales = os.path.join(destination, "remoting_locales")
-  os.mkdir(remoting_locales , 0775)
+  destination_locales = os.path.join(destination, '_locales')
+  os.mkdir(destination_locales, 0775)
+  remoting_locales = os.path.join(destination, 'remoting_locales')
+  os.mkdir(remoting_locales, 0775)
   for current_locale in locales:
     extension = os.path.splitext(current_locale)[1]
     if extension == '.json':
@@ -161,7 +162,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
                                       os.path.split(current_locale)[1])
       shutil.copy2(current_locale, destination_file)
     else:
-      raise Exception("Unknown extension: " + current_locale);
+      raise Exception('Unknown extension: ' + current_locale)
 
   # Set client plugin type.
   # TODO(wez): Use 'native' in app_remoting until b/17441659 is resolved.
@@ -188,24 +189,24 @@ def buildWebApp(buildtype, version, destination, zip_path,
     # being generated correctly (no overrides) and with the correct buildtype.
     # They also verify that folks are not accidentally building dev/test/staging
     # apps for release (no impersonation) instead of dev.
-    if service_environment == "prod" and buildtype == "Dev":
-      raise Exception("Prod environment cannot be built for 'dev' builds");
+    if service_environment == 'prod' and buildtype == 'Dev':
+      raise Exception("Prod environment cannot be built for 'dev' builds")
 
-    if buildtype != "Dev":
-      if service_environment != "prod":
-        raise Exception("Invalid service_environment targeted for "
-                        + buildtype + ": " + service_environment);
-      if "out/Release" not in destination:
-        raise Exception("Prod builds must be placed in the out/Release folder");
+    if buildtype != 'Dev':
+      if service_environment != 'prod':
+        raise Exception('Invalid service_environment targeted for '
+                        + buildtype + ': ' + service_environment)
+      if 'out/Release' not in destination:
+        raise Exception('Prod builds must be placed in the out/Release folder')
       if app_id != None:
-        raise Exception("Cannot pass in an app_id for "
-                        + buildtype + " builds: " + service_environment);
+        raise Exception('Cannot pass in an app_id for '
+                        + buildtype + ' builds: ' + service_environment)
       if appRemotingApiHost != None:
-        raise Exception("Cannot set APP_REMOTING_API_HOST env var for "
-                        + buildtype + " builds");
+        raise Exception('Cannot set APP_REMOTING_API_HOST env var for '
+                        + buildtype + ' builds')
       if appRemotingApplicationId != None:
-        raise Exception("Cannot set APP_REMOTING_APPLICATION_ID env var for "
-                        + buildtype + " builds");
+        raise Exception('Cannot set APP_REMOTING_APPLICATION_ID env var for '
+                        + buildtype + ' builds')
 
     # If an Application ID was set (either from service_environment variable or
     # from a command line argument), hardcode it, otherwise get it at runtime.
@@ -224,21 +225,21 @@ def buildWebApp(buildtype, version, destination, zip_path,
   if webapp_type == 'app_remoting':
     # Set the apiary endpoint and then set the endpoint version
     if not appRemotingApiHost:
-      if service_environment == "prod":
+      if service_environment == 'prod':
         appRemotingApiHost = 'https://www.googleapis.com'
       else:
         appRemotingApiHost = 'https://www-googleapis-test.sandbox.google.com'
 
-    if service_environment == "dev":
+    if service_environment == 'dev':
       appRemotingServicePath = '/appremoting/v1beta1_dev'
-    elif service_environment == "test":
+    elif service_environment == 'test':
       appRemotingServicePath = '/appremoting/v1beta1'
-    elif service_environment == "staging":
+    elif service_environment == 'staging':
       appRemotingServicePath = '/appremoting/v1beta1_staging'
-    elif service_environment == "prod":
+    elif service_environment == 'prod':
       appRemotingServicePath = '/appremoting/v1beta1'
     else:
-      raise Exception("Unknown service environment: " + service_environment);
+      raise Exception('Unknown service environment: ' + service_environment)
     appRemotingApiBaseUrl = appRemotingApiHost + appRemotingServicePath
   else:
     appRemotingApiBaseUrl = ''
@@ -284,9 +285,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
   else:
     oauth2RedirectUrlJs = "'" + oauth2RedirectBaseUrlJs + "/dev'"
     oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/dev*'
-  thirdPartyAuthUrlJs = oauth2RedirectBaseUrlJs + "/thirdpartyauth"
+  thirdPartyAuthUrlJs = oauth2RedirectBaseUrlJs + '/thirdpartyauth'
   thirdPartyAuthUrlJson = oauth2RedirectBaseUrlJson + '/thirdpartyauth*'
-  replaceString(destination, "TALK_GADGET_URL", talkGadgetBaseUrl)
+  replaceString(destination, 'TALK_GADGET_URL', talkGadgetBaseUrl)
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'OAUTH2_REDIRECT_URL'", oauth2RedirectUrlJs)
 
@@ -299,9 +300,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
 
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "Boolean('XMPP_SERVER_USE_TLS')", xmppServerUseTls)
-  replaceString(destination, "XMPP_SERVER_ADDRESS", xmppServerAddress)
-  replaceString(destination, "DIRECTORY_BOT_JID", directoryBotJid)
-  replaceString(destination, "THIRD_PARTY_AUTH_REDIRECT_URL",
+  replaceString(destination, 'XMPP_SERVER_ADDRESS', xmppServerAddress)
+  replaceString(destination, 'DIRECTORY_BOT_JID', directoryBotJid)
+  replaceString(destination, 'THIRD_PARTY_AUTH_REDIRECT_URL',
                 thirdPartyAuthUrlJs)
 
   # Set the correct API keys.
@@ -310,8 +311,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
   apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
 
-  replaceString(destination, "API_CLIENT_ID", apiClientId)
-  replaceString(destination, "API_CLIENT_SECRET", apiClientSecret)
+  replaceString(destination, 'API_CLIENT_ID', apiClientId)
+  replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
 
   # Use a consistent extension id for dev builds.
   if buildtype == 'Dev':
@@ -322,21 +323,21 @@ def buildWebApp(buildtype, version, destination, zip_path,
   # Generate manifest.
   if manifest_template:
     context = {
-      'webapp_type': webapp_type,
-      'FULL_APP_VERSION': version,
-      'MANIFEST_KEY_FOR_UNOFFICIAL_BUILD': manifestKey,
-      'OAUTH2_REDIRECT_URL': oauth2RedirectUrlJson,
-      'TALK_GADGET_HOST': talkGadgetHostJson,
-      'THIRD_PARTY_AUTH_REDIRECT_URL': thirdPartyAuthUrlJson,
-      'REMOTING_IDENTITY_API_CLIENT_ID': apiClientIdV2,
-      'OAUTH2_BASE_URL': oauth2BaseUrl,
-      'OAUTH2_API_BASE_URL': oauth2ApiBaseUrl,
-      'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
-      'APP_REMOTING_API_BASE_URL': appRemotingApiBaseUrl,
-      'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
-      'GOOGLE_API_HOSTS': googleApiHosts,
-      'APP_NAME': app_name,
-      'APP_DESCRIPTION': app_description,
+        'webapp_type': webapp_type,
+        'FULL_APP_VERSION': version,
+        'MANIFEST_KEY_FOR_UNOFFICIAL_BUILD': manifestKey,
+        'OAUTH2_REDIRECT_URL': oauth2RedirectUrlJson,
+        'TALK_GADGET_HOST': talkGadgetHostJson,
+        'THIRD_PARTY_AUTH_REDIRECT_URL': thirdPartyAuthUrlJson,
+        'REMOTING_IDENTITY_API_CLIENT_ID': apiClientIdV2,
+        'OAUTH2_BASE_URL': oauth2BaseUrl,
+        'OAUTH2_API_BASE_URL': oauth2ApiBaseUrl,
+        'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
+        'APP_REMOTING_API_BASE_URL': appRemotingApiBaseUrl,
+        'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
+        'GOOGLE_API_HOSTS': googleApiHosts,
+        'APP_NAME': app_name,
+        'APP_DESCRIPTION': app_description,
     }
     processJinjaTemplate(manifest_template,
                          jinja_paths,
