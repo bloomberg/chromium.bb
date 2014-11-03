@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "cc/base/switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -56,6 +57,9 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // This is needed for now to enable the egltest Ozone platform to work with
   // current Linux/NVidia OpenGL drivers.
   { switches::kIgnoreGpuBlacklist, ""},
+  // TODO(gusfernandez): This is needed to fix a bug with
+  // glPostSubBufferCHROMIUM (crbug.com/429200)
+  { cc::switches::kUIDisablePartialSwap, ""},
 #endif
   { NULL, NULL },  // Termination
 };

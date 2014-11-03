@@ -1,6 +1,7 @@
 include_rules = [
   # chromecast/browser/ is the top-level main directory for the Chromecast
   # embedder and can include from all other chromecast/ directories.
+  "+cc/base/switches.h",
   "+chromecast",
   "+components/crash",
   "+content/public/browser",
