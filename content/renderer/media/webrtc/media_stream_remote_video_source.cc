@@ -131,7 +131,12 @@ RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
 MediaStreamRemoteVideoSource::Observer::Observer(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::VideoTrackInterface* track)
-    : main_thread_(main_thread), track_(track), state_(track->state()) {
+    : main_thread_(main_thread),
+#if DCHECK_IS_ON
+      source_set_(false),
+#endif
+      track_(track),
+      state_(track->state()) {
   track->RegisterObserver(this);
 }
 
@@ -157,6 +162,13 @@ void MediaStreamRemoteVideoSource::Observer::SetSource(
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!source_);
   source_ = source;
+#if DCHECK_IS_ON
+  // |source_set_| means that there is a MediaStreamRemoteVideoSource that
+  // should handle all state changes. Since an Observer is always created when
+  // a remote MediaStream changes in RemoteMediaStreamImpl::Observer::OnChanged,
+  // it can happen that an Observer is created but SetSource is never called.
+  source_set_ = true;
+#endif
 }
 
 void MediaStreamRemoteVideoSource::Observer::OnChanged() {
@@ -169,7 +181,9 @@ void MediaStreamRemoteVideoSource::Observer::OnChanged() {
 void MediaStreamRemoteVideoSource::Observer::OnChangedImpl(
     webrtc::MediaStreamTrackInterface::TrackState state) {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  DCHECK(source_) << "Dropping a state change event. " << state;
+#if DCHECK_IS_ON
+  DCHECK(source_ || !source_set_) << "Dropping a state change event. " << state;
+#endif
   if (source_ && state != state_)
     source_->OnChanged(state);
   state_ = state;

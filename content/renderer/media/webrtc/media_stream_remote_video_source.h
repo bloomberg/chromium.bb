@@ -45,6 +45,9 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
     base::WeakPtr<MediaStreamRemoteVideoSource> source_;
+#if DCHECK_IS_ON
+    bool source_set_;
+#endif
     const scoped_refptr<webrtc::VideoTrackInterface> track_;
     webrtc::MediaStreamTrackInterface::TrackState state_;
   };

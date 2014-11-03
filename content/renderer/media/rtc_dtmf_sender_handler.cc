@@ -6,18 +6,53 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_checker.h"
 
 using webrtc::DtmfSenderInterface;
 
 namespace content {
 
+class RtcDtmfSenderHandler::Observer :
+    public base::RefCountedThreadSafe<Observer>,
+    public webrtc::DtmfSenderObserverInterface {
+ public:
+  explicit Observer(const base::WeakPtr<RtcDtmfSenderHandler>& handler)
+     : main_thread_(base::MessageLoopProxy::current()), handler_(handler) {}
+
+ private:
+  friend class base::RefCountedThreadSafe<Observer>;
+
+  ~Observer() override {}
+
+  void OnToneChange(const std::string& tone) override {
+    main_thread_->PostTask(FROM_HERE,
+        base::Bind(&RtcDtmfSenderHandler::Observer::OnToneChangeOnMainThread,
+                   this, tone));
+  }
+
+  void OnToneChangeOnMainThread(const std::string& tone) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (handler_)
+      handler_->OnToneChange(tone);
+  }
+
+  base::ThreadChecker thread_checker_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  base::WeakPtr<RtcDtmfSenderHandler> handler_;
+};
+
 RtcDtmfSenderHandler::RtcDtmfSenderHandler(DtmfSenderInterface* dtmf_sender)
     : dtmf_sender_(dtmf_sender),
-      webkit_client_(NULL) {
+      webkit_client_(NULL),
+      weak_factory_(this),
+      observer_(new Observer(weak_factory_.GetWeakPtr())) {
   DVLOG(1) << "::ctor";
-  dtmf_sender_->RegisterObserver(this);
+  dtmf_sender_->RegisterObserver(observer_.get());
 }
 
 RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
