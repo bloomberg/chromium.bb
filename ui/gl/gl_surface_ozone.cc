@@ -144,7 +144,6 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     SwapBuffers();
     return true;
   }
-  virtual bool IsSurfaceless() const override { return true; }
 
  private:
   virtual ~GLSurfaceOzoneSurfaceless() {

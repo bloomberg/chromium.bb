@@ -682,6 +682,10 @@ bool SurfacelessEGL::IsOffscreen() {
   return true;
 }
 
+bool SurfacelessEGL::IsSurfaceless() const {
+  return true;
+}
+
 bool SurfacelessEGL::SwapBuffers() {
   LOG(ERROR) << "Attempted to call SwapBuffers with SurfacelessEGL.";
   return false;

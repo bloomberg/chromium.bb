@@ -131,6 +131,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
+  bool IsSurfaceless() const override;
   bool SwapBuffers() override;
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size) override;
