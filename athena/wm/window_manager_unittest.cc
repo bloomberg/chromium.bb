@@ -176,69 +176,6 @@ TEST_F(WindowManagerTest, NewWindowFromOverview) {
   EXPECT_FALSE(w2->IsVisible());
 }
 
-TEST_F(WindowManagerTest, BezelGestureToSplitViewMode) {
-  aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateAndActivateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateAndActivateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateAndActivateWindow(&delegate));
-
-  test::WindowManagerImplTestApi wm_api;
-
-  // Test that going into split-view mode with two-finger gesture selects the
-  // correct windows on left and right splits.
-  ui::test::EventGenerator generator(root_window());
-  const gfx::Point start_points[2] = {
-      gfx::Point(2, 10), gfx::Point(4, 20),
-  };
-  const int kEventTimeSepration = 16;
-  int x_middle = root_window()->bounds().width() / 2;
-  generator.GestureMultiFingerScroll(
-      2, start_points, kEventTimeSepration, 1, x_middle, 0);
-  ASSERT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
-  EXPECT_EQ(second.get(), wm_api.GetSplitViewController()->left_window());
-  EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->right_window());
-  EXPECT_EQ(second->bounds().size().ToString(),
-            third->bounds().size().ToString());
-}
-
-TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
-  aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> first(CreateAndActivateWindow(&delegate));
-  scoped_ptr<aura::Window> second(CreateAndActivateWindow(&delegate));
-  scoped_ptr<aura::Window> third(CreateAndActivateWindow(&delegate));
-  first->Hide();
-  second->Hide();
-
-  test::WindowManagerImplTestApi wm_api;
-
-  EXPECT_EQ(third.get(),
-            wm_api.GetWindowListProvider()->GetWindowList().back());
-
-  // Do a two-finger swipe from the left bezel.
-  ui::test::EventGenerator generator(root_window());
-  const gfx::Point left_bezel_points[2] = {
-      gfx::Point(2, 10), gfx::Point(4, 20),
-  };
-  const int kEventTimeSeparation = 16;
-  int width = root_window()->bounds().width();
-  generator.GestureMultiFingerScroll(
-      2, left_bezel_points, kEventTimeSeparation, 1, width, 0);
-  EXPECT_TRUE(wm::IsActiveWindow(second.get()));
-  EXPECT_EQ(second.get(),
-            wm_api.GetWindowListProvider()->GetWindowList().back());
-
-  // Do a two-finger swipe from the right bezel.
-  const gfx::Point right_bezel_points[2] = {
-      gfx::Point(width - 5, 10),
-      gfx::Point(width - 10, 20)
-  };
-  generator.GestureMultiFingerScroll(
-      2, right_bezel_points, kEventTimeSeparation, 1, -width, 0);
-  EXPECT_TRUE(wm::IsActiveWindow(third.get()));
-  EXPECT_EQ(third.get(),
-            wm_api.GetWindowListProvider()->GetWindowList().back());
-}
-
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
@@ -286,7 +223,10 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
   EXPECT_TRUE(third->IsVisible());
 }
 
-TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
+// Verifies that the correct windows are replaced and the ordering of
+// the window list changes correctly when the window titlebars are dragged
+// in split view mode.
+TEST_F(WindowManagerTest, ReplaceWindowsInSplitViewMode) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
   scoped_ptr<aura::Window> first(CreateAndActivateWindow(&delegate));
@@ -295,45 +235,60 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {
   scoped_ptr<aura::Window> fourth(CreateAndActivateWindow(&delegate));
 
   test::WindowManagerImplTestApi wm_api;
-
-  // Test that going into split-view mode with two-finger gesture selects the
-  // correct windows on left and right splits.
-  ui::test::EventGenerator generator(root_window());
-  const gfx::Point start_points[2] = {
-      gfx::Point(2, 10), gfx::Point(4, 20),
-  };
-  const int kEventTimeSepration = 16;
-  int x_middle = root_window()->bounds().width() / 2;
-  generator.GestureMultiFingerScroll(
-      2, start_points, kEventTimeSepration, 1, x_middle, 0);
+  wm_api.wm()->ToggleSplitView();
   ASSERT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
-  EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->left_window());
-  EXPECT_EQ(fourth.get(), wm_api.GetSplitViewController()->right_window());
 
-  // Swipe the title of the left window. It should switch to |second|.
+  // Verify that the left and right windows have been set to the
+  // two windows at the top of the window list.
+  aura::Window::Windows windows =
+      wm_api.GetWindowListProvider()->GetWindowList();
+  ASSERT_EQ(4u, windows.size());
+  EXPECT_EQ(first.get(), windows[0]);
+  EXPECT_EQ(second.get(), windows[1]);
+  EXPECT_EQ(third.get(), windows[2]);
+  EXPECT_EQ(fourth.get(), windows[3]);
+  EXPECT_EQ(fourth.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->right_window());
+
+  // Swiping the title of the left window should change it from |fourth|
+  // to |second|. The right window should not change.
+  ui::test::EventGenerator generator(root_window());
   generator.GestureScrollSequence(gfx::Point(20, 10),
                                   gfx::Point(20, 400),
                                   base::TimeDelta::FromMilliseconds(20),
                                   5);
   EXPECT_EQ(second.get(), wm_api.GetSplitViewController()->left_window());
-  EXPECT_EQ(fourth.get(), wm_api.GetSplitViewController()->right_window());
-  aura::Window::Windows windows =
-      wm_api.GetWindowListProvider()->GetWindowList();
-  ASSERT_EQ(4u, windows.size());
-  EXPECT_EQ(second.get(), windows[3]);
-  EXPECT_EQ(fourth.get(), windows[2]);
+  EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->right_window());
 
-  // Swipe the title of the right window now. It should switch to |third|.
+  // |second| should be placed at the front of the list. The replaced
+  // window (|fourth|) should be stacked behind the non-replaced window
+  // (|third|).
+  windows = wm_api.GetWindowListProvider()->GetWindowList();
+  ASSERT_EQ(4u, windows.size());
+  EXPECT_EQ(first.get(), windows[0]);
+  EXPECT_EQ(fourth.get(), windows[1]);
+  EXPECT_EQ(third.get(), windows[2]);
+  EXPECT_EQ(second.get(), windows[3]);
+
+  // Swiping the title of the right window should change it from |third|
+  // to |fourth|. The left window should not change.
+  int x_middle = root_window()->bounds().width() / 2;
   generator.GestureScrollSequence(gfx::Point(x_middle + 20, 10),
                                   gfx::Point(x_middle + 20, 400),
                                   base::TimeDelta::FromMilliseconds(20),
                                   5);
   EXPECT_EQ(second.get(), wm_api.GetSplitViewController()->left_window());
-  EXPECT_EQ(third.get(), wm_api.GetSplitViewController()->right_window());
+  EXPECT_EQ(fourth.get(), wm_api.GetSplitViewController()->right_window());
+
+  // |fourth| should be placed at the front of the list. The replaced
+  // window (|third|) should be stacked behind the non-replaced window
+  // (|second|).
   windows = wm_api.GetWindowListProvider()->GetWindowList();
   ASSERT_EQ(4u, windows.size());
-  EXPECT_EQ(third.get(), windows[3]);
+  EXPECT_EQ(first.get(), windows[0]);
+  EXPECT_EQ(third.get(), windows[1]);
   EXPECT_EQ(second.get(), windows[2]);
+  EXPECT_EQ(fourth.get(), windows[3]);
 }
 
 TEST_F(WindowManagerTest, NewWindowBounds) {

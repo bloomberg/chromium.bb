@@ -8,7 +8,6 @@
 
 #include "athena/screen/public/screen_manager.h"
 #include "athena/util/container_priorities.h"
-#include "athena/wm/bezel_controller.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/split_view_controller.h"
 #include "athena/wm/title_drag_controller.h"
@@ -158,12 +157,9 @@ WindowManagerImpl::WindowManagerImpl() {
   container_->AddObserver(this);
   window_list_provider_.reset(new WindowListProviderImpl(container_.get()));
   window_list_provider_->AddObserver(this);
-  bezel_controller_.reset(new BezelController(container_.get()));
   split_view_controller_.reset(
       new SplitViewController(container_.get(), window_list_provider_.get()));
   AddObserver(split_view_controller_.get());
-  bezel_controller_->set_left_right_delegate(split_view_controller_.get());
-  container_->AddPreTargetHandler(bezel_controller_.get());
   title_drag_controller_.reset(new TitleDragController(container_.get(), this));
   wm_state_.reset(new wm::WMState());
   aura::client::ActivationClient* activation_client =
@@ -181,10 +177,9 @@ WindowManagerImpl::~WindowManagerImpl() {
   RemoveObserver(split_view_controller_.get());
   split_view_controller_.reset();
   window_list_provider_.reset();
-  if (container_) {
+  if (container_)
     container_->RemoveObserver(this);
-    container_->RemovePreTargetHandler(bezel_controller_.get());
-  }
+
   // |title_drag_controller_| needs to be reset before |container_|.
   title_drag_controller_.reset();
   container_.reset();
@@ -212,7 +207,6 @@ void WindowManagerImpl::EnterOverview() {
   if (IsOverviewModeActive())
     return;
 
-  bezel_controller_->set_left_right_delegate(nullptr);
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
 
   // Note: The window_list_provider_ resembles the exact window list of the
@@ -249,7 +243,6 @@ void WindowManagerImpl::ExitOverviewNoActivate() {
   if (!IsOverviewModeActive())
     return;
 
-  bezel_controller_->set_left_right_delegate(split_view_controller_.get());
   overview_.reset();
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
   AcceleratorManager::Get()->UnregisterAccelerator(kEscAcceleratorData, this);

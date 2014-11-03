@@ -105,8 +105,6 @@
         'util/fill_layout_manager.h',
         'util/switches.cc',
         'util/switches.h',
-        'wm/bezel_controller.cc',
-        'wm/bezel_controller.h',
         'wm/overview_toolbar.cc',
         'wm/overview_toolbar.h',
         'wm/public/window_list_provider.h',

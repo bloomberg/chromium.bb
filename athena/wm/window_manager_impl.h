@@ -26,7 +26,6 @@ namespace test {
 class WindowManagerImplTestApi;
 }
 
-class BezelController;
 class SplitViewController;
 class WindowListProviderImpl;
 class WindowManagerObserver;
@@ -106,7 +105,6 @@ class ATHENA_EXPORT WindowManagerImpl : public WindowManager,
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowListProviderImpl> window_list_provider_;
   scoped_ptr<WindowOverviewMode> overview_;
-  scoped_ptr<BezelController> bezel_controller_;
   scoped_ptr<SplitViewController> split_view_controller_;
   scoped_ptr<wm::WMState> wm_state_;
   scoped_ptr<TitleDragController> title_drag_controller_;
