@@ -264,7 +264,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
     if (mediaElement->audioSourceNode()) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "invalid HTMLMediaElement.");
+            "HTMLMediaElement already connected previously to a different MediaElementSourceNode.");
         return 0;
     }
 

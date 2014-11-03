@@ -15,70 +15,33 @@
 description("Basic tests for MediaElementAudioSourceNode API.");
 
 var context = 0;
+var audioElement = 0;
+var audioNode = 0;
 
 function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    
     window.jsTestIsAsync = true;
 
     context = new AudioContext();
 
     audioElement = new Audio();
     mediaSource = context.createMediaElementSource(audioElement);
-    window.audioNode = mediaSource;
+    audioNode = mediaSource;
 
     // Check number of inputs and outputs.
-    if (audioNode.numberOfInputs == 0)
-        testPassed("Source AudioNode has no inputs.");
-    else
-        testFailed("Source AudioNode should not have inputs.");
-    
-    if (audioNode.numberOfOutputs == 1)
-        testPassed("Source AudioNode has one output.");
-    else
-        testFailed("Source AudioNode should have one output.");
+    shouldBeEqualToNumber("audioNode.numberOfInputs", 0);
+    shouldBeEqualToNumber("audioNode.numberOfOutputs", 1);
 
-    // Try calling connect() method with illegal values.
-
-    try {
-        audioNode.connect(0, 0, 0);
-        testFailed("connect() exception should be thrown for illegal destination AudioNode.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal destination AudioNode.");
-    }
-
-    try {
-        audioNode.connect(context.destination, 5, 0);
-        testFailed("connect() exception should be thrown for illegal output index.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal output index.");
-    }
-
-    try {
-        audioNode.connect(context.destination, 0, 5);
-        testFailed("connect() exception should be thrown for illegal input index.");
-    } catch(e) {
-        testPassed("connect() exception thrown for illegal input index.");
-    }
+    // Try calling connect() method with illegal values: illegal destination, illegal output index,
+    // and illegal input index.
+    shouldThrow("audioNode.connect(0, 0, 0)");
+    shouldThrow("audioNode.connect(context.destination, 5, 0)");
+    shouldThrow("audioNode.connect(context.destination, 0, 5)");
 
     // Try calling connect() with proper values.
-    try {
-        audioNode.connect(context.destination, 0, 0);
-        testPassed("audioNode.connect(context.destination) succeeded.");
-    } catch(e) {
-        testFailed("audioNode.connect(context.destination) failed.");
-    }
+    shouldNotThrow("audioNode.connect(context.destination, 0, 0)");
     
     // Try creating another MediaElementAudioSourceNode using the same audio element.
-    try {
-        mediaSource = context.createMediaElementSource(audioElement);
-        testFailed("createMediaElementSource() should throw if called twice on same HTMLMediaElement.");
-    } catch(e) {
-        testPassed("createMediaElementSource() threw error when called twice on same HTMLMediaElement.");
-    }
+    shouldThrow("context.createMediaElementSource(audioElement)");
 
     finishJSTest();
 }

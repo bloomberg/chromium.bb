@@ -2,13 +2,13 @@ Basic tests for MediaElementAudioSourceNode API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS Source AudioNode has no inputs.
-PASS Source AudioNode has one output.
-PASS connect() exception thrown for illegal destination AudioNode.
-PASS connect() exception thrown for illegal output index.
-PASS connect() exception thrown for illegal input index.
-PASS audioNode.connect(context.destination) succeeded.
-PASS createMediaElementSource() threw error when called twice on same HTMLMediaElement.
+PASS audioNode.numberOfInputs is 0
+PASS audioNode.numberOfOutputs is 1
+PASS audioNode.connect(0, 0, 0) threw exception SyntaxError: Failed to execute 'connect' on 'AudioNode': invalid destination node..
+PASS audioNode.connect(context.destination, 5, 0) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (5) exceeds number of outputs (1)..
+PASS audioNode.connect(context.destination, 0, 5) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': input index (5) exceeds number of inputs (1)..
+PASS audioNode.connect(context.destination, 0, 0) did not throw exception.
+PASS context.createMediaElementSource(audioElement) threw exception InvalidStateError: Failed to execute 'createMediaElementSource' on 'AudioContext': HTMLMediaElement already connected previously to a different MediaElementSourceNode..
 PASS successfullyParsed is true
 
 TEST COMPLETE
