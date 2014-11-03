@@ -1,6 +1,7 @@
 {
-  "AutoConnect":false,
+  "AutoConnect": true,
   "GUID":"{a3860e83-f03d-4cb1-bafa-b22c9e746950}",
+  "ManagedCredentials": true,
   "Name":"my vpn",
   "OpenVPN.Password":"some password",
   "OpenVPN.Port":"443",
@@ -9,8 +10,7 @@
   "Provider.Host":"vpn.my.domain.com",
   "Provider.Type":"openvpn",
   "Profile": "/profile/user1/shill",
-  // Password is not 'Recommended' by policy, thus removed here.
-  "UIData": "{\"onc_source\":\"user_policy\",\"user_settings\":{}}",
+  "UIData": "{\"onc_source\":\"user_policy\"}",
   "SaveCredentials":false,
   "Type":"vpn"
 }

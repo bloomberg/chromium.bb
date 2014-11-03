@@ -417,6 +417,46 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsWiFi) {
+  InitializeStandardProfiles();
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_autoconnect_on_unconfigured_wifi1.json");
+
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(*mock_manager_client_,
+              ConfigureServiceForProfile(
+                  dbus::ObjectPath(kUser1ProfilePath),
+                  IsEqualTo(expected_shill_properties.get()),
+                  _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_wifi1_autoconnect.onc");
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest, EnableManagedCredentialsVPN) {
+  InitializeStandardProfiles();
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_autoconnect_on_unconfigured_vpn.json");
+
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(*mock_manager_client_,
+              ConfigureServiceForProfile(
+                  dbus::ObjectPath(kUser1ProfilePath),
+                  IsEqualTo(expected_shill_properties.get()),
+                  _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1,
+            "policy/policy_vpn_autoconnect.onc");
+  message_loop_.RunUntilIdle();
+}
+
 // Ensure that EAP settings for ethernet are matched with the right profile
 // entry and written to the dedicated EthernetEAP service.
 TEST_F(ManagedNetworkConfigurationHandlerTest,
