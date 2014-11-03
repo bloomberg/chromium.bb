@@ -23,7 +23,7 @@ buzz::XmppClientSettings MakeXmppClientSettings(
   xmpp_client_settings.set_user(jid.node());
   xmpp_client_settings.set_resource("chrome-sync");
   xmpp_client_settings.set_host(jid.domain());
-  xmpp_client_settings.set_use_tls(buzz::TLS_ENABLED);
+  xmpp_client_settings.set_use_tls(buzz::TLS_REQUIRED);
   xmpp_client_settings.set_auth_token(notifier_options.auth_mechanism,
       notifier_options.invalidate_xmpp_login ?
       token + "bogus" : token);
