@@ -168,10 +168,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   WebContents* web_contents() const;
   const GURL& url() const { return url_; }
 
-  // Creates the RenderViewHost containing the interstitial content.
-  // Overriden in unit tests.
-  virtual RenderViewHost* CreateRenderViewHost();
-
   // Creates the WebContentsView that shows the interstitial RVH.
   // Overriden in unit tests.
   virtual WebContentsView* CreateWebContentsView();
@@ -200,6 +196,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   // IPC message handlers.
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
+
+  // Creates the RenderViewHost containing the interstitial content.
+  RenderViewHostImpl* CreateRenderViewHost();
 
   // The contents in which we are displayed.  This is valid until Hide is
   // called, at which point it will be set to NULL because the WebContents

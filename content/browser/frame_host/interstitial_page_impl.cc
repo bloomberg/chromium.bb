@@ -244,7 +244,7 @@ void InterstitialPageImpl::Show() {
   }
 
   DCHECK(!render_view_host_);
-  render_view_host_ = static_cast<RenderViewHostImpl*>(CreateRenderViewHost());
+  render_view_host_ = CreateRenderViewHost();
   render_view_host_->AttachToFrameTree();
   CreateWebContentsView();
 
@@ -553,7 +553,7 @@ WebContents* InterstitialPageImpl::web_contents() const {
   return web_contents_;
 }
 
-RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
+RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
   if (!enabled())
     return NULL;
 
