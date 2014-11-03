@@ -64,6 +64,11 @@ class TestCLPreCQStatus(cros_test_lib.TestCase):
     act('polenta')
     self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_INFLIGHT)
 
+    # Marking the CL as KICKED_OUT should mark it as FAILED, as a workaround
+    # for Bug 429777. TODO(davidjames): Remove this.
+    act(constants.CL_ACTION_KICKED_OUT)
+    self.assertEqual(self._GetCLStatus(change), constants.CL_STATUS_FAILED)
+
 
 class TestCLStatusCounter(cros_test_lib.TestCase):
   """Tests that GetCLActionCount behaves as expected."""
