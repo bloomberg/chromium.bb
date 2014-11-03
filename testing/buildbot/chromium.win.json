@@ -282,6 +282,12 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Win 7 Tests x64 (1)": {
@@ -374,6 +380,12 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Win7 Tests (dbg)(1)": {

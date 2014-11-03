@@ -165,6 +165,12 @@
         }
       },
       "url_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Mac 10.6 Tests (dbg)(1)": {
