@@ -377,12 +377,6 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
-crbug.com/407416 fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
-crbug.com/407416 fast/repaint/selection-clear.html [ NeedsRebaseline ]
-crbug.com/407416 fast/repaint/selection-partial-invalidation-between-blocks.html [ NeedsRebaseline ]
-crbug.com/407416 compositing/squashing/selection-repaint-with-gaps.html [ NeedsRebaseline ]
-crbug.com/407416 fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
-
 # Test changes due to disabling SVG Fonts on non-GDI platforms.
 crbug.com/242735 [ XP ] svg/custom/svg-font-support.html [ ImageOnlyFailure ]
 
