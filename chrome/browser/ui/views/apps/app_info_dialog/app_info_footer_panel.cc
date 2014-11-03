@@ -82,18 +82,24 @@ void AppInfoFooterPanel::LayoutButtons() {
     AddChildView(pin_to_shelf_button_);
   if (unpin_from_shelf_button_)
     AddChildView(unpin_from_shelf_button_);
-  UpdatePinButtons();
+  UpdatePinButtons(false);
 
   if (remove_button_)
     AddChildView(remove_button_);
 }
 
-void AppInfoFooterPanel::UpdatePinButtons() {
+void AppInfoFooterPanel::UpdatePinButtons(bool focus_visible_button) {
   if (pin_to_shelf_button_ && unpin_from_shelf_button_) {
     bool is_pinned =
         !ash::Shell::GetInstance()->GetShelfDelegate()->IsAppPinned(app_->id());
     pin_to_shelf_button_->SetVisible(is_pinned);
     unpin_from_shelf_button_->SetVisible(!is_pinned);
+
+    if (focus_visible_button) {
+      views::View* button_to_focus =
+          is_pinned ? pin_to_shelf_button_ : unpin_from_shelf_button_;
+      button_to_focus->RequestFocus();
+    }
   }
 }
 
@@ -153,7 +159,7 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
   else
     shelf_delegate->UnpinAppWithID(app_->id());
 
-  UpdatePinButtons();
+  UpdatePinButtons(true);
   Layout();
 }
 

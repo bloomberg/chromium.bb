@@ -86,9 +86,15 @@ class AppListDialogContainer : public views::DialogDelegateView,
     dialog_body_->SetBoundsRect(GetContentsBounds());
     views::DialogDelegateView::Layout();
   }
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override {
+    views::DialogDelegateView::ViewHierarchyChanged(details);
+    if (details.is_add && details.child == this)
+      GetFocusManager()->AdvanceFocus(false);
+  }
 
   // Overridden from views::WidgetDelegate:
-  views::View* GetInitiallyFocusedView() override { return GetContentsView(); }
+  views::View* GetInitiallyFocusedView() override { return NULL; }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
   void WindowClosing() override {
     if (!close_callback_.is_null())
@@ -160,6 +166,12 @@ class NativeDialogContainer : public views::DialogDelegateView {
  private:
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override { return size_; }
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override {
+    views::DialogDelegateView::ViewHierarchyChanged(details);
+    if (details.is_add && details.child == this)
+      GetFocusManager()->AdvanceFocus(false);
+  }
 
   // Overridden from views::WidgetDelegate:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }

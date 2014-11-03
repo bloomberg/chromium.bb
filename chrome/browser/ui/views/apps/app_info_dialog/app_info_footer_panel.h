@@ -44,8 +44,9 @@ class AppInfoFooterPanel
   void LayoutButtons();
 
   // Updates the visibility of the pin/unpin buttons so that only one is visible
-  // at a time.
-  void UpdatePinButtons();
+  // at a time. If |focus_button| is true, sets the focus to whichever button is
+  // now visible.
+  void UpdatePinButtons(bool focus_visible_button);
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
