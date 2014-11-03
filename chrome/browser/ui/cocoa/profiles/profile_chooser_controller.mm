@@ -726,7 +726,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     profiles::UpdateProfileName(profile_, newProfileName);
     [controller_
         postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_NAME];
-    [self setTitle:base::SysUTF16ToNSString(newProfileName)];
   } else {
     // Since the text is empty and not allowed, revert it from the textbox.
     [profileNameTextField_ setStringValue:[self title]];
