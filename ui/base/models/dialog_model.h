@@ -12,14 +12,11 @@
 namespace ui {
 
 // A model representing a dialog window. The model provides the content to show
-// to the user (i.e. label, title), and the ways the user can interact with it
+// to the user (i.e. title), and the ways the user can interact with it
 // (i.e. the buttons).
 class UI_BASE_EXPORT DialogModel {
  public:
   virtual ~DialogModel();
-
-  // Returns the text of show in the dialog.
-  virtual base::string16 GetDialogLabel() const = 0;
 
   // Returns the title of the dialog.
   virtual base::string16 GetDialogTitle() const = 0;

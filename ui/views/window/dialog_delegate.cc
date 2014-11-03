@@ -106,10 +106,6 @@ bool DialogDelegate::Close() {
   return Accept(true);
 }
 
-base::string16 DialogDelegate::GetDialogLabel() const {
-  return base::string16();
-}
-
 base::string16 DialogDelegate::GetDialogTitle() const {
   return GetWindowTitle();
 }

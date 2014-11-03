@@ -83,7 +83,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual bool Close();
 
   // Overridden from ui::DialogModel:
-  base::string16 GetDialogLabel() const override;
   base::string16 GetDialogTitle() const override;
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
