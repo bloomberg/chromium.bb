@@ -133,6 +133,7 @@ public:
     virtual void setPrimaryHoverType(HoverType) override;
     virtual void setRenderVSyncNotificationEnabled(bool) override;
     virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) override;
+    virtual void setRootLayerScrolls(bool) override;
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setSelectTrailingWhitespaceEnabled(bool override);
     virtual void setSelectionIncludesAltImageText(bool) override;

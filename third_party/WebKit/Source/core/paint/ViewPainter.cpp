@@ -6,6 +6,7 @@
 #include "core/paint/ViewPainter.h"
 
 #include "core/frame/FrameView.h"
+#include "core/paint/BlockPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -27,6 +28,7 @@ void ViewPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         paintInfo.context->fillRect(paintInfo.rect, m_renderView.frameView()->baseBackgroundColor());
 
     m_renderView.paintObject(paintInfo, paintOffset);
+    BlockPainter(m_renderView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }
 
 static inline bool rendererObscuresBackground(RenderBox* rootBox)

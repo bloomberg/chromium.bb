@@ -934,7 +934,8 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 {
     MainThreadScrollingReasons reasons = static_cast<MainThreadScrollingReasons>(0);
 
-    if (!m_page->settings().threadedScrollingEnabled())
+    // FIXME: make threaded scrolling work correctly with rootLayerScrolls.
+    if (!m_page->settings().threadedScrollingEnabled() || m_page->settings().rootLayerScrolls())
         reasons |= ThreadedScrollingDisabled;
 
     if (!m_page->mainFrame()->isLocalFrame())

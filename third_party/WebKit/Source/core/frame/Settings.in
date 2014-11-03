@@ -123,6 +123,10 @@ scrollAnimatorEnabled initial=true
 # main thread scrolling are supported.
 threadedScrollingEnabled initial=true, invalidate=Style
 
+# Handles frame-level scrolls via the root RenderLayer instead of the FrameView.
+# crbug.com/417782 tracks enabling this by default.
+rootLayerScrolls initial=false
+
 # Used in layout tests for gesture tap highlights. Makes the highlights square
 # (rather than rounded) to make it possible to reftest the results.
 mockGestureTapHighlightsEnabled initial=false

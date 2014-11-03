@@ -900,8 +900,9 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
     if (!node || !node->renderer())
         return false;
 
+    bool rootLayerScrolls = m_frame->settings() && m_frame->settings()->rootLayerScrolls();
     RenderBox* curBox = node->renderer()->enclosingBox();
-    while (curBox && !curBox->isRenderView()) {
+    while (curBox && (rootLayerScrolls || !curBox->isRenderView())) {
         ScrollDirection physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->slowIsFlippedBlocksWritingMode());
 

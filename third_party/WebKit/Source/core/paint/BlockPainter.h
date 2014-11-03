@@ -24,6 +24,7 @@ public:
     void paintObject(PaintInfo&, const LayoutPoint&);
     void paintChildren(PaintInfo&, const LayoutPoint&);
     void paintChildAsInlineBlock(RenderBox*, PaintInfo&, const LayoutPoint&);
+    void paintOverflowControlsIfNeeded(PaintInfo&, const LayoutPoint&);
 
     // inline-block elements paint all phases atomically. This function ensures that. Certain other elements
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.

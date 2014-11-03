@@ -199,7 +199,7 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
 
     IntRect scrollRect = rect;
     // If we are not yet inserted into the tree, there is no need to issue paint invaldiations.
-    if (!box().parent())
+    if (!box().isRenderView() && !box().parent())
         return;
 
     if (scrollbar == m_vBar.get())

@@ -44,6 +44,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayerClipper.h"
 
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
@@ -272,7 +273,8 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& context, const L
 
 void RenderLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
-    if (!m_renderer.layer()->parent()) {
+    bool rootLayerScrolls = m_renderer.document().settings() && m_renderer.document().settings()->rootLayerScrolls();
+    if (!m_renderer.layer()->parent() && !rootLayerScrolls) {
         // The root layer's clip rect is always infinite.
         clipRects.reset(PaintInfo::infiniteRect());
         return;

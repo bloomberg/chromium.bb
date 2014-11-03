@@ -241,6 +241,11 @@ void WebSettingsImpl::setReportScreenSizeInPhysicalPixelsQuirk(bool reportScreen
     m_settings->setReportScreenSizeInPhysicalPixelsQuirk(reportScreenSizeInPhysicalPixelsQuirk);
 }
 
+void WebSettingsImpl::setRootLayerScrolls(bool rootLayerScrolls)
+{
+    m_settings->setRootLayerScrolls(rootLayerScrolls);
+}
+
 void WebSettingsImpl::setClobberUserAgentInitialScaleQuirk(bool clobberUserAgentInitialScaleQuirk)
 {
     m_clobberUserAgentInitialScaleQuirk = clobberUserAgentInitialScaleQuirk;

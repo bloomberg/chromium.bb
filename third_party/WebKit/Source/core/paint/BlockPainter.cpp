@@ -70,9 +70,15 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with
     // z-index. We paint after we painted the background/border, so that the scrollbars will
     // sit above the background/border.
+    paintOverflowControlsIfNeeded(paintInfo, adjustedPaintOffset);
+}
+
+void BlockPainter::paintOverflowControlsIfNeeded(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    PaintPhase phase = paintInfo.phase;
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(adjustedPaintOffset, m_renderBlock.visualOverflowRect().size()));
-        m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect, false /* paintingOverlayControls */);
+        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(paintOffset, m_renderBlock.visualOverflowRect().size()));
+        m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.rect, false /* paintingOverlayControls */);
     }
 }
 

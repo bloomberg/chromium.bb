@@ -1577,9 +1577,10 @@ bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& 
     ASSERT(!renderer()->frame()->view()->layoutPending());
     ASSERT(!renderer()->document().renderView()->needsLayout());
 
-    LayoutRect hitTestArea = renderer()->view()->documentRect();
-    if (!request.ignoreClipping())
-        hitTestArea.intersect(frameVisibleRect(renderer()));
+    // Start with frameVisibleRect to ensure we include the scrollbars.
+    LayoutRect hitTestArea = frameVisibleRect(renderer());
+    if (request.ignoreClipping())
+        hitTestArea.unite(renderer()->view()->documentRect());
 
     RenderLayer* insideLayer = hitTestLayer(this, 0, request, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer) {

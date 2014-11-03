@@ -267,6 +267,7 @@ void RenderBox::updateFromStyle()
     RenderStyle* styleToUse = style();
     bool isRootObject = isDocumentElement();
     bool isViewObject = isRenderView();
+    bool rootLayerScrolls = document().settings() && document().settings()->rootLayerScrolls();
 
     // The root and the RenderView always paint their backgrounds/borders.
     if (isRootObject || isViewObject)
@@ -275,7 +276,7 @@ void RenderBox::updateFromStyle()
     setFloating(!isOutOfFlowPositioned() && styleToUse->isFloating());
 
     bool boxHasOverflowClip = false;
-    if (!styleToUse->isOverflowVisible() && isRenderBlock() && !isViewObject) {
+    if (!styleToUse->isOverflowVisible() && isRenderBlock() && (rootLayerScrolls || !isViewObject)) {
         // If overflow has been propagated to the viewport, it has no effect here.
         if (node() != document().viewportDefiningElement())
             boxHasOverflowClip = true;
