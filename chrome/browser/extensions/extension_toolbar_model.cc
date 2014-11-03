@@ -211,6 +211,12 @@ void ExtensionToolbarModel::Observe(
                      extension_prefs_, extension->id());
   // Hiding works differently with the new and old toolbars.
   if (include_all_extensions_) {
+    // It's possible that we haven't added this extension yet, if its
+    // visibility was adjusted in the course of its initialization.
+    if (std::find(toolbar_items_.begin(), toolbar_items_.end(), extension) ==
+            toolbar_items_.end())
+      return;
+
     int new_size = 0;
     int new_index = 0;
     if (visible) {
@@ -354,6 +360,10 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
       std::find(toolbar_items_.begin(), toolbar_items_.end(), extension);
   if (pos == toolbar_items_.end())
     return;
+
+  // If our visible count is set to the current size, we need to decrement it.
+  if (visible_icon_count_ == static_cast<int>(toolbar_items_.size()))
+    SetVisibleIconCount(toolbar_items_.size() - 1);
 
   toolbar_items_.erase(pos);
 
