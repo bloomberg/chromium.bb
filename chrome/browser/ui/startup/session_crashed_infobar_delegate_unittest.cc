@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -27,15 +29,23 @@ class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
     // This needs to be called after the local state is set, because it will
     // create a browser which will try to read from the local state.
     BrowserWithTestWindowTest::SetUp();
+
+    // Make sure we have a Profile Manager.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(
+        new ProfileManagerWithoutInit(temp_dir_.path()));
   }
 
   void TearDown() override {
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
     BrowserWithTestWindowTest::TearDown();
+
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
   }
 
  private:
   TestingPrefServiceSimple pref_service;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {

@@ -697,8 +697,6 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
   if (success) {
     ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
-    info_cache.SetProfileSigninRequiredAtIndex(
-        authenticating_profile_index_, false);
     base::FilePath path = info_cache.GetPathOfProfileAtIndex(
         authenticating_profile_index_);
     profiles::SwitchToProfile(
@@ -724,6 +722,15 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
 void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
   DCHECK(browser);
   DCHECK(browser->window());
+
+  // Unlock the profile after browser opens so startup can read the lock bit.
+  // Any necessary authentication must have been successful to reach this point.
+  ProfileInfoCache& info_cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = info_cache.GetIndexOfProfileWithPath(
+      browser->profile()->GetPath());
+  info_cache.SetProfileSigninRequiredAtIndex(index, false);
+
   if (url_hash_ == profiles::kUserManagerSelectProfileTaskManager) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&chrome::OpenTaskManager, browser));

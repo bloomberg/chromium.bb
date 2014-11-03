@@ -388,6 +388,19 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
       !profile->IsNewProfile()) {
     pref.type = SessionStartupPref::LAST;
   }
+
+  // A browser starting for a profile being unlocked should always restore.
+  if (!profile->IsGuestSession()) {
+    ProfileInfoCache& info_cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = info_cache.GetIndexOfProfileWithPath(profile->GetPath());
+
+    if (index != std::string::npos &&
+        info_cache.ProfileIsSigninRequiredAtIndex(index)) {
+      pref.type = SessionStartupPref::LAST;
+    }
+  }
+
   if (pref.type == SessionStartupPref::LAST &&
       IncognitoModePrefs::ShouldLaunchIncognito(command_line, prefs)) {
     // We don't store session information when incognito. If the user has
