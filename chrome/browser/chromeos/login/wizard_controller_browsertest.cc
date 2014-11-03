@@ -884,7 +884,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(GetErrorScreen(),
             WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
-  device_state.SetBoolean(policy::kDeviceStateDisabled, true);
+  device_state.SetString(policy::kDeviceStateRestoreMode,
+                         policy::kDeviceStateRestoreModeDisabled);
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);

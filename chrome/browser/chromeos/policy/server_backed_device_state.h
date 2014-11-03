@@ -10,12 +10,30 @@ namespace policy {
 // Dictionary key constants for prefs::kServerBackedDeviceState.
 extern const char kDeviceStateManagementDomain[];
 extern const char kDeviceStateRestoreMode[];
-extern const char kDeviceStateDisabled[];
 extern const char kDeviceStateDisabledMessage[];
 
-// Values for kDeviceStateRestoreMode.
-extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];
+// String constants used to persist the restorative action in the
+// kDeviceStateRestoreMode dictionary entry.
 extern const char kDeviceStateRestoreModeReEnrollmentRequested[];
+extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];
+extern const char kDeviceStateRestoreModeDisabled[];
+
+// Restorative action to take after device reset.
+enum RestoreMode {
+  // No state restoration.
+  RESTORE_MODE_NONE = 0,
+  // Enterprise enrollment requested, but user may skip.
+  RESTORE_MODE_REENROLLMENT_REQUESTED = 1,
+  // Enterprise enrollment is enforced and cannot be skipped.
+  RESTORE_MODE_REENROLLMENT_ENFORCED = 2,
+  // The device has been disabled by its owner. The device will show a warning
+  // screen and prevent the user from proceeding further.
+  RESTORE_MODE_DISABLED = 3,
+};
+
+// Parses the contents of the kDeviceStateRestoreMode dictionary entry and
+// returns it as a RestoreMode.
+RestoreMode GetRestoreMode();
 
 }  // namespace policy
 

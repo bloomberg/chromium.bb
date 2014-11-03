@@ -74,6 +74,8 @@ std::string ConvertRestoreMode(
       return kDeviceStateRestoreModeReEnrollmentRequested;
     case em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED:
       return kDeviceStateRestoreModeReEnrollmentEnforced;
+    case em::DeviceStateRetrievalResponse::RESTORE_MODE_DISABLED:
+      return kDeviceStateRestoreModeDisabled;
   }
 
   // Return is required to avoid compiler warning.
@@ -233,13 +235,10 @@ void AutoEnrollmentClient::NextStep() {
     // Protocol finished successfully, report result.
     bool trigger_enrollment = false;
     if (retrieve_device_state_) {
-      const base::DictionaryValue* device_state_dict =
-          local_state_->GetDictionary(prefs::kServerBackedDeviceState);
-      std::string restore_mode;
-      device_state_dict->GetString(kDeviceStateRestoreMode, &restore_mode);
+      const RestoreMode restore_mode = GetRestoreMode();
       trigger_enrollment =
-          (restore_mode == kDeviceStateRestoreModeReEnrollmentRequested ||
-           restore_mode == kDeviceStateRestoreModeReEnrollmentEnforced);
+          (restore_mode == RESTORE_MODE_REENROLLMENT_REQUESTED ||
+           restore_mode == RESTORE_MODE_REENROLLMENT_ENFORCED);
     } else {
       trigger_enrollment = has_server_state_;
     }
@@ -411,11 +410,6 @@ bool AutoEnrollmentClient::OnDeviceStateRequestCompletion(
                  !restore_mode.empty(),
                  new base::StringValue(restore_mode));
 
-      UpdateDict(dict.Get(),
-                 kDeviceStateDisabled,
-                 true /* set_or_clear */,
-                 new base::FundamentalValue(
-                     state_response.has_disabled_state()));
       UpdateDict(dict.Get(),
                  kDeviceStateDisabledMessage,
                  state_response.has_disabled_state(),

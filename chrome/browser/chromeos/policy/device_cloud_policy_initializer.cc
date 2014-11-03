@@ -135,9 +135,9 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
 }
 
 bool DeviceCloudPolicyInitializer::ShouldAutoStartEnrollment() const {
-  std::string restore_mode = GetRestoreMode();
-  if (restore_mode == kDeviceStateRestoreModeReEnrollmentRequested ||
-      restore_mode == kDeviceStateRestoreModeReEnrollmentEnforced) {
+  const RestoreMode restore_mode = GetRestoreMode();
+  if (restore_mode == RESTORE_MODE_REENROLLMENT_REQUESTED ||
+      restore_mode == RESTORE_MODE_REENROLLMENT_ENFORCED) {
     return true;
   }
 
@@ -163,7 +163,7 @@ std::string DeviceCloudPolicyInitializer::GetEnrollmentRecoveryDomain() const {
 }
 
 bool DeviceCloudPolicyInitializer::CanExitEnrollment() const {
-  if (GetRestoreMode() == kDeviceStateRestoreModeReEnrollmentEnforced)
+  if (GetRestoreMode() == RESTORE_MODE_REENROLLMENT_ENFORCED)
     return false;
 
   if (local_state_->HasPrefPath(prefs::kDeviceEnrollmentCanExit))
@@ -252,14 +252,6 @@ void DeviceCloudPolicyInitializer::StartConnection(
     on_connected_callback_.Run();
     on_connected_callback_.Reset();
   }
-}
-
-std::string DeviceCloudPolicyInitializer::GetRestoreMode() const {
-  const base::DictionaryValue* device_state_dict =
-      local_state_->GetDictionary(prefs::kServerBackedDeviceState);
-  std::string restore_mode;
-  device_state_dict->GetString(kDeviceStateRestoreMode, &restore_mode);
-  return restore_mode;
 }
 
 }  // namespace policy

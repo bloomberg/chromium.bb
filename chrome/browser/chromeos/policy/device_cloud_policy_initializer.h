@@ -110,9 +110,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   void TryToCreateClient();
   void StartConnection(scoped_ptr<CloudPolicyClient> client);
 
-  // Gets the device restore mode as stored in |local_state_|.
-  std::string GetRestoreMode() const;
-
   PrefService* local_state_;
   DeviceManagementService* enterprise_service_;
   DeviceManagementService* consumer_service_;

@@ -48,11 +48,7 @@ void DeviceDisabledScreen::Show() {
   if (!actor_ || showing_)
     return;
 
-  bool is_device_disabled = false;
-  g_browser_process->local_state()->GetDictionary(
-      prefs::kServerBackedDeviceState)->GetBoolean(policy::kDeviceStateDisabled,
-                                                   &is_device_disabled);
-  if (!is_device_disabled ||
+  if (policy::GetRestoreMode() != policy::RESTORE_MODE_DISABLED ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDeviceDisabling)) {
     // Skip the screen if the device is not marked as disabled or device

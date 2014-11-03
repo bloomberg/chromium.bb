@@ -102,9 +102,13 @@ void DeviceDisabledScreenTest::HideErrorScreen(BaseScreen* parent_screen) {
 
 void DeviceDisabledScreenTest::SetDeviceDisabled(bool disabled) {
   DictionaryPrefUpdate dict(&local_state_, prefs::kServerBackedDeviceState);
-  dict->SetBoolean(policy::kDeviceStateDisabled, disabled);
-  if (disabled)
-    dict->SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
+  if (disabled) {
+    dict->SetString(policy::kDeviceStateRestoreMode,
+                    policy::kDeviceStateRestoreModeDisabled);
+  } else {
+    dict->Remove(policy::kDeviceStateRestoreMode, nullptr);
+  }
+  dict->SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
 }
 
 void DeviceDisabledScreenTest::SetDeviceMode(policy::DeviceMode device_mode) {

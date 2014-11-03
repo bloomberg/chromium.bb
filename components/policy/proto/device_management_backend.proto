@@ -619,6 +619,9 @@ message DeviceStateRetrievalResponse {
     RESTORE_MODE_REENROLLMENT_REQUESTED = 1;
     // Enterprise enrollment is enforced and cannot be skipped.
     RESTORE_MODE_REENROLLMENT_ENFORCED = 2;
+    // The device has been disabled by its owner. The device will show a warning
+    // screen and prevent the user from proceeding further.
+    RESTORE_MODE_DISABLED = 3;
   };
   // The server-indicated restore mode.
   optional RestoreMode restore_mode = 1 [default = RESTORE_MODE_NONE];
@@ -626,7 +629,8 @@ message DeviceStateRetrievalResponse {
   // Primary domain the device is associated with.
   optional string management_domain = 2;
 
-  // The device is disabled and no logins are possible when this is set.
+  // State that is relevant only when the |restore_mode| is
+  // |RESTORE_MODE_DISABLED|.
   optional DisabledState disabled_state = 3;
 }
 
