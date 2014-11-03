@@ -53,6 +53,8 @@ source_set("app_shell_lib") {
     "app/shell_main_delegate.h",
     "browser/api/identity/identity_api.cc",
     "browser/api/identity/identity_api.h",
+    "browser/api/shell_gcd/shell_gcd_api.cc",
+    "browser/api/shell_gcd/shell_gcd_api.h",
     "browser/api/shell_window/shell_window_api.cc",
     "browser/api/shell_window/shell_window_api.h",
     "browser/default_shell_browser_main_delegate.cc",

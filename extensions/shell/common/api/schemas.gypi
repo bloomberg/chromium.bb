@@ -12,6 +12,7 @@
     ],
     'schema_files': [
       'identity.idl',
+      'shell_gcd.idl',
       'shell_window.idl',
     ],
     'cc_dir': 'extensions/shell/common/api',
