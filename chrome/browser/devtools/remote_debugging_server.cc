@@ -36,8 +36,10 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
     int port) {
+  VLOG(2) << "RemoteDebuggingServer::RemoteDebuggingServer : BEGIN";
   base::FilePath output_dir;
   if (!port) {
+    VLOG(2) << "RemoteDebuggingServer::RemoteDebuggingServer : !port";
     // The client requested an ephemeral port. Must write the selected
     // port to a well-known location in the profile directory to
     // bootstrap the connection process.
@@ -45,13 +47,16 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     DCHECK(result);
   }
 
+  VLOG(2) << "RemoteDebuggingServer::RemoteDebuggingServer : factory";
   scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
       new TCPServerSocketFactory(ip, port, 1));
+  VLOG(2) << "RemoteDebuggingServer::RemoteDebuggingServer : handler";
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       factory.Pass(),
       "",
       new BrowserListTabContentsProvider(host_desktop_type),
       output_dir);
+  VLOG(2) << "RemoteDebuggingServer::RemoteDebuggingServer : END";
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
