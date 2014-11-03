@@ -1119,7 +1119,7 @@ AccessibilityRole AXNodeObject::ariaRoleAttribute() const
 
 // When building the textUnderElement for an object, determine whether or not
 // we should include the inner text of this given descendant object or skip it.
-static bool shouldUseAccessiblityObjectInnerText(AXObject* obj)
+static bool shouldUseAccessibilityObjectInnerText(AXObject* obj)
 {
     // Consider this hypothetical example:
     // <div tabindex=0>
@@ -1161,7 +1161,7 @@ String AXNodeObject::textUnderElement() const
 
     StringBuilder builder;
     for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (!shouldUseAccessiblityObjectInnerText(child))
+        if (!shouldUseAccessibilityObjectInnerText(child))
             continue;
 
         if (child->isAXNodeObject()) {
