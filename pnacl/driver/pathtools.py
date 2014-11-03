@@ -92,6 +92,9 @@ def abspath(npath):
   else:
     return posixpath.abspath(npath)
 
+def normpath(npath):
+  return posixpath.normpath(npath)
+
 def isdir(npath):
   return os.path.isdir(tosys(npath))
 
