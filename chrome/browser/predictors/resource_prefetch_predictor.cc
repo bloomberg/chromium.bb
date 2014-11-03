@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -88,6 +90,49 @@ void RecordNavigationEvent(NavigationEvent event) {
   UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
                             event,
                             NAVIGATION_EVENT_COUNT);
+}
+
+// These are additional connection types for
+// net::NetworkChangeNotifier::ConnectionType. They have negative values in case
+// the original network connection types expand.
+enum AdditionalConnectionType {
+  CONNECTION_ALL = -2,
+  CONNECTION_CELLULAR = -1
+};
+
+std::string GetNetTypeStr() {
+  switch (net::NetworkChangeNotifier::GetConnectionType()) {
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      return "Ethernet";
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      return "WiFi";
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      return "2G";
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      return "3G";
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      return "4G";
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      return "None";
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return "Bluetooth";
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    default:
+      break;
+  }
+  return "Unknown";
+}
+
+void ReportPrefetchedNetworkType(int type) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "ResourcePrefetchPredictor.NetworkType.Prefetched",
+      type);
+}
+
+void ReportNotPrefetchedNetworkType(int type) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "ResourcePrefetchPredictor.NetworkType.NotPrefetched",
+      type);
 }
 
 }  // namespace
@@ -525,6 +570,8 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_TRACKED_URL);
 
   // Report any stats.
+  base::TimeDelta plt = base::TimeTicks::Now() - navigation_id.creation_time;
+  ReportPageLoadTimeStats(plt);
   if (prefetch_manager_.get()) {
     ResultsMap::iterator results_it = results_map_.find(navigation_id);
     bool have_prefetch_results = results_it != results_map_.end();
@@ -534,6 +581,17 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
       ReportAccuracyStats(results_it->second->key_type,
                           *(nav_it->second),
                           results_it->second->requests.get());
+      ReportPageLoadTimePrefetchStats(
+          plt,
+          true,
+          base::Bind(&ReportPrefetchedNetworkType),
+          results_it->second->key_type);
+    } else {
+      ReportPageLoadTimePrefetchStats(
+          plt,
+          false,
+          base::Bind(&ReportNotPrefetchedNetworkType),
+          PREFETCH_KEY_TYPE_URL);
     }
   } else {
     scoped_ptr<ResourcePrefetcher::RequestVector> requests(
@@ -1003,7 +1061,81 @@ void ResourcePrefetchPredictor::LearnNavigation(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Accuracy measurement.
+// Page load time and accuracy measurement.
+
+// This is essentially UMA_HISTOGRAM_MEDIUM_TIMES, but it avoids using the
+// STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM definitions.
+#define RPP_HISTOGRAM_MEDIUM_TIMES(name, page_load_time) \
+  do { \
+    base::HistogramBase* histogram = base::Histogram::FactoryTimeGet( \
+        name, \
+        base::TimeDelta::FromMilliseconds(10), \
+        base::TimeDelta::FromMinutes(3), \
+        50, \
+        base::HistogramBase::kUmaTargetedHistogramFlag); \
+    histogram->AddTime(page_load_time); \
+  } while (0)
+
+void ResourcePrefetchPredictor::ReportPageLoadTimeStats(
+    base::TimeDelta plt) const {
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      net::NetworkChangeNotifier::GetConnectionType();
+
+  RPP_HISTOGRAM_MEDIUM_TIMES("ResourcePrefetchPredictor.PLT", plt);
+  RPP_HISTOGRAM_MEDIUM_TIMES(
+      "ResourcePrefetchPredictor.PLT_" + GetNetTypeStr(), plt);
+  if (net::NetworkChangeNotifier::IsConnectionCellular(connection_type))
+    RPP_HISTOGRAM_MEDIUM_TIMES("ResourcePrefetchPredictor.PLT_Cellular", plt);
+}
+
+void ResourcePrefetchPredictor::ReportPageLoadTimePrefetchStats(
+    base::TimeDelta plt,
+    bool prefetched,
+    base::Callback<void(int)> report_network_type_callback,
+    PrefetchKeyType key_type) const {
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      net::NetworkChangeNotifier::GetConnectionType();
+  bool on_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(connection_type);
+
+  report_network_type_callback.Run(CONNECTION_ALL);
+  report_network_type_callback.Run(connection_type);
+  if (on_cellular)
+    report_network_type_callback.Run(CONNECTION_CELLULAR);
+
+  std::string prefetched_str;
+  if (prefetched)
+    prefetched_str = "Prefetched";
+  else
+    prefetched_str = "NotPrefetched";
+
+  RPP_HISTOGRAM_MEDIUM_TIMES(
+      "ResourcePrefetchPredictor.PLT." + prefetched_str, plt);
+  RPP_HISTOGRAM_MEDIUM_TIMES(
+      "ResourcePrefetchPredictor.PLT." + prefetched_str + "_" + GetNetTypeStr(),
+      plt);
+  if (on_cellular) {
+    RPP_HISTOGRAM_MEDIUM_TIMES(
+        "ResourcePrefetchPredictor.PLT." + prefetched_str + "_Cellular", plt);
+  }
+
+  if (!prefetched)
+    return;
+
+  std::string type =
+      key_type == PREFETCH_KEY_TYPE_HOST ? "Host" : "Url";
+  RPP_HISTOGRAM_MEDIUM_TIMES(
+      "ResourcePrefetchPredictor.PLT.Prefetched." + type, plt);
+  RPP_HISTOGRAM_MEDIUM_TIMES(
+      "ResourcePrefetchPredictor.PLT.Prefetched." + type + "_"
+          + GetNetTypeStr(),
+      plt);
+  if (on_cellular) {
+    RPP_HISTOGRAM_MEDIUM_TIMES(
+        "ResourcePrefetchPredictor.PLT.Prefetched." + type + "_Cellular",
+        plt);
+  }
+}
 
 void ResourcePrefetchPredictor::ReportAccuracyStats(
     PrefetchKeyType key_type,
@@ -1217,6 +1349,7 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
         prefetch_network * 100.0 / total_resources_fetched_from_network);
   }
 
+#undef RPP_HISTOGRAM_MEDIUM_TIMES
 #undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
 #undef RPP_PREDICTED_HISTOGRAM_COUNTS
 }

@@ -28411,6 +28411,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ResourcePrefetchPredictor.NetworkType"
+    enum="ResourcePrefetchPredictorNetworkType">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Records the number of pages on each type of network after a page is loaded.
+  </summary>
+</histogram>
+
+<histogram name="ResourcePrefetchPredictor.PLT" units="milliseconds">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Page load time. It starts from when the main frame URL request is sent out
+    to when the main frame document load is completed.
+
+    This is recorded for both prefetched and non-prefetched pages.
+  </summary>
+</histogram>
+
 <histogram name="ResourcePrefetchPredictor.PredictedPrefetchCount">
   <obsolete>
     Deprecated 01/2013. Replaced with specific ones for Url and Host.
@@ -52231,6 +52249,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="NAVIGATION_STATUS_ABANDONED"/>
 </enum>
 
+<enum name="ResourcePrefetchPredictorNetworkType" type="int">
+  <int value="-2" label="CONNECTION_ALL"/>
+  <int value="-1" label="CONNECTION_CELLULAR"/>
+  <int value="0" label="CONNECTION_UNKNOWN"/>
+  <int value="1" label="CONNECTION_ETHERNET"/>
+  <int value="2" label="CONNECTION_WIFI"/>
+  <int value="3" label="CONNECTION_2G"/>
+  <int value="4" label="CONNECTION_3G"/>
+  <int value="5" label="CONNECTION_4G"/>
+  <int value="6" label="CONNECTION_NONE"/>
+  <int value="7" label="CONNECTION_BLUETOOTH"/>
+</enum>
+
 <enum name="ResourcePrefetchPredictorReportingEvent" type="int">
   <int value="0" label="REPORTING_EVENT_ALL_HISTORY_CLEARED"/>
   <int value="1" label="REPORTING_EVENT_PARTIAL_HISTORY_CLEARED"/>
@@ -58645,6 +58676,48 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Undefined" label="For unknown or undefined events."/>
   <affected-histogram name="Event.Latency.Renderer"/>
   <affected-histogram name="Event.Latency.Renderer2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorNetworkTypePrefetch"
+    separator=".">
+  <suffix name="NotPrefetched"
+      label="Number of non-prefetched pages on each type of network."/>
+  <suffix name="Prefetched"
+      label="Number of prefetched pages on each type of network."/>
+  <affected-histogram name="ResourcePrefetchPredictor.NetworkType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorPLTNetworkTypes">
+  <suffix name="2G" label="Page load time in 2G network."/>
+  <suffix name="3G" label="Page load time in 3G network."/>
+  <suffix name="4G" label="Page load time in 4G network."/>
+  <suffix name="Bluetooth" label="Page load time in bluetooth network."/>
+  <suffix name="Cellular" label="Page load time in cellular network."/>
+  <suffix name="Ethernet" label="Page load time in Ethernet."/>
+  <suffix name="None" label="Page load time without network connection."/>
+  <suffix name="Unknown" label="Page load time in unknown type of network."/>
+  <suffix name="WiFi" label="Page load time in WiFi network."/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT"/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT.NotPrefetched"/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT.Prefetched"/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT.Prefetched.Host"/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT.Prefetched.Url"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorPLTPrefetch" separator=".">
+  <suffix name="NotPrefetched"
+      label="Page load time for non-prefetched pages."/>
+  <suffix name="Prefetched" label="Page load time for prefetched pages."/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ResourcePrefetchPredictorPLTPrefetchType"
+    separator=".">
+  <suffix name="Host"
+      label="Page load time for prefetched pages based on main frame host."/>
+  <suffix name="Url"
+      label="Page load time for prefetched pages based on main frame URL."/>
+  <affected-histogram name="ResourcePrefetchPredictor.PLT.Prefetched"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorPredictedStatsVariedMax">

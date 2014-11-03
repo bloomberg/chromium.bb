@@ -264,6 +264,16 @@ class ResourcePrefetchPredictor
                        size_t max_data_map_size,
                        PrefetchDataMap* data_map);
 
+  // Reports overall page load time.
+  void ReportPageLoadTimeStats(base::TimeDelta plt) const;
+
+  // Reports page load time for prefetched and not prefetched pages
+  void ReportPageLoadTimePrefetchStats(
+      base::TimeDelta plt,
+      bool prefetched,
+      base::Callback<void(int)> report_network_type_callback,
+      PrefetchKeyType key_type) const;
+
   // Reports accuracy by comparing prefetched resources with resources that are
   // actually used by the page.
   void ReportAccuracyStats(PrefetchKeyType key_type,

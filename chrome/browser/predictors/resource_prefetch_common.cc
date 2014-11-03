@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 using base::FieldTrialList;
@@ -164,7 +164,7 @@ NavigationID::NavigationID(const NavigationID& other)
 
 NavigationID::NavigationID(content::WebContents* web_contents)
     : render_process_id(web_contents->GetRenderProcessHost()->GetID()),
-      render_frame_id(web_contents->GetRenderViewHost()->GetRoutingID()),
+      render_frame_id(web_contents->GetMainFrame()->GetRoutingID()),
       main_frame_url(web_contents->GetURL()) {
 }
 
