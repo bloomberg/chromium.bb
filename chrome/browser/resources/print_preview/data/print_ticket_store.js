@@ -86,6 +86,14 @@ cr.define('print_preview', function() {
         new print_preview.ticket_items.Copies(this.destinationStore_);
 
     /**
+     * DPI ticket item.
+     * @type {!print_preview.ticket_items.Dpi}
+     * @private
+     */
+    this.dpi_ = new print_preview.ticket_items.Dpi(
+        this.appState_, this.destinationStore_);
+
+    /**
      * Duplex ticket item.
      * @type {!print_preview.ticket_items.Duplex}
      * @private
@@ -243,6 +251,10 @@ cr.define('print_preview', function() {
       return this.customMargins_;
     },
 
+    get dpi() {
+      return this.dpi_;
+    },
+
     get duplex() {
       return this.duplex_;
     },
@@ -308,6 +320,11 @@ cr.define('print_preview', function() {
         this.color_.updateValue(
             /** @type {!Object} */(this.appState_.getField(
             print_preview.AppState.Field.IS_COLOR_ENABLED)));
+      }
+      if (this.appState_.hasField(print_preview.AppState.Field.DPI)) {
+        this.dpi_.updateValue(
+            /** @type {!Object} */(this.appState_.getField(
+            print_preview.AppState.Field.DPI)));
       }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_DUPLEX_ENABLED)) {
@@ -439,6 +456,14 @@ cr.define('print_preview', function() {
       } else if (this.landscape.isUserEdited()) {
         cjt.print.page_orientation =
             {type: this.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};
+      }
+      if (this.dpi.isCapabilityAvailable()) {
+        var value = this.dpi.getValue();
+        cjt.print.dpi = {
+          horizontal_dpi: value.horizontal_dpi,
+          vertical_dpi: value.vertical_dpi,
+          vendor_id: value.vendor_id
+        };
       }
       if (this.vendorItems.isCapabilityAvailable() &&
           this.vendorItems.isUserEdited()) {

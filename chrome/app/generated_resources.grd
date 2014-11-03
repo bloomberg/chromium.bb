@@ -8450,6 +8450,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL" desc="Media size option label. Provides user the option to change the size of the printed page.">
           Paper size
         </message>
+        <message name="IDS_PRINT_PREVIEW_DPI_LABEL" desc="Print quality option label. Provides user the option to select one of the print quality options defined for the printer.">
+          Quality
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DPI_ITEM_LABEL" desc="Print quality option value text.">
+          <ph name="DPI">$1<ex>300</ex></ph> dpi
+        </message>
         <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
           Print using system dialog…
         </message>

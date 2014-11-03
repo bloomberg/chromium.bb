@@ -151,6 +151,15 @@ cr.define('print_preview', function() {
     this.addChild(this.marginSettings_);
 
     /**
+     * Component that renders the DPI settings.
+     * @type {!print_preview.DpiSettings}
+     * @private
+     */
+    this.dpiSettings_ =
+        new print_preview.DpiSettings(this.printTicketStore_.dpi);
+    this.addChild(this.dpiSettings_);
+
+    /**
      * Component that renders miscellaneous print options.
      * @type {!print_preview.OtherOptionsSettings}
      * @private
@@ -189,6 +198,7 @@ cr.define('print_preview', function() {
         this.layoutSettings_,
         this.marginSettings_,
         this.colorSettings_,
+        this.dpiSettings_,
         this.otherOptionsSettings_,
         this.advancedOptionsSettings_];
     /**
@@ -461,6 +471,7 @@ cr.define('print_preview', function() {
       this.layoutSettings_.decorate($('layout-settings'));
       this.colorSettings_.decorate($('color-settings'));
       this.marginSettings_.decorate($('margin-settings'));
+      this.dpiSettings_.decorate($('dpi-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.advancedOptionsSettings_.decorate($('advanced-options-settings'));
       this.advancedSettings_.decorate($('advanced-settings'));
@@ -487,6 +498,7 @@ cr.define('print_preview', function() {
       this.layoutSettings_.isEnabled = isEnabled;
       this.colorSettings_.isEnabled = isEnabled;
       this.marginSettings_.isEnabled = isEnabled;
+      this.dpiSettings_.isEnabled = isEnabled;
       this.otherOptionsSettings_.isEnabled = isEnabled;
       this.advancedOptionsSettings_.isEnabled = isEnabled;
     },
@@ -1242,6 +1254,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/collate.js">
 <include src="data/ticket_items/color.js">
 <include src="data/ticket_items/copies.js">
+<include src="data/ticket_items/dpi.js">
 <include src="data/ticket_items/duplex.js">
 <include src="data/ticket_items/header_footer.js">
 <include src="data/ticket_items/media_size.js">
@@ -1261,8 +1274,10 @@ cr.define('print_preview', function() {
 <include src="metrics.js">
 
 <include src="settings/settings_section.js">
+<include src="settings/settings_section_select.js">
 <include src="settings/page_settings.js">
 <include src="settings/copies_settings.js">
+<include src="settings/dpi_settings.js">
 <include src="settings/media_size_settings.js">
 <include src="settings/layout_settings.js">
 <include src="settings/color_settings.js">
