@@ -4,13 +4,10 @@
 
 #include "net/quic/crypto/source_address_token.h"
 
-#include <vector>
-
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 
 using std::string;
-using std::vector;
 
 namespace net {
 

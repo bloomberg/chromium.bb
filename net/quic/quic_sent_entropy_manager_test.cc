@@ -5,14 +5,12 @@
 #include "net/quic/quic_sent_entropy_manager.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::make_pair;
 using std::pair;
-using std::vector;
 
 namespace net {
 namespace test {

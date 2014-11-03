@@ -83,7 +83,7 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
     std::vector<int>::iterator pos = std::find(suspended_processes_.begin(),
                                                suspended_processes_.end(),
                                                host->GetID());
-    DCHECK_NE(pos, suspended_processes_.end());
+    DCHECK(pos != suspended_processes_.end());
     host->RemoveObserver(this);
     suspended_processes_.erase(pos);
   }

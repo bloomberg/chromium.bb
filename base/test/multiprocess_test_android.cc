@@ -38,7 +38,7 @@ ProcessHandle SpawnMultiProcessTestChild(const std::string& procname,
     return pid;
   }
   // Child process.
-  std::hash_set<int> fds_to_keep_open;
+  base::hash_set<int> fds_to_keep_open;
   for (FileHandleMappingVector::const_iterator it = fds_to_remap->begin();
        it != fds_to_remap->end(); ++it) {
     fds_to_keep_open.insert(it->first);

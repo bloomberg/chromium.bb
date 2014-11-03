@@ -6,6 +6,7 @@
 
 #include <android/log.h>
 #include <unwind.h>
+#include <ostream>
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/strings/stringprintf.h"

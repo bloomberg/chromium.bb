@@ -146,7 +146,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
 
   void ClearFallback();
 
-  vector<UnknownField>* fields_;
+  std::vector<UnknownField>* fields_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
