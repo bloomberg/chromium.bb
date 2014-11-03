@@ -896,11 +896,11 @@ test("ui_unittests") {
     ]
     deps += [
       "//chromeos",
-      "//chromeos/resources",
-      "//chromeos/strings",
       "//ui/aura:test_support",
-      "//ui/events:gesture_detection",
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
       "//ui/chromeos:ui_chromeos",
+      "//ui/events:gesture_detection",
       "//ui/message_center:message_center",
     ]
   }
