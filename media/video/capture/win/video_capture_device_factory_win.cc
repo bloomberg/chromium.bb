@@ -52,12 +52,12 @@ static base::LazyInstance<MFInitializerSingleton> g_mf_initialize =
 // Blacklisted devices are identified by a characteristic prefix of the name.
 // This prefix is used case-insensitively. This list must be kept in sync with
 // |BlacklistedCameraNames|.
-static const char* kBlacklistedCameraNames[] = {
+static const char* const kBlacklistedCameraNames[] = {
   // Name of a fake DirectShow filter on computers with GTalk installed.
-  {"Google Camera Adapter"},
+  "Google Camera Adapter",
   // The following two software WebCams cause crashes.
-  {"IP Camera [JPEG/MJPEG]"},
-  {"CyberLink Webcam Splitter"}
+  "IP Camera [JPEG/MJPEG]",
+  "CyberLink Webcam Splitter",
 };
 
 static void EnsureMediaFoundationInit() {
