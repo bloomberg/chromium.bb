@@ -15,6 +15,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -699,33 +700,17 @@ public class Linker {
     }
 
     /**
-     * Load a native shared library with the Chromium linker.
-     * The shared library is uncompressed and page aligned inside the zipfile.
-     * Note the crazy linker treats libraries and files as equivalent,
-     * so you can only open one library in a given zip file. The library must
-     * not be the Chromium linker library.
+     * Load a native shared library with the Chromium linker. If the zip file
+     * is not null, the shared library must be uncompressed and page aligned
+     * inside the zipfile. Note the crazy linker treats libraries and files as
+     * equivalent, so you can only open one library in a given zip file. The
+     * library must not be the Chromium linker library.
      *
-     * @param zipfile The filename of the zipfile contain the library.
-     * @param library The library's base name.
+     * @param zipFilePath The path of the zip file containing the library (or null).
+     * @param libFilePath The path of the library (possibly in the zip file).
      */
-    public static void loadLibraryInZipFile(String zipfile, String library) {
-        loadLibraryMaybeInZipFile(zipfile, library);
-    }
-
-    /**
-     * Load a native shared library with the Chromium linker. The library must
-     * not be the Chromium linker library.
-     *
-     * @param library The library's base name.
-     */
-    public static void loadLibrary(String library) {
-        loadLibraryMaybeInZipFile(null, library);
-    }
-
-    private static void loadLibraryMaybeInZipFile(
-            @Nullable String zipFile, String library) {
-        if (DEBUG) Log.i(TAG, "loadLibrary: " + library);
-        assert !isChromiumLinkerLibrary(library);
+    public static void loadLibrary(@Nullable String zipFilePath, String libFilePath) {
+        if (DEBUG) Log.i(TAG, "loadLibrary: " + zipFilePath + ", " + libFilePath);
 
         synchronized (Linker.class) {
             ensureInitializedLocked();
@@ -736,12 +721,10 @@ public class Linker {
             // that wrap all calls to loadLibrary() in the library loader.
             assert sPrepareLibraryLoadCalled;
 
-            String libName = System.mapLibraryName(library);
-
             if (sLoadedLibraries == null) sLoadedLibraries = new HashMap<String, LibInfo>();
 
-            if (sLoadedLibraries.containsKey(libName)) {
-                if (DEBUG) Log.i(TAG, "Not loading " + libName + " twice");
+            if (sLoadedLibraries.containsKey(libFilePath)) {
+                if (DEBUG) Log.i(TAG, "Not loading " + libFilePath + " twice");
                 return;
             }
 
@@ -752,18 +735,18 @@ public class Linker {
                 loadAddress = sCurrentLoadAddress;
             }
 
-            String sharedRelRoName = libName;
-            if (zipFile != null) {
-                if (!nativeLoadLibraryInZipFile(zipFile, libName, loadAddress, libInfo)) {
-                    String errorMessage = "Unable to load library: " + libName
-                                          + ", in: " + zipFile;
+            String sharedRelRoName = libFilePath;
+            if (zipFilePath != null) {
+                if (!nativeLoadLibraryInZipFile(zipFilePath, libFilePath, loadAddress, libInfo)) {
+                    String errorMessage = "Unable to load library: " + libFilePath
+                                          + ", in: " + zipFilePath;
                     Log.e(TAG, errorMessage);
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
-                sharedRelRoName = zipFile;
+                sharedRelRoName = zipFilePath;
             } else {
-                if (!nativeLoadLibrary(libName, loadAddress, libInfo)) {
-                    String errorMessage = "Unable to load library: " + libName;
+                if (!nativeLoadLibrary(libFilePath, loadAddress, libInfo)) {
+                    String errorMessage = "Unable to load library: " + libFilePath;
                     Log.e(TAG, errorMessage);
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
@@ -780,7 +763,7 @@ public class Linker {
                         Locale.US,
                         "%s_LIBRARY_ADDRESS: %s %x",
                         sInBrowserProcess ? "BROWSER" : "RENDERER",
-                        libName,
+                        libFilePath,
                         libInfo.mLoadAddress));
             }
 
@@ -788,7 +771,7 @@ public class Linker {
                 // Create a new shared RELRO section at the 'current' fixed load address.
                 if (!nativeCreateSharedRelro(sharedRelRoName, sCurrentLoadAddress, libInfo)) {
                     Log.w(TAG, String.format(Locale.US,
-                            "Could not create shared RELRO for %s at %x", libName,
+                            "Could not create shared RELRO for %s at %x", libFilePath,
                             sCurrentLoadAddress));
                 } else {
                     if (DEBUG) Log.i(TAG,
@@ -823,6 +806,21 @@ public class Linker {
     }
 
     /**
+     * Get the full library path in zip file (lib/<abi>/crazy.<lib_name>).
+     *
+     * @param library The library's base name.
+     * @return the library path.
+     */
+    public static String getLibraryFilePathInZipFile(String library) throws FileNotFoundException {
+        String path = nativeGetLibraryFilePathInZipFile(library);
+        if (path.equals("")) {
+            throw new FileNotFoundException(
+                    "Failed to retrieve path in zip file for library " + library);
+        }
+        return path;
+    }
+
+    /**
      * Check whether the device supports loading a library directly from the APK file.
      *
      * @param apkFile Filename of the APK.
@@ -854,8 +852,8 @@ public class Linker {
 
             if (DEBUG) Log.i(TAG, "checkLibraryAlignedInApk: " + apkFile + ", " + library);
             boolean aligned = nativeCheckLibraryAlignedInApk(apkFile, library);
-            if (DEBUG) Log.i(TAG, library + " is " + (aligned ? "" : "NOT ") +
-                    "page aligned in " + apkFile);
+            if (DEBUG) Log.i(TAG, library + " is " + (aligned ? "" : "NOT ")
+                    + "page aligned in " + apkFile);
             return aligned;
         }
     }
@@ -955,6 +953,15 @@ public class Linker {
      * @return address to pass to future mmap, or 0 on error.
      */
     private static native long nativeGetRandomBaseLoadAddress(long sizeBytes);
+
+    /**
+      * Native method used to get the full library path in zip file
+      * (lib/<abi>/crazy.<lib_name>).
+      *
+      * @param library The library's base name.
+      * @return the library path (or empty string on failure).
+      */
+    private static native String nativeGetLibraryFilePathInZipFile(String library);
 
     /**
      * Native method which checks whether the device supports loading a library

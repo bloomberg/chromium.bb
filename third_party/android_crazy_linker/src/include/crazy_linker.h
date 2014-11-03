@@ -32,6 +32,9 @@ extern "C" {
 // the library.
 #define _CRAZY_PUBLIC __attribute__((__visibility__("default")))
 
+// Maximum path length of a file in a zip file.
+const size_t kMaxFilePathLengthInZip = 256;
+
 // Status values returned by crazy linker functions to indicate
 // success or failure. They were chosen to match boolean values,
 // this allows one to test for failures with:
@@ -334,6 +337,15 @@ crazy_status_t crazy_linker_find_symbol(const char* symbol_name,
 crazy_status_t crazy_library_find_from_address(
     void* address,
     crazy_library_t** library) _CRAZY_PUBLIC;
+
+// Return the full path of |lib_name| in the zip file
+// (lib/<abi>/crazy.<lib_name>). The result is returned in
+// |buffer[0..buffer_size - 1]|. If |buffer_size| is too small,
+// CRAZY_STATUS_FAILURE is returned.
+crazy_status_t crazy_library_file_path_in_zip_file(const char* lib_name,
+                                                   char* buffer,
+                                                   size_t buffer_size)
+    _CRAZY_PUBLIC;
 
 // Check whether |lib_name| is page aligned in |zipfile_name|.
 crazy_status_t crazy_linker_check_library_aligned_in_zip_file(

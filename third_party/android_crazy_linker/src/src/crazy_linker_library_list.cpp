@@ -5,6 +5,7 @@
 #include "crazy_linker_library_list.h"
 
 #include <assert.h>
+#include <crazy_linker.h>
 #include <dlfcn.h>
 
 #include "crazy_linker_debug.h"
@@ -19,9 +20,6 @@
 namespace crazy {
 
 namespace {
-
-// Maximum filename length of a file in a zip file.
-const size_t kMaxFilenameInZip = 256;
 
 // Page size for alignment in a zip file.
 const size_t kZipAlignmentPageSize = 4096;
@@ -401,24 +399,28 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
 #error "Unsupported target abi"
 #endif
 
+String LibraryList::GetLibraryFilePathInZipFile(const char* lib_name) {
+  String path;
+  path.Reserve(kMaxFilePathLengthInZip);
+  path = "lib/";
+  path += CURRENT_ABI;
+  path += "/crazy.";
+  path += lib_name;
+  return path;
+}
+
 int LibraryList::FindAlignedLibraryInZipFile(
     const char* zip_file_path,
     const char* lib_name,
     Error* error) {
-  String fullname;
-  fullname.Reserve(kMaxFilenameInZip);
-  fullname = "lib/";
-  fullname += CURRENT_ABI;
-  fullname += "/crazy.";
-  fullname += lib_name;
-
-  if (fullname.size() + 1 > kMaxFilenameInZip) {
+  String path = GetLibraryFilePathInZipFile(lib_name);
+  if (path.size() >= kMaxFilePathLengthInZip) {
     error->Format("Filename too long for a file in a zip file %s\n",
-                  fullname.c_str());
+                  path.c_str());
     return CRAZY_OFFSET_FAILED;
   }
 
-  int offset = FindStartOffsetOfFileInZipFile(zip_file_path, fullname.c_str());
+  int offset = FindStartOffsetOfFileInZipFile(zip_file_path, path.c_str());
   if (offset == CRAZY_OFFSET_FAILED) {
     return CRAZY_OFFSET_FAILED;
   }

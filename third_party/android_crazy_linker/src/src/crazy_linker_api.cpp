@@ -372,6 +372,20 @@ crazy_status_t crazy_library_find_from_address(void* address,
   }
 }
 
+crazy_status_t crazy_library_file_path_in_zip_file(const char* lib_name,
+                                                   char* buffer,
+                                                   size_t buffer_size) {
+  crazy::String path = crazy::LibraryList::GetLibraryFilePathInZipFile(
+      lib_name);
+  if (path.size() >= buffer_size) {
+    return CRAZY_STATUS_FAILURE;
+  }
+
+  memcpy(buffer, path.c_str(), path.size());
+  buffer[path.size()] = '\0';
+  return CRAZY_STATUS_SUCCESS;
+}
+
 crazy_status_t crazy_linker_check_library_aligned_in_zip_file(
     const char* zipfile_name,
     const char* lib_name) {

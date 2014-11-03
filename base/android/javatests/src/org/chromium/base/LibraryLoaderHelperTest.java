@@ -21,7 +21,8 @@ public class LibraryLoaderHelperTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         Context context = getInstrumentation().getTargetContext();
-        LibraryLoaderHelper.deleteWorkaroundLibrariesSynchronously(context);
+        LibraryLoaderHelper.deleteLibrariesSynchronously(
+                context, LibraryLoaderHelper.PACKAGE_MANAGER_WORKAROUND_DIR);
     }
 
     @MediumTest
@@ -30,13 +31,13 @@ public class LibraryLoaderHelperTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 Context context = getInstrumentation().getTargetContext();
-                File libDir = LibraryLoaderHelper.getWorkaroundLibDir(context);
+                File libDir = LibraryLoaderHelper.getLibDir(context,
+                        LibraryLoaderHelper.PACKAGE_MANAGER_WORKAROUND_DIR);
                 assertTrue(libDir.exists());
                 assertTrue(libDir.isDirectory());
                 assertEquals(libDir.list().length, 0);
 
-                assertTrue(
-                    LibraryLoaderHelper.loadNativeLibrariesUsingWorkaroundForTesting(
+                assertTrue(LibraryLoaderHelper.loadNativeLibrariesUsingWorkaroundForTesting(
                         context));
 
                 assertTrue(libDir.list().length > 0);
@@ -47,7 +48,8 @@ public class LibraryLoaderHelperTest extends InstrumentationTestCase {
     @Override
     public void tearDown() throws Exception {
         Context context = getInstrumentation().getTargetContext();
-        LibraryLoaderHelper.deleteWorkaroundLibrariesSynchronously(context);
+        LibraryLoaderHelper.deleteLibrariesSynchronously(
+                context, LibraryLoaderHelper.PACKAGE_MANAGER_WORKAROUND_DIR);
         super.tearDown();
     }
 }

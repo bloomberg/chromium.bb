@@ -71,6 +71,10 @@ class LibraryList {
                            SearchPathList* search_path_list,
                            Error* error);
 
+  // Return the full path of |lib_name| in the zip file
+  // (lib/<abi>/crazy.<lib_name>).
+  static String GetLibraryFilePathInZipFile(const char* lib_name);
+
   // Find the location of a library in the zip file. If the name of the library
   // is too long, an error occurs during the search or the library is not
   // page aligned in the zip file, CRAZY_OFFSET_FAILED is returned. Otherwise,
