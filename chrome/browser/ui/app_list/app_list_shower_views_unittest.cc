@@ -18,6 +18,11 @@ class FakeAppListShower : public AppListShower {
   explicit FakeAppListShower(AppListShowerDelegate* delegate)
       : AppListShower(delegate), has_view_(false), visible_(false) {}
 
+  void ShowForProfile(Profile* requested_profile) {
+    CreateViewForProfile(requested_profile);
+    ShowForCurrentProfile();
+  }
+
   // AppListShower:
   void HandleViewBeingDestroyed() override {
     AppListShower::HandleViewBeingDestroyed();

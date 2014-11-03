@@ -31,9 +31,8 @@ void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
 
   ScopedKeepAlive keep_alive;
 
-  InvalidatePendingProfileLoads();
-  SetProfilePath(requested_profile->GetPath());
-  shower_.ShowForProfile(requested_profile);
+  CreateForProfile(requested_profile);
+  shower_.ShowForCurrentProfile();
   RecordAppListLaunch();
 }
 
@@ -61,7 +60,10 @@ AppListControllerDelegate* AppListServiceViews::GetControllerDelegate() {
 }
 
 void AppListServiceViews::CreateForProfile(Profile* requested_profile) {
+  DCHECK(requested_profile);
+  InvalidatePendingProfileLoads();
   shower_.CreateViewForProfile(requested_profile);
+  SetProfilePath(shower_.profile()->GetPath());
 }
 
 void AppListServiceViews::DestroyAppList() {

@@ -24,7 +24,7 @@ class AppListShower {
   explicit AppListShower(AppListShowerDelegate* delegate);
   virtual ~AppListShower();
 
-  void ShowForProfile(Profile* requested_profile);
+  void ShowForCurrentProfile();
   gfx::NativeWindow GetWindow();
 
   app_list::AppListView* app_list() { return app_list_; }

@@ -384,14 +384,6 @@ Profile* AppListServiceMac::GetCurrentAppListProfile() {
 }
 
 void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
-  InvalidatePendingProfileLoads();
-
-  if (requested_profile == profile_) {
-    ShowWindowNearDock();
-    return;
-  }
-
-  SetProfilePath(requested_profile->GetPath());
   CreateForProfile(requested_profile);
   ShowWindowNearDock();
 }
@@ -439,10 +431,13 @@ void AppListServiceMac::CreateShortcut() {
 }
 
 void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
-  if (profile_ == requested_profile)
+  DCHECK(requested_profile);
+  InvalidatePendingProfileLoads();
+  if (profile_ && requested_profile->IsSameProfile(profile_))
     return;
 
-  profile_ = requested_profile;
+  profile_ = requested_profile->GetOriginalProfile();
+  SetProfilePath(profile_->GetPath());
 
   if (!window_controller_)
     window_controller_.reset([[AppListWindowController alloc] init]);

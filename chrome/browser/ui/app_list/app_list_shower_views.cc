@@ -24,24 +24,15 @@ AppListShower::AppListShower(AppListShowerDelegate* delegate)
 AppListShower::~AppListShower() {
 }
 
-void AppListShower::ShowForProfile(Profile* requested_profile) {
+void AppListShower::ShowForCurrentProfile() {
+  DCHECK(HasView());
+  keep_alive_.reset(new ScopedKeepAlive);
+
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).
-  if (IsAppListVisible() && (requested_profile == profile_)) {
-    Show();
-    return;
-  }
-
-  if (!HasView()) {
-    CreateViewForProfile(requested_profile);
-  } else if (requested_profile != profile_) {
-    profile_ = requested_profile;
-    UpdateViewForNewProfile();
-  }
-
-  keep_alive_.reset(new ScopedKeepAlive);
   if (!IsAppListVisible())
     delegate_->MoveNearCursor(app_list_);
+
   Show();
 }
 
@@ -52,7 +43,15 @@ gfx::NativeWindow AppListShower::GetWindow() {
 }
 
 void AppListShower::CreateViewForProfile(Profile* requested_profile) {
-  profile_ = requested_profile;
+  DCHECK(requested_profile);
+  if (HasView() && requested_profile->IsSameProfile(profile_))
+    return;
+
+  profile_ = requested_profile->GetOriginalProfile();
+  if (HasView()) {
+    UpdateViewForNewProfile();
+    return;
+  }
   app_list_ = MakeViewForCurrentProfile();
   delegate_->OnViewCreated();
 }
