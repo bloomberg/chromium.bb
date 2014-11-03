@@ -48,6 +48,12 @@ def gyp_defines():
       for arg in shlex.split(os.environ.get('GYP_DEFINES', '')))
 
 @memoize()
+def gyp_generator_flags():
+  """Parses and returns GYP_GENERATOR_FLAGS env var as a dictionary."""
+  return dict(arg.split('=', 1)
+      for arg in shlex.split(os.environ.get('GYP_GENERATOR_FLAGS', '')))
+
+@memoize()
 def gyp_msvs_version():
   return os.environ.get('GYP_MSVS_VERSION', '')
 

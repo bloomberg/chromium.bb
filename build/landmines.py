@@ -44,7 +44,12 @@ def get_build_dir(build_tool, is_iphone=False):
   if build_tool == 'xcode':
     ret = os.path.join(SRC_DIR, 'xcodebuild')
   elif build_tool in ['make', 'ninja', 'ninja-ios']:  # TODO: Remove ninja-ios.
-    ret = os.path.join(SRC_DIR, os.environ.get('CHROMIUM_OUT_DIR', 'out'))
+    if ('CHROMIUM_OUT_DIR' not in os.environ and
+        'output_dir' in landmine_utils.gyp_generator_flags()):
+      output_dir = landmine_utils.gyp_generator_flags()['output_dir']
+    else:
+      output_dir = os.environ.get('CHROMIUM_OUT_DIR', 'out')
+    ret = os.path.join(SRC_DIR, output_dir)
   else:
     raise NotImplementedError('Unexpected GYP_GENERATORS (%s)' % build_tool)
   return os.path.abspath(ret)
