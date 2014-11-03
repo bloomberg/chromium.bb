@@ -139,12 +139,15 @@
       'target_name': 'password_manager_core_common',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'password_manager/core/common/experiments.cc',
+        'password_manager/core/common/experiments.h',
         'password_manager/core/common/password_manager_pref_names.cc',
         'password_manager/core/common/password_manager_pref_names.h',
         'password_manager/core/common/password_manager_switches.cc',

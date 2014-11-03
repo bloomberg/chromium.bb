@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/experiments.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "jni/PasswordUIView_jni.h"
 
@@ -104,21 +105,7 @@ jstring GetAccountDashboardURL(JNIEnv* env, jclass) {
 
 static jboolean ShouldDisplayManageAccountLink(
     JNIEnv* env, jclass) {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("AndroidPasswordLinkInSettings");
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(
-          password_manager::switches::kDisableAndroidPasswordLink)) {
-    return false;
-  }
-
-  if (command_line->HasSwitch(
-          password_manager::switches::kEnableAndroidPasswordLink)) {
-    return true;
-  }
-
-  return group_name == "Enabled";
+  return password_manager::ManageAccountLinkExperimentEnabled();
 }
 
 // static

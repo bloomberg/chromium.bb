@@ -6,11 +6,6 @@
   width: 550px;
 }
 
-#autofill-help {
-  bottom: 18px;
-  position: absolute;
-}
-
 #autofill-options list {
   min-height: 172px;
 }

@@ -12,10 +12,6 @@ namespace switches {
 const char kAllowAutofillSyncCredential[] =
     "allow-autofill-sync-credential";
 
-// Disable the link in the password manager settings page that points to account
-// central.
-const char kDisableAndroidPasswordLink[] = "disable-android-password-link";
-
 // Disable dropping the credential used to sync passwords.
 const char kDisableDropSyncCredential[] =
     "disable-drop-sync-credential";
@@ -23,6 +19,10 @@ const char kDisableDropSyncCredential[] =
 // Disable both saving and filling for the sync signin form.
 const char kDisableManagerForSyncSignin[] =
     "disable-manager-for-sync-signin";
+
+// Disable the link in the password manager settings page that points to account
+// central.
+const char kDisablePasswordLink[] = "disable-password-link";
 
 // Disallow autofilling of the sync credential.
 const char kDisallowAutofillSyncCredential[] =
@@ -33,9 +33,10 @@ const char kDisallowAutofillSyncCredential[] =
 const char kDisallowAutofillSyncCredentialForReauth[] =
     "disallow-autofill-sync-credential-for-reauth";
 
-// Enable the link in the password manager settings page that points to account
-// central.
-const char kEnableAndroidPasswordLink[] = "enable-android-password-link";
+// Disables the save-password prompt. Passwords are then saved automatically,
+// without asking the user.
+const char kEnableAutomaticPasswordSaving[] =
+    "enable-automatic-password-saving";
 
 // Enable dropping the credential used to sync passwords.
 const char kEnableDropSyncCredential[] =
@@ -46,10 +47,9 @@ const char kEnableDropSyncCredential[] =
 const char kEnableManagerForSyncSignin[] =
     "enable-manager-for-sync-signin";
 
-// Disables the save-password prompt. Passwords are then saved automatically,
-// without asking the user.
-const char kEnableAutomaticPasswordSaving[] =
-    "enable-automatic-password-saving";
+// Enable the link in the password manager settings page that points to account
+// central.
+const char kEnablePasswordLink[] = "enable-password-link";
 
 }  // namespace switches
 

@@ -47515,6 +47515,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="120429808" label="disable-new-profile-management"/>
   <int value="121858954" label="enable-supervised-user-safesites"/>
+  <int value="125934378" label="enable-password-link"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="270267831" label="enable-scripts-require-action"/>
@@ -47610,6 +47611,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1481562816" label="disable-password-link"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1505194447" label="disable-transition-compositing"/>

@@ -213,6 +213,10 @@ cr.define('options', function() {
       var item = this.savedPasswordsList_.getListItemByIndex(index);
       item.showPassword(password);
     },
+
+    setManageAccountLinkVisibility_: function(visible) {
+      $('manage-passwords-span').hidden = !visible;
+    },
   };
 
   /**
@@ -237,6 +241,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations on the singleton instance.
   cr.makePublic(PasswordManager, [
+    'setManageAccountLinkVisibility',
     'setSavedPasswordsList',
     'setPasswordExceptionsList',
     'showPassword'
