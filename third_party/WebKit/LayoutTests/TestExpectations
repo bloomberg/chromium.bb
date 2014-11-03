@@ -1482,3 +1482,5 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-3.html [
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-4.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/splitText-dirty-lines.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-to-fit.html [ Failure ]
+
+crbug.com/429843 [ Win7 Debug ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
