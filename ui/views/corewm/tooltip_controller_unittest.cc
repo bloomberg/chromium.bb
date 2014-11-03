@@ -27,6 +27,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
@@ -411,30 +412,6 @@ int IndexInParent(const aura::Window* window) {
       static_cast<int>(i - window->parent()->children().begin());
 }
 
-class TestScreenPositionClient : public aura::client::ScreenPositionClient {
- public:
-  TestScreenPositionClient() {}
-  ~TestScreenPositionClient() override {}
-
-  // ScreenPositionClient overrides:
-  void ConvertPointToScreen(const aura::Window* window,
-                            gfx::Point* point) override {}
-  void ConvertPointFromScreen(const aura::Window* window,
-                              gfx::Point* point) override {}
-  void ConvertHostPointToScreen(aura::Window* root_gwindow,
-                                gfx::Point* point) override {
-    NOTREACHED();
-  }
-  void SetBounds(aura::Window* window,
-                 const gfx::Rect& bounds,
-                 const gfx::Display& display) override {
-    window->SetBounds(bounds);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestScreenPositionClient);
-};
-
 }  // namespace
 
 class TooltipControllerCaptureTest : public TooltipControllerTest {
@@ -463,7 +440,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
   }
 
  private:
-  TestScreenPositionClient screen_position_client_;
+  wm::DefaultScreenPositionClient screen_position_client_;
   scoped_ptr<gfx::Screen> desktop_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);

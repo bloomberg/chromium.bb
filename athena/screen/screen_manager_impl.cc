@@ -22,6 +22,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/window_util.h"
 
@@ -120,7 +121,7 @@ class AthenaFocusRules : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(AthenaFocusRules);
 };
 
-class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
+class AthenaScreenPositionClient : public wm::DefaultScreenPositionClient {
  public:
   AthenaScreenPositionClient() {
   }
@@ -128,28 +129,10 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
 
  private:
   // aura::client::ScreenPositionClient:
-  virtual void ConvertPointToScreen(const aura::Window* window,
-                                    gfx::Point* point) override {
-    const aura::Window* root = window->GetRootWindow();
-    aura::Window::ConvertPointToTarget(window, root, point);
-  }
-
-  virtual void ConvertPointFromScreen(const aura::Window* window,
-                                      gfx::Point* point) override {
-    const aura::Window* root = window->GetRootWindow();
-    aura::Window::ConvertPointToTarget(root, window, point);
-  }
-
-  virtual void ConvertHostPointToScreen(aura::Window* window,
-                                        gfx::Point* point) override {
+  void ConvertHostPointToScreen(aura::Window* window,
+                                gfx::Point* point) override {
     // TODO(oshima): Implement this when adding multiple display support.
     NOTREACHED();
-  }
-
-  virtual void SetBounds(aura::Window* window,
-                         const gfx::Rect& bounds,
-                         const gfx::Display& display) override {
-    window->SetBounds(bounds);
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaScreenPositionClient);

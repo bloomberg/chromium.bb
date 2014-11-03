@@ -56,6 +56,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/core/window_util.h"
 
 using testing::_;
@@ -69,34 +70,6 @@ using blink::WebTouchPoint;
 
 namespace content {
 namespace {
-
-// Simple screen position client to test coordinate system conversion.
-class TestScreenPositionClient
-    : public aura::client::ScreenPositionClient {
- public:
-  TestScreenPositionClient() {}
-  ~TestScreenPositionClient() override {}
-
-  // aura::client::ScreenPositionClient overrides:
-  void ConvertPointToScreen(const aura::Window* window,
-                            gfx::Point* point) override {
-    point->Offset(-1, -1);
-  }
-
-  void ConvertPointFromScreen(const aura::Window* window,
-                              gfx::Point* point) override {
-    point->Offset(1, 1);
-  }
-
-  void ConvertHostPointToScreen(aura::Window* window,
-                                gfx::Point* point) override {
-    ConvertPointToScreen(window, point);
-  }
-
-  void SetBounds(aura::Window* window,
-                 const gfx::Rect& bounds,
-                 const gfx::Display& display) override {}
-};
 
 class TestOverscrollDelegate : public OverscrollControllerDelegate {
  public:
@@ -706,7 +679,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusFullscreen) {
 // Checks that a popup is positioned correctly relative to its parent using
 // screen coordinates.
 TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
-  TestScreenPositionClient screen_position_client;
+  wm::DefaultScreenPositionClient screen_position_client;
 
   aura::Window* window = parent_view_->GetNativeView();
   aura::Window* root = window->GetRootWindow();
