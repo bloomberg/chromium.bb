@@ -514,6 +514,8 @@
       'renderer/pepper/plugin_module.h',
       'renderer/pepper/plugin_object.cc',
       'renderer/pepper/plugin_object.h',
+      'renderer/pepper/plugin_power_saver_helper.cc',
+      'renderer/pepper/plugin_power_saver_helper.h',
       'renderer/pepper/ppapi_preferences_builder.cc',
       'renderer/pepper/ppapi_preferences_builder.h',
       'renderer/pepper/ppb_audio_impl.cc',

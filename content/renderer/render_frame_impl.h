@@ -72,6 +72,7 @@ class NotificationPermissionDispatcher;
 class NotificationProvider;
 class PageState;
 class PepperPluginInstanceImpl;
+class PluginPowerSaverHelper;
 class PushMessagingDispatcher;
 class RendererAccessibility;
 class RendererCdmManager;
@@ -242,6 +243,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnImeConfirmComposition(const base::string16& text,
                                const gfx::Range& replacement_range,
                                bool keep_selection);
+
+  PluginPowerSaverHelper* plugin_power_saver_helper();
 #endif  // defined(ENABLE_PLUGINS)
 
   // May return NULL in some cases, especially if userMediaClient() returns
@@ -687,6 +690,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Current text input composition text. Empty if no composition is in
   // progress.
   base::string16 pepper_composition_text_;
+
+  PluginPowerSaverHelper* plugin_power_saver_helper_;
 #endif
 
   RendererWebCookieJarImpl cookie_jar_;

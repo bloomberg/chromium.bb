@@ -136,6 +136,7 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -562,6 +563,9 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       render_frame_proxy_(NULL),
       is_detaching_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
+#if defined(ENABLE_PLUGINS)
+      plugin_power_saver_helper_(NULL),
+#endif
       cookie_jar_(this),
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
@@ -594,8 +598,14 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 
   render_view_->RegisterRenderFrame(this);
 
+  // Everything below subclasses RenderFrameObserver and is automatically
+  // deleted when the RenderFrame gets deleted.
 #if defined(OS_ANDROID)
   new GinJavaBridgeDispatcher(this);
+#endif
+
+#if defined(ENABLE_PLUGINS)
+  plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -827,6 +837,10 @@ void RenderFrameImpl::OnImeConfirmComposition(
   pepper_composition_text_.clear();
 }
 
+PluginPowerSaverHelper* RenderFrameImpl::plugin_power_saver_helper() {
+  DCHECK(plugin_power_saver_helper_);
+  return plugin_power_saver_helper_;
+}
 #endif  // defined(ENABLE_PLUGINS)
 
 MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {

@@ -57,6 +57,7 @@ class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class ManifestManagerHost;
 class MidiDispatcherHost;
+class PluginContentOriginWhitelist;
 class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
@@ -1162,6 +1163,11 @@ class CONTENT_EXPORT WebContentsImpl
   // Manages the guest state for browser plugin, if this WebContents is a guest;
   // NULL otherwise.
   scoped_ptr<BrowserPluginGuest> browser_plugin_guest_;
+
+#if defined(ENABLE_PLUGINS)
+  // Manages the whitelist of plugin content origins exempt from power saving.
+  scoped_ptr<PluginContentOriginWhitelist> plugin_content_origin_whitelist_;
+#endif
 
   // This must be at the end, or else we might get notifications and use other
   // member variables that are gone.

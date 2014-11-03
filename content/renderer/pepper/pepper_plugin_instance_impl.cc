@@ -21,6 +21,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -45,6 +46,7 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
+#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -574,6 +576,32 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
           container_->element().document().url(),
           GetPluginURL());
     }
+
+    PluginPowerSaverHelper* power_saver_helper =
+        render_frame_->plugin_power_saver_helper();
+    GURL content_origin = plugin_url_.GetOrigin();
+    blink::WebRect bounds = container_->element().boundsInViewportSpace();
+
+    bool cross_origin = false;
+    power_saver_enabled_ =
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePluginPowerSaver) &&
+        module_->name() == kFlashPluginName &&
+        power_saver_helper->ShouldThrottleContent(
+            content_origin, bounds.width, bounds.height, &cross_origin);
+
+    if (power_saver_enabled_) {
+      power_saver_helper->RegisterPeripheralPlugin(
+          content_origin,
+          base::Bind(&PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle,
+                     weak_factory_.GetWeakPtr()));
+
+      throttler_.reset(new PepperPluginInstanceThrottler(
+          base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
+                     weak_factory_.GetWeakPtr(), true /* throttled */)));
+    } else if (cross_origin) {
+      power_saver_helper->WhitelistContentOrigin(content_origin);
+    }
   }
 
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
@@ -582,16 +610,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   if (GetContentClient()->renderer() &&  // NULL in unit tests.
       GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
     external_document_load_ = true;
-
-  power_saver_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnablePluginPowerSaver) &&
-                         IsPeripheralContent();
-
-  if (power_saver_enabled_) {
-    throttler_.reset(new PepperPluginInstanceThrottler(
-        base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
-                   weak_factory_.GetWeakPtr(), true /* throttled */)));
-  }
 }
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
@@ -3295,27 +3313,6 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
   }
 }
 
-bool PepperPluginInstanceImpl::IsPeripheralContent() const {
-  if (module_->name() != kFlashPluginName)
-    return false;
-
-  // Peripheral plugin content is defined to be peripheral when the plugin
-  // content's origin differs from the top level frame's origin. For example:
-  //  - Peripheral:      a.com -> b.com/plugin.swf
-  //  - Peripheral:      a.com -> b.com/iframe.html -> b.com/plugin.swf
-  //  - NOT peripheral:  a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
-
-  // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
-  // is fixed. For now, case 3 in the comment above doesn't work in
-  // --site-per-process mode.
-  WebFrame* main_frame = render_frame_->GetWebFrame()->view()->mainFrame();
-  if (main_frame->isWebRemoteFrame())
-     return true;
-
-  GURL main_frame_url = main_frame->document().url();
-  return plugin_url_.GetOrigin() != main_frame_url.GetOrigin();
-}
-
 void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
   // Do not throttle if we've already disabled power saver.
   if (!power_saver_enabled_ && throttled)
@@ -3323,6 +3320,12 @@ void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
 
   plugin_throttled_ = throttled;
   SendDidChangeView();
+}
+
+void PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle() {
+  DCHECK(power_saver_enabled_);
+  power_saver_enabled_ = false;
+  SetPluginThrottled(false);
 }
 
 }  // namespace content

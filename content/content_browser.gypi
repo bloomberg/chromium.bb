@@ -1510,6 +1510,8 @@
     'plugin_browser_sources': [
       'browser/pepper_flash_settings_helper_impl.cc',
       'browser/pepper_flash_settings_helper_impl.h',
+      'browser/plugin_content_origin_whitelist.cc',
+      'browser/plugin_content_origin_whitelist.h',
       'browser/plugin_data_remover_impl.cc',
       'browser/plugin_data_remover_impl.h',
       'browser/plugin_loader_posix.cc',

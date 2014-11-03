@@ -1258,6 +1258,7 @@
             'renderer/pepper/pepper_file_chooser_host_unittest.cc',
             'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
             'renderer/pepper/pepper_url_request_unittest.cc',
+            'renderer/pepper/plugin_power_saver_helper_browsertest.cc',
             'renderer/render_thread_impl_browsertest.cc',
             'renderer/render_view_browsertest.cc',
             'renderer/render_view_browsertest_mac.mm',

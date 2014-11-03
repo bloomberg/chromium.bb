@@ -493,6 +493,12 @@ IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
                     content::CommonNavigationParams, /* common_params */
                     content::CommitNavigationParams /* commit_params */)
 
+#if defined(ENABLE_PLUGINS)
+// Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
+IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
+                    std::set<GURL> /* origin_whitelist */)
+#endif  // defined(ENABLE_PLUGINS)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -634,6 +640,13 @@ IPC_SYNC_MESSAGE_CONTROL4_3(FrameHostMsg_GetPluginInfo,
                             bool /* found */,
                             content::WebPluginInfo /* plugin info */,
                             std::string /* actual_mime_type */)
+
+// A renderer sends this to the browser process when it wants to temporarily
+// whitelist an origin's plugin content as essential. This temporary whitelist
+// is specific to a top level frame, and is cleared when the whitelisting
+// RenderFrame is destroyed.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_PluginContentOriginAllowed,
+                    GURL /* content_origin */)
 #endif  // defined(ENABLE_PLUGINS)
 
 // A renderer sends this to the browser process when it wants to
