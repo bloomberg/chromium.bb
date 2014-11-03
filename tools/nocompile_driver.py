@@ -220,13 +220,16 @@ def StartTest(sourcefile_path, cflags, config):
         }
   """
   # TODO(ajwong): Get the compiler from gyp.
-  cmdline = ['g++']
+  cmdline = [os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          '../third_party/llvm-build/Release+Asserts/bin',
+                          'clang++')]
   cmdline.extend(shlex.split(cflags))
   name = config['name']
   expectations = config['expectations']
   if expectations is not None:
     cmdline.append('-D%s' % name)
-  cmdline.extend(['-o', '/dev/null', '-c', '-x', 'c++', sourcefile_path])
+  cmdline.extend(['-std=c++11', '-o', '/dev/null', '-c', '-x', 'c++',
+                  sourcefile_path])
 
   process = subprocess.Popen(cmdline, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)

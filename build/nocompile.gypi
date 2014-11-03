@@ -60,7 +60,7 @@
   # TODO(awong): Disabled until http://crbug.com/105388 is resolved.
   'sources/': [['exclude', '\\.nc$']],
   'conditions': [
-    [ 'OS=="linux" and clang==0', {
+    [ 'OS!="win" and clang==1', {
       'rules': [
         {
           'variables': {
@@ -90,7 +90,7 @@
       ],
     }, {
       'sources/': [['exclude', '\\.nc$']]
-    }],  # 'OS=="linux" and clang=="0"'
+    }],  # 'OS!="win" and clang=="1"'
   ],
 }
 

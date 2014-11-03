@@ -64,7 +64,7 @@ template <typename T>
 void VoidPolymorphic1(T t) {
 }
 
-#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"invalid conversion from 'const base::NoRef\*' to 'base::NoRef\*'"]
+#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: cannot initialize a parameter of type 'base::NoRef \*' with an lvalue of type 'typename enable_if<!IsMoveOnlyType<const HasRef \*const>::value, const HasRef \*const>::type' \(aka 'const base::HasRef \*const'\)"]
 
 // Method bound to const-object.
 //
@@ -77,7 +77,7 @@ void WontCompile() {
   method_to_const_cb.Run();
 }
 
-#elif defined(NCTEST_METHOD_BIND_NEEDS_REFCOUNTED_OBJECT)  // [r"has no member named 'AddRef'"]
+#elif defined(NCTEST_METHOD_BIND_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: no member named 'AddRef' in 'base::NoRef'"]
 
 // Method bound to non-refcounted object.
 //
@@ -89,7 +89,7 @@ void WontCompile() {
   no_ref_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_METHOD_NEEDS_REFCOUNTED_OBJECT)  // [r"has no member named 'AddRef'"]
+#elif defined(NCTEST_CONST_METHOD_NEEDS_REFCOUNTED_OBJECT)  // [r"fatal error: no member named 'AddRef' in 'base::NoRef'"]
 
 // Const Method bound to non-refcounted object.
 //
@@ -101,7 +101,7 @@ void WontCompile() {
   no_ref_const_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_POINTER)  // [r"invalid conversion from 'const base::NoRef\*' to 'base::NoRef\*'"]
+#elif defined(NCTEST_CONST_POINTER)  // [r"fatal error: reference to type 'base::NoRef \*const' could not bind to an lvalue of type 'typename enable_if<!IsMoveOnlyType<const NoRef \*const>::value, const NoRef \*const>::type' \(aka 'const base::NoRef \*const'\)"]
 
 // Const argument used with non-const pointer parameter of same type.
 //
@@ -113,7 +113,7 @@ void WontCompile() {
   pointer_same_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_POINTER_SUBTYPE)  // [r"'const base::NoRefParent\*' to 'base::NoRefParent\*'"]
+#elif defined(NCTEST_CONST_POINTER_SUBTYPE)  // [r"fatal error: reference to type 'base::NoRefParent \*const' could not bind to an lvalue of type 'typename enable_if<!IsMoveOnlyType<const NoRefChild \*const>::value, const NoRefChild \*const>::type' \(aka 'const base::NoRefChild \*const'\)"]
 
 // Const argument used with non-const pointer parameter of super type.
 //
@@ -125,10 +125,10 @@ void WontCompile() {
   pointer_super_cb.Run();
 }
 
-#elif defined(DISABLED_NCTEST_DISALLOW_NON_CONST_REF_PARAM)  // [r"badstring"]
-// I think there's a type safety promotion issue here where we can pass a const
-// ref to a non const-ref function, or vice versa accidentally. Or we make a
-// copy accidentally. Check.
+#elif defined(DISABLED_NCTEST_DISALLOW_NON_CONST_REF_PARAM)  // [r"fatal error: no member named 'AddRef' in 'base::NoRef'"]
+// TODO(dcheng): I think there's a type safety promotion issue here where we can
+// pass a const ref to a non const-ref function, or vice versa accidentally. Or
+// we make a copy accidentally. Check.
 
 // Functions with reference parameters, unsupported.
 //
@@ -142,7 +142,7 @@ void WontCompile() {
   ref_arg_cb.Run(p);
 }
 
-#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"size of array is negative"]
+#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"fatal error: static_assert failed \"do_not_bind_functions_with_nonconst_ref\""]
 
 // Binding functions with reference parameters, unsupported.
 //
@@ -153,7 +153,7 @@ void WontCompile() {
   ref_cb.Run();
 }
 
-#elif defined(NCTEST_NO_IMPLICIT_ARRAY_PTR_CONVERSION)  // [r"size of array is negative"]
+#elif defined(NCTEST_NO_IMPLICIT_ARRAY_PTR_CONVERSION)  // [r"fatal error: static_assert failed \"first_bound_argument_to_method_cannot_be_array\""]
 
 // A method should not be bindable with an array of objects.
 //
@@ -167,7 +167,7 @@ void WontCompile() {
   method_bound_to_array_cb.Run();
 }
 
-#elif defined(NCTEST_NO_RAW_PTR_FOR_REFCOUNTED_TYPES)  // [r"size of array is negative"]
+#elif defined(NCTEST_NO_RAW_PTR_FOR_REFCOUNTED_TYPES)  // [r"fatal error: static_assert failed \"p1_is_refcounted_type_and_needs_scoped_refptr\""]
 
 // Refcounted types should not be bound as a raw pointer.
 void WontCompile() {
@@ -179,7 +179,7 @@ void WontCompile() {
       Bind(&VoidPolymorphic1<HasRef*>, &for_raw_ptr);
 }
 
-#elif defined(NCTEST_WEAKPTR_BIND_MUST_RETURN_VOID)  // [r"size of array is negative"]
+#elif defined(NCTEST_WEAKPTR_BIND_MUST_RETURN_VOID)  // [r"fatal error: static_assert failed \"weak_ptrs_can_only_bind_to_methods_without_return_values\""]
 
 // WeakPtrs cannot be bound to methods with return types.
 void WontCompile() {
@@ -190,7 +190,7 @@ void WontCompile() {
   weak_ptr_with_non_void_return_type.Run();
 }
 
-#elif defined(NCTEST_DISALLOW_ASSIGN_DIFFERENT_TYPES)  // [r"conversion from 'base::Callback<void\(int\)>' to non-scalar type"]
+#elif defined(NCTEST_DISALLOW_ASSIGN_DIFFERENT_TYPES)  // [r"fatal error: no viable conversion from 'Callback<typename internal::BindState<typename internal::FunctorTraits<void \(\*\)\(int\)>::RunnableType, typename internal::FunctorTraits<void \(\*\)\(int\)>::RunType, void \(\)>::UnboundRunType>' to 'Callback<void \(\)>'"]
 
 // Bind result cannot be assigned to Callbacks with a mismatching type.
 void WontCompile() {
