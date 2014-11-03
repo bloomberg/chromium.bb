@@ -2431,8 +2431,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
                                       views::BubbleBorder::PAINT_NORMAL;
     AvatarMenuBubbleView::ShowBubble(anchor_view, arrow, arrow_paint_type,
                                      alignment, bounds, browser());
-    ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
+  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {

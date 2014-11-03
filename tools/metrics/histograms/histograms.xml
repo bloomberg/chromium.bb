@@ -51657,8 +51657,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="ProfileOpenMethod" type="int">
-  <int value="0" label="Opened the avatar bubble menu from NTP"/>
-  <int value="1" label="Opened the avatar bubble menu from icon"/>
+  <int value="0" label="Opened the avatar menu from NTP"/>
+  <int value="1" label="Opened the avatar menu from avatar button"/>
   <int value="2" label="Switch to profile from icon menu"/>
   <int value="3" label="Switch to profile from title bar menu"/>
   <int value="4" label="Switch to profile from Mac OS X Dock menu"/>
