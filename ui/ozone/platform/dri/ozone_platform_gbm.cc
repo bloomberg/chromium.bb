@@ -27,7 +27,6 @@
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
-#include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -112,7 +111,6 @@ class OzonePlatformGbm : public OzonePlatform {
         gpu_platform_support_host_.get(), device_manager_.get()));
   }
   virtual void InitializeUI() override {
-    vt_manager_.reset(new VirtualTerminalManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
@@ -152,7 +150,6 @@ class OzonePlatformGbm : public OzonePlatform {
 
  private:
   bool use_surfaceless_;
-  scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

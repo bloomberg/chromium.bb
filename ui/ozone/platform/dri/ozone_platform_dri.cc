@@ -21,7 +21,6 @@
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
-#include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ui_thread_gpu.h"
 
@@ -38,8 +37,7 @@ const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : vt_manager_(new VirtualTerminalManager()),
-        dri_(new DriWrapper(kDefaultGraphicsCardPath)),
+      : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
         buffer_generator_(new DriBufferGenerator(dri_.get())),
         screen_manager_(new ScreenManager(dri_.get(),
                                           buffer_generator_.get())),
@@ -104,7 +102,6 @@ class OzonePlatformDri : public OzonePlatform {
   virtual void InitializeGPU() override {}
 
  private:
-  scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
   scoped_ptr<DriBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

@@ -84,8 +84,6 @@
         'screen_manager.cc',
         'screen_manager.h',
         'scanout_buffer.h',
-        'virtual_terminal_manager.cc',
-        'virtual_terminal_manager.h',
       ],
       'conditions': [
         ['use_drm_atomic_flip==1', {
