@@ -39,6 +39,14 @@ enum V8CacheOptions {
   V8_CACHE_OPTIONS_LAST = V8_CACHE_OPTIONS_CODE
 };
 
+enum V8ScriptStreamingMode {
+  V8_SCRIPT_STREAMING_MODE_ALL,
+  V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER,
+  V8_SCRIPT_STREAMING_MODE_ALL_PLUS_BLOCK_PARSER_BLOCKING,
+  V8_SCRIPT_STREAMING_MODE_LAST =
+      V8_SCRIPT_STREAMING_MODE_ALL_PLUS_BLOCK_PARSER_BLOCKING
+};
+
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
@@ -145,6 +153,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool navigate_on_drag_drop;
   V8CacheOptions v8_cache_options;
   bool v8_script_streaming_enabled;
+  V8ScriptStreamingMode v8_script_streaming_mode;
   bool slimming_paint_enabled;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It

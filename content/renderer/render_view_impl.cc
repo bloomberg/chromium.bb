@@ -1067,6 +1067,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
 
   settings->setV8ScriptStreamingEnabled(prefs.v8_script_streaming_enabled);
+  settings->setV8ScriptStreamingMode(
+      static_cast<WebSettings::V8ScriptStreamingMode>(
+          prefs.v8_script_streaming_mode));
 
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);
