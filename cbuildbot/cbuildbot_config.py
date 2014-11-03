@@ -2533,6 +2533,14 @@ _non_testable_brillo_release.add_config('kayle-release',
   images=['base', 'test'],
 )
 
+_non_testable_brillo_release.add_config('cosmos-release',
+  boards=['cosmos'],
+
+  paygen_skip_testing=True,
+  important=False,
+  signer_tests=False,
+)
+
 _non_testable_brillo_release.add_config('storm-release',
   boards=['storm'],
 
