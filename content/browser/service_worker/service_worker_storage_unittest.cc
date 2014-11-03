@@ -327,6 +327,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const GURL kScope("http://www.test.not/scope/");
   const GURL kScript("http://www.test.not/script.js");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
+  const GURL kResource1("http://www.test.not/scope/resource1.js");
+  const int64 kResource1Size = 1591234;
+  const GURL kResource2("http://www.test.not/scope/resource2.js");
+  const int64 kResource2Size = 51;
   const int64 kRegistrationId = 0;
   const int64 kVersionId = 0;
   const base::Time kToday = base::Time::Now();
@@ -348,6 +352,12 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
                 kRegistrationId, kScope.GetOrigin(), &found_registration));
   EXPECT_FALSE(found_registration.get());
 
+  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+  resources.push_back(
+      ServiceWorkerDatabase::ResourceRecord(1, kResource1, kResource1Size));
+  resources.push_back(
+      ServiceWorkerDatabase::ResourceRecord(2, kResource2, kResource2Size));
+
   // Store something.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
       new ServiceWorkerRegistration(
@@ -356,6 +366,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
       new ServiceWorkerVersion(
           live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
+  live_version->script_cache_map()->SetResources(resources);
   live_registration->SetWaitingVersion(live_version.get());
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -365,6 +376,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration, found_registration);
+  EXPECT_EQ(kResource1Size + kResource2Size,
+            live_registration->resources_total_size_bytes());
+  EXPECT_EQ(kResource1Size + kResource2Size,
+            found_registration->resources_total_size_bytes());
   found_registration = NULL;
 
   // But FindRegistrationForPattern is always async.
@@ -391,7 +406,18 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   ASSERT_TRUE(found_registration.get());
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
+
+  // Check that sizes are populated correctly
   EXPECT_EQ(live_version.get(), found_registration->waiting_version());
+  EXPECT_EQ(kResource1Size + kResource2Size,
+            found_registration->resources_total_size_bytes());
+  std::vector<ServiceWorkerRegistrationInfo> all_registrations;
+  GetAllRegistrations(&all_registrations);
+  EXPECT_EQ(1u, all_registrations.size());
+  ServiceWorkerRegistrationInfo info = all_registrations[0];
+  EXPECT_EQ(kResource1Size + kResource2Size, info.stored_version_size_bytes);
+  all_registrations.clear();
+
   found_registration = NULL;
 
   // Drop the live version too.

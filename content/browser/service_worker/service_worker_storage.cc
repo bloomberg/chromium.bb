@@ -479,22 +479,14 @@ void ServiceWorkerStorage::StoreRegistration(
       base::Bind(&WriteRegistrationInDB,
                  database_.get(),
                  base::MessageLoopProxy::current(),
-                 data, resources,
+                 data,
+                 resources,
                  base::Bind(&ServiceWorkerStorage::DidStoreRegistration,
                             weak_factory_.GetWeakPtr(),
-                            callback)));
+                            callback,
+                            data)));
 
   registration->set_is_deleted(false);
-
-  // TODO(dmurph): Add correct byte delta.
-  if (quota_manager_proxy_.get()) {
-    // Can be nullptr in tests.
-    quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kServiceWorker,
-        registration->pattern().GetOrigin(),
-        storage::StorageType::kStorageTypeTemporary,
-        0);
-  }
 }
 
 void ServiceWorkerStorage::UpdateToActiveState(
@@ -927,25 +919,26 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
   // Add all stored registrations.
   std::set<int64> pushed_registrations;
   std::vector<ServiceWorkerRegistrationInfo> infos;
-  for (RegistrationList::const_iterator it = registrations->begin();
-       it != registrations->end(); ++it) {
+  for (const auto& registration_data : *registrations) {
     const bool inserted =
-        pushed_registrations.insert(it->registration_id).second;
+        pushed_registrations.insert(registration_data.registration_id).second;
     DCHECK(inserted);
 
     ServiceWorkerRegistration* registration =
-        context_->GetLiveRegistration(it->registration_id);
+        context_->GetLiveRegistration(registration_data.registration_id);
     if (registration) {
       infos.push_back(registration->GetInfo());
       continue;
     }
 
     ServiceWorkerRegistrationInfo info;
-    info.pattern = it->scope;
-    info.registration_id = it->registration_id;
+    info.pattern = registration_data.scope;
+    info.registration_id = registration_data.registration_id;
+    info.stored_version_size_bytes =
+        registration_data.resources_total_size_bytes;
     if (ServiceWorkerVersion* version =
-            context_->GetLiveVersion(it->version_id)) {
-      if (it->is_active)
+            context_->GetLiveVersion(registration_data.version_id)) {
+      if (registration_data.is_active)
         info.active_version = version->GetInfo();
       else
         info.waiting_version = version->GetInfo();
@@ -953,12 +946,12 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
       continue;
     }
 
-    if (it->is_active) {
+    if (registration_data.is_active) {
       info.active_version.status = ServiceWorkerVersion::ACTIVATED;
-      info.active_version.version_id = it->version_id;
+      info.active_version.version_id = registration_data.version_id;
     } else {
       info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
-      info.waiting_version.version_id = it->version_id;
+      info.waiting_version.version_id = registration_data.version_id;
     }
     infos.push_back(info);
   }
@@ -976,8 +969,9 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
 
 void ServiceWorkerStorage::DidStoreRegistration(
     const StatusCallback& callback,
+    const ServiceWorkerDatabase::RegistrationData& new_version,
     const GURL& origin,
-    int64 deleted_version_id,
+    const ServiceWorkerDatabase::RegistrationData& deleted_version,
     const std::vector<int64>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::STATUS_OK) {
@@ -986,9 +980,24 @@ void ServiceWorkerStorage::DidStoreRegistration(
     return;
   }
   registered_origins_.insert(origin);
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      context_->GetLiveRegistration(new_version.registration_id);
+  registration->set_resources_total_size_bytes(
+      new_version.resources_total_size_bytes);
+  if (quota_manager_proxy_.get()) {
+    // Can be nullptr in tests.
+    quota_manager_proxy_->NotifyStorageModified(
+        storage::QuotaClient::kServiceWorker,
+        origin,
+        storage::StorageType::kStorageTypeTemporary,
+        new_version.resources_total_size_bytes -
+            deleted_version.resources_total_size_bytes);
+  }
+
   callback.Run(SERVICE_WORKER_OK);
 
-  if (!context_ || !context_->GetLiveVersion(deleted_version_id))
+  if (!context_ || !context_->GetLiveVersion(deleted_version.version_id))
     StartPurgingResources(newly_purgeable_resources);
 }
 
@@ -1005,7 +1014,7 @@ void ServiceWorkerStorage::DidUpdateToActiveState(
 void ServiceWorkerStorage::DidDeleteRegistration(
     const DidDeleteRegistrationParams& params,
     bool origin_is_deletable,
-    int64 version_id,
+    const ServiceWorkerDatabase::RegistrationData& deleted_version,
     const std::vector<int64>& newly_purgeable_resources,
     ServiceWorkerDatabase::Status status) {
   pending_deletions_.erase(params.registration_id);
@@ -1014,11 +1023,19 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     params.callback.Run(DatabaseStatusToStatusCode(status));
     return;
   }
+  if (quota_manager_proxy_.get()) {
+    // Can be nullptr in tests.
+    quota_manager_proxy_->NotifyStorageModified(
+        storage::QuotaClient::kServiceWorker,
+        params.origin,
+        storage::StorageType::kStorageTypeTemporary,
+        -deleted_version.resources_total_size_bytes);
+  }
   if (origin_is_deletable)
     registered_origins_.erase(params.origin);
   params.callback.Run(SERVICE_WORKER_OK);
 
-  if (!context_ || !context_->GetLiveVersion(version_id))
+  if (!context_ || !context_->GetLiveVersion(deleted_version.version_id))
     StartPurgingResources(newly_purgeable_resources);
 }
 
@@ -1033,6 +1050,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
 
   registration = new ServiceWorkerRegistration(
       data.scope, data.registration_id, context_);
+  registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
   if (pending_deletions_.find(data.registration_id) !=
       pending_deletions_.end()) {
@@ -1292,17 +1310,15 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
     const DeleteRegistrationCallback& callback) {
   DCHECK(database);
 
-  int64 version_id = kInvalidServiceWorkerVersionId;
+  ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64> newly_purgeable_resources;
   ServiceWorkerDatabase::Status status = database->DeleteRegistration(
-      registration_id, origin, &version_id, &newly_purgeable_resources);
+      registration_id, origin, &deleted_version, &newly_purgeable_resources);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(FROM_HERE,
-                                   base::Bind(callback,
-                                              false,
-                                              kInvalidServiceWorkerVersionId,
-                                              std::vector<int64>(),
-                                              status));
+    original_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, false, deleted_version, std::vector<int64>(), status));
     return;
   }
 
@@ -1311,20 +1327,20 @@ void ServiceWorkerStorage::DeleteRegistrationFromDB(
   std::vector<ServiceWorkerDatabase::RegistrationData> registrations;
   status = database->GetRegistrationsForOrigin(origin, &registrations);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
-    original_task_runner->PostTask(FROM_HERE,
-                                   base::Bind(callback,
-                                              false,
-                                              kInvalidServiceWorkerVersionId,
-                                              std::vector<int64>(),
-                                              status));
+    original_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            callback, false, deleted_version, std::vector<int64>(), status));
     return;
   }
 
   bool deletable = registrations.empty();
-  original_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(
-          callback, deletable, version_id, newly_purgeable_resources, status));
+  original_task_runner->PostTask(FROM_HERE,
+                                 base::Bind(callback,
+                                            deletable,
+                                            deleted_version,
+                                            newly_purgeable_resources,
+                                            status));
 }
 
 void ServiceWorkerStorage::WriteRegistrationInDB(
@@ -1334,14 +1350,14 @@ void ServiceWorkerStorage::WriteRegistrationInDB(
     const ResourceList& resources,
     const WriteRegistrationCallback& callback) {
   DCHECK(database);
-  int64 deleted_version_id = kInvalidServiceWorkerVersionId;
+  ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64> newly_purgeable_resources;
   ServiceWorkerDatabase::Status status = database->WriteRegistration(
-      data, resources, &deleted_version_id, &newly_purgeable_resources);
+      data, resources, &deleted_version, &newly_purgeable_resources);
   original_task_runner->PostTask(FROM_HERE,
                                  base::Bind(callback,
                                             data.script.GetOrigin(),
-                                            deleted_version_id,
+                                            deleted_version,
                                             newly_purgeable_resources,
                                             status));
 }
@@ -1450,6 +1466,8 @@ void ServiceWorkerStorage::DeleteAllDataForOriginsFromDB(
 // database should not disable itself when an error occurs and the storage
 // controls it instead.
 void ServiceWorkerStorage::ScheduleDeleteAndStartOver() {
+  // TODO(dmurph): Notify the quota manager somehow that all of our data is now
+  // removed.
   if (state_ == DISABLED) {
     // Recovery process has already been scheduled.
     return;

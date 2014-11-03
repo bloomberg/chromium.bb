@@ -65,7 +65,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     base::Time last_update_check;
 
     // Not populated until ServiceWorkerStorage::StoreRegistration is called.
-    uint64 resources_total_size_bytes;
+    int64_t resources_total_size_bytes;
 
     RegistrationData();
     ~RegistrationData();
@@ -123,15 +123,15 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Writes |registration| and |resources| into the database and does following
   // things:
   //   - If an old version of the registration exists, deletes it and sets
-  //   |deleted_version_id| to the old version id and
+  //   |deleted_version| to the old version registration data object
   //   |newly_purgeable_resources| to its resources. Otherwise, sets
-  //   |deleted_version_id| to -1.
+  //   |deleted_version->version_id| to -1.
   //   - Bumps the next registration id and the next version id if needed.
   //   - Removes |resources| from the uncommitted list if exist.
   // Returns OK they are successfully written. Otherwise, returns an error.
   Status WriteRegistration(const RegistrationData& registration,
                            const std::vector<ResourceRecord>& resources,
-                           int64* deleted_version_id,
+                           RegistrationData* deleted_version,
                            std::vector<int64>* newly_purgeable_resources);
 
   // Updates a registration for |registration_id| to an active state. Returns OK
@@ -155,7 +155,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // database. Otherwise, returns an error.
   Status DeleteRegistration(int64 registration_id,
                             const GURL& origin,
-                            int64* version_id,
+                            RegistrationData* deleted_version,
                             std::vector<int64>* newly_purgeable_resources);
 
   // As new resources are put into the diskcache, they go into an uncommitted

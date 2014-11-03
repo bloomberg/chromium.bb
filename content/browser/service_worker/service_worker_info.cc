@@ -37,19 +37,24 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
 
 ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 
-ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo() {}
+ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
+    : registration_id(kInvalidServiceWorkerRegistrationId),
+      stored_version_size_bytes(0) {
+}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
     int64 registration_id,
     const ServiceWorkerVersionInfo& active_version,
     const ServiceWorkerVersionInfo& waiting_version,
-    const ServiceWorkerVersionInfo& installing_version)
+    const ServiceWorkerVersionInfo& installing_version,
+    int64_t stored_version_size_bytes)
     : pattern(pattern),
       registration_id(registration_id),
       active_version(active_version),
       waiting_version(waiting_version),
-      installing_version(installing_version) {
+      installing_version(installing_version),
+      stored_version_size_bytes(stored_version_size_bytes) {
 }
 
 ServiceWorkerRegistrationInfo::~ServiceWorkerRegistrationInfo() {}

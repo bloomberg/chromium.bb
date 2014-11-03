@@ -206,26 +206,19 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
   std::vector<ServiceWorkerUsageInfo> usage_infos;
 
   std::map<GURL, ServiceWorkerUsageInfo> origins;
-  for (std::vector<ServiceWorkerRegistrationInfo>::const_iterator it =
-           registrations.begin();
-       it != registrations.end();
-       ++it) {
-    const ServiceWorkerRegistrationInfo& registration_info = *it;
+  for (const auto& registration_info : registrations) {
     GURL origin = registration_info.pattern.GetOrigin();
 
     ServiceWorkerUsageInfo& usage_info = origins[origin];
     if (usage_info.origin.is_empty())
       usage_info.origin = origin;
     usage_info.scopes.push_back(registration_info.pattern);
+    usage_info.total_size_bytes += registration_info.stored_version_size_bytes;
   }
 
-  for (std::map<GURL, ServiceWorkerUsageInfo>::const_iterator it =
-           origins.begin();
-       it != origins.end();
-       ++it) {
-    usage_infos.push_back(it->second);
+  for (const auto& origin_info_pair : origins) {
+    usage_infos.push_back(origin_info_pair.second);
   }
-
   callback.Run(usage_infos);
 }
 

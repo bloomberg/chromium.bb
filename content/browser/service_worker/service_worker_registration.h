@@ -56,6 +56,14 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool is_uninstalling() const { return is_uninstalling_; }
   bool is_uninstalled() const { return is_uninstalled_; }
 
+  int64_t resources_total_size_bytes() const {
+    return resources_total_size_bytes_;
+  }
+
+  void set_resources_total_size_bytes(int64_t resources_total_size_bytes) {
+    resources_total_size_bytes_ = resources_total_size_bytes;
+  }
+
   ServiceWorkerVersion* active_version() const {
     return active_version_.get();
   }
@@ -144,6 +152,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool is_uninstalled_;
   bool should_activate_when_ready_;
   base::Time last_update_check_;
+  int64_t resources_total_size_bytes_;
   scoped_refptr<ServiceWorkerVersion> active_version_;
   scoped_refptr<ServiceWorkerVersion> waiting_version_;
   scoped_refptr<ServiceWorkerVersion> installing_version_;

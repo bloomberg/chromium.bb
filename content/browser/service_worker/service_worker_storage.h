@@ -99,10 +99,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // to storage, overwritting any pre-existing registration data for the scope.
   // A pre-existing version's script resources remain available if that version
   // is live. PurgeResources should be called when it's OK to delete them.
-  void StoreRegistration(
-      ServiceWorkerRegistration* registration,
-      ServiceWorkerVersion* version,
-      const StatusCallback& callback);
+  void StoreRegistration(ServiceWorkerRegistration* registration,
+                         ServiceWorkerVersion* version,
+                         const StatusCallback& callback);
 
   // Updates the state of the registration's stored version to active.
   void UpdateToActiveState(
@@ -208,16 +207,16 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<void(
       InitialData* data,
       ServiceWorkerDatabase::Status status)> InitializeCallback;
-  typedef base::Callback<
-      void(const GURL& origin,
-           int64 deleted_version_id,
-           const std::vector<int64>& newly_purgeable_resources,
-           ServiceWorkerDatabase::Status status)> WriteRegistrationCallback;
-  typedef base::Callback<
-      void(bool origin_is_deletable,
-           int64 version_id,
-           const std::vector<int64>& newly_purgeable_resources,
-           ServiceWorkerDatabase::Status status)> DeleteRegistrationCallback;
+  typedef base::Callback<void(
+      const GURL& origin,
+      const ServiceWorkerDatabase::RegistrationData& deleted_version_data,
+      const std::vector<int64>& newly_purgeable_resources,
+      ServiceWorkerDatabase::Status status)> WriteRegistrationCallback;
+  typedef base::Callback<void(
+      bool origin_is_deletable,
+      const ServiceWorkerDatabase::RegistrationData& deleted_version_data,
+      const std::vector<int64>& newly_purgeable_resources,
+      ServiceWorkerDatabase::Status status)> DeleteRegistrationCallback;
   typedef base::Callback<void(
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
@@ -264,18 +263,20 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const GetAllRegistrationInfosCallback& callback,
       RegistrationList* registrations,
       ServiceWorkerDatabase::Status status);
-  void DidStoreRegistration(const StatusCallback& callback,
-                            const GURL& origin,
-                            int64 deleted_version_id,
-                            const std::vector<int64>& newly_purgeable_resources,
-                            ServiceWorkerDatabase::Status status);
+  void DidStoreRegistration(
+      const StatusCallback& callback,
+      const ServiceWorkerDatabase::RegistrationData& new_version,
+      const GURL& origin,
+      const ServiceWorkerDatabase::RegistrationData& deleted_version,
+      const std::vector<int64>& newly_purgeable_resources,
+      ServiceWorkerDatabase::Status status);
   void DidUpdateToActiveState(
       const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
   void DidDeleteRegistration(
       const DidDeleteRegistrationParams& params,
       bool origin_is_deletable,
-      int64 version_id,
+      const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64>& newly_purgeable_resources,
       ServiceWorkerDatabase::Status status);
   void ReturnFoundRegistration(

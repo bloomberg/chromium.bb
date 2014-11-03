@@ -492,11 +492,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     const RegistrationData& registration,
     const std::vector<ResourceRecord>& resources,
-    int64* deleted_version_id,
+    RegistrationData* old_registration,
     std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  *deleted_version_id = kInvalidServiceWorkerVersionId;
+  DCHECK(old_registration);
   Status status = LazyOpen(true);
+  old_registration->version_id = kInvalidServiceWorkerVersionId;
   if (status != STATUS_OK)
     return status;
 
@@ -506,7 +507,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
 
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
 #if DCHECK_IS_ON
-  uint64 total_size_bytes = 0;
+  int64_t total_size_bytes = 0;
   for (const auto& resource : resources) {
     total_size_bytes += resource.size_bytes;
   }
@@ -539,17 +540,15 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   }
 
   // Retrieve a previous version to sweep purgeable resources.
-  RegistrationData old_registration;
   status = ReadRegistrationData(registration.registration_id,
                                 registration.scope.GetOrigin(),
-                                &old_registration);
+                                old_registration);
   if (status != STATUS_OK && status != STATUS_ERROR_NOT_FOUND)
     return status;
   if (status == STATUS_OK) {
-    DCHECK_LT(old_registration.version_id, registration.version_id);
-    *deleted_version_id = old_registration.version_id;
+    DCHECK_LT(old_registration->version_id, registration.version_id);
     status = DeleteResourceRecords(
-        old_registration.version_id, newly_purgeable_resources, &batch);
+        old_registration->version_id, newly_purgeable_resources, &batch);
     if (status != STATUS_OK)
       return status;
 
@@ -617,10 +616,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
     int64 registration_id,
     const GURL& origin,
-    int64* version_id,
+    RegistrationData* deleted_version,
     std::vector<int64>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  *version_id = kInvalidServiceWorkerVersionId;
+  DCHECK(deleted_version);
+  deleted_version->version_id = kInvalidServiceWorkerVersionId;
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_OK;
@@ -648,12 +648,11 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
   batch.Delete(CreateRegistrationKey(registration_id, origin));
 
   // Delete resource records associated with the registration.
-  for (std::vector<RegistrationData>::const_iterator itr =
-           registrations.begin(); itr != registrations.end(); ++itr) {
-    if (itr->registration_id == registration_id) {
-      *version_id = itr->version_id;
+  for (const auto& registration : registrations) {
+    if (registration.registration_id == registration_id) {
+      *deleted_version = registration;
       status = DeleteResourceRecords(
-          itr->version_id, newly_purgeable_resources, &batch);
+          registration.version_id, newly_purgeable_resources, &batch);
       if (status != STATUS_OK)
         return status;
       break;

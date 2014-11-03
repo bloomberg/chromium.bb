@@ -8,14 +8,14 @@ namespace content {
 
 ServiceWorkerUsageInfo::ServiceWorkerUsageInfo(const GURL& origin,
                                                const std::vector<GURL>& scopes)
-    : origin(origin), scopes(scopes) {
+    : origin(origin), scopes(scopes), total_size_bytes(0) {
 }
 
 ServiceWorkerUsageInfo::ServiceWorkerUsageInfo(const GURL& origin)
-    : origin(origin) {
+    : origin(origin), total_size_bytes(0) {
 }
 
-ServiceWorkerUsageInfo::ServiceWorkerUsageInfo() {
+ServiceWorkerUsageInfo::ServiceWorkerUsageInfo() : total_size_bytes(0) {
 }
 
 ServiceWorkerUsageInfo::~ServiceWorkerUsageInfo() {

@@ -27,7 +27,9 @@ class CONTENT_EXPORT ServiceWorkerUsageInfo {
   // a registration is a 'scope' - a URL with optional wildcard.
   std::vector<GURL> scopes;
 
-  // TODO(jsbell): Add size on disk (in bytes).
+  // The total size, including resources.
+  int64_t total_size_bytes;
+
   // TODO(jsbell): Add last modified time.
 };
 

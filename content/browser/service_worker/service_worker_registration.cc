@@ -32,6 +32,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       is_uninstalling_(false),
       is_uninstalled_(false),
       should_activate_when_ready_(false),
+      resources_total_size_bytes_(0),
       context_(context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(context_);
@@ -78,7 +79,8 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
       registration_id_,
       GetVersionInfo(active_version_.get()),
       GetVersionInfo(waiting_version_.get()),
-      GetVersionInfo(installing_version_.get()));
+      GetVersionInfo(installing_version_.get()),
+      resources_total_size_bytes_);
 }
 
 void ServiceWorkerRegistration::SetActiveVersion(
