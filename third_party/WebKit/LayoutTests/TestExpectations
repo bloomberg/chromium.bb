@@ -1484,3 +1484,4 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/splitText-dirty-line
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-to-fit.html [ Failure ]
 
 crbug.com/429843 [ Win7 Debug ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
+crbug.com/429874 [ Win7 ] http/tests/serviceworker/cache-match.html [ Failure ]
