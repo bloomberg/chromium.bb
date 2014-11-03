@@ -597,7 +597,8 @@ bool Instance::HandleInputEvent(const pp::InputEvent& event) {
           engine_->SelectAll();
           return true;
       }
-    } else if (modifier & PP_INPUTEVENT_MODIFIER_CONTROLKEY) {
+    }
+    if (modifier & PP_INPUTEVENT_MODIFIER_CONTROLKEY) {
       switch (keyboard_event.GetKeyCode()) {
         case ui::VKEY_OEM_4:
           // Left bracket.
