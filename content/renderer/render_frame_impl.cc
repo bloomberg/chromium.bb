@@ -52,6 +52,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -664,6 +665,10 @@ RenderWidget* RenderFrameImpl::GetRenderWidget() {
 void RenderFrameImpl::PepperPluginCreated(RendererPpapiHost* host) {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     DidCreatePepperPlugin(host));
+  if (host->GetPluginName() == kFlashPluginName) {
+    RenderThread::Get()->RecordAction(
+        base::UserMetricsAction("FrameLoadWithFlash"));
+  }
 }
 
 void RenderFrameImpl::PepperDidChangeCursor(
@@ -1672,7 +1677,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   if (!found)
     return NULL;
 
-  if (info.type == content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+  if (info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
             this, base::UTF16ToUTF8(params.mimeType)));
@@ -2628,9 +2633,9 @@ blink::WebColorChooser* RenderFrameImpl::createColorChooser(
     const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
   RendererWebColorChooserImpl* color_chooser =
       new RendererWebColorChooserImpl(this, client);
-  std::vector<content::ColorSuggestion> color_suggestions;
+  std::vector<ColorSuggestion> color_suggestions;
   for (size_t i = 0; i < suggestions.size(); i++) {
-    color_suggestions.push_back(content::ColorSuggestion(suggestions[i]));
+    color_suggestions.push_back(ColorSuggestion(suggestions[i]));
   }
   color_chooser->Open(static_cast<SkColor>(initial_color), color_suggestions);
   return color_chooser;

@@ -390,6 +390,10 @@ void InitLatencyInfo(ui::LatencyInfo* new_latency,
   }
 }
 
+bool IsFlashPlugin(PluginModule* module) {
+  return module->name() == kFlashPluginName;
+}
+
 }  // namespace
 
 // static
@@ -586,7 +590,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     power_saver_enabled_ =
         CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnablePluginPowerSaver) &&
-        module_->name() == kFlashPluginName &&
+        IsFlashPlugin(module_.get()) &&
         power_saver_helper->ShouldThrottleContent(
             content_origin, bounds.width, bounds.height, &cross_origin);
 
@@ -610,6 +614,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   if (GetContentClient()->renderer() &&  // NULL in unit tests.
       GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
     external_document_load_ = true;
+
+  if (IsFlashPlugin(module_.get())) {
+    RenderThread::Get()->RecordAction(
+        base::UserMetricsAction("Flash.PluginInstanceCreated"));
+  }
 }
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {

@@ -2657,6 +2657,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Flash.PluginInstanceCreated">
+  <owner>thestig@chromium.org</owner>
+  <description>Count of frame loads that also load PPAPI Flash.</description>
+</action>
+
 <action name="FocusAppMenu">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -2940,6 +2945,16 @@ should be able to be added at any place in this file.
 <action name="ForwardMenu_ShowFullHistory">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="FrameLoad">
+  <owner>thestig@chromium.org</owner>
+  <description>Count of successful frame loads to new pages.</description>
+</action>
+
+<action name="FrameLoadWithFlash">
+  <owner>thestig@chromium.org</owner>
+  <description>Count of frame loads that also load PPAPI Flash.</description>
 </action>
 
 <action name="Gesture_Overview">

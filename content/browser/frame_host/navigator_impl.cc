@@ -30,6 +30,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -873,6 +874,10 @@ void NavigatorImpl::RecordNavigationMetrics(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     SiteInstance* site_instance) {
   DCHECK(site_instance->HasProcess());
+
+  if (!details.is_in_page)
+    RecordAction(base::UserMetricsAction("FrameLoad"));
+
   if (!details.is_main_frame || !navigation_data_ ||
       navigation_data_->url_ != params.original_request_url) {
     return;
