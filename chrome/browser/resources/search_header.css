@@ -25,7 +25,7 @@ header {
   padding: 0 12px;
 }
 
-header h2 {
+header h1 {
   flex: 1;
   /* TODO(dbeam): reconcile font/line-height/margin with chrome_shared.css */
   font-size: 1.5em;
