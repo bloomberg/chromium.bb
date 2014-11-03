@@ -160,7 +160,7 @@ nacl_list="g++-mingw-w64-i686 lib32z1-dev
 # Hence we must match the same version or this entire script will fail.
 mesa_variant=""
 for variant in "-lts-quantal" "-lts-raring" "-lts-saucy" "-lts-trusty"; do
-  if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} | \
+  if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} 2>/dev/null | \
        grep -q " ok installed"); then
     mesa_variant="${variant}"
   fi
