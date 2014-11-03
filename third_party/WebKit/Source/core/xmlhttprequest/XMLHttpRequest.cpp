@@ -607,6 +607,13 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
             exceptionState.throwDOMException(InvalidAccessError, "Synchronous requests must not set a timeout.");
             return;
         }
+
+        // Here we just warn that firing sync XHR's may affect responsiveness.
+        // Eventually sync xhr will be deprecated and an "InvalidAccessError" exception thrown.
+        // Refer : https://xhr.spec.whatwg.org/#sync-warning
+        // Use count for XHR synchronous requests on main thread only.
+        if (!document()->processingBeforeUnload())
+            UseCounter::countDeprecation(executionContext(), UseCounter::XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload);
     }
 
     m_method = FetchUtils::normalizeMethod(method);

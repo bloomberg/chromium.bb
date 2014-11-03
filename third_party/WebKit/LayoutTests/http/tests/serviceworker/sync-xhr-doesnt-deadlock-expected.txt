@@ -1,3 +1,6 @@
 CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
-XPathExpression_evaluate_WRONG_DOCUMENT_ERR
-throw_WRONG_DOCUMENT_ERR: assertTrue failed
+
+This is a testharness.js-based test.
+PASS Verify SyncXHR does not deadlock 
+Harness: the test ran to completion.
+

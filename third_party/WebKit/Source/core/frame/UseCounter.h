@@ -548,6 +548,7 @@ public:
         ScriptElementWithInvalidTypeHasSrc = 578,
         TimelineStart = 579,
         ElementBaseURIFromXMLBase = 580,
+        XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload = 581,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

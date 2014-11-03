@@ -1,6 +1,7 @@
 main frame - didStartProvisionalLoadForFrame
 main frame - didCommitLoadForFrame
 http://127.0.0.1:8000/js-test-resources/js-test.js has priority Medium
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
 http://127.0.0.1:8000/resources/test.mp4 has priority VeryHigh
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
