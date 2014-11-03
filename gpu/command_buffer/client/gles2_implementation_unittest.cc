@@ -445,11 +445,13 @@ class GLES2ImplementationTest : public testing::Test {
             .RetiresOnSaturation();
         GetNextToken();  // eat the token that starting up will use.
 
+        const bool support_client_side_arrays = true;
         gl_.reset(new GLES2Implementation(helper_.get(),
                                           share_group,
                                           transfer_buffer_.get(),
                                           bind_generates_resource_client,
                                           lose_context_when_out_of_memory,
+                                          support_client_side_arrays,
                                           gpu_control_.get()));
 
         if (!gl_->Initialize(kTransferBufferSize,

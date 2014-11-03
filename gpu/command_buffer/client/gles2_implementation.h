@@ -189,6 +189,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                       TransferBufferInterface* transfer_buffer,
                       bool bind_generates_resource,
                       bool lose_context_when_out_of_memory,
+                      bool support_client_side_arrays,
                       GpuControl* gpu_control);
 
   ~GLES2Implementation() override;
@@ -735,6 +736,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // When true, the context is lost when a GL_OUT_OF_MEMORY error occurs.
   bool lose_context_when_out_of_memory_;
+
+  // Whether or not to support client side arrays.
+  bool support_client_side_arrays_;
 
   // Used to check for single threaded access.
   int use_count_;

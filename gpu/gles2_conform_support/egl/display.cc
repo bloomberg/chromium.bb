@@ -228,6 +228,7 @@ EGLContext Display::CreateContext(EGLConfig config,
 
   bool bind_generates_resources = true;
   bool lose_context_when_out_of_memory = false;
+  bool support_client_side_arrays = true;
 
   context_.reset(
       new gpu::gles2::GLES2Implementation(gles2_cmd_helper_.get(),
@@ -235,6 +236,7 @@ EGLContext Display::CreateContext(EGLConfig config,
                                           transfer_buffer_.get(),
                                           bind_generates_resources,
                                           lose_context_when_out_of_memory,
+                                          support_client_side_arrays,
                                           this));
 
   if (!context_->Initialize(

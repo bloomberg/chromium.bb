@@ -135,31 +135,6 @@ component("gles2_implementation") {
   ]
 }
 
-# Library emulates GLES2 using command_buffers.
-component("gles2_implementation_client_side_arrays") {
-  sources = gles2_implementation_source_files
-
-  defines = [
-    "GLES2_IMPL_IMPLEMENTATION",
-    "GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1",
-  ]
-  all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
-
-  deps = [
-    ":gles2_cmd_helper",
-    ":gles2_interface",
-    "//base",
-    "//gpu/command_buffer/common",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-  ]
-}
-
 component("gl_in_process_context") {
   sources = [
     "gl_in_process_context.h",

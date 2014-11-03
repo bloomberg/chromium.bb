@@ -25,10 +25,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/trace_event.h"
 
-#if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-#define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
-#endif
-
 #if defined(GPU_CLIENT_DEBUG)
 #include "base/command_line.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
@@ -86,6 +82,7 @@ GLES2Implementation::GLES2Implementation(
     TransferBufferInterface* transfer_buffer,
     bool bind_generates_resource,
     bool lose_context_when_out_of_memory,
+    bool support_client_side_arrays,
     GpuControl* gpu_control)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
@@ -113,6 +110,7 @@ GLES2Implementation::GLES2Implementation(
       error_bits_(0),
       debug_(false),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
+      support_client_side_arrays_(support_client_side_arrays),
       use_count_(0),
       error_message_callback_(NULL),
       gpu_control_(gpu_control),
@@ -191,15 +189,16 @@ bool GLES2Implementation::Initialize(
   buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
 
   query_id_allocator_.reset(new IdAllocator());
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  GetIdHandler(id_namespaces::kBuffers)->MakeIds(
-      this, kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
-#endif
+  if (support_client_side_arrays_) {
+    GetIdHandler(id_namespaces::kBuffers)->MakeIds(
+       this, kClientSideArrayId, arraysize(reserved_ids_), &reserved_ids_[0]);
+  }
 
   vertex_array_object_manager_.reset(new VertexArrayObjectManager(
       static_state_.int_state.max_vertex_attribs,
       reserved_ids_[0],
-      reserved_ids_[1]));
+      reserved_ids_[1],
+      support_client_side_arrays_));
 
   // GL_BIND_GENERATES_RESOURCE_CHROMIUM state must be the same
   // on Client & Service.
@@ -296,9 +295,8 @@ GLES2Implementation::~GLES2Implementation() {
   WaitForCmd();
   query_tracker_.reset();
 
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
-#endif
+  if (support_client_side_arrays_)
+    DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 
   // Release any per-context data in share group.
   share_group_->FreeContext(this);
@@ -1213,8 +1211,7 @@ void GLES2Implementation::VertexAttribPointer(
                "client side arrays are not allowed in vertex array objects.");
     return;
   }
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  if (bound_array_buffer_id_ != 0) {
+  if (!support_client_side_arrays_ || bound_array_buffer_id_ != 0) {
     // Only report NON client side buffers to the service.
     if (!ValidateOffset("glVertexAttribPointer",
                         reinterpret_cast<GLintptr>(ptr))) {
@@ -1223,14 +1220,6 @@ void GLES2Implementation::VertexAttribPointer(
     helper_->VertexAttribPointer(index, size, type, normalized, stride,
                                  ToGLuint(ptr));
   }
-#else  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-  if (!ValidateOffset("glVertexAttribPointer",
-                      reinterpret_cast<GLintptr>(ptr))) {
-    return;
-  }
-  helper_->VertexAttribPointer(index, size, type, normalized, stride,
-                               ToGLuint(ptr));
-#endif  // !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   CheckGLError();
 }
 

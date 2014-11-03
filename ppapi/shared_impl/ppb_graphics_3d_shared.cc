@@ -119,6 +119,7 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
 
   const bool bind_creates_resources = true;
   const bool lose_context_when_out_of_memory = false;
+  const bool support_client_side_arrays = true;
 
   // Create the object exposing the OpenGL API.
   gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
@@ -127,6 +128,7 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
       transfer_buffer_.get(),
       bind_creates_resources,
       lose_context_when_out_of_memory,
+      support_client_side_arrays,
       GetGpuControl()));
 
   if (!gles2_impl_->Initialize(

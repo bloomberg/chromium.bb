@@ -8,20 +8,12 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
-#if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
-#define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
-#endif
-
 namespace gpu {
 namespace gles2 {
-
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 
 static GLsizei RoundUpToMultipleOf4(GLsizei size) {
   return (size + 3) & ~3;
 }
-
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
 static GLuint ToGLuint(const void* ptr) {
@@ -329,7 +321,8 @@ const VertexArrayObject::VertexAttrib* VertexArrayObject::GetAttrib(
 VertexArrayObjectManager::VertexArrayObjectManager(
     GLuint max_vertex_attribs,
     GLuint array_buffer_id,
-    GLuint element_array_buffer_id)
+    GLuint element_array_buffer_id,
+    bool support_client_side_arrays)
     : max_vertex_attribs_(max_vertex_attribs),
       array_buffer_id_(array_buffer_id),
       array_buffer_size_(0),
@@ -338,7 +331,8 @@ VertexArrayObjectManager::VertexArrayObjectManager(
       element_array_buffer_size_(0),
       collection_buffer_size_(0),
       default_vertex_array_object_(new VertexArrayObject(max_vertex_attribs)),
-      bound_vertex_array_object_(default_vertex_array_object_) {
+      bound_vertex_array_object_(default_vertex_array_object_),
+      support_client_side_arrays_(support_client_side_arrays) {
 }
 
 VertexArrayObjectManager::~VertexArrayObjectManager() {
@@ -483,7 +477,8 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     GLsizei primcount,
     bool* simulated) {
   *simulated = false;
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  if (!support_client_side_arrays_)
+    return true;
   if (!bound_vertex_array_object_->HaveEnabledClientSideBuffers()) {
     return true;
   }
@@ -537,7 +532,6 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
       DCHECK_LE(array_buffer_offset_, array_buffer_size_);
     }
   }
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   return true;
 }
 
@@ -554,7 +548,8 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
     bool* simulated) {
   *simulated = false;
   *offset = ToGLuint(indices);
-#if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
+  if (!support_client_side_arrays_)
+    return true;
   GLsizei num_elements = 0;
   if (bound_vertex_array_object_->bound_element_array_buffer() == 0) {
     *simulated = true;
@@ -630,7 +625,6 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
       function_name, gl, gl_helper, num_elements, primcount,
       &simulated_client_side_buffers);
   *simulated = *simulated || simulated_client_side_buffers;
-#endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   return true;
 }
 

@@ -240,13 +240,16 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   DCHECK(host_.get());
 
   // Create the object exposing the OpenGL API.
-  bool bind_generates_resources = false;
+  const bool bind_generates_resources = false;
+  const bool support_client_side_arrays = false;
+
   real_gl_.reset(
       new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
                                           gles2_share_group.get(),
                                           transfer_buffer_.get(),
                                           bind_generates_resources,
                                           lose_context_when_out_of_memory_,
+                                          support_client_side_arrays,
                                           command_buffer_.get()));
   setGLInterface(real_gl_.get());
 

@@ -204,7 +204,8 @@ bool GLInProcessContextImpl::Initialize(
 
   // Check for consistency.
   DCHECK(!attribs.bind_generates_resource);
-  bool bind_generates_resource = false;
+  const bool bind_generates_resource = false;
+  const bool support_client_side_arrays = false;
 
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(
@@ -213,6 +214,7 @@ bool GLInProcessContextImpl::Initialize(
                                      transfer_buffer_.get(),
                                      bind_generates_resource,
                                      attribs.lose_context_when_out_of_memory,
+                                     support_client_side_arrays,
                                      command_buffer_.get()));
 
   if (use_global_share_group) {

@@ -19,9 +19,6 @@
 #
 #  gpu.gyp:gles2_implementation =>
 #      //gpu/command_buffer/client:gles2_implementation
-
-#  gpu.gyp:gles2_implementation_client_side_arrays =>
-#      //gpu/command_buffer/client:gles2_implementation_client_side_arrays
 #
 #  gpu.gyp:gpu_config => //gpu/config
 #
@@ -114,7 +111,7 @@ test("gl_tests") {
     "//ui/gl",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
+    "//gpu/command_buffer/client:gles2_implementation",
   ]
 
   libs = []
@@ -241,7 +238,7 @@ test("gpu_unittests") {
     "//ui/gl",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/client:gles2_c_lib",
-    "//gpu/command_buffer/client:gles2_implementation_client_side_arrays",
+    "//gpu/command_buffer/client:gles2_implementation",
   ]
 }
 

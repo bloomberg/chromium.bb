@@ -61,35 +61,10 @@
     },
     {
       # Library emulates GLES2 using command_buffers.
-      # GN version: //gpu/command_buffer/client:gles2_implementation_client_side_arrays
-      'target_name': 'gles2_implementation_client_side_arrays',
+      'target_name': 'gles2_implementation_no_check',
       'type': '<(component)',
       'defines': [
         'GLES2_IMPL_IMPLEMENTATION',
-        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../third_party/khronos/khronos.gyp:khronos_headers',
-        '../ui/gl/gl.gyp:gl',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/gfx/gfx.gyp:gfx',
-        'command_buffer/command_buffer.gyp:gles2_utils',
-        'gles2_cmd_helper',
-      ],
-      'sources': [
-        '<@(gles2_implementation_source_files)',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
-      # Library emulates GLES2 using command_buffers.
-      'target_name': 'gles2_implementation_client_side_arrays_no_check',
-      'type': '<(component)',
-      'defines': [
-        'GLES2_IMPL_IMPLEMENTATION',
-        'GLES2_SUPPORT_CLIENT_SIDE_ARRAYS=1',
         'GLES2_CONFORMANCE_TESTS=1',
       ],
       'dependencies': [
@@ -141,7 +116,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_client',
-        'gles2_implementation_client_side_arrays_no_check',
+        'gles2_implementation_no_check',
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
@@ -197,7 +172,7 @@
         'command_buffer_service',
         'gpu',
         'gpu_unittest_utils',
-        'gles2_implementation_client_side_arrays',
+        'gles2_implementation',
         'gles2_cmd_helper',
         'gles2_c_lib',
       ],
@@ -329,7 +304,7 @@
         'command_buffer_service',
         'gpu',
         'gpu_unittest_utils',
-        'gles2_implementation_client_side_arrays',
+        'gles2_implementation',
         'gles2_cmd_helper',
         'gles2_c_lib',
         #'gl_unittests',

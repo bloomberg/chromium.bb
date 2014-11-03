@@ -255,12 +255,14 @@ void GLManager::Initialize(const GLManager::Options& options) {
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
   // Create the object exposing the OpenGL API.
+  const bool support_client_side_arrays = true;
   gles2_implementation_.reset(
       new gles2::GLES2Implementation(gles2_helper_.get(),
                                      client_share_group,
                                      transfer_buffer_.get(),
                                      options.bind_generates_resource,
                                      options.lose_context_when_out_of_memory,
+                                     support_client_side_arrays,
                                      this));
 
   ASSERT_TRUE(gles2_implementation_->Initialize(

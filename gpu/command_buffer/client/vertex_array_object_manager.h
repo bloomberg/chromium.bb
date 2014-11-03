@@ -26,7 +26,8 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   VertexArrayObjectManager(
       GLuint max_vertex_attribs,
       GLuint array_buffer_id,
-      GLuint element_array_buffer_id);
+      GLuint element_array_buffer_id,
+      bool support_client_side_arrays);
   ~VertexArrayObjectManager();
 
   bool IsReservedId(GLuint id) const;
@@ -115,6 +116,8 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   VertexArrayObject* default_vertex_array_object_;
   VertexArrayObject* bound_vertex_array_object_;
   VertexArrayObjectMap vertex_array_objects_;
+
+  bool support_client_side_arrays_;
 
   DISALLOW_COPY_AND_ASSIGN(VertexArrayObjectManager);
 };
