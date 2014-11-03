@@ -1,0 +1,24 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://webscreens.github.io/presentation-api/#presentationsession
+
+enum PresentationSessionState {
+    "connected",
+    "disconnected"
+};
+
+[
+    GarbageCollected,
+    RuntimeEnabled=Presentation
+] interface PresentationSession : EventTarget {
+    readonly attribute DOMString? id;
+    readonly attribute PresentationSessionState state;
+
+    void postMessage(DOMString message);
+    void close();
+
+    attribute EventHandler onmessage;
+    attribute EventHandler onstatechange;
+};

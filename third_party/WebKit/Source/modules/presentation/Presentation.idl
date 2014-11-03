@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://webscreens.github.io/presentation-api/#presentation-interface
+// http://webscreens.github.io/presentation-api/#navigatorpresentation
 
 [
     GarbageCollected,
     RuntimeEnabled=Presentation
 ] interface Presentation : EventTarget {
+    readonly attribute PresentationSession? session;
+
+    [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString senderId, [Default=Undefined] optional DOMString presentationId);
+    [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString senderId, [Default=Undefined] optional DOMString presentationId);
+
     attribute EventHandler onavailablechange;
 };

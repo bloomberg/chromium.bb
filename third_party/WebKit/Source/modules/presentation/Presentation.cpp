@@ -5,6 +5,10 @@
 #include "config.h"
 #include "modules/presentation/Presentation.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
 #include "modules/EventTargetModules.h"
 
 namespace blink {
@@ -36,7 +40,29 @@ ExecutionContext* Presentation::executionContext() const
 
 void Presentation::trace(Visitor* visitor)
 {
+    visitor->trace(m_session);
     EventTargetWithInlineData::trace(visitor);
+}
+
+PresentationSession* Presentation::session() const
+{
+    return m_session.get();
+}
+
+ScriptPromise Presentation::startSession(ScriptState* state, const String& senderId, const String& presentationId)
+{
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
+    ScriptPromise promise = resolver->promise();
+    resolver->reject(DOMException::create(NotSupportedError, "The method is not supported yet."));
+    return promise;
+}
+
+ScriptPromise Presentation::joinSession(ScriptState* state, const String& senderId, const String& presentationId)
+{
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
+    ScriptPromise promise = resolver->promise();
+    resolver->reject(DOMException::create(NotSupportedError, "The method is not supported yet."));
+    return promise;
 }
 
 } // namespace blink

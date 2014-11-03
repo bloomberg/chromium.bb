@@ -282,6 +282,7 @@ Plugin
 PluginArray
 PopStateEvent
 Presentation
+PresentationSession
 ProcessingInstruction
 ProgressEvent
 Promise

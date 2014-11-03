@@ -19,6 +19,7 @@ modules/mediastream/RTCPeerConnection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
 modules/presentation/Presentation
+modules/presentation/PresentationSession
 modules/screen_orientation/ScreenOrientation
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerGlobalScope
