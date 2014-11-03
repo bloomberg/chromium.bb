@@ -103,10 +103,6 @@ public class AwContentsTest extends AwTestBase {
                 createAwTestContainerView(mContentsClient).getAwContents();
         awContents.destroy();
 
-        assertNull(awContents.getWebContents());
-        assertNull(awContents.getContentViewCore());
-        assertNull(awContents.getNavigationController());
-
         // The documentation for WebView#destroy() reads "This method should be called
         // after this WebView has been removed from the view system. No other methods
         // may be called on this WebView after destroy".
@@ -342,8 +338,8 @@ public class AwContentsTest extends AwTestBase {
             pollOnUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
-                    return awContents.getFavicon() != null &&
-                        !awContents.getFavicon().sameAs(defaultFavicon);
+                    return awContents.getFavicon() != null
+                            && !awContents.getFavicon().sameAs(defaultFavicon);
                 }
             });
 

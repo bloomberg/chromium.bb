@@ -88,15 +88,15 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     }
 
     private String getHtmlForPageWithJsRedirectTo(String url, String method, int timeout) {
-        return makeHtmlPageFrom(
-                "<script>" +
-                  "function doRedirectAssign() {" +
-                    "location.href = '" + url + "';" +
-                  "} " +
-                  "function doRedirectReplace() {" +
-                    "location.replace('" + url + "');" +
-                  "} " +
-                "</script>",
+        return makeHtmlPageFrom(""
+                + "<script>"
+                +   "function doRedirectAssign() {"
+                +     "location.href = '" + url + "';"
+                +   "} "
+                +   "function doRedirectReplace() {"
+                +     "location.replace('" + url + "');"
+                +   "} "
+                + "</script>",
                 String.format("<iframe onLoad=\"setTimeout('doRedirect%s()', %d);\" />",
                     method, timeout));
     }
@@ -500,9 +500,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     @Feature({"AndroidWebView", "Navigation"})
     public void testCalledForDataUrl() throws Throwable {
         final String dataUrl =
-                "data:text/html;base64," +
-                "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
-                "L2hlYWQ+PC9odG1sPg==";
+                "data:text/html;base64,"
+                        + "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48"
+                        + "L2hlYWQ+PC9odG1sPg==";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentsClient);
@@ -516,8 +516,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertTrue("Expected URL that starts with 'data:' but got: <" +
-                   shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl() + "> instead.",
+        assertTrue("Expected URL that starts with 'data:' but got: <"
+                   + shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl() + "> instead.",
                    shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl().startsWith(
                            "data:"));
     }
@@ -815,5 +815,49 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCallDestroyInCallback() throws Throwable {
+        class DestroyInCallbackClient extends TestAwContentsClient {
+            private AwContents mAwContents;
+
+            public void setAwContents(AwContents awContents) {
+                mAwContents = awContents;
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(String url) {
+                mAwContents.destroy();
+                return super.shouldOverrideUrlLoading(url);
+            }
+        }
+
+        DestroyInCallbackClient contentsClient = new DestroyInCallbackClient();
+        AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        AwContents awContents = testContainerView.getAwContents();
+        contentsClient.setAwContents(awContents);
+
+        OnReceivedErrorHelper onReceivedErrorHelper = contentsClient.getOnReceivedErrorHelper();
+        int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
+
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
+        int shouldOverrideUrlLoadingCallCount = shouldOverrideUrlLoadingHelper.getCallCount();
+        setShouldOverrideUrlLoadingReturnValueOnUiThread(shouldOverrideUrlLoadingHelper, true);
+        clickOnLinkUsingJs(awContents, contentsClient);
+        shouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
+
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return AwContents.getNativeInstanceCount() == 0;
+            }
+        });
     }
 }

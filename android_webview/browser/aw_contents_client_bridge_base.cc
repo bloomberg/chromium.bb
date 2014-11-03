@@ -47,11 +47,6 @@ void AwContentsClientBridgeBase::Associate(
                             new UserData(handler));
 }
 
-void AwContentsClientBridgeBase::Disassociate(
-  WebContents* web_contents) {
-  web_contents->RemoveUserData(kAwContentsClientBridgeBase);
-}
-
 // static
 AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromWebContents(
     WebContents* web_contents) {

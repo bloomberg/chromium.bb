@@ -233,9 +233,9 @@ class AwContents : public FindHelper::Listener,
   void HideGeolocationPrompt(const GURL& origin);
 
   JavaObjectWeakGlobalRef java_ref_;
-  scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwContentsClientBridge> contents_client_bridge_;
+  scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
