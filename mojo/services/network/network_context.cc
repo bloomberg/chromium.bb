@@ -22,7 +22,10 @@ NetworkContext::NetworkContext(const base::FilePath& base_path) {
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   cache_params.path = base_path.Append(FILE_PATH_LITERAL("Cache"));
-  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
+  // TODO(esprehn): For now store the cache in memory so we can run many shells
+  // in parallel when running tests, otherwise the network services in each
+  // shell will corrupt the disk cache.
+  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
   builder.EnableHttpCache(cache_params);
 
   builder.set_file_enabled(true);
