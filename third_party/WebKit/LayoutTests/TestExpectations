@@ -677,9 +677,6 @@ crbug.com/341331 http/tests/xmlhttprequest/event-listener-gc.html [ Pass Failure
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
-# Updated event_sender API, will re-enable the tests after landing crrev.com/649343002
-crbug.com/423270 fast/events/key-events-in-input-button.html [ Skip ]
-
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]
