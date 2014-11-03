@@ -20,7 +20,10 @@
   },
   'conditions': [
     ['enable_pepper_cdms==1', {
-      'targets': [
+        'includes': [
+          '../build/util/version.gypi',
+        ],
+        'targets': [
         {
           'target_name': 'clearkeycdm',
           'type': 'none',
@@ -94,6 +97,31 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          'target_name': 'clearkeycdmadapter_resources',
+          'type': 'none',
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                'branding_path': '../chrome/app/theme/chromium/BRANDING',
+              },
+            }],
+          ],
+          'variables': {
+            'output_dir': '.',
+            'template_input_path': '../chrome/app/chrome_version.rc.version',
+          },
+          'sources': [
+            'clearkeycdmadapter.ver',
+          ],
+          'includes': [
+            '../chrome/version_resource_rules.gypi',
+          ],
+        },
+        {
           'target_name': 'clearkeycdmadapter',
           'type': 'none',
           # Check whether the plugin's origin URL is valid.
@@ -102,6 +130,10 @@
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
             'media_cdm_adapter.gyp:cdmadapter',
             'clearkeycdm',
+            'clearkeycdmadapter_resources',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/clearkeycdmadapter_version.rc',
           ],
           'conditions': [
             ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
