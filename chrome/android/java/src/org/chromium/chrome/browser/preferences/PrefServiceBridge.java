@@ -533,6 +533,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return Whether printing is managed by policy.
+     */
+    public boolean isPrintingManaged() {
+        return nativeGetPrintingManaged();
+    }
+
+    /**
      * Adds/Edit a popup exception
      *
      * @param pattern attribute for the popup exception pattern
@@ -651,6 +658,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetIncognitoModeEnabled();
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
+    private native boolean nativeGetPrintingManaged();
     private native boolean nativeGetForceSafeSearch();
     private native void nativeSetTranslateEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();

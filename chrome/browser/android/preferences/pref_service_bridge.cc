@@ -220,6 +220,10 @@ static jboolean GetPasswordEchoEnabled(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetPrintingEnabled(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(prefs::kPrintingEnabled);
+}
+
+static jboolean GetPrintingManaged(JNIEnv* env, jobject obj) {
   return GetPrefService()->IsManagedPreference(prefs::kPrintingEnabled);
 }
 
