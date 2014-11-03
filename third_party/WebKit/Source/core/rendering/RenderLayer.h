@@ -116,7 +116,7 @@ public:
 
     void setLayerType(LayerType layerType) { m_layerType = layerType; }
 
-    bool isTransparent() const { return renderer()->isTransparent() || renderer()->hasMask(); }
+    bool isTransparent() const { return renderer()->isTransparent() || renderer()->hasBlendMode() || renderer()->hasMask(); }
     RenderLayer* transparentPaintingAncestor();
 
     bool isReflection() const { return renderer()->isReplica(); }
@@ -274,8 +274,6 @@ public:
 
     void filterNeedsPaintInvalidation();
     bool hasFilter() const { return renderer()->hasFilter(); }
-
-    bool paintsWithBlendMode() const;
 
     void* operator new(size_t);
     // Only safe to call from RenderLayerModelObject::destroyLayer()

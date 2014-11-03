@@ -2506,11 +2506,6 @@ bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
     return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
 }
 
-bool RenderLayer::paintsWithBlendMode() const
-{
-    return m_renderer->hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
-}
-
 bool RenderLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
 {
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
