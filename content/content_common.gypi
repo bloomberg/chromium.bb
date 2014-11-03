@@ -287,10 +287,10 @@
       'common/gpu/gpu_config.h',
       'common/gpu/gpu_memory_buffer_factory.h',
       'common/gpu/gpu_memory_buffer_factory_android.cc',
+      'common/gpu/gpu_memory_buffer_factory_linux.cc',
       'common/gpu/gpu_memory_buffer_factory_mac.cc',
       'common/gpu/gpu_memory_buffer_factory_ozone.cc',
       'common/gpu/gpu_memory_buffer_factory_win.cc',
-      'common/gpu/gpu_memory_buffer_factory_x11.cc',
       'common/gpu/gpu_memory_manager.cc',
       'common/gpu/gpu_memory_manager.h',
       'common/gpu/gpu_memory_manager_client.cc',
@@ -694,10 +694,6 @@
       ],
       'dependencies': [
          '<(DEPTH)/build/linux/system.gyp:xcomposite',
-      ],
-      'sources': [
-        'common/gpu/gpu_memory_buffer_factory_x11_pixmap.cc',
-        'common/gpu/gpu_memory_buffer_factory_x11_pixmap.h',
       ],
     }],
     ['use_x11 == 1 and (target_arch != "arm" or chromeos == 0)', {

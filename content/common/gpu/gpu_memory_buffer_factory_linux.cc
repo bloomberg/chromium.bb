@@ -5,7 +5,6 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
-#include "content/common/gpu/gpu_memory_buffer_factory_x11_pixmap.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
@@ -22,30 +21,16 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage) override {
-    switch (handle.type) {
-      case gfx::X11_PIXMAP_BUFFER:
-        x11_pixmap_factory_.CreateGpuMemoryBuffer(handle.global_id,
-                                                  handle.pixmap);
-        return handle;
-      default:
-        NOTREACHED();
-        return gfx::GpuMemoryBufferHandle();
-    }
+    NOTREACHED();
+    return gfx::GpuMemoryBufferHandle();
   }
   void DestroyGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle) override {
-    switch (handle.type) {
-      case gfx::X11_PIXMAP_BUFFER:
-        x11_pixmap_factory_.DestroyGpuMemoryBuffer(handle.global_id);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    NOTREACHED();
   }
   gpu::ImageFactory* AsImageFactory() override { return this; }
 
-  // Overridden from gpu::GpuMemoryBufferFactory:
+  // Overridden from gpu::ImageFactory:
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
@@ -61,21 +46,11 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory,
 
         return image;
       }
-      case gfx::X11_PIXMAP_BUFFER:
-        // Verify that client is the owner of the buffer we're about to use.
-        if (handle.global_id.secondary_id != client_id)
-          return scoped_refptr<gfx::GLImage>();
-
-        return x11_pixmap_factory_.CreateImageForGpuMemoryBuffer(
-            handle.global_id, size, internalformat);
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();
     }
   }
-
- private:
-  GpuMemoryBufferFactoryX11Pixmap x11_pixmap_factory_;
 };
 
 }  // namespace
