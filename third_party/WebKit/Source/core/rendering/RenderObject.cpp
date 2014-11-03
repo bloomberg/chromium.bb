@@ -137,6 +137,9 @@ COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObj
 
 bool RenderObject::s_affectsParentBlock = false;
 
+typedef HashMap<const RenderObject*, LayoutRect> SelectionPaintInvalidationMap;
+static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = 0;
+
 #if !ENABLE(OILPAN)
 void* RenderObject::operator new(size_t sz)
 {
@@ -1241,16 +1244,40 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
     return value;
 }
 
-void RenderObject::invalidateSelectionIfNeeded(const RenderLayerModelObject& paintInvalidationContainer)
+LayoutRect RenderObject::previousSelectionRectForPaintInvalidation() const
+{
+    ASSERT(shouldInvalidateSelection());
+
+    if (!selectionPaintInvalidationMap)
+        return LayoutRect();
+
+    return selectionPaintInvalidationMap->get(this);
+}
+
+void RenderObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect& selectionRect)
+{
+    if (!selectionPaintInvalidationMap)
+        selectionPaintInvalidationMap = new SelectionPaintInvalidationMap();
+
+    selectionPaintInvalidationMap->set(this, selectionRect);
+}
+
+void RenderObject::invalidateSelectionIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
 {
     if (!shouldInvalidateSelection())
         return;
 
-    LayoutRect selection = selectionRectForPaintInvalidation(&paintInvalidationContainer);
-    // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
+    LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
+    LayoutRect previousSelectionRectForPaintInvalidation = selectionRectForPaintInvalidation(&paintInvalidationContainer);
+    // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer.layer()->groupedMapping())
-        RenderLayer::mapRectToPaintBackingCoordinates(&paintInvalidationContainer, selection);
-    invalidatePaintUsingContainer(&paintInvalidationContainer, selection, PaintInvalidationSelection);
+        RenderLayer::mapRectToPaintBackingCoordinates(&paintInvalidationContainer, previousSelectionRectForPaintInvalidation);
+    setPreviousSelectionRectForPaintInvalidation(previousSelectionRectForPaintInvalidation);
+
+    if (view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(invalidationReason))
+        return;
+
+    fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, previousSelectionRectForPaintInvalidation);
 }
 
 PaintInvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
@@ -1268,6 +1295,10 @@ PaintInvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalid
 
     PaintInvalidationReason invalidationReason = paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
 
+    // We need to invalidate the selection before checking for whether we are doing a full invalidation.
+    // This is because we need to update the old rect regardless.
+    invalidateSelectionIfNeeded(paintInvalidationContainer, invalidationReason);
+
     // If we are set to do a full paint invalidation that means the RenderView will issue
     // paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
@@ -1277,8 +1308,6 @@ PaintInvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalid
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
         "info", jsonObjectForOldAndNewRects(oldBounds, oldLocation, newBounds, newLocation));
-
-    invalidateSelectionIfNeeded(paintInvalidationContainer);
 
     if (invalidationReason == PaintInvalidationNone)
         return invalidationReason;
@@ -2343,6 +2372,9 @@ void RenderObject::willBeDestroyed()
     }
 
     setAncestorLineBoxDirty(false);
+
+    if (selectionPaintInvalidationMap)
+        selectionPaintInvalidationMap->remove(this);
 
     clearLayoutRootIfNeeded();
 }

@@ -112,7 +112,6 @@ public:
     ImageObserverDisabler(Image* image)
         : m_image(image)
     {
-        ASSERT(m_image->imageObserver());
         m_observer = m_image->imageObserver();
         m_image->setImageObserver(0);
     }

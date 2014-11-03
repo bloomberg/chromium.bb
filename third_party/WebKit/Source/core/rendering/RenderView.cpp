@@ -537,15 +537,19 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     int oldEndPos = m_selectionEndPos;
 
     // Objects each have a single selection rect to examine.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, OwnPtrWillBeMember<RenderSelectionInfo> > SelectedObjectMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, SelectionState > SelectedObjectMap;
     SelectedObjectMap oldSelectedObjects;
+    // FIXME: |newSelectedObjects| doesn't really need to store the SelectionState, it's just more convenient
+    // to have it use the same data structure as |oldSelectedObjects|.
     SelectedObjectMap newSelectedObjects;
 
     // Blocks contain selected objects and fill gaps between them, either on the left, right, or in between lines and blocks.
     // In order to get the paint invalidation rect right, we have to examine left, middle, and right rects individually, since otherwise
     // the union of those rects might remain the same even when changes have occurred.
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderBlock>, OwnPtrWillBeMember<RenderBlockSelectionInfo> > SelectedBlockMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderBlock>, SelectionState > SelectedBlockMap;
     SelectedBlockMap oldSelectedBlocks;
+    // FIXME: |newSelectedBlocks| doesn't really need to store the SelectionState, it's just more convenient
+    // to have it use the same data structure as |oldSelectedBlocks|.
     SelectedBlockMap newSelectedBlocks;
 
     RenderObject* os = m_selectionStart;
@@ -555,14 +559,13 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     while (continueExploring) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps.  They must be examined as well.
-            oldSelectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os)));
+            oldSelectedObjects.set(os, os->selectionState());
             if (blockPaintInvalidationMode == PaintInvalidationNewXOROld) {
                 RenderBlock* cb = os->containingBlock();
                 while (cb && !cb->isRenderView()) {
-                    OwnPtrWillBeMember<RenderBlockSelectionInfo>& blockInfo = oldSelectedBlocks.add(cb, nullptr).storedValue->value;
-                    if (blockInfo)
+                    SelectedBlockMap::AddResult result = oldSelectedBlocks.add(cb, cb->selectionState());
+                    if (!result.isNewEntry)
                         break;
-                    blockInfo = adoptPtrWillBeNoop(new RenderBlockSelectionInfo(cb));
                     cb = cb->containingBlock();
                 }
             }
@@ -610,13 +613,12 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     continueExploring = o && (o != stop);
     while (continueExploring) {
         if ((o->canBeSelectionLeaf() || o == start || o == end) && o->selectionState() != SelectionNone) {
-            newSelectedObjects.set(o, adoptPtrWillBeNoop(new RenderSelectionInfo(o)));
+            newSelectedObjects.set(o, o->selectionState());
             RenderBlock* cb = o->containingBlock();
             while (cb && !cb->isRenderView()) {
-                OwnPtrWillBeMember<RenderBlockSelectionInfo>& blockInfo = newSelectedBlocks.add(cb, nullptr).storedValue->value;
-                if (blockInfo)
+                SelectedBlockMap::AddResult result = newSelectedBlocks.add(cb, cb->selectionState());
+                if (!result.isNewEntry)
                     break;
-                blockInfo = adoptPtrWillBeNoop(new RenderBlockSelectionInfo(cb));
                 cb = cb->containingBlock();
             }
         }
@@ -630,43 +632,37 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     // Have any of the old selected objects changed compared to the new selection?
     for (SelectedObjectMap::iterator i = oldSelectedObjects.begin(); i != oldObjectsEnd; ++i) {
         RenderObject* obj = i->key;
-        RenderSelectionInfo* newInfo = newSelectedObjects.get(obj);
-        RenderSelectionInfo* oldInfo = i->value.get();
-        if (!newInfo || newInfo->hasChangedFrom(*oldInfo)
+        SelectionState newSelectionState = obj->selectionState();
+        SelectionState oldSelectionState = i->value;
+        if (newSelectionState != oldSelectionState
             || (m_selectionStart == obj && oldStartPos != m_selectionStartPos)
             || (m_selectionEnd == obj && oldEndPos != m_selectionEndPos)) {
-            oldInfo->invalidatePaint();
-            if (newInfo) {
-                newInfo->object()->setShouldInvalidateSelection();
-                newSelectedObjects.remove(obj);
-            }
+            obj->setShouldInvalidateSelection();
+            newSelectedObjects.remove(obj);
         }
     }
 
     // Any new objects that remain were not found in the old objects dict, and so they need to be updated.
     SelectedObjectMap::iterator newObjectsEnd = newSelectedObjects.end();
     for (SelectedObjectMap::iterator i = newSelectedObjects.begin(); i != newObjectsEnd; ++i)
-        i->value->object()->setShouldInvalidateSelection();
+        i->key->setShouldInvalidateSelection();
 
     // Have any of the old blocks changed?
     SelectedBlockMap::iterator oldBlocksEnd = oldSelectedBlocks.end();
     for (SelectedBlockMap::iterator i = oldSelectedBlocks.begin(); i != oldBlocksEnd; ++i) {
         RenderBlock* block = i->key;
-        RenderBlockSelectionInfo* newInfo = newSelectedBlocks.get(block);
-        RenderBlockSelectionInfo* oldInfo = i->value.get();
-        if (!newInfo || newInfo->hasChangedFrom(*oldInfo)) {
-            oldInfo->invalidatePaint();
-            if (newInfo) {
-                newInfo->object()->setShouldInvalidateSelection();
-                newSelectedBlocks.remove(block);
-            }
+        SelectionState newSelectionState = block->selectionState();
+        SelectionState oldSelectionState = i->value;
+        if (newSelectionState != oldSelectionState) {
+            block->setShouldInvalidateSelection();
+            newSelectedBlocks.remove(block);
         }
     }
 
     // Any new blocks that remain were not found in the old blocks dict, and so they need to be updated.
     SelectedBlockMap::iterator newBlocksEnd = newSelectedBlocks.end();
     for (SelectedBlockMap::iterator i = newSelectedBlocks.begin(); i != newBlocksEnd; ++i)
-        i->value->object()->setShouldInvalidateSelection();
+        i->key->setShouldInvalidateSelection();
 }
 
 void RenderView::clearSelection()

@@ -70,11 +70,6 @@ public:
         }
     }
 
-    void invalidatePaint()
-    {
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(m_rect), PaintInvalidationSelection);
-    }
-
     LayoutRect absoluteSelectionRect() const
     {
         if (!m_paintInvalidationContainer)
@@ -84,55 +79,8 @@ public:
         return absQuad.enclosingBoundingBox();
     }
 
-    bool hasChangedFrom(const RenderSelectionInfo& other) const
-    {
-        // There is no point in comparing selection info for different objects.
-        ASSERT(m_object == other.m_object);
-        ASSERT(m_paintInvalidationContainer == other.m_paintInvalidationContainer);
-
-        return m_state != other.m_state || m_rect != other.m_rect;
-    }
-
 private:
     LayoutRect m_rect; // relative to paint invalidation container
-};
-
-// This struct is used when the selection changes to cache the old and new state of the selection for each RenderBlock.
-class RenderBlockSelectionInfo final : public RenderSelectionInfoBase {
-public:
-    RenderBlockSelectionInfo(RenderBlock* b)
-        : RenderSelectionInfoBase(b)
-    {
-        if (m_paintInvalidationContainer && b->canUpdateSelectionOnRootLineBoxes())
-            m_rects = block()->selectionGapRectsForPaintInvalidation(m_paintInvalidationContainer);
-        else
-            m_rects = GapRects();
-    }
-
-    void invalidatePaint()
-    {
-        LayoutRect paintInvalidationRect = m_rects;
-        // FIXME: this is leaking the squashing abstraction. However, removing the groupedMapping() condiitional causes
-        // RenderBox::mapRectToPaintInvalidationBacking to get called, which makes rect adjustments even if you pass the same
-        // paintInvalidationContainer as the render object. Find out why it does that and fix.
-        if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
-            RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, paintInvalidationRect);
-        m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(paintInvalidationRect), PaintInvalidationSelection);
-    }
-
-    bool hasChangedFrom(const RenderBlockSelectionInfo& other) const
-    {
-        // There is no point in comparing selection info for different objects.
-        ASSERT(m_object == other.m_object);
-        ASSERT(m_paintInvalidationContainer == other.m_paintInvalidationContainer);
-
-        return m_state != other.m_state || m_rects != other.m_rects;
-    }
-
-private:
-    RenderBlock* block() const { return toRenderBlock(m_object); }
-
-    GapRects m_rects; // relative to paint invalidation container
 };
 
 } // namespace blink

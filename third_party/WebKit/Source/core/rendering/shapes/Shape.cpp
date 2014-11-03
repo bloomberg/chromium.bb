@@ -37,6 +37,7 @@
 #include "core/rendering/shapes/RasterShape.h"
 #include "core/rendering/shapes/RectangleShape.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -192,8 +193,12 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
     OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageRect.size());
 
-    if (imageBuffer) {
+    if (image && imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
+        // FIXME: This is not totally correct but it is needed to prevent shapes
+        // that loads SVG Images during paint invalidations to mark renderers for
+        // layout, which is not allowed. See https://crbug.com/429346
+        ImageObserverDisabler disabler(image);
         graphicsContext->drawImage(image, IntRect(IntPoint(), imageRect.size()));
 
         RefPtr<Uint8ClampedArray> pixelArray = imageBuffer->getImageData(Unmultiplied, IntRect(IntPoint(), imageRect.size()));

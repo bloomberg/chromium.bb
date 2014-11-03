@@ -851,7 +851,7 @@ public:
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
-    void invalidateSelectionIfNeeded(const RenderLayerModelObject&);
+    void invalidateSelectionIfNeeded(const RenderLayerModelObject&, PaintInvalidationReason);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
@@ -1194,6 +1194,9 @@ private:
 
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const RenderLayerModelObject* repaintContainer);
 
+    LayoutRect previousSelectionRectForPaintInvalidation() const;
+    void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);
+
     const RenderLayerModelObject* enclosingCompositedContainer() const;
 
     RenderFlowThread* locateFlowThreadContainingBlock() const;
@@ -1389,7 +1392,7 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 
-    // This stores the paint invalidation rect from the previous layout.
+    // This stores the paint invalidation rect from the previous frame.
     LayoutRect m_previousPaintInvalidationRect;
 
     // This stores the position in the paint invalidation backing's coordinate.
