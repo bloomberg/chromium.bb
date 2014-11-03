@@ -94,7 +94,7 @@ void GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
         FROM_HERE,
         base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn, latency_info));
   }
-  cc::OutputSurface::OnSwapBuffersComplete();
+  OnSwapBuffersComplete();
 #endif
 }
 
