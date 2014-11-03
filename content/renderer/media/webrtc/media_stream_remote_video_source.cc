@@ -197,6 +197,7 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
   DCHECK(CalledOnValidThread());
+  observer_ = nullptr;
 }
 
 void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
