@@ -2033,6 +2033,9 @@ class ValidationPool(object):
                               timestamp)
       if db:
         self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT)
+        if self.pre_cq:
+          self._InsertCLActionToDatabase(
+              change, constants.CL_ACTION_PRE_CQ_FAILED)
 
   def _InsertCLActionToDatabase(self, change, action):
     """If cidb is set up and not None, insert given cl action to cidb.
