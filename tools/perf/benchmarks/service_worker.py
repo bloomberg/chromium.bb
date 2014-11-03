@@ -15,6 +15,7 @@ from telemetry.timeline import async_slice as async_slice_module
 from telemetry.timeline import slice as slice_module
 from telemetry.value import scalar
 
+
 class _ServiceWorkerTimelineMetric(object):
   def AddResultsOfCounters(self, process, counter_regex_string, results):
     counter_filter = re.compile(counter_regex_string)
@@ -82,6 +83,8 @@ class _ServiceWorkerTimelineMetric(object):
 
 
 class _ServiceWorkerMeasurement(page_test.PageTest):
+  """Measure Speed Index and TRACE_EVENTs"""
+
   def __init__(self, *args, **kwargs):
     super(_ServiceWorkerMeasurement, self).__init__(*args, **kwargs)
     self._timeline_controller = timeline_controller.TimelineController()
@@ -99,16 +102,8 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.WaitForJavaScriptExpression(
-        '(window.done == null) ? ' +
-        '(document.readyState == "complete") : window.done', 40)
+    tab.WaitForDocumentReadyStateToBeComplete(40)
     self._timeline_controller.Stop(tab)
-
-    # Measure JavaScript-land
-    json = tab.EvaluateJavaScript('window.results || {}')
-    for key, value in json.iteritems():
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, key, value['units'], value['value']))
 
     # Retrieve TRACE_EVENTs
     timeline_metric = _ServiceWorkerTimelineMetric()
@@ -138,8 +133,55 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
       chart_prefix += '_later'
     self._speed_index.AddResults(tab, results, chart_prefix)
 
+
+class _ServiceWorkerMicroBenchmarkMeasurement(page_test.PageTest):
+  """Measure JS land values and TRACE_EVENTs"""
+
+  def __init__(self, *args, **kwargs):
+    super(_ServiceWorkerMicroBenchmarkMeasurement, self).__init__(*args,
+                                                                  **kwargs)
+    self._timeline_controller = timeline_controller.TimelineController()
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-experimental-web-platform-features'
+      ])
+
+  def WillNavigateToPage(self, page, tab):
+    self._timeline_controller.SetUp(page, tab)
+    self._timeline_controller.Start(tab)
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    tab.WaitForJavaScriptExpression('window.done', 40)
+    self._timeline_controller.Stop(tab)
+
+    # Measure JavaScript-land
+    json = tab.EvaluateJavaScript('window.results || {}')
+    for key, value in json.iteritems():
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, key, value['units'], value['value']))
+
+    # Retrieve TRACE_EVENTs
+    timeline_metric = _ServiceWorkerTimelineMetric()
+    browser_process = self._timeline_controller.model.browser_process
+    filter_text = '(RegisterServiceWorker|'\
+                  'UnregisterServiceWorker|'\
+                  'ProcessAllocate|'\
+                  'FindRegistrationForDocument|'\
+                  'DispatchFetchEvent)'
+    timeline_metric.AddResultsOfEvents(
+        browser_process, 'IOThread', filter_text , results)
+
+
 @benchmark.Enabled('android')
 class ServiceWorkerPerfTest(benchmark.Benchmark):
-  """Performance test on pages controlled by ServiceWorker"""
+  """Performance test on public applications using ServiceWorker"""
   test = _ServiceWorkerMeasurement
   page_set = page_sets.ServiceWorkerPageSet
+
+
+@benchmark.Enabled('android')
+class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
+  """Service Worker performance test using a micro benchmark page set"""
+  test = _ServiceWorkerMicroBenchmarkMeasurement
+  page_set = page_sets.ServiceWorkerMicroBenchmarkPageSet
