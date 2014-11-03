@@ -56,9 +56,9 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
                              bool has_submenu);
 
   // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   friend struct DefaultSingletonTraits<AccessibilityEventRouterViews>;
@@ -71,7 +71,7 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
                            AccessibilityFocusableView);
 
   AccessibilityEventRouterViews();
-  virtual ~AccessibilityEventRouterViews();
+  ~AccessibilityEventRouterViews() override;
 
   // Call DispatchAccessibilityEvent using a view storage id.
   static void DispatchEventOnViewStorageId(

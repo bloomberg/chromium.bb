@@ -38,14 +38,14 @@ class InvertBubbleView : public views::BubbleDelegateView,
                          public views::LinkListener {
  public:
   InvertBubbleView(Browser* browser, views::View* anchor_view);
-  virtual ~InvertBubbleView();
+  ~InvertBubbleView() override;
 
  private:
   // Overridden from views::BubbleDelegateView:
-  virtual void Init() override;
+  void Init() override;
 
   // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   void OpenLink(const std::string& url, int event_flags);
 
