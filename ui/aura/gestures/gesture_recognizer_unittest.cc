@@ -4080,7 +4080,7 @@ TEST_F(GestureRecognizerTest, LatencyPassedFromTouchEvent) {
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0, time_ui, 1);
 
   press1.latency()->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, 0, 0, time_acked, 1);
+      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0, time_acked, 1);
 
   DispatchEventUsingWindowDispatcher(&press1);
   EXPECT_TRUE(delegate->tap_down());
@@ -4097,7 +4097,7 @@ TEST_F(GestureRecognizerTest, LatencyPassedFromTouchEvent) {
   EXPECT_EQ(time_ui, component.event_time);
 
   ASSERT_TRUE(delegate->latency_info().FindLatency(
-      ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, 0, &component));
+      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, &component));
   EXPECT_EQ(time_acked, component.event_time);
 
   delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_SHOW_PRESS);

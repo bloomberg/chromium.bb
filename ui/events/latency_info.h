@@ -43,8 +43,8 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT,
   // Timestamp when a scroll update is forwarded to the main thread.
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
-  // Timestamp when the touch event is acked.
-  INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT,
+  // Timestamp when the event's ack is received by the RWH.
+  INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
   // Frame number when a window snapshot was requested. The snapshot
   // is taken when the rendering results actually reach the screen.
   WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,

@@ -96,7 +96,7 @@ void GestureProviderAura::OnGestureEvent(
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   gesture_latency->CopyLatencyFrom(
       last_touch_event_latency_info_,
-      ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT);
+      ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT);
 
   if (!handling_event_) {
     // Dispatching event caused by timer.

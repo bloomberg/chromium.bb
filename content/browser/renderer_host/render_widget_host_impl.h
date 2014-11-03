@@ -437,13 +437,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // other way around.
   bool should_auto_resize() { return should_auto_resize_; }
 
-  void ComputeTouchLatency(const ui::LatencyInfo& latency_info);
   void FrameSwapped(const ui::LatencyInfo& latency_info);
   void DidReceiveRendererFrame();
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
-  int64 GetLatencyComponentId();
+  int64 GetLatencyComponentId() const;
 
   static void CompositorFrameDrawn(
       const std::vector<ui::LatencyInfo>& latency_info);
@@ -483,11 +482,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Create a LatencyInfo struct with INPUT_EVENT_LATENCY_RWH_COMPONENT
   // component if it is not already in |original|. And if |original| is
   // not NULL, it is also merged into the resulting LatencyInfo.
-  ui::LatencyInfo CreateRWHLatencyInfoIfNotExist(
+  ui::LatencyInfo CreateInputEventLatencyInfoIfNotExist(
       const ui::LatencyInfo* original,
       blink::WebInputEvent::Type type,
       const ui::LatencyInfo::InputCoordinate* logical_coordinates,
       size_t logical_coordinates_size);
+  // Add UMA histograms for the latency to the renderer and roundtrip latency
+  // for a given event type.
+  void ComputeInputLatencyHistograms(
+      blink::WebInputEvent::Type type,
+      const ui::LatencyInfo& latency_info) const;
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be

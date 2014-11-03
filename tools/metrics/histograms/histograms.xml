@@ -6956,6 +6956,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.Browser.WheelAcked" units="microseconds">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    Time between wheel events sent from RWH to renderer and acked by renderer.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.WheelUI" units="microseconds">
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    Time between wheel events received by Chrome and sent from RWH to renderer.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Renderer" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
