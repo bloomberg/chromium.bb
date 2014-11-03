@@ -43,10 +43,14 @@ class PepperInputHandler : public pp::MouseLock {
   // Called when the plugin receives or loses focus.
   void DidChangeFocus(bool has_focus);
 
-  // Sets the mouse cursor image. Passing NULL image will lock the mouse if
-  // mouse lock is enabled.
+  // Sets the mouse cursor image. Passing NULL |image| will cause the cursor to
+  // be hidden.
+  // Passing NULL |image| will also cause mouse-lock to be entered, if allowed.
   void SetMouseCursor(scoped_ptr<pp::ImageData> image,
                       const pp::Point& hotspot);
+
+  // Hides the mousr cursor without triggering mouse-lock.
+  void HideMouseCursor();
 
   // Enable or disable sending mouse input when the plugin does not have input
   // focus.

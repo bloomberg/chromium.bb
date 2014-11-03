@@ -629,7 +629,7 @@ void ChromotingInstance::SetCursorShape(
     dictionary.Set(pp::Var("hotspotY"), cursor_hotspot.y());
     dictionary.Set(pp::Var("data"), array_buffer);
     PostChromotingMessage("setCursorShape", dictionary);
-    input_handler_.SetMouseCursor(nullptr, cursor_hotspot);
+    input_handler_.HideMouseCursor();
   } else {
     if (delegate_large_cursors_) {
       pp::VarDictionary dictionary;

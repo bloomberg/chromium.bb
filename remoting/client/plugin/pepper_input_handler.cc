@@ -218,6 +218,11 @@ void PepperInputHandler::SetMouseCursor(scoped_ptr<pp::ImageData> image,
   }
 }
 
+void PepperInputHandler::HideMouseCursor() {
+  cursor_image_.reset();
+  pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_NONE);
+}
+
 void PepperInputHandler::MouseLockLost() {
   DCHECK(mouse_lock_state_ == MouseLockOn ||
          mouse_lock_state_ == MouseLockCancelling);
