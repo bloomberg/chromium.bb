@@ -39,6 +39,10 @@ function test()
     function createWorkspaceWithTarget(userCallback)
     {
         InspectorTest.createWorkspace();
+
+        InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+        InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+
         createMockTarget(callback);
         function callback(target)
         {
@@ -71,6 +75,18 @@ function test()
     {
         target.debuggerModel._reset();
         InspectorTest.testDebuggerWorkspaceBinding._reset(target);
+    }
+
+    function uiSourceCodeAdded(event)
+    {
+        var uiSourceCode = event.data;
+        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url);
+    }
+
+    function uiSourceCodeRemoved(event)
+    {
+        var uiSourceCode = event.data;
+        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url);
     }
 
     InspectorTest.runTestSuite([
@@ -253,8 +269,13 @@ function test()
 
             function originalResourceUISourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(stubUISourceCodeAdded, 1, WebInspector.projectTypes.Service);
                 originalUISourceCode = uiSourceCode;
+            }
+
+            function stubUISourceCodeAdded(uiSourceCode)
+            {
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
             }
 
             function firstUISourceCodeAdded(uiSourceCode)
@@ -263,7 +284,6 @@ function test()
                     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
                     return;
                 }
-
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
             }
 
@@ -276,8 +296,9 @@ function test()
                 afterScriptAdded();
             }
 
-            function afterScriptAdded(uiSourceCode)
+            function afterScriptAdded()
             {
+                InspectorTest.addResult("afterScriptAdded");
                 var uiSourceCode1 = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/source1.js");
                 var uiSourceCode2 = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/source2.js");
 

@@ -311,6 +311,8 @@ InspectorTest.waitForScriptSource = function(scriptName, callback)
     var panel = WebInspector.panels.sources;
     var uiSourceCodes = panel._workspace.uiSourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
+        if (uiSourceCodes[i].project().type() === WebInspector.projectTypes.Service)
+            continue;
         if (uiSourceCodes[i].name() === scriptName) {
             callback(uiSourceCodes[i]);
             return;

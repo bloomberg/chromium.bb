@@ -17,7 +17,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
 }
 
-InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count)
+InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count, projectType)
 {
     InspectorTest.uiSourceCodeAddedEventsLeft = count || 1;
     InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
@@ -25,6 +25,10 @@ InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count)
 
     function uiSourceCodeAdded(event)
     {
+        if (projectType && event.data.project().type() !== projectType)
+            return;
+        if (!projectType && event.data.project().type() === WebInspector.projectTypes.Service)
+            return;
         if (!(--InspectorTest.uiSourceCodeAddedEventsLeft)) {
             InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
             InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
@@ -37,12 +41,14 @@ InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, coun
 {
     InspectorTest.uiSourceCodeRemovedEventsLeft = count || 1;
     InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeAdded);
+    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
-    function uiSourceCodeAdded(event)
+    function uiSourceCodeRemoved(event)
     {
+        if (event.data.project().type() === WebInspector.projectTypes.Service)
+            return;
         if (!(--InspectorTest.uiSourceCodeRemovedEventsLeft)) {
-            InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeAdded);
+            InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
             InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
         }
         callback(event.data);
@@ -59,6 +65,8 @@ InspectorTest._defaultWorkspaceEventHandler = function(event)
 {
     var uiSourceCode = event.data;
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger && !uiSourceCode.url)
+        return;
+    if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
         return;
     throw new Error("Unexpected Workspace event: " + event.type + ": " + uiSourceCode.uri() + ".");
 }
