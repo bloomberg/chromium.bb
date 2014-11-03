@@ -69,6 +69,25 @@
             '<(DEPTH)/chrome/common_constants.gyp:common_constants',
           ],
         }],
+        ['OS=="win" and clang==1', {
+          # service_controller.h uses DECLARE_REGISTRY_APPID_RESOURCEID, which
+          # in msvs2013 returns string literals via a non-const pointer. So
+          # disable this warning for now.
+          # TODO(thakis): Remove this once we're on 2014,
+          # https://connect.microsoft.com/VisualStudio/feedback/details/806376/atl-hindrances-to-adopting-new-strictstrings-conformance-option-in-vs2013
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'AdditionalOptions': ['-Wno-writable-strings'],
+            },
+          },
+          'direct_dependent_settings': {
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': ['-Wno-writable-strings'],
+              },
+            },
+          },
+        }],
         ['enable_printing!=0', {
           'dependencies': [
             '<(DEPTH)/printing/printing.gyp:printing',
