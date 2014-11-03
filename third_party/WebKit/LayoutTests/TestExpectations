@@ -585,7 +585,7 @@ crbug.com/337774 [ Debug ] svg/animations/use-while-animating-crash.html [ Crash
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
-crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
+crbug.com/310323 [ Linux Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
 crbug.com/234871 [ Win ] fast/scroll-behavior/listbox-scrollTop.html [ Failure Pass ]
@@ -1485,13 +1485,3 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-3.html [
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-4.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/splitText-dirty-lines.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-to-fit.html [ Failure ]
-
-# This batch is for the sync xhr console log patch.
-crbug.com/392311 [ Mac Win Release ] http/tests/appcache/fallback.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/plugins/third-party-cookie-accept-policy.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/22.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/27.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/28.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/29.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/30.html [ NeedsRebaseline ]
-crbug.com/392311 [ Mac Win Release ] http/tests/xmlhttprequest/origin-exact-matching/36.html [ NeedsRebaseline ]
