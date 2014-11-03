@@ -7,7 +7,6 @@
   // Correspond to steps in the hotword opt-in flow.
   /** @const */ var HOTWORD_AUDIO_HISTORY = 'hotword-audio-history-container';
   /** @const */ var HOTWORD_ONLY_START = 'hotword-only-container';
-  /** @const */ var AUDIO_HISTORY_START = 'audio-history-container';
   /** @const */ var SPEECH_TRAINING = 'speech-training-container';
   /** @const */ var FINISHED = 'finished-container';
 
@@ -18,9 +17,6 @@
    * @const
    */
   var FLOWS = [
-    // TODO(kcarattini): Remove the first flow, since we will not be
-    // managing the Audio History Setting in Chrome anymore.
-    [AUDIO_HISTORY_START],
     [HOTWORD_ONLY_START, FINISHED],
     [HOTWORD_AUDIO_HISTORY, SPEECH_TRAINING, FINISHED],
     [SPEECH_TRAINING, FINISHED]
