@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 
@@ -18,11 +19,14 @@ namespace extensions {
 
 // A service that is responsible for showing an extension warning badge on the
 // wrench menu.
-class ExtensionWarningBadgeService : public WarningService::Observer,
+class ExtensionWarningBadgeService : public KeyedService,
+                                     public WarningService::Observer,
                                      public base::NonThreadSafe {
  public:
   explicit ExtensionWarningBadgeService(Profile* profile);
   virtual ~ExtensionWarningBadgeService();
+
+  static ExtensionWarningBadgeService* Get(content::BrowserContext* context);
 
   // Black lists all currently active extension warnings, so that they do not
   // trigger a warning badge again for the life-time of the browsing session.
@@ -40,6 +44,9 @@ class ExtensionWarningBadgeService : public WarningService::Observer,
   virtual void ShowBadge(bool show);
 
   Profile* profile_;
+
+  ScopedObserver<WarningService, WarningService::Observer>
+      warning_service_observer_;
 
   // Warnings that do not trigger a badge on the wrench menu.
   WarningSet suppressed_warnings_;

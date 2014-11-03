@@ -6,8 +6,8 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/warning_service_factory.h"
 #include "extensions/common/extension_set.h"
 
 using content::BrowserThread;
@@ -24,6 +24,11 @@ WarningService::WarningService(content::BrowserContext* browser_context)
 }
 
 WarningService::~WarningService() {}
+
+// static
+WarningService* WarningService::Get(content::BrowserContext* browser_context) {
+  return WarningServiceFactory::GetForBrowserContext(browser_context);
+}
 
 void WarningService::ClearWarnings(
     const std::set<Warning::WarningType>& types) {
@@ -95,8 +100,7 @@ void WarningService::NotifyWarningsOnUI(
     return;
   }
 
-  WarningService* warning_service =
-      ExtensionSystem::Get(browser_context)->warning_service();
+  WarningService* warning_service = WarningService::Get(browser_context);
 
   warning_service->AddWarnings(warnings);
 }

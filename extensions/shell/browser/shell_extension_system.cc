@@ -141,10 +141,6 @@ EventRouter* ShellExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-WarningService* ShellExtensionSystem::warning_service() {
-  return NULL;
-}
-
 Blacklist* ShellExtensionSystem::blacklist() {
   return NULL;
 }

@@ -58,10 +58,6 @@ EventRouter* MockExtensionSystem::event_router() {
   return NULL;
 }
 
-WarningService* MockExtensionSystem::warning_service() {
-  return NULL;
-}
-
 Blacklist* MockExtensionSystem::blacklist() {
   return NULL;
 }

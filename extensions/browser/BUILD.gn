@@ -480,6 +480,8 @@ source_set("browser") {
       "view_type_utils.h",
       "warning_service.cc",
       "warning_service.h",
+      "warning_service_factory.cc",
+      "warning_service_factory.h",
       "warning_set.cc",
       "warning_set.h",
     ]

@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/extension_warning_badge_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -55,8 +54,6 @@
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/state_store.h"
-#include "extensions/browser/warning_service.h"
-#include "extensions/browser/warning_set.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -383,11 +380,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
 
-  warning_service_.reset(new WarningService(profile_));
-  extension_warning_badge_service_.reset(
-      new ExtensionWarningBadgeService(profile_));
-  warning_service_->AddObserver(
-      extension_warning_badge_service_.get());
   error_console_.reset(new ErrorConsole(profile_));
   quota_service_.reset(new QuotaService);
 
@@ -411,10 +403,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
-  if (warning_service_) {
-    warning_service_->RemoveObserver(
-        extension_warning_badge_service_.get());
-  }
   if (content_verifier_.get())
     content_verifier_->Shutdown();
   if (extension_service_)
@@ -459,10 +447,6 @@ LazyBackgroundTaskQueue*
 
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return event_router_.get();
-}
-
-WarningService* ExtensionSystemImpl::Shared::warning_service() {
-  return warning_service_.get();
 }
 
 Blacklist* ExtensionSystemImpl::Shared::blacklist() {
@@ -567,10 +551,6 @@ LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
-}
-
-WarningService* ExtensionSystemImpl::warning_service() {
-  return shared_->warning_service();
 }
 
 Blacklist* ExtensionSystemImpl::blacklist() {

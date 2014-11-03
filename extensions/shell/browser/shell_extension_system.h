@@ -62,7 +62,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   InfoMap* info_map() override;
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   EventRouter* event_router() override;
-  WarningService* warning_service() override;
   Blacklist* blacklist() override;
   ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;

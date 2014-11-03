@@ -758,6 +758,8 @@
         'browser/view_type_utils.h',
         'browser/warning_service.cc',
         'browser/warning_service.h',
+        'browser/warning_service_factory.cc',
+        'browser/warning_service_factory.h',
         'browser/warning_set.cc',
         'browser/warning_set.h',
       ],

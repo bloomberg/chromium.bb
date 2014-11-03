@@ -884,7 +884,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   // Add the extensions to the results structure.
   base::ListValue* extensions_list = new base::ListValue();
 
-  WarningService* warnings = ExtensionSystem::Get(profile)->warning_service();
+  WarningService* warnings = WarningService::Get(profile);
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   const ExtensionSet& enabled_set = registry->enabled_extensions();
@@ -1355,8 +1355,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
-  warning_service_observer_.Add(
-      ExtensionSystem::Get(profile)->warning_service());
+  warning_service_observer_.Add(WarningService::Get(profile));
 
   error_console_observer_.Add(ErrorConsole::Get(profile));
 

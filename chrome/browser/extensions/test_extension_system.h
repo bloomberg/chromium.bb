@@ -66,7 +66,6 @@ class TestExtensionSystem : public ExtensionSystem {
   LazyBackgroundTaskQueue* lazy_background_task_queue() override;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
   EventRouter* event_router() override;
-  WarningService* warning_service() override;
   Blacklist* blacklist() override;
   ErrorConsole* error_console() override;
   InstallVerifier* install_verifier() override;
