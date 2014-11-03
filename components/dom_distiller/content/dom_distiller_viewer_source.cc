@@ -268,7 +268,7 @@ void DomDistillerViewerSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  DCHECK(render_frame_host);
+  if (!render_frame_host) return;
   content::RenderViewHost* render_view_host =
       render_frame_host->GetRenderViewHost();
   DCHECK(render_view_host);
@@ -290,9 +290,7 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
   }
   content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id,
-                                           render_frame_id));
+      content::WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
   // An empty |path| is invalid, but guard against it. If not empty, assume
   // |path| starts with '?', which is stripped away.
