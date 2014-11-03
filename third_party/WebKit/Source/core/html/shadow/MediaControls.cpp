@@ -220,8 +220,10 @@ void MediaControls::show()
 
 void MediaControls::mediaElementFocused()
 {
-    show();
-    resetHideMediaControlsTimer();
+    if (mediaElement().shouldShowControls()) {
+        show();
+        resetHideMediaControlsTimer();
+    }
 }
 
 void MediaControls::hide()

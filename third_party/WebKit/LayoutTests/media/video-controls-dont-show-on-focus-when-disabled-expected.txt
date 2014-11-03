@@ -1,0 +1,5 @@
+Test that video controls don't appear when the media (<video>) element is focused and the 'controls' attribute is not set.
+
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+END OF TEST
+
