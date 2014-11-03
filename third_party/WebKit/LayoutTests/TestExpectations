@@ -1281,10 +1281,6 @@ crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispa
 crbug.com/407915 virtual/implsidepainting/inspector/timeline/timeline-frames.html [ Failure Pass ]
 
 crbug.com/409580 inspector/device-emulation/device-emulation-320-2x.html [ Crash Pass ]
-crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Timeout ]
-crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-v2-events.html [ Pass Timeout ]
-crbug.com/407993 [ Mac Win Release ] media/encrypted-media/encrypted-media-playback-multiple-sessions.html [ Pass Timeout ]
-crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Timeout Pass ]
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-in-foreign-domain-subframe.html [ Pass Timeout ]
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
