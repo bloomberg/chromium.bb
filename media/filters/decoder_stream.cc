@@ -302,8 +302,10 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
 
   TRACE_EVENT_ASYNC_END0("media", GetTraceString<StreamType>(), this);
 
-  if (end_of_stream)
+  if (end_of_stream) {
+    DCHECK(!pending_decode_requests_);
     decoding_eos_ = false;
+  }
 
   if (state_ == STATE_ERROR) {
     DCHECK(read_cb_.is_null());
