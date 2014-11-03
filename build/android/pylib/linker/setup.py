@@ -39,7 +39,6 @@ def Setup(options, _devices):
 
   def TestRunnerFactory(device, _shard_index):
     return test_runner.LinkerTestRunner(
-        device, options.tool, options.push_deps,
-        options.cleanup_test_files)
+        device, options.tool, options.cleanup_test_files)
 
   return (TestRunnerFactory, all_tests)

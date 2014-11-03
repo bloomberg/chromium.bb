@@ -49,18 +49,16 @@ class LinkerTestRunner(base_test_runner.BaseTestRunner):
   """
 
   #override
-  def __init__(self, device, tool, push_deps, cleanup_test_files):
+  def __init__(self, device, tool, cleanup_test_files):
     """Creates a new LinkerTestRunner.
 
     Args:
       device: Attached android device.
       tool: Name of the Valgrind tool.
-      push_deps: If True, push all dependencies to the device.
       cleanup_test_files: Whether or not to cleanup test files on device.
     """
 
-    super(LinkerTestRunner, self).__init__(device, tool, push_deps,
-                                               cleanup_test_files)
+    super(LinkerTestRunner, self).__init__(device, tool, cleanup_test_files)
 
   #override
   def InstallTestPackage(self):

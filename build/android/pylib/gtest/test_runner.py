@@ -36,7 +36,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
 
     super(TestRunner, self).__init__(device, test_options.tool,
-                                     test_options.push_deps,
                                      test_options.cleanup_test_files)
 
     self.test_package = test_package

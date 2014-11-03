@@ -57,7 +57,6 @@ class HostDrivenTestCase(object):
     self.has_forwarded_ports = False
     self.instrumentation_options = instrumentation_options
     self.ports_to_forward = []
-    self.push_deps = False
     self.shard_index = 0
 
     # Use tagged_name when creating results, so that we can identify host-driven
@@ -68,7 +67,7 @@ class HostDrivenTestCase(object):
 
   # TODO(bulach): make ports_to_forward not optional and move the Forwarder
   # mapping here.
-  def SetUp(self, device, shard_index, push_deps,
+  def SetUp(self, device, shard_index,
             cleanup_test_files, ports_to_forward=None):
     if not ports_to_forward:
       ports_to_forward = []
@@ -76,7 +75,6 @@ class HostDrivenTestCase(object):
     self.shard_index = shard_index
     self.device = device_utils.DeviceUtils(self.device_id)
     self.adb = self.device.old_interface
-    self.push_deps = push_deps
     self.cleanup_test_files = cleanup_test_files
     if ports_to_forward:
       self.ports_to_forward = ports_to_forward

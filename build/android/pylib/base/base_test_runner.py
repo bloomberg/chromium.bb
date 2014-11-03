@@ -24,13 +24,11 @@ NET_TEST_SERVER_PORT_INFO_FILE = 'net-test-server-ports'
 class BaseTestRunner(object):
   """Base class for running tests on a single device."""
 
-  def __init__(self, device_serial, tool, push_deps=True,
-               cleanup_test_files=False):
+  def __init__(self, device_serial, tool, cleanup_test_files=False):
     """
       Args:
         device: Tests will run on the device of this ID.
         tool: Name of the Valgrind tool.
-        push_deps: If True, push all dependencies to the device.
         cleanup_test_files: Whether or not to cleanup test files on device.
     """
     self.device_serial = device_serial
@@ -46,7 +44,6 @@ class BaseTestRunner(object):
     # starting it in TestServerThread.
     self.test_server_spawner_port = 0
     self.test_server_port = 0
-    self._push_deps = push_deps
     self._cleanup_test_files = cleanup_test_files
 
   def _PushTestServerPortInfoToDevice(self):
@@ -79,19 +76,7 @@ class BaseTestRunner(object):
   def SetUp(self):
     """Run once before all tests are run."""
     self.InstallTestPackage()
-    push_size_before = self.device.old_interface.GetPushSizeInfo()
-    if self._push_deps:
-      logging.warning('Pushing data files to device.')
-      self.PushDataDeps()
-      push_size_after = self.device.old_interface.GetPushSizeInfo()
-      logging.warning(
-          'Total data: %0.3fMB' %
-          ((push_size_after[0] - push_size_before[0]) / float(2 ** 20)))
-      logging.warning(
-          'Total data transferred: %0.3fMB' %
-          ((push_size_after[1] - push_size_before[1]) / float(2 ** 20)))
-    else:
-      logging.warning('Skipping pushing data to device.')
+    self.PushDataDeps()
 
   def TearDown(self):
     """Run once after all tests are run."""

@@ -98,11 +98,6 @@ def AddDeviceOptions(option_parser):
                    dest='tool',
                    help=('Run the test under a tool '
                          '(use --tool help to list them)'))
-  group.add_option('--skip-deps-push', dest='push_deps',
-                   action='store_false', default=True,
-                   help=('Do not push dependencies to the device. '
-                         'Use this at own risk for speeding up test '
-                         'execution on local machine.'))
   group.add_option('-d', '--device', dest='test_device',
                    help=('Target device for the test suite '
                          'to run on.'))
@@ -308,7 +303,6 @@ def ProcessInstrumentationOptions(options, error_func):
   return instrumentation_test_options.InstrumentationOptions(
       options.tool,
       options.cleanup_test_files,
-      options.push_deps,
       options.annotations,
       options.exclude_annotations,
       options.test_filter,
@@ -387,7 +381,6 @@ def ProcessUIAutomatorOptions(options, error_func):
   return uiautomator_test_options.UIAutomatorOptions(
       options.tool,
       options.cleanup_test_files,
-      options.push_deps,
       options.annotations,
       options.exclude_annotations,
       options.test_filter,
@@ -591,7 +584,6 @@ def _RunGTests(options, devices):
     gtest_options = gtest_test_options.GTestOptions(
         options.tool,
         options.cleanup_test_files,
-        options.push_deps,
         options.test_filter,
         options.run_disabled,
         options.test_arguments,
