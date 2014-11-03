@@ -1469,7 +1469,11 @@
     { "name": "vpnzoom.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "watsonhall.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "weblogzwolle.nl", "include_subdomains": true, "mode": "force-https" },
-    { "name": "ypart.eu", "include_subdomains": true, "mode": "force-https" }
+    { "name": "ypart.eu", "include_subdomains": true, "mode": "force-https" },
+    { "name": "www.etsy.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "etsysecure.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "18f.gsa.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "my.usa.gov", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
