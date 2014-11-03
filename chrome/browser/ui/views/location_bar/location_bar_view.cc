@@ -1313,7 +1313,7 @@ bool LocationBarView::ShowPageActionPopup(
           *extension);
   DCHECK(extension_action);
   return GetPageActionView(extension_action)->image_view()->view_controller()->
-      ExecuteAction(ExtensionPopup::SHOW, grant_tab_permissions);
+      ExecuteAction(grant_tab_permissions);
 }
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
@@ -1391,7 +1391,7 @@ void LocationBarView::TestPageActionPressed(size_t index) {
     if (page_action_views_[i]->visible()) {
       if (current == index) {
         page_action_views_[i]->image_view()->view_controller()->
-            ExecuteAction(ExtensionPopup::SHOW, true);
+            ExecuteAction(true);
         return;
       }
       ++current;

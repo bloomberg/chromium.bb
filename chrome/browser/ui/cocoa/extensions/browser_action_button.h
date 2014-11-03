@@ -7,18 +7,17 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <string>
+
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 class Browser;
-class ExtensionAction;
+@class BrowserActionsController;
 @class ExtensionActionContextMenuController;
-class ExtensionActionIconFactoryBridge;
-
-namespace extensions {
-class Extension;
-}
+class ToolbarActionViewController;
+class ToolbarActionViewDelegateBridge;
 
 // Fired on each drag event while the user is moving the button.
 extern NSString* const kBrowserActionButtonDraggingNotification;
@@ -27,18 +26,17 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 @interface BrowserActionButton : NSButton<NSMenuDelegate> {
  @private
-  // Bridge to proxy Chrome notifications to the Obj-C class as well as load the
-  // extension's icon.
-  scoped_ptr<ExtensionActionIconFactoryBridge> iconFactoryBridge_;
-
   // Used to move the button and query whether a button is currently animating.
   base::scoped_nsobject<NSViewAnimation> moveAnimation_;
 
-  // The extension for this button. Weak.
-  const extensions::Extension* extension_;
+  // The bridge between the view controller and this object.
+  scoped_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
 
-  // The ID of the active tab.
-  int tabId_;
+  // The controller that handles most non-view logic.
+  scoped_ptr<ToolbarActionViewController> viewController_;
+
+  // The controller for the browser actions bar that owns this button. Weak.
+  BrowserActionsController* browserActionsController_;
 
   // Whether the button is currently being dragged.
   BOOL isBeingDragged_;
@@ -56,10 +54,12 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
       ExtensionActionContextMenuController> contextMenuController_;
 }
 
+// Init the button with the frame. Takes ownership of |viewController| and
+// |menuController|, does not own |controller|.
 - (id)initWithFrame:(NSRect)frame
-          extension:(const extensions::Extension*)extension
-            browser:(Browser*)browser
-              tabId:(int)tabId;
+     viewController:(scoped_ptr<ToolbarActionViewController>)viewController
+         controller:(BrowserActionsController*)controller
+     menuController:(ExtensionActionContextMenuController*)menuController;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
 
@@ -67,27 +67,28 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 - (BOOL)isAnimating;
 
+- (ToolbarActionViewController*)viewController;
+
 // Returns a pointer to an autoreleased NSImage with the badge, shadow and
 // cell image drawn into it.
 - (NSImage*)compositedImage;
 
 @property(readonly, nonatomic) BOOL isBeingDragged;
-@property(readonly, nonatomic) const extensions::Extension* extension;
-@property(readwrite, nonatomic) int tabId;
 
 @end
 
 @interface BrowserActionCell : ImageButtonCell {
  @private
-  // The current tab ID used when drawing the cell.
-  int tabId_;
+  // The controller for the browser actions bar that owns the button. Weak.
+  BrowserActionsController* browserActionsController_;
 
-  // The action we're drawing the cell for. Weak.
-  ExtensionAction* extensionAction_;
+  // The view controller for the parent button. Weak.
+  ToolbarActionViewController* viewController_;
 }
 
-@property(readwrite, nonatomic) int tabId;
-@property(readwrite, nonatomic) ExtensionAction* extensionAction;
+@property(assign, nonatomic)
+    BrowserActionsController* browserActionsController;
+@property(readwrite, nonatomic) ToolbarActionViewController* viewController;
 
 @end
 

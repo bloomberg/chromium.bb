@@ -36,12 +36,16 @@ class MockComponentAction : public ToolbarActionViewController {
   gfx::ImageSkia GetIconWithBadge() override {
     return *GetIcon(nullptr).ToImageSkia();
   }
-  base::string16 GetAccessibleName(
-      content::WebContents* web_contents) const override {
+  base::string16 GetActionName() const override {
     return base::ASCIIToUTF16("Component Action");
   }
-  base::string16 GetTooltip(content::WebContents* web_contents) const override {
-    return GetAccessibleName(web_contents);
+  base::string16 GetAccessibleName(content::WebContents* web_contents)
+      const override {
+    return GetActionName();
+  }
+  base::string16 GetTooltip(content::WebContents* web_contents)
+      const override {
+    return GetActionName();
   }
   bool IsEnabled(content::WebContents* web_contents) const override {
     return true;

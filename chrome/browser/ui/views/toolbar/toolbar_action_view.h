@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -29,7 +29,7 @@ class Image;
 // A wrapper around a ToolbarActionViewController to display a toolbar action
 // action in the BrowserActionsContainer.
 class ToolbarActionView : public views::MenuButton,
-                          public ToolbarActionViewDelegate,
+                          public ToolbarActionViewDelegateViews,
                           public views::ButtonListener,
                           public content::NotificationObserver {
  public:
@@ -70,9 +70,6 @@ class ToolbarActionView : public views::MenuButton,
                     Delegate* delegate);
   ~ToolbarActionView() override;
 
-  // Called to update the display to match the toolbar action's state.
-  void UpdateState();
-
   // Overridden from views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
 
@@ -98,6 +95,7 @@ class ToolbarActionView : public views::MenuButton,
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
 
   // ToolbarActionViewDelegate: (public because called by others).
+  void UpdateState() override;
   content::WebContents* GetCurrentWebContents() const override;
 
   ToolbarActionViewController* view_controller() {
@@ -117,7 +115,7 @@ class ToolbarActionView : public views::MenuButton,
   void PaintChildren(gfx::Canvas* canvas,
                      const views::CullSet& cull_set) override;
 
-  // ToolbarActionViewDelegate:
+  // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
   bool IsShownInMenu() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
@@ -126,7 +124,6 @@ class ToolbarActionView : public views::MenuButton,
   views::View* GetReferenceViewForPopup() override;
   views::MenuButton* GetContextMenuButton() override;
   void HideActivePopup() override;
-  void OnIconUpdated() override;
   void OnPopupShown(bool grant_tab_permissions) override;
   void CleanupPopup() override;
 

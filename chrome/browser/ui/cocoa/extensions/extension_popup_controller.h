@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_POPUP_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -47,6 +48,8 @@ class ExtensionViewHost;
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
   scoped_ptr<ExtensionPopupContainer> container_;
+
+  std::string extensionId_;
 
   // Whether the popup has a devtools window attached to it.
   BOOL beingInspected_;
@@ -94,6 +97,9 @@ class ExtensionViewHost;
 // Set whether the popup is being inspected or not. If it is being inspected
 // it will not be hidden when it loses focus.
 - (void)setBeingInspected:(BOOL)beingInspected;
+
+@property(readonly, nonatomic) std::string extensionId;
+
 @end
 
 @interface ExtensionPopupController(TestingAPI)

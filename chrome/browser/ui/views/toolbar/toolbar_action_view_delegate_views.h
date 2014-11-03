@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_VIEWS_H_
 
-namespace content {
-class WebContents;
-}
+#include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 
 namespace views {
 class FocusManager;
@@ -16,12 +14,8 @@ class View;
 class Widget;
 }
 
-class ToolbarActionViewController;
-
-// The view that surrounds an ToolbarAction and owns the
-// ToolbarActionViewController. Since different actions can subclass
-// different views, we don't derive views::View directly here.
-class ToolbarActionViewDelegate {
+// The views-specific methods necessary for a ToolbarActionViewDelegate.
+class ToolbarActionViewDelegateViews : public ToolbarActionViewDelegate {
  public:
   // Returns |this| as a view. We need this because our subclasses implement
   // different kinds of views, and inheriting View here is a really bad idea.
@@ -36,11 +30,6 @@ class ToolbarActionViewDelegate {
   // Returns the parent for the associated context menu.
   virtual views::Widget* GetParentForContextMenu() = 0;
 
-  // In some cases (such as when an action is shown in a menu), a substitute
-  // ToolbarActionViewController should be used for showing popups. This
-  // returns the preferred control.
-  virtual ToolbarActionViewController* GetPreferredPopupViewController() = 0;
-
   // Returns the reference view for the extension action's popup.
   virtual views::View* GetReferenceViewForPopup() = 0;
 
@@ -48,14 +37,8 @@ class ToolbarActionViewDelegate {
   // allows views code to update the pressed state of the button).
   virtual views::MenuButton* GetContextMenuButton() = 0;
 
-  // Returns the current web contents.
-  virtual content::WebContents* GetCurrentWebContents() const = 0;
-
   // Hides whatever popup is active (even if it's not this one).
   virtual void HideActivePopup() = 0;
-
-  // Called when the icon is updated; this is forwarded from the icon factory.
-  virtual void OnIconUpdated() = 0;
 
   // Called when a popup is shown. See ExecuteAction() for the definition of
   // |grant_tab_permissions|.
@@ -65,7 +48,7 @@ class ToolbarActionViewDelegate {
   virtual void CleanupPopup() {}
 
  protected:
-  virtual ~ToolbarActionViewDelegate() {}
+  virtual ~ToolbarActionViewDelegateViews() {}
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_DELEGATE_VIEWS_H_

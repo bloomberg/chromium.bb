@@ -13,21 +13,20 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/extension_registry.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
@@ -90,9 +89,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // position of the button.
 - (void)updateButtonOpacity;
 
-// Returns the existing button with the given extension backing it; nil if it
-// cannot be found or the extension's ID is invalid.
-- (BrowserActionButton*)buttonForExtension:(const Extension*)extension;
+// Returns the existing button associated with the given id; nil if it cannot be
+// found.
+- (BrowserActionButton*)buttonForId:(const std::string&)id;
 
 // Returns the preferred width of the container given the number of visible
 // buttons |buttonCount|.
@@ -166,9 +165,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // Updates the container's grippy cursor based on the number of hidden buttons.
 - (void)updateGrippyCursors;
-
-// Returns the ID of the currently selected tab or -1 if none exists.
-- (int)currentTabId;
 @end
 
 // A helper class to proxy extension notifications to the view controller's
@@ -231,7 +227,7 @@ class ExtensionServiceObserverBridge
   void ToolbarExtensionMoved(const Extension* extension, int index) override {}
 
   void ToolbarExtensionUpdated(const Extension* extension) override {
-    BrowserActionButton* button = [owner_ buttonForExtension:extension];
+    BrowserActionButton* button = [owner_ buttonForId:extension->id()];
     if (button)
       [button updateState];
   }
@@ -243,9 +239,8 @@ class ExtensionServiceObserverBridge
     if (popup || !browser_->window()->IsActive())
       return false;
 
-    BrowserActionButton* button = [owner_ buttonForExtension:extension];
-    return button && [owner_ browserActionClicked:button
-                                      shouldGrant:grant_active_tab];
+    BrowserActionButton* button = [owner_ buttonForId:extension->id()];
+    return button && [button viewController]->ExecuteAction(grant_active_tab);
   }
 
   void ToolbarVisibleCountChanged() override {}
@@ -347,10 +342,8 @@ class ExtensionServiceObserverBridge
 }
 
 - (void)update {
-  for (BrowserActionButton* button in [buttons_ allValues]) {
-    [button setTabId:[self currentTabId]];
+  for (BrowserActionButton* button in [buttons_ allValues])
     [button updateState];
-  }
 }
 
 - (NSUInteger)buttonCount {
@@ -380,15 +373,6 @@ class ExtensionServiceObserverBridge
   }
 }
 
-- (NSView*)browserActionViewForExtension:(const Extension*)extension {
-  for (BrowserActionButton* button in [buttons_ allValues]) {
-    if ([button extension] == extension)
-      return button;
-  }
-  NOTREACHED();
-  return nil;
-}
-
 - (CGFloat)savedWidth {
   if (!toolbarModel_)
     return 0;
@@ -400,13 +384,8 @@ class ExtensionServiceObserverBridge
   return [self containerWidthWithButtonCount:savedButtonCount];
 }
 
-- (NSPoint)popupPointForBrowserAction:(const Extension*)extension {
-  if (!extensions::ExtensionActionManager::Get(profile_)->
-      GetBrowserAction(*extension)) {
-    return NSZeroPoint;
-  }
-
-  NSButton* button = [self buttonForExtension:extension];
+- (NSPoint)popupPointForId:(const std::string&)id {
+  NSButton* button = [self buttonForId:id];
   if (!button)
     return NSZeroPoint;
 
@@ -444,16 +423,15 @@ class ExtensionServiceObserverBridge
   return YES;
 }
 
-- (void)activateBrowserAction:(const std::string&)extension_id {
-  const Extension* extension = extensions::ExtensionRegistry::Get(
-      browser_->profile())->enabled_extensions().GetByID(extension_id);
-  if (!extension)
-    return;
-
-  BrowserActionButton* button = [self buttonForExtension:extension];
+- (void)activateBrowserAction:(const std::string&)id {
+  BrowserActionButton* button = [self buttonForId:id];
   // |button| can be nil when the browser action has its button hidden.
   if (button)
     [self browserActionClicked:button];
+}
+
+- (content::WebContents*)currentWebContents {
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 #pragma mark -
@@ -466,7 +444,8 @@ class ExtensionServiceObserverBridge
   [menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 
   for (BrowserActionButton* button in hiddenButtons_.get()) {
-    NSString* name = base::SysUTF8ToNSString([button extension]->name());
+    NSString* name =
+        base::SysUTF16ToNSString([button viewController]->GetActionName());
     NSMenuItem* item =
         [menu addItemWithTitle:name
                         action:@selector(chevronItemSelected:)
@@ -505,12 +484,26 @@ class ExtensionServiceObserverBridge
 
   NSRect buttonFrame = NSMakeRect(0.0, kBrowserActionOriginYOffset,
                                   kBrowserActionWidth, kBrowserActionHeight);
+  ExtensionAction* extensionAction =
+      extensions::ExtensionActionManager::Get(browser_->profile())->
+          GetExtensionAction(*extension);
+  DCHECK(extensionAction)
+        << "Don't create a BrowserActionButton if there is no browser action.";
+  scoped_ptr<ToolbarActionViewController> viewController(
+      new ExtensionActionViewController(extension, browser_, extensionAction));
+  // TODO(devlin): Move ContextMenuController stuff to
+  // ExtensionActionViewController.
+  ExtensionActionContextMenuController* menuController =
+      [[ExtensionActionContextMenuController alloc]
+          initWithExtension:extension
+                    browser:browser_
+            extensionAction:extensionAction];
   BrowserActionButton* newButton =
       [[[BrowserActionButton alloc]
          initWithFrame:buttonFrame
-             extension:extension
-               browser:browser_
-                 tabId:[self currentTabId]] autorelease];
+        viewController:viewController.Pass()
+            controller:self
+        menuController:menuController] autorelease];
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
@@ -561,7 +554,7 @@ class ExtensionServiceObserverBridge
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
+    BrowserActionButton* button = [self buttonForId:(iter->get()->id())];
     if (!button)
       continue;
     if (![button isBeingDragged])
@@ -588,12 +581,12 @@ class ExtensionServiceObserverBridge
   }
 }
 
-- (BrowserActionButton*)buttonForExtension:(const Extension*)extension {
-  NSString* extensionId = base::SysUTF8ToNSString(extension->id());
-  DCHECK(extensionId);
-  if (!extensionId)
+- (BrowserActionButton*)buttonForId:(const std::string&)id {
+  NSString* nsId = base::SysUTF8ToNSString(id);
+  DCHECK(nsId);
+  if (!nsId)
     return nil;
-  return [buttons_ objectForKey:extensionId];
+  return [buttons_ objectForKey:nsId];
 }
 
 - (CGFloat)containerWidthWithButtonCount:(NSUInteger)buttonCount {
@@ -654,7 +647,7 @@ class ExtensionServiceObserverBridge
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
+    BrowserActionButton* button = [self buttonForId:(iter->get()->id())];
     NSRect buttonFrame = [button frame];
     if (NSContainsRect([containerView_ bounds], buttonFrame))
       continue;
@@ -700,13 +693,14 @@ class ExtensionServiceObserverBridge
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
+    BrowserActionButton* button = [self buttonForId:(iter->get()->id())];
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
 
     if (intersectionWidth > dragThreshold && button != draggedButton &&
         ![button isAnimating] && index < [self visibleButtonCount]) {
-      toolbarModel_->MoveExtensionIcon([draggedButton extension]->id(), index);
+      toolbarModel_->MoveExtensionIcon([draggedButton viewController]->GetId(),
+                                       index);
       [self positionActionButtonsAndAnimate:YES];
       return;
     }
@@ -744,24 +738,7 @@ class ExtensionServiceObserverBridge
 
 - (BOOL)browserActionClicked:(BrowserActionButton*)button
                  shouldGrant:(BOOL)shouldGrant {
-  const Extension* extension = [button extension];
-  switch (extensions::ExtensionActionAPI::Get(profile_)->ExecuteExtensionAction(
-              extension, browser_, shouldGrant)) {
-    case ExtensionAction::ACTION_NONE:
-      break;
-    case ExtensionAction::ACTION_SHOW_POPUP: {
-      GURL popupUrl = extensions::ExtensionActionManager::Get(profile_)->
-          GetBrowserAction(*extension)->GetPopupUrl([self currentTabId]);
-      NSPoint arrowPoint = [self popupPointForBrowserAction:extension];
-      [ExtensionPopupController showURL:popupUrl
-                              inBrowser:browser_
-                             anchoredAt:arrowPoint
-                          arrowLocation:info_bubble::kTopRight
-                                devMode:NO];
-      return YES;
-    }
-  }
-  return NO;
+  return [button viewController]->ExecuteAction(shouldGrant);
 }
 
 - (BOOL)browserActionClicked:(BrowserActionButton*)button {
@@ -847,15 +824,6 @@ class ExtensionServiceObserverBridge
   [containerView_ setCanDragLeft:[hiddenButtons_ count] > 0];
   [containerView_ setCanDragRight:[self visibleButtonCount] > 0];
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
-}
-
-- (int)currentTabId {
-  content::WebContents* active_tab =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  if (!active_tab)
-    return -1;
-
-  return SessionTabHelper::FromWebContents(active_tab)->session_id().id();
 }
 
 #pragma mark -

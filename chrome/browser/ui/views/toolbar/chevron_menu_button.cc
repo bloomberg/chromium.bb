@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
-#include "chrome/browser/ui/views/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "extensions/common/extension.h"
@@ -43,7 +43,7 @@ class IconUpdater : public ExtensionActionIconFactory::Observer {
     DCHECK(view_controller);
     view_controller->set_icon_observer(this);
   }
-  ~IconUpdater() override { view_controller_->set_icon_observer(NULL); }
+  ~IconUpdater() override { view_controller_->set_icon_observer(nullptr); }
 
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override {
@@ -158,19 +158,19 @@ ChevronMenuButton::MenuController::MenuController(
        i < browser_actions_container_->num_toolbar_actions(); ++i) {
     ToolbarActionView* view =
         browser_actions_container_->GetToolbarActionViewAt(i);
-    ExtensionActionViewController* view_controller =
-        static_cast<ExtensionActionViewController*>(view->view_controller());
     views::MenuItemView* menu_item = menu_->AppendMenuItemWithIcon(
         command_id,
-        base::UTF8ToUTF16(view_controller->extension()->name()),
-        view_controller->GetIconWithBadge());
+        view->view_controller()->GetActionName(),
+        view->view_controller()->GetIconWithBadge());
 
     // Set the tooltip for this item.
     menu_->SetTooltip(
-        view_controller->GetTooltip(view->GetCurrentWebContents()),
+        view->view_controller()->GetTooltip(view->GetCurrentWebContents()),
         command_id);
 
-    icon_updaters_.push_back(new IconUpdater(menu_item, view_controller));
+    icon_updaters_.push_back(new IconUpdater(
+        menu_item,
+        static_cast<ExtensionActionViewController*>(view->view_controller())));
 
     ++command_id;
   }

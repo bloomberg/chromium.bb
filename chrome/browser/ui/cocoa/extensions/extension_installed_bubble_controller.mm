@@ -260,7 +260,7 @@ class ExtensionLoadedNotificationObserver
       BrowserActionsController* controller =
           [[window->cocoa_controller() toolbarController]
               browserActionsController];
-      arrowPoint = [controller popupPointForBrowserAction:extension_];
+      arrowPoint = [controller popupPointForId:extension_->id()];
       break;
     }
     case extension_installed_bubble::kPageAction: {

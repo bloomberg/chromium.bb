@@ -233,7 +233,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
   } else if (actionManager->GetBrowserAction(*extension_) == action_) {
     BrowserActionsController* controller =
         [toolbarController browserActionsController];
-    popupPoint = [controller popupPointForBrowserAction:extension_];
+    popupPoint = [controller popupPointForId:extension_->id()];
   } else {
     NOTREACHED() << "action_ is not a page action or browser action?";
   }

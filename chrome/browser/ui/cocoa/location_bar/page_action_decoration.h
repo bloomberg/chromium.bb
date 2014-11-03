@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_PAGE_ACTION_DECORATION_H_
 
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_icon_factory.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "url/gurl.h"
 
+class ExtensionAction;
 @class ExtensionActionContextMenuController;
+class ExtensionActionViewController;
 class Browser;
 class LocationBarViewMac;
 
@@ -28,7 +30,7 @@ class Extension;
 // Action and notify the extension when the icon is clicked.
 
 class PageActionDecoration : public ImageDecoration,
-                             public ExtensionActionIconFactory::Observer,
+                             public ToolbarActionViewDelegateCocoa,
                              public content::NotificationObserver {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
@@ -36,22 +38,19 @@ class PageActionDecoration : public ImageDecoration,
                        ExtensionAction* page_action);
   ~PageActionDecoration() override;
 
-  ExtensionAction* page_action() { return page_action_; }
-  int current_tab_id() { return current_tab_id_; }
   void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
   bool preview_enabled() const { return preview_enabled_; }
 
-  // Overridden from |ExtensionActionIconFactory::Observer|.
-  void OnIconUpdated() override;
+  // Returns the extension associated with this decoration.
+  const extensions::Extension* GetExtension();
+
+  // Returns the page action associated with this decoration.
+  ExtensionAction* GetPageAction();
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the WebContents that is
   // active, |url| is the current page URL.
-  void UpdateVisibility(content::WebContents* contents, const GURL& url);
-
-  // Sets the tooltip for this Page Action image.
-  void SetToolTip(NSString* tooltip);
-  void SetToolTip(std::string tooltip);
+  void UpdateVisibility(content::WebContents* contents);
 
   // Overridden from |LocationBarDecoration|
   CGFloat GetWidthForSpace(CGFloat width) override;
@@ -67,14 +66,14 @@ class PageActionDecoration : public ImageDecoration,
   bool ActivatePageAction(bool grant_active_tab);
 
  private:
-  // Activate the page action in the given |frame|.
-  bool ActivatePageAction(NSRect frame, bool grant_active_tab);
+  // Sets the tooltip for this Page Action image.
+  void SetToolTip(const base::string16& tooltip);
 
-  // Show the popup in the frame, with the given URL.
-  void ShowPopup(const NSRect& frame, const GURL& popup_url);
-
-  // Returns the extension associated with the page action.
-  const extensions::Extension* GetExtension();
+  // Overridden from ToolbarActionViewDelegateCocoa:
+  ToolbarActionViewController* GetPreferredPopupViewController() override;
+  content::WebContents* GetCurrentWebContents() const override;
+  void UpdateState() override;
+  NSPoint GetPopupPoint() override;
 
   // Overridden from NotificationObserver:
   void Observe(int type,
@@ -84,25 +83,8 @@ class PageActionDecoration : public ImageDecoration,
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
 
-  // The current browser (not owned by us).
-  Browser* browser_;
-
-  // The Page Action that this view represents. The Page Action is not
-  // owned by us, it resides in the extension of this particular
-  // profile.
-  ExtensionAction* page_action_;
-
-  // The object that will be used to get the page action icon for us.
-  // It may load the icon asynchronously (in which case the initial icon
-  // returned by the factory will be transparent), so we have to observe it for
-  // updates to the icon.
-  scoped_ptr<ExtensionActionIconFactory> icon_factory_;
-
-  // The tab id we are currently showing the icon for.
-  int current_tab_id_;
-
-  // The URL we are currently showing the icon for.
-  GURL current_url_;
+  // The view controller for this page action.
+  scoped_ptr<ExtensionActionViewController> viewController_;
 
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;

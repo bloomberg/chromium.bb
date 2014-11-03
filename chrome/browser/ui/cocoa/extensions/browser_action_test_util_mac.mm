@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -64,7 +65,7 @@ void BrowserActionTestUtil::Press(int index) {
 }
 
 std::string BrowserActionTestUtil::GetExtensionId(int index) {
-  return [GetButton(browser_, index) extension]->id();
+  return [GetButton(browser_, index) viewController]->GetId();
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {

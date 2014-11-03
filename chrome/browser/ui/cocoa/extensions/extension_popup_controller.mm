@@ -148,6 +148,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 @implementation ExtensionPopupController
 
+@synthesize extensionId = extensionId_;
+
 - (id)initWithHost:(extensions::ExtensionViewHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
@@ -166,6 +168,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                        parentWindow:parentWindow
                          anchoredAt:anchoredAt])) {
     host_.reset(host);
+    extensionId_ = host_->extension_id();
     beingInspected_ = devMode;
     ignoreWindowDidResignKey_ = NO;
 

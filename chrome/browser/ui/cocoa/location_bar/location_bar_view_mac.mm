@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,27 +84,12 @@ const static int kFirstRunBubbleYOffset = 1;
 
 // Functor for moving BookmarkManagerPrivate page actions to the right via
 // stable_partition.
-class IsPageActionViewRightAligned {
- public:
-  explicit IsPageActionViewRightAligned(ExtensionService* extension_service)
-      : extension_service_(extension_service) {}
-
-  bool operator()(PageActionDecoration* page_action_decoration) {
-    return extension_service_
-        ->GetExtensionById(
-              page_action_decoration->page_action()->extension_id(), false)
-        ->permissions_data()
-        ->HasAPIPermission(extensions::APIPermission::kBookmarkManagerPrivate);
-  }
-
- private:
-  ExtensionService* extension_service_;
-
-  // NOTE: Can't DISALLOW_COPY_AND_ASSIGN as we pass this object by value to
-  // std::stable_partition().
-};
-
+bool PageActionHasBookmarkManagerPrivate(PageActionDecoration* decoration) {
+  return decoration->GetExtension()->permissions_data()->HasAPIPermission(
+      extensions::APIPermission::kBookmarkManagerPrivate);
 }
+
+}  // namespace
 
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
@@ -237,7 +221,7 @@ bool LocationBarViewMac::ShowPageActionPopup(
   for (ScopedVector<PageActionDecoration>::iterator iter =
            page_action_decorations_.begin();
        iter != page_action_decorations_.end(); ++iter) {
-    if ((*iter)->page_action()->extension_id() == extension->id())
+    if ((*iter)->GetExtension() == extension)
       return (*iter)->ActivatePageAction(grant_active_tab);
   }
   return false;
@@ -288,7 +272,7 @@ int LocationBarViewMac::PageActionVisibleCount() {
 
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
   if (index < page_action_decorations_.size())
-    return page_action_decorations_[index]->page_action();
+    return page_action_decorations_[index]->GetPageAction();
   NOTREACHED();
   return NULL;
 }
@@ -298,7 +282,7 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     if (page_action_decorations_[i]->IsVisible()) {
       if (current == index)
-        return page_action_decorations_[i]->page_action();
+        return page_action_decorations_[i]->GetPageAction();
 
       ++current;
     }
@@ -502,7 +486,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
     return;
 
   decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents, GetToolbarModel()->GetURL());
+  decoration->UpdateVisibility(contents);
 }
 
 NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
@@ -645,7 +629,7 @@ PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
     ExtensionAction* page_action) {
   DCHECK(page_action);
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->page_action() == page_action)
+    if (page_action_decorations_[i]->GetPageAction() == page_action)
       return page_action_decorations_[i];
   }
   // If |page_action| is the browser action of an extension, no element in
@@ -653,7 +637,6 @@ PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
   NOTREACHED();
   return NULL;
 }
-
 
 void LocationBarViewMac::DeletePageActionDecorations() {
   // TODO(shess): Deleting these decorations could result in the cell
@@ -694,17 +677,15 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     }
 
     // Move rightmost extensions to the start.
-    std::stable_partition(
-        page_action_decorations_.begin(),
-        page_action_decorations_.end(),
-        IsPageActionViewRightAligned(
-            extensions::ExtensionSystem::Get(profile())->extension_service()));
+    std::stable_partition(page_action_decorations_.begin(),
+                          page_action_decorations_.end(),
+                          PageActionHasBookmarkManagerPrivate);
   }
 
   GURL url = GetToolbarModel()->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        GetToolbarModel()->input_in_progress() ? NULL : web_contents, url);
+        GetToolbarModel()->input_in_progress() ? NULL : web_contents);
   }
 }
 

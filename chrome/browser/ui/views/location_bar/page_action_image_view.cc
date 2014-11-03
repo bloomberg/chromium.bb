@@ -117,7 +117,7 @@ void PageActionImageView::PaintChildren(gfx::Canvas* canvas,
   }
 }
 
-void PageActionImageView::OnIconUpdated() {
+void PageActionImageView::UpdateState() {
   UpdateVisibility(GetCurrentWebContents());
 }
 
@@ -137,7 +137,7 @@ views::Widget* PageActionImageView::GetParentForContextMenu() {
   return GetWidget();
 }
 
-ExtensionActionViewController*
+ToolbarActionViewController*
 PageActionImageView::GetPreferredPopupViewController() {
   return view_controller_.get();
 }

@@ -23,6 +23,10 @@ class Extension;
 class ExtensionToolbarModel;
 }
 
+namespace content {
+class WebContents;
+}
+
 // Sent when the visibility of the Browser Actions changes.
 extern NSString* const kBrowserActionVisibilityChangedNotification;
 
@@ -85,19 +89,14 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // account the size of the grippy. Also updates the persistent width preference.
 - (void)resizeContainerAndAnimate:(BOOL)animate;
 
-// Returns the NSView for the action button associated with an extension.
-- (NSView*)browserActionViewForExtension:(
-    const extensions::Extension*)extension;
-
 // Returns the saved width determined by the number of shown Browser Actions
 // preference property. If no preference is found, then the width for the
 // container is returned as if all buttons are shown.
 - (CGFloat)savedWidth;
 
-// Returns where the popup arrow should point to for a given Browser Action. If
-// it is passed an extension that is not a Browser Action, then it will return
-// NSZeroPoint.
-- (NSPoint)popupPointForBrowserAction:(const extensions::Extension*)extension;
+// Returns where the popup arrow should point to for the action with the given
+// |id|. If passed an id with no corresponding button, returns NSZeroPoint.
+- (NSPoint)popupPointForId:(const std::string&)id;
 
 // Returns whether the chevron button is currently hidden or in the process of
 // being hidden (fading out). Will return NO if it is not hidden or is in the
@@ -106,6 +105,9 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Activates the browser action for the extension that has the given id.
 - (void)activateBrowserAction:(const std::string&)extension_id;
+
+// Returns the currently-active web contents.
+- (content::WebContents*)currentWebContents;
 
 @end  // @interface BrowserActionsController
 

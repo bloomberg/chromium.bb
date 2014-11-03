@@ -208,10 +208,6 @@ gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }
 
-void ToolbarActionView::OnIconUpdated() {
-  UpdateState();
-}
-
 views::View* ToolbarActionView::GetAsView() {
   return this;
 }

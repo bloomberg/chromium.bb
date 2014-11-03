@@ -9,13 +9,12 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_icon_factory.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
-#include "extensions/common/extension.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
@@ -23,9 +22,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/size.h"
-
-using extensions::Extension;
 
 NSString* const kBrowserActionButtonDraggingNotification =
     @"BrowserActionButtonDraggingNotification";
@@ -36,43 +32,57 @@ static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 static const CGFloat kAnimationDuration = 0.2;
 static const CGFloat kMinimumDragDistance = 5;
 
-// A helper class to bridge the asynchronous Skia bitmap loading mechanism to
-// the extension's button.
-class ExtensionActionIconFactoryBridge
-    : public ExtensionActionIconFactory::Observer {
+// A class to bridge the ToolbarActionViewController and the
+// BrowserActionButton.
+class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
  public:
-  ExtensionActionIconFactoryBridge(BrowserActionButton* owner,
-                                   Profile* profile,
-                                   const Extension* extension)
-      : owner_(owner),
-        browser_action_([[owner cell] extensionAction]),
-        icon_factory_(profile, extension, browser_action_, this) {
-  }
-
-  ~ExtensionActionIconFactoryBridge() override {}
-
-  // ExtensionActionIconFactory::Observer implementation.
-  void OnIconUpdated() override { [owner_ updateState]; }
-
-  gfx::Image GetIcon(int tabId) {
-    return icon_factory_.GetIcon(tabId);
-  }
+  ToolbarActionViewDelegateBridge(BrowserActionButton* owner,
+                                  BrowserActionsController* controller);
+  ~ToolbarActionViewDelegateBridge();
 
  private:
-  // Weak. Owns us.
+  // ToolbarActionViewDelegateCocoa:
+  ToolbarActionViewController* GetPreferredPopupViewController() override;
+  content::WebContents* GetCurrentWebContents() const override;
+  void UpdateState() override;
+  NSPoint GetPopupPoint() override;
+
+  // The owning button. Weak.
   BrowserActionButton* owner_;
 
-  // The browser action whose images we're loading.
-  ExtensionAction* const browser_action_;
+  // The BrowserActionsController that owns the button. Weak.
+  BrowserActionsController* controller_;
 
-  // The object that will be used to get the browser action icon for us.
-  // It may load the icon asynchronously (in which case the initial icon
-  // returned by the factory will be transparent), so we have to observe it for
-  // updates to the icon.
-  ExtensionActionIconFactory icon_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryBridge);
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
 };
+
+ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
+    BrowserActionButton* owner,
+    BrowserActionsController* controller)
+    : owner_(owner),
+      controller_(controller) {
+}
+
+ToolbarActionViewDelegateBridge::~ToolbarActionViewDelegateBridge() {
+}
+
+ToolbarActionViewController*
+ToolbarActionViewDelegateBridge::GetPreferredPopupViewController() {
+  return [owner_ viewController];
+}
+
+content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()
+    const {
+  return [controller_ currentWebContents];
+}
+
+void ToolbarActionViewDelegateBridge::UpdateState() {
+  [owner_ updateState];
+}
+
+NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
+  return [controller_ popupPointForId:[owner_ viewController]->GetId()];
+}
 
 @interface BrowserActionCell (Internals)
 - (void)drawBadgeWithinFrame:(NSRect)frame;
@@ -85,17 +95,15 @@ class ExtensionActionIconFactoryBridge
 @implementation BrowserActionButton
 
 @synthesize isBeingDragged = isBeingDragged_;
-@synthesize extension = extension_;
-@synthesize tabId = tabId_;
 
 + (Class)cellClass {
   return [BrowserActionCell class];
 }
 
 - (id)initWithFrame:(NSRect)frame
-          extension:(const Extension*)extension
-            browser:(Browser*)browser
-              tabId:(int)tabId {
+     viewController:(scoped_ptr<ToolbarActionViewController>)viewController
+         controller:(BrowserActionsController*)controller
+     menuController:(ExtensionActionContextMenuController*)menuController {
   if ((self = [super initWithFrame:frame])) {
     BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
     // [NSButton setCell:] warns to NOT use setCell: other than in the
@@ -104,15 +112,18 @@ class ExtensionActionIconFactoryBridge
     // object.  To honor the assumed semantics, we do nothing with
     // NSButton between alloc/init and setCell:.
     [self setCell:cell];
-    [cell setTabId:tabId];
-    ExtensionAction* browser_action =
-        extensions::ExtensionActionManager::Get(browser->profile())->
-        GetExtensionAction(*extension);
-    CHECK(browser_action)
-        << "Don't create a BrowserActionButton if there is no browser action.";
-    [cell setExtensionAction:browser_action];
+
+    browserActionsController_ = controller;
+    viewControllerDelegate_.reset(
+        new ToolbarActionViewDelegateBridge(self, controller));
+    viewController_ = viewController.Pass();
+    viewController_->SetDelegate(viewControllerDelegate_.get());
+
+    [cell setBrowserActionsController:controller];
+    [cell setViewController:viewController_.get()];
     [cell
-        accessibilitySetOverrideValue:base::SysUTF8ToNSString(extension->name())
+        accessibilitySetOverrideValue:base::SysUTF16ToNSString(
+            viewController_->GetAccessibleName([controller currentWebContents]))
         forAttribute:NSAccessibilityDescriptionAttribute];
     [cell setImageID:IDR_BROWSER_ACTION
       forButtonState:image_button_cell::kDefaultState];
@@ -127,19 +138,12 @@ class ExtensionActionIconFactoryBridge
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];
 
-    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
-        initWithExtension:extension
-                  browser:browser
-          extensionAction:browser_action]);
+    contextMenuController_.reset(menuController);
+
     base::scoped_nsobject<NSMenu> contextMenu(
         [[NSMenu alloc] initWithTitle:@""]);
     [contextMenu setDelegate:self];
     [self setMenu:contextMenu];
-
-    tabId_ = tabId;
-    extension_ = extension;
-    iconFactoryBridge_.reset(new ExtensionActionIconFactoryBridge(
-        self, browser->profile(), extension));
 
     moveAnimation_.reset([[NSViewAnimation alloc] init]);
     [moveAnimation_ gtm_setDuration:kAnimationDuration
@@ -240,31 +244,30 @@ class ExtensionActionIconFactoryBridge
 }
 
 - (void)updateState {
-  if (tabId_ < 0)
+  content::WebContents* webContents =
+      [browserActionsController_ currentWebContents];
+  if (!webContents)
     return;
 
-  std::string tooltip = [[self cell] extensionAction]->GetTitle(tabId_);
-  if (tooltip.empty()) {
-    [self setToolTip:nil];
-  } else {
-    [self setToolTip:base::SysUTF8ToNSString(tooltip)];
-  }
+  base::string16 tooltip = viewController_->GetTooltip(webContents);
+  [self setToolTip:(tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip))];
 
-  gfx::Image image = iconFactoryBridge_->GetIcon(tabId_);
+  gfx::Image image = viewController_->GetIcon(webContents);
 
   if (!image.IsEmpty())
     [self setImage:image.ToNSImage()];
 
-  [[self cell] setTabId:tabId_];
-
-  bool enabled = [[self cell] extensionAction]->GetIsVisible(tabId_);
-  [self setEnabled:enabled];
+  [self setEnabled:viewController_->IsEnabled(webContents)];
 
   [self setNeedsDisplay:YES];
 }
 
 - (BOOL)isAnimating {
   return [moveAnimation_ isAnimating];
+}
+
+- (ToolbarActionViewController*)viewController {
+  return viewController_.get();
 }
 
 - (NSImage*)compositedImage {
@@ -304,21 +307,24 @@ class ExtensionActionIconFactoryBridge
 
 @implementation BrowserActionCell
 
-@synthesize tabId = tabId_;
-@synthesize extensionAction = extensionAction_;
+@synthesize browserActionsController = browserActionsController_;
+@synthesize viewController = viewController_;
 
-- (void)drawBadgeWithinFrame:(NSRect)frame {
+- (void)drawBadgeWithinFrame:(NSRect)frame
+                 webContents:(content::WebContents*)webContents {
   gfx::CanvasSkiaPaint canvas(frame, false);
   canvas.set_composite_alpha(true);
   gfx::Rect boundingRect(NSRectToCGRect(frame));
-  extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
+  viewController_->PaintExtra(&canvas, boundingRect, webContents);
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   [super drawWithFrame:cellFrame inView:controlView];
-  CHECK(extensionAction_);
-  bool enabled = extensionAction_->GetIsVisible(tabId_);
+  DCHECK(viewController_);
+  content::WebContents* webContents =
+      [browserActionsController_ currentWebContents];
+  bool enabled = viewController_->IsEnabled(webContents);
   const NSSize imageSize = self.image.size;
   const NSRect imageRect =
       NSMakeRect(std::floor((NSWidth(cellFrame) - imageSize.width) / 2.0),
@@ -332,7 +338,8 @@ class ExtensionActionIconFactoryBridge
                    hints:nil];
 
   cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
-  [self drawBadgeWithinFrame:cellFrame];
+  [self drawBadgeWithinFrame:cellFrame
+                 webContents:webContents];
 }
 
 @end
