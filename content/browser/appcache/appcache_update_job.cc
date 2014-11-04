@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -19,6 +20,15 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
+
+namespace {
+bool IsDataReductionProxy(const net::HostPortPair& proxy_server) {
+  return (
+      proxy_server.Equals(net::HostPortPair("proxy.googlezip.net", 443)) ||
+      proxy_server.Equals(net::HostPortPair("compress.googlezip.net", 80)) ||
+      proxy_server.Equals(net::HostPortPair("proxy-dev.googlezip.net", 80)));
+}
+}  // namspace
 
 namespace content {
 
@@ -144,6 +154,16 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
   DCHECK(request_ == request);
+  // TODO(bengr): Remove this special case logic when crbug.com/429505 is
+  // resolved. Until then, the data reduction proxy client logic uses the
+  // redirect mechanism to resend requests over a direct connection when
+  // the proxy instructs it to do so. The redirect is to the same location
+  // as the original URL.
+  if ((request->load_flags() & net::LOAD_BYPASS_PROXY) &&
+      IsDataReductionProxy(request->proxy_server())) {
+    DCHECK_EQ(request->original_url(), request->url());
+    return;
+  }
   // Redirect is not allowed by the update process.
   job_->MadeProgress();
   redirect_response_code_ = request->GetResponseCode();
