@@ -357,7 +357,8 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
 bool URLDatabase::GetTextMatches(const base::string16& query,
                                  URLRows* results) {
   ScopedVector<query_parser::QueryNode> query_nodes;
-  query_parser_.ParseQueryNodes(query, &query_nodes.get());
+  query_parser_.ParseQueryNodes(
+      query, query_parser::MatchingAlgorithm::DEFAULT, &query_nodes.get());
 
   results->clear();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,

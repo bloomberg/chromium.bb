@@ -83,13 +83,16 @@ class BookmarkIndexTest : public testing::Test {
     std::vector<std::string> title_vector;
     for (size_t i = 0; i < expected_count; ++i)
       title_vector.push_back(expected_titles[i]);
-    ExpectMatches(query, title_vector);
+    ExpectMatches(query, query_parser::MatchingAlgorithm::DEFAULT,
+                  title_vector);
   }
 
   void ExpectMatches(const std::string& query,
+                     query_parser::MatchingAlgorithm matching_algorithm,
                      const std::vector<std::string>& expected_titles) {
     std::vector<BookmarkMatch> matches;
-    model_->GetBookmarksMatching(ASCIIToUTF16(query), 1000, &matches);
+    model_->GetBookmarksMatching(ASCIIToUTF16(query), 1000, matching_algorithm,
+                                 &matches);
     ASSERT_EQ(expected_titles.size(), matches.size());
     for (size_t i = 0; i < expected_titles.size(); ++i) {
       bool found = false;
@@ -171,7 +174,15 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     { "think",                      "\"thi\"",  ""},
 
     // Prefix matches against multiple candidates.
-    { "abc1 abc2 abc3 abc4", "abc", "abc1 abc2 abc3 abc4"},
+    { "abc1 abc2 abc3 abc4",        "abc",      "abc1 abc2 abc3 abc4"},
+
+    // Prefix match on the first term.
+    { "abc",                        "a",        "" },
+
+    // Prefix match on subsequent terms.
+    { "abc def",                    "abc d",    "" },
+
+
   };
   for (size_t i = 0; i < arraysize(data); ++i) {
     std::vector<std::string> titles;
@@ -187,7 +198,68 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     if (!data[i].expected.empty())
       base::SplitString(data[i].expected, ';', &expected);
 
-    ExpectMatches(data[i].query, expected);
+    ExpectMatches(data[i].query, query_parser::MatchingAlgorithm::DEFAULT,
+                  expected);
+
+    model_ = client_.CreateModel();
+  }
+}
+
+TEST_F(BookmarkIndexTest, GetBookmarksMatchingAlwaysPrefixSearch) {
+  struct TestData {
+    const std::string titles;
+    const std::string query;
+    const std::string expected;
+  } data[] = {
+    // Trivial test case of only one term, exact match.
+    { "z;y",                        "Z",        "z" },
+
+    // Prefix match, one term.
+    { "abcd;abc;b",                 "abc",      "abcd;abc" },
+
+    // Prefix match, multiple terms.
+    { "abcd cdef;abcd;abcd cdefg",  "abc cde",  "abcd cdef;abcd cdefg" },
+
+    // Exact and prefix match.
+    { "ab cdef ghij;ab;cde;cdef;ghi;cdef ab;ghij ab",
+      "ab cde ghi",
+      "ab cdef ghij" },
+
+    // Title with term multiple times.
+    { "ab ab",                      "ab",       "ab ab" },
+
+    // Make sure quotes don't do a prefix match.
+    { "think",                      "\"thi\"",  "" },
+
+    // Prefix matches against multiple candidates.
+    { "abc1 abc2 abc3 abc4",        "abc",      "abc1 abc2 abc3 abc4" },
+
+    // Prefix match on the first term.
+    { "abc",                        "a",        "abc" },
+
+    // Prefix match on subsequent terms.
+    { "abc def",                    "abc d",    "abc def" },
+
+    // Exact and prefix match.
+    { "ab cdef;abcd;abcd cdefg",    "ab cdef",  "ab cdef;abcd cdefg" },
+  };
+  for (size_t i = 0; i < arraysize(data); ++i) {
+    std::vector<std::string> titles;
+    base::SplitString(data[i].titles, ';', &titles);
+    std::vector<TitleAndURL> bookmarks;
+    for (size_t j = 0; j < titles.size(); ++j) {
+      TitleAndURL bookmark(titles[j], kAboutBlankURL);
+      bookmarks.push_back(bookmark);
+    }
+    AddBookmarks(bookmarks);
+
+    std::vector<std::string> expected;
+    if (!data[i].expected.empty())
+      base::SplitString(data[i].expected, ';', &expected);
+
+    ExpectMatches(data[i].query,
+                  query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
+                  expected);
 
     model_ = client_.CreateModel();
   }
@@ -247,7 +319,8 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingWithURLs) {
     if (data[i].should_be_retrieved)
       expected.push_back(data[i].title);
 
-    ExpectMatches(data[i].query, expected);
+    ExpectMatches(data[i].query, query_parser::MatchingAlgorithm::DEFAULT,
+                  expected);
   }
 }
 

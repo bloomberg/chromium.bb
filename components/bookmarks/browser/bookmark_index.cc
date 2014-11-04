@@ -133,9 +133,11 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
     UnregisterNode(terms[i], node);
 }
 
-void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
-                                         size_t max_count,
-                                         std::vector<BookmarkMatch>* results) {
+void BookmarkIndex::GetBookmarksMatching(
+    const base::string16& input_query,
+    size_t max_count,
+    query_parser::MatchingAlgorithm matching_algorithm,
+    std::vector<BookmarkMatch>* results) {
   const base::string16 query = Normalize(input_query);
   std::vector<base::string16> terms = ExtractQueryWords(query);
   if (terms.empty())
@@ -143,8 +145,10 @@ void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
 
   Matches matches;
   for (size_t i = 0; i < terms.size(); ++i) {
-    if (!GetBookmarksMatchingTerm(terms[i], i == 0, &matches))
+    if (!GetBookmarksMatchingTerm(
+            terms[i], i == 0, matching_algorithm, &matches)) {
       return;
+    }
   }
 
   Nodes sorted_nodes;
@@ -155,7 +159,7 @@ void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
   // matches and so this shouldn't be performance critical.
   query_parser::QueryParser parser;
   ScopedVector<query_parser::QueryNode> query_nodes;
-  parser.ParseQueryNodes(query, &query_nodes.get());
+  parser.ParseQueryNodes(query, matching_algorithm, &query_nodes.get());
 
   // The highest typed counts should be at the beginning of the results vector
   // so that the best matches will always be included in the results. The loop
@@ -246,14 +250,17 @@ void BookmarkIndex::AddMatchToResults(
   results->push_back(match);
 }
 
-bool BookmarkIndex::GetBookmarksMatchingTerm(const base::string16& term,
-                                                      bool first_term,
-                                                      Matches* matches) {
+bool BookmarkIndex::GetBookmarksMatchingTerm(
+    const base::string16& term,
+    bool first_term,
+    query_parser::MatchingAlgorithm matching_algorithm,
+    Matches* matches) {
   Index::const_iterator i = index_.lower_bound(term);
   if (i == index_.end())
     return false;
 
-  if (!query_parser::QueryParser::IsWordLongEnoughForPrefixSearch(term)) {
+  if (!query_parser::QueryParser::IsWordLongEnoughForPrefixSearch(
+      term, matching_algorithm)) {
     // Term is too short for prefix match, compare using exact match.
     if (i->first != term)
       return false;  // No bookmarks with this term.
@@ -334,7 +341,9 @@ std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
   if (query.empty())
     return std::vector<base::string16>();
   query_parser::QueryParser parser;
-  parser.ParseQueryWords(base::i18n::ToLower(query), &terms);
+  parser.ParseQueryWords(base::i18n::ToLower(query),
+                         query_parser::MatchingAlgorithm::DEFAULT,
+                         &terms);
   return terms;
 }
 

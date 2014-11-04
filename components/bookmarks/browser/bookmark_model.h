@@ -46,6 +46,10 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
+namespace query_parser {
+enum class MatchingAlgorithm;
+}
+
 // BookmarkModel --------------------------------------------------------------
 
 // BookmarkModel provides a directed acyclic graph of URLs and folders.
@@ -235,10 +239,18 @@ class BookmarkModel : public KeyedService {
   void ResetDateFolderModified(const BookmarkNode* node);
 
   // Returns up to |max_count| of bookmarks containing each term from |text|
-  // in either the title or the URL.
+  // in either the title or the URL. It uses default matching algorithm.
   void GetBookmarksMatching(const base::string16& text,
                             size_t max_count,
                             std::vector<bookmarks::BookmarkMatch>* matches);
+
+  // Returns up to |max_count| of bookmarks containing each term from |text|
+  // in either the title or the URL.
+  void GetBookmarksMatching(
+      const base::string16& text,
+      size_t max_count,
+      query_parser::MatchingAlgorithm matching_algorithm,
+      std::vector<bookmarks::BookmarkMatch>* matches);
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up

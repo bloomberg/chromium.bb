@@ -24,6 +24,14 @@ struct QueryWord {
   size_t position;
 };
 
+enum class MatchingAlgorithm {
+  // Only words long enough are considered for prefix search. Shorter words are
+  // considered for exact matches.
+  DEFAULT,
+  // All words are considered for a prefix search.
+  ALWAYS_PREFIX_SEARCH,
+};
+
 typedef std::vector<query_parser::QueryWord> QueryWordVector;
 
 // QueryNode is used by QueryParser to represent the elements that constitute a
@@ -72,23 +80,29 @@ class QueryParser {
   // point doing anything for them and we only adjust the minimum length
   // to 2 for Korean Hangul while using 3 for others. This is a temporary
   // hack until we have a segmentation support.
-  static bool IsWordLongEnoughForPrefixSearch(const base::string16& word);
+  static bool IsWordLongEnoughForPrefixSearch(
+      const base::string16& word,
+      MatchingAlgorithm matching_algorithm);
 
   // Parse a query into a SQLite query. The resulting query is placed in
   // |sqlite_query| and the number of words is returned.
-  int ParseQuery(const base::string16& query, base::string16* sqlite_query);
+  int ParseQuery(const base::string16& query,
+                 MatchingAlgorithm matching_algorithm,
+                 base::string16* sqlite_query);
 
   // Parses |query|, returning the words that make up it. Any words in quotes
   // are put in |words| without the quotes. For example, the query text
   // "foo bar" results in two entries being added to words, one for foo and one
   // for bar.
   void ParseQueryWords(const base::string16& query,
+                       MatchingAlgorithm matching_algorithm,
                        std::vector<base::string16>* words);
 
   // Parses |query|, returning the nodes that constitute the valid words in the
   // query. This is intended for later usage with DoesQueryMatch. Ownership of
   // the nodes passes to the caller.
   void ParseQueryNodes(const base::string16& query,
+                       MatchingAlgorithm matching_algorithm,
                        QueryNodeStarVector* nodes);
 
   // Returns true if the string text matches the query nodes created by a call
@@ -114,7 +128,9 @@ class QueryParser {
  private:
   // Does the work of parsing |query|; creates nodes in |root| as appropriate.
   // This is invoked from both of the ParseQuery methods.
-  bool ParseQueryImpl(const base::string16& query, QueryNodeList* root);
+  bool ParseQueryImpl(const base::string16& query,
+                      MatchingAlgorithm matching_algorithm,
+                      QueryNodeList* root);
 
   DISALLOW_COPY_AND_ASSIGN(QueryParser);
 };

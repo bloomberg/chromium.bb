@@ -689,14 +689,22 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
   SetDateFolderModified(node, Time());
 }
 
+void BookmarkModel::GetBookmarksMatching(const base::string16& text,
+                                         size_t max_count,
+                                         std::vector<BookmarkMatch>* matches) {
+  GetBookmarksMatching(text, max_count,
+                       query_parser::MatchingAlgorithm::DEFAULT, matches);
+}
+
 void BookmarkModel::GetBookmarksMatching(
     const base::string16& text,
     size_t max_count,
+    query_parser::MatchingAlgorithm matching_algorithm,
     std::vector<BookmarkMatch>* matches) {
   if (!loaded_)
     return;
 
-  index_->GetBookmarksMatching(text, max_count, matches);
+  index_->GetBookmarksMatching(text, max_count, matching_algorithm, matches);
 }
 
 void BookmarkModel::ClearStore() {

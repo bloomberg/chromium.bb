@@ -350,6 +350,7 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
   query_parser::QueryParser parser;
   if (query.word_phrase_query) {
     parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
+                           query_parser::MatchingAlgorithm::DEFAULT,
                            &query_words);
     if (query_words.empty())
       return;
