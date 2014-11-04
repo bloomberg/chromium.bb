@@ -188,8 +188,7 @@ TEST_F(SimpleIndexFileTest, LegacyIsIndexFileStale) {
       WrappedSimpleIndexFile::LegacyIsIndexFileStale(cache_mtime, index_path));
 }
 
-// This test is flaky, see http://crbug.com/255775.
-TEST_F(SimpleIndexFileTest, DISABLED_WriteThenLoadIndex) {
+TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
 
@@ -214,8 +213,7 @@ TEST_F(SimpleIndexFileTest, DISABLED_WriteThenLoadIndex) {
 
   WrappedSimpleIndexFile simple_index_file(cache_dir.path());
   base::Time fake_cache_mtime;
-  ASSERT_TRUE(simple_util::GetMTime(simple_index_file.GetIndexFilePath(),
-                                    &fake_cache_mtime));
+  ASSERT_TRUE(simple_util::GetMTime(cache_dir.path(), &fake_cache_mtime));
   SimpleIndexLoadResult load_index_result;
   simple_index_file.LoadIndexEntries(fake_cache_mtime,
                                      GetCallback(),

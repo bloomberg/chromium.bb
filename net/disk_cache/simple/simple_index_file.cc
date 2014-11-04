@@ -199,6 +199,15 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
                                       scoped_ptr<Pickle> pickle,
                                       const base::TimeTicks& start_time,
                                       bool app_on_background) {
+  DCHECK_EQ(index_filename.DirName().value(),
+            temp_index_filename.DirName().value());
+  base::FilePath index_file_directory = temp_index_filename.DirName();
+  if (!base::DirectoryExists(index_file_directory) &&
+      !base::CreateDirectory(index_file_directory)) {
+    LOG(ERROR) << "Could not create a directory to hold the index file";
+    return;
+  }
+
   // There is a chance that the index containing all the necessary data about
   // newly created entries will appear to be stale. This can happen if on-disk
   // part of a Create operation does not fit into the time budget for the index
@@ -211,14 +220,8 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   }
   SerializeFinalData(cache_dir_mtime, pickle.get());
   if (!WritePickleFile(pickle.get(), temp_index_filename)) {
-    if (!base::CreateDirectory(temp_index_filename.DirName())) {
-      LOG(ERROR) << "Could not create a directory to hold the index file";
-      return;
-    }
-    if (!WritePickleFile(pickle.get(), temp_index_filename)) {
-      LOG(ERROR) << "Failed to write the temporary index file";
-      return;
-    }
+    LOG(ERROR) << "Failed to write the temporary index file";
+    return;
   }
 
   // Atomically rename the temporary index file to become the real one.
