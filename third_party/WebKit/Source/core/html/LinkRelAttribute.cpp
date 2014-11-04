@@ -55,38 +55,37 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     relCopy.replace('\n', ' ');
     Vector<String> list;
     relCopy.split(' ', list);
-    Vector<String>::const_iterator end = list.end();
-    for (Vector<String>::const_iterator it = list.begin(); it != end; ++it) {
-        if (equalIgnoringCase(*it, "stylesheet")) {
+    for (const String& linkType : list) {
+        if (equalIgnoringCase(linkType, "stylesheet")) {
             if (!m_isImport)
                 m_isStyleSheet = true;
-        } else if (equalIgnoringCase(*it, "import")) {
+        } else if (equalIgnoringCase(linkType, "import")) {
             if (!m_isStyleSheet)
                 m_isImport = true;
-        } else if (equalIgnoringCase(*it, "alternate")) {
+        } else if (equalIgnoringCase(linkType, "alternate")) {
             m_isAlternate = true;
-        } else if (equalIgnoringCase(*it, "icon")) {
+        } else if (equalIgnoringCase(linkType, "icon")) {
             // This also allows "shortcut icon" since we just ignore the non-standard "shortcut" token.
             // FIXME: This doesn't really follow the spec that requires "shortcut icon" to be the
             // entire string http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
             m_iconType = Favicon;
-        } else if (equalIgnoringCase(*it, "prefetch")) {
+        } else if (equalIgnoringCase(linkType, "prefetch")) {
             m_isLinkPrefetch = true;
-        } else if (equalIgnoringCase(*it, "dns-prefetch")) {
+        } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
             m_isDNSPrefetch = true;
-        } else if (equalIgnoringCase(*it, "subresource")) {
+        } else if (equalIgnoringCase(linkType, "subresource")) {
             m_isLinkSubresource = true;
-        } else if (equalIgnoringCase(*it, "prerender")) {
+        } else if (equalIgnoringCase(linkType, "prerender")) {
             m_isLinkPrerender = true;
-        } else if (equalIgnoringCase(*it, "next")) {
+        } else if (equalIgnoringCase(linkType, "next")) {
             m_isLinkNext = true;
-        } else if (equalIgnoringCase(*it, "apple-touch-icon")) {
+        } else if (equalIgnoringCase(linkType, "apple-touch-icon")) {
             if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
                 m_iconType = TouchIcon;
-        } else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed")) {
+        } else if (equalIgnoringCase(linkType, "apple-touch-icon-precomposed")) {
             if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
                 m_iconType = TouchPrecomposedIcon;
-        } else if (equalIgnoringCase(*it, "manifest")) {
+        } else if (equalIgnoringCase(linkType, "manifest")) {
             m_isManifest = true;
         } else if (equalIgnoringCase(rel, "transition-exiting-stylesheet")) {
             if (RuntimeEnabledFeatures::navigationTransitionsEnabled())

@@ -427,7 +427,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
     RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
 
     // To preserve comments, remove only the text nodes, then add a single text node.
-    WillBeHeapVector<RefPtrWillBeMember<Node> > textNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> textNodes;
     for (Node* n = firstChild(); n; n = n->nextSibling()) {
         if (n->isTextNode())
             textNodes.append(n);

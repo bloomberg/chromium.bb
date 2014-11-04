@@ -127,7 +127,7 @@ public:
     }
 
 private:
-    static WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& disabledSubtreeRoots();
+    static WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>& disabledSubtreeRoots();
 
     RawPtrWillBeMember<Node> m_root;
 };

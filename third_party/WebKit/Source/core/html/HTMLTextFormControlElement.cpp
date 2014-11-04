@@ -694,7 +694,7 @@ HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
 {
     if (!container)
-        return 0;
+        return nullptr;
     Element* ancestor = container->shadowHost();
     return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
 }

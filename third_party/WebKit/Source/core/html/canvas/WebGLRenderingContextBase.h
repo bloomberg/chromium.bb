@@ -185,8 +185,8 @@ public:
 
     PassRefPtrWillBeRawPtr<WebGLActiveInfo> getActiveAttrib(WebGLProgram*, GLuint index);
     PassRefPtrWillBeRawPtr<WebGLActiveInfo> getActiveUniform(WebGLProgram*, GLuint index);
-    bool getAttachedShaders(WebGLProgram*, WillBeHeapVector<RefPtrWillBeMember<WebGLShader> >&);
-    Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader> > > getAttachedShaders(WebGLProgram*);
+    bool getAttachedShaders(WebGLProgram*, WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>&);
+    Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> getAttachedShaders(WebGLProgram*);
     GLint getAttribLocation(WebGLProgram*, const String& name);
     WebGLGetInfo getBufferParameter(GLenum target, GLenum pname);
     PassRefPtrWillBeRawPtr<WebGLContextAttributes> getContextAttributes();
@@ -201,7 +201,7 @@ public:
     String getShaderInfoLog(WebGLShader*);
     PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType);
     String getShaderSource(WebGLShader*);
-    Nullable<Vector<String> > getSupportedExtensions();
+    Nullable<Vector<String>> getSupportedExtensions();
     WebGLGetInfo getTexParameter(GLenum target, GLenum pname);
     WebGLGetInfo getUniform(WebGLProgram*, const WebGLUniformLocation*);
     PassRefPtrWillBeRawPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&);
@@ -457,7 +457,7 @@ protected:
     Timer<WebGLRenderingContextBase> m_restoreTimer;
 
     bool m_markedCanvasDirty;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject> > m_contextObjects;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject>> m_contextObjects;
 
     OwnPtrWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
     OwnPtrWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
@@ -616,7 +616,7 @@ protected:
     template <typename T>
     class TypedExtensionTracker final : public ExtensionTracker {
     public:
-        static PassOwnPtrWillBeRawPtr<TypedExtensionTracker<T> > create(RefPtrWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
+        static PassOwnPtrWillBeRawPtr<TypedExtensionTracker<T>> create(RefPtrWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
         {
             return adoptPtrWillBeNoop(new TypedExtensionTracker<T>(extensionField, flags, prefixes));
         }
@@ -680,7 +680,7 @@ protected:
     };
 
     bool m_extensionEnabled[WebGLExtensionNameCount];
-    WillBeHeapVector<OwnPtrWillBeMember<ExtensionTracker> > m_extensions;
+    WillBeHeapVector<OwnPtrWillBeMember<ExtensionTracker>> m_extensions;
 
     template <typename T>
     void registerExtension(RefPtrWillBeMember<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = 0)

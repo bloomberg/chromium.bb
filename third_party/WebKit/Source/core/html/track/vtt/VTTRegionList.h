@@ -55,7 +55,7 @@ public:
 private:
     VTTRegionList();
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> m_list;
 };
 
 } // namespace blink

@@ -55,10 +55,10 @@ RadioNodeList::~RadioNodeList()
 static inline HTMLInputElement* toRadioButtonInputElement(Element& element)
 {
     if (!isHTMLInputElement(element))
-        return 0;
+        return nullptr;
     HTMLInputElement& inputElement = toHTMLInputElement(element);
     if (inputElement.type() != InputTypeNames::radio || inputElement.value().isEmpty())
-        return 0;
+        return nullptr;
     return &inputElement;
 }
 

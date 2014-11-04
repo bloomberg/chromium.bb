@@ -770,8 +770,8 @@ void WebGLRenderingContextBase::destroyContext()
 
     m_extensionsUtil.clear();
 
-    webContext()->setContextLostCallback(0);
-    webContext()->setErrorMessageCallback(0);
+    webContext()->setContextLostCallback(nullptr);
+    webContext()->setErrorMessageCallback(nullptr);
 
     ASSERT(drawingBuffer());
 #if ENABLE(OILPAN)
@@ -1591,7 +1591,7 @@ PassRefPtrWillBeRawPtr<WebGLRenderbuffer> WebGLRenderingContextBase::createRende
 WebGLRenderbuffer* WebGLRenderingContextBase::ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer* renderbuffer)
 {
     if (isContextLost())
-        return 0;
+        return nullptr;
     if (!renderbuffer->emulatedStencilBuffer()) {
         renderbuffer->setEmulatedStencilBuffer(createRenderbuffer());
         webContext()->bindRenderbuffer(target, objectOrZero(renderbuffer->emulatedStencilBuffer()));
@@ -2064,12 +2064,12 @@ PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveUnif
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
 
-Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader> > > WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
+Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
 {
     if (isContextLost() || !validateWebGLObject("getAttachedShaders", program))
-        return Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader> > >();
+        return Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>>();
 
-    WillBeHeapVector<RefPtrWillBeMember<WebGLShader> > shaderObjects;
+    WillBeHeapVector<RefPtrWillBeMember<WebGLShader>> shaderObjects;
     const GLenum shaderType[] = {
         GL_VERTEX_SHADER,
         GL_FRAGMENT_SHADER
@@ -2653,10 +2653,10 @@ String WebGLRenderingContextBase::getShaderSource(WebGLShader* shader)
     return ensureNotNull(shader->source());
 }
 
-Nullable<Vector<String> > WebGLRenderingContextBase::getSupportedExtensions()
+Nullable<Vector<String>> WebGLRenderingContextBase::getSupportedExtensions()
 {
     if (isContextLost())
-        return Nullable<Vector<String> >();
+        return Nullable<Vector<String>>();
 
     Vector<String> result;
 
@@ -4372,7 +4372,7 @@ void WebGLRenderingContextBase::addContextObject(WebGLContextObject* object)
 void WebGLRenderingContextBase::detachAndRemoveAllObjects()
 {
     while (m_contextObjects.size() > 0) {
-        WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject> >::iterator it = m_contextObjects.begin();
+        WillBeHeapHashSet<RawPtrWillBeWeakMember<WebGLContextObject>>::iterator it = m_contextObjects.begin();
         (*it)->detachContext();
     }
 }
@@ -4562,7 +4562,7 @@ GLenum WebGLRenderingContextBase::boundFramebufferColorFormat()
 
 WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap)
 {
-    WebGLTexture* tex = 0;
+    WebGLTexture* tex = nullptr;
     switch (target) {
     case GL_TEXTURE_2D:
         tex = m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get();
@@ -4575,20 +4575,20 @@ WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* func
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
         if (!useSixEnumsForCubeMap) {
             synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture target");
-            return 0;
+            return nullptr;
         }
         tex = m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get();
         break;
     case GL_TEXTURE_CUBE_MAP:
         if (useSixEnumsForCubeMap) {
             synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture target");
-            return 0;
+            return nullptr;
         }
         tex = m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get();
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture target");
-        return 0;
+        return nullptr;
     }
     if (!tex)
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture");
@@ -5282,7 +5282,7 @@ bool WebGLRenderingContextBase::validateUniformMatrixParameters(const char* func
 
 WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* functionName, GLenum target)
 {
-    WebGLBuffer* buffer = 0;
+    WebGLBuffer* buffer = nullptr;
     switch (target) {
     case GL_ELEMENT_ARRAY_BUFFER:
         buffer = m_boundVertexArrayObject->boundElementArrayBuffer().get();
@@ -5292,11 +5292,11 @@ WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* fun
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
-        return 0;
+        return nullptr;
     }
     if (!buffer) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "no buffer");
-        return 0;
+        return nullptr;
     }
     return buffer;
 }
@@ -5630,7 +5630,7 @@ ImageBuffer* WebGLRenderingContextBase::LRUImageBufferCache::imageBuffer(const I
 
     OwnPtr<ImageBuffer> temp(ImageBuffer::create(size));
     if (!temp)
-        return 0;
+        return nullptr;
     i = std::min(m_capacity - 1, i);
     m_buffers[i] = temp.release();
 

@@ -1104,12 +1104,12 @@ void* HTMLInputElement::preDispatchEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::textInput && m_inputTypeView->shouldSubmitImplicitly(event)) {
         event->stopPropagation();
-        return 0;
+        return nullptr;
     }
     if (event->type() != EventTypeNames::click)
-        return 0;
+        return nullptr;
     if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
-        return 0;
+        return nullptr;
 #if ENABLE(OILPAN)
     return m_inputTypeView->willDispatchClick();
 #else
@@ -1273,8 +1273,8 @@ static Vector<String> parseAcceptAttribute(const String& acceptString, bool (*pr
 
     Vector<String> splitTypes;
     acceptString.split(',', false, splitTypes);
-    for (size_t i = 0; i < splitTypes.size(); ++i) {
-        String trimmedType = stripLeadingAndTrailingHTMLSpaces(splitTypes[i]);
+    for (const String& splitType : splitTypes) {
+        String trimmedType = stripLeadingAndTrailingHTMLSpaces(splitType);
         if (trimmedType.isEmpty())
             continue;
         if (!predicate(trimmedType))
@@ -1531,16 +1531,16 @@ HTMLElement* HTMLInputElement::list() const
 HTMLDataListElement* HTMLInputElement::dataList() const
 {
     if (!m_hasNonEmptyList)
-        return 0;
+        return nullptr;
 
     if (!m_inputType->shouldRespectListAttribute())
-        return 0;
+        return nullptr;
 
     Element* element = treeScope().getElementById(fastGetAttribute(listAttr));
     if (!element)
-        return 0;
+        return nullptr;
     if (!isHTMLDataListElement(*element))
-        return 0;
+        return nullptr;
 
     return toHTMLDataListElement(element);
 }
@@ -1673,19 +1673,19 @@ HTMLInputElement* HTMLInputElement::checkedRadioButtonForGroup()
         return this;
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         return scope->checkedButtonForGroup(name());
-    return 0;
+    return nullptr;
 }
 
 RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
 {
     // FIXME: Remove type check.
     if (type() != InputTypeNames::radio)
-        return 0;
+        return nullptr;
     if (HTMLFormElement* formElement = form())
         return &formElement->radioButtonGroupScope();
     if (inDocument())
         return &document().formController().radioButtonGroupScope();
-    return 0;
+    return nullptr;
 }
 
 inline void HTMLInputElement::addToRadioButtonGroup()

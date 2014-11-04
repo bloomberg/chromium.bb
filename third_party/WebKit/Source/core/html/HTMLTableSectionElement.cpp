@@ -49,7 +49,7 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
 {
     if (HTMLTableElement* table = findParentTable())
         return table->additionalGroupStyle(true);
-    return 0;
+    return nullptr;
 }
 
 // these functions are rather slow, since we need to get the row at

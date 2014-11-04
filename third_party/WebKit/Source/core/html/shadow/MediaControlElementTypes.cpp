@@ -48,12 +48,12 @@ class Event;
 HTMLMediaElement* toParentMediaElement(Node* node)
 {
     if (!node)
-        return 0;
+        return nullptr;
     Node* mediaNode = node->shadowHost();
     if (!mediaNode)
-        return 0;
+        return nullptr;
     if (!isHTMLMediaElement(mediaNode))
-        return 0;
+        return nullptr;
 
     return toHTMLMediaElement(mediaNode);
 }

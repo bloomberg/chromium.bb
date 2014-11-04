@@ -490,12 +490,12 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
 {
     Page* page = document().page();
     if (!page)
-        return 0;
+        return nullptr;
 
     return &page->validationMessageClient();
 }
 
-bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
+bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     if (!willValidate() || isValidElement())
         return true;
@@ -599,7 +599,7 @@ bool HTMLFormControlElement::isDefaultButtonForForm() const
 HTMLFormControlElement* HTMLFormControlElement::enclosingFormControlElement(Node* node)
 {
     if (!node)
-        return 0;
+        return nullptr;
     return Traversal<HTMLFormControlElement>::firstAncestorOrSelf(*node);
 }
 

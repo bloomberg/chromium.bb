@@ -87,7 +87,7 @@ HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const
             return candidate;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)

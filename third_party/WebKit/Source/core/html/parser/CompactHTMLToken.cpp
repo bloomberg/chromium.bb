@@ -63,8 +63,8 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token, const TextPosition& t
         break;
     case HTMLToken::StartTag:
         m_attributes.reserveInitialCapacity(token->attributes().size());
-        for (Vector<HTMLToken::Attribute>::const_iterator it = token->attributes().begin(); it != token->attributes().end(); ++it)
-            m_attributes.append(Attribute(attemptStaticStringCreation(it->name, Likely8Bit), StringImpl::create8BitIfPossible(it->value)));
+        for (const HTMLToken::Attribute& attribute : token->attributes())
+            m_attributes.append(Attribute(attemptStaticStringCreation(attribute.name, Likely8Bit), StringImpl::create8BitIfPossible(attribute.value)));
         // Fall through!
     case HTMLToken::EndTag:
         m_selfClosing = token->selfClosing();
@@ -87,15 +87,15 @@ const CompactHTMLToken::Attribute* CompactHTMLToken::getAttributeItem(const Qual
         if (threadSafeMatch(m_attributes.at(i).name, name))
             return &m_attributes.at(i);
     }
-    return 0;
+    return nullptr;
 }
 
 bool CompactHTMLToken::isSafeToSendToAnotherThread() const
 {
-    for (Vector<Attribute>::const_iterator it = m_attributes.begin(); it != m_attributes.end(); ++it) {
-        if (!it->name.isSafeToSendToAnotherThread())
+    for (const Attribute& attribute : m_attributes) {
+        if (!attribute.name.isSafeToSendToAnotherThread())
             return false;
-        if (!it->value.isSafeToSendToAnotherThread())
+        if (!attribute.value.isSafeToSendToAnotherThread())
             return false;
     }
     return m_data.isSafeToSendToAnotherThread();

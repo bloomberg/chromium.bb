@@ -176,7 +176,7 @@ HTMLImageElement* HTMLAreaElement::imageElement() const
 {
     if (HTMLMapElement* mapElement = Traversal<HTMLMapElement>::firstAncestor(*this))
         return mapElement->imageElement();
-    return 0;
+    return nullptr;
 }
 
 bool HTMLAreaElement::isKeyboardFocusable() const

@@ -122,7 +122,7 @@ private:
     // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
     void drawBuffersIfNecessary(bool force);
 
-    typedef WillBeHeapHashMap<GLenum, RefPtrWillBeMember<WebGLAttachment> > AttachmentMap;
+    typedef WillBeHeapHashMap<GLenum, RefPtrWillBeMember<WebGLAttachment>> AttachmentMap;
 
     AttachmentMap m_attachments;
 

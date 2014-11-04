@@ -60,7 +60,7 @@ public:
 
     virtual void paintRenderingResultsToCanvas() {}
 
-    virtual blink::WebLayer* platformLayer() const { return 0; }
+    virtual blink::WebLayer* platformLayer() const { return nullptr; }
 
     virtual void trace(Visitor* visitor) { visitor->trace(m_canvas); }
 

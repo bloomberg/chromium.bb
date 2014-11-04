@@ -89,7 +89,7 @@ void HTMLImport::stateDidChange()
 void HTMLImport::recalcTreeState(HTMLImport* root)
 {
     WillBeHeapHashMap<RawPtrWillBeMember<HTMLImport>, HTMLImportState> snapshot;
-    WillBeHeapVector<RawPtrWillBeMember<HTMLImport> > updated;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLImport>> updated;
 
     for (HTMLImport* i = root; i; i = traverseNext(i)) {
         snapshot.add(i, i->state());

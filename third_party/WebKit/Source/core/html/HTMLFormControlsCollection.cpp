@@ -65,7 +65,7 @@ const FormAssociatedElement::List& HTMLFormControlsCollection::formControlElemen
     return toHTMLFieldSetElement(ownerNode()).associatedElements();
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& HTMLFormControlsCollection::formImageElements() const
+const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& HTMLFormControlsCollection::formImageElements() const
 {
     return toHTMLFormElement(ownerNode()).imageElements();
 }
@@ -100,7 +100,7 @@ HTMLElement* HTMLFormControlsCollection::virtualItemAfter(Element* previous) con
             return m_cachedElement;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
@@ -111,7 +111,7 @@ void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
 }
 
 static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsArray,
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >* imageElementsArray, const QualifiedName& attrName, const String& name)
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>* imageElementsArray, const QualifiedName& attrName, const String& name)
 {
     ASSERT(attrName == idAttr || attrName == nameAttr);
 
@@ -122,7 +122,7 @@ static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsAr
     }
 
     if (!imageElementsArray)
-        return 0;
+        return nullptr;
 
     for (unsigned i = 0; i < imageElementsArray->size(); ++i) {
         HTMLImageElement* element = (*imageElementsArray)[i];
@@ -132,7 +132,7 @@ static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsAr
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 HTMLElement* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
@@ -142,7 +142,7 @@ HTMLElement* HTMLFormControlsCollection::namedItem(const AtomicString& name) con
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
     if (HTMLElement* item = firstNamedItem(formControlElements(), imagesElements, idAttr, name))
         return item;
 
@@ -177,7 +177,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     }
 
     if (isHTMLFormElement(ownerNode())) {
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElementsArray = formImageElements();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];
             const AtomicString& idAttrVal = element->getIdAttribute();
@@ -195,7 +195,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (namedItems.isEmpty())

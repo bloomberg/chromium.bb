@@ -69,7 +69,7 @@ static TextPosition uninitializedPositionValue1()
 
 static inline bool isAllWhitespace(const String& string)
 {
-    return string.isAllSpecialCharacters<isHTMLSpace<UChar> >();
+    return string.isAllSpecialCharacters<isHTMLSpace<UChar>>();
 }
 
 static inline bool isAllWhitespaceOrReplacementCharacters(const String& string)
@@ -175,17 +175,17 @@ public:
 
     void skipLeadingWhitespace()
     {
-        skipLeading<isHTMLSpace<UChar> >();
+        skipLeading<isHTMLSpace<UChar>>();
     }
 
     String takeLeadingWhitespace()
     {
-        return takeLeading<isHTMLSpace<UChar> >();
+        return takeLeading<isHTMLSpace<UChar>>();
     }
 
     void skipLeadingNonWhitespace()
     {
-        skipLeading<isNotHTMLSpace<UChar> >();
+        skipLeading<isNotHTMLSpace<UChar>>();
     }
 
     String takeRemaining()

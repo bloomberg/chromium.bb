@@ -161,7 +161,7 @@ int HTMLOptionElement::index() const
 
     int optionIndex = 0;
 
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = selectElement->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = selectElement->listItems();
     size_t length = items.size();
     for (size_t i = 0; i < length; ++i) {
         if (!isHTMLOptionElement(*items[i]))
@@ -377,7 +377,7 @@ HTMLFormElement* HTMLOptionElement::form() const
     if (HTMLSelectElement* selectElement = ownerSelectElement())
         return selectElement->formOwner();
 
-    return 0;
+    return nullptr;
 }
 
 void HTMLOptionElement::didAddUserAgentShadowRoot(ShadowRoot& root)

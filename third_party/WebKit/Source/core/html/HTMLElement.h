@@ -74,7 +74,7 @@ public:
 
     bool ieForbidsInsertHTML() const;
 
-    virtual HTMLFormElement* formOwner() const { return 0; }
+    virtual HTMLFormElement* formOwner() const { return nullptr; }
 
     HTMLFormElement* findFormAncestor() const;
 

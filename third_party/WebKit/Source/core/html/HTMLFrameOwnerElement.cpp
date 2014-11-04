@@ -38,16 +38,16 @@
 
 namespace blink {
 
-typedef WillBeHeapHashMap<RefPtrWillBeMember<Widget>, RawPtrWillBeMember<FrameView> > WidgetToParentMap;
+typedef WillBeHeapHashMap<RefPtrWillBeMember<Widget>, RawPtrWillBeMember<FrameView>> WidgetToParentMap;
 static WidgetToParentMap& widgetNewParentMap()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WidgetToParentMap>, map, (adoptPtrWillBeNoop(new WidgetToParentMap())));
     return *map;
 }
 
-WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >& SubframeLoadingDisabler::disabledSubtreeRoots()
+WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> > >, nodes, (adoptPtrWillBeNoop(new WillBeHeapHashCountedSet<RawPtrWillBeMember<Node> >())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>>, nodes, (adoptPtrWillBeNoop(new WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>())));
     return *nodes;
 }
 
@@ -62,11 +62,10 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
 {
     WidgetToParentMap map;
     widgetNewParentMap().swap(map);
-    WidgetToParentMap::iterator end = map.end();
-    for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
-        Widget* child = it->key.get();
+    for (const auto& widget : map) {
+        Widget* child = widget.key.get();
         FrameView* currentParent = toFrameView(child->parent());
-        FrameView* newParent = it->value;
+        FrameView* newParent = widget.value;
         if (newParent != currentParent) {
             if (currentParent)
                 currentParent->removeChild(child);
@@ -117,7 +116,7 @@ RenderPart* HTMLFrameOwnerElement::renderPart() const
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
     // when using fallback content.
     if (!renderer() || !renderer()->isRenderPart())
-        return 0;
+        return nullptr;
     return toRenderPart(renderer());
 }
 
@@ -202,7 +201,7 @@ Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) 
     Document* doc = contentDocument();
     if (doc && doc->isSVGDocument())
         return doc;
-    return 0;
+    return nullptr;
 }
 
 void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)

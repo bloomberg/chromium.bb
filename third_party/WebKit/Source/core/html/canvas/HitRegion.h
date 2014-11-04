@@ -73,10 +73,10 @@ public:
 private:
     HitRegionManager() { }
 
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<HitRegion> > HitRegionList;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<HitRegion>> HitRegionList;
     typedef HitRegionList::const_reverse_iterator HitRegionIterator;
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<HitRegion> > HitRegionIdMap;
-    typedef WillBeHeapHashMap<RefPtrWillBeMember<Element>, RefPtrWillBeMember<HitRegion> > HitRegionControlMap;
+    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<HitRegion>> HitRegionIdMap;
+    typedef WillBeHeapHashMap<RefPtrWillBeMember<Element>, RefPtrWillBeMember<HitRegion>> HitRegionControlMap;
 
     HitRegionList m_hitRegionList;
     HitRegionIdMap m_hitRegionIdMap;

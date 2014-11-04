@@ -55,13 +55,13 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
 {
     ShadowRoot* containingRoot = containingShadowRoot();
     if (!containingRoot)
-        return 0;
+        return nullptr;
 
     document().updateDistributionForNodeIfNeeded(this);
 
     ShadowRoot* older = containingRoot->olderShadowRoot();
     if (!older || !older->shouldExposeToBindings() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
-        return 0;
+        return nullptr;
 
     ASSERT(older->shouldExposeToBindings());
     return older;

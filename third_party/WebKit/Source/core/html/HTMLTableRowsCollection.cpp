@@ -95,7 +95,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, 
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
@@ -119,7 +119,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
             return lastRow;
     }
 
-    return 0;
+    return nullptr;
 }
 
 // Must call get() on the table in case that argument is compiled before dereferencing the

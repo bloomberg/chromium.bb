@@ -60,10 +60,10 @@ void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLR
 
 void PublicURLManager::revoke(const KURL& url)
 {
-    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
-        if (i->value.contains(url.string())) {
-            i->key->unregisterURL(url);
-            i->value.remove(url.string());
+    for (auto& registryUrl : m_registryToURL) {
+        if (registryUrl.value.contains(url.string())) {
+            registryUrl.key->unregisterURL(url);
+            registryUrl.value.remove(url.string());
             break;
         }
     }
@@ -73,15 +73,15 @@ void PublicURLManager::revoke(const String& uuid)
 {
     // A linear scan; revoking by UUID is assumed rare.
     Vector<String> urlsToRemove;
-    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
-        URLRegistry* registry = i->key;
-        URLMap& registeredURLs = i->value;
-        for (URLMap::iterator j = registeredURLs.begin(); j != registeredURLs.end(); ++j) {
-            if (uuid == j->value) {
-                KURL url(ParsedURLString, j->key);
+    for (auto& registryUrl : m_registryToURL) {
+        URLRegistry* registry = registryUrl.key;
+        URLMap& registeredURLs = registryUrl.value;
+        for (auto& registeredUrl : registeredURLs) {
+            if (uuid == registeredUrl.value) {
+                KURL url(ParsedURLString, registeredUrl.key);
                 MemoryCache::removeURLFromCache(executionContext(), url);
                 registry->unregisterURL(url);
-                urlsToRemove.append(j->key);
+                urlsToRemove.append(registeredUrl.key);
             }
         }
         for (unsigned j = 0; j < urlsToRemove.size(); j++)
@@ -96,9 +96,9 @@ void PublicURLManager::stop()
         return;
 
     m_isStopped = true;
-    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
-        for (URLMap::iterator j = i->value.begin(); j != i->value.end(); ++j)
-            i->key->unregisterURL(KURL(ParsedURLString, j->key));
+    for (auto& registryUrl : m_registryToURL) {
+        for (auto& url : registryUrl.value)
+            registryUrl.key->unregisterURL(KURL(ParsedURLString, url.key));
     }
 
     m_registryToURL.clear();

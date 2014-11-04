@@ -52,13 +52,13 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* elements = cache.getElementsById(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* elements = cache.getElementsById(name)) {
         if (index < elements->size())
             return elements->at(index);
         index -= elements->size();
     }
 
-    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* elements = cache.getElementsByName(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* elements = cache.getElementsByName(name)) {
         if (index < elements->size())
             return elements->at(index);
     }
@@ -68,7 +68,7 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
 
 void HTMLAllCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())

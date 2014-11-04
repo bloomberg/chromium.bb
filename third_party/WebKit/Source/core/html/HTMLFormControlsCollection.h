@@ -58,7 +58,7 @@ private:
     virtual void supportedPropertyNames(Vector<String>& names) override;
 
     const FormAssociatedElement::List& formControlElements() const;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& formImageElements() const;
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& formImageElements() const;
     virtual HTMLElement* virtualItemAfter(Element*) const override;
     virtual void invalidateCache(Document* oldDocument = 0) const override;
 

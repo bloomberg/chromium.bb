@@ -60,7 +60,7 @@ static inline RenderPart* findPartRenderer(const Node* n)
     if (n && n->renderer() && n->renderer()->isRenderPart())
         return toRenderPart(n->renderer());
 
-    return 0;
+    return nullptr;
 }
 
 RenderPart* HTMLEmbedElement::existingRenderPart() const
@@ -113,10 +113,9 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
 void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues)
 {
     AttributeCollection attributes = this->attributes();
-    AttributeCollection::iterator end = attributes.end();
-    for (AttributeCollection::iterator it = attributes.begin(); it != end; ++it) {
-        paramNames.append(it->localName().string());
-        paramValues.append(it->value().string());
+    for (const Attribute& attribute : attributes) {
+        paramNames.append(attribute.localName().string());
+        paramValues.append(attribute.value().string());
     }
 }
 

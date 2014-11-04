@@ -80,7 +80,7 @@ private:
     HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
 
     OwnPtrWillBeMember<HTMLImportTreeRoot> m_root;
-    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader> > LoaderList;
+    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader>> LoaderList;
     LoaderList m_loaders;
 };
 

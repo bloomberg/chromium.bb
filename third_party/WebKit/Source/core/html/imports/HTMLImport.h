@@ -111,7 +111,7 @@ public:
 
     virtual Document* document() const = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
-    virtual HTMLImportLoader* loader() const { return 0; }
+    virtual HTMLImportLoader* loader() const { return nullptr; }
     virtual void stateWillChange() { }
     virtual void stateDidChange();
 

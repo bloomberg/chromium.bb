@@ -71,7 +71,7 @@ inline void FormControlState::append(const String& value)
     m_values.append(value);
 }
 
-typedef HashMap<AtomicString, OwnPtr<SavedFormState> > SavedFormStateMap;
+typedef HashMap<AtomicString, OwnPtr<SavedFormState>> SavedFormStateMap;
 
 class DocumentState final : public RefCountedWillBeGarbageCollected<DocumentState> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState);

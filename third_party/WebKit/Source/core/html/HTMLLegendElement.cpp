@@ -47,7 +47,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     // Check if there's a fieldset belonging to this legend.
     HTMLFieldSetElement* fieldset = Traversal<HTMLFieldSetElement>::firstAncestor(*this);
     if (!fieldset)
-        return 0;
+        return nullptr;
 
     // Find first form element inside the fieldset that is not a legend element.
     // FIXME: Should we consider tabindex?
@@ -77,7 +77,7 @@ HTMLFormElement* HTMLLegendElement::form() const
     // form attribute on that fieldset element. Otherwise, it must return null.
     ContainerNode* fieldset = parentNode();
     if (!isHTMLFieldSetElement(fieldset))
-        return 0;
+        return nullptr;
 
     return toHTMLFieldSetElement(fieldset)->formOwner();
 }

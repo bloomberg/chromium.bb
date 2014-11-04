@@ -121,7 +121,7 @@ const StylePropertySet* HTMLTableCellElement::additionalPresentationAttributeSty
 {
     if (HTMLTableElement* table = findParentTable())
         return table->additionalCellStyle();
-    return 0;
+    return nullptr;
 }
 
 bool HTMLTableCellElement::isURLAttribute(const Attribute& attribute) const
@@ -173,14 +173,14 @@ HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
 {
     RenderObject* cellRenderer = renderer();
     if (!cellRenderer)
-        return 0;
+        return nullptr;
     if (!cellRenderer->isTableCell())
-        return 0;
+        return nullptr;
 
     RenderTableCell* tableCellRenderer = toRenderTableCell(cellRenderer);
     RenderTableCell* cellAboveRenderer = tableCellRenderer->table()->cellAbove(tableCellRenderer);
     if (!cellAboveRenderer)
-        return 0;
+        return nullptr;
 
     return toHTMLTableCellElement(cellAboveRenderer->node());
 }

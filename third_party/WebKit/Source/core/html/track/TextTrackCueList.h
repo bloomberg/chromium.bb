@@ -64,7 +64,7 @@ private:
     void clear();
     void invalidateCueIndexes(size_t);
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> m_list;
     RefPtrWillBeMember<TextTrackCueList> m_activeCues;
 };
 

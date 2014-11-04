@@ -94,7 +94,7 @@ static unsigned textLengthLimitForContainer(const ContainerNode& node)
 
 static inline bool isAllWhitespace(const String& string)
 {
-    return string.isAllSpecialCharacters<isHTMLSpace<UChar> >();
+    return string.isAllSpecialCharacters<isHTMLSpace<UChar>>();
 }
 
 static inline void insert(HTMLConstructionSiteTask& task)

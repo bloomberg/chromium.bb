@@ -185,7 +185,7 @@ void HTMLImportChild::clearClient()
 HTMLLinkElement* HTMLImportChild::link() const
 {
     if (!m_client)
-        return 0;
+        return nullptr;
     return m_client->link();
 }
 

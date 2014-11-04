@@ -49,7 +49,7 @@ TextTrackCue* TextTrackCueList::item(unsigned index) const
 {
     if (index < m_list.size())
         return m_list[index].get();
-    return 0;
+    return nullptr;
 }
 
 TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const
@@ -58,7 +58,7 @@ TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const
         if (m_list[i]->id() == id)
             return m_list[i].get();
     }
-    return 0;
+    return nullptr;
 }
 
 TextTrackCueList* TextTrackCueList::activeCues()

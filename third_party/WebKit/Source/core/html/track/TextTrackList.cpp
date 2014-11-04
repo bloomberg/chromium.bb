@@ -157,7 +157,7 @@ TextTrack* TextTrackList::getTrackById(const AtomicString& id)
 
 void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
 {
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> >* tracks = 0;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
 
     if (track->trackType() == TextTrack::TrackElement) {
         tracks = &m_elementTracks;
@@ -211,7 +211,7 @@ void TextTrackList::append(PassRefPtrWillBeRawPtr<TextTrack> prpTrack)
 
 void TextTrackList::remove(TextTrack* track)
 {
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> >* tracks = 0;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
 
     if (track->trackType() == TextTrack::TrackElement) {
         tracks = &m_elementTracks;
@@ -247,7 +247,7 @@ void TextTrackList::removeAllInbandTracks()
 
 bool TextTrackList::contains(TextTrack* track) const
 {
-    const WillBeHeapVector<RefPtrWillBeMember<TextTrack> >* tracks = 0;
+    const WillBeHeapVector<RefPtrWillBeMember<TextTrack>>* tracks = 0;
 
     if (track->trackType() == TextTrack::TrackElement)
         tracks = &m_elementTracks;

@@ -114,7 +114,7 @@ private:
     // unreferenced slaved media element alive. When Oilpan is
     // enabled by default, consider making the hash set references
     // strong to accomplish that. crbug.com/383072
-    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > MediaElementSequence;
+    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<HTMLMediaElement>> MediaElementSequence;
     MediaElementSequence m_mediaElements;
     bool m_paused;
     double m_defaultPlaybackRate;

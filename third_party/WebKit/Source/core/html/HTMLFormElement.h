@@ -51,7 +51,7 @@ public:
     void setNeedsValidityCheck();
 
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
-    void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element> >&);
+    void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element>>&);
 
     unsigned length() const;
     HTMLElement* item(unsigned index);
@@ -116,7 +116,7 @@ public:
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
     const FormAssociatedElement::List& associatedElements() const;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& imageElements();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElements();
 
     void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
 
@@ -145,7 +145,7 @@ private:
     void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
 
     void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
-    void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >&);
+    void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively();
@@ -153,13 +153,13 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >*, CheckValidityEventBehavior);
+    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>*, CheckValidityEventBehavior);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
-    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<Element> > PastNamesMap;
+    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<Element>> PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
     OwnPtrWillBeMember<PastNamesMap> m_pastNamesMap;
@@ -169,7 +169,7 @@ private:
     // Do not access m_associatedElements directly. Use associatedElements() instead.
     FormAssociatedElement::List m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
-    WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > m_imageElements;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>> m_imageElements;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
 #endif

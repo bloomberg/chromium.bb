@@ -217,7 +217,7 @@ public:
         {
         }
 
-        WillBeHeapVector<RefPtrWillBeMember<TextTrack> > tracks;
+        WillBeHeapVector<RefPtrWillBeMember<TextTrack>> tracks;
         RefPtrWillBeMember<TextTrack> visibleTrack;
         RefPtrWillBeMember<TextTrack> defaultTrack;
         GroupKind kind;
@@ -584,7 +584,7 @@ private:
     RefPtrWillBeMember<AudioTrackList> m_audioTracks;
     RefPtrWillBeMember<VideoTrackList> m_videoTracks;
     RefPtrWillBeMember<TextTrackList> m_textTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_textTracksWhenResourceSelectionBegan;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
     CueIntervalTree m_cueTree;
 

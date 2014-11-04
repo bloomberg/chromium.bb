@@ -85,7 +85,7 @@ private:
     FetchRequest::DeferOption m_defer;
 };
 
-typedef Vector<OwnPtr<PreloadRequest> > PreloadRequestStream;
+typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
 
 class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader> {
     WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

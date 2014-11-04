@@ -90,7 +90,7 @@ public:
 
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
-    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >* unhandledInvalidControls = 0, CheckValidityEventBehavior = CheckValidityDispatchInvalidEvent);
+    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls = 0, CheckValidityEventBehavior = CheckValidityDispatchInvalidEvent);
     bool reportValidity();
     // This must be called only after the caller check the element is focusable.
     void showValidationMessage();

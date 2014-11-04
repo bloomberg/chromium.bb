@@ -167,7 +167,7 @@ template<bool characterPredicate(UChar)>
 inline void VTTScanner::skipWhile()
 {
     if (m_is8Bit)
-        ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate> >(m_data.characters8, m_end.characters8);
+        ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(m_data.characters8, m_end.characters8);
     else
         ::skipWhile<UChar, characterPredicate>(m_data.characters16, m_end.characters16);
 }
@@ -176,7 +176,7 @@ template<bool characterPredicate(UChar)>
 inline void VTTScanner::skipUntil()
 {
     if (m_is8Bit)
-        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate> >(m_data.characters8, m_end.characters8);
+        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(m_data.characters8, m_end.characters8);
     else
         ::skipUntil<UChar, characterPredicate>(m_data.characters16, m_end.characters16);
 }
@@ -186,7 +186,7 @@ inline VTTScanner::Run VTTScanner::collectWhile()
 {
     if (m_is8Bit) {
         const LChar* current = m_data.characters8;
-        ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate> >(current, m_end.characters8);
+        ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate>>(current, m_end.characters8);
         return Run(position(), current, m_is8Bit);
     }
     const UChar* current = m_data.characters16;
@@ -199,7 +199,7 @@ inline VTTScanner::Run VTTScanner::collectUntil()
 {
     if (m_is8Bit) {
         const LChar* current = m_data.characters8;
-        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate> >(current, m_end.characters8);
+        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate>>(current, m_end.characters8);
         return Run(position(), current, m_is8Bit);
     }
     const UChar* current = m_data.characters16;

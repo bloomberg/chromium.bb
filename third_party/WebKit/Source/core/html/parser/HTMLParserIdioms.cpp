@@ -325,9 +325,9 @@ WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList& attributes
     Mode mode = None;
     String charset;
 
-    for (HTMLAttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
-        const String& attributeName = iter->first;
-        const String& attributeValue = AtomicString(iter->second);
+    for (const auto& htmlAttribute : attributes) {
+        const String& attributeName = htmlAttribute.first;
+        const String& attributeValue = AtomicString(htmlAttribute.second);
 
         if (threadSafeMatch(attributeName, http_equivAttr)) {
             if (equalIgnoringCase(attributeValue, "content-type"))
@@ -374,7 +374,7 @@ inline StringImpl* findStringIfStatic(const CharType* characters, unsigned lengt
 {
     // We don't need to try hashing if we know the string is too long.
     if (length > StringImpl::highestStaticStringLength())
-        return 0;
+        return nullptr;
     // computeHashAndMaskTop8Bits is the function StringImpl::hash() uses.
     unsigned hash = StringHasher::computeHashAndMaskTop8Bits(characters, length);
     const WTF::StaticStringsTable& table = StringImpl::allStaticStrings();
@@ -382,13 +382,13 @@ inline StringImpl* findStringIfStatic(const CharType* characters, unsigned lengt
 
     WTF::StaticStringsTable::const_iterator it = table.find(hash);
     if (it == table.end())
-        return 0;
+        return nullptr;
     // It's possible to have hash collisions between arbitrary strings and
     // known identifiers (e.g. "bvvfg" collides with "script").
     // However ASSERTs in StringImpl::createStatic guard against there ever being collisions
     // between static strings.
     if (!equal(it->value, characters, length))
-        return 0;
+        return nullptr;
     return it->value;
 }
 

@@ -442,7 +442,7 @@ Chrome* InputType::chrome() const
 {
     if (FrameHost* host = element().document().frameHost())
         return &host->chrome();
-    return 0;
+    return nullptr;
 }
 
 Locale& InputType::locale() const
@@ -508,7 +508,7 @@ bool InputType::rendererIsNeeded()
 
 FileList* InputType::files()
 {
-    return 0;
+    return nullptr;
 }
 
 void InputType::setFiles(FileList*)
@@ -730,7 +730,7 @@ TextDirection InputType::computedTextDirection()
 
 ColorChooserClient* InputType::colorChooserClient()
 {
-    return 0;
+    return nullptr;
 }
 
 void InputType::applyStep(const Decimal& current, int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)

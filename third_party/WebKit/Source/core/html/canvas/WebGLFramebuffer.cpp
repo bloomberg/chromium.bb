@@ -332,9 +332,9 @@ void WebGLFramebuffer::attach(GLenum attachment, GLenum attachmentPoint)
 WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) const
 {
     if (!object())
-        return 0;
+        return nullptr;
     WebGLAttachment* attachmentObject = getAttachment(attachment);
-    return attachmentObject ? attachmentObject->object() : 0;
+    return attachmentObject ? attachmentObject->object() : nullptr;
 }
 
 bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLenum attachment, const char** reason) const
@@ -467,10 +467,10 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* a
     bool checkMore = true;
     while (checkMore) {
         checkMore = false;
-        for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it) {
-            WebGLAttachment* attachmentObject = it->value.get();
+        for (const auto& it : m_attachments) {
+            WebGLAttachment* attachmentObject = it.value.get();
             if (attachmentObject->isSharedObject(attachment)) {
-                GLenum attachmentType = it->key;
+                GLenum attachmentType = it.key;
                 attachmentObject->unattach(context()->webContext(), attachmentType);
                 removeAttachmentFromBoundFramebuffer(attachmentType);
                 checkMore = true;
@@ -497,9 +497,9 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
     bool haveDepth = false;
     bool haveStencil = false;
     bool haveDepthStencil = false;
-    for (AttachmentMap::const_iterator it = m_attachments.begin(); it != m_attachments.end(); ++it) {
-        WebGLAttachment* attachment = it->value.get();
-        if (!isAttachmentComplete(attachment, it->key, reason))
+    for (const auto& it : m_attachments) {
+        WebGLAttachment* attachment = it.value.get();
+        if (!isAttachmentComplete(attachment, it.key, reason))
             return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
         if (!attachment->valid()) {
             *reason = "attachment is not valid";
@@ -509,7 +509,7 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
             *reason = "attachment is an unsupported format";
             return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
         }
-        switch (it->key) {
+        switch (it.key) {
         case GL_DEPTH_ATTACHMENT:
             haveDepth = true;
             break;
@@ -572,8 +572,8 @@ void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, 
     // The WebGLAttachment-derived classes instead handle detachment
     // on their own when finalizing, so the explicit notification is
     // not needed.
-    for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it)
-        it->value->onDetached(context3d);
+    for (const auto& attachment : m_attachments)
+        attachment.value->onDetached(context3d);
 #endif
 
     context3d->deleteFramebuffer(object);

@@ -119,7 +119,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTCue> > newCues;
+    WillBeHeapVector<RefPtrWillBeMember<VTTCue>> newCues;
     m_loader->getNewCues(newCues);
 
     if (!m_cues)
@@ -150,7 +150,7 @@ void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > newRegions;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> newRegions;
     m_loader->getNewRegions(newRegions);
 
     for (size_t i = 0; i < newRegions.size(); ++i) {

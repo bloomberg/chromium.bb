@@ -75,7 +75,7 @@ bool HiddenInputType::supportsValidation() const
 RenderObject* HiddenInputType::createRenderer(RenderStyle*) const
 {
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 void HiddenInputType::accessKeyAction(bool)

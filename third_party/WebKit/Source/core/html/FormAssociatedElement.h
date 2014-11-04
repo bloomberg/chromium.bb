@@ -90,7 +90,7 @@ public:
 
     void formAttributeTargetChanged();
 
-    typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement> > List;
+    typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement>> List;
 
 protected:
     FormAssociatedElement();

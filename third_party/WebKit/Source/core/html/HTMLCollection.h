@@ -53,7 +53,7 @@ public:
     void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
 
     // Non-DOM API
-    void namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >&) const;
+    void namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element>>&) const;
     bool isEmpty() const { return m_collectionItemsCache.isEmpty(*this); }
     bool hasExactlyOneItem() const { return m_collectionItemsCache.hasExactlyOneNode(*this); }
     bool elementMatches(const Element&) const;
@@ -77,8 +77,8 @@ protected:
             return adoptPtrWillBeNoop(new NamedItemCache);
         }
 
-        WillBeHeapVector<RawPtrWillBeMember<Element> >* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
-        WillBeHeapVector<RawPtrWillBeMember<Element> >* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
+        WillBeHeapVector<RawPtrWillBeMember<Element>>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
+        WillBeHeapVector<RawPtrWillBeMember<Element>>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
         void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
         void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
 
@@ -92,12 +92,12 @@ protected:
 
     private:
         NamedItemCache();
-        typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element> > > > StringToElementsMap;
+        typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element>>>> StringToElementsMap;
         static void addElementToMap(StringToElementsMap& map, const AtomicString& key, Element* element)
         {
-            OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element> > >& vector = map.add(key.impl(), nullptr).storedValue->value;
+            OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element>>>& vector = map.add(key.impl(), nullptr).storedValue->value;
             if (!vector)
-                vector = adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element> >);
+                vector = adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element>>);
             vector->append(element);
         }
 

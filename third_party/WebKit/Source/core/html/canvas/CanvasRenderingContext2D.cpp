@@ -207,7 +207,7 @@ void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingConte
     }
     if (canvas()->hasImageBuffer() && canvas()->buffer()->restoreSurface()) {
         m_tryRestoreContextEventTimer.stop();
-        dispatchContextRestoredEvent(0);
+        dispatchContextRestoredEvent(nullptr);
     }
 
     if (++m_tryRestoreContextAttemptCount > MaxTryRestoreContextAttempts)
@@ -217,7 +217,7 @@ void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingConte
         // final attempt: allocate a brand new image buffer instead of restoring
         timer->stop();
         if (canvas()->buffer())
-            dispatchContextRestoredEvent(0);
+            dispatchContextRestoredEvent(nullptr);
     }
 }
 
@@ -567,7 +567,7 @@ void CanvasRenderingContext2D::setShadowOffsetX(float x)
         return;
     if (state().m_shadowOffset.width() == x)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_shadowOffset.setWidth(x);
     applyShadow();
 }
@@ -583,7 +583,7 @@ void CanvasRenderingContext2D::setShadowOffsetY(float y)
         return;
     if (state().m_shadowOffset.height() == y)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_shadowOffset.setHeight(y);
     applyShadow();
 }
@@ -599,7 +599,7 @@ void CanvasRenderingContext2D::setShadowBlur(float blur)
         return;
     if (state().m_shadowBlur == blur)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_shadowBlur = blur;
     applyShadow();
 }
@@ -616,7 +616,7 @@ void CanvasRenderingContext2D::setShadowColor(const String& color)
         return;
     if (state().m_shadowColor == rgba)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_shadowColor = rgba;
     applyShadow();
 }
@@ -640,7 +640,7 @@ void CanvasRenderingContext2D::setLineDash(const Vector<float>& dash)
     if (!lineDashSequenceIsValid(dash))
         return;
 
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_lineDash = dash;
     // Spec requires the concatenation of two copies the dash list when the
     // number of elements is odd
@@ -660,7 +660,7 @@ void CanvasRenderingContext2D::setLineDashOffset(float offset)
     if (!std::isfinite(offset) || state().m_lineDashOffset == offset)
         return;
 
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_lineDashOffset = offset;
     applyLineDash();
 }
@@ -881,7 +881,7 @@ void CanvasRenderingContext2D::setStrokeColor(const String& color)
 {
     if (color == state().m_unparsedStrokeColor)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     setStrokeStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedStrokeColor = color;
 }
@@ -923,7 +923,7 @@ void CanvasRenderingContext2D::setFillColor(const String& color)
 {
     if (color == state().m_unparsedFillColor)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     setFillStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedFillColor = color;
 }
@@ -1428,7 +1428,7 @@ void CanvasRenderingContext2D::setShadow(const FloatSize& offset, float blur, RG
     if (state().m_shadowOffset == offset && state().m_shadowBlur == blur && state().m_shadowColor == color)
         return;
     bool wasDrawingShadows = shouldDrawShadows();
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_shadowOffset = offset;
     modifiableState().m_shadowBlur = blur;
     modifiableState().m_shadowColor = color;
@@ -1759,7 +1759,7 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
 GraphicsContext* CanvasRenderingContext2D::drawingContext() const
 {
     if (isContextLost())
-        return 0;
+        return nullptr;
     return canvas()->drawingContext();
 }
 
@@ -1946,7 +1946,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
 
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_unparsedFont = newFontSafeCopy;
 
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
@@ -2007,7 +2007,7 @@ void CanvasRenderingContext2D::setTextAlign(const String& s)
         return;
     if (state().m_textAlign == align)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_textAlign = align;
 }
 
@@ -2023,7 +2023,7 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
         return;
     if (state().m_textBaseline == baseline)
         return;
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_textBaseline = baseline;
 }
 
@@ -2066,7 +2066,7 @@ void CanvasRenderingContext2D::setDirection(const String& directionString)
     if (state().m_direction == direction)
         return;
 
-    realizeSaves(0);
+    realizeSaves(nullptr);
     modifiableState().m_direction = direction;
 }
 
@@ -2443,7 +2443,7 @@ HitRegion* CanvasRenderingContext2D::hitRegionAtPoint(const LayoutPoint& point)
     if (m_hitRegionManager)
         return m_hitRegionManager->getHitRegionAtPoint(point);
 
-    return 0;
+    return nullptr;
 }
 
 unsigned CanvasRenderingContext2D::hitRegionsCount() const

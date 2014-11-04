@@ -82,7 +82,7 @@ private:
     KURL m_reportURL;
 };
 
-typedef Vector<OwnPtr<XSSInfo> > XSSInfoStream;
+typedef Vector<OwnPtr<XSSInfo>> XSSInfoStream;
 
 }
 

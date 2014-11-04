@@ -133,7 +133,7 @@ const AtomicString& HTMLStyleElement::type() const
 ContainerNode* HTMLStyleElement::scopingNode()
 {
     if (!inDocument())
-        return 0;
+        return nullptr;
 
     if (isInShadowTree())
         return containingShadowRoot();

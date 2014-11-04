@@ -125,7 +125,7 @@ static const char mediaSourceBlobProtocol[] = "blob";
 
 using namespace HTMLNames;
 
-typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement> > WeakMediaElementSet;
+typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement>> WeakMediaElementSet;
 typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet> DocumentElementSetMap;
 static DocumentElementSetMap& documentToElementSetMap()
 {
@@ -327,7 +327,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_loadState(WaitingForSource)
     , m_deferredLoadState(NotDeferred)
     , m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired)
-    , m_webLayer(0)
+    , m_webLayer(nullptr)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
@@ -1188,13 +1188,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         CueList potentiallySkippedCues =
             m_cueTree.allOverlaps(m_cueTree.createInterval(lastTime, movieTime));
 
-        for (size_t i = 0; i < potentiallySkippedCues.size(); ++i) {
-            double cueStartTime = potentiallySkippedCues[i].low();
-            double cueEndTime = potentiallySkippedCues[i].high();
-
+        for (CueInterval cue : potentiallySkippedCues) {
             // Consider cues that may have been missed since the last seek time.
-            if (cueStartTime > std::max(m_lastSeekTime, lastTime) && cueEndTime < movieTime)
-                missedCues.append(potentiallySkippedCues[i]);
+            if (cue.low() > std::max(m_lastSeekTime, lastTime) && cue.high() < movieTime)
+                missedCues.append(cue);
         }
     }
 
@@ -1226,10 +1223,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
             activeSetChanged = true;
     }
 
-    for (size_t i = 0; i < currentCuesSize; ++i) {
-        currentCues[i].data()->updateDisplayTree(movieTime);
+    for (CueInterval currentCue : currentCues) {
+        currentCue.data()->updateDisplayTree(movieTime);
 
-        if (!currentCues[i].data()->isActive())
+        if (!currentCue.data()->isActive())
             activeSetChanged = true;
     }
 
@@ -1256,10 +1253,10 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // 8 - Let events be a list of tasks, initially empty. Each task in this
     // list will be associated with a text track, a text track cue, and a time,
     // which are used to sort the list before the tasks are queued.
-    WillBeHeapVector<std::pair<double, RawPtrWillBeMember<TextTrackCue> > > eventTasks;
+    WillBeHeapVector<std::pair<double, RawPtrWillBeMember<TextTrackCue>>> eventTasks;
 
     // 8 - Let affected tracks be a list of text tracks, initially empty.
-    WillBeHeapVector<RawPtrWillBeMember<TextTrack> > affectedTracks;
+    WillBeHeapVector<RawPtrWillBeMember<TextTrack>> affectedTracks;
 
     for (size_t i = 0; i < missedCuesSize; ++i) {
         // 9 - For each text track cue in missed cues, prepare an event named enter
@@ -2794,7 +2791,7 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
     WTF_LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%p, %d)", this, group.kind);
 
     // First, find the track in the group that should be enabled (if any).
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > currentlyEnabledTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> currentlyEnabledTracks;
     RefPtrWillBeRawPtr<TextTrack> trackToEnable = nullptr;
     RefPtrWillBeRawPtr<TextTrack> defaultTrack = nullptr;
     RefPtrWillBeRawPtr<TextTrack> fallbackTrack = nullptr;
@@ -3790,7 +3787,7 @@ void* HTMLMediaElement::preDispatchEventHandler(Event* event)
     if (event && event->type() == EventTypeNames::webkitfullscreenchange)
         configureMediaControls();
 
-    return 0;
+    return nullptr;
 }
 
 void HTMLMediaElement::createMediaPlayer()
@@ -3828,7 +3825,7 @@ AudioSourceProvider* HTMLMediaElement::audioSourceProvider()
     if (m_player)
         return m_player->audioSourceProvider();
 
-    return 0;
+    return nullptr;
 }
 #endif
 
@@ -3852,15 +3849,15 @@ void HTMLMediaElement::setMediaGroup(const AtomicString& group)
     // 4. If there is another media element whose Document is the same as m's Document (even if one or both
     // of these elements are not actually in the Document),
     WeakMediaElementSet elements = documentToElementSetMap().get(&document());
-    for (WeakMediaElementSet::iterator i = elements.begin(); i != elements.end(); ++i) {
-        if (*i == this)
+    for (const auto& element : elements) {
+        if (element == this)
             continue;
 
         // and which also has a mediagroup attribute, and whose mediagroup attribute has the same value as
         // the new value of m's mediagroup attribute,
-        if ((*i)->mediaGroup() == group) {
+        if (element->mediaGroup() == group) {
             //  then let controller be that media element's current media controller.
-            setControllerInternal((*i)->controller());
+            setControllerInternal(element->controller());
             return;
         }
     }
@@ -4034,7 +4031,7 @@ void HTMLMediaElement::selectInitialTracksIfNecessary()
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
     if (!visitor->isAlive(m_audioSourceNode) && audioSourceProvider())
-        audioSourceProvider()->setClient(0);
+        audioSourceProvider()->setClient(nullptr);
 }
 #endif
 

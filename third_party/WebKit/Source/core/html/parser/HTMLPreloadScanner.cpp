@@ -68,7 +68,7 @@ static const StringImpl* tagImplFor(const HTMLToken::DataVector& data)
     const StringImpl* result = tagName.impl();
     if (result->isStatic())
         return result;
-    return 0;
+    return nullptr;
 }
 
 static const StringImpl* tagImplFor(const String& tagName)
@@ -76,7 +76,7 @@ static const StringImpl* tagImplFor(const String& tagName)
     const StringImpl* result = tagName.impl();
     if (result->isStatic())
         return result;
-    return 0;
+    return nullptr;
 }
 
 static String initiatorFor(const StringImpl* tagImpl)
@@ -137,9 +137,9 @@ public:
         ASSERT(isMainThread());
         if (!m_tagImpl)
             return;
-        for (HTMLToken::AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
-            AtomicString attributeName(iter->name);
-            String attributeValue = StringImpl::create8BitIfPossible(iter->value);
+        for (const HTMLToken::Attribute& htmlTokenAttribute : attributes) {
+            AtomicString attributeName(htmlTokenAttribute.name);
+            String attributeValue = StringImpl::create8BitIfPossible(htmlTokenAttribute.value);
             processAttribute(attributeName, attributeValue);
         }
     }
@@ -148,8 +148,8 @@ public:
     {
         if (!m_tagImpl)
             return;
-        for (Vector<CompactHTMLToken::Attribute>::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-            processAttribute(iter->name, iter->value);
+        for (const CompactHTMLToken::Attribute& htmlTokenAttribute : attributes)
+            processAttribute(htmlTokenAttribute.name, htmlTokenAttribute.value);
     }
 
     void handlePictureSourceURL(String& sourceURL)

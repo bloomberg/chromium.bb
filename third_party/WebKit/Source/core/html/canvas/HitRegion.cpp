@@ -134,7 +134,7 @@ HitRegion* HitRegionManager::getHitRegionByControl(Element* control) const
     if (control)
         return m_hitRegionControlMap.get(control);
 
-    return 0;
+    return nullptr;
 }
 
 HitRegion* HitRegionManager::getHitRegionAtPoint(const LayoutPoint& point) const
@@ -147,7 +147,7 @@ HitRegion* HitRegionManager::getHitRegionAtPoint(const LayoutPoint& point) const
             return hitRegion.get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 unsigned HitRegionManager::getHitRegionsCount() const

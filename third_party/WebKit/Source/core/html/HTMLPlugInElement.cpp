@@ -299,7 +299,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 {
     LocalFrame* frame = document().frame();
     if (!frame)
-        return 0;
+        return nullptr;
 
     // If the host dynamically turns off JavaScript (or Java) we will still
     // return the cached allocated Bindings::Instance. Not supporting this
@@ -322,7 +322,7 @@ Widget* HTMLPlugInElement::pluginWidget() const
 {
     if (RenderPart* renderPart = renderPartForJSBindings())
         return renderPart->widget();
-    return 0;
+    return nullptr;
 }
 
 bool HTMLPlugInElement::isPresentationAttribute(const QualifiedName& name) const
@@ -441,7 +441,7 @@ RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
     // when using fallback content.
     if (!renderer() || !renderer()->isEmbeddedObject())
-        return 0;
+        return nullptr;
     return toRenderEmbeddedObject(renderer());
 }
 

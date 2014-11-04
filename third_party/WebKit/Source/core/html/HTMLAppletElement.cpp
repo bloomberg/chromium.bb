@@ -104,7 +104,7 @@ RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
 RenderPart* HTMLAppletElement::renderPartForJSBindings() const
 {
     if (!canEmbedJava())
-        return 0;
+        return nullptr;
     return HTMLPlugInElement::renderPartForJSBindings();
 }
 

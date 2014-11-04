@@ -42,7 +42,7 @@ private:
     Timer<HTMLImportTreeRoot> m_recalcTimer;
 
     // List of import which has been loaded or being loaded.
-    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportChild> > ImportList;
+    typedef WillBeHeapVector<OwnPtrWillBeMember<HTMLImportChild>> ImportList;
     ImportList m_imports;
 };
 

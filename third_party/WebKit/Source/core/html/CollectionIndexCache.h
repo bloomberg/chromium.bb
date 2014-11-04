@@ -127,7 +127,7 @@ template <typename Collection, typename NodeType>
 inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collection& collection, unsigned index)
 {
     if (isCachedNodeCountValid() && index >= cachedNodeCount())
-        return 0;
+        return nullptr;
 
     if (cachedNode()) {
         if (index > cachedNodeIndex())
@@ -143,7 +143,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collec
     if (!firstNode) {
         // The collection is empty.
         setCachedNodeCount(0);
-        return 0;
+        return nullptr;
     }
     setCachedNode(firstNode, 0);
     return index ? nodeAfterCachedNode(collection, index) : firstNode;
@@ -196,7 +196,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode
     if (!currentNode) {
         // Did not find the node. On plus side, we now know the length.
         setCachedNodeCount(currentIndex + 1);
-        return 0;
+        return nullptr;
     }
     setCachedNode(currentNode, currentIndex);
     return currentNode;

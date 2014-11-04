@@ -68,7 +68,7 @@ LabelableElement* HTMLLabelElement::control() const
             if (element.supportLabels())
                 return &element;
         }
-        return 0;
+        return nullptr;
     }
 
     if (Element* element = treeScope().getElementById(controlId)) {
@@ -76,7 +76,7 @@ LabelableElement* HTMLLabelElement::control() const
             return toLabelableElement(element);
     }
 
-    return 0;
+    return nullptr;
 }
 
 HTMLFormElement* HTMLLabelElement::formOwner() const

@@ -93,9 +93,9 @@ private:
 
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_addTrackTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_elementTracks;
-    WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_inbandTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_addTrackTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_elementTracks;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_inbandTracks;
 };
 
 } // namespace blink

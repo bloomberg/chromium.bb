@@ -627,7 +627,7 @@ AXObject* BaseMultipleFieldsDateAndTimeInputType::popupRootAXObject()
 {
     if (PickerIndicatorElement* picker = pickerIndicatorElement())
         return picker->popupRootAXObject();
-    return 0;
+    return nullptr;
 }
 
 } // namespace blink

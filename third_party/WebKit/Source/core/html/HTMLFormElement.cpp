@@ -170,10 +170,8 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 template<class T>
 void notifyFormRemovedFromTree(const T& elements, Node& root)
 {
-    size_t size = elements.size();
-    for (size_t i = 0; i < size; ++i)
-        elements[i]->formRemovedFromTree(root);
-    ASSERT(elements.size() == size);
+    for (const auto& element : elements)
+        element->formRemovedFromTree(root);
 }
 
 void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
@@ -194,10 +192,10 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
         }
 
         if (!m_imageElementsAreDirty) {
-            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > images(imageElements());
+            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>> images(imageElements());
             notifyFormRemovedFromTree(images, root);
         } else {
-            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> > images;
+            WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>> images;
             collectImageElements(NodeTraversal::highestAncestorOrSelf(*insertionPoint), images);
             notifyFormRemovedFromTree(images, root);
             collectImageElements(root, images);
@@ -282,7 +280,7 @@ bool HTMLFormElement::validateInteractively()
             toHTMLFormControlElement(elements[i])->hideVisibleValidationMessage();
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> > unhandledInvalidControls;
+    WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>> unhandledInvalidControls;
     if (!checkInvalidControlsAndCollectUnhandled(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent))
         return true;
     // Because the form has invalid controls, we abort the form submission and
@@ -647,7 +645,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     return m_associatedElements;
 }
 
-void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& elements)
+void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& elements)
 {
     elements.clear();
     for (HTMLImageElement& image : Traversal<HTMLImageElement>::startsAfter(root)) {
@@ -656,7 +654,7 @@ void HTMLFormElement::collectImageElements(Node& root, WillBeHeapVector<RawPtrWi
     }
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& HTMLFormElement::imageElements()
+const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& HTMLFormElement::imageElements()
 {
     if (!m_imageElementsAreDirty)
         return m_imageElements;
@@ -731,13 +729,13 @@ bool HTMLFormElement::checkValidity()
     return !checkInvalidControlsAndCollectUnhandled(0, CheckValidityDispatchInvalidEvent);
 }
 
-bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement> >* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
+bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
     // HTMLFormControlElement::checkValidity() might change associatedElements.
     const FormAssociatedElement::List& associatedElements = this->associatedElements();
-    WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> > elements;
+    WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement>> elements;
     elements.reserveCapacity(associatedElements.size());
     for (unsigned i = 0; i < associatedElements.size(); ++i)
         elements.append(associatedElements[i]);
@@ -790,16 +788,15 @@ void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)
 {
     if (!m_pastNamesMap)
         return;
-    PastNamesMap::iterator end = m_pastNamesMap->end();
-    for (PastNamesMap::iterator it = m_pastNamesMap->begin(); it != end; ++it) {
-        if (it->value == &element) {
-            it->value = nullptr;
+    for (auto& it : *m_pastNamesMap) {
+        if (it.value == &element) {
+            it.value = nullptr;
             // Keep looping. Single element can have multiple names.
         }
     }
 }
 
-void HTMLFormElement::getNamedElements(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >& namedItems)
+void HTMLFormElement::getNamedElements(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element>>& namedItems)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#dom-form-nameditem
     elements()->namedItems(name, namedItems);
@@ -837,7 +834,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RadioNodeLi
     // and let HTMLFormElement update its cache.
     // See issue: 867404
     {
-        WillBeHeapVector<RefPtrWillBeMember<Element> > elements;
+        WillBeHeapVector<RefPtrWillBeMember<Element>> elements;
         getNamedElements(name, elements);
         if (elements.isEmpty())
             return;
@@ -845,7 +842,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RadioNodeLi
 
     // Second call may return different results from the first call,
     // but if the first the size cannot be zero.
-    WillBeHeapVector<RefPtrWillBeMember<Element> > elements;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> elements;
     getNamedElements(name, elements);
     ASSERT(!elements.isEmpty());
 

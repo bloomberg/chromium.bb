@@ -139,7 +139,7 @@ private:
 
     void setPersistedPluginWidget(Widget*);
 
-    mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
+    mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
     bool m_needsWidgetUpdate;

@@ -551,7 +551,7 @@ bool HTMLImageElement::isServerMap() const
 Image* HTMLImageElement::imageContents()
 {
     if (!imageLoader().imageComplete())
-        return 0;
+        return nullptr;
 
     return imageLoader().image()->image();
 }

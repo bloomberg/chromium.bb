@@ -13,7 +13,7 @@
 namespace blink {
 
 template<class T>
-class TrackListBase : public RefCountedWillBeGarbageCollectedFinalized<TrackListBase<T> >, public EventTargetWithInlineData {
+class TrackListBase : public RefCountedWillBeGarbageCollectedFinalized<TrackListBase<T>>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TrackListBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TrackListBase);
 public:
@@ -34,7 +34,7 @@ public:
     T* anonymousIndexedGetter(unsigned index) const
     {
         if (index >= m_tracks.size())
-            return 0;
+            return nullptr;
         return m_tracks[index].get();
     }
 
@@ -45,7 +45,7 @@ public:
                 return m_tracks[i].get();
         }
 
-        return 0;
+        return nullptr;
     }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
@@ -57,7 +57,7 @@ public:
     {
         if (m_mediaElement)
             return m_mediaElement->executionContext();
-        return 0;
+        return nullptr;
     }
 
 #if !ENABLE(OILPAN)
@@ -127,7 +127,7 @@ private:
         m_mediaElement->scheduleEvent(event);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<T> > m_tracks;
+    WillBeHeapVector<RefPtrWillBeMember<T>> m_tracks;
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 };
 

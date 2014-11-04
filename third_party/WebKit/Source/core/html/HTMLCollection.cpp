@@ -301,7 +301,7 @@ static inline IsMatch<HTMLCollectionType> makeIsMatch(const HTMLCollectionType& 
 Element* HTMLCollection::virtualItemAfter(Element*) const
 {
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
@@ -361,7 +361,7 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
                 if (++currentOffset == offset)
                     return next;
             }
-            return 0;
+            return nullptr;
         }
         if (shouldOnlyIncludeDirectChildren()) {
             IsMatch<HTMLCollection> isMatch(*this);
@@ -369,7 +369,7 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
                 if (++currentOffset == offset)
                     return next;
             }
-            return 0;
+            return nullptr;
         }
         return traverseMatchingElementsForwardToOffset(currentElement, &rootNode(), offset, currentOffset, makeIsMatch(*this));
     }
@@ -385,7 +385,7 @@ Element* HTMLCollection::traverseBackwardToOffset(unsigned offset, Element& curr
             if (--currentOffset == offset)
                 return previous;
         }
-        return 0;
+        return nullptr;
     }
     return traverseMatchingElementsBackwardToOffset(currentElement, &rootNode(), offset, currentOffset, makeIsMatch(*this));
 }
@@ -400,15 +400,15 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element>>* idResults = cache.getElementsById(name);
     if (idResults && !idResults->isEmpty())
         return idResults->first();
 
-    WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name);
+    WillBeHeapVector<RawPtrWillBeMember<Element>>* nameResults = cache.getElementsByName(name);
     if (nameResults && !nameResults->isEmpty())
         return nameResults->first();
 
-    return 0;
+    return nullptr;
 }
 
 bool HTMLCollection::namedPropertyQuery(const AtomicString& name, ExceptionState&)
@@ -474,7 +474,7 @@ void HTMLCollection::updateIdNameCache() const
     setNamedItemCache(cache.release());
 }
 
-void HTMLCollection::namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element> >& result) const
+void HTMLCollection::namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element>>& result) const
 {
     ASSERT(result.isEmpty());
     if (name.isEmpty())
@@ -483,11 +483,11 @@ void HTMLCollection::namedItems(const AtomicString& name, WillBeHeapVector<RefPt
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* idResults = cache.getElementsById(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* idResults = cache.getElementsById(name)) {
         for (unsigned i = 0; i < idResults->size(); ++i)
             result.append(idResults->at(i));
     }
-    if (WillBeHeapVector<RawPtrWillBeMember<Element> >* nameResults = cache.getElementsByName(name)) {
+    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* nameResults = cache.getElementsByName(name)) {
         for (unsigned i = 0; i < nameResults->size(); ++i)
             result.append(nameResults->at(i));
     }

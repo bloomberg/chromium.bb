@@ -89,7 +89,7 @@ void WebGLObject::detachAndDeleteObject()
     // destructors will always call detachAndDeleteObject() rather
     // than do it based on Oilpan being enabled.
     detach();
-    deleteObject(0);
+    deleteObject(nullptr);
 }
 
 void WebGLObject::onDetached(blink::WebGraphicsContext3D* context3d)

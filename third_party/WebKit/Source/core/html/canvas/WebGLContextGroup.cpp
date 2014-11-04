@@ -91,8 +91,8 @@ void WebGLContextGroup::loseContextGroup(WebGLRenderingContextBase::LostContextM
     // and prevents groupObjects from being properly deleted.
     detachAndRemoveAllObjects();
 
-    for (HashSet<WebGLRenderingContextBase*>::iterator it = m_contexts.begin(); it != m_contexts.end(); ++it)
-        (*it)->loseContextImpl(mode, autoRecoveryMethod);
+    for (WebGLRenderingContextBase* const context : m_contexts)
+        context->loseContextImpl(mode, autoRecoveryMethod);
 }
 
 } // namespace blink

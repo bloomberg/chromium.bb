@@ -64,7 +64,7 @@ class HTMLVideoElement;
 class ImageData;
 class TextMetrics;
 
-typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
+typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
 class CanvasRenderingContext2D final: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
@@ -364,7 +364,7 @@ private:
     virtual WebLayer* platformLayer() const override;
     TextDirection toTextDirection(Direction, RenderStyle** computedStyle = nullptr) const;
 
-    WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
+    WillBeHeapVector<OwnPtrWillBeMember<State>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
     bool m_usesCSSCompatibilityParseMode;
     GraphicsContext::AntiAliasingMode m_clipAntialiasing;

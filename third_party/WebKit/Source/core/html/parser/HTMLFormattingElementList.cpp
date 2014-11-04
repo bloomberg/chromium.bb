@@ -50,11 +50,11 @@ Element* HTMLFormattingElementList::closestElementInScopeWithName(const AtomicSt
     for (unsigned i = 1; i <= m_entries.size(); ++i) {
         const Entry& entry = m_entries[m_entries.size() - i];
         if (entry.isMarker())
-            return 0;
+            return nullptr;
         if (entry.stackItem()->matchesHTMLTag(targetName))
             return entry.element();
     }
-    return 0;
+    return nullptr;
 }
 
 bool HTMLFormattingElementList::contains(Element* element)
@@ -69,7 +69,7 @@ HTMLFormattingElementList::Entry* HTMLFormattingElementList::find(Element* eleme
         // This is somewhat of a hack, and is why this method can't be const.
         return &m_entries[index];
     }
-    return 0;
+    return nullptr;
 }
 
 HTMLFormattingElementList::Bookmark HTMLFormattingElementList::bookmarkFor(Element* element)
@@ -123,7 +123,7 @@ void HTMLFormattingElementList::clearToLastMarker()
     }
 }
 
-void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackItem* newItem, WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> >& remainingCandidates)
+void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackItem* newItem, WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem>>& remainingCandidates)
 {
     ASSERT(remainingCandidates.isEmpty());
 
@@ -160,14 +160,14 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(HTMLStackIte
 
 void HTMLFormattingElementList::ensureNoahsArkCondition(HTMLStackItem* newItem)
 {
-    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> > candidates;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem>> candidates;
     tryToEnsureNoahsArkConditionQuickly(newItem, candidates);
     if (candidates.isEmpty())
         return;
 
     // We pre-allocate and re-use this second vector to save one malloc per
     // attribute that we verify.
-    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem> > remainingCandidates;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLStackItem>> remainingCandidates;
     remainingCandidates.reserveInitialCapacity(candidates.size());
 
     const Vector<Attribute>& attributes = newItem->attributes();

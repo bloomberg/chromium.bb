@@ -192,7 +192,7 @@ TextTrackCueList* TextTrack::cues()
     // http://www.whatwg.org/specs/web-apps/current-work/#dom-texttrack-cues
     if (m_mode != disabledKeyword())
         return ensureTextTrackCueList();
-    return 0;
+    return nullptr;
 }
 
 void TextTrack::removeAllCues()
@@ -219,7 +219,7 @@ TextTrackCueList* TextTrack::activeCues() const
     // http://www.whatwg.org/specs/web-apps/current-work/#dom-texttrack-activecues
     if (m_cues && m_mode != disabledKeyword())
         return m_cues->activeCues();
-    return 0;
+    return nullptr;
 }
 
 void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
@@ -296,7 +296,7 @@ VTTRegionList* TextTrack::regions()
     // each time.
     if (RuntimeEnabledFeatures::webVTTRegionsEnabled() && m_mode != disabledKeyword())
         return ensureVTTRegionList();
-    return 0;
+    return nullptr;
 }
 
 void TextTrack::addRegion(PassRefPtrWillBeRawPtr<VTTRegion> prpRegion)

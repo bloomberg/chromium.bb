@@ -63,7 +63,7 @@ HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
     Node* parent = NodeRenderingTraversal::parent(this);
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
-    return 0;
+    return nullptr;
 }
 
 bool HTMLSummaryElement::isMainSummary() const

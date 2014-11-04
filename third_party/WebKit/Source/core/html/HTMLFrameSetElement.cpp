@@ -214,10 +214,10 @@ LocalDOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& na
 {
     Element* frameElement = children()->namedItem(name);
     if (!isHTMLFrameElement(frameElement))
-        return 0;
+        return nullptr;
     Document* document = toHTMLFrameElement(frameElement)->contentDocument();
     if (!document || !document->frame())
-        return 0;
+        return nullptr;
     return document->domWindow();
 }
 

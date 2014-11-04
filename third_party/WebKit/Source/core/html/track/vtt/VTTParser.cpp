@@ -90,13 +90,13 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
 {
 }
 
-void VTTParser::getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >& outputCues)
+void VTTParser::getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue>>& outputCues)
 {
     outputCues = m_cueList;
     m_cueList.clear();
 }
 
-void VTTParser::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >& outputRegions)
+void VTTParser::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions)
 {
     outputRegions = m_regionList;
     m_regionList.clear();

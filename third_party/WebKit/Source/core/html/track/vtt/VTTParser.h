@@ -105,8 +105,8 @@ public:
     void flush();
 
     // Transfers ownership of last parsed cues to caller.
-    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >&);
-    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >&);
+    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue>>&);
+    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
 
     void trace(Visitor*);
 
@@ -143,9 +143,9 @@ private:
 
     VTTParserClient* m_client;
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTCue> > m_cueList;
+    WillBeHeapVector<RefPtrWillBeMember<VTTCue>> m_cueList;
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_regionList;
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> m_regionList;
 };
 
 } // namespace blink

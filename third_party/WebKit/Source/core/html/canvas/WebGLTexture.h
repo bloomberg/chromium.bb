@@ -124,7 +124,7 @@ private:
     GLenum m_wrapS;
     GLenum m_wrapT;
 
-    Vector<Vector<LevelInfo> > m_info;
+    Vector<Vector<LevelInfo>> m_info;
 
     bool m_isNPOT;
     bool m_isCubeComplete;

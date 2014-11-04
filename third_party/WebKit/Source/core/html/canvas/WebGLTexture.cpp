@@ -378,12 +378,12 @@ void WebGLTexture::update()
 const WebGLTexture::LevelInfo* WebGLTexture::getLevelInfo(GLenum target, GLint level) const
 {
     if (!object() || !m_target)
-        return 0;
+        return nullptr;
     int targetIndex = mapTargetToIndex(target);
     if (targetIndex < 0 || targetIndex >= static_cast<int>(m_info.size()))
-        return 0;
+        return nullptr;
     if (level < 0 || level >= static_cast<GLint>(m_info[targetIndex].size()))
-        return 0;
+        return nullptr;
     return &(m_info[targetIndex][level]);
 }
 

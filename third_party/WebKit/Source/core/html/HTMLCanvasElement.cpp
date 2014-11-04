@@ -96,9 +96,8 @@ HTMLCanvasElement::~HTMLCanvasElement()
     resetDirtyRect();
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
 #if !ENABLE(OILPAN)
-    HashSet<RawPtr<CanvasObserver> >::iterator end = m_observers.end();
-    for (HashSet<RawPtr<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
-        (*it)->canvasDestroyed(this);
+    for (CanvasObserver* canvasObserver : m_observers)
+        canvasObserver->canvasDestroyed(this);
     // Ensure these go away before the ImageBuffer.
     m_contextStateSaver.clear();
     m_context.clear();
@@ -165,7 +164,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     // once it is created.
     if (type == "2d") {
         if (m_context && !m_context->is2d())
-            return 0;
+            return nullptr;
         if (!m_context) {
             blink::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
 
@@ -185,12 +184,12 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             updateExternallyAllocatedMemory();
         } else if (!m_context->is3d()) {
             dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
-            return 0;
+            return nullptr;
         }
         return m_context.get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 void HTMLCanvasElement::didDraw(const FloatRect& rect)
@@ -252,9 +251,8 @@ void HTMLCanvasElement::willProcessTask()
 
 void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
 {
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator end = m_observers.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
-        (*it)->canvasChanged(this, rect);
+    for (CanvasObserver* canvasObserver : m_observers)
+        canvasObserver->canvasChanged(this, rect);
 }
 
 void HTMLCanvasElement::reset()
@@ -312,9 +310,8 @@ void HTMLCanvasElement::reset()
         }
     }
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator end = m_observers.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver> >::iterator it = m_observers.begin(); it != end; ++it)
-        (*it)->canvasResized(this);
+    for (CanvasObserver* canvasObserver : m_observers)
+        canvasObserver->canvasResized(this);
 }
 
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
@@ -672,7 +669,7 @@ GraphicsContext* HTMLCanvasElement::drawingContext() const
 GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
 {
     if (!hasImageBuffer())
-        return 0;
+        return nullptr;
 
     return drawingContext();
 }

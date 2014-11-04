@@ -125,7 +125,7 @@ private:
     String m_decodedURL;
     String m_decodedHTTPBody;
     String m_httpBodyAsString;
-    OwnPtr<SuffixTree<ASCIICodebook> > m_decodedHTTPBodySuffixTree;
+    OwnPtr<SuffixTree<ASCIICodebook>> m_decodedHTTPBodySuffixTree;
 
     State m_state;
     bool m_scriptTagFoundInRequest;

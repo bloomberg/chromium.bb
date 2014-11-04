@@ -120,7 +120,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
         ClientDidNotRequestCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
-        return 0;
+        return nullptr;
 
     HTMLImportLoader* loader = createLoader();
     HTMLImportChild* child = createChild(request.url(), loader, parent, client);
@@ -157,7 +157,7 @@ HTMLImportLoader* HTMLImportsController::loaderFor(const Document& document) con
             return m_loaders[i].get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 Document* HTMLImportsController::loaderDocumentAt(size_t i) const

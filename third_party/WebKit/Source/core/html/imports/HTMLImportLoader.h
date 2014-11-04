@@ -125,7 +125,7 @@ private:
 #endif
 
     RawPtrWillBeMember<HTMLImportsController> m_controller;
-    WillBeHeapVector<RawPtrWillBeMember<HTMLImportChild> > m_imports;
+    WillBeHeapVector<RawPtrWillBeMember<HTMLImportChild>> m_imports;
     State m_state;
     RefPtrWillBeMember<Document> m_document;
     RefPtrWillBeMember<DocumentWriter> m_writer;

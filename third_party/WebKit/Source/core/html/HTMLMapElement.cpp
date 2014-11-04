@@ -81,7 +81,7 @@ HTMLImageElement* HTMLMapElement::imageElement()
             return &imageElement;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

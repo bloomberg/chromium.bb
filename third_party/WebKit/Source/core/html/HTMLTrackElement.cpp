@@ -266,7 +266,7 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
     Element* parent = parentElement();
     if (isHTMLMediaElement(parent))
         return toHTMLMediaElement(parent);
-    return 0;
+    return nullptr;
 }
 
 void HTMLTrackElement::trace(Visitor* visitor)

@@ -55,9 +55,9 @@ bool HTMLMetaCharsetParser::processMeta()
 {
     const HTMLToken::AttributeList& tokenAttributes = m_token.attributes();
     HTMLAttributeList attributes;
-    for (HTMLToken::AttributeList::const_iterator iter = tokenAttributes.begin(); iter != tokenAttributes.end(); ++iter) {
-        String attributeName = attemptStaticStringCreation(iter->name, Likely8Bit);
-        String attributeValue = StringImpl::create8BitIfPossible(iter->value);
+    for (const HTMLToken::Attribute& tokenAttribute : tokenAttributes) {
+        String attributeName = attemptStaticStringCreation(tokenAttribute.name, Likely8Bit);
+        String attributeValue = StringImpl::create8BitIfPossible(tokenAttribute.value);
         attributes.append(std::make_pair(attributeName, attributeValue));
     }
 

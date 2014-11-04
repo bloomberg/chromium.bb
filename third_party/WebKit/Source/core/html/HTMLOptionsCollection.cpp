@@ -120,7 +120,7 @@ void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exception
 
 void HTMLOptionsCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element> > namedItems;
+    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())

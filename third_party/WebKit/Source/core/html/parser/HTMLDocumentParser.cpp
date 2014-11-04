@@ -95,7 +95,7 @@ public:
         if (HTMLParserThread::shared())
             return &HTMLParserThread::shared()->platformThread();
 
-        return 0;
+        return nullptr;
     }
 
 private:
@@ -435,9 +435,9 @@ void HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Parse
 
     HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
 
-    for (XSSInfoStream::const_iterator it = chunk->xssInfos.begin(); it != chunk->xssInfos.end(); ++it) {
-        m_textPosition = (*it)->m_textPosition;
-        m_xssAuditorDelegate.didBlockScript(**it);
+    for (const auto& xssInfo : chunk->xssInfos) {
+        m_textPosition = xssInfo->m_textPosition;
+        m_xssAuditorDelegate.didBlockScript(*xssInfo);
         if (isStopped())
             break;
     }
@@ -543,7 +543,7 @@ Document* HTMLDocumentParser::contextForParsingSession()
     // The parsing session should interact with the document only when parsing
     // non-fragments. Otherwise, we might delay the load event mistakenly.
     if (isParsingFragment())
-        return 0;
+        return nullptr;
     return document();
 }
 
@@ -716,7 +716,7 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(!m_haveBackgroundParser);
     m_haveBackgroundParser = true;
 
-    RefPtr<WeakReference<BackgroundHTMLParser> > reference = WeakReference<BackgroundHTMLParser>::createUnbound();
+    RefPtr<WeakReference<BackgroundHTMLParser>> reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
 
     // TODO(oysteine): Disabled due to crbug.com/398076 until a full fix can be implemented.
@@ -1022,7 +1022,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        OwnPtr<Vector<char> > buffer = adoptPtr(new Vector<char>(length));
+        OwnPtr<Vector<char>> buffer = adoptPtr(new Vector<char>(length));
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1("net", "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
