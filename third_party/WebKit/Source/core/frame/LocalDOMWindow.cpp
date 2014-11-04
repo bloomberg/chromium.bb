@@ -1296,7 +1296,7 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
     host->chrome().setStatusbarText(frame(), m_defaultStatus);
 }
 
-DOMWindow* LocalDOMWindow::self() const
+LocalDOMWindow* LocalDOMWindow::self() const
 {
     if (!frame())
         return 0;
@@ -1304,7 +1304,7 @@ DOMWindow* LocalDOMWindow::self() const
     return frame()->domWindow();
 }
 
-DOMWindow* LocalDOMWindow::opener() const
+LocalDOMWindow* LocalDOMWindow::opener() const
 {
     if (!frame())
         return 0;
@@ -1316,7 +1316,7 @@ DOMWindow* LocalDOMWindow::opener() const
     return opener->domWindow();
 }
 
-DOMWindow* LocalDOMWindow::parent() const
+LocalDOMWindow* LocalDOMWindow::parent() const
 {
     if (!frame())
         return 0;
@@ -1328,7 +1328,7 @@ DOMWindow* LocalDOMWindow::parent() const
     return frame()->domWindow();
 }
 
-DOMWindow* LocalDOMWindow::top() const
+LocalDOMWindow* LocalDOMWindow::top() const
 {
     if (!frame())
         return 0;

@@ -124,10 +124,12 @@ public:
     void setStatus(const String&) override;
     String defaultStatus() const override;
     void setDefaultStatus(const String&) override;
-    DOMWindow* self() const override;
-    DOMWindow* opener() const override;
-    DOMWindow* parent() const override;
-    DOMWindow* top() const override;
+    LocalDOMWindow* self() const override;
+    LocalDOMWindow* window() const { return self(); }
+    LocalDOMWindow* frames() const { return self(); }
+    LocalDOMWindow* opener() const override;
+    LocalDOMWindow* parent() const override;
+    LocalDOMWindow* top() const override;
     Document* document() const override;
     StyleMedia* styleMedia() const override;
     double devicePixelRatio() const override;
