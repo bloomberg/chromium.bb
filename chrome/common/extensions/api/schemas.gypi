@@ -57,7 +57,6 @@
       'image_writer_private.idl',
       'input_ime.json',
       'location.idl',
-      'management.json',
       'manifest_types.json',
       'mdns.idl',
       'media_galleries.idl',

@@ -29,6 +29,7 @@ class ContentRulesRegistry;
 class DevicePermissionsPrompt;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
+class ManagementAPIDelegate;
 class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
 class WebViewGuest;
@@ -106,6 +107,9 @@ class ExtensionsAPIClient {
   // Returns a delegate for some of VirtualKeyboardAPI's behavior.
   virtual scoped_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
       const;
+
+  // Creates a delegate for handling the management extension api.
+  virtual ManagementAPIDelegate* CreateManagementAPIDelegate() const;
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

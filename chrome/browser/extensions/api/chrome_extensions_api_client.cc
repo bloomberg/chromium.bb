@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
+#include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
@@ -104,6 +105,11 @@ ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
 #else
   return nullptr;
 #endif
+}
+
+ManagementAPIDelegate* ChromeExtensionsAPIClient::CreateManagementAPIDelegate()
+    const {
+  return new ChromeManagementAPIDelegate;
 }
 
 }  // namespace extensions

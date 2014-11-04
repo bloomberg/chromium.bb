@@ -145,6 +145,25 @@
     "dependencies": ["permission:hid"],
     "contexts": ["blessed_extension"]
   },
+  "management": {
+    "dependencies": ["permission:management"],
+    "contexts": ["blessed_extension"]
+  },
+  "management.getPermissionWarningsByManifest": {
+    "dependencies": [],
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
+  "management.getSelf": {
+    "dependencies": [],
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
+  "management.uninstallSelf": {
+    "dependencies": [],
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
   "power": {
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]

@@ -81,4 +81,9 @@ ExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
   return nullptr;
 }
 
+ManagementAPIDelegate* ExtensionsAPIClient::CreateManagementAPIDelegate()
+    const {
+  return nullptr;
+}
+
 }  // namespace extensions

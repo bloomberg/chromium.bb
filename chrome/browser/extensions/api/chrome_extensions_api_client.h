@@ -41,6 +41,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       content::WebContents* web_contents) const override;
   scoped_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
       const override;
+  ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);

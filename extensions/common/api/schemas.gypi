@@ -25,6 +25,7 @@
       'extension_options_internal.idl',
       'extension_types.json',
       'guest_view_internal.json',
+      'management.json',
       'hid.idl',
       'mime_handler_view_guest_internal.json',
       'power.idl',

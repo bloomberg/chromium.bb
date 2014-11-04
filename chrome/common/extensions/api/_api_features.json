@@ -475,25 +475,6 @@
     "dependencies": ["permission:webcamPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "management": {
-    "dependencies": ["permission:management"],
-    "contexts": ["blessed_extension"]
-  },
-  "management.getPermissionWarningsByManifest": {
-    "dependencies": [],
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "management.getSelf": {
-    "dependencies": [],
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
-  "management.uninstallSelf": {
-    "dependencies": [],
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-  },
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.
   "manifestTypes": {

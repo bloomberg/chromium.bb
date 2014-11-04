@@ -30,8 +30,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;

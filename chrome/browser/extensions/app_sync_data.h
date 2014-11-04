@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_APP_SYNC_DATA_H_
 
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"
 

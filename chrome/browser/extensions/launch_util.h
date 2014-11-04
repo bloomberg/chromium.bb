@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 
 class ExtensionService;
 

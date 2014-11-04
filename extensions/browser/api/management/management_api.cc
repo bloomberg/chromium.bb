@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/management/management_api.h"
+#include "extensions/browser/api/management/management_api.h"
 
 #include <string>
 #include <vector>
@@ -18,32 +18,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/management/management_api_constants.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/launch_util.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
-#include "chrome/common/extensions/api/management.h"
-#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/api/management.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -58,25 +42,19 @@
 
 using base::IntToString;
 using content::BrowserThread;
-using content::UtilityProcessHost;
-using content::UtilityProcessHostClient;
 
 namespace keys = extension_management_api_constants;
 
 namespace extensions {
 
-namespace management = api::management;
+namespace management = core_api::management;
 
 namespace {
 
-typedef std::vector<linked_ptr<management::ExtensionInfo> > ExtensionInfoList;
-typedef std::vector<linked_ptr<management::IconInfo> > IconInfoList;
+typedef std::vector<linked_ptr<management::ExtensionInfo>> ExtensionInfoList;
+typedef std::vector<linked_ptr<management::IconInfo>> IconInfoList;
 
-enum AutoConfirmForTest {
-  DO_NOT_SKIP = 0,
-  PROCEED,
-  ABORT
-};
+enum AutoConfirmForTest { DO_NOT_SKIP = 0, PROCEED, ABORT };
 
 AutoConfirmForTest auto_confirm_for_test = DO_NOT_SKIP;
 
@@ -93,7 +71,8 @@ std::vector<std::string> CreateWarningsList(const Extension* extension) {
 }
 
 std::vector<management::LaunchType> GetAvailableLaunchTypes(
-    const Extension& extension) {
+    const Extension& extension,
+    const ManagementAPIDelegate* delegate) {
   std::vector<management::LaunchType> launch_type_list;
   if (extension.is_platform_app()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
@@ -106,7 +85,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
 #endif
 
-  if (!util::IsStreamlinedHostedAppsEnabled()) {
+  if (!delegate->IsStreamlinedHostedAppsEnabled()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
   }
@@ -115,22 +94,25 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
 
 scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     const Extension& extension,
-    ExtensionSystem* system) {
+    content::BrowserContext* context) {
+  ExtensionSystem* system = ExtensionSystem::Get(context);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const ManagementAPIDelegate* delegate =
+      ManagementAPI::GetFactoryInstance()->Get(context)->GetDelegate();
   scoped_ptr<management::ExtensionInfo> info(new management::ExtensionInfo());
-  ExtensionService* service = system->extension_service();
 
   info->id = extension.id();
   info->name = extension.name();
   info->short_name = extension.short_name();
-  info->enabled = service->IsExtensionEnabled(info->id);
+  info->enabled = registry->enabled_extensions().Contains(info->id);
   info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info->version = extension.VersionString();
   info->description = extension.description();
   info->options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
-  info->homepage_url.reset(new std::string(
-      ManifestURL::GetHomepageURL(&extension).spec()));
-  info->may_disable = system->management_policy()->
-      UserMayModifySettings(&extension, NULL);
+  info->homepage_url.reset(
+      new std::string(ManifestURL::GetHomepageURL(&extension).spec()));
+  info->may_disable =
+      system->management_policy()->UserMayModifySettings(&extension, NULL);
   info->is_app = extension.is_app();
   if (info->is_app) {
     if (extension.is_legacy_packaged_app())
@@ -148,7 +130,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   if (info->enabled) {
     info->disabled_reason = management::ExtensionInfo::DISABLED_REASON_NONE;
   } else {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(service->profile());
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
       info->disabled_reason =
           management::ExtensionInfo::DISABLED_REASON_PERMISSIONS_INCREASE;
@@ -159,13 +141,13 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   }
 
   if (!ManifestURL::GetUpdateURL(&extension).is_empty()) {
-    info->update_url.reset(new std::string(
-        ManifestURL::GetUpdateURL(&extension).spec()));
+    info->update_url.reset(
+        new std::string(ManifestURL::GetUpdateURL(&extension).spec()));
   }
 
   if (extension.is_app()) {
-    info->app_launch_url.reset(new std::string(
-        AppLaunchInfo::GetFullLaunchURL(&extension).spec()));
+    info->app_launch_url.reset(
+        new std::string(delegate->GetFullLaunchURL(&extension).spec()));
   }
 
   const ExtensionIconSet::IconMap& icons =
@@ -176,9 +158,9 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       management::IconInfo* icon_info = new management::IconInfo();
       icon_info->size = icon_iter->first;
-      GURL url = ExtensionIconSource::GetIconURL(
-          &extension, icon_info->size, ExtensionIconSet::MATCH_EXACTLY, false,
-          NULL);
+      GURL url =
+          delegate->GetIconURL(&extension, icon_info->size,
+                               ExtensionIconSet::MATCH_EXACTLY, false, nullptr);
       icon_info->url = url.spec();
       info->icons->push_back(make_linked_ptr<management::IconInfo>(icon_info));
     }
@@ -237,7 +219,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
       launch_type = LAUNCH_TYPE_WINDOW;
     } else {
       launch_type =
-          GetLaunchType(ExtensionPrefs::Get(service->profile()), &extension);
+          delegate->GetLaunchType(ExtensionPrefs::Get(context), &extension);
     }
 
     switch (launch_type) {
@@ -259,49 +241,45 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     }
 
     info->available_launch_types.reset(new std::vector<management::LaunchType>(
-        GetAvailableLaunchTypes(extension)));
+        GetAvailableLaunchTypes(extension, delegate)));
   }
 
   return info.Pass();
 }
 
+bool ShouldNotBeVisible(const Extension* extension,
+                        content::BrowserContext* context) {
+  return (extension->ShouldNotBeVisible() ||
+          ExtensionPrefs::Get(context)->IsEphemeralApp(extension->id()));
+}
+
 void AddExtensionInfo(const ExtensionSet& extensions,
-                            ExtensionSystem* system,
-                            ExtensionInfoList* extension_list,
-                            content::BrowserContext* context) {
+                      ExtensionInfoList* extension_list,
+                      content::BrowserContext* context) {
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     const Extension& extension = *iter->get();
 
-    if (ui_util::ShouldNotBeVisible(&extension, context))
+    if (ShouldNotBeVisible(&extension, context))
       continue;  // Skip built-in extensions/apps.
 
     extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
-        CreateExtensionInfo(extension, system).release()));
+        CreateExtensionInfo(extension, context).release()));
   }
 }
 
 }  // namespace
 
-ExtensionService* ManagementFunction::service() {
-  return ExtensionSystem::Get(GetProfile())->extension_service();
-}
-
-ExtensionService* AsyncManagementFunction::service() {
-  return ExtensionSystem::Get(GetProfile())->extension_service();
-}
-
 bool ManagementGetAllFunction::RunSync() {
   ExtensionInfoList extensions;
-  ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
-  ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
 
-  AddExtensionInfo(registry->enabled_extensions(),
-                   system, &extensions, browser_context());
-  AddExtensionInfo(registry->disabled_extensions(),
-                   system, &extensions, browser_context());
-  AddExtensionInfo(registry->terminated_extensions(),
-                   system, &extensions, browser_context());
+  AddExtensionInfo(registry->enabled_extensions(), &extensions,
+                   browser_context());
+  AddExtensionInfo(registry->disabled_extensions(), &extensions,
+                   browser_context());
+  AddExtensionInfo(registry->terminated_extensions(), &extensions,
+                   browser_context());
 
   results_ = management::GetAll::Results::Create(extensions);
   return true;
@@ -311,16 +289,18 @@ bool ManagementGetFunction::RunSync() {
   scoped_ptr<management::Get::Params> params(
       management::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
 
-  const Extension* extension = service()->GetExtensionById(params->id, true);
+  const Extension* extension =
+      registry->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                                     params->id);
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
     return false;
   }
 
   scoped_ptr<management::ExtensionInfo> info =
-      CreateExtensionInfo(*extension, ExtensionSystem::Get(GetProfile()));
+      CreateExtensionInfo(*extension, browser_context());
   results_ = management::Get::Results::Create(*info);
 
   return true;
@@ -328,7 +308,7 @@ bool ManagementGetFunction::RunSync() {
 
 bool ManagementGetSelfFunction::RunSync() {
   scoped_ptr<management::ExtensionInfo> info =
-      CreateExtensionInfo(*extension_, ExtensionSystem::Get(GetProfile()));
+      CreateExtensionInfo(*extension_, browser_context());
   results_ = management::Get::Results::Create(*info);
 
   return true;
@@ -339,10 +319,12 @@ bool ManagementGetPermissionWarningsByIdFunction::RunSync() {
       management::GetPermissionWarningsById::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  const Extension* extension = service()->GetExtensionById(params->id, true);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                                     params->id);
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
     return false;
   }
 
@@ -351,118 +333,38 @@ bool ManagementGetPermissionWarningsByIdFunction::RunSync() {
   return true;
 }
 
-namespace {
-
-// This class helps ManagementGetPermissionWarningsByManifestFunction manage
-// sending manifest JSON strings to the utility process for parsing.
-class SafeManifestJSONParser : public UtilityProcessHostClient {
- public:
-  SafeManifestJSONParser(
-      ManagementGetPermissionWarningsByManifestFunction* client,
-      const std::string& manifest)
-      : client_(client),
-        manifest_(manifest) {}
-
-  void Start() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::StartWorkOnIOThread, this));
-  }
-
-  void StartWorkOnIOThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    UtilityProcessHost* host = UtilityProcessHost::Create(
-        this, base::MessageLoopProxy::current().get());
-    host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
-  }
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SafeManifestJSONParser, message)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                          OnJSONParseSucceeded)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
-                          OnJSONParseFailed)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnJSONParseSucceeded(const base::ListValue& wrapper) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const base::Value* value = NULL;
-    CHECK(wrapper.Get(0, &value));
-    if (value->IsType(base::Value::TYPE_DICTIONARY))
-      parsed_manifest_.reset(
-          static_cast<const base::DictionaryValue*>(value)->DeepCopy());
-    else
-      error_ = keys::kManifestParseError;
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::ReportResultFromUIThread, this));
-  }
-
-  void OnJSONParseFailed(const std::string& error) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    error_ = error;
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&SafeManifestJSONParser::ReportResultFromUIThread, this));
-  }
-
-  void ReportResultFromUIThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (error_.empty() && parsed_manifest_.get())
-      client_->OnParseSuccess(parsed_manifest_.Pass());
-    else
-      client_->OnParseFailure(error_);
-  }
-
- private:
-  ~SafeManifestJSONParser() override {}
-
-  // The client who we'll report results back to.
-  ManagementGetPermissionWarningsByManifestFunction* client_;
-
-  // Data to parse.
-  std::string manifest_;
-
-  // Results of parsing.
-  scoped_ptr<base::DictionaryValue> parsed_manifest_;
-
-  std::string error_;
-};
-
-}  // namespace
-
 bool ManagementGetPermissionWarningsByManifestFunction::RunAsync() {
   scoped_ptr<management::GetPermissionWarningsByManifest::Params> params(
       management::GetPermissionWarningsByManifest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  scoped_refptr<SafeManifestJSONParser> parser =
-      new SafeManifestJSONParser(this, params->manifest_str);
-  parser->Start();
+  const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
+                                              ->Get(browser_context())
+                                              ->GetDelegate();
 
-  // Matched with a Release() in OnParseSuccess/Failure().
-  AddRef();
+  if (delegate) {
+    delegate->GetPermissionWarningsByManifestFunctionDelegate(
+        this, params->manifest_str);
 
-  // Response is sent async in OnParseSuccess/Failure().
-  return true;
+    // Matched with a Release() in OnParseSuccess/Failure().
+    AddRef();
+
+    // Response is sent async in OnParseSuccess/Failure().
+    return true;
+  } else {
+    // TODO(lfg) add error string
+    OnParseFailure("");
+    return false;
+  }
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
     scoped_ptr<base::DictionaryValue> parsed_manifest) {
   CHECK(parsed_manifest.get());
 
-  scoped_refptr<Extension> extension = Extension::Create(
-      base::FilePath(), Manifest::INVALID_LOCATION, *parsed_manifest,
-      Extension::NO_FLAGS, &error_);
+  scoped_refptr<Extension> extension =
+      Extension::Create(base::FilePath(), Manifest::INVALID_LOCATION,
+                        *parsed_manifest, Extension::NO_FLAGS, &error_);
   if (!extension.get()) {
     OnParseFailure(keys::kExtensionCreateError);
     return;
@@ -490,30 +392,23 @@ bool ManagementLaunchAppFunction::RunSync() {
   scoped_ptr<management::LaunchApp::Params> params(
       management::LaunchApp::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  const Extension* extension = service()->GetExtensionById(params->id, true);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                                     params->id);
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
     return false;
   }
   if (!extension->is_app()) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError,
-                                                     params->id);
+    error_ = ErrorUtils::FormatErrorMessage(keys::kNotAnAppError, params->id);
     return false;
   }
 
-  // Look at prefs to find the right launch container.
-  // If the user has not set a preference, the default launch value will be
-  // returned.
-  LaunchContainer launch_container =
-      GetLaunchContainer(ExtensionPrefs::Get(GetProfile()), extension);
-  OpenApplication(AppLaunchParams(
-      GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
-  CoreAppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_EXTENSION_API,
-      extension->GetType());
-
-  return true;
+  const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
+                                              ->Get(browser_context())
+                                              ->GetDelegate();
+  return delegate->LaunchAppFunctionDelegate(extension, browser_context());
 }
 
 ManagementSetEnabledFunction::ManagementSetEnabledFunction() {
@@ -526,58 +421,64 @@ bool ManagementSetEnabledFunction::RunAsync() {
   scoped_ptr<management::SetEnabled::Params> params(
       management::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+  const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
+                                              ->Get(browser_context())
+                                              ->GetDelegate();
 
   extension_id_ = params->id;
 
   const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (!extension || ui_util::ShouldNotBeVisible(extension, browser_context())) {
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kNoExtensionError, extension_id_);
+      registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+  if (!extension || ShouldNotBeVisible(extension, browser_context())) {
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, extension_id_);
     return false;
   }
 
   const ManagementPolicy* policy =
-      ExtensionSystem::Get(GetProfile())->management_policy();
+      ExtensionSystem::Get(browser_context())->management_policy();
   if (!policy->UserMayModifySettings(extension, NULL) ||
       (!params->enabled && policy->MustRemainEnabled(extension, NULL)) ||
       (params->enabled && policy->MustRemainDisabled(extension, NULL, NULL))) {
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kUserCantModifyError, extension_id_);
+    error_ = ErrorUtils::FormatErrorMessage(keys::kUserCantModifyError,
+                                            extension_id_);
     return false;
   }
 
-  bool currently_enabled = service()->IsExtensionEnabled(extension_id_);
+  bool currently_enabled =
+      registry->enabled_extensions().Contains(extension_id_) ||
+      registry->terminated_extensions().Contains(extension_id_);
 
   if (!currently_enabled && params->enabled) {
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(GetProfile());
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
     if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture()) {
-        error_ = keys::kGestureNeededForEscalationError;
+        SetError(keys::kGestureNeededForEscalationError);
         return false;
       }
       AddRef();  // Matched in InstallUIProceed/InstallUIAbort
-      install_prompt_.reset(
-          new ExtensionInstallPrompt(GetAssociatedWebContents()));
-      install_prompt_->ConfirmReEnable(this, extension);
+      install_prompt_ = delegate->SetEnabledFunctionDelegate(this, extension);
       return true;
     }
-    service()->EnableExtension(extension_id_);
+    delegate->EnableExtension(browser_context(), extension_id_);
   } else if (currently_enabled && !params->enabled) {
-    service()->DisableExtension(extension_id_, Extension::DISABLE_USER_ACTION);
+    delegate->DisableExtension(browser_context(), extension_id_,
+                               Extension::DISABLE_USER_ACTION);
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&ManagementSetEnabledFunction::SendResponse, this, true));
 
   return true;
 }
 
 void ManagementSetEnabledFunction::InstallUIProceed() {
-  service()->EnableExtension(extension_id_);
+  ManagementAPI::GetFactoryInstance()
+      ->Get(browser_context())
+      ->GetDelegate()
+      ->EnableExtension(browser_context(), extension_id_);
   SendResponse(true);
   Release();
 }
@@ -597,40 +498,32 @@ ManagementUninstallFunctionBase::~ManagementUninstallFunctionBase() {
 bool ManagementUninstallFunctionBase::Uninstall(
     const std::string& target_extension_id,
     bool show_confirm_dialog) {
+  const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
+                                              ->Get(browser_context())
+                                              ->GetDelegate();
   extension_id_ = target_extension_id;
   const Extension* target_extension =
-      extensions::ExtensionRegistry::Get(browser_context())->
-          GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+      extensions::ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   if (!target_extension ||
-      ui_util::ShouldNotBeVisible(target_extension, browser_context())) {
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kNoExtensionError, extension_id_);
+      ShouldNotBeVisible(target_extension, browser_context())) {
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, extension_id_);
     return false;
   }
 
-  if (!ExtensionSystem::Get(GetProfile())
+  if (!ExtensionSystem::Get(browser_context())
            ->management_policy()
            ->UserMayModifySettings(target_extension, NULL)) {
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kUserCantModifyError, extension_id_);
+    error_ = ErrorUtils::FormatErrorMessage(keys::kUserCantModifyError,
+                                            extension_id_);
     return false;
   }
 
   if (auto_confirm_for_test == DO_NOT_SKIP) {
     if (show_confirm_dialog) {
       AddRef();  // Balanced in ExtensionUninstallAccepted/Canceled
-      content::WebContents* web_contents = GetAssociatedWebContents();
-      extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-          GetProfile(),
-          web_contents ? web_contents->GetTopLevelNativeWindow() : NULL,
-          this));
-      if (extension_id() != target_extension_id) {
-        extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
-            target_extension, extension());
-      } else {
-        // If this is a self uninstall, show the generic uninstall dialog.
-        extension_uninstall_dialog_->ConfirmUninstall(target_extension);
-      }
+      delegate->UninstallFunctionDelegate(this, target_extension_id);
     } else {
       Finish(true);
     }
@@ -651,7 +544,7 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
   if (should_uninstall) {
     // The extension can be uninstalled in another window while the UI was
     // showing. Do nothing in that case.
-    ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
     const Extension* extension = registry->GetExtensionById(
         extension_id_, ExtensionRegistry::EVERYTHING);
     if (!extension) {
@@ -659,18 +552,21 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
                                               extension_id_);
       SendResponse(false);
     } else {
-      bool success = service()->UninstallExtension(
-          extension_id_,
+      const ManagementAPIDelegate* delegate =
+          ManagementAPI::GetFactoryInstance()
+              ->Get(browser_context())
+              ->GetDelegate();
+      bool success = delegate->UninstallExtension(
+          browser_context(), extension_id_,
           extensions::UNINSTALL_REASON_MANAGEMENT_API,
-          base::Bind(&base::DoNothing),
-          NULL);
+          base::Bind(&base::DoNothing), NULL);
 
       // TODO set error_ if !success
       SendResponse(success);
     }
   } else {
-    error_ = ErrorUtils::FormatErrorMessage(
-        keys::kUninstallCanceledError, extension_id_);
+    error_ = ErrorUtils::FormatErrorMessage(keys::kUninstallCanceledError,
+                                            extension_id_);
     SendResponse(false);
   }
 }
@@ -757,10 +653,12 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
   scoped_ptr<management::CreateAppShortcut::Params> params(
       management::CreateAppShortcut::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  const Extension* extension = service()->GetExtensionById(params->id, true);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
   if (!extension) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
-                                            params->id);
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
     return false;
   }
 
@@ -776,24 +674,21 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
   }
 #endif
 
-  Browser* browser = chrome::FindBrowserWithProfile(
-      GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (!browser) {
-    // Shouldn't happen if we have user gesture.
-    error_ = keys::kNoBrowserToCreateShortcut;
-    return false;
+  if (auto_confirm_for_test != DO_NOT_SKIP) {
+    // Matched with a Release() in OnCloseShortcutPrompt().
+    AddRef();
+
+    OnCloseShortcutPrompt(auto_confirm_for_test == PROCEED);
+
+    return true;
   }
 
-  // Matched with a Release() in OnCloseShortcutPrompt().
-  AddRef();
-
-  if (auto_confirm_for_test == DO_NOT_SKIP) {
-    chrome::ShowCreateChromeAppShortcutsDialog(
-        browser->window()->GetNativeWindow(), browser->profile(), extension,
-        base::Bind(&ManagementCreateAppShortcutFunction::OnCloseShortcutPrompt,
-           this));
-  } else {
-    OnCloseShortcutPrompt(auto_confirm_for_test == PROCEED);
+  if (ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetDelegate()
+          ->CreateAppShortcutFunctionDelegate(this, extension)) {
+    // Matched with a Release() in OnCloseShortcutPrompt().
+    AddRef();
   }
 
   // Response is sent async in OnCloseShortcutPrompt().
@@ -809,7 +704,12 @@ bool ManagementSetLaunchTypeFunction::RunSync() {
   scoped_ptr<management::SetLaunchType::Params> params(
       management::SetLaunchType::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  const Extension* extension = service()->GetExtensionById(params->id, true);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
+  const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
+                                              ->Get(browser_context())
+                                              ->GetDelegate();
   if (!extension) {
     error_ =
         ErrorUtils::FormatErrorMessage(keys::kNoExtensionError, params->id);
@@ -822,11 +722,10 @@ bool ManagementSetLaunchTypeFunction::RunSync() {
   }
 
   std::vector<management::LaunchType> available_launch_types =
-      GetAvailableLaunchTypes(*extension);
+      GetAvailableLaunchTypes(*extension, delegate);
 
   management::LaunchType app_launch_type = params->launch_type;
-  if (std::find(available_launch_types.begin(),
-                available_launch_types.end(),
+  if (std::find(available_launch_types.begin(), available_launch_types.end(),
                 app_launch_type) == available_launch_types.end()) {
     error_ = keys::kLaunchTypeNotAvailableError;
     return false;
@@ -850,7 +749,7 @@ bool ManagementSetLaunchTypeFunction::RunSync() {
       NOTREACHED();
   }
 
-  SetLaunchType(service(), params->id, launch_type);
+  delegate->SetLaunchType(browser_context(), params->id, launch_type);
 
   return true;
 }
@@ -866,7 +765,7 @@ void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
     const WebApplicationInfo& web_app_info) {
   if (extension) {
     scoped_ptr<management::ExtensionInfo> info =
-        CreateExtensionInfo(*extension, ExtensionSystem::Get(GetProfile()));
+        CreateExtensionInfo(*extension, browser_context());
     results_ = management::GenerateAppForLink::Results::Create(*info);
 
     SendResponse(true);
@@ -876,25 +775,6 @@ void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
     SendResponse(false);
     Release();
   }
-}
-
-void ManagementGenerateAppForLinkFunction::OnFaviconForApp(
-    const favicon_base::FaviconImageResult& image_result) {
-  WebApplicationInfo web_app;
-  web_app.title = base::UTF8ToUTF16(title_);
-  web_app.app_url = launch_url_;
-
-  if (!image_result.image.IsEmpty()) {
-    WebApplicationInfo::IconInfo icon;
-    icon.data = image_result.image.AsBitmap();
-    icon.width = icon.data.width();
-    icon.height = icon.data.height();
-    web_app.icons.push_back(icon);
-  }
-
-  bookmark_app_helper_.reset(new BookmarkAppHelper(service(), web_app, NULL));
-  bookmark_app_helper_->Create(base::Bind(
-      &ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp, this));
 }
 
 bool ManagementGenerateAppForLinkFunction::RunAsync() {
@@ -909,8 +789,8 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
 
   GURL launch_url(params->url);
   if (!launch_url.is_valid() || !launch_url.SchemeIsHTTPOrHTTPS()) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kInvalidURLError,
-                                            params->url);
+    error_ =
+        ErrorUtils::FormatErrorMessage(keys::kInvalidURLError, params->url);
     return false;
   }
 
@@ -919,23 +799,17 @@ bool ManagementGenerateAppForLinkFunction::RunAsync() {
     return false;
   }
 
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(GetProfile(),
-                                           Profile::EXPLICIT_ACCESS);
-  DCHECK(favicon_service);
+  app_for_link_delegate_ =
+      ManagementAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetDelegate()
+          ->GenerateAppForLinkFunctionDelegate(this, browser_context(),
+                                               params->title, launch_url);
 
-  title_ = params->title;
-  launch_url_ = launch_url;
-
-  favicon_service->GetFaviconImageForPageURL(
-      launch_url,
-      base::Bind(&ManagementGenerateAppForLinkFunction::OnFaviconForApp, this),
-      &cancelable_task_tracker_);
-
-  // Matched with a Release() in OnExtensionLoaded().
+  // Matched with a Release() in FinishCreateBookmarkApp().
   AddRef();
 
-  // Response is sent async in OnExtensionLoaded().
+  // Response is sent async in FinishCreateBookmarkApp().
   return true;
 }
 
@@ -944,7 +818,8 @@ ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
-ManagementEventRouter::~ManagementEventRouter() {}
+ManagementEventRouter::~ManagementEventRouter() {
+}
 
 void ManagementEventRouter::OnExtensionLoaded(
     content::BrowserContext* browser_context,
@@ -975,14 +850,14 @@ void ManagementEventRouter::OnExtensionUninstalled(
 
 void ManagementEventRouter::BroadcastEvent(const Extension* extension,
                                            const char* event_name) {
-  if (ui_util::ShouldNotBeVisible(extension, browser_context_))
+  if (ShouldNotBeVisible(extension, browser_context_))
     return;  // Don't dispatch events for built-in extenions.
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == management::OnUninstalled::kEventName) {
     args->Append(new base::StringValue(extension->id()));
   } else {
     scoped_ptr<management::ExtensionInfo> info =
-        CreateExtensionInfo(*extension, ExtensionSystem::Get(browser_context_));
+        CreateExtensionInfo(*extension, browser_context_);
     args->Append(info->ToValue().release());
   }
 
@@ -991,7 +866,8 @@ void ManagementEventRouter::BroadcastEvent(const Extension* extension,
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context),
+      delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);
@@ -1006,7 +882,7 @@ void ManagementAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<ManagementAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ManagementAPI>>
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static

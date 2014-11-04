@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
