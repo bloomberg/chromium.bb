@@ -174,12 +174,6 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
-enum weston_mode_switch_op {
-	WESTON_MODE_SWITCH_SET_NATIVE,
-	WESTON_MODE_SWITCH_SET_TEMPORARY,
-	WESTON_MODE_SWITCH_RESTORE_NATIVE
-};
-
 struct weston_output {
 	uint32_t id;
 	char *name;
@@ -1434,8 +1428,15 @@ void
 weston_surface_destroy(struct weston_surface *surface);
 
 int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode,
-			int32_t scale, enum weston_mode_switch_op op);
+weston_output_mode_set_native(struct weston_output *output,
+			      struct weston_mode *mode,
+			      int32_t scale);
+int
+weston_output_mode_switch_to_temporary(struct weston_output *output,
+				       struct weston_mode *mode,
+				       int32_t scale);
+int
+weston_output_mode_switch_to_native(struct weston_output *output);
 
 int
 noop_renderer_init(struct weston_compositor *ec);

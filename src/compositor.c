@@ -98,76 +98,13 @@ weston_output_transform_scale_init(struct weston_output *output,
 static void
 weston_compositor_build_view_list(struct weston_compositor *compositor);
 
-WL_EXPORT int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode,
-		int32_t scale, enum weston_mode_switch_op op)
+static void weston_mode_switch_finish(struct weston_output *output,
+				      int mode_changed,
+				      int scale_changed)
 {
 	struct weston_seat *seat;
 	struct wl_resource *resource;
 	pixman_region32_t old_output_region;
-	int ret, notify_mode_changed, notify_scale_changed;
-	int temporary_mode, temporary_scale;
-
-	if (!output->switch_mode)
-		return -1;
-
-	temporary_mode = (output->original_mode != 0);
-	temporary_scale = (output->current_scale != output->original_scale);
-	ret = 0;
-
-	notify_mode_changed = 0;
-	notify_scale_changed = 0;
-	switch(op) {
-	case WESTON_MODE_SWITCH_SET_NATIVE:
-		output->native_mode = mode;
-		if (!temporary_mode) {
-			notify_mode_changed = 1;
-			ret = output->switch_mode(output, mode);
-			if (ret < 0)
-				return ret;
-		}
-
-		output->native_scale = scale;
-		if(!temporary_scale)
-			notify_scale_changed = 1;
-		break;
-	case WESTON_MODE_SWITCH_SET_TEMPORARY:
-		if (!temporary_mode)
-			output->original_mode = output->native_mode;
-		if (!temporary_scale)
-			output->original_scale = output->native_scale;
-
-		ret = output->switch_mode(output, mode);
-		if (ret < 0)
-			return ret;
-
-		output->current_scale = scale;
-		break;
-	case WESTON_MODE_SWITCH_RESTORE_NATIVE:
-		if (!temporary_mode) {
-			weston_log("already in the native mode\n");
-			return -1;
-		}
-
-		notify_mode_changed = (output->original_mode != output->native_mode);
-
-		ret = output->switch_mode(output, mode);
-		if (ret < 0)
-			return ret;
-
-		if (output->original_scale != output->native_scale) {
-			notify_scale_changed = 1;
-			scale = output->native_scale;
-			output->original_scale = scale;
-		}
-		output->original_mode = 0;
-
-		output->current_scale = output->native_scale;
-		break;
-	default:
-		weston_log("unknown weston_switch_mode_op %d\n", op);
-		break;
-	}
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);
@@ -211,25 +148,113 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	pixman_region32_fini(&old_output_region);
 
 	/* notify clients of the changes */
-	if (notify_mode_changed || notify_scale_changed) {
-		wl_resource_for_each(resource, &output->resource_list) {
-			if(notify_mode_changed) {
-				wl_output_send_mode(resource,
-						mode->flags | WL_OUTPUT_MODE_CURRENT,
-						mode->width,
-						mode->height,
-						mode->refresh);
-			}
+	wl_resource_for_each(resource, &output->resource_list) {
+		if (mode_changed) {
+			wl_output_send_mode(resource,
+					    output->current_mode->flags,
+					    output->current_mode->width,
+					    output->current_mode->height,
+					    output->current_mode->refresh);
+		}
 
-			if (notify_scale_changed)
-				wl_output_send_scale(resource, scale);
+		if (scale_changed)
+			wl_output_send_scale(resource, output->current_scale);
 
-			if (wl_resource_get_version(resource) >= 2)
-				   wl_output_send_done(resource);
+		if (wl_resource_get_version(resource) >= 2)
+			   wl_output_send_done(resource);
+	}
+}
+
+WL_EXPORT int
+weston_output_mode_set_native(struct weston_output *output,
+			      struct weston_mode *mode,
+			      int32_t scale)
+{
+	int ret;
+	int mode_changed = 0, scale_changed = 0;
+
+	if (!output->switch_mode)
+		return -1;
+
+	if (!output->original_mode) {
+		mode_changed = 1;
+		ret = output->switch_mode(output, mode);
+		if (ret < 0)
+			return ret;
+		if (output->current_scale != scale) {
+			scale_changed = 1;
+			output->current_scale = scale;
 		}
 	}
 
-	return ret;
+	output->native_mode = mode;
+	output->native_scale = scale;
+
+	weston_mode_switch_finish(output, mode_changed, scale_changed);
+
+	return 0;
+}
+
+WL_EXPORT int
+weston_output_mode_switch_to_native(struct weston_output *output)
+{
+	int ret;
+	int mode_changed = 0, scale_changed = 0;
+
+	if (!output->switch_mode)
+		return -1;
+
+	if (!output->original_mode) {
+		weston_log("already in the native mode\n");
+		return -1;
+	}
+	/* the non fullscreen clients haven't seen a mode set since we
+	 * switched into a temporary, so we need to notify them if the
+	 * mode at that time is different from the native mode now.
+	 */
+	mode_changed = (output->original_mode != output->native_mode);
+	scale_changed = (output->original_scale != output->native_scale);
+
+	ret = output->switch_mode(output, output->native_mode);
+	if (ret < 0)
+		return ret;
+
+	output->current_scale = output->native_scale;
+
+	output->original_mode = NULL;
+	output->original_scale = 0;
+
+	weston_mode_switch_finish(output, mode_changed, scale_changed);
+
+	return 0;
+}
+
+WL_EXPORT int
+weston_output_mode_switch_to_temporary(struct weston_output *output,
+				       struct weston_mode *mode,
+				       int32_t scale)
+{
+	int ret;
+
+	if (!output->switch_mode)
+		return -1;
+
+	/* original_mode is the last mode non full screen clients have seen,
+	 * so we shouldn't change it if we already have one set.
+	 */
+	if (!output->original_mode) {
+		output->original_mode = output->native_mode;
+		output->original_scale = output->native_scale;
+	}
+	ret = output->switch_mode(output, mode);
+	if (ret < 0)
+		return ret;
+
+	output->current_scale = scale;
+
+	weston_mode_switch_finish(output, 0, 0);
+
+	return 0;
 }
 
 WL_EXPORT void

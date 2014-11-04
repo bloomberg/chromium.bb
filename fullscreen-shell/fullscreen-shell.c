@@ -284,12 +284,8 @@ fs_output_for_output(struct weston_output *output)
 static void
 restore_output_mode(struct weston_output *output)
 {
-	if (output->original_mode ||
-	    (int32_t)output->current_scale != output->original_scale)
-		weston_output_switch_mode(output,
-					  output->native_mode,
-					  output->native_scale,
-					  WESTON_MODE_SWITCH_RESTORE_NATIVE);
+	if (output->original_mode)
+		weston_output_mode_switch_to_native(output);
 }
 
 /*
@@ -472,9 +468,8 @@ fs_output_configure_for_mode(struct fs_output *fsout,
 	mode.height = surf_height * fsout->output->native_scale;
 	mode.refresh = fsout->pending.framerate;
 
-	ret = weston_output_switch_mode(fsout->output, &mode,
-					fsout->output->native_scale,
-					WESTON_MODE_SWITCH_SET_TEMPORARY);
+	ret = weston_output_mode_switch_to_temporary(fsout->output, &mode,
+					fsout->output->native_scale);
 
 	if (ret != 0) {
 		/* The mode switch failed.  Clear the pending and

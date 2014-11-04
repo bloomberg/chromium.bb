@@ -803,7 +803,7 @@ xf_peer_post_connect(freerdp_peer* client)
 				weston_log("client mode not found\n");
 				return FALSE;
 			}
-			weston_output_switch_mode(&output->base, target_mode, 1, WESTON_MODE_SWITCH_SET_NATIVE);
+			weston_output_mode_set_native(&output->base, target_mode, 1);
 			output->base.width = new_mode.width;
 			output->base.height = new_mode.height;
 		}

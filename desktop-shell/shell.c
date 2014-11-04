@@ -2247,12 +2247,8 @@ shell_surface_set_class(struct wl_client *client,
 static void
 restore_output_mode(struct weston_output *output)
 {
-	if (output->original_mode ||
-	    (int32_t)output->current_scale != output->original_scale)
-		weston_output_switch_mode(output,
-					  output->native_mode,
-					  output->native_scale,
-					  WESTON_MODE_SWITCH_RESTORE_NATIVE);
+	if (output->original_mode)
+		weston_output_mode_switch_to_native(output);
 }
 
 static void
@@ -2876,8 +2872,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 				surf_height * surface->buffer_viewport.buffer.scale,
 				shsurf->fullscreen.framerate};
 
-			if (weston_output_switch_mode(output, &mode, surface->buffer_viewport.buffer.scale,
-					WESTON_MODE_SWITCH_SET_TEMPORARY) == 0) {
+			if (weston_output_mode_switch_to_temporary(output, &mode,
+					surface->buffer_viewport.buffer.scale) == 0) {
 				weston_view_set_position(shsurf->view,
 							 output->x - surf_x,
 							 output->y - surf_y);
