@@ -4,6 +4,7 @@
 
 #include "android_webview/common/aw_content_client.h"
 
+#include "android_webview/common/aw_version_info_values.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
@@ -15,10 +16,7 @@
 namespace {
 
 std::string GetProduct() {
-  // "Chrome/XX.0.0.0" identifies that this WebView is derived from the
-  // corresponding Chromium version XX.
-  // TODO(torne): Use chrome/VERSION file. See http://crbug.com/297522
-  return "Chrome/40.0.0.0";
+  return "Chrome/" PRODUCT_VERSION;
 }
 
 }

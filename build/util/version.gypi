@@ -7,9 +7,11 @@
     'variables': {
       'version_py_path': '<(DEPTH)/build/util/version.py',
       'version_path': '<(DEPTH)/chrome/VERSION',
+      'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
     },
     'version_py_path': '<(version_py_path)',
     'version_path': '<(version_path)',
+    'lastchange_path': '<(lastchange_path)',
     'version_full':
         '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
     'version_libchrome_short':
