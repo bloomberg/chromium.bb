@@ -89,14 +89,15 @@ HTMLDocumentView::HTMLDocumentView(
     ShellPtr shell,
     scoped_refptr<base::MessageLoopProxy> compositor_thread,
     WebMediaPlayerFactory* web_media_player_factory)
-    : shell_(shell.Pass()),
+    : response_(response.Pass()),
+      shell_(shell.Pass()),
       web_view_(NULL),
       root_(NULL),
       view_manager_client_factory_(shell_.get(), this),
       compositor_thread_(compositor_thread),
       web_media_player_factory_(web_media_player_factory),
       weak_factory_(this) {
-  Load(response.Pass());
+  shell_.set_client(this);
 }
 
 HTMLDocumentView::~HTMLDocumentView() {
@@ -110,6 +111,7 @@ void HTMLDocumentView::AcceptConnection(const String& requestor_url,
                                         ServiceProviderPtr provider) {
   exported_services_.AddService(&view_manager_client_factory_);
   WeakBindToPipe(&exported_services_, provider.PassMessagePipe());
+  Load(response_.Pass());
 }
 
 void HTMLDocumentView::Initialize(Array<String> args) {
