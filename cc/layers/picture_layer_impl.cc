@@ -1087,9 +1087,6 @@ void PictureLayerImpl::RecalculateRasterScales() {
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
   }
 
-  raster_contents_scale_ =
-      std::max(raster_contents_scale_, MinimumContentsScale());
-
   // If we're not re-rasterizing during animation, rasterize at the maximum
   // scale that will occur during the animation, if the maximum scale is
   // known. However we want to avoid excessive memory use. If the scale is
@@ -1121,6 +1118,9 @@ void PictureLayerImpl::RecalculateRasterScales() {
       raster_contents_scale_ = 1.f * ideal_page_scale_ * ideal_device_scale_;
   }
 
+  raster_contents_scale_ =
+      std::max(raster_contents_scale_, MinimumContentsScale());
+
   // If this layer would create zero or one tiles at this content scale,
   // don't create a low res tiling.
   gfx::Size raster_bounds = gfx::ToCeiledSize(
@@ -1138,6 +1138,8 @@ void PictureLayerImpl::RecalculateRasterScales() {
   low_res_raster_contents_scale_ = std::max(
       raster_contents_scale_ * low_res_factor,
       MinimumContentsScale());
+  DCHECK_LE(low_res_raster_contents_scale_, raster_contents_scale_);
+  DCHECK_GE(low_res_raster_contents_scale_, MinimumContentsScale());
 }
 
 void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
