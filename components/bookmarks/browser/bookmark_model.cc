@@ -371,9 +371,9 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 
   {
     base::AutoLock url_lock(url_lock_);
-    RemoveNodeFromURLSet(mutable_node);
+    RemoveNodeFromInternalMaps(mutable_node);
     mutable_node->set_url(url);
-    nodes_ordered_by_url_set_.insert(mutable_node);
+    AddNodeToInternalMaps(mutable_node);
   }
 
   if (store_.get())
@@ -617,12 +617,6 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
   if (meta_info)
     new_node->SetMetaInfoMap(*meta_info);
 
-  {
-    // Only hold the lock for the duration of the insert.
-    base::AutoLock url_lock(url_lock_);
-    nodes_ordered_by_url_set_.insert(new_node);
-  }
-
   return AddNode(AsMutable(parent), index, new_node);
 }
 
@@ -748,9 +742,8 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
 
   url_lock_.AssertAcquired();
   if (node->is_url()) {
-    RemoveNodeFromURLSet(node);
+    RemoveNodeFromInternalMaps(node);
     removed_urls->insert(node->url());
-    index_->Remove(node);
   }
 
   CancelPendingFaviconLoadRequests(node);
@@ -845,9 +838,11 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
       BookmarkNodeRemoved(this, parent, index, node.get(), removed_urls));
 }
 
-void BookmarkModel::RemoveNodeFromURLSet(BookmarkNode* node) {
+void BookmarkModel::RemoveNodeFromInternalMaps(BookmarkNode* node) {
+  index_->Remove(node);
   // NOTE: this is called in such a way that url_lock_ is already held. As
   // such, this doesn't explicitly grab the lock.
+  url_lock_.AssertAcquired();
   NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
   DCHECK(i != nodes_ordered_by_url_set_.end());
   // i points to the first node with the URL, advance until we find the
@@ -891,12 +886,23 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   if (store_.get())
     store_->ScheduleSave();
 
+  if (node->type() == BookmarkNode::URL) {
+    base::AutoLock url_lock(url_lock_);
+    AddNodeToInternalMaps(node);
+  } else {
+    index_->Add(node);
+  }
+
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeAdded(this, parent, index));
 
-  index_->Add(node);
-
   return node;
+}
+
+void BookmarkModel::AddNodeToInternalMaps(BookmarkNode* node) {
+  index_->Add(node);
+  url_lock_.AssertAcquired();
+  nodes_ordered_by_url_set_.insert(node);
 }
 
 bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,

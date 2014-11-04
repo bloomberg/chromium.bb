@@ -461,6 +461,18 @@ TEST_F(BookmarkIndexTest, ChangeTitle) {
   ExpectMatches("BlAh", expected, arraysize(expected));
 }
 
+// Makes sure index is updated when a node's URL is changed.
+TEST_F(BookmarkIndexTest, ChangeURL) {
+  const char* titles[] = { "a", "b" };
+  const char* urls[] = {"http://fizz",
+                        "http://fuzz"};
+  AddBookmarks(titles, urls, arraysize(titles));
+
+  const char* expected[] = { "a" };
+  model_->SetURL(model_->other_node()->GetChild(0), GURL("http://blah"));
+  ExpectMatches("blah", expected, arraysize(expected));
+}
+
 // Makes sure no more than max queries is returned.
 TEST_F(BookmarkIndexTest, HonorMax) {
   const char* titles[] = { "abcd", "abcde" };

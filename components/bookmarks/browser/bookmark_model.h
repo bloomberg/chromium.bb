@@ -336,14 +336,17 @@ class BookmarkModel : public KeyedService {
   // type specifies how the node should be removed.
   void RemoveAndDeleteNode(BookmarkNode* delete_me);
 
-  // Remove |node| from |nodes_ordered_by_url_set_|.
-  void RemoveNodeFromURLSet(BookmarkNode* node);
+  // Remove |node| from |nodes_ordered_by_url_set_| and |index_|.
+  void RemoveNodeFromInternalMaps(BookmarkNode* node);
 
   // Adds the |node| at |parent| in the specified |index| and notifies its
   // observers.
   BookmarkNode* AddNode(BookmarkNode* parent,
                         int index,
                         BookmarkNode* node);
+
+  // Adds the |node| to |nodes_ordered_by_url_set_| and |index_|.
+  void AddNodeToInternalMaps(BookmarkNode* node);
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
