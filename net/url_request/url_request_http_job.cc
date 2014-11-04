@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -783,6 +784,11 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 URLRequestHttpJob::OnStartCompleted"));
+
   RecordTimer();
 
   // If the request was destroyed, then there is no more work to do.
@@ -886,6 +892,11 @@ void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
 }
 
 void URLRequestHttpJob::OnReadCompleted(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 URLRequestHttpJob::OnReadCompleted"));
+
   read_in_progress_ = false;
 
   if (ShouldFixMismatchedContentLength(result))
