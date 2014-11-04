@@ -59,3 +59,39 @@ template("go_test_binary") {
     ] + rebase_path(invoker.sources, build_dir)
   }
 }
+
+template("go_shared_library") {
+  # Only available on android for now.
+  assert(is_android)
+  assert(defined(invoker.sources))
+  assert(go_build_tool != "")
+
+  static_library_name = target_name + "_static_library"
+
+  static_library(static_library_name) {
+    complete_static_lib = true
+    deps = invoker.deps
+  }
+
+  action(target_name) {
+    deps = [ ":$static_library_name" ]
+    script = "//build/go/go.py"
+    outputs = [ "${target_out_dir}/${target_name}" ]
+    # Since go test does not permit specifying an output directory or output
+    # binary name, we create a temporary build directory, and the python
+    # script will later identify the output, copy it to the target location,
+    # and clean up the temporary build directory.
+    build_dir = "${target_out_dir}/${target_name}_build"
+    args = [
+      "--", 
+      "CGO_ENABLED=1 GOOS=android GOARCH=arm GOARM=7 ${go_build_tool}",
+      rebase_path(build_dir, root_build_dir),
+      rebase_path(target_out_dir, root_build_dir) + "/${target_name}",
+      rebase_path("//", root_build_dir),
+      "-I" + rebase_path("//"),
+      " -L" + rebase_path(target_out_dir) +
+       " -l" + static_library_name + "",
+      "build -ldflags=-shared",
+    ] + rebase_path(invoker.sources, build_dir)
+  }
+}
