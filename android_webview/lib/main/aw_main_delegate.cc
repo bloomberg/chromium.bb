@@ -79,9 +79,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // This is needed for sharing textures across the different GL threads.
   cl->AppendSwitch(switches::kEnableThreadedTextureMailboxes);
 
-  // Virtual viewport doesn't behave well with web view. crbug.com/426891
-  cl->AppendSwitch(cc::switches::kDisablePinchVirtualViewport);
-
   return false;
 }
 
