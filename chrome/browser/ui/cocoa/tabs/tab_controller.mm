@@ -128,6 +128,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)dealloc {
+  [mediaIndicatorButton_ setAnimationDoneTarget:nil withAction:nil];
+  [mediaIndicatorButton_ setClickTarget:nil withAction:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[self tabView] setController:nil];
   [super dealloc];
