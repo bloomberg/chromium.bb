@@ -44372,6 +44372,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="913" label="HOTWORDPRIVATE_FINALIZESPEAKERMODEL"/>
   <int value="914" label="HOTWORDPRIVATE_STOPTRAINING"/>
   <int value="915" label="GCDPRIVATE_STARTPAIRING"/>
+  <int value="916" label="VPNPROVIDER_CREATECONFIG"/>
+  <int value="917" label="VPNPROVIDER_DESTROYCONFIG"/>
+  <int value="918" label="VPNPROVIDER_SETPARAMETERS"/>
+  <int value="919" label="VPNPROVIDER_SENDPACKET"/>
+  <int value="920" label="VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

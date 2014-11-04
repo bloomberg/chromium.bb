@@ -306,6 +306,11 @@
       ]
     }
   ],
+  "vpnProvider": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"]
+  },
   "webview": [
     {
       "channel": "stable",

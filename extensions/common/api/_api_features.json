@@ -288,6 +288,10 @@
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
   },
+  "vpnProvider": {
+    "dependencies": ["permission:vpnProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
     "contexts": ["blessed_extension"]

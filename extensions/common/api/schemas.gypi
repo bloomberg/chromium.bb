@@ -43,6 +43,7 @@
       'test.json',
       'usb.idl',
       'virtual_keyboard_private.json',
+      'vpn_provider.idl',
       'web_request.json',
       'web_view_internal.json',
     ],

@@ -1,0 +1,96 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.vpnProvider</code> API to implement a VPN
+// client.
+namespace vpnProvider {
+  // A parameters class for the vpn interface
+  dictionary Parameters {
+    // IP address for the VPN interface in CIDR notation.
+    // IPv4 is currently the only supported mode.
+    DOMString address;
+    // Broadcast address for the VPN interface. (default: Deduced
+    // from IP address and mask).
+    DOMString? broadcastAddress;
+    // MTU for the VPN interface. (default: 1500)
+    DOMString? mtu;
+    // Bypass network traffic to the below IPs (in CIDR notation)
+    // from the tunnel. Typically used to bypass traffic to/from
+    // VPN server.
+    DOMString[] bypassTunnelForIp;
+    // A list of search domains (default: system setting).
+    DOMString[]? domainSearch;
+    // A list of DNS servers in CIDR notation (default: system
+    // setting).
+    DOMString[]? dnsServers;
+  };
+
+  // The enum is used by the platform to notify the client of
+  // connection and network related status.
+  // TODO(kaliamoorthi) : Document the messages
+  enum PlatformMessage {
+    connected,
+    disconnected,
+    underlyingNetworkDisconnected,
+    error
+  };
+
+  // The enum is used by the VPN client to inform the platform
+  // of its current state. This helps provide meaningful messages
+  // to the user. The states listed below are currently known to
+  // the platform (Shill daemon).
+  // TODO(kaliamoorthi) : Document all states
+  // TODO(kaliamoorthi) : Make failure more informative by expanding the failure
+  // conditions.
+  enum VpnConnectionState {
+    connected,
+    portal,
+    online,
+    failure
+  };
+
+  // The callback is used by <code>setParameters, sendPacket</code>
+  // to signal completion. The callback is called with
+  // <code>chrome.runtime.lastError</code> set to error code if
+  // there is an error.
+  [inline_doc] callback CallCompleteCallback = void ();
+
+  // The callback is used by createConfig to signal completion.
+  callback ConfigCreatedCallback = void (long handle);
+
+  interface Functions {
+    // Creates a new VPN configuration.
+    static void createConfig(DOMString name,
+                             ConfigCreatedCallback callback);
+
+    // Destroys a VPN configuration created by the extension.
+    static void destroyConfig(long handle,
+                              optional CallCompleteCallback callback);
+
+    // Sets the parameters for a VPN configuration. This should be
+    // called after connected is received from the platform.
+    static void setParameters(long handle, Parameters parameters,
+                              CallCompleteCallback callback);
+
+    // Injects an IP packet into the network stack of Chrome OS.
+    static void sendPacket(long handle, ArrayBuffer data,
+                           optional CallCompleteCallback callback);
+
+    // Notifies the VPN connection state to Chrome OS.
+    static void notifyConnectionStateChanged(
+        long handle, VpnConnectionState state,
+        optional CallCompleteCallback callback);
+  };
+
+  interface Events {
+    // Called when a message is received from the platform for a
+    // VPN configuration owned by the extension.
+    static void onPlatformMessage(long handle,
+                                  PlatformMessage message);
+
+    // Called when an IP packet is received from the platform for a
+    // VPN configuration owned by the extension.
+    static void onPacketReceived(long handle, ArrayBuffer data);
+  };
+};

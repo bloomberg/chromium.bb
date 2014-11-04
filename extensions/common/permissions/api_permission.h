@@ -171,6 +171,7 @@ class APIPermission {
     kUsbDevice,
     kVideoCapture,
     kVirtualKeyboardPrivate,
+    kVpnProvider,
     kWallpaper,
     kWallpaperPrivate,
     kWebcamPrivate,

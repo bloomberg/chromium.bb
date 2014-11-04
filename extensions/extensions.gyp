@@ -515,6 +515,8 @@
         'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.cc',
         'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h',
         'browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h',
+        'browser/api/vpn_provider/vpn_provider_api.cc',
+        'browser/api/vpn_provider/vpn_provider_api.h',
         'browser/api/web_request/form_data_parser.cc',
         'browser/api/web_request/form_data_parser.h',
         'browser/api/web_request/upload_data_presenter.cc',
