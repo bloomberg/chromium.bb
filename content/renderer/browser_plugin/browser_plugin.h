@@ -172,10 +172,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnAttachACK(int browser_plugin_instance_id);
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnCopyFromCompositingSurface(int instance_id,
-                                    int request_id,
-                                    gfx::Rect source_rect,
-                                    gfx::Size dest_size);
   void OnGuestGone(int instance_id);
   void OnSetContentsOpaque(int instance_id, bool opaque);
   void OnSetCursor(int instance_id, const WebCursor& cursor);

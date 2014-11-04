@@ -21,7 +21,6 @@ class SharedMemory;
 
 namespace cc {
 class CompositorFrame;
-class CopyOutputResult;
 class Layer;
 class SolidColorLayer;
 class DelegatedFrameProvider;
@@ -59,9 +58,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   static ChildFrameCompositingHelper* CreateForRenderFrameProxy(
       RenderFrameProxy* render_frame_proxy);
 
-  void CopyFromCompositingSurface(int request_id,
-                                  gfx::Rect source_rect,
-                                  gfx::Size dest_size);
   void DidCommitCompositorFrame();
   void EnableCompositing(bool);
   void OnContainerDestroy();
@@ -102,10 +98,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                                          float device_scale_factor,
                                          cc::Layer* layer);
   void SendReturnedDelegatedResources();
-  void CopyFromCompositingSurfaceHasResult(
-      int request_id,
-      gfx::Size dest_size,
-      scoped_ptr<cc::CopyOutputResult> result);
 
   int host_routing_id_;
   int last_route_id_;

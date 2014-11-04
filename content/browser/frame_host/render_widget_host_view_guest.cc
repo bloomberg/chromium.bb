@@ -350,15 +350,6 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   rwhv->SelectionBoundsChanged(guest_params);
 }
 
-void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    CopyFromCompositingSurfaceCallback& callback,
-    const SkColorType color_type) {
-  CHECK(guest_);
-  guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
-}
-
 void RenderWidgetHostViewGuest::SetBackgroundColor(SkColor color) {
   // Content embedders can toggle opaque backgrounds through this API.
   // We plumb the value here so that BrowserPlugin updates its compositing

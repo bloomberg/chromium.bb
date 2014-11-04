@@ -141,11 +141,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   void UpdateVisibility();
 
-  void CopyFromCompositingSurface(
-      gfx::Rect src_subrect,
-      gfx::Size dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback);
-
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // WebContentsObserver implementation.
@@ -227,13 +222,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
   // Message handlers for messages from embedder.
-
   void OnCompositorFrameSwappedACK(
       int instance_id,
       const FrameHostMsg_CompositorFrameSwappedACK_Params& params);
-  void OnCopyFromCompositingSurfaceAck(int instance_id,
-                                       int request_id,
-                                       const SkBitmap& bitmap);
+
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding
@@ -347,13 +339,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool embedder_visible_;
   // Whether the browser plugin is inside a plugin document.
   bool is_full_page_plugin_;
-
-  // Each copy-request is identified by a unique number. The unique number is
-  // used to keep track of the right callback.
-  int copy_request_id_;
-  typedef base::Callback<void(bool, const SkBitmap&)> CopyRequestCallback;
-  typedef std::map<int, const CopyRequestCallback> CopyRequestMap;
-  CopyRequestMap copy_request_callbacks_;
 
   // Indicates that this BrowserPluginGuest has associated renderer-side state.
   // This is used to determine whether or not to create a new RenderView when

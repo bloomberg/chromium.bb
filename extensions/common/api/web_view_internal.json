@@ -128,28 +128,6 @@
         ]
       },
       {
-        "name": "captureVisibleRegion",
-        "type": "function",
-        "description": "Captures the visible area of the currently loaded page inside <webview>.",
-        "parameters": [
-          {
-            "type": "integer",
-            "name": "instanceId",
-            "description": "The instance ID of the guest <webview> process."
-          },
-          {
-            "$ref": "extensionTypes.ImageDetails",
-            "name": "options",
-            "optional": true
-          },
-          {
-            "type": "function", "name": "callback", "parameters": [
-              {"type": "string", "name": "dataUrl", "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
-            ]
-          }
-        ]
-      },
-      {
         "name": "setZoom",
         "type": "function",
         "parameters": [

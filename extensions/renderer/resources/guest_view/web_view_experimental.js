@@ -19,11 +19,6 @@ WebView.prototype.maybeGetExperimentalEvents = function() {
   return {};
 };
 
-// Captures the visible content within the webview.
-WebView.prototype.captureVisibleRegion = function(spec, callback) {
-  WebViewInternal.captureVisibleRegion(this.guestInstanceId, spec, callback);
-};
-
 // Loads a data URL with a specified base URL used for relative links.
 // Optionally, a virtual URL can be provided to be shown to the user instead
 // of the data URL.
@@ -46,7 +41,6 @@ WebView.prototype.loadDataWithBaseUrl = function(
 // Registers the experimantal WebVIew API when available.
 WebView.maybeGetExperimentalAPIs = function() {
   var experimentalMethods = [
-    'captureVisibleRegion',
     'loadDataWithBaseUrl'
   ];
   return experimentalMethods;

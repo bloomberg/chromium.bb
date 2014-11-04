@@ -115,25 +115,6 @@ class WebViewInternalInsertCSSFunction
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalInsertCSSFunction);
 };
 
-class WebViewInternalCaptureVisibleRegionFunction
-    : public extensions::CaptureWebContentsFunction {
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
-                             WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
-
-  WebViewInternalCaptureVisibleRegionFunction();
-
- protected:
-  ~WebViewInternalCaptureVisibleRegionFunction() override;
-
- private:
-  // extensions::CaptureWebContentsFunction implementation.
-  bool IsScreenshotEnabled() override;
-  content::WebContents* GetWebContentsForID(int id) override;
-  void OnCaptureFailure(FailureReason reason) override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewInternalCaptureVisibleRegionFunction);
-};
-
 class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setName",

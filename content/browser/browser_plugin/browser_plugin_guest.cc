@@ -81,7 +81,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       guest_visible_(false),
       embedder_visible_(true),
       is_full_page_plugin_(false),
-      copy_request_id_(0),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -166,8 +165,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
                         OnCompositorFrameSwappedACK)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
-                        OnCopyFromCompositingSurfaceAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExecuteEditCommand,
@@ -291,19 +288,6 @@ RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
 
 void BrowserPluginGuest::UpdateVisibility() {
   OnSetVisibility(browser_plugin_instance_id(), visible());
-}
-
-void BrowserPluginGuest::CopyFromCompositingSurface(
-      gfx::Rect src_subrect,
-      gfx::Size dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  copy_request_callbacks_.insert(std::make_pair(++copy_request_id_, callback));
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_CopyFromCompositingSurface(
-          browser_plugin_instance_id(),
-          copy_request_id_,
-          src_subrect,
-          dst_size));
 }
 
 BrowserPluginGuestManager*
@@ -458,7 +442,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginHostMsg_CompositorFrameSwappedACK::ID:
-    case BrowserPluginHostMsg_CopyFromCompositingSurfaceAck::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_ExecuteEditCommand::ID:
     case BrowserPluginHostMsg_ExtendSelectionAndDelete::ID:
@@ -740,18 +723,6 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   if (mouse_locked_)
     Send(new ViewMsg_MouseLockLost(routing_id()));
   mouse_locked_ = false;
-}
-
-void BrowserPluginGuest::OnCopyFromCompositingSurfaceAck(
-    int browser_plugin_instance_id,
-    int request_id,
-    const SkBitmap& bitmap) {
-  CHECK(copy_request_callbacks_.count(request_id));
-  if (!copy_request_callbacks_.count(request_id))
-    return;
-  const CopyRequestCallback& callback = copy_request_callbacks_[request_id];
-  callback.Run(!bitmap.empty() && !bitmap.isNull(), bitmap);
-  copy_request_callbacks_.erase(request_id);
 }
 
 void BrowserPluginGuest::OnUpdateGeometry(int browser_plugin_instance_id,

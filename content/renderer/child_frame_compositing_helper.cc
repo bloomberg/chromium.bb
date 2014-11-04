@@ -112,21 +112,6 @@ void ChildFrameCompositingHelper::SendReclaimCompositorResourcesToBrowser(
   }
 }
 
-void ChildFrameCompositingHelper::CopyFromCompositingSurface(
-    int request_id,
-    gfx::Rect source_rect,
-    gfx::Size dest_size) {
-  CHECK(background_layer_.get());
-  scoped_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
-          &ChildFrameCompositingHelper::CopyFromCompositingSurfaceHasResult,
-          this,
-          request_id,
-          dest_size));
-  request->set_area(source_rect);
-  background_layer_->RequestCopyOfOutput(request.Pass());
-}
-
 void ChildFrameCompositingHelper::DidCommitCompositorFrame() {
   if (!resource_collection_.get() || !ack_pending_)
     return;
@@ -295,29 +280,6 @@ void ChildFrameCompositingHelper::SetContentsOpaque(bool opaque) {
   opaque_ = opaque;
   if (delegated_layer_.get())
     delegated_layer_->SetContentsOpaque(opaque_);
-}
-
-void ChildFrameCompositingHelper::CopyFromCompositingSurfaceHasResult(
-    int request_id,
-    gfx::Size dest_size,
-    scoped_ptr<cc::CopyOutputResult> result) {
-  scoped_ptr<SkBitmap> bitmap;
-  if (result && result->HasBitmap() && !result->size().IsEmpty())
-    bitmap = result->TakeBitmap();
-
-  SkBitmap resized_bitmap;
-  if (bitmap) {
-    resized_bitmap =
-        skia::ImageOperations::Resize(*bitmap,
-                                      skia::ImageOperations::RESIZE_BEST,
-                                      dest_size.width(),
-                                      dest_size.height());
-  }
-  if (GetBrowserPluginManager()) {
-    GetBrowserPluginManager()->Send(
-        new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
-            host_routing_id_, GetInstanceID(), request_id, resized_bitmap));
-  }
 }
 
 }  // namespace content

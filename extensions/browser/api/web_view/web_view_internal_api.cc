@@ -153,30 +153,6 @@ bool WebViewInternalInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }
 
-WebViewInternalCaptureVisibleRegionFunction::
-    WebViewInternalCaptureVisibleRegionFunction() {
-}
-
-WebViewInternalCaptureVisibleRegionFunction::
-    ~WebViewInternalCaptureVisibleRegionFunction() {
-}
-
-bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
-  return true;
-}
-
-WebContents* WebViewInternalCaptureVisibleRegionFunction::GetWebContentsForID(
-    int instance_id) {
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
-  return guest ? guest->web_contents() : NULL;
-}
-
-void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
-    FailureReason reason) {
-  SendResponse(false);
-}
-
 WebViewInternalSetNameFunction::WebViewInternalSetNameFunction() {
 }
 

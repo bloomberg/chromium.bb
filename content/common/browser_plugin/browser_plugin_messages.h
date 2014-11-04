@@ -116,11 +116,6 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_HandleInputEvent,
                     gfx::Rect /* guest_window_rect */,
                     IPC::WebInputEventPointer /* event */)
 
-IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
-                    int /* browser_plugin_instance_id */,
-                    int /* request_id */,
-                    SkBitmap)
-
 // Notify the guest renderer that some resources given to the embededer
 // are not used any more.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ReclaimCompositorResources,
@@ -198,12 +193,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetContentsOpaque,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,
                      content::WebCursor /* cursor */)
-
-IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
-                     int /* browser_plugin_instance_id */,
-                     int /* request_id */,
-                     gfx::Rect  /* source_rect */,
-                     gfx::Size  /* dest_size */)
 
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* browser_plugin_instance_id */,
