@@ -456,7 +456,6 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  VLOG(2) << "OnWebSocketRequest";
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -698,11 +697,8 @@ void DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI(int connection_id) {
 void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  VLOG(2) << "OnWebSocketRequestUI : " << request.path;
-  if (!thread_) {
-    VLOG(2) << "OnWebSocketRequestUI : !thread_";
+  if (!thread_)
     return;
-  }
 
   std::string browser_prefix = "/devtools/browser";
   size_t browser_pos = request.path.find(browser_prefix);
