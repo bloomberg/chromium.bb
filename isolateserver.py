@@ -96,13 +96,6 @@ DEFAULT_BLACKLIST = (
 )
 
 
-# Chromium-specific.
-DEFAULT_BLACKLIST += (
-  r'^.+\.(?:run_test_cases)$',
-  r'^(?:.+' + re.escape(os.path.sep) + r'|)testserver\.log$',
-)
-
-
 class Error(Exception):
   """Generic runtime error."""
   pass
@@ -1997,11 +1990,7 @@ def CMDarchive(parser, args):
   directory entry itself.
   """
   add_isolate_server_options(parser, False)
-  parser.add_option(
-      '--blacklist',
-      action='append', default=list(DEFAULT_BLACKLIST),
-      help='List of regexp to use as blacklist filter when uploading '
-           'directories')
+  add_archive_options(parser)
   options, files = parser.parse_args(args)
   process_isolate_server_options(parser, options)
   if file_path.is_url(options.isolate_server):
@@ -2080,6 +2069,14 @@ def CMDdownload(parser, args):
         print('  ' + ' '.join(bundle.command))
 
   return 0
+
+
+def add_archive_options(parser):
+  parser.add_option(
+      '--blacklist',
+      action='append', default=list(DEFAULT_BLACKLIST),
+      help='List of regexp to use as blacklist filter when uploading '
+           'directories')
 
 
 def add_isolate_server_options(parser, add_indir):

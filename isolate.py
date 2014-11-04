@@ -13,7 +13,7 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 import datetime
 import itertools
@@ -478,7 +478,7 @@ class CompleteState(object):
 
   def load_isolate(
       self, cwd, isolate_file, path_variables, config_variables,
-      extra_variables, ignore_broken_items):
+      extra_variables, blacklist, ignore_broken_items):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -555,7 +555,7 @@ class CompleteState(object):
     infiles = isolated_format.expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
-        lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
+        tools.gen_blacklist(blacklist),
         follow_symlinks,
         ignore_broken_items)
 
@@ -673,7 +673,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
     # Then load the .isolate and expands directories.
     complete_state.load_isolate(
         cwd, isolate, options.path_variables, options.config_variables,
-        options.extra_variables, options.ignore_broken_items)
+        options.extra_variables, options.blacklist, options.ignore_broken_items)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
@@ -886,6 +886,7 @@ def CMDbatcharchive(parser, args):
   }
   """
   isolateserver.add_isolate_server_options(parser, False)
+  isolateserver.add_archive_options(parser)
   auth.add_auth_options(parser)
   parser.add_option(
       '--dump-json',
@@ -1108,6 +1109,7 @@ def add_variable_option(parser):
 
 def add_isolate_options(parser):
   """Adds --isolate, --isolated, --out and --<foo>-variable options."""
+  isolateserver.add_archive_options(parser)
   group = optparse.OptionGroup(parser, 'Common options')
   group.add_option(
       '-i', '--isolate',

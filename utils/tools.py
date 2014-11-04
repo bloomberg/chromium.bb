@@ -336,7 +336,7 @@ def format_json(data, dense):
 
 def gen_blacklist(regexes):
   """Returns a lambda to be used as a blacklist."""
-  compiled = [re.compile(i) for i in regexes]
+  compiled = [re.compile(i) for i in regexes or []]
   return lambda f: any(j.match(f) for j in compiled)
 
 

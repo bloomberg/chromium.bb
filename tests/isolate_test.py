@@ -142,7 +142,7 @@ class IsolateTest(IsolateBase):
     with self.assertRaises(SystemExit):
       parser.parse_args(['--config-variable', 'Foo'])
 
-  def test_blacklist(self):
+  def test_blacklist_default(self):
     ok = [
       '.git2',
       '.pyc',
@@ -162,7 +162,7 @@ class IsolateTest(IsolateBase):
     for i in blocked:
       self.assertTrue(blacklist(i), i)
 
-  def test_blacklist_chromium(self):
+  def test_blacklist_custom(self):
     ok = [
       '.run_test_cases',
       'testserver.log2',
@@ -172,7 +172,7 @@ class IsolateTest(IsolateBase):
       'testserver.log',
       os.path.join('foo', 'testserver.log'),
     ]
-    blacklist = tools.gen_blacklist(isolateserver.DEFAULT_BLACKLIST)
+    blacklist = tools.gen_blacklist([r'^.+\.run_test_cases$', r'^.+\.log$'])
     for i in ok:
       self.assertFalse(blacklist(i), i)
     for i in blocked:
@@ -195,7 +195,7 @@ class IsolateTest(IsolateBase):
     }
     complete_state = isolate.CompleteState(None, isolate.SavedState(self.cwd))
     complete_state.load_isolate(
-        unicode(self.cwd), unicode(isolate_file), {}, {}, {}, False)
+        unicode(self.cwd), unicode(isolate_file), {}, {}, {}, None, False)
     self.assertEqual(expected, complete_state.saved_state.to_isolated())
 
 
@@ -215,6 +215,7 @@ class IsolateLoad(IsolateBase):
       isolated = os.path.join(self.directory, 'foo.isolated')
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
+      blacklist = list(isolateserver.DEFAULT_BLACKLIST)
       path_variables = {}
       config_variables = {
         'OS': 'linux',
@@ -891,7 +892,8 @@ class IsolateLoad(IsolateBase):
       config = {
         'OS': config_os,
       }
-      c.load_isolate(unicode(self.cwd), root_isolate, {}, config, {}, False)
+      c.load_isolate(
+          unicode(self.cwd), root_isolate, {}, config, {}, None, False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
         'algo': 'sha-1',
@@ -1084,7 +1086,7 @@ class IsolateLoad(IsolateBase):
         'EXTRA': 'indeed',
       }
       c.load_isolate(
-          unicode(cwd), root_isolate, paths, config, extra, False)
+          unicode(cwd), root_isolate, paths, config, extra, None, False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
         'algo': 'sha-1',
