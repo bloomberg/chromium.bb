@@ -14,7 +14,6 @@
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/password_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/document_state.h"
@@ -185,14 +184,9 @@ bool DoUsernamesMatch(const base::string16& username1,
   return StartsWith(username1, username2, true);
 }
 
-// Returns |true| if the given element is both editable and has permission to be
-// autocompleted. The latter can be either because there is no
-// autocomplete='off' set for the element, or because the flag is set to ignore
-// autocomplete='off'. Otherwise, returns |false|.
+// Returns |true| if the given element is editable. Otherwise, returns |false|.
 bool IsElementAutocompletable(const blink::WebInputElement& element) {
-  return IsElementEditable(element) &&
-         (ShouldIgnoreAutocompleteOffForPasswordFields() ||
-          element.autoComplete());
+  return IsElementEditable(element);
 }
 
 // Returns true if the password specified in |form| is a default value.
@@ -397,15 +391,11 @@ bool FillFormOnPasswordRecieved(
   if (password_element.document().frame()->parent())
     return false;
 
-  bool form_contains_username_field = FillDataContainsUsername(fill_data);
-  if (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
-      form_contains_username_field && !username_element.form().autoComplete())
-    return false;
-
   // If we can't modify the password, don't try to set the username
   if (!IsElementAutocompletable(password_element))
     return false;
 
+  bool form_contains_username_field = FillDataContainsUsername(fill_data);
   // Try to set the username to the preferred name, but only if the field
   // can be set and isn't prefilled.
   if (form_contains_username_field &&

@@ -1694,13 +1694,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
   },
   {
-    "disable-ignore-autocomplete-off",
-    IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME,
-    IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(autofill::switches::kDisableIgnoreAutocompleteOff)
-  },
-  {
     "ignore-autocomplete-off-autofill",
     IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME,
     IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_DESCRIPTION,

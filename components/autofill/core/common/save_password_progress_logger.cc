@@ -133,8 +133,6 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Form blacklisted.";
     case SavePasswordProgressLogger::STRING_INVALID_FORM:
       return "Invalid form.";
-    case SavePasswordProgressLogger::STRING_AUTOCOMPLETE_OFF:
-      return "Autocomplete=off.";
     case SavePasswordProgressLogger::STRING_SYNC_CREDENTIAL:
       return "Credential is used for syncing passwords.";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:

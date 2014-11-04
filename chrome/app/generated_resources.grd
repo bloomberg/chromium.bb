@@ -14658,12 +14658,6 @@ Do you accept?
       </message>
     </if>
 
-    <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME" desc="Name of the disable ignore autocomplete='off' lab">
-      Disable ignore autocomplete='off' (Passwords)
-    </message>
-    <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION" desc="Description of the disable ignore autocomplete='off' lab">
-      Disable ignore autocomplete='off' for password forms in the password manager.
-    </message>
     <message name="IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME" desc="Name of the ignore autocomplete='off' for Autofill lab">
       Ignore autocomplete='off' (Autofill)
     </message>

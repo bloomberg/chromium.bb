@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "components/autofill/core/common/password_autofill_util.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -279,15 +278,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
-  // Always save generated passwords, as the user expresses explicit intent for
-  // Chrome to manage such passwords. For other passwords, respect the
-  // autocomplete attribute if autocomplete='off' is not ignored.
-  if (!autofill::ShouldIgnoreAutocompleteOffForPasswordFields() &&
-      !manager->HasGeneratedPassword() && !form.password_autocomplete_set) {
-    RecordFailure(AUTOCOMPLETE_OFF, form.origin.host(), logger.get());
-    return;
-  }
-
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid =
       form.origin.SchemeIsSecure() &&
@@ -344,9 +334,6 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
         break;
       case INVALID_FORM:
         logger->LogMessage(Logger::STRING_INVALID_FORM);
-        break;
-      case AUTOCOMPLETE_OFF:
-        logger->LogMessage(Logger::STRING_AUTOCOMPLETE_OFF);
         break;
       case SYNC_CREDENTIAL:
         logger->LogMessage(Logger::STRING_SYNC_CREDENTIAL);

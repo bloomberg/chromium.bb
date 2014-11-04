@@ -7,10 +7,6 @@
 namespace autofill {
 namespace switches {
 
-// Forces the password manager to not ignore autocomplete='off' for password
-// forms.
-const char kDisableIgnoreAutocompleteOff[]  = "do-not-ignore-autocomplete-off";
-
 // Disables password generation when we detect that the user is going through
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";

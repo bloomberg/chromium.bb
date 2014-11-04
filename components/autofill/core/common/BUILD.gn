@@ -20,8 +20,6 @@ static_library("common") {
     "form_field_data.h",
     "form_field_data_predictions.cc",
     "form_field_data_predictions.h",
-    "password_autofill_util.cc",
-    "password_autofill_util.h",
     "password_form.cc",
     "password_form.h",
     "password_form_fill_data.cc",

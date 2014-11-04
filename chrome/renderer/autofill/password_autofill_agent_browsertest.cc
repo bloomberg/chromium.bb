@@ -12,7 +12,6 @@
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/password_autofill_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -323,37 +322,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                                   GetMainFrame(),
                                   username_element_,
                                   is_user_input);
-  }
-
-  // Tests that no suggestion popup is generated when the username_element_ is
-  // edited.
-  void ExpectNoSuggestionsPopup() {
-    // The first test below ensures that the suggestions have been handled by
-    // the password_autofill_agent, even though autocomplete='off' is set. The
-    // second check ensures that, although handled, no "show suggestions" IPC to
-    // the browser was generated.
-    //
-    // This is interesting in the specific case of an autocomplete='off' form
-    // that also has a remembered username and password
-    // (http://crbug.com/326679). To fix the DCHECK that this case used to hit,
-    // |true| is returned from ShowSuggestions for all forms with valid
-    // usersnames that are autocomplete='off', prentending that a selection box
-    // has been shown to the user. Of course, it hasn't, so a message is never
-    // sent to the browser on acceptance, and the DCHECK isn't hit (and nothing
-    // is filled).
-    //
-    // These tests only make sense in the context of not ignoring
-    // autocomplete='off', so only test them if the disable autocomplete='off'
-    // flag is not enabled.
-    // TODO(jww): Remove this function and callers once autocomplete='off' is
-    // permanently ignored.
-    if (!ShouldIgnoreAutocompleteOffForPasswordFields()) {
-      EXPECT_TRUE(
-          password_autofill_agent_->ShowSuggestions(username_element_, false));
-
-      EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-          AutofillHostMsg_ShowPasswordSuggestions::ID));
-    }
   }
 
   void SimulateKeyDownEvent(const WebInputElement& element,
@@ -968,68 +936,6 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
 
   ExecuteJavaScript(kJavaScriptClick);
   CheckTextFieldsDOMState(kAliceUsername, true, "", true);
-}
-
-// Regression test for http://crbug.com/326679
-TEST_F(PasswordAutofillAgentTest, SelectUsernameWithUsernameAutofillOff) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Set the username element to autocomplete='off'
-  username_element_.setAttribute(WebString::fromUTF8("autocomplete"),
-                                 WebString::fromUTF8("off"));
-
-  // Simulate the user changing the username to some known username.
-  SimulateUsernameChange(kAliceUsername, true);
-
-  ExpectNoSuggestionsPopup();
-}
-
-// Regression test for http://crbug.com/326679
-TEST_F(PasswordAutofillAgentTest,
-       SelectUnknownUsernameWithUsernameAutofillOff) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Set the username element to autocomplete='off'
-  username_element_.setAttribute(WebString::fromUTF8("autocomplete"),
-                                 WebString::fromUTF8("off"));
-
-  // Simulate the user changing the username to some unknown username.
-  SimulateUsernameChange("foo", true);
-
-  ExpectNoSuggestionsPopup();
-}
-
-// Regression test for http://crbug.com/326679
-TEST_F(PasswordAutofillAgentTest, SelectUsernameWithPasswordAutofillOff) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Set the main password element to autocomplete='off'
-  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
-                                 WebString::fromUTF8("off"));
-
-  // Simulate the user changing the username to some known username.
-  SimulateUsernameChange(kAliceUsername, true);
-
-  ExpectNoSuggestionsPopup();
-}
-
-// Regression test for http://crbug.com/326679
-TEST_F(PasswordAutofillAgentTest,
-       SelectUnknownUsernameWithPasswordAutofillOff) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Set the main password element to autocomplete='off'
-  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
-                                 WebString::fromUTF8("off"));
-
-  // Simulate the user changing the username to some unknown username.
-  SimulateUsernameChange("foo", true);
-
-  ExpectNoSuggestionsPopup();
 }
 
 // Verifies that password autofill triggers onChange events in JavaScript for
