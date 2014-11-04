@@ -2138,6 +2138,7 @@ class ValidationPool(object):
       if not ignored_stages or not failing_stages.issubset(ignored_stages):
         rejection_candidates.append(change)
 
+    # TODO(yjhong): Deprecate the logic here once crbug.com/422639 is completed.
     # Filter out innocent internal overlay changes from our list of candidates.
     rejected = triage_lib.CalculateSuspects.FilterOutInnocentChanges(
         self.build_root, rejection_candidates, messages)
@@ -2519,12 +2520,10 @@ class ValidationPool(object):
            'You can follow along at %(build_log)s .')
     self.SendNotification(change, msg)
 
-
   def UpdateCLPreCQStatus(self, change, status):
     """Update the pre-CQ |status| of |change|."""
     action = clactions.TranslatePreCQStatusToAction(status)
     self._InsertCLActionToDatabase(change, action)
-
 
   def CreateDisjointTransactions(self, manifest, max_txn_length=None):
     """Create a list of disjoint transactions from the changes in the pool.
@@ -2547,6 +2546,24 @@ class ValidationPool(object):
     if failed:
       self._HandleApplyFailure(failed)
     return plans
+
+  def RecordIrrelevantChanges(self, changes):
+    """Records |changes| irrelevant to the slave build into cidb.
+
+    Args:
+      changes: A set of irrelevant changes to record.
+    """
+    formatted_changes = ['CL:%s' % cros_patch.AddPrefix(x, x.gerrit_number)
+                         for x in changes]
+    if formatted_changes:
+      logging.info('The following changes are irrelevant to this build: %s',
+                   ' '.join(formatted_changes))
+    else:
+      logging.info('All changes are considered relevant to this build.')
+
+    for change in changes:
+      self._InsertCLActionToDatabase(change,
+                                     constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
 
 
 class PaladinMessage():
