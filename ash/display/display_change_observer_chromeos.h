@@ -11,7 +11,7 @@
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/events/input_device_event_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {
 

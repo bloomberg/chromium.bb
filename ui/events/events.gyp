@@ -40,11 +40,6 @@
         # Note: sources list duplicated in GN build.
         'android/scroller.cc',
         'android/scroller.h',
-        'device_data_manager.cc',
-        'device_data_manager.h',
-        'device_hotplug_event_observer.h',
-        'device_util_linux.cc',
-        'device_util_linux.h',
         'event_constants.h',
         'event_switches.cc',
         'event_switches.h',
@@ -54,11 +49,6 @@
         'gesture_event_details.h',
         'gestures/fling_curve.cc',
         'gestures/fling_curve.h',
-        'input_device.cc',
-        'input_device.h',
-        'input_device_event_observer.h',
-        'keyboard_device.cc',
-        'keyboard_device.h',
         'keycodes/keyboard_code_conversion.cc',
         'keycodes/keyboard_code_conversion.h',
         'keycodes/keyboard_code_conversion_android.cc',
@@ -72,18 +62,8 @@
         'keycodes/keyboard_codes.h',
         'latency_info.cc',
         'latency_info.h',
-        'touchscreen_device.cc',
-        'touchscreen_device.h',
-        'x/device_data_manager_x11.cc',
-        'x/device_data_manager_x11.h',
-        'x/device_list_cache_x.cc',
-        'x/device_list_cache_x.h',
-        'x/hotplug_event_handler_x11.cc',
-        'x/hotplug_event_handler_x11.h',
         'x/keysym_to_unicode.cc',
         'x/keysym_to_unicode.h',
-        'x/touch_factory_x11.cc',
-        'x/touch_factory_x11.h',
       ],
       'export_dependent_settings': [
         '../../ui/gfx/gfx.gyp:gfx',
@@ -158,6 +138,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
+            'devices/events_devices.gyp:events_devices',
             '../../build/linux/system.gyp:x11',
           ],
         }],
@@ -294,6 +275,11 @@
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            'devices/events_devices.gyp:events_devices',
+          ],
+        }],
       ],
     },
     {
@@ -309,6 +295,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx_test_support',
+        'devices/events_devices.gyp:events_devices',
         'dom4_keycode_converter',
         'events',
         'events_base',
@@ -320,6 +307,7 @@
         # Note: sources list duplicated in GN build.
         'android/scroller_unittest.cc',
         'cocoa/events_mac_unittest.mm',
+        'devices/x11/device_data_manager_x11_unittest.cc',
         'event_dispatcher_unittest.cc',
         'event_processor_unittest.cc',
         'event_rewriter_unittest.cc',
@@ -338,7 +326,6 @@
         'keycodes/dom4/keycode_converter_unittest.cc',
         'latency_info_unittest.cc',
         'platform/platform_event_source_unittest.cc',
-        'x/device_data_manager_x11_unittest.cc',
         'x/events_x_unittest.cc',
       ],
       'conditions': [

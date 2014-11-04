@@ -23,7 +23,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
-#include "ui/events/x/touch_factory_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #endif  // defined(USE_X11)
 
 using metrics::ChromeUserMetricsExtension;

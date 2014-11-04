@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 
 #include <vector>
 
@@ -11,11 +11,11 @@
 #undef None
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/device_hotplug_event_observer.h"
-#include "ui/events/input_device.h"
-#include "ui/events/input_device_event_observer.h"
-#include "ui/events/keyboard_device.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/device_hotplug_event_observer.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_event_observer.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace ui {
 namespace test {

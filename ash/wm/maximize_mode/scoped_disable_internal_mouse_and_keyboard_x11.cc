@@ -18,12 +18,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/x/device_data_manager_x11.h"
-#include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ash {
@@ -75,7 +75,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
       static_cast<ui::DeviceDataManagerX11*>(
           ui::DeviceDataManager::GetInstance());
   if (device_data_manager->IsXInput2Available()) {
-    XIDeviceList xi_dev_list = ui::DeviceListCacheX::GetInstance()->
+    XIDeviceList xi_dev_list = ui::DeviceListCacheX11::GetInstance()->
         GetXI2DeviceList(gfx::GetXDisplay());
     for (int i = 0; i < xi_dev_list.count; ++i) {
       std::string device_name(xi_dev_list[i].name);

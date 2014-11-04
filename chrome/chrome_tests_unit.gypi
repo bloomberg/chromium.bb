@@ -2341,6 +2341,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+            '../ui/events/devices/events_devices.gyp:events_devices',
           ],
         }],
         ['OS=="linux"', {

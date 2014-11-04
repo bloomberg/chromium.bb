@@ -84,6 +84,7 @@ component("views") {
       "//build/config/linux:xrandr",
     ]
     deps += [
+      "//ui/events/devices",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]
@@ -205,6 +206,7 @@ test("views_unittests") {
       "//build/config/linux:xext",
     ]
     deps += [
+      "//ui/events/devices",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]

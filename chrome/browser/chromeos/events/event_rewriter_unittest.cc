@@ -35,9 +35,9 @@
 #if defined(USE_X11)
 #include <X11/keysym.h>
 
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
 #endif
 

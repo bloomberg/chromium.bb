@@ -3393,6 +3393,7 @@
             ['use_x11==1', {
               'dependencies': [
                 '../build/linux/system.gyp:x11',
+                '../ui/events/devices/events_devices.gyp:events_devices',
                 '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
               ],
             }],

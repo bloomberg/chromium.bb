@@ -10,10 +10,10 @@
 #include <X11/XKBlib.h>
 
 #include "base/logging.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/x/device_data_manager_x11.h"
-#include "ui/events/x/hotplug_event_handler_x11.h"
+#include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -87,7 +87,7 @@ X11EventSource::X11EventSource(XDisplay* display)
   CHECK(display_);
   DeviceDataManagerX11::CreateInstance();
   hotplug_event_handler_.reset(
-      new HotplugEventHandlerX11(DeviceDataManager::GetInstance()));
+      new X11HotplugEventHandler(DeviceDataManager::GetInstance()));
   InitializeXInput2(display_);
   InitializeXkb(display_);
 

@@ -18,11 +18,6 @@ component("events_base") {
   sources = [
     "android/scroller.cc",
     "android/scroller.h",
-    "device_data_manager.cc",
-    "device_data_manager.h",
-    "device_hotplug_event_observer.h",
-    "device_util_linux.cc",
-    "device_util_linux.h",
     "event_constants.h",
     "event_switches.cc",
     "event_switches.h",
@@ -32,11 +27,6 @@ component("events_base") {
     "gesture_event_details.h",
     "gestures/fling_curve.cc",
     "gestures/fling_curve.h",
-    "input_device.cc",
-    "input_device.h",
-    "input_device_event_observer.h",
-    "keyboard_device.cc",
-    "keyboard_device.h",
     "keycodes/keyboard_code_conversion.cc",
     "keycodes/keyboard_code_conversion.h",
     "keycodes/keyboard_code_conversion_android.cc",
@@ -48,8 +38,6 @@ component("events_base") {
     "keycodes/keyboard_codes.h",
     "latency_info.cc",
     "latency_info.h",
-    "touchscreen_device.cc",
-    "touchscreen_device.h",
   ]
 
   defines = [ "EVENTS_BASE_IMPLEMENTATION" ]
@@ -73,16 +61,8 @@ component("events_base") {
     sources += [
       "keycodes/keyboard_code_conversion_x.cc",
       "keycodes/keyboard_code_conversion_x.h",
-      "x/device_data_manager_x11.cc",
-      "x/device_data_manager_x11.h",
-      "x/device_list_cache_x.cc",
-      "x/device_list_cache_x.h",
-      "x/hotplug_event_handler_x11.cc",
-      "x/hotplug_event_handler_x11.h",
       "x/keysym_to_unicode.cc",
       "x/keysym_to_unicode.h",
-      "x/touch_factory_x11.cc",
-      "x/touch_factory_x11.h",
     ]
 
     deps += [ "//ui/gfx/x" ]
@@ -139,7 +119,10 @@ component("events") {
       "//build/config/linux:glib",
       "//build/config/linux:x11",
     ]
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/devices",
+      "//ui/gfx/x",
+    ]
   }
 
   if (!is_chromeos && is_linux) {
@@ -279,7 +262,10 @@ source_set("test_support") {
       "test/events_test_utils_x11.cc",
       "test/events_test_utils_x11.h",
     ]
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/devices",
+      "//ui/gfx/x",
+    ]
   }
 }
 
@@ -287,6 +273,7 @@ test("events_unittests") {
   sources = [
     "android/scroller_unittest.cc",
     "cocoa/events_mac_unittest.mm",
+    "devices/x11/device_data_manager_x11_unittest.cc",
     "event_dispatcher_unittest.cc",
     "event_processor_unittest.cc",
     "event_rewriter_unittest.cc",
@@ -303,7 +290,6 @@ test("events_unittests") {
     "keycodes/dom4/keycode_converter_unittest.cc",
     "latency_info_unittest.cc",
     "platform/platform_event_source_unittest.cc",
-    "x/device_data_manager_x11_unittest.cc",
     "x/events_x_unittest.cc",
   ]
 
@@ -317,6 +303,7 @@ test("events_unittests") {
     "//base/test:run_all_unittests",
     "//skia",
     "//testing/gtest",
+    "//ui/events/devices",
     "//ui/events/platform",
     "//ui/gfx:test_support",
   ]
@@ -326,7 +313,7 @@ test("events_unittests") {
     deps += [ "//ui/gfx/x" ]
   } else {
     sources -= [
-      "x/device_data_manager_x11_unittest.cc",
+      "devices/x11/device_data_manager_x11_unittest.cc",
       "x/events_x_unittest.cc",
     ]
   }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_DEVICE_DATA_MANAGER_H_
-#define UI_EVENTS_DEVICE_DATA_MANAGER_H_
+#ifndef UI_EVENTS_DEVICES_DEVICE_DATA_MANAGER_H_
+#define UI_EVENTS_DEVICES_DEVICE_DATA_MANAGER_H_
 
 #include <stdint.h>
 
@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/events/device_hotplug_event_observer.h"
-#include "ui/events/events_base_export.h"
-#include "ui/events/keyboard_device.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/device_hotplug_event_observer.h"
+#include "ui/events/devices/events_devices_export.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -23,7 +23,8 @@ namespace ui {
 class InputDeviceEventObserver;
 
 // Keeps track of device mappings and event transformations.
-class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
+class EVENTS_DEVICES_EXPORT DeviceDataManager
+    : public DeviceHotplugEventObserver {
  public:
   static const int kMaxDeviceNum = 128;
   ~DeviceDataManager() override;
@@ -86,4 +87,4 @@ class EVENTS_BASE_EXPORT DeviceDataManager : public DeviceHotplugEventObserver {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_DEVICE_DATA_MANAGER_H_
+#endif  // UI_EVENTS_DEVICES_DEVICE_DATA_MANAGER_H_

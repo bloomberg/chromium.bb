@@ -19,8 +19,8 @@
 #include <X11/Xlib.h>
 #undef Bool
 #undef None
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/events/x/device_data_manager_x11.h"
 #elif defined(USE_OZONE)
 #include "ui/events/event.h"
 #endif

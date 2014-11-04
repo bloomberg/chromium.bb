@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/keyboard_device.h"
+#include "ui/events/devices/keyboard_device.h"
 
 #include <string>
 
-#include "ui/events/input_device.h"
+#include "ui/events/devices/input_device.h"
 
 namespace ui {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_INPUT_DEVICE_H_
-#define UI_EVENTS_INPUT_DEVICE_H_
+#ifndef UI_EVENTS_DEVICES_INPUT_DEVICE_H_
+#define UI_EVENTS_DEVICES_INPUT_DEVICE_H_
 
 #include <string>
 
-#include "ui/events/events_base_export.h"
+#include "ui/events/devices/events_devices_export.h"
 
 namespace ui {
 
@@ -18,7 +18,7 @@ enum InputDeviceType {
 };
 
 // Represents an input device state.
-struct EVENTS_BASE_EXPORT InputDevice {
+struct EVENTS_DEVICES_EXPORT InputDevice {
   static const unsigned int kInvalidId;
 
   // Creates an invalid input device.
@@ -39,4 +39,4 @@ struct EVENTS_BASE_EXPORT InputDevice {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_INPUT_DEVICE_H_
+#endif  // UI_EVENTS_DEVICES_INPUT_DEVICE_H_

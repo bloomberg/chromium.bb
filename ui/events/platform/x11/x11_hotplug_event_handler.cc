@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/hotplug_event_handler_x11.h"
+#include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -18,11 +18,11 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "ui/events/device_hotplug_event_observer.h"
-#include "ui/events/device_util_linux.h"
-#include "ui/events/input_device.h"
-#include "ui/events/keyboard_device.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/device_hotplug_event_observer.h"
+#include "ui/events/devices/device_util_linux.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -109,22 +109,22 @@ bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
 
 }  // namespace
 
-HotplugEventHandlerX11::HotplugEventHandlerX11(
+X11HotplugEventHandler::X11HotplugEventHandler(
     DeviceHotplugEventObserver* delegate)
     : delegate_(delegate) {
 }
 
-HotplugEventHandlerX11::~HotplugEventHandlerX11() {
+X11HotplugEventHandler::~X11HotplugEventHandler() {
 }
 
-void HotplugEventHandlerX11::OnHotplugEvent() {
+void X11HotplugEventHandler::OnHotplugEvent() {
   const XIDeviceList& device_list =
-      DeviceListCacheX::GetInstance()->GetXI2DeviceList(gfx::GetXDisplay());
+      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(gfx::GetXDisplay());
   HandleTouchscreenDevices(device_list);
   HandleKeyboardDevices(device_list);
 }
 
-void HotplugEventHandlerX11::HandleKeyboardDevices(
+void X11HotplugEventHandler::HandleKeyboardDevices(
     const XIDeviceList& x11_devices) {
   std::vector<KeyboardDevice> devices;
 
@@ -149,7 +149,7 @@ void HotplugEventHandlerX11::HandleKeyboardDevices(
   delegate_->OnKeyboardDevicesUpdated(devices);
 }
 
-void HotplugEventHandlerX11::HandleTouchscreenDevices(
+void X11HotplugEventHandler::HandleTouchscreenDevices(
     const XIDeviceList& x11_devices) {
   std::vector<TouchscreenDevice> devices;
   Display* display = gfx::GetXDisplay();

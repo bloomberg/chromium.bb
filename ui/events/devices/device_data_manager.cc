@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/device_data_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "ui/events/input_device_event_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point3_f.h"
 

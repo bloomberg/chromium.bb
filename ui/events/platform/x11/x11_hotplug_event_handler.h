@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_HOTPLUG_EVENT_HANDLER_H_
-#define UI_EVENTS_X_HOTPLUG_EVENT_HANDLER_H_
+#ifndef UI_EVENTS_PLATFORM_X11_X11_HOTPLUG_EVENT_HANDLER_H_
+#define UI_EVENTS_PLATFORM_X11_X11_HOTPLUG_EVENT_HANDLER_H_
 
-#include "ui/events/x/device_list_cache_x.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
 
 namespace ui {
 
@@ -13,10 +13,10 @@ class DeviceHotplugEventObserver;
 
 // Parses X11 native devices and propagates the list of active devices to an
 // observer.
-class EVENTS_BASE_EXPORT HotplugEventHandlerX11 {
+class X11HotplugEventHandler {
  public:
-  explicit HotplugEventHandlerX11(DeviceHotplugEventObserver* delegate);
-  ~HotplugEventHandlerX11();
+  explicit X11HotplugEventHandler(DeviceHotplugEventObserver* delegate);
+  ~X11HotplugEventHandler();
 
   // Called on an X11 hotplug event.
   void OnHotplugEvent();
@@ -27,9 +27,9 @@ class EVENTS_BASE_EXPORT HotplugEventHandlerX11 {
 
   DeviceHotplugEventObserver* delegate_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(HotplugEventHandlerX11);
+  DISALLOW_COPY_AND_ASSIGN(X11HotplugEventHandler);
 };
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_HOTPLUG_EVENT_HANDLER_H_
+#endif  // UI_EVENTS_PLATFORM_X11_X11_HOTPLUG_EVENT_HANDLER_H_

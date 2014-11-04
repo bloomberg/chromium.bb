@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
-#include "ui/events/input_device.h"
+#include "ui/events/devices/input_device.h"
 
 namespace ash {
 

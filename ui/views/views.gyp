@@ -666,6 +666,7 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xrandr',
+            '../events/devices/events_devices.gyp:events_devices',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
@@ -813,6 +814,7 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xext',
+            '../events/devices/events_devices.gyp:events_devices',
             '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],

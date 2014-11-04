@@ -8,7 +8,7 @@
 #include "ash/display/display_info.h"
 #include "ash/touch/touchscreen_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/input_device.h"
+#include "ui/events/devices/input_device.h"
 
 namespace ash {
 

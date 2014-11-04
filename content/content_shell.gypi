@@ -314,6 +314,7 @@
         }],
         ['use_x11 == 1', {
           'dependencies': [
+            '../ui/events/devices/events_devices.gyp:events_devices',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],

@@ -34,7 +34,7 @@
 #include "ui/wm/core/wm_state.h"
 
 #if defined(USE_X11)
-#include "ui/events/x/touch_factory_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #endif
 
 #if defined(OS_CHROMEOS)

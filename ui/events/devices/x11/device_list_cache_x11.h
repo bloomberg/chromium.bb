@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
-#define UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
+#ifndef UI_EVENTS_DEVICES_X11_DEVICE_LIST_CACHE_X11_H_
+#define UI_EVENTS_DEVICES_X11_DEVICE_LIST_CACHE_X11_H_
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -11,7 +11,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "ui/events/events_base_export.h"
+#include "ui/events/devices/events_devices_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -37,9 +37,9 @@ namespace ui {
 // A class to cache the current XInput device list. This minimized the
 // round-trip time to the X server whenever such a device list is needed. The
 // update function will be called on each incoming XI_HierarchyChanged event.
-class EVENTS_BASE_EXPORT DeviceListCacheX {
+class EVENTS_DEVICES_EXPORT DeviceListCacheX11 {
  public:
-  static DeviceListCacheX* GetInstance();
+  static DeviceListCacheX11* GetInstance();
 
   void UpdateDeviceList(Display* display);
 
@@ -54,18 +54,18 @@ class EVENTS_BASE_EXPORT DeviceListCacheX {
   const XIDeviceList& GetXI2DeviceList(Display* display);
 
  private:
-  friend struct DefaultSingletonTraits<DeviceListCacheX>;
+  friend struct DefaultSingletonTraits<DeviceListCacheX11>;
 
-  DeviceListCacheX();
-  ~DeviceListCacheX();
+  DeviceListCacheX11();
+  ~DeviceListCacheX11();
 
   std::map<Display*, XDeviceList> x_dev_list_map_;
   std::map<Display*, XIDeviceList> xi_dev_list_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX);
+  DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX11);
 };
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_DEVICE_LIST_CACHE_X_H_
+#endif  // UI_EVENTS_DEVICES_X11_DEVICE_LIST_CACHE_X11_H_
 

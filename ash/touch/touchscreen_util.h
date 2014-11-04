@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_info.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
 

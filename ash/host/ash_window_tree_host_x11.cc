@@ -21,12 +21,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/device_data_manager.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/x/device_list_cache_x.h"
-#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 
@@ -258,7 +258,7 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
   Atom prop = atom_cache()->GetAtom("Tap Paused");
   unsigned char value = state;
   XIDeviceList dev_list =
-      ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(xdisplay());
+      ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(xdisplay());
 
   // Only slave pointer devices could possibly have tap-paused property.
   for (int i = 0; i < dev_list.count; i++) {

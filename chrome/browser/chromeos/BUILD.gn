@@ -139,6 +139,7 @@ source_set("chromeos") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/events/devices" ]
   } else {
     assert(use_ozone, "Either use_x11 or use_ozone has to be specified.")
     deps += [ "//ui/ozone" ]

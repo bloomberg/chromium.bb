@@ -289,6 +289,8 @@ static_library("content_shell_lib") {
     # Some tests rely on this tool at runtime. Note: it might be better if
     # the tests that needed it had this as a dep instead of adding it here.
     datadeps = [ "//tools/xdisplaycheck" ]
+
+    deps += [ "//ui/events/devices" ]
   }
 
   if (is_android) {

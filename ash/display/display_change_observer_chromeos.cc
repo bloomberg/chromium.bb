@@ -25,8 +25,8 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"
-#include "ui/events/device_data_manager.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/display.h"
 #include "ui/wm/core/user_activity_detector.h"
 

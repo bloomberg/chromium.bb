@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -13,12 +13,12 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/sys_info.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/keyboard_device.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/events/x/device_list_cache_x.h"
-#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/x/x11_types.h"
@@ -220,7 +220,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
 
   // Find all the touchpad devices.
   XDeviceList dev_list =
-      ui::DeviceListCacheX::GetInstance()->GetXDeviceList(display);
+      ui::DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
   Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
   for (int i = 0; i < dev_list.count; ++i)
     if (dev_list[i].type == xi_touchpad)
@@ -231,7 +231,7 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
 
   // Update the structs with new valuator information
   XIDeviceList info_list =
-      ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
+      ui::DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   Atom atoms[DT_LAST_ENTRY];
   for (int data_type = 0; data_type < DT_LAST_ENTRY; ++data_type)
     atoms[data_type] = atom_cache_.GetAtom(kCachedAtoms[data_type]);

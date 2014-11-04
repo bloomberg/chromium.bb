@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_
-#define UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_
+#ifndef UI_EVENTS_DEVICES_X11_DEVICE_DATA_MANAGER_X11_H_
+#define UI_EVENTS_DEVICES_X11_DEVICE_DATA_MANAGER_X11_H_
 
 // Generically-named #defines from Xlib is conflicting with symbols in GTest.
 // So many tests .cc file #undef Bool before including device_data_manager.h,
@@ -23,9 +23,9 @@
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/events/device_data_manager.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/events_devices_export.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/events_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -42,7 +42,7 @@ enum GestureMetricsType {
 
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
-class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
+class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
  public:
   // Enumerate additional data that one might be interested on an input event,
   // which are usually wrapped in X valuators. If you modify any of this,
@@ -321,4 +321,4 @@ class EVENTS_BASE_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_DEVICE_DATA_MANAGER_X11_H_
+#endif  // UI_EVENTS_DEVICES_X11_DEVICE_DATA_MANAGER_X11_H_

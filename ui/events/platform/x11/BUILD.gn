@@ -10,6 +10,8 @@ component("x11") {
     "x11_event_source.h",
     "x11_event_source_glib.cc",
     "x11_event_source_libevent.cc",
+    "x11_hotplug_event_handler.cc",
+    "x11_hotplug_event_handler.h",
   ]
 
   defines = [ "EVENTS_IMPLEMENTATION" ]
@@ -19,6 +21,7 @@ component("x11") {
   public_deps = [
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events/devices",
     "//ui/events/platform",
     "//ui/gfx/x",
   ]

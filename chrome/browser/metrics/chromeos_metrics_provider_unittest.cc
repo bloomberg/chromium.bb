@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_X11)
-#include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 #endif
 
 using chromeos::DBusThreadManager;

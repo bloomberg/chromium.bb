@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_X_TOUCH_FACTORY_X11_H_
-#define UI_EVENTS_X_TOUCH_FACTORY_X11_H_
+#ifndef UI_EVENTS_DEVICES_X11_TOUCH_FACTORY_X11_H_
+#define UI_EVENTS_DEVICES_X11_TOUCH_FACTORY_X11_H_
 
 #include <bitset>
 #include <map>
@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ui/events/events_base_export.h"
+#include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -24,7 +24,7 @@ typedef union _XEvent XEvent;
 namespace ui {
 
 // Functions related to determining touch devices.
-class EVENTS_BASE_EXPORT TouchFactory {
+class EVENTS_DEVICES_EXPORT TouchFactory {
  private:
   TouchFactory();
   ~TouchFactory();
@@ -153,4 +153,4 @@ class EVENTS_BASE_EXPORT TouchFactory {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_X_TOUCH_FACTORY_X11_H_
+#endif  // UI_EVENTS_DEVICES_X11_TOUCH_FACTORY_X11_H_

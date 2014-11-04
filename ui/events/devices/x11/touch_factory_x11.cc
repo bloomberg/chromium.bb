@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/touch_factory_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
@@ -19,9 +19,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/x/device_data_manager_x11.h"
-#include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -93,7 +93,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // we assume there cannot be any touch devices.
   // With XI2.1 or older, we allow only single touch devices.
   XDeviceList dev_list =
-      DeviceListCacheX::GetInstance()->GetXDeviceList(display);
+      DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
   Atom xi_touchscreen = XInternAtom(display, XI_TOUCHSCREEN, false);
   for (int i = 0; i < dev_list.count; i++) {
     if (dev_list[i].type == xi_touchscreen) {
@@ -120,7 +120,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // also select on the floating devices.
   pointer_device_lookup_.reset();
   XIDeviceList xi_dev_list =
-      DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
+      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
   for (int i = 0; i < xi_dev_list.count; i++) {
     XIDeviceInfo* devinfo = xi_dev_list.devices + i;
     if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {

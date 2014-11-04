@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/x/device_list_cache_x.h"
+#include "ui/events/devices/x11/device_list_cache_x11.h"
 
 #include <algorithm>
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/events/x/device_data_manager_x11.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 
 namespace {
 
@@ -24,10 +24,10 @@ bool IsXI2Available() {
 
 namespace ui {
 
-DeviceListCacheX::DeviceListCacheX() {
+DeviceListCacheX11::DeviceListCacheX11() {
 }
 
-DeviceListCacheX::~DeviceListCacheX() {
+DeviceListCacheX11::~DeviceListCacheX11() {
   std::map<Display*, XDeviceList>::iterator xp;
   for (xp = x_dev_list_map_.begin(); xp != x_dev_list_map_.end(); xp++) {
     if (xp->second.devices)
@@ -40,11 +40,11 @@ DeviceListCacheX::~DeviceListCacheX() {
   }
 }
 
-DeviceListCacheX* DeviceListCacheX::GetInstance() {
-  return Singleton<DeviceListCacheX>::get();
+DeviceListCacheX11* DeviceListCacheX11::GetInstance() {
+  return Singleton<DeviceListCacheX11>::get();
 }
 
-void DeviceListCacheX::UpdateDeviceList(Display* display) {
+void DeviceListCacheX11::UpdateDeviceList(Display* display) {
   XDeviceList& new_x_dev_list = x_dev_list_map_[display];
   if (new_x_dev_list.devices)
     XFreeDeviceList(new_x_dev_list.devices);
@@ -57,7 +57,7 @@ void DeviceListCacheX::UpdateDeviceList(Display* display) {
       XIQueryDevice(display, XIAllDevices, &new_xi_dev_list.count) : NULL;
 }
 
-const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
+const XDeviceList& DeviceListCacheX11::GetXDeviceList(Display* display) {
   XDeviceList& x_dev_list = x_dev_list_map_[display];
   // Note that the function can be called before any update has taken place.
   if (!x_dev_list.devices && !x_dev_list.count)
@@ -65,7 +65,7 @@ const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
   return x_dev_list;
 }
 
-const XIDeviceList& DeviceListCacheX::GetXI2DeviceList(Display* display) {
+const XIDeviceList& DeviceListCacheX11::GetXI2DeviceList(Display* display) {
   XIDeviceList& xi_dev_list = xi_dev_list_map_[display];
   if (!xi_dev_list.devices && !xi_dev_list.count) {
     xi_dev_list.devices = XIQueryDevice(display, XIAllDevices,

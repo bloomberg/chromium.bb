@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_DEVICE_UTIL_LINUX_H_
-#define UI_EVENTS_DEVICE_UTIL_LINUX_H_
+#ifndef UI_EVENTS_DEVICES_DEVICE_UTIL_LINUX_H_
+#define UI_EVENTS_DEVICES_DEVICE_UTIL_LINUX_H_
 
-#include "ui/events/events_base_export.h"
+#include "ui/events/devices/events_devices_export.h"
 
 namespace base {
 class FilePath;
@@ -14,8 +14,8 @@ class FilePath;
 namespace ui {
 
 // Returns true if the device described by |path| is an internal device.
-EVENTS_BASE_EXPORT bool IsTouchscreenInternal(const base::FilePath& path);
+EVENTS_DEVICES_EXPORT bool IsTouchscreenInternal(const base::FilePath& path);
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_DEVICE_UTIL_LINUX_H_
+#endif  // UI_EVENTS_DEVICES_DEVICE_UTIL_LINUX_H_

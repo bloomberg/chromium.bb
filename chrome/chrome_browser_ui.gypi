@@ -2981,6 +2981,7 @@
               'dependencies': [
                 '../build/linux/system.gyp:x11',
                 '../build/linux/system.gyp:gio',
+                '../ui/events/devices/events_devices.gyp:events_devices',
               ],
             }],
             ['use_udev==1', {

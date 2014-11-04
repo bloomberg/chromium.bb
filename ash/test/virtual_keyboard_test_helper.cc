@@ -4,11 +4,11 @@
 
 #include "ash/test/virtual_keyboard_test_helper.h"
 
-#include "ui/events/device_data_manager.h"
-#include "ui/events/device_hotplug_event_observer.h"
-#include "ui/events/input_device.h"
-#include "ui/events/keyboard_device.h"
-#include "ui/events/touchscreen_device.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_hotplug_event_observer.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
 namespace test {

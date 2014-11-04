@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
-#define UI_EVENTS_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
+#ifndef UI_EVENTS_DEVICES_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
+#define UI_EVENTS_DEVICES_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
 
 #include <vector>
 
-#include "ui/events/events_base_export.h"
+#include "ui/events/devices/events_devices_export.h"
 
 namespace ui {
 
@@ -15,7 +15,7 @@ struct KeyboardDevice;
 struct TouchscreenDevice;
 
 // Listener for specific input device hotplug events.
-class EVENTS_BASE_EXPORT DeviceHotplugEventObserver {
+class EVENTS_DEVICES_EXPORT DeviceHotplugEventObserver {
  public:
   virtual ~DeviceHotplugEventObserver() {}
 
@@ -32,4 +32,4 @@ class EVENTS_BASE_EXPORT DeviceHotplugEventObserver {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_DEVICE_HOTPLUG_EVENT_OBSERVER_H_
+#endif  // UI_EVENTS_DEVICES_DEVICE_HOTPLUG_EVENT_OBSERVER_H_

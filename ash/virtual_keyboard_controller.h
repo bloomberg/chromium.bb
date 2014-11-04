@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ui/events/input_device_event_observer.h"
+#include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {
 

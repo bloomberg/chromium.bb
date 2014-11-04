@@ -10,10 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/x/device_data_manager_x11.h"
 
 // Enum type for CrOS gesture lib UMA
 enum UMACrosGestureMetricsType{

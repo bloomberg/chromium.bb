@@ -65,6 +65,7 @@ component("events_ozone_evdev") {
   deps = [
     ":events_ozone",
     "//base",
+    "//ui/events/devices",
     "//ui/events/platform",
     "//ui/gfx",
   ]
