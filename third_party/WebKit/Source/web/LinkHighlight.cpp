@@ -108,7 +108,9 @@ void LinkHighlight::releaseResources()
 
 void LinkHighlight::attachLinkHighlightToCompositingLayer(const RenderLayerModelObject* paintInvalidationContainer)
 {
-    GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBackingForScrolling();
+    GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
+    if (!newGraphicsLayer->drawsContent())
+        newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBackingForScrolling();
     if (!newGraphicsLayer)
         return;
 

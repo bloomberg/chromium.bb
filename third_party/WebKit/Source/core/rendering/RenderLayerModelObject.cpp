@@ -192,7 +192,7 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
-void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const RenderObject& forRenderer) const
+void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
     // so assert but check that the layer is composited.
@@ -205,8 +205,6 @@ void RenderLayerModelObject::setBackingNeedsPaintInvalidationInRect(const Layout
             // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
             squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
         }
-    } else if (this != forRenderer && isBox() && toRenderBox(this)->usesCompositedScrolling()) {
-        layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(r, invalidationReason);
     } else {
         layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
     }

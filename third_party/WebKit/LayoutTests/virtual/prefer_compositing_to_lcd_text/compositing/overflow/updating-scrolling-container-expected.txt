@@ -22,6 +22,9 @@
                   "bounds": [400, 400],
                   "shouldFlattenTransform": false,
                   "drawsContent": true,
+                  "repaintRects": [
+                    [-5, -5, 210, 210]
+                  ],
                   "children": [
                     {
                       "shouldFlattenTransform": false

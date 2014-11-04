@@ -75,6 +75,18 @@ crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/overflow/updating-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/overflow/text-color-change.html [ NeedsRebaseline ]
+crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
+crbug.com/416535 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
+
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]

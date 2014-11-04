@@ -134,11 +134,6 @@ public:
     // r is in the coordinate space of the layer's render object
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
-    void setScrollingContentsNeedDisplay();
-    // FIXME: Temporarily the rect is in the coordinate space of the scrolling container layer.
-    // Will make it in the coordinate space of the scrolling contents layer. crbug.com/416539.
-    void setScrollingContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
-
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);
 
