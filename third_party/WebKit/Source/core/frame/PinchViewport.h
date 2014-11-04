@@ -119,7 +119,7 @@ public:
     // Scroll the main frame and pinch viewport so that the given rect in the
     // top-level document is centered in the viewport. This method will avoid
     // scrolling the pinch viewport unless necessary.
-    void scrollIntoView(const FloatRect&);
+    void scrollIntoView(const LayoutRect&);
 
     // Clamp the given point, in document coordinates, to the maximum/minimum
     // scroll extents of the viewport within the document.

@@ -133,19 +133,22 @@ FloatRect PinchViewport::visibleRectInDocument() const
     return pinchRect;
 }
 
-void PinchViewport::scrollIntoView(const FloatRect& rect)
+void PinchViewport::scrollIntoView(const LayoutRect& rect)
 {
     if (!mainFrame() || !mainFrame()->view())
         return;
 
     FrameView* view = mainFrame()->view();
 
-    float centeringOffsetX = (visibleRect().width() - rect.width()) / 2;
-    float centeringOffsetY = (visibleRect().height() - rect.height()) / 2;
+    // Snap the visible rect to layout units to match the input rect.
+    FloatRect visible = LayoutRect(visibleRect());
+
+    float centeringOffsetX = (visible.width() - rect.width()) / 2;
+    float centeringOffsetY = (visible.height() - rect.height()) / 2;
 
     DoublePoint targetOffset(
-        rect.x() - centeringOffsetX - visibleRect().x(),
-        rect.y() - centeringOffsetY - visibleRect().y());
+        rect.x() - centeringOffsetX - visible.x(),
+        rect.y() - centeringOffsetY - visible.y());
 
     view->setScrollPosition(targetOffset);
 

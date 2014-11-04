@@ -962,7 +962,7 @@ TEST_F(PinchViewportTest, TestContextMenuShownInCorrectLocation)
 
 // Test that the scrollIntoView correctly scrolls the main frame
 // and pinch viewports such that the given rect is centered in the viewport.
-TEST_F(PinchViewportTest, DISABLED_TestScrollingDocumentRegionIntoView)
+TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
 {
     initializeWithDesktopSettings();
     webViewImpl()->resize(IntSize(100, 150));
@@ -976,11 +976,11 @@ TEST_F(PinchViewportTest, DISABLED_TestScrollingDocumentRegionIntoView)
     // resized (as is the case when the ChromeOS keyboard comes up) but not
     // scaled.
     webViewImpl()->resizePinchViewport(WebSize(100, 100));
-    pinchViewport.scrollIntoView(FloatRect(100, 250, 50, 50));
+    pinchViewport.scrollIntoView(LayoutRect(100, 250, 50, 50));
     EXPECT_POINT_EQ(IntPoint(75, 150), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
 
-    pinchViewport.scrollIntoView(FloatRect(25, 75, 50, 50));
+    pinchViewport.scrollIntoView(LayoutRect(25, 75, 50, 50));
     EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
 
@@ -989,13 +989,23 @@ TEST_F(PinchViewportTest, DISABLED_TestScrollingDocumentRegionIntoView)
     webViewImpl()->setPageScaleFactor(2);
     pinchViewport.setLocation(FloatPoint());
 
-    pinchViewport.scrollIntoView(FloatRect(50, 75, 50, 75));
+    pinchViewport.scrollIntoView(LayoutRect(50, 75, 50, 75));
     EXPECT_POINT_EQ(IntPoint(50, 75), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(), pinchViewport.visibleRect().location());
 
-    pinchViewport.scrollIntoView(FloatRect(190, 290, 10, 10));
+    pinchViewport.scrollIntoView(LayoutRect(190, 290, 10, 10));
     EXPECT_POINT_EQ(IntPoint(100, 150), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 75), pinchViewport.visibleRect().location());
+
+    // Scrolling into view the viewport rect itself should be a no-op.
+    webViewImpl()->resizePinchViewport(IntSize(100, 100));
+    webViewImpl()->setPageScaleFactor(1.5f);
+    frame()->view()->scrollTo(IntPoint(50, 50));
+    pinchViewport.setLocation(FloatPoint(0, 10));
+
+    pinchViewport.scrollIntoView(LayoutRect(pinchViewport.visibleRectInDocument()));
+    EXPECT_POINT_EQ(IntPoint(50, 50), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 10), pinchViewport.visibleRect().location());
 }
 
 static IntPoint expectedMaxFrameViewScrollOffset(PinchViewport& pinchViewport, FrameView& frameView)
