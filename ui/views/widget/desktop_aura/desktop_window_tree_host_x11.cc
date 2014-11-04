@@ -121,6 +121,9 @@ const char* kAtomsToCache[] = {
   NULL
 };
 
+const char kX11WindowRolePopup[] = "popup";
+const char kX11WindowRoleBubble[] = "bubble";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1185,12 +1188,26 @@ void DesktopWindowTreeHostX11::InitX11Window(
     ui::SetWindowClassHint(
         xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
   }
-  if (!params.wm_role_name.empty() ||
-      params.type == Widget::InitParams::TYPE_POPUP) {
-    const char kX11WindowRolePopup[] = "popup";
-    ui::SetWindowRole(xdisplay_, xwindow_, params.wm_role_name.empty() ?
-                      std::string(kX11WindowRolePopup) : params.wm_role_name);
+
+  const char* wm_role_name = NULL;
+  // If the widget isn't overriding the role, provide a default value for popup
+  // and bubble types.
+  if (!params.wm_role_name.empty()) {
+    wm_role_name = params.wm_role_name.c_str();
+  } else {
+    switch (params.type) {
+      case Widget::InitParams::TYPE_POPUP:
+        wm_role_name = kX11WindowRolePopup;
+        break;
+      case Widget::InitParams::TYPE_BUBBLE:
+        wm_role_name = kX11WindowRoleBubble;
+        break;
+      default:
+        break;
+    }
   }
+  if (wm_role_name)
+    ui::SetWindowRole(xdisplay_, xwindow_, std::string(wm_role_name));
 
   if (params.remove_standard_frame) {
     // Setting _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED tells gnome-shell to not force
