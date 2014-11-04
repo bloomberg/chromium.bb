@@ -154,7 +154,8 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
 
-  DCHECK_NE(0u, displays.size());
+  if (displays.empty())
+    return;
 
   ScopedDrmPropertyPtr dpms(
       dri_->GetProperty(displays[0]->connector(), "DPMS"));
