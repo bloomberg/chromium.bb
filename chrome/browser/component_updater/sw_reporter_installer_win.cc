@@ -100,25 +100,30 @@ void ReportUmaStep(SwReporterUmaValue value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
 }
 
-void ReportUmaVersion(const base::Version& version) {
+void ReportVersionWithUma(const base::Version& version) {
   DCHECK(!version.components().empty());
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MinorVersion",
-                              version.components().back());
-  // The major version uses the 1st component value (when there is more than
-  // one, since the last one is always the minor version) as a hi word in a
-  // double word. The low word is either the second component (when there are
-  // only three) or the 3rd one if there are at least 4. E.g., for W.X.Y.Z, we
-  // ignore X, and Z is the minor version. We compute the major version with W
-  // as the hi word, and Y as the low word. For X.Y.Z, we use X and Y as hi and
-  // low words, and if we would have Y.Z we would use Y as the hi word and 0 as
-  // the low word. major version is 0 if the version only has one component.
-  uint32_t major_version = 0;
+  // The minor version is the 2nd last component of the version,
+  // or just the first component if there is only 1.
+  uint32_t minor_version = 0;
   if (version.components().size() > 1)
-    major_version = 0x10000 * version.components()[0];
-  if (version.components().size() < 4 && version.components().size() > 2)
-    major_version += version.components()[1];
-  else if (version.components().size() > 3)
+    minor_version = version.components()[version.components().size() - 2];
+  else
+    minor_version = version.components()[0];
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MinorVersion", minor_version);
+
+  // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
+  // components, only the first three count, and if there are less than 3, the
+  // missing values are just replaced by zero. So 1 is equivalent 1.0.0.
+  DCHECK(version.components()[0] < 0x100);
+  uint32_t major_version = 0x1000000 * version.components()[0];
+  if (version.components().size() >= 2) {
+    DCHECK(version.components()[1] < 0x10000);
+    major_version += 0x100 * version.components()[1];
+  }
+  if (version.components().size() >= 3) {
+    DCHECK(version.components()[2] < 0x100);
     major_version += version.components()[2];
+  }
   UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
 }
 
@@ -241,7 +246,7 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
                               const base::FilePath& install_dir,
                               scoped_ptr<base::DictionaryValue> manifest) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    ReportUmaVersion(version);
+    ReportVersionWithUma(version);
 
     wcsncpy_s(version_dir_,
               _MAX_PATH,
