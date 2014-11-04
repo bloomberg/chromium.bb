@@ -11,15 +11,7 @@ correctly when the inputs change.
 
 import TestGyp
 
-import os
-import sys
-
 test = TestGyp.TestGyp(workdir='workarea_default')
-if (test.format == 'msvs' and
-    int(os.environ.get('GYP_MSVS_VERSION', 0)) == 2013):
-  print 'This test is broken on VS2013. https://code.google.com/p/gyp/issues/detail?id=465'
-  sys.exit(0)
-
 
 test.run_gyp('same_target.gyp', chdir='src')
 
