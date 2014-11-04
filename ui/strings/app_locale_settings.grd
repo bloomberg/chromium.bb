@@ -218,10 +218,21 @@
           75%
         </message>
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="is_macosx">
         <!-- The font used in Web UI (e.g. History). -->
         <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
           'Lucida Grande', sans-serif
+        </message>
+
+        <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
+          75%
+        </message>
+      </if>
+      <if expr="is_ios">
+        <!-- The font used in Web UI (e.g. History). -->
+        <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
+          'Roboto-Regular', sans-serif
         </message>
 
         <!-- The relative font size in % used in Web UI (e.g. History).  -->
