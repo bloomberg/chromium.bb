@@ -29,6 +29,7 @@ class PreferenceWhitelist {
     whitelist_.insert("data_reduction.daily_original_length");
     whitelist_.insert("data_reduction.daily_received_length");
     whitelist_.insert("data_reduction.update_daily_lengths");
+    whitelist_.insert("easy_unlock.proximity_required");
   }
 
   ~PreferenceWhitelist() {}
