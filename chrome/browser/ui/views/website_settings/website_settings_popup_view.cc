@@ -122,7 +122,7 @@ const int kSiteDataSectionRowSpacing = 11;
 class PopupHeaderView : public views::View {
  public:
   explicit PopupHeaderView(views::ButtonListener* close_button_listener);
-  virtual ~PopupHeaderView();
+  ~PopupHeaderView() override;
 
   // Sets the name of the site's identity.
   void SetIdentityName(const base::string16& name);
@@ -146,10 +146,10 @@ class PopupHeaderView : public views::View {
 class InternalPageInfoPopupView : public views::BubbleDelegateView {
  public:
   explicit InternalPageInfoPopupView(views::View* anchor_view);
-  virtual ~InternalPageInfoPopupView();
+  ~InternalPageInfoPopupView() override;
 
   // views::BubbleDelegateView:
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);

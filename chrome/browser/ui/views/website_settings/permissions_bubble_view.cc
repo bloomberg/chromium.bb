@@ -65,15 +65,14 @@ class PermissionCombobox : public views::MenuButton,
                      int index,
                      const GURL& url,
                      ContentSetting setting);
-  virtual ~PermissionCombobox();
+  ~PermissionCombobox() override;
 
   int index() const { return index_; }
 
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // MenuButtonListener:
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
 
   // Callback when a permission's setting is changed.
   void PermissionChanged(const WebsiteSettingsUI::PermissionInfo& permission);
@@ -144,11 +143,11 @@ class CustomizeAllowComboboxModel : public ui::ComboboxModel {
   };
 
   CustomizeAllowComboboxModel() {}
-  virtual ~CustomizeAllowComboboxModel() {}
+  ~CustomizeAllowComboboxModel() override {}
 
-  virtual int GetItemCount() const override;
-  virtual base::string16 GetItemAt(int index) override;
-  virtual int GetDefaultIndex() const override;
+  int GetItemCount() const override;
+  base::string16 GetItemAt(int index) override;
+  int GetDefaultIndex() const override;
 };
 
 int CustomizeAllowComboboxModel::GetItemCount() const {
@@ -179,27 +178,26 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state,
       bool customization_mode);
-  virtual ~PermissionsBubbleDelegateView();
+  ~PermissionsBubbleDelegateView() override;
 
   void Close();
   void SizeToContents();
 
   // BubbleDelegateView:
-  virtual bool ShouldShowCloseButton() const override;
-  virtual bool ShouldShowWindowTitle() const override;
-  virtual const gfx::FontList& GetTitleFontList() const override;
-  virtual base::string16 GetWindowTitle() const override;
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  bool ShouldShowCloseButton() const override;
+  bool ShouldShowWindowTitle() const override;
+  const gfx::FontList& GetTitleFontList() const override;
+  base::string16 GetWindowTitle() const override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // ButtonListener:
-  virtual void ButtonPressed(views::Button* button,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* button, const ui::Event& event) override;
 
   // ComboboxListener:
-  virtual void OnPerformAction(views::Combobox* combobox) override;
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // PermissionCombobox::Listener:
-  virtual void PermissionSelectionChanged(int index, bool allowed) override;
+  void PermissionSelectionChanged(int index, bool allowed) override;
 
  private:
   PermissionBubbleViewViews* owner_;

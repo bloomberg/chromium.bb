@@ -43,19 +43,18 @@ class PermissionMenuButton : public views::MenuButton,
   PermissionMenuButton(const base::string16& text,
                        PermissionMenuModel* model,
                        bool show_menu_marker);
-  virtual ~PermissionMenuButton();
+  ~PermissionMenuButton() override;
 
   // Overridden from views::LabelButton.
-  virtual void SetText(const base::string16& text) override;
+  void SetText(const base::string16& text) override;
 
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
   // Overridden from views::MenuButtonListener.
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& point) override;
+  void OnMenuButtonClicked(View* source, const gfx::Point& point) override;
 
   PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorView|.
   scoped_ptr<views::MenuRunner> menu_runner_;

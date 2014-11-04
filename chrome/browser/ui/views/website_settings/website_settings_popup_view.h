@@ -46,7 +46,7 @@ class WebsiteSettingsPopupView
       public views::TabbedPaneListener,
       public WebsiteSettingsUI {
  public:
-  virtual ~WebsiteSettingsPopupView();
+  ~WebsiteSettingsPopupView() override;
 
   static void ShowPopup(views::View* anchor_view,
                         Profile* profile,
@@ -66,32 +66,31 @@ class WebsiteSettingsPopupView
                            Browser* browser);
 
   // PermissionSelectorViewObserver implementation.
-  virtual void OnPermissionChanged(
+  void OnPermissionChanged(
       const WebsiteSettingsUI::PermissionInfo& permission) override;
 
   // views::BubbleDelegateView implementation.
-  virtual void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* button,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* button, const ui::Event& event) override;
 
   // views::LinkListener implementation.
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::TabbedPaneListener implementations.
-  virtual void TabSelectedAt(int index) override;
+  void TabSelectedAt(int index) override;
 
   // views::View implementation.
-  virtual gfx::Size GetPreferredSize() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // WebsiteSettingsUI implementations.
-  virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  virtual void SetPermissionInfo(
+  void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
+  void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
-  virtual void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  virtual void SetFirstVisit(const base::string16& first_visit) override;
-  virtual void SetSelectedTab(TabId tab_id) override;
+  void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetFirstVisit(const base::string16& first_visit) override;
+  void SetSelectedTab(TabId tab_id) override;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
   // returned view is transferred to the caller.

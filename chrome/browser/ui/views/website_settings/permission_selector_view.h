@@ -40,10 +40,10 @@ class PermissionSelectorView : public views::View {
 
  protected:
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(View* child) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
  private:
-  virtual ~PermissionSelectorView();
+  ~PermissionSelectorView() override;
 
   // Model for the permission's menu.
   scoped_ptr<PermissionMenuModel> menu_model_;
