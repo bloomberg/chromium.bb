@@ -1909,6 +1909,8 @@ internal_paladin.add_config('link-paladin',
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
+  # Note: lumpy-paladin runs bvt-inline while stumpy-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -1965,6 +1967,8 @@ internal_paladin.add_config('quawks-paladin',
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
+  # Note: wolf-paladin runs bvt-inline while peppy-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -1993,6 +1997,8 @@ internal_paladin.add_config('stout-paladin',
 internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
+  # Note: lumpy-paladin runs bvt-inline while stumpy-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -2005,6 +2011,8 @@ internal_paladin.add_config('winky-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
+  # Note: wolf-paladin runs bvt-inline while peppy-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -2042,6 +2050,8 @@ internal_notest_paladin = internal_paladin.derive(non_testable_builder)
 internal_notest_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
+  # Note: daisy-paladin runs bvt-inline while peach_pit-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -2070,6 +2080,8 @@ internal_notest_paladin.add_config('kayle-paladin',
 internal_notest_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
+  # Note: daisy-paladin runs bvt-inline while peach_pit-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -2193,6 +2205,13 @@ def ShardHWTestsBetweenBuilders(*args):
   # Assign each config the Nth HWTest.
   for i, name in enumerate(names):
     config[name]['hw_tests'] = [config[name].hw_tests[i]]
+
+# Shard the bvt-inline and bvt-cq hw tests between similar builders.
+# The first builder gets bvt-inline, and the second builder gets bvt-cq.
+# bvt-cq takes longer, so it usually makes sense to give it the faster board.
+ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
+ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
+ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
 
 internal_incremental.add_config('mario-incremental',
