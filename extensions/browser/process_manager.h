@@ -77,6 +77,16 @@ class ProcessManager : public KeyedService,
   // apps, not hosted apps.
   virtual content::SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
+  // If the view isn't keeping the lazy background page alive, increments the
+  // keepalive count to do so.
+  void AcquireLazyKeepaliveCountForView(
+      content::RenderViewHost* render_view_host);
+
+  // If the view is keeping the lazy background page alive, decrements the
+  // keepalive count to stop doing it.
+  void ReleaseLazyKeepaliveCountForView(
+      content::RenderViewHost* render_view_host);
+
   // Unregisters a RenderViewHost as hosting any extension.
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
 
@@ -101,9 +111,6 @@ class ProcessManager : public KeyedService,
   int GetLazyKeepaliveCount(const Extension* extension);
   void IncrementLazyKeepaliveCount(const Extension* extension);
   void DecrementLazyKeepaliveCount(const Extension* extension);
-
-  void IncrementLazyKeepaliveCountForView(
-      content::RenderViewHost* render_view_host);
 
   // Keeps a background page alive. Unlike IncrementLazyKeepaliveCount, these
   // impulses will only keep the page alive for a limited amount of time unless
@@ -210,10 +217,11 @@ class ProcessManager : public KeyedService,
 
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;
+  struct ExtensionRenderViewData;
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
-  typedef std::map<content::RenderViewHost*,
-      extensions::ViewType> ExtensionRenderViews;
+  typedef std::map<content::RenderViewHost*, ExtensionRenderViewData>
+      ExtensionRenderViews;
 
   // Load all background pages once the profile data is ready and the pages
   // should be loaded.

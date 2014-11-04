@@ -192,6 +192,40 @@ struct ProcessManager::BackgroundPageData {
         close_sequence_id(0) {}
 };
 
+// Data of a RenderViewHost associated with an extension.
+struct ProcessManager::ExtensionRenderViewData {
+  // The type of the view.
+  extensions::ViewType view_type;
+
+  // Whether the view is keeping the lazy background page alive or not.
+  bool has_keepalive;
+
+  ExtensionRenderViewData()
+      : view_type(VIEW_TYPE_INVALID), has_keepalive(false) {}
+
+  // Returns whether the view can keep the lazy background page alive or not.
+  bool CanKeepalive() const {
+    switch (view_type) {
+      case VIEW_TYPE_APP_WINDOW:
+      case VIEW_TYPE_BACKGROUND_CONTENTS:
+      case VIEW_TYPE_EXTENSION_DIALOG:
+      case VIEW_TYPE_EXTENSION_INFOBAR:
+      case VIEW_TYPE_EXTENSION_POPUP:
+      case VIEW_TYPE_LAUNCHER_PAGE:
+      case VIEW_TYPE_PANEL:
+      case VIEW_TYPE_TAB_CONTENTS:
+      case VIEW_TYPE_VIRTUAL_KEYBOARD:
+        return true;
+
+      case VIEW_TYPE_INVALID:
+      case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
+        return false;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
 //
 // ProcessManager
 //
@@ -368,6 +402,40 @@ const Extension* ProcessManager::GetExtensionForRenderViewHost(
       GetExtensionID(render_view_host));
 }
 
+void ProcessManager::AcquireLazyKeepaliveCountForView(
+    content::RenderViewHost* render_view_host) {
+  auto it = all_extension_views_.find(render_view_host);
+  if (it == all_extension_views_.end())
+    return;
+
+  ExtensionRenderViewData* data = &it->second;
+  if (data->CanKeepalive() && !data->has_keepalive) {
+    const Extension* extension =
+        GetExtensionForRenderViewHost(render_view_host);
+    if (extension) {
+      IncrementLazyKeepaliveCount(extension);
+      data->has_keepalive = true;
+    }
+  }
+}
+
+void ProcessManager::ReleaseLazyKeepaliveCountForView(
+    content::RenderViewHost* render_view_host) {
+  auto it = all_extension_views_.find(render_view_host);
+  if (it == all_extension_views_.end())
+    return;
+
+  ExtensionRenderViewData* data = &it->second;
+  if (data->CanKeepalive() && data->has_keepalive) {
+    const Extension* extension =
+        GetExtensionForRenderViewHost(render_view_host);
+    if (extension) {
+      DecrementLazyKeepaliveCount(extension);
+      data->has_keepalive = false;
+    }
+  }
+}
+
 void ProcessManager::UnregisterRenderViewHost(
     RenderViewHost* render_view_host) {
   ExtensionRenderViews::iterator view =
@@ -376,17 +444,10 @@ void ProcessManager::UnregisterRenderViewHost(
     return;
 
   OnRenderViewHostUnregistered(GetBrowserContext(), render_view_host);
-  ViewType view_type = view->second;
-  all_extension_views_.erase(view);
 
   // Keepalive count, balanced in RegisterRenderViewHost.
-  if (view_type != VIEW_TYPE_INVALID &&
-      view_type != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-    const Extension* extension = GetExtensionForRenderViewHost(
-        render_view_host);
-    if (extension)
-      DecrementLazyKeepaliveCount(extension);
-  }
+  ReleaseLazyKeepaliveCountForView(render_view_host);
+  all_extension_views_.erase(view);
 }
 
 bool ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
@@ -396,12 +457,13 @@ bool ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
     return false;
 
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  all_extension_views_[render_view_host] = GetViewType(web_contents);
+  ExtensionRenderViewData* data = &all_extension_views_[render_view_host];
+  data->view_type = GetViewType(web_contents);
 
   // Keep the lazy background page alive as long as any non-background-page
   // extension views are visible. Keepalive count balanced in
   // UnregisterRenderViewHost.
-  IncrementLazyKeepaliveCountForView(render_view_host);
+  AcquireLazyKeepaliveCountForView(render_view_host);
   return true;
 }
 
@@ -456,20 +518,6 @@ void ProcessManager::DecrementLazyKeepaliveCount(
                    extension_id,
                    last_background_close_sequence_id_),
         base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
-  }
-}
-
-void ProcessManager::IncrementLazyKeepaliveCountForView(
-    RenderViewHost* render_view_host) {
-  WebContents* web_contents =
-      WebContents::FromRenderViewHost(render_view_host);
-  ViewType view_type = GetViewType(web_contents);
-  if (view_type != VIEW_TYPE_INVALID &&
-      view_type != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-    const Extension* extension = GetExtensionForRenderViewHost(
-        render_view_host);
-    if (extension)
-      IncrementLazyKeepaliveCount(extension);
   }
 }
 
@@ -606,6 +654,24 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
+    // Close remaining views.
+    std::vector<RenderViewHost*> views_to_close;
+    for (const auto& view : all_extension_views_) {
+      if (view.second.CanKeepalive() &&
+          GetExtensionID(view.first) == extension_id) {
+        DCHECK(!view.second.has_keepalive);
+        views_to_close.push_back(view.first);
+      }
+    }
+    for (auto view : views_to_close) {
+      view->ClosePage();
+      // RenderViewHost::ClosePage() may result in calling
+      // UnregisterRenderViewHost() asynchronously and may cause race conditions
+      // when the background page is reloaded.
+      // To avoid this, unregister the view now.
+      UnregisterRenderViewHost(view);
+    }
+
     ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
     if (host)
       CloseBackgroundHost(host);
@@ -908,8 +974,15 @@ void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
   // views.
   for (ExtensionRenderViews::const_iterator it = all_extension_views_.begin();
        it != all_extension_views_.end(); ++it) {
-    if (GetExtensionID(it->first) == extension_id)
-      IncrementLazyKeepaliveCountForView(it->first);
+    RenderViewHost* view = it->first;
+    const ExtensionRenderViewData& data = it->second;
+    // Do not increment the count when |has_keepalive| is false
+    // (i.e. ReleaseLazyKeepaliveCountForView() was called).
+    if (GetExtensionID(view) == extension_id && data.has_keepalive) {
+      const Extension* extension = GetExtensionForRenderViewHost(view);
+      if (extension)
+        IncrementLazyKeepaliveCount(extension);
+    }
   }
 }
 
