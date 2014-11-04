@@ -72,8 +72,7 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   void SwitchToSetupWiFi(const ResultCallback& callback) override;
   void CreatePrivetV3Client(const std::string& service_name,
                             const PrivetClientCallback& callback) override;
-  void ConfirmSecurityCode(const std::string& confirmation_code,
-                           const ResultCallback& callback) override;
+  void ConfirmSecurityCode(const ResultCallback& callback) override;
   void RestoreWifi(const ResultCallback& callback) override;
   void OnSetupDone() override;
   void OnSetupError() override;

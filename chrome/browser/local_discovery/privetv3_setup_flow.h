@@ -16,7 +16,7 @@
 namespace local_discovery {
 
 // Provides complete flow for Privet v3 device setup.
-class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
+class PrivetV3SetupFlow {
  public:
   // Delegate to be implemented by client code.
   class Delegate {
@@ -47,9 +47,8 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
     virtual void CreatePrivetV3Client(const std::string& service_name,
                                       const PrivetClientCallback& callback) = 0;
 
-    // Requests client to prompt user to check |confirmation_code|.
-    virtual void ConfirmSecurityCode(const std::string& confirmation_code,
-                                     const ResultCallback& callback) = 0;
+    // Requests client to prompt user to check pairing code.
+    virtual void ConfirmSecurityCode(const ResultCallback& callback) = 0;
 
     // Restores WiFi network.
     virtual void RestoreWifi(const ResultCallback& callback) = 0;
@@ -62,7 +61,7 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   };
 
   explicit PrivetV3SetupFlow(Delegate* delegate);
-  ~PrivetV3SetupFlow() override;
+  virtual ~PrivetV3SetupFlow();
 
   // Starts registration.
   void Register(const std::string& service_name);
@@ -71,14 +70,7 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   void SetupWifiAndRegister(const std::string& device_ssid);
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
-  // PrivetV3Session::Delegate implementation.
-  void OnSetupConfirmationNeeded(const std::string& confirmation_code,
-                                 extensions::api::gcd_private::ConfirmationType
-                                     confirmation_type) override;
-  void OnSessionStatus(extensions::api::gcd_private::Status status) override;
-
   void OnSetupError();
-  void OnDeviceRegistered();
 
   const std::string& service_name() const { return service_name_; }
 
@@ -86,14 +78,22 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   void OnTicketCreated(const std::string& ticket_id,
                        const std::string& device_id);
   void OnPrivetClientCreated(scoped_ptr<PrivetHTTPClient> privet_http_client);
-  void OnCodeConfirmed(const std::string& code, bool success);
+  void OnCodeConfirmed(bool success);
+
+  void OnSessionInitialized(
+      PrivetV3Session::Result result,
+      const std::vector<PrivetV3Session::PairingType>& types);
+  void OnPairingStarted(PrivetV3Session::Result result);
+  void OnPairingDone(PrivetV3Session::Result result);
+  void OnSetupMessageSent(PrivetV3Session::Result result,
+                          const base::DictionaryValue& responce);
 
   Delegate* delegate_;
   std::string service_name_;
   std::string device_id_;
+  std::string ticket_id_;
   scoped_ptr<GCDApiFlow> ticket_request_;
   scoped_ptr<PrivetV3Session> session_;
-  scoped_ptr<PrivetV3Session::Request> setup_request_;
   base::WeakPtrFactory<PrivetV3SetupFlow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetV3SetupFlow);

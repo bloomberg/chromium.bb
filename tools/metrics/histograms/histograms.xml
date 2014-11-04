@@ -44156,6 +44156,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="912" label="HOTWORDPRIVATE_STARTTRAINING"/>
   <int value="913" label="HOTWORDPRIVATE_FINALIZESPEAKERMODEL"/>
   <int value="914" label="HOTWORDPRIVATE_STOPTRAINING"/>
+  <int value="915" label="GCDPRIVATE_STARTPAIRING"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

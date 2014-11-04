@@ -392,12 +392,11 @@ void LocalDiscoveryUIHandler::SwitchToSetupWiFi(
 }
 
 void LocalDiscoveryUIHandler::ConfirmSecurityCode(
-    const std::string& confirmation_code,
     const ResultCallback& callback) {
   device_code_callback_ = callback;
   web_ui()->CallJavascriptFunction(
       "local_discovery.onRegistrationConfirmDeviceCode",
-      base::StringValue(confirmation_code));
+      base::StringValue("1234"));
 }
 
 void LocalDiscoveryUIHandler::RestoreWifi(const ResultCallback& callback) {

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 #include "chrome/common/extensions/api/gcd_private.h"
 
@@ -26,28 +27,39 @@ class PrivetV3Session {
   class FetcherDelegate;
 
  public:
-  // Delegate to be implemented by client code.
-  class Delegate {
-   public:
-    virtual ~Delegate();
+  typedef extensions::api::gcd_private::PairingType PairingType;
+  typedef extensions::api::gcd_private::Status Result;
 
-    // Called when client code should prompt user to check |confirmation_code|.
-    virtual void OnSetupConfirmationNeeded(
-        const std::string& confirmation_code,
-        extensions::api::gcd_private::ConfirmationType confirmation_type) = 0;
+  typedef base::Callback<
+      void(Result result, const std::vector<PairingType>& types)> InitCallback;
 
-    virtual void OnSessionStatus(
-        extensions::api::gcd_private::Status status) = 0;
-  };
+  typedef base::Callback<void(Result result)> ResultCallback;
+  typedef base::Callback<void(Result result,
+                              const base::DictionaryValue& response)>
+      MessageCallback;
 
+  explicit PrivetV3Session(scoped_ptr<PrivetHTTPClient> client);
+  ~PrivetV3Session();
+
+  // Initialized session.
+  void Init(const InitCallback& callback);
+
+  void StartPairing(PairingType pairing_type, const ResultCallback& callback);
+
+  void ConfirmCode(const std::string& code, const ResultCallback& callback);
+
+  // Create a single /privet/v3/session/call request.
+  void SendMessage(const std::string& api,
+                   const base::DictionaryValue& input,
+                   const MessageCallback& callback);
+
+ private:
   // Represents request in progress using secure session.
   class Request {
    public:
     Request();
     virtual ~Request();
 
-    virtual std::string GetName() = 0;
-    virtual const base::DictionaryValue& GetInput() = 0;
     virtual void OnError() = 0;
     virtual void OnParsedJson(const base::DictionaryValue& value,
                               bool has_error) = 0;
@@ -57,24 +69,12 @@ class PrivetV3Session {
     scoped_ptr<FetcherDelegate> fetcher_delegate_;
   };
 
-  PrivetV3Session(scoped_ptr<PrivetHTTPClient> client, Delegate* delegate);
-  ~PrivetV3Session();
+  void RunCallback(const base::Closure& callback);
+  void DeleteFetcher(const FetcherDelegate* fetcher);
 
-  // Establishes a session, will call |OnSetupConfirmationNeeded| and then
-  // |OnSessionEstablished|.
-  void Start();
-
-  void ConfirmCode(const std::string& code);
-
-  // Create a single /privet/v3/session/call request.
-  void StartRequest(Request* request);
-
- private:
-  void ConfirmFakeCode();
-
-  Delegate* delegate_;
   scoped_ptr<PrivetHTTPClient> client_;
   bool code_confirmed_;
+  ScopedVector<FetcherDelegate> fetchers_;
   base::WeakPtrFactory<PrivetV3Session> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetV3Session);
 };

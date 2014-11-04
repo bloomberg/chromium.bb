@@ -137,11 +137,26 @@ class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void OnConfirmCodeCallback(
+  void OnSessionInitialized(
       int session_id,
       api::gcd_private::Status status,
-      const std::string& confirm_code,
-      api::gcd_private::ConfirmationType confirmation_type);
+      const std::vector<api::gcd_private::PairingType>& pairing_types);
+};
+
+class GcdPrivateStartPairingFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.startPairing", GCDPRIVATE_STARTPAIRING)
+
+  GcdPrivateStartPairingFunction();
+
+ protected:
+  ~GcdPrivateStartPairingFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void OnPairingStarted(api::gcd_private::Status status);
 };
 
 class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
@@ -157,7 +172,7 @@ class GcdPrivateConfirmCodeFunction : public ChromeAsyncExtensionFunction {
   bool RunAsync() override;
 
  private:
-  void OnSessionEstablishedCallback(api::gcd_private::Status status);
+  void OnCodeConfirmed(api::gcd_private::Status status);
 };
 
 class GcdPrivateSendMessageFunction : public ChromeAsyncExtensionFunction {

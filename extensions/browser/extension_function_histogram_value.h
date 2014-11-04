@@ -973,6 +973,7 @@ enum HistogramValue {
   HOTWORDPRIVATE_STARTTRAINING,
   HOTWORDPRIVATE_FINALIZESPEAKERMODEL,
   HOTWORDPRIVATE_STOPTRAINING,
+  GCDPRIVATE_STARTPAIRING,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

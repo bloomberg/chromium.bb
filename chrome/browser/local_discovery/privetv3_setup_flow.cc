@@ -11,70 +11,8 @@ namespace local_discovery {
 
 namespace {
 
-const char kSsidJsonKeyName[] = "wifi.ssid";
-const char kPasswordJsonKeyName[] = "wifi.passphrase";
 const char kTicketJsonKeyName[] = "registration.ticketID";
 const char kUserJsonKeyName[] = "registration.user";
-
-class SetupRequest : public PrivetV3Session::Request {
- public:
-  explicit SetupRequest(PrivetV3SetupFlow* setup_flow);
-  ~SetupRequest() override;
-
-  std::string GetName() override { return "/privet/v3/setup/start"; }
-  const base::DictionaryValue& GetInput() override;
-
-  void OnError() override;
-  void OnParsedJson(const base::DictionaryValue& value,
-                    bool has_error) override;
-
-  void SetWiFiCridentials(const std::string& ssid, const std::string& password);
-
-  void SetRegistrationTicket(const std::string& ticket_id,
-                             const std::string& owner_email);
-
- private:
-  base::DictionaryValue input_;
-  PrivetV3SetupFlow* setup_flow_;
-};
-
-SetupRequest::SetupRequest(PrivetV3SetupFlow* setup_flow)
-    : setup_flow_(setup_flow) {
-}
-
-SetupRequest::~SetupRequest() {
-}
-
-const base::DictionaryValue& SetupRequest::GetInput() {
-  return input_;
-}
-
-void SetupRequest::OnError() {
-  setup_flow_->OnSetupError();
-}
-
-void SetupRequest::OnParsedJson(const base::DictionaryValue& value,
-                                bool has_error) {
-  if (has_error)
-    return setup_flow_->OnSetupError();
-  setup_flow_->OnDeviceRegistered();
-}
-
-void SetupRequest::SetWiFiCridentials(const std::string& ssid,
-                                      const std::string& password) {
-  DCHECK(!ssid.empty());
-  DCHECK(!password.empty());
-  input_.SetString(kSsidJsonKeyName, ssid);
-  input_.SetString(kPasswordJsonKeyName, password);
-}
-
-void SetupRequest::SetRegistrationTicket(const std::string& ticket_id,
-                                         const std::string& owner_email) {
-  DCHECK(!ticket_id.empty());
-  DCHECK(!owner_email.empty());
-  input_.SetString(kTicketJsonKeyName, ticket_id);
-  input_.SetString(kUserJsonKeyName, owner_email);
-}
 
 }  // namespace
 
@@ -108,31 +46,8 @@ void PrivetV3SetupFlow::SetupWifiAndRegister(const std::string& device_ssid) {
 }
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
-void PrivetV3SetupFlow::OnSetupConfirmationNeeded(
-    const std::string& confirmation_code,
-    extensions::api::gcd_private::ConfirmationType confirmation_type) {
-  delegate_->ConfirmSecurityCode(confirmation_code,
-                                 base::Bind(&PrivetV3SetupFlow::OnCodeConfirmed,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            confirmation_code));
-}
-
-void PrivetV3SetupFlow::OnSessionStatus(
-    extensions::api::gcd_private::Status status) {
-  if (status == extensions::api::gcd_private::STATUS_SUCCESS) {
-    DCHECK(setup_request_);
-    session_->StartRequest(setup_request_.get());
-  } else {
-    OnSetupError();
-  }
-}
-
 void PrivetV3SetupFlow::OnSetupError() {
   delegate_->OnSetupError();
-}
-
-void PrivetV3SetupFlow::OnDeviceRegistered() {
-  delegate_->OnSetupDone();
 }
 
 void PrivetV3SetupFlow::OnTicketCreated(const std::string& ticket_id,
@@ -143,9 +58,7 @@ void PrivetV3SetupFlow::OnTicketCreated(const std::string& ticket_id,
   }
   // TODO(vitalybuka): Implement success check by polling status of device_id_.
   device_id_ = device_id;
-  SetupRequest* setup_request = new SetupRequest(this);
-  setup_request_.reset(setup_request);
-  setup_request->SetRegistrationTicket(ticket_id, "me");
+  ticket_id_ = ticket_id;
   delegate_->CreatePrivetV3Client(
       service_name_,
       base::Bind(&PrivetV3SetupFlow::OnPrivetClientCreated,
@@ -158,14 +71,52 @@ void PrivetV3SetupFlow::OnPrivetClientCreated(
     OnSetupError();
     return;
   }
-  session_.reset(new PrivetV3Session(privet_http_client.Pass(), this));
-  session_->Start();
+  session_.reset(new PrivetV3Session(privet_http_client.Pass()));
+  session_->Init(base::Bind(&PrivetV3SetupFlow::OnSessionInitialized,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PrivetV3SetupFlow::OnCodeConfirmed(const std::string& code, bool success) {
+void PrivetV3SetupFlow::OnCodeConfirmed(bool success) {
   if (!success)
     return OnSetupError();
-  session_->ConfirmCode(code);
+  session_->ConfirmCode("1234", base::Bind(&PrivetV3SetupFlow::OnPairingDone,
+                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrivetV3SetupFlow::OnSessionInitialized(
+    PrivetV3Session::Result result,
+    const std::vector<PrivetV3Session::PairingType>& types) {
+  if (result != PrivetV3Session::Result::STATUS_SUCCESS)
+    return OnSetupError();
+  session_->StartPairing(PrivetV3Session::PairingType::PAIRING_TYPE_PINCODE,
+                         base::Bind(&PrivetV3SetupFlow::OnPairingStarted,
+                                    weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrivetV3SetupFlow::OnPairingStarted(PrivetV3Session::Result result) {
+  if (result != PrivetV3Session::Result::STATUS_SUCCESS)
+    return OnSetupError();
+  delegate_->ConfirmSecurityCode(base::Bind(&PrivetV3SetupFlow::OnCodeConfirmed,
+                                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrivetV3SetupFlow::OnPairingDone(PrivetV3Session::Result result) {
+  if (result != PrivetV3Session::Result::STATUS_SUCCESS)
+    return OnSetupError();
+  base::DictionaryValue message;
+  message.SetString(kTicketJsonKeyName, ticket_id_);
+  message.SetString(kUserJsonKeyName, "me");
+  session_->SendMessage("/privet/v3/setup/start", message,
+                        base::Bind(&PrivetV3SetupFlow::OnSetupMessageSent,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PrivetV3SetupFlow::OnSetupMessageSent(
+    PrivetV3Session::Result result,
+    const base::DictionaryValue& responce) {
+  if (result != PrivetV3Session::Result::STATUS_SUCCESS)
+    return OnSetupError();
+  delegate_->OnSetupDone();
 }
 
 }  // namespace local_discovery

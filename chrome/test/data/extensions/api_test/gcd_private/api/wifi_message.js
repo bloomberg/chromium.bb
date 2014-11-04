@@ -5,48 +5,51 @@
 onload = function() {
   chrome.test.runTests([
     function wifiMessage() {
-      var messages_needed = 3;
-      function onConfirmCode(sessionId, status, confirmation) {
-        chrome.test.assertEq("success", status);
-        chrome.test.assertEq("1234", confirmation.code);
-        chrome.gcdPrivate.confirmCode(sessionId,
-                                      confirmation.code,
-                                      onSessionEstablished.bind(null,
-                                                                sessionId));
+      var messagesNeeded = 3;
+      var sessionId = -1;
+
+      function onSessionEstablished(newSessionId) {
+        sessionId = newSessionId;
+        chrome.gcdPrivate.startPairing(sessionId, "embeddedCode",
+                                       onPairingStarted);
       }
 
-      function onSessionEstablished(sessionId, status) {
+      function onPairingStarted(status) {
         chrome.test.assertEq("success", status);
+        chrome.gcdPrivate.confirmCode(sessionId, "1234", onCodeConfirmed);
+      }
 
+      function onCodeConfirmed(status) {
+        chrome.test.assertEq("success", status);
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
           "wifi" : {
-           }
+          }
         }, onMessageSent.bind(null, "setupParseError"));
 
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
           "wifi" : {
             "passphrase": "Blah"
-           }
+          }
         }, onMessageSent.bind(null, "setupParseError"));
 
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/v3/setup/start", {
           "wifi" : {
             "ssid": "Blah"
-           }
+          }
         }, onMessageSent.bind(null, "wifiPasswordError"));
       }
 
       function onMessageSent(expected_status, status, output) {
         chrome.test.assertEq(expected_status, status);
-        messages_needed--;
-        console.log("Messages needed " + messages_needed);
+        messagesNeeded--;
+        console.log("Messages needed " + messagesNeeded);
 
-        if (messages_needed == 0) {
+        if (messagesNeeded == 0) {
           chrome.test.notifyPass();
         }
       }
 
-      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onConfirmCode);
+      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onSessionEstablished);
     }
   ]);
 };

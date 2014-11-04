@@ -5,23 +5,25 @@
 onload = function() {
   chrome.test.runTests([
     function session() {
-      function onConfirmCode(sessionId, status, confirmationInfo) {
+      function onSessionEstablished(sessionId, status, pairingTypes) {
         chrome.test.assertEq("success", status);
-        chrome.test.assertEq("1234", confirmationInfo.code);
-        chrome.test.assertEq("displayCode", confirmationInfo.type);
-
+        chrome.test.assertEq(["embeddedCode"], pairingTypes);
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
                                       onMessageSentFail);
-
-        chrome.gcdPrivate.confirmCode(sessionId,
-                                      "1234",
-                                      onSessionEstablished.bind(null,
-                                                                sessionId));
+        chrome.gcdPrivate.startPairing(sessionId, "embeddedCode",
+                                       onPairingStarted.bind(null, sessionId));
       }
 
-      function onSessionEstablished(sessionId, status) {
+      function onPairingStarted(sessionId, status) {
         chrome.test.assertEq("success", status);
+        chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
+                                      onMessageSentFail);
+        chrome.gcdPrivate.confirmCode(sessionId, "1234",
+                                      onCodeConfirmed.bind(null, sessionId));
+      }
 
+      function onCodeConfirmed(sessionId, status) {
+        chrome.test.assertEq("success", status);
         chrome.gcdPrivate.sendMessage(sessionId, "/privet/ping", {},
                                       onMessageSent);
       }
@@ -33,11 +35,10 @@ onload = function() {
       function onMessageSent(status, output) {
         chrome.test.assertEq("success", status);
         chrome.test.assertEq("pong", output.response);
-
         chrome.test.notifyPass();
       }
 
-      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onConfirmCode);
+      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onSessionEstablished);
     }
   ]);
 };

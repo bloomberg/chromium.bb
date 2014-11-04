@@ -94,8 +94,7 @@ class MockDelegate : public PrivetV3SetupFlow::Delegate {
     privet_client_ptr_ = privet_client.get();
     callback.Run(privet_client.Pass());
   }
-  MOCK_METHOD2(ConfirmSecurityCode,
-               void(const std::string&, const ResultCallback&));
+  MOCK_METHOD1(ConfirmSecurityCode, void(const ResultCallback&));
   MOCK_METHOD1(RestoreWifi, void(const ResultCallback&));
   MOCK_METHOD0(OnSetupDone, void());
   MOCK_METHOD0(OnSetupError, void());
@@ -133,7 +132,7 @@ class PrivetV3SetupFlowTest : public testing::Test {
     quit_closure_ = run_loop_.QuitClosure();
     EXPECT_CALL(delegate_, GetWiFiCredentials(_)).Times(0);
     EXPECT_CALL(delegate_, SwitchToSetupWiFi(_)).Times(0);
-    EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(0);
+    EXPECT_CALL(delegate_, ConfirmSecurityCode(_)).Times(0);
     EXPECT_CALL(delegate_, RestoreWifi(_)).Times(0);
     EXPECT_CALL(delegate_, OnSetupDone()).Times(0);
     EXPECT_CALL(delegate_, OnSetupError()).Times(0);
@@ -169,8 +168,9 @@ TEST_F(PrivetV3SetupFlowTest, InvalidTicket) {
 
 TEST_F(PrivetV3SetupFlowTest, InvalidDeviceResponce) {
   EXPECT_CALL(delegate_, OnSetupError()).Times(1);
-  EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(1).WillOnce(
-      WithArgs<1>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
+  EXPECT_CALL(delegate_, ConfirmSecurityCode(_))
+      .Times(1)
+      .WillOnce(WithArgs<0>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
   delegate_.gcd_server_response_ = kRegistrationTicketResponse;
   setup_.Register(kServiceName);
   run_loop_.Run();
@@ -179,8 +179,9 @@ TEST_F(PrivetV3SetupFlowTest, InvalidDeviceResponce) {
 
 TEST_F(PrivetV3SetupFlowTest, Success) {
   EXPECT_CALL(delegate_, OnSetupDone()).Times(1);
-  EXPECT_CALL(delegate_, ConfirmSecurityCode(_, _)).Times(1).WillOnce(
-      WithArgs<1>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
+  EXPECT_CALL(delegate_, ConfirmSecurityCode(_))
+      .Times(1)
+      .WillOnce(WithArgs<0>(Invoke(this, &PrivetV3SetupFlowTest::ConfirmCode)));
   delegate_.gcd_server_response_ = kRegistrationTicketResponse;
   setup_.Register(kServiceName);
   run_loop_.Run();
