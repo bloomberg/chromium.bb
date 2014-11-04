@@ -65,7 +65,8 @@ BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
 BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
-CHROMIUM_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.chromium'
+CHROMIUM_DASHBOARD = ('https://uberchromegw.corp.google.com/',
+                      'i/chromiumos.chromium')
 
 # Waterfall to dashboard URL mapping.
 WATERFALL_TO_DASHBOARD = {
@@ -792,3 +793,4 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 # AFDO common constants.
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
 AFDO_GENERATE_TIMEOUT = 90 * 60
+

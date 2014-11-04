@@ -635,6 +635,14 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       logging.warning('Detected that a sanity-check builder failed. '
                       'Will not reject any changes.')
 
+    # If the tree was not open when we acquired a pool, do not assume that
+    # tot was sane.
+    if not self.sync_stage.pool.tree_was_open:
+      logging.info('The tree was not open when changes were acquired so we are '
+                   'attributing failures to the broken tree rather than the '
+                   'changes.')
+      tot_sanity = False
+
     if inflight:
       # Some slave(s) timed out due to unknown causes. We don't have
       # any more information, so reject all changes.

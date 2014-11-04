@@ -16,6 +16,7 @@ import itertools
 import mox
 import os
 import pickle
+import random
 import sys
 import tempfile
 import time
@@ -45,7 +46,10 @@ import mock
 
 
 _GetNumber = iter(itertools.count()).next
-
+# Without this some lambda's defined in constants will not be the same as
+# constants defined in this module. For comparisons, lambdas must be the same
+# function.
+validation_pool.constants = constants
 
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
@@ -82,6 +86,8 @@ class FakeBuilderRun(object):
     FakeAttrs = collections.namedtuple('FakeAttrs', ['metadata'])
     self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata(
         metadata_dict=metadata_dict))
+    FakeConfig = collections.namedtuple('FakeConfig', ['name'])
+    self.config = FakeConfig(name='master-paladin')
 
   def GetCIDBHandle(self):
     """Get the build_id and cidb handle, if available.
@@ -731,14 +737,18 @@ class TestCoreLogic(MoxBase):
   def MakeFailure(self, patch, inflight=True):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
 
-  def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
+  def GetPool(self, changes, applied=(), tot=(), inflight=(),
+              max_change_count=None, **kwargs):
+    if not max_change_count:
+      max_change_count = len(changes)
+
     pool = self.MakePool(changes=changes, fake_db=self.fake_db, **kwargs)
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        changes, manifest=mox.IgnoreArg()
+        changes, manifest=mox.IgnoreArg(), max_change_count=max_change_count
         ).AndReturn((applied, tot, inflight))
 
     for patch in applied:
@@ -907,7 +917,8 @@ class TestCoreLogic(MoxBase):
 
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
-        patches, manifest=mox.IgnoreArg()).AndRaise(MyException)
+        patches, manifest=mox.IgnoreArg(),
+        max_change_count=len(patches)).AndRaise(MyException)
     errors = [mox.Func(functools.partial(VerifyCQError, x)) for x in patches]
     pool._HandleApplyFailure(errors).AndReturn(None)
 
@@ -993,6 +1004,190 @@ class TestCoreLogic(MoxBase):
 
     compare(results[0], allowed_patches)
     compare(results[1], filtered_patches)
+
+  def testAcquirePool(self):
+    """Various tests for the AcquirePool method."""
+    directory = '/tmp/dontmattah'
+    repo = repository.RepoRepository(directory, directory, 'master', depth=1)
+    self.mox.StubOutWithMock(repo, 'Sync')
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, 'AcquireChanges')
+    self.mox.StubOutWithMock(validation_pool.ValidationPool,
+                             'RecordPatchesInMetadataAndDatabase')
+    self.mox.StubOutWithMock(time, 'sleep')
+    self.mox.StubOutWithMock(tree_status, 'WaitForTreeStatus')
+
+    # 1) Test, tree open -> get changes and finish.
+    tree_status.WaitForTreeStatus(
+        period=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg(),
+        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
+    repo.Sync()
+    # pylint: disable=no-value-for-parameter
+    validation_pool.ValidationPool.AcquireChanges(
+        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
+    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
+
+    self.mox.ReplayAll()
+
+    query = constants.CQ_READY_QUERY
+    pool = validation_pool.ValidationPool.AcquirePool(
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
+        check_tree_open=True)
+
+    self.assertTrue(pool.tree_was_open)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    # 2) Test, tree open -> need to loop at least once to get changes.
+    tree_status.WaitForTreeStatus(
+        period=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg(),
+        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
+    repo.Sync()
+    validation_pool.ValidationPool.AcquireChanges(
+        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(False)
+    time.sleep(validation_pool.ValidationPool.SLEEP_TIMEOUT)
+    tree_status.WaitForTreeStatus(
+        period=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg(),
+        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
+    repo.Sync()
+    validation_pool.ValidationPool.AcquireChanges(
+        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
+    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
+    self.mox.ReplayAll()
+
+    query = constants.CQ_READY_QUERY
+    pool = validation_pool.ValidationPool.AcquirePool(
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
+        check_tree_open=True)
+
+    self.assertTrue(pool.tree_was_open)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    # 3) Test, tree throttled -> get changes and finish.
+    tree_status.WaitForTreeStatus(
+        period=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg(),
+        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_THROTTLED)
+    repo.Sync()
+    validation_pool.ValidationPool.AcquireChanges(
+        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
+    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
+
+    self.mox.ReplayAll()
+    query = constants.CQ_READY_QUERY
+    pool = validation_pool.ValidationPool.AcquirePool(
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
+        check_tree_open=True)
+
+    self.assertTrue(pool.tree_was_open)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    # 4) Test, tree throttled -> use exponential fallback logic.
+    # We force this case to be different than 3 by setting the exponential
+    # fallback timeout from 10 minutes to 0 seconds.
+    tree_status.WaitForTreeStatus(
+        period=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg(),
+        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_THROTTLED)
+    repo.Sync()
+    validation_pool.ValidationPool.AcquireChanges(
+        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
+    validation_pool.ValidationPool.RecordPatchesInMetadataAndDatabase()
+
+    self.mox.ReplayAll()
+
+    validation_pool.ValidationPool.CQ_THROTTLED_TIMEOUT = 0
+    query = constants.CQ_READY_QUERY
+    pool = validation_pool.ValidationPool.AcquirePool(
+        constants.PUBLIC_OVERLAYS, repo, 1, 'buildname', query, dryrun=False,
+        check_tree_open=True)
+
+    self.assertFalse(pool.tree_was_open)
+
+
+  def testGetFailStreak(self):
+    """Tests that we're correctly able to calculate a fail streak."""
+    builder_name = 'master-paladin'
+    for i in range(2):
+      self.fake_db.InsertBuild(
+          builder_name, None, i, builder_name, 'abcdelicious')
+
+    # Just one success.
+    slave_pool = self.MakePool(fake_db=self.fake_db)
+    self.assertEqual(slave_pool._GetFailStreak(), 0)
+
+    # Add a fail streak.
+    for i in range(3, 6):
+      self.fake_db.InsertBuild(
+          builder_name, None, i, builder_name, 'abcdelicious',
+          status=constants.BUILDER_STATUS_FAILED)
+
+    self.assertEqual(slave_pool._GetFailStreak(), 3)
+
+    # Add another success and failure
+    self.fake_db.InsertBuild(
+        builder_name, None, 6, builder_name, 'abcdelicious',
+        status=constants.BUILDER_STATUS_PASSED)
+    self.fake_db.InsertBuild(
+        builder_name, None, 7, builder_name, 'abcdelicious',
+        status=constants.BUILDER_STATUS_FAILED)
+
+    self.assertEqual(slave_pool._GetFailStreak(), 1)
+
+    # Finally just add one last pass and make sure fail streak is wiped.
+    self.fake_db.InsertBuild(
+        builder_name, None, 8, builder_name, 'abcdelicious',
+        status=constants.BUILDER_STATUS_PASSED)
+
+    self.assertEqual(slave_pool._GetFailStreak(), 0)
+
+  def testApplyWithTreeNotOpen(self):
+    """Tests that we can correctly apply exponential fallback."""
+    patches = self.GetPatches(4)
+
+    # We mock out the shuffle so that we can deterministically test.
+    self.mox.StubOutWithMock(random, 'shuffle')
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_GetFailStreak')
+
+    slave_pool = self.GetPool(changes=patches, applied=patches[:2],
+                              max_change_count=2,
+                              tree_was_open=False, handlers=True)
+    random.shuffle(patches) # Mock.
+    # pylint: disable=no-value-for-parameter
+    validation_pool.ValidationPool._GetFailStreak().AndReturn(1)
+
+    self.mox.ReplayAll()
+    self.runApply(slave_pool, True)
+    self.assertEqual(len(slave_pool.changes), 2)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    slave_pool = self.GetPool(changes=patches, applied=patches[:1],
+                              max_change_count=1,
+                              tree_was_open=False, handlers=True)
+    random.shuffle(patches) # Mock.
+    validation_pool.ValidationPool._GetFailStreak().AndReturn(2)
+
+    self.mox.ReplayAll()
+    self.runApply(slave_pool, True)
+    self.assertEqual(len(slave_pool.changes), 1)
+    self.mox.VerifyAll()
+    self.mox.ResetAll()
+
+    slave_pool = self.GetPool(changes=patches, applied=patches[:1],
+                              max_change_count=1,
+                              tree_was_open=False, handlers=True)
+    random.shuffle(patches) # Mock.
+    validation_pool.ValidationPool._GetFailStreak().AndReturn(10)
+
+    self.mox.ReplayAll()
+    self.runApply(slave_pool, True)
+    self.assertEqual(len(slave_pool.changes), 1)
+    self.mox.VerifyAll()
 
 
 class TestPickling(cros_test_lib.TempDirTestCase):

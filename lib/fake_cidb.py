@@ -39,8 +39,12 @@ class FakeCIDBConnection(object):
 
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  deadline=None):
-    """Insert a build row."""
+                  deadline=None, status=constants.BUILDER_STATUS_PASSED):
+    """Insert a build row.
+
+    Note this API slightly differs from cidb as we pass status to avoid having
+    to have a later FinishBuild call in testing.
+    """
     row = {'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
            'waterfall': waterfall,
@@ -49,7 +53,8 @@ class FakeCIDBConnection(object):
            'bot_hostname': bot_hostname,
            'start_time': datetime.datetime.now(),
            'master_build_id' : master_build_id,
-           'deadline': deadline}
+           'deadline': deadline,
+           'status': status}
     build_id = len(self.buildTable)
     self.buildTable.append(row)
     return build_id
@@ -143,3 +148,16 @@ class FakeCIDBConnection(object):
   def GetBuildStatuses(self, build_ids):
     """Gets the status of the builds."""
     return [self.buildTable[x -1] for x in build_ids]
+
+  def GetLastBuildStatuses(self, build_config, number):
+    """Returns the last |number| builds for the given |build_config|."""
+    def ReduceToBuildConfig(new_list, current_build):
+      """Filters a build list to only those of a given config."""
+      if current_build['build_config'] == build_config:
+        new_list.append(current_build)
+
+      return new_list
+
+    build_configs = reduce(ReduceToBuildConfig, self.buildTable, [])
+    # Reverse sort as that's what's expected.
+    return sorted(build_configs[-number:], reverse=True)

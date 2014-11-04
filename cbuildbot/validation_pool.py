@@ -16,6 +16,7 @@ import functools
 import httplib
 import logging
 import os
+import random
 import sys
 import time
 from xml.dom import minidom
@@ -759,7 +760,7 @@ class PatchSeries(object):
 
   @_ManifestDecorator
   def Apply(self, changes, frozen=True, honor_ordering=False,
-            changes_filter=None):
+            changes_filter=None, max_change_count=None):
     """Applies changes from pool into the build root specified by the manifest.
 
     This method resolves each given change down into a set of transactions-
@@ -792,6 +793,10 @@ class PatchSeries(object):
         changes being inspected, and expand the changes if necessary.
         Primarily this is of use for cbuildbot patching when dealing w/
         uploaded/remote patches.
+      max_change_count: If not None, this is a soft integer limit on the number
+        of patches to pull in. We stop pulling in patches as soon as we grab
+        at least this many patches. Note that this limit may be exceeded by N-1,
+        where N is the length of the longest transaction.
 
     Returns:
       A tuple of changes-applied, Exceptions for the changes that failed
@@ -807,6 +812,7 @@ class PatchSeries(object):
     self.InjectLookupCache(changes)
     limit_to = cros_patch.PatchCache(changes) if frozen else None
     resolved, applied, failed = [], [], []
+    planned = set()
     for change, plan, ex in self.CreateTransactions(changes, limit_to=limit_to):
       if ex is not None:
         logging.info("Failed creating transaction for %s: %s", change, ex)
@@ -815,6 +821,10 @@ class PatchSeries(object):
         resolved.append((change, plan))
         logging.info("Transaction for %s is %s.",
                      change, ', '.join(map(str, resolved[-1][-1])))
+        planned.update(plan)
+
+      if max_change_count is not None and len(planned) >= max_change_count:
+        break
 
     if not resolved:
       # No work to do; either no changes were given to us, or all failed
@@ -1007,8 +1017,16 @@ class ValidationPool(object):
   method that grabs the commits that are ready for validation.
   """
 
+  # Global variable to control whether or not we should allow CL's to get tried
+  # and/or committed when the tree is throttled.
+  # TODO(sosa): Remove this global once metrics show that this is the direction
+  # we want to go (and remove all additional throttled_ok logic from this
+  # module.
+  THROTTLED_OK = True
   GLOBAL_DRYRUN = False
   MAX_TIMEOUT = 60 * 60 * 4
+  # How long to wait when the tree is throttled before checking for CR+1 CL's.
+  CQ_THROTTLED_TIMEOUT = 60 * 10
   SLEEP_TIMEOUT = 30
   INCONSISTENT_SUBMIT_MSG = ('Gerrit thinks that the change was not submitted, '
                              'even though we hit the submit button.')
@@ -1016,6 +1034,11 @@ class ValidationPool(object):
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
   REJECTION_GRACE_PERIOD = 30 * 60
+
+  # How many CQ runs to go back when making a decision about the CQ health.
+  # Note this impacts the max exponential fallback (2^10=1024 max exponential
+  # divisor)
+  CQ_SEARCH_HISTORY = 10
 
 
   def __init__(self, overlays, build_root, build_number, builder_name,
@@ -1106,6 +1129,7 @@ class ValidationPool(object):
     self._build_number = build_number
     self._builder_name = builder_name
 
+    # Set to False if the tree was not open when we acquired changes.
     self.tree_was_open = tree_was_open
 
   @property
@@ -1142,22 +1166,74 @@ class ValidationPool(object):
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier,
-            self.pre_cq_trybot))
+            self.pre_cq_trybot,
+            self.tree_was_open))
 
   @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
+    kwargs.setdefault('tree_was_open', True)
     kwargs.setdefault('pre_cq_trybot', True)
     kwargs.setdefault('is_master', True)
     pool = cls(*args, **kwargs)
     pool.RecordPatchesInMetadataAndDatabase()
     return pool
 
+  @staticmethod
+  def _WaitForQuery(query):
+    """Helper method to return msg to print out when waiting for a |query|."""
+    # Dictionary that maps CQ Queries to msg's to display.
+    if query == constants.CQ_READY_QUERY:
+      return 'new CLs'
+    elif query == constants.THROTTLED_CQ_READY_QUERY:
+      return 'new CQ+2 CLs or the tree to open'
+    else:
+      return 'waiting for tree to open'
+
+  def AcquireChanges(self, gerrit_query, ready_fn, change_filter):
+    """Helper method for AcquirePool. Adds changes to pool based on args.
+
+    Queries gerrit using the given flags, filters out any unwanted changes, and
+    handles draft changes.
+
+    Args:
+      gerrit_query: gerrit query to use.
+      ready_fn: CR function (see constants).
+      change_filter: If set, filters with change_filter(pool, changes,
+        non_manifest_changes) to remove unwanted patches.
+    """
+    # Iterate through changes from all gerrit instances we care about.
+    for helper in self._helper_pool:
+      changes = helper.Query(gerrit_query, sort='lastUpdated')
+      changes.reverse()
+
+      if ready_fn:
+        # The query passed in may include a dictionary of flags to use for
+        # revalidating the query results. We need to do this because Gerrit
+        # caches are sometimes stale and need sanity checking.
+        changes = [x for x in changes if ready_fn(x)]
+
+      # Tell users to publish drafts before marking them commit ready.
+      for change in changes:
+        if change.HasApproval('COMR', ('1', '2')) and change.IsDraft():
+          self.HandleDraftChange(change)
+
+      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
+          changes, git.ManifestCheckout.Cached(self.build_root))
+      self.changes.extend(changes)
+      self.non_manifest_changes.extend(non_manifest_changes)
+
+    # Filter out unwanted changes.
+    self.changes, self.non_manifest_changes = change_filter(
+        self, self.changes, self.non_manifest_changes)
+
+    return self.changes or self.non_manifest_changes
+
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name, query,
                   dryrun=False, check_tree_open=True,
-                  change_filter=None, throttled_ok=False, builder_run=None):
+                  change_filter=None, builder_run=None):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which changes are ready to be committed.
@@ -1175,8 +1251,6 @@ class ValidationPool(object):
       check_tree_open: If True, only return when the tree is open.
       change_filter: If set, use change_filter(pool, changes,
         non_manifest_changes) to filter out unwanted patches.
-      throttled_ok: if |check_tree_open|, treat a throttled tree as open.
-                    Default: True.
       builder_run: Optional BuilderRun instance used to record CL actions to
         metadata and cidb.
 
@@ -1185,7 +1259,7 @@ class ValidationPool(object):
 
     Raises:
       TreeIsClosedException: if the tree is closed (or throttled, if not
-                             |throttled_ok|).
+                             |THROTTLED_OK|).
     """
     if change_filter is None:
       change_filter = lambda _, x, y: (x, y)
@@ -1193,75 +1267,89 @@ class ValidationPool(object):
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     end_time = time.time() + cls.MAX_TIMEOUT
+    # How long to wait until if the tree is throttled and we want to be more
+    # accepting of changes. We leave it as end_time whenever the tree is open.
+    tree_throttled_time = end_time
+    status = constants.TREE_OPEN
     while True:
-      loop_time = time.time()
-      time_left = end_time - loop_time
-
-      # Wait until the tree becomes open (or throttled, if |throttled_ok|,
-      # and record the tree status).
+      current_time = time.time()
+      time_left = end_time - current_time
+      # Wait until the tree becomes open.
       if check_tree_open:
         try:
           status = tree_status.WaitForTreeStatus(
               period=cls.SLEEP_TIMEOUT, timeout=time_left,
-              throttled_ok=throttled_ok)
+              throttled_ok=cls.THROTTLED_OK)
+          # Manages the timer for accepting CL's >= CR+1 based on tree status.
+          # If the tree is not open.
+          if status == constants.TREE_OPEN:
+            # Reset the timer in case it was changed.
+            tree_throttled_time = end_time
+          elif tree_throttled_time == end_time:
+            # Tree not open and tree_throttled_time not set.
+            tree_throttled_time = current_time + cls.CQ_THROTTLED_TIMEOUT
         except timeout_util.TimeoutError:
-          raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
-      else:
-        status = constants.TREE_OPEN
-
-      gerrit_query, ready_fn = query
-      waiting_for = 'new CLs'
-
-      # If we are using the CQ query, adjust for a throttled tree.
-      if (query == constants.CQ_READY_QUERY and
-          status == constants.TREE_THROTTLED):
-        gerrit_query, ready_fn = constants.THROTTLED_CQ_READY_QUERY
-        waiting_for = 'new CQ+2 CLs or the tree to open'
+          raise TreeIsClosedException(
+              closed_or_throttled=not cls.THROTTLED_OK)
 
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
 
-      # Only master configurations should call this method.
+      # Determine the query to use.
+      gerrit_query, ready_fn = query
+      tree_was_open = True
+      if (status == constants.TREE_THROTTLED and
+          query == constants.CQ_READY_QUERY):
+        if current_time < tree_throttled_time:
+          gerrit_query, ready_fn = constants.THROTTLED_CQ_READY_QUERY
+        else:
+          # Note we only apply the tree not open logic after a given
+          # window.
+          tree_was_open = False
+          gerrit_query, ready_fn = constants.CQ_READY_QUERY
+
       pool = ValidationPool(overlays, repo.directory, build_number,
-                            builder_name, True, dryrun, builder_run=builder_run)
+                            builder_name, True, dryrun, builder_run=builder_run,
+                            tree_was_open=tree_was_open)
 
-      # Iterate through changes from all gerrit instances we care about.
-      for helper in cls.GetGerritHelpersForOverlays(overlays):
-        changes = helper.Query(gerrit_query, sort='lastUpdated')
-        changes.reverse()
-
-        if ready_fn:
-          # The query passed in may include a dictionary of flags to use for
-          # revalidating the query results. We need to do this because Gerrit
-          # caches are sometimes stale and need sanity checking.
-          changes = [x for x in changes if ready_fn(x)]
-
-        # Tell users to publish drafts before marking them commit ready.
-        for change in changes:
-          if change.HasApproval('COMR', ('1', '2')) and change.IsDraft():
-            pool.HandleDraftChange(change)
-
-        changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            changes, git.ManifestCheckout.Cached(repo.directory))
-        pool.changes.extend(changes)
-        pool.non_manifest_changes.extend(non_manifest_changes)
-
-      # Filter out unwanted changes.
-      pool.changes, pool.non_manifest_changes = change_filter(
-          pool, pool.changes, pool.non_manifest_changes)
-
-      if (pool.changes or pool.non_manifest_changes or dryrun or time_left < 0
-          or cls.ShouldExitEarly()):
+      if pool.AcquireChanges(gerrit_query, ready_fn, change_filter):
         break
 
-      logging.info('Waiting for %s (%d minutes left)...', waiting_for,
-                   time_left / 60)
-      wait_time = loop_time + cls.SLEEP_TIMEOUT - time.time()
-      if wait_time > 0:
-        time.sleep(wait_time)
+      if dryrun or time_left < 0 or cls.ShouldExitEarly():
+        break
+
+      # Iterated through all queries with no changes.
+      logging.info('Waiting for %s (%d minutes left)...',
+                   cls._WaitForQuery(query), time_left / 60)
+      time.sleep(cls.SLEEP_TIMEOUT)
 
     pool.RecordPatchesInMetadataAndDatabase()
     return pool
+
+  def _GetFailStreak(self):
+    """Returns the fail streak for the validation pool.
+
+    Queries CIDB for the last CQ_SEARCH_HISTORY builds from the current build_id
+    and returns how many of them haven't passed in a row. This is used for
+    tree throttled validation pool logic.
+    """
+    # TODO(sosa): Remove Google Storage Fail Streak Counter.
+    _, db = self._run.GetCIDBHandle()
+    if not db:
+      return 0
+
+    statuses = db.GetLastBuildStatuses(self._run.config.name,
+                                       ValidationPool.CQ_SEARCH_HISTORY)
+    number_of_failures = 0
+    # Iterate through the ordered list of statuses until you get one that is
+    # passed.
+    for status_dict in statuses:
+      if status_dict['status'] != constants.BUILDER_STATUS_PASSED:
+        number_of_failures = number_of_failures + 1
+      else:
+        break
+
+    return number_of_failures
 
   def AddPendingCommitsIntoPool(self, manifest):
     """Add the pending commits from |manifest| into pool.
@@ -1469,11 +1557,19 @@ class ValidationPool(object):
     failed_tot = []
     failed_inflight = []
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
+
+    # Only try a subset of the changes if the tree was throttled.
+    max_change_count = len(self.changes)
+    if not self.tree_was_open:
+      random.shuffle(self.changes)
+      fail_streak = self._GetFailStreak()
+      max_change_count = max(1, len(self.changes) / (2**fail_streak))
+
     if self.is_master:
       try:
         # pylint: disable=E1123
         applied, failed_tot, failed_inflight = patch_series.Apply(
-            self.changes, manifest=manifest)
+            self.changes, manifest=manifest, max_change_count=max_change_count)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
       except Exception as e:
@@ -1674,7 +1770,8 @@ class ValidationPool(object):
         tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
                                timeout=self.MAX_TIMEOUT,
                                throttled_ok=throttled_ok)):
-      raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
+      raise TreeIsClosedException(
+          closed_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.
     unmodified_changes, errors = self.FilterModifiedChanges(changes)
@@ -1725,7 +1822,6 @@ class ValidationPool(object):
     metadata = self._run.attrs.metadata
 
     _, db = self._run.GetCIDBHandle()
-
     timestamp = int(time.time())
     for change in self.changes:
       metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,

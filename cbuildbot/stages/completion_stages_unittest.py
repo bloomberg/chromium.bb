@@ -306,7 +306,9 @@ class CommitQueueCompletionStageTest(
     self.other_changes = ['A', 'B']
     self.changes = self.other_changes + self.partial_submit_changes
     self.tot_sanity_mock = self.PatchObject(
-        completion_stages.CommitQueueCompletionStage, '_ToTSanity')
+        completion_stages.CommitQueueCompletionStage,
+        '_ToTSanity',
+        return_value=True)
 
     self.alert_email_mock = self.PatchObject(alerts, '_SendEmailHelper')
     self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
@@ -320,11 +322,17 @@ class CommitQueueCompletionStageTest(
                      return_value=(dict(), []))
     self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
 
-  def ConstructStage(self):
-    """Returns a CommitQueueCompletionStage object."""
+  # pylint: disable=W0221
+  def ConstructStage(self, tree_was_open=True):
+    """Returns a CommitQueueCompletionStage object.
+
+    Args:
+      tree_was_open: If not true, tree was not open when we acquired changes.
+    """
     sync_stage = sync_stages.CommitQueueSyncStage(self._run)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.changes = self.changes
+    sync_stage.pool.tree_was_open = tree_was_open
 
     sync_stage.pool.handle_failure_mock = self.PatchObject(
         sync_stage.pool, 'HandleValidationFailure')
@@ -334,7 +342,8 @@ class CommitQueueCompletionStageTest(
         self._run, sync_stage, success=True)
 
   def VerifyStage(self, failing, inflight, handle_failure=True,
-                  handle_timeout=False, submit_partial=False, alert=False):
+                  handle_timeout=False, sane_tot=True, submit_partial=False,
+                  alert=False, stage=None):
     """Runs and Verifies CQMasterHandleFailure.
 
     Args:
@@ -342,10 +351,13 @@ class CommitQueueCompletionStageTest(
       inflight: The names of the buiders that timed out.
       handle_failure: If True, calls HandleValidationFailure.
       handle_timeout: If True, calls HandleValidationTimeout.
+      sane_tot: If not true, assumes TOT is not sane.
       submit_partial: If True, submit partial pool.
       alert: If True, sends out an alert email for infra failures.
+      stage: If set, use this constructed stage, otherwise create own.
     """
-    stage = self.ConstructStage()
+    if not stage:
+      stage = self.ConstructStage()
 
     if submit_partial:
       self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
@@ -364,7 +376,7 @@ class CommitQueueCompletionStageTest(
 
     if handle_failure:
       stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
-          mock.ANY, no_stat=[], sanity=mock.ANY, changes=self.other_changes)
+          mock.ANY, no_stat=[], sanity=sane_tot, changes=self.other_changes)
 
     if handle_timeout:
       stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
@@ -444,6 +456,21 @@ class CommitQueueCompletionStageTest(
     stage = self.ConstructStage()
     results = stage.GetRelevantChangesForSlaves(changes, no_stat)
     self.assertEqual(results, expected)
+
+  def testWithExponentialFallbackApplied(self):
+    """Tests that we don't treat TOT as sane when it isn't."""
+    failing = ['foo', 'bar']
+    inflight = ['inflight']
+    stage = self.ConstructStage(tree_was_open=False)
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetInfraFailMessages', return_value=[])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=['foo'])
+
+    # An alert is sent, since we have an inflight build still.
+    self.VerifyStage(failing, inflight, handle_failure=False,
+                     handle_timeout=False, sane_tot=False, alert=True,
+                     stage=stage)
 
 
 class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):

@@ -796,9 +796,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
             dryrun=self._run.options.debug,
             check_tree_open=(not self._run.options.debug or
                              self._run.options.mock_tree_status),
-            change_filter=self._ChangeFilter, throttled_ok=True,
-            builder_run=self._run)
-
+            change_filter=self._ChangeFilter, builder_run=self._run)
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
         return None
