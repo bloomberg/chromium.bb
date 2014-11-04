@@ -6,7 +6,192 @@
 var TestConstants = {
   wallpaperURL: 'https://test.com/test.jpg',
   // A dummy string which is used to mock an image.
-  image: '*#*@#&'
+  IMAGE: '*#*@#&',
+  // A dummy array which is used to mock the file content.
+  FILESTRING: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+};
+
+// mock FileReader object in HTML5 File System
+function FileReader() {
+  this.result = '';
+  this.onloadend = function() {
+  };
+  this.readAsArrayBuffer = function(mockFile) {
+    this.result = mockFile;
+    this.onloadend();
+  }
+}
+
+// Mock localFS handler
+var mockLocalFS = {
+  root: {
+    dirList: [],
+    rootFileList: [],
+    getDirectory: function(dir, isCreate, success, failure) {
+      for(var i = 0; i < this.dirList.length; i++) {
+        if (this.dirList[i].name == dir) {
+          success(this.dirList[i]);
+          return;
+        }
+      }
+      if (!isCreate.create) {
+        if (failure)
+          failure('DIR_NOT_FOUND');
+      } else {
+        this.dirList.push(new DirEntry(dir));
+        success(this.dirList[this.dirList.length - 1]);
+      }
+    },
+    getFile: function(fileName, isCreate, success, failure) {
+      if (fileName[0] == '/')
+        fileName = fileName.substr(1);
+      if (fileName.split('/').length == 1) {
+        for(var i = 0; i < this.rootFileList.length; i++) {
+          if (fileName == this.rootFileList[i].name) {
+            success(this.rootFileList[i]);
+            return;
+          }
+        }
+        if (!isCreate.create) {
+          if (failure)
+            failure('FILE_NOT_FOUND');
+        } else {
+          this.rootFileList.push(new FileEntry(fileName));
+          success(this.rootFileList[this.rootFileList.length - 1]);
+        }
+      } else if (fileName.split('/').length == 2) {
+        var realDirName = fileName.split('/')[0];
+        var realFileName = fileName.split('/')[1];
+        var getDirSuccess = function(dirEntry) {
+          dirEntry.getFile(realFileName, isCreate, success, failure);
+        };
+        this.getDirectory(realDirName, {create: false},
+                                 getDirSuccess, failure);
+      } else {
+        console.error('Only support one level deep subdirectory')
+      }
+    }
+  },
+  /**
+   * Create a new file in mockLocalFS.
+   * @param {string} fileName File name that to be created.
+   * @return {FileEntry} Handle of the new file
+   */
+  mockTestFile: function(fileName) {
+    var mockFile;
+    if (fileName[0] == '/')
+      fileName = fileName.substr(1);
+    if (fileName.split('/').length == 1) {
+      mockFile = new FileEntry(fileName);
+      this.root.rootFileList.push(mockFile);
+    } else if (fileName.split('/').length == 2) {
+      var realDirName = fileName.split('/')[0];
+      var realFileName = fileName.split('/')[1];
+      var getDirSuccess = function(dirEntry) {
+        dirEntry.getFile(realFileName, {create: true},
+                         function(fe) {mockFile = fe;} );
+      };
+      this.root.getDirectory(realDirName, {create: true}, getDirSuccess);
+    } else {
+      console.error('Only support one-level fileSystem mock')
+    }
+    return mockFile;
+  },
+  /**
+   * Delete all files and directories in mockLocalFS.
+   */
+  reset: function() {
+    this.root.dirList = [];
+    this.root.rootFileList = [];
+  }
+};
+
+function DirEntry(dirname) {
+  this.name = dirname;
+  this.fileList = [];
+  this.getFile = function(fileName, isCreate, success, failure) {
+    for(var i = 0; i < this.fileList.length; i++) {
+      if (fileName == this.fileList[i].name) {
+        success(this.fileList[i]);
+        return;
+      }
+    }
+    if (!isCreate.create) {
+      if (failure)
+        failure('FILE_NOT_FOUND');
+    } else {
+      this.fileList.push( new FileEntry(fileName) );
+      success(this.fileList[this.fileList.length - 1]);
+    }
+  }
+}
+
+window.webkitRequestFileSystem = function(type, size, callback) {
+  callback(mockLocalFS);
+}
+
+function Blob(arg) {
+  var data = arg[0];
+  this.content = '';
+  if (typeof data == 'string')
+    this.content = data;
+  else
+    this.content = Array.prototype.join.call(data);
+}
+
+var mockWriter = {
+  write: function(blobData) {
+  }
+};
+
+function FileEntry(filename) {
+  this.name = filename;
+  this.file = function(callback) {
+    callback(TestConstants.FILESTRING);
+  };
+  this.createWriter = function(callback) {
+    callback(mockWriter);
+  };
+  this.remove = function(success, failure) {
+  };
+}
+
+// Mock chrome syncFS handler
+var mockSyncFS = {
+  root: {
+    fileList: [],
+    getFile: function(fileName, isCreate, success, failure) {
+      for(var i = 0; i < this.fileList.length; i++) {
+        if (fileName == this.fileList[i].name) {
+          success(this.fileList[i]);
+          return;
+        }
+      }
+      if (!isCreate.create) {
+        if (failure)
+          failure('FILE_NOT_FOUND');
+      } else {
+        this.fileList.push(new FileEntry(fileName));
+        success(this.fileList[this.fileList.length - 1]);
+      }
+    },
+  },
+  /**
+   * Create a new file in mockSyncFS.
+   * @param {string} fileName File name that to be created.
+   * @return {FileEntry} Handle of the new file
+   */
+  mockTestFile: function(fileName) {
+    var mockFile = new FileEntry(fileName);
+    this.root.fileList.push(mockFile);
+    return mockFile;
+  },
+  /**
+   * Delete all files in mockSyncFS.
+   */
+  reset: function() {
+    this.root.fileList = [];
+  }
 };
 
 // Mock a few chrome apis.
@@ -20,7 +205,7 @@ var chrome = {
             items[Constants.AccessLocalWallpaperInfoKey] = {
               'url': 'dummy',
               'layout': 'dummy',
-              'source': 'dummy'
+              'source': Constants.WallpaperSourceEnum.Custom
             };
         }
         callback(items);
@@ -41,7 +226,8 @@ var chrome = {
     }
   },
   syncFileSystem: {
-    requestFileSystem: function(fs) {
+    requestFileSystem: function(callback) {
+      callback(mockSyncFS);
     },
     onFileStatusChanged: {
       addListener: function(listener) {
@@ -67,9 +253,15 @@ var chrome = {
     getStrings: function(callback) {
       callback({isExperimental: false});
     },
+    setCustomWallpaper: function(data, layout, isGenerateThumbnail, fileName,
+                                 callback) {
+    },
     getSyncSetting: function(callback) {
       callback({syncThemes: true});
     }
+  },
+  runtime: {
+    lastError: null
   }
 };
 
@@ -100,20 +292,18 @@ var chrome = {
       var listeners = this.eventListeners && this.eventListeners[type] || [];
 
       for (var i = 0; i < listeners.length; ++i) {
-        if (listeners[i] == listener) {
+        if (listeners[i] == listener)
           return listeners.splice(i, 1);
-        }
       }
     },
 
     dispatchEvent: function(type) {
       var listeners = this.eventListeners && this.eventListeners[type] || [];
 
-      if (/test.jpg$/g.test(this.url)) {
-        this.response = TestConstants.image;
-      } else {
+      if (/test.jpg$/g.test(this.url))
+        this.response = TestConstants.IMAGE;
+      else
         this.response = '';
-      }
 
       for (var i = 0; i < listeners.length; ++i)
         listeners[i].call(this, new Event(type));
