@@ -22,6 +22,7 @@
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
 
@@ -40,7 +41,8 @@ namespace domain_reliability {
 
 // The top-level object that measures requests and hands off the measurements
 // to the proper |DomainReliabilityContext|.
-class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
+class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Creates a Monitor. |local_state_pref_service| must live on |pref_thread|
   // (which should be the current thread); |network_thread| is the thread
@@ -59,7 +61,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
 
   // Must be called from the pref thread if |MoveToNetworkThread| was not
   // called, or from the network thread if it was called.
-  ~DomainReliabilityMonitor();
+  virtual ~DomainReliabilityMonitor();
 
   // Must be called before |InitURLRequestContext| on the same thread on which
   // the Monitor was constructed. Moves (most of) the Monitor to the network
@@ -95,6 +97,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   // actually started before it was terminated. Must be called after
   // |SetDiscardUploads|.
   void OnCompleted(net::URLRequest* request, bool started);
+
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Called to remove browsing data. With CLEAR_BEACONS, leaves contexts in
   // place but clears beacons (which betray browsing history); with
@@ -152,6 +158,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
   base::WeakPtr<DomainReliabilityMonitor> MakeWeakPtr();
 
   scoped_ptr<MockableTime> time_;
+  base::TimeTicks last_network_change_time_;
   const std::string upload_reporter_string_;
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;

@@ -33,6 +33,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       discard_uploads_set_(false),
       weak_factory_(this) {
   DCHECK(OnPrefThread());
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
@@ -51,6 +52,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       discard_uploads_set_(false),
       weak_factory_(this) {
   DCHECK(OnPrefThread());
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
@@ -60,6 +62,7 @@ DomainReliabilityMonitor::~DomainReliabilityMonitor() {
     DCHECK(OnPrefThread());
 
   ClearContexts();
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void DomainReliabilityMonitor::MoveToNetworkThread() {
@@ -144,6 +147,11 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
   }
 }
 
+void DomainReliabilityMonitor::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  last_network_change_time_ = time_->NowTicks();
+}
+
 void DomainReliabilityMonitor::ClearBrowsingData(
    DomainReliabilityClearMode mode) {
   DCHECK(OnNetworkThread());
@@ -218,6 +226,7 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
       new DomainReliabilityContext(time_.get(),
                                    scheduler_params_,
                                    upload_reporter_string_,
+                                   &last_network_change_time_,
                                    &dispatcher_,
                                    uploader_.get(),
                                    config.Pass());

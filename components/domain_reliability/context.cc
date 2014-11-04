@@ -101,6 +101,7 @@ DomainReliabilityContext::DomainReliabilityContext(
     MockableTime* time,
     const DomainReliabilityScheduler::Params& scheduler_params,
     const std::string& upload_reporter_string,
+    const base::TimeTicks* last_network_change_time,
     DomainReliabilityDispatcher* dispatcher,
     DomainReliabilityUploader* uploader,
     scoped_ptr<const DomainReliabilityConfig> config)
@@ -115,6 +116,7 @@ DomainReliabilityContext::DomainReliabilityContext(
       dispatcher_(dispatcher),
       uploader_(uploader),
       uploading_beacons_size_(0),
+      last_network_change_time_(last_network_change_time),
       weak_factory_(this) {
   InitializeResourceStates();
 }
@@ -260,7 +262,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
     base::TimeTicks upload_time) const {
   scoped_ptr<ListValue> beacons_value(new ListValue());
   for (BeaconConstIterator it = beacons_.begin(); it != beacons_.end(); ++it)
-    beacons_value->Append(it->ToValue(upload_time));
+    beacons_value->Append(it->ToValue(upload_time, *last_network_change_time_));
 
   scoped_ptr<ListValue> resources_value(new ListValue());
   for (ResourceStateIterator it = states_.begin(); it != states_.end(); ++it) {

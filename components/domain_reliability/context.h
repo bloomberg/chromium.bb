@@ -36,6 +36,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
       MockableTime* time,
       const DomainReliabilityScheduler::Params& scheduler_params,
       const std::string& upload_reporter_string,
+      const base::TimeTicks* last_network_change_time,
       DomainReliabilityDispatcher* dispatcher,
       DomainReliabilityUploader* uploader,
       scoped_ptr<const DomainReliabilityConfig> config);
@@ -110,6 +111,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   ResourceStateVector states_;
   base::TimeTicks upload_time_;
   base::TimeTicks last_upload_time_;
+  // The last network change time is not tracked per-context, so this is a
+  // pointer to that value in a wider (e.g. per-Monitor or unittest) scope.
+  const base::TimeTicks* last_network_change_time_;
 
   base::WeakPtrFactory<DomainReliabilityContext> weak_factory_;
 
