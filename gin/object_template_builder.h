@@ -71,7 +71,7 @@ struct CallbackTraits<T, typename base::enable_if<
 // This specialization allows people to construct function templates directly if
 // they need to do fancier stuff.
 template<>
-struct GIN_EXPORT CallbackTraits<v8::Handle<v8::FunctionTemplate> > {
+struct CallbackTraits<v8::Handle<v8::FunctionTemplate> > {
   static v8::Handle<v8::FunctionTemplate> CreateTemplate(
       v8::Handle<v8::FunctionTemplate> templ) {
     return templ;
