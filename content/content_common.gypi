@@ -915,6 +915,7 @@
       ],
       'sources!': [
         'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
+        'common/gpu/gpu_memory_buffer_factory_linux.cc',
       ],
     }],
   ],

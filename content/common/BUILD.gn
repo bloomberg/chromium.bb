@@ -155,6 +155,10 @@ source_set("common") {
       "font_list_ozone.cc",
       "gpu/gpu_memory_buffer_factory_ozone.cc",
     ]
+  } else {
+    sources -= [
+      "gpu/gpu_memory_buffer_factory_linux.cc",
+    ]
   }
 
   if (!use_aura) {
