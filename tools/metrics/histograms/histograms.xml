@@ -39689,6 +39689,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.BWE.InitialBandwidthEstimate" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>The bandwidth estimate 2 seconds into a WebRTC call.</summary>
+</histogram>
+
+<histogram name="WebRTC.BWE.InitiallyLostPackets" units="packets">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The number of video packets lost durig the first 2 seconds in a WebRTC call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.BWE.InitialRtt" units="ms">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The round-trip time as measured 2 seconds into a WebRTC call.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
   <owner>perkj@chromium.org</owner>
   <summary>
