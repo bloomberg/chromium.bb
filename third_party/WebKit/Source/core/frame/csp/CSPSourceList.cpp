@@ -288,7 +288,7 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue&
     // respective entries in the kAlgorithmMap array in checkDigest().
     static const struct {
         const char* prefix;
-        ContentSecurityPolicyHashAlgorithm algorithm;
+        ContentSecurityPolicyHashAlgorithm type;
     } kSupportedPrefixes[] = {
         { "'sha1-", ContentSecurityPolicyHashAlgorithmSha1 },
         { "'sha256-", ContentSecurityPolicyHashAlgorithmSha256 },
@@ -298,17 +298,12 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue&
 
     String prefix;
     hashAlgorithm = ContentSecurityPolicyHashAlgorithmNone;
+    size_t hashLength = end - begin;
 
-    // Instead of this sizeof() calculation to get the length of this array,
-    // it would be preferable to use WTF_ARRAY_LENGTH for simplicity and to
-    // guarantee a compile time calculation. Unfortunately, on some
-    // compliers, the call to WTF_ARRAY_LENGTH fails on arrays of anonymous
-    // stucts, so, for now, it is necessary to resort to this sizeof
-    // calculation.
-    for (size_t i = 0; i < (sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0])); i++) {
-        if (equalIgnoringCase(kSupportedPrefixes[i].prefix, begin, strlen(kSupportedPrefixes[i].prefix))) {
-            prefix = kSupportedPrefixes[i].prefix;
-            hashAlgorithm = kSupportedPrefixes[i].algorithm;
+    for (const auto& algorithm : kSupportedPrefixes) {
+        if (hashLength > strlen(algorithm.prefix) && equalIgnoringCase(algorithm.prefix, begin, strlen(algorithm.prefix))) {
+            prefix = algorithm.prefix;
+            hashAlgorithm = algorithm.type;
             break;
         }
     }
@@ -319,14 +314,17 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue&
     const UChar* position = begin + prefix.length();
     const UChar* hashBegin = position;
 
+    ASSERT(position < end);
     skipWhile<UChar, isBase64EncodedCharacter>(position, end);
     ASSERT(hashBegin <= position);
 
     // Base64 encodings may end with exactly one or two '=' characters
-    skipExactly<UChar>(position, position + 1, '=');
-    skipExactly<UChar>(position, position + 1, '=');
+    if (position < end)
+        skipExactly<UChar>(position, position + 1, '=');
+    if (position < end)
+        skipExactly<UChar>(position, position + 1, '=');
 
-    if ((position + 1) != end || *position != '\'' || !(position - hashBegin))
+    if (position + 1 != end || *position != '\'' || position == hashBegin)
         return false;
 
     Vector<char> hashVector;
