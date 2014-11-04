@@ -75,6 +75,9 @@ void AudioDirectiveHandlerImpl::AddInstruction(
     const TokenInstruction& instruction,
     const std::string& op_id,
     base::TimeDelta ttl) {
+  DCHECK(transmits_lists_.size() == 2u && receives_lists_.size() == 2u)
+      << "Call Initialize() before other AudioDirectiveHandler methods";
+
   switch (instruction.token_instruction_type()) {
     case TRANSMIT:
       DVLOG(2) << "Audio Transmit Directive received. Token: "
@@ -118,6 +121,9 @@ void AudioDirectiveHandlerImpl::AddInstruction(
 }
 
 void AudioDirectiveHandlerImpl::RemoveInstructions(const std::string& op_id) {
+  DCHECK(transmits_lists_.size() == 2u && receives_lists_.size() == 2u)
+      << "Call Initialize() before other AudioDirectiveHandler methods";
+
   transmits_lists_[AUDIBLE]->RemoveDirective(op_id);
   transmits_lists_[INAUDIBLE]->RemoveDirective(op_id);
   receives_lists_[AUDIBLE]->RemoveDirective(op_id);
