@@ -19,6 +19,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -131,7 +132,8 @@ class HomeCardView : public views::WidgetDelegateView,
         main_view_(new AthenaStartPageView(view_delegate)),
         minimized_background_(new views::View()),
         drag_indicator_(new views::View()),
-        gesture_delegate_(gesture_delegate) {
+        gesture_delegate_(gesture_delegate),
+        weak_factory_(this) {
     background_->set_background(
         views::Background::CreateVerticalGradientBackground(SK_ColorLTGRAY,
                                                             SK_ColorWHITE));
@@ -181,6 +183,7 @@ class HomeCardView : public views::WidgetDelegateView,
     }
     background_->layer()->SetOpacity(background_opacity);
     minimized_background_->layer()->SetOpacity(1.0f - background_opacity);
+    UpdateMinimizedBackgroundVisibility();
 
     int background_height = kHomeCardHeight;
     if (from_state == HomeCard::VISIBLE_CENTERED ||
@@ -207,11 +210,18 @@ class HomeCardView : public views::WidgetDelegateView,
                              gfx::Tween::Type tween_type) {
     float minimized_opacity =
         (state == HomeCard::VISIBLE_MINIMIZED) ? 1.0f : 0.0f;
+    // |minimized_background_| needs to be visible before scheduling animation.
+    if (state == HomeCard::VISIBLE_MINIMIZED)
+      minimized_background_->SetVisible(true);
+
     if (minimized_opacity !=
         minimized_background_->layer()->GetTargetOpacity()) {
       ui::ScopedLayerAnimationSettings settings(
           minimized_background_->layer()->GetAnimator());
       settings.SetTweenType(gfx::Tween::EASE_IN);
+      settings.AddObserver(new ui::ClosureAnimationObserver(
+          base::Bind(&HomeCardView::UpdateMinimizedBackgroundVisibility,
+                     weak_factory_.GetWeakPtr())));
       minimized_background_->layer()->SetOpacity(minimized_opacity);
     }
 
@@ -293,6 +303,11 @@ class HomeCardView : public views::WidgetDelegateView,
   }
 
  private:
+  void UpdateMinimizedBackgroundVisibility() {
+    minimized_background_->SetVisible(
+        minimized_background_->layer()->GetTargetOpacity() != 0.0f);
+  }
+
   // views::WidgetDelegate:
   views::View* GetContentsView() override { return this; }
 
@@ -309,6 +324,8 @@ class HomeCardView : public views::WidgetDelegateView,
   HomeCard::State state_;
   scoped_ptr<HomeCardGestureManager> gesture_manager_;
   HomeCardGestureManager::Delegate* gesture_delegate_;
+
+  base::WeakPtrFactory<HomeCardView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
