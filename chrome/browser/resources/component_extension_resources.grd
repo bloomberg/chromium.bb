@@ -99,6 +99,7 @@
         <include name="IDR_HOTWORD_NACL_MANAGER_JS" file="hotword/nacl_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_PAGE_AUDIO_MANAGER_JS" file="hotword/page_audio_manager.js" type="BINDATA" />
         <include name="IDR_HOTWORD_STATE_MANAGER_JS" file="hotword/state_manager.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_TRAINING_MANAGER_JS" file="hotword/training_manager.js" type="BINDATA" />
       </if>
       <if expr="not is_android">
         <include name="IDR_FEEDBACK_DEFAULT_HTML" file="feedback/html/default.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

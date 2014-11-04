@@ -22,6 +22,7 @@
   var pageAudioManager = new hotword.PageAudioManager(stateManager);
   var alwaysOnManager = new hotword.AlwaysOnManager(stateManager);
   var launcherManager = new hotword.LauncherManager(stateManager);
+  var trainingManager = new hotword.TrainingManager(stateManager);
 
   // Detect Chrome startup and make sure we get a chance to run.
   chrome.runtime.onStartup.addListener(function() {

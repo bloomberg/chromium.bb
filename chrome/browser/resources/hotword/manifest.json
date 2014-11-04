@@ -20,6 +20,7 @@
       "always_on_manager.js",
       "launcher_manager.js",
       "page_audio_manager.js",
+      "training_manager.js",
       "manager.js"
     ],
     "persistent": false

@@ -160,6 +160,14 @@ cr.define('hotword', function() {
     },
 
     /**
+     * @return {boolean} True if training is enabled.
+     */
+    isTrainingEnabled: function() {
+      assert(this.hotwordStatus_, 'No hotword status (isTrainingEnabled)');
+      return this.hotwordStatus_.trainingEnabled;
+    },
+
+    /**
      * Callback for hotwordPrivate.getStatus() function.
      * @param {chrome.hotwordPrivate.StatusDetails} status Current hotword
      *     status.
@@ -181,7 +189,9 @@ cr.define('hotword', function() {
       if (!this.hotwordStatus_)
         return;
 
-      if (this.hotwordStatus_.enabled || this.hotwordStatus_.alwaysOnEnabled) {
+      if (this.hotwordStatus_.enabled ||
+          this.hotwordStatus_.alwaysOnEnabled ||
+          this.hotwordStatus_.trainingEnabled) {
         // Start the detector if there's a session, and shut it down if there
         // isn't.
         // NOTE(amistry): With always-on, we want a different behaviour with

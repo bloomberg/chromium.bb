@@ -69,7 +69,7 @@ cr.define('hotword', function() {
           function() {
             chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
           },
-          this.handleHotwordTrigger_.bind(this));
+          this.handleHotwordTrigger.bind(this));
     },
 
     /**
@@ -83,9 +83,9 @@ cr.define('hotword', function() {
 
     /**
      * Handles a hotword triggered event.
-     * @private
+     * @protected
      */
-    handleHotwordTrigger_: function() {
+    handleHotwordTrigger: function() {
       hotword.debug('Hotword triggered: ' + this.sessionSource_);
       chrome.hotwordPrivate.notifyHotwordRecognition('search', function() {});
     },
