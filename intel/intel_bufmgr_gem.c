@@ -936,6 +936,71 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	return &bo_gem->bo;
 }
 
+static bool
+has_userptr(drm_intel_bufmgr_gem *bufmgr_gem)
+{
+	int ret;
+	void *ptr;
+	long pgsz;
+	struct drm_i915_gem_userptr userptr;
+	struct drm_gem_close close_bo;
+
+	pgsz = sysconf(_SC_PAGESIZE);
+	assert(pgsz > 0);
+
+	ret = posix_memalign(&ptr, pgsz, pgsz);
+	if (ret) {
+		DBG("Failed to get a page (%ld) for userptr detection!\n",
+			pgsz);
+		return false;
+	}
+
+	memclear(userptr);
+	userptr.user_ptr = (__u64)(unsigned long)ptr;
+	userptr.user_size = pgsz;
+
+retry:
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_USERPTR, &userptr);
+	if (ret) {
+		if (errno == ENODEV && userptr.flags == 0) {
+			userptr.flags = I915_USERPTR_UNSYNCHRONIZED;
+			goto retry;
+		}
+		free(ptr);
+		return false;
+	}
+
+	memclear(close_bo);
+	close_bo.handle = userptr.handle;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
+	free(ptr);
+	if (ret) {
+		fprintf(stderr, "Failed to release test userptr object! (%d) "
+				"i915 kernel driver may not be sane!\n", errno);
+		return false;
+	}
+
+	return true;
+}
+
+static drm_intel_bo *
+check_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
+		       const char *name,
+		       void *addr,
+		       uint32_t tiling_mode,
+		       uint32_t stride,
+		       unsigned long size,
+		       unsigned long flags)
+{
+	if (has_userptr((drm_intel_bufmgr_gem *)bufmgr))
+		bufmgr->bo_alloc_userptr = drm_intel_gem_bo_alloc_userptr;
+	else
+		bufmgr->bo_alloc_userptr = NULL;
+
+	return drm_intel_bo_alloc_userptr(bufmgr, name, addr,
+					  tiling_mode, stride, size, flags);
+}
+
 /**
  * Returns a drm_intel_bo wrapping the given buffer object handle.
  *
@@ -3403,53 +3468,6 @@ drm_intel_bufmgr_gem_unref(drm_intel_bufmgr *bufmgr)
 	}
 }
 
-static bool
-has_userptr(drm_intel_bufmgr_gem *bufmgr_gem)
-{
-	int ret;
-	void *ptr;
-	long pgsz;
-	struct drm_i915_gem_userptr userptr;
-	struct drm_gem_close close_bo;
-
-	pgsz = sysconf(_SC_PAGESIZE);
-	assert(pgsz > 0);
-
-	ret = posix_memalign(&ptr, pgsz, pgsz);
-	if (ret) {
-		DBG("Failed to get a page (%ld) for userptr detection!\n",
-			pgsz);
-		return false;
-	}
-
-	memclear(userptr);
-	userptr.user_ptr = (__u64)(unsigned long)ptr;
-	userptr.user_size = pgsz;
-
-retry:
-	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_USERPTR, &userptr);
-	if (ret) {
-		if (errno == ENODEV && userptr.flags == 0) {
-			userptr.flags = I915_USERPTR_UNSYNCHRONIZED;
-			goto retry;
-		}
-		free(ptr);
-		return false;
-	}
-
-	memclear(close_bo);
-	close_bo.handle = userptr.handle;
-	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close_bo);
-	free(ptr);
-	if (ret) {
-		fprintf(stderr, "Failed to release test userptr object! (%d) "
-				"i915 kernel driver may not be sane!\n", errno);
-		return false;
-	}
-
-	return true;
-}
-
 /**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
@@ -3554,9 +3572,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_relaxed_fencing = ret == 0;
 
-	if (has_userptr(bufmgr_gem))
-		bufmgr_gem->bufmgr.bo_alloc_userptr =
-			drm_intel_gem_bo_alloc_userptr;
+	bufmgr_gem->bufmgr.bo_alloc_userptr = check_bo_alloc_userptr;
 
 	gp.param = I915_PARAM_HAS_WAIT_TIMEOUT;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
