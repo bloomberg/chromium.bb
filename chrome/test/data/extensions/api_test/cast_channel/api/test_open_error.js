@@ -6,7 +6,7 @@ var errorEvent = false;
 var openCallback = false;
 
 var onClose = function(channel) {
-  chrome.test.assertLastError('Unknown error.');
+  chrome.test.assertLastError('Channel socket error = 3');
   assertClosedChannelWithError(channel, 'connect_error');
   chrome.test.succeed();
 }
@@ -21,7 +21,7 @@ var onError = function(channel, error) {
 }
 
 var onOpen = function(channel) {
-  chrome.test.assertLastError('Unknown error.');
+  chrome.test.assertLastError('Channel socket error = 3');
   openCallback = true;
   assertClosedChannelWithError(channel, 'connect_error');
   maybeClose(channel);

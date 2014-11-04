@@ -502,3 +502,17 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSetAuthorityKeysValid) {
       cast_channel_set_authority_keys_function.get(), args, browser());
   EXPECT_EQ(error, std::string());
 }
+
+// TODO(vadimgo): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TestSetAuthorityKeys DISABLED_TestSetAuthorityKeys
+#else
+#define MAYBE_TestSetAuthorityKeys TestSetAuthorityKeys
+#endif
+// Test loading extension, opening a channel with ConnectInfo, adding a
+// listener, writing, reading, and closing.
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestSetAuthorityKeys) {
+  EXPECT_TRUE(
+      RunExtensionSubtest("cast_channel/api", "test_authority_keys.html"));
+}

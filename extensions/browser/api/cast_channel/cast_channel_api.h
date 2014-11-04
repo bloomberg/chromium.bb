@@ -129,9 +129,6 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
 
   // The API resource manager for CastSockets.
   ApiResourceManager<cast_channel::CastSocket>* manager_;
-
-  // The result of the function.
-  cast_channel::ChannelError error_;
 };
 
 class CastChannelOpenFunction : public CastChannelAsyncApiFunction {

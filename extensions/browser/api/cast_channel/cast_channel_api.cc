@@ -172,8 +172,8 @@ void CastChannelAPI::OnMessage(const CastSocket* socket,
 
 CastChannelAPI::~CastChannelAPI() {}
 
-CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
-  : manager_(NULL), error_(cast_channel::CHANNEL_ERROR_NONE) { }
+CastChannelAsyncApiFunction::CastChannelAsyncApiFunction() : manager_(NULL) {
+}
 
 CastChannelAsyncApiFunction::~CastChannelAsyncApiFunction() { }
 
@@ -183,7 +183,7 @@ bool CastChannelAsyncApiFunction::PrePrepare() {
 }
 
 bool CastChannelAsyncApiFunction::Respond() {
-  return error_ == cast_channel::CHANNEL_ERROR_NONE;
+  return GetError().empty();
 }
 
 CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
@@ -216,7 +216,10 @@ void CastChannelAsyncApiFunction::SetResultFromSocket(
     const CastSocket& socket) {
   ChannelInfo channel_info;
   FillChannelInfo(socket, &channel_info);
-  error_ = socket.error_state();
+  ChannelError error = socket.error_state();
+  if (error != cast_channel::CHANNEL_ERROR_NONE) {
+    SetError("Channel socket error = " + base::IntToString(error));
+  }
   SetResultFromChannelInfo(channel_info);
 }
 
@@ -231,7 +234,7 @@ void CastChannelAsyncApiFunction::SetResultFromError(int channel_id,
   channel_info.connect_info.port = 0;
   channel_info.connect_info.auth = cast_channel::CHANNEL_AUTH_TYPE_SSL;
   SetResultFromChannelInfo(channel_info);
-  error_ = error;
+  SetError("Channel error = " + base::IntToString(error));
 }
 
 CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) {
