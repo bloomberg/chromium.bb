@@ -17,13 +17,13 @@ class EVBubbleView : public IconLabelBubbleView {
                SkColor text_color,
                SkColor parent_background_color,
                LocationBarView* parent);
-  virtual ~EVBubbleView();
+  ~EVBubbleView() override;
 
   // IconLabelBubbleView:
-  virtual gfx::Size GetMinimumSize() const override;
-  virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Size GetMinimumSize() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Returns what the minimum size would be if the label text were |text|.
   gfx::Size GetMinimumSizeForLabelText(const base::string16& text) const;

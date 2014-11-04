@@ -14,16 +14,15 @@ class CommandUpdater;
 class TranslateIconView : public BubbleIconView {
  public:
   explicit TranslateIconView(CommandUpdater* command_updater);
-  virtual ~TranslateIconView();
+  ~TranslateIconView() override;
 
   // Toggles the icon on or off.
   void SetToggled(bool on);
 
  protected:
   // BubbleIconView:
-  virtual bool IsBubbleShowing() const override;
-  virtual void OnExecuting(
-      BubbleIconView::ExecuteSource execute_source) override;
+  bool IsBubbleShowing() const override;
+  void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateIconView);

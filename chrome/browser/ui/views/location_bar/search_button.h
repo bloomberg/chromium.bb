@@ -14,7 +14,7 @@
 class SearchButton : public views::LabelButton {
  public:
   explicit SearchButton(views::ButtonListener* listener);
-  virtual ~SearchButton();
+  ~SearchButton() override;
 
   // Updates the search button icon to a search icon if |is_search| is true, or
   // a navigation icon otherwise.

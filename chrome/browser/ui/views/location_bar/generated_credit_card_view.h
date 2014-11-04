@@ -28,14 +28,14 @@ class GeneratedCreditCardBubbleController;
 class GeneratedCreditCardView : public LocationBarDecorationView {
  public:
   explicit GeneratedCreditCardView(LocationBarView::Delegate* delegate);
-  virtual ~GeneratedCreditCardView();
+  ~GeneratedCreditCardView() override;
 
   void Update();
 
  protected:
   // LocationBarDecorationView:
-  virtual bool CanHandleClick() const override;
-  virtual void OnClick() override;
+  bool CanHandleClick() const override;
+  void OnClick() override;
 
  private:
   // Helper to get the GeneratedCreditCardBubbleController associated with the

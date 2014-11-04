@@ -50,11 +50,10 @@ class OriginChipExtensionIcon : public extensions::IconImage::Observer {
   OriginChipExtensionIcon(LocationIconView* icon_view,
                           Profile* profile,
                           const extensions::Extension* extension);
-  virtual ~OriginChipExtensionIcon();
+  ~OriginChipExtensionIcon() override;
 
   // IconImage::Observer:
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* image) override;
+  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
 
  private:
   LocationIconView* icon_view_;

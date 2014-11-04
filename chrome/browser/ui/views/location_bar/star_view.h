@@ -13,16 +13,15 @@ class CommandUpdater;
 class StarView : public BubbleIconView {
  public:
   explicit StarView(CommandUpdater* command_updater);
-  virtual ~StarView();
+  ~StarView() override;
 
   // Toggles the star on or off.
   void SetToggled(bool on);
 
  protected:
   // BubbleIconView:
-  virtual bool IsBubbleShowing() const override;
-  virtual void OnExecuting(
-      BubbleIconView::ExecuteSource execute_source) override;
+  bool IsBubbleShowing() const override;
+  void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StarView);

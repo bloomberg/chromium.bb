@@ -138,7 +138,7 @@ class LocationBarView : public LocationBar,
                   Delegate* delegate,
                   bool is_popup_mode);
 
-  virtual ~LocationBarView();
+  ~LocationBarView() override;
 
   // Initializes the LocationBarView.
   void Init();
@@ -239,22 +239,22 @@ class LocationBarView : public LocationBar,
                                       int* right_margin);
 
   // LocationBar:
-  virtual void FocusLocation(bool select_all) override;
-  virtual void Revert() override;
-  virtual OmniboxView* GetOmniboxView() override;
+  void FocusLocation(bool select_all) override;
+  void Revert() override;
+  OmniboxView* GetOmniboxView() override;
 
   // views::View:
-  virtual bool HasFocus() const override;
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual gfx::Size GetPreferredSize() const override;
-  virtual void Layout() override;
+  bool HasFocus() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
   // OmniboxEditController:
-  virtual void Update(const content::WebContents* contents) override;
-  virtual void ShowURL() override;
-  virtual void EndOriginChipAnimations(bool cancel_fade) override;
-  virtual ToolbarModel* GetToolbarModel() override;
-  virtual content::WebContents* GetWebContents() override;
+  void Update(const content::WebContents* contents) override;
+  void ShowURL() override;
+  void EndOriginChipAnimations(bool cancel_fade) override;
+  ToolbarModel* GetToolbarModel() override;
+  content::WebContents* GetWebContents() override;
 
   // Thickness of the edges of the omnibox background images, in normal mode.
   static const int kNormalEdgeThickness;
@@ -339,76 +339,74 @@ class LocationBarView : public LocationBar,
   void ResetShowAnimationAndColors();
 
   // LocationBar:
-  virtual void ShowFirstRunBubble() override;
-  virtual GURL GetDestinationURL() const override;
-  virtual WindowOpenDisposition GetWindowOpenDisposition() const override;
-  virtual ui::PageTransition GetPageTransition() const override;
-  virtual void AcceptInput() override;
-  virtual void FocusSearch() override;
-  virtual void UpdateContentSettingsIcons() override;
-  virtual void UpdateManagePasswordsIconAndBubble() override;
-  virtual void UpdatePageActions() override;
-  virtual void InvalidatePageActions() override;
-  virtual void UpdateBookmarkStarVisibility() override;
-  virtual bool ShowPageActionPopup(const extensions::Extension* extension,
-                                   bool grant_active_tab) override;
-  virtual void UpdateOpenPDFInReaderPrompt() override;
-  virtual void UpdateGeneratedCreditCardView() override;
-  virtual void SaveStateToContents(content::WebContents* contents) override;
-  virtual const OmniboxView* GetOmniboxView() const override;
-  virtual LocationBarTesting* GetLocationBarForTesting() override;
+  void ShowFirstRunBubble() override;
+  GURL GetDestinationURL() const override;
+  WindowOpenDisposition GetWindowOpenDisposition() const override;
+  ui::PageTransition GetPageTransition() const override;
+  void AcceptInput() override;
+  void FocusSearch() override;
+  void UpdateContentSettingsIcons() override;
+  void UpdateManagePasswordsIconAndBubble() override;
+  void UpdatePageActions() override;
+  void InvalidatePageActions() override;
+  void UpdateBookmarkStarVisibility() override;
+  bool ShowPageActionPopup(const extensions::Extension* extension,
+                           bool grant_active_tab) override;
+  void UpdateOpenPDFInReaderPrompt() override;
+  void UpdateGeneratedCreditCardView() override;
+  void SaveStateToContents(content::WebContents* contents) override;
+  const OmniboxView* GetOmniboxView() const override;
+  LocationBarTesting* GetLocationBarForTesting() override;
 
   // LocationBarTesting:
-  virtual int PageActionCount() override;
-  virtual int PageActionVisibleCount() override;
-  virtual ExtensionAction* GetPageAction(size_t index) override;
-  virtual ExtensionAction* GetVisiblePageAction(size_t index) override;
-  virtual void TestPageActionPressed(size_t index) override;
-  virtual bool GetBookmarkStarVisibility() override;
+  int PageActionCount() override;
+  int PageActionVisibleCount() override;
+  ExtensionAction* GetPageAction(size_t index) override;
+  ExtensionAction* GetVisiblePageAction(size_t index) override;
+  void TestPageActionPressed(size_t index) override;
+  bool GetBookmarkStarVisibility() override;
 
   // views::View:
-  virtual const char* GetClassName() const override;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  virtual void OnFocus() override;
-  virtual void OnPaint(gfx::Canvas* canvas) override;
-  virtual void PaintChildren(gfx::Canvas* canvas,
-                             const views::CullSet& cull_set) override;
+  const char* GetClassName() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnFocus() override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintChildren(gfx::Canvas* canvas,
+                     const views::CullSet& cull_set) override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::DragController:
-  virtual void WriteDragDataForView(View* sender,
-                                    const gfx::Point& press_pt,
-                                    OSExchangeData* data) override;
-  virtual int GetDragOperationsForView(View* sender,
-                                       const gfx::Point& p) override;
-  virtual bool CanStartDragForView(View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) override;
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            OSExchangeData* data) override;
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override;
 
   // OmniboxEditController:
-  virtual void OnChanged() override;
-  virtual void OnSetFocus() override;
-  virtual InstantController* GetInstant() override;
-  virtual const ToolbarModel* GetToolbarModel() const override;
-  virtual void HideURL() override;
+  void OnChanged() override;
+  void OnSetFocus() override;
+  InstantController* GetInstant() override;
+  const ToolbarModel* GetToolbarModel() const override;
+  void HideURL() override;
 
   // DropdownBarHostDelegate:
-  virtual void SetFocusAndSelection(bool select_all) override;
-  virtual void SetAnimationOffset(int offset) override;
+  void SetFocusAndSelection(bool select_all) override;
+  void SetAnimationOffset(int offset) override;
 
   // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) override;
-  virtual void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // TemplateURLServiceObserver:
-  virtual void OnTemplateURLServiceChanged() override;
+  void OnTemplateURLServiceChanged() override;
 
   // SearchModelObserver:
-  virtual void ModelChanged(const SearchModel::State& old_state,
-                            const SearchModel::State& new_state) override;
+  void ModelChanged(const SearchModel::State& old_state,
+                    const SearchModel::State& new_state) override;
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser

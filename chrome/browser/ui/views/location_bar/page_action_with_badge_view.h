@@ -23,13 +23,13 @@ class PageActionWithBadgeView : public views::View {
   PageActionImageView* image_view() { return image_view_; }
 
   // views::View:
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual gfx::Size GetPreferredSize() const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
+  gfx::Size GetPreferredSize() const override;
 
   void UpdateVisibility(content::WebContents* contents);
 
  private:
-  virtual void Layout() override;
+  void Layout() override;
 
   // The button this view contains.
   PageActionImageView* image_view_;

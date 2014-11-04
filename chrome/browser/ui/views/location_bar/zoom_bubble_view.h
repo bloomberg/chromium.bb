@@ -77,7 +77,7 @@ class ZoomBubbleView : public views::BubbleDelegateView,
                  bool auto_close,
                  ImmersiveModeController* immersive_mode_controller,
                  FullscreenController* fullscreen_controller);
-  virtual ~ZoomBubbleView();
+  ~ZoomBubbleView() override;
 
   // If the bubble is not anchored to a view, places the bubble in the top
   // right (left in RTL) of the |screen_bounds| that contain |web_contents_|'s
@@ -103,32 +103,30 @@ class ZoomBubbleView : public views::BubbleDelegateView,
   void StopTimer();
 
   // extensions::IconImage::Observer overrides:
-  virtual void OnExtensionIconImageChanged(
-      extensions::IconImage* /* image */) override;
+  void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
 
   // views::View methods.
-  virtual void OnMouseEntered(const ui::MouseEvent& event) override;
-  virtual void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // ui::EventHandler method.
-  virtual void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ButtonListener method.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::BubbleDelegateView method.
-  virtual void Init() override;
-  virtual void WindowClosing() override;
+  void Init() override;
+  void WindowClosing() override;
 
   // content::NotificationObserver method.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // ImmersiveModeController::Observer methods.
-  virtual void OnImmersiveRevealStarted() override;
-  virtual void OnImmersiveModeControllerDestroyed() override;
+  void OnImmersiveRevealStarted() override;
+  void OnImmersiveModeControllerDestroyed() override;
 
   ZoomBubbleExtensionInfo extension_info_;
 
