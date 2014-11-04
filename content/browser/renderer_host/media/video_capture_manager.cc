@@ -132,7 +132,9 @@ void VideoCaptureManager::Register(
 
 void VideoCaptureManager::Unregister() {
   DCHECK(listener_);
+  DCHECK(device_task_runner_.get());
   listener_ = NULL;
+  device_task_runner_ = NULL;
 }
 
 void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
