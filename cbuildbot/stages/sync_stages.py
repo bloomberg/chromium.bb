@@ -553,6 +553,9 @@ class ManifestVersionedSyncStage(SyncStage):
       else:
         sys.exit(0)
 
+    # Record the path to the local manifest for this build.
+    self._run.attrs.manifest_path = next_manifest
+
     # Log this early on for the release team to grep out before we finish.
     if self.manifest_manager:
       self._Print('\nRELEASETAG: %s\n' % (

@@ -151,6 +151,7 @@ class RunAttributes(object):
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
       'metadata',         # Used by various build stages to record metadata.
+      'manifest_path',    # Set by ManifestVersionedSyncStage.
   ))
 
   # TODO(mtennant): It might be useful to have additional info for each board
