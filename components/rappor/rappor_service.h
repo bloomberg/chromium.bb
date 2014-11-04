@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/metrics/daily_event.h"
+#include "components/rappor/rappor_parameters.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -26,12 +27,12 @@ namespace rappor {
 class LogUploader;
 class RapporMetric;
 class RapporReports;
-struct RapporParameters;
 
 // The type of data stored in a metric.
 enum RapporType {
   // For sampling the eTLD+1 of a URL.
   ETLD_PLUS_ONE_RAPPOR_TYPE = 0,
+  COARSE_RAPPOR_TYPE,
   NUM_RAPPOR_TYPES
 };
 
@@ -49,6 +50,7 @@ class RapporService {
   void AddDailyObserver(scoped_ptr<metrics::DailyEvent::Observer> observer);
 
   // Starts the periodic generation of reports and upload attempts.
+  // |metrics enabled| should be true if UMA users have opted in.
   void Start(net::URLRequestContextGetter* context,
              bool metrics_enabled);
 
@@ -58,25 +60,24 @@ class RapporService {
                     RapporType type,
                     const std::string& sample);
 
-  // Sets the cohort value. For use by tests only.
-  void SetCohortForTesting(uint32_t cohort) { cohort_ = cohort; }
-
-  // Sets the secret value. For use by tests only.
-  void SetSecretForTesting(const std::string& secret) { secret_ = secret; }
-
   // Registers the names of all of the preferences used by RapporService in the
   // provided PrefRegistry. This should be called before calling Start().
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
+  // Initializes the state of the RapporService.
+  void Initialize(int32_t cohort,
+                  const std::string& secret,
+                  const ReportingLevel& reporting_level);
+
   // Retrieves the cohort number this client was assigned to, generating it if
   // doesn't already exist. The cohort should be persistent.
-  void LoadCohort();
+  int32_t LoadCohort();
 
   // Retrieves the value for secret_ from preferences, generating it if doesn't
   // already exist. The secret should be persistent, so that additional bits
   // from the client do not get exposed over time.
-  void LoadSecret();
+  std::string LoadSecret();
 
   // Logs all of the collected metrics to the reports proto message and clears
   // the internal map. Exposed for tests. Returns true if any metrics were
@@ -120,6 +121,9 @@ class RapporService {
 
   // A private LogUploader instance for sending reports to the server.
   scoped_ptr<LogUploader> uploader_;
+
+  // What reporting level of metrics are being reported.
+  ReportingLevel reporting_level_;
 
   // We keep all registered metrics in a map, from name to metric.
   // The map owns the metrics it contains.

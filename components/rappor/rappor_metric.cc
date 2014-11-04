@@ -21,6 +21,9 @@ RapporMetric::RapporMetric(const std::string& metric_name,
                         parameters.bloom_filter_hash_function_count) {
   DCHECK_GE(cohort_seed, 0);
   DCHECK_LT(cohort_seed, RapporParameters::kMaxCohorts);
+  // Since cohort_seed is in the range [0, kMaxCohorts), num_cohorts should
+  // divide kMaxCohorts for each cohort to have equal weight.
+  DCHECK_EQ(0, RapporParameters::kMaxCohorts % parameters.num_cohorts);
 }
 
 RapporMetric::~RapporMetric() {}

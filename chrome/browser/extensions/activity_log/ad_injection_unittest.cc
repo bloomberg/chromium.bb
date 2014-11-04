@@ -51,8 +51,9 @@ class TestRapporService : public rappor::RapporService {
 TestRapporService::TestRapporService()
   : rappor::RapporService(&prefs_) {
   // Initialize the RapporService for testing.
-  SetCohortForTesting(0);
-  SetSecretForTesting(rappor::HmacByteVectorGenerator::GenerateEntropyInput());
+  Initialize(0,
+             rappor::HmacByteVectorGenerator::GenerateEntropyInput(),
+             rappor::FINE_LEVEL);
 }
 
 TestRapporService::~TestRapporService() {}

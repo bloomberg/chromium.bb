@@ -15,6 +15,18 @@ enum Probability {
   PROBABILITY_25,    // 25%
 };
 
+
+// A metric is reported when it's reporting level is >= the reporting level
+// passed in to RapporService::Start()
+enum ReportingLevel {
+  // No metrics are reported at this level.
+  REPORTING_DISABLED = 0,
+  // Metrics suitable for broader populations.
+  COARSE_LEVEL,
+  // Metrics suitable for UMA opt-in users.
+  FINE_LEVEL,
+};
+
 // An object describing a rappor metric and the parameters used to generate it.
 //
 // For a full description of the rappor metrics, see
@@ -27,6 +39,8 @@ struct RapporParameters {
   static const int kMaxCohorts;
 
   // The number of cohorts to divide the reports for this metric into.
+  // This should divide kMaxCohorts evenly so that each cohort has an equal
+  // probability of being assigned users.
   int num_cohorts;
 
   // The number of bytes stored in the Bloom filter.
@@ -43,6 +57,9 @@ struct RapporParameters {
   Probability one_coin_prob;
   // The probability that a zero bit in the redacted data reports as one.
   Probability zero_coin_prob;
+
+  // The reporting level this metric is reported at.
+  ReportingLevel reporting_level;
 };
 
 }  // namespace rappor

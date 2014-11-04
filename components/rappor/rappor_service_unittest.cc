@@ -16,19 +16,23 @@ namespace rappor {
 
 class TestRapporService : public RapporService {
  public:
-  TestRapporService() : RapporService(&prefs_) {
-    RegisterPrefs(prefs_.registry());
-    prefs_.SetInteger(prefs::kRapporCohortSeed, 0);
-    std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
-    std::string secret_base64;
-    base::Base64Encode(secret, &secret_base64);
-    prefs_.SetString(prefs::kRapporSecret, secret_base64);
-    LoadCohort();
-    LoadSecret();
+  TestRapporService(ReportingLevel reporting_level) : RapporService(&prefs) {
+    RegisterPrefs(prefs.registry());
+    Initialize(0,
+               HmacByteVectorGenerator::GenerateEntropyInput(),
+               reporting_level);
   }
 
   void GetReports(RapporReports* reports) {
     ExportMetrics(reports);
+  }
+
+  int32_t TestLoadCohort() {
+    return LoadCohort();
+  }
+
+  std::string TestLoadSecret() {
+    return LoadSecret();
   }
 
   void TestRecordSample(const std::string& metric_name,
@@ -37,13 +41,28 @@ class TestRapporService : public RapporService {
     RecordSampleInternal(metric_name, parameters, sample);
   }
 
- protected:
-  TestingPrefServiceSimple prefs_;
+  TestingPrefServiceSimple prefs;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRapporService);
 };
 
+TEST(RapporServiceTest, LoadCohort) {
+  TestRapporService rappor_service(REPORTING_DISABLED);
+  rappor_service.prefs.SetInteger(prefs::kRapporCohortSeed, 1);
+  EXPECT_EQ(1, rappor_service.TestLoadCohort());
+}
+
+TEST(RapporServiceTest, LoadSecret) {
+  TestRapporService rappor_service(REPORTING_DISABLED);
+  std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
+  std::string secret_base64;
+  base::Base64Encode(secret, &secret_base64);
+  rappor_service.prefs.SetString(prefs::kRapporSecret, secret_base64);
+  EXPECT_EQ(secret, rappor_service.TestLoadSecret());
+}
+
+// Check that samples can be recorded and exported.
 TEST(RapporServiceTest, RecordAndExportMetrics) {
   const RapporParameters kTestRapporParameters = {
       1 /* Num cohorts */,
@@ -52,10 +71,12 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
       PROBABILITY_75 /* Fake data probability */,
       PROBABILITY_50 /* Fake one probability */,
       PROBABILITY_75 /* One coin probability */,
-      PROBABILITY_50 /* Zero coin probability */};
+      PROBABILITY_50 /* Zero coin probability */,
+      COARSE_LEVEL};
 
-  TestRapporService rappor_service;
+  TestRapporService rappor_service(COARSE_LEVEL);
 
+  // Multiple samples for the same metric should only generate one report.
   rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "foo");
   rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "bar");
 
@@ -66,6 +87,27 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
   const RapporReports::Report& report = reports.report(0);
   EXPECT_TRUE(report.name_hash());
   EXPECT_EQ(16u, report.bits().size());
+}
+
+// Check that the reporting level is respected.
+TEST(RapporServiceTest, ReportingLevel) {
+  const RapporParameters kFineRapporParameters = {
+      1 /* Num cohorts */,
+      16 /* Bloom filter size bytes */,
+      4 /* Bloom filter hash count */,
+      PROBABILITY_75 /* Fake data probability */,
+      PROBABILITY_50 /* Fake one probability */,
+      PROBABILITY_75 /* One coin probability */,
+      PROBABILITY_50 /* Zero coin probability */,
+      FINE_LEVEL};
+
+  TestRapporService rappor_service(COARSE_LEVEL);
+
+  rappor_service.TestRecordSample("FineMetric", kFineRapporParameters, "foo");
+
+  RapporReports reports;
+  rappor_service.GetReports(&reports);
+  EXPECT_EQ(0, reports.report_size());
 }
 
 }  // namespace rappor
