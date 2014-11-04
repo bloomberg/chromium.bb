@@ -25,7 +25,6 @@ node = env.CommandSelLdrTestNacl(
     'sel_ldr_seccomp_test.out',
     env.File('${STAGING_DIR}/hello_world.nexe'),
     stdout_golden=env.File('../hello_world/hello_world.stdout'),
-    track_cmdtime='1',
     loader=trusted_env.GetSelLdrSeccomp())
 
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],

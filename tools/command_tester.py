@@ -90,9 +90,6 @@ def ResetGlobalSettings():
       # affect tracked performance. Used to compare different environments.
       'perf_env_description': None,
 
-      # Track total time taken for the command: '0' or '1'.
-      'track_cmdtime': '0',
-
       'name': None,
       'output_stamp': None,
 
@@ -161,13 +158,6 @@ def LogPerfResult(graph_name, trace_name, value, units):
   # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
   Print('RESULT %s: %s= %s %s' %
         (graph_name, trace_name, value, units))
-
-def PrintTotalTime(total_time):
-  if int(GlobalSettings['track_cmdtime']):
-    LogPerfResult(GlobalSettings['name'],
-                  'TOTAL_' + GlobalSettings['perf_env_description'],
-                  '%f' % total_time,
-                  'seconds')
 
 
 # On POSIX systems, exit() codes are 8-bit.  You cannot use exit() to
@@ -597,7 +587,6 @@ def DoRun(command, stdin_data):
     (total_time, exit_status, failed) = test_lib.RunTestWithInput(
         command, stdin_data,
         timeout=GlobalSettings['time_error'])
-    PrintTotalTime(total_time)
     if not CheckExitStatus(failed,
                            GlobalSettings['exit_status'],
                            GlobalSettings['using_nacl_signal_handler'],
@@ -609,7 +598,6 @@ def DoRun(command, stdin_data):
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
          command, stdin_data, int(GlobalSettings['capture_stderr']),
          timeout=GlobalSettings['time_error'])
-    PrintTotalTime(total_time)
     # CheckExitStatus may spew stdout/stderr when there is an error.
     # Otherwise, we do not spew stdout/stderr in this case (capture_output).
     if not CheckExitStatus(failed,

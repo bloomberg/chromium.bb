@@ -12,10 +12,9 @@ node = env.CommandSelLdrTestNacl(
     'hello_world_test.out',
     hello_nexe,
     stdout_golden=env.File('hello_world.stdout'),
-    track_cmdtime='1',
     )
 env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests', 'performance_tests'],
+                       ['small_tests', 'sel_ldr_tests'],
                        'run_hello_world_test')
 
 if not env.Bit('nacl_static_link') and not env.Bit('bitcode'):

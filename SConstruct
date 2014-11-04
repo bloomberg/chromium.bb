@@ -1791,7 +1791,7 @@ pre_base_env.AddMethod(CommandSelLdrTestNacl)
 TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
-                   'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
+                   'osenv', 'arch', 'subarch', 'exit_status',
                    'num_runs', 'process_output_single',
                    'process_output_combined', 'using_nacl_signal_handler',
                    'declares_exit_status', 'time_warning', 'time_error']
