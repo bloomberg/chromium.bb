@@ -234,13 +234,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
             media_stream_manager_->video_capture_manager()
             ->video_capture_device_factory());
     DCHECK(video_capture_device_factory_);
-#if defined(OS_WIN)
-    // Override the Video Capture Thread that MediaStreamManager constructs.
-    media_stream_manager_->video_capture_manager()->Unregister();
-    media_stream_manager_->video_capture_manager()->Register(
-        media_stream_manager_.get(),
-        base::MessageLoopProxy::current());
-#endif
 
     MockResourceContext* mock_resource_context =
         static_cast<MockResourceContext*>(
