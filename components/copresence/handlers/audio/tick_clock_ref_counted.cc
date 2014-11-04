@@ -9,14 +9,15 @@
 namespace copresence {
 
 TickClockRefCounted::TickClockRefCounted(scoped_ptr<base::TickClock> clock)
-    : clock_(clock.Pass()) {
-}
+    : clock_(clock.Pass()) {}
 
-base::TimeTicks TickClockRefCounted::NowTicks() {
+TickClockRefCounted::TickClockRefCounted(base::TickClock* clock)
+    : clock_(make_scoped_ptr(clock)) {}
+
+base::TimeTicks TickClockRefCounted::NowTicks() const {
   return clock_->NowTicks();
 }
 
-TickClockRefCounted::~TickClockRefCounted() {
-}
+TickClockRefCounted::~TickClockRefCounted() {}
 
 }  // namespace copresence

@@ -8,11 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/macros.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
 
 namespace media {
 class AudioBusRefCounted;
@@ -41,15 +42,14 @@ struct AudioDirective final {
 // classes from it.
 class AudioDirectiveList {
  public:
-  AudioDirectiveList();
+  explicit AudioDirectiveList(const scoped_refptr<TickClockRefCounted>& clock =
+      make_scoped_refptr(new TickClockRefCounted(new base::DefaultTickClock)));
   ~AudioDirectiveList();
 
   void AddDirective(const std::string& op_id, base::TimeDelta ttl);
   void RemoveDirective(const std::string& op_id);
 
   scoped_ptr<AudioDirective> GetActiveDirective();
-
-  void set_clock_for_testing(const scoped_refptr<TickClockRefCounted>& clock);
 
  private:
   // Comparator for comparing end_times on audio tokens.

@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
 
 namespace base {
 class TickClock;
+class TimeTicks;
 }
 
 namespace copresence {
@@ -20,7 +20,11 @@ class TickClockRefCounted
     : public base::RefCountedThreadSafe<TickClockRefCounted> {
  public:
   explicit TickClockRefCounted(scoped_ptr<base::TickClock> clock);
-  base::TimeTicks NowTicks();
+
+  // Takes ownership of the clock.
+  explicit TickClockRefCounted(base::TickClock* clock);
+
+  base::TimeTicks NowTicks() const;
 
  private:
   friend class base::RefCountedThreadSafe<TickClockRefCounted>;

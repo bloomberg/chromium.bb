@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "components/copresence/handlers/audio/audio_directive_handler.h"
+#include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/proto/data.pb.h"
 
 namespace copresence {
@@ -15,7 +15,7 @@ namespace copresence {
 // Public functions
 
 DirectiveHandler::DirectiveHandler()
-  : audio_handler_(new AudioDirectiveHandler),
+  : audio_handler_(new AudioDirectiveHandlerImpl),
     whispernet_client_(nullptr) {}
 
 DirectiveHandler::~DirectiveHandler() {}

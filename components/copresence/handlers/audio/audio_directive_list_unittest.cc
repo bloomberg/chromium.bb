@@ -15,9 +15,7 @@ namespace copresence {
 
 class AudioDirectiveListTest : public testing::Test {
  public:
-  AudioDirectiveListTest() : directive_list_(new AudioDirectiveList()) {}
-
-  ~AudioDirectiveListTest() override {}
+  AudioDirectiveListTest() : directive_list_(new AudioDirectiveList) {}
 
  protected:
   base::MessageLoop message_loop_;
