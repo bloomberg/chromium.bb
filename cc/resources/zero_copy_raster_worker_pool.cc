@@ -26,20 +26,14 @@ class RasterBufferImpl : public RasterBuffer {
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
-                float scale,
-                RenderingStatsInstrumentation* stats) override {
+                float scale) override {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.GetGpuMemoryBuffer();
     if (!gpu_memory_buffer)
       return;
 
-    RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
-                                       resource_->format(),
-                                       resource_->size(),
-                                       gpu_memory_buffer->GetStride(),
-                                       raster_source,
-                                       rect,
-                                       scale,
-                                       stats);
+    RasterWorkerPool::PlaybackToMemory(
+        gpu_memory_buffer->Map(), resource_->format(), resource_->size(),
+        gpu_memory_buffer->GetStride(), raster_source, rect, scale);
     gpu_memory_buffer->Unmap();
   }
 

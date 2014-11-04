@@ -10,7 +10,6 @@
 
 namespace cc {
 class RasterSource;
-class RenderingStatsInstrumentation;
 
 class CC_EXPORT RasterBuffer {
  public:
@@ -19,8 +18,7 @@ class CC_EXPORT RasterBuffer {
 
   virtual void Playback(const RasterSource* raster_source,
                         const gfx::Rect& rect,
-                        float scale,
-                        RenderingStatsInstrumentation* stats) = 0;
+                        float scale) = 0;
 };
 
 }  // namespace cc

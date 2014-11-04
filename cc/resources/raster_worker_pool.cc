@@ -201,8 +201,7 @@ void RasterWorkerPool::PlaybackToMemory(void* memory,
                                         int stride,
                                         const RasterSource* raster_source,
                                         const gfx::Rect& rect,
-                                        float scale,
-                                        RenderingStatsInstrumentation* stats) {
+                                        float scale) {
   SkBitmap bitmap;
   switch (format) {
     case RGBA_4444:
@@ -226,7 +225,7 @@ void RasterWorkerPool::PlaybackToMemory(void* memory,
   }
 
   SkCanvas canvas(bitmap);
-  raster_source->PlaybackToCanvas(&canvas, rect, scale, stats);
+  raster_source->PlaybackToCanvas(&canvas, rect, scale);
 
   SkColorType buffer_color_type = ResourceFormatToSkColorType(format);
   if (buffer_color_type != bitmap.colorType()) {

@@ -72,8 +72,7 @@ class CC_EXPORT RasterWorkerPool {
                                int stride,
                                const RasterSource* raster_source,
                                const gfx::Rect& rect,
-                               float scale,
-                               RenderingStatsInstrumentation* stats);
+                               float scale);
 
   // Type-checking downcast routine.
   virtual Rasterizer* AsRasterizer() = 0;

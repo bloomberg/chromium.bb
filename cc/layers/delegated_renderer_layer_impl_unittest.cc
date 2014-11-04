@@ -13,7 +13,6 @@
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"

@@ -54,16 +54,10 @@ class RasterBufferImpl : public RasterBuffer {
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
-                float scale,
-                RenderingStatsInstrumentation* stats) override {
+                float scale) override {
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
-        lock_.Pass(),
-        raster_resource_.Pass(),
-        resource_,
-        raster_source,
-        rect,
-        scale,
-        stats);
+        lock_.Pass(), raster_resource_.Pass(), resource_, raster_source, rect,
+        scale);
   }
 
  private:
@@ -280,8 +274,7 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     const Resource* dst,
     const RasterSource* raster_source,
     const gfx::Rect& rect,
-    float scale,
-    RenderingStatsInstrumentation* stats) {
+    float scale) {
   CopySequenceNumber sequence;
 
   {
@@ -324,14 +317,9 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
       gfx::GpuMemoryBuffer* gpu_memory_buffer =
           write_lock->GetGpuMemoryBuffer();
       if (gpu_memory_buffer) {
-        RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
-                                           src->format(),
-                                           src->size(),
-                                           gpu_memory_buffer->GetStride(),
-                                           raster_source,
-                                           rect,
-                                           scale,
-                                           stats);
+        RasterWorkerPool::PlaybackToMemory(
+            gpu_memory_buffer->Map(), src->format(), src->size(),
+            gpu_memory_buffer->GetStride(), raster_source, rect, scale);
         gpu_memory_buffer->Unmap();
       }
     }

@@ -6,7 +6,6 @@
 
 #include "cc/debug/lap_timer.h"
 #include "cc/test/fake_picture_pile_impl.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -36,8 +35,7 @@ class PicturePileImplPerfTest : public testing::Test {
     RasterSource::SolidColorAnalysis analysis;
     timer_.Reset();
     do {
-      pile->PerformSolidColorAnalysis(
-          content_rect, contents_scale, &analysis, nullptr);
+      pile->PerformSolidColorAnalysis(content_rect, contents_scale, &analysis);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -55,13 +53,9 @@ class PicturePileImplPerfTest : public testing::Test {
     bitmap.allocN32Pixels(1, 1);
     SkCanvas canvas(bitmap);
 
-    FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
     timer_.Reset();
     do {
-      pile->PlaybackToCanvas(&canvas,
-                             content_rect,
-                             contents_scale,
-                             &rendering_stats_instrumentation);
+      pile->PlaybackToCanvas(&canvas, content_rect, contents_scale);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

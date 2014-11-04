@@ -47,7 +47,6 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"

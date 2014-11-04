@@ -60,7 +60,6 @@ void RenderingStats::MainThreadRenderingStats::Add(
 
 RenderingStats::ImplThreadRenderingStats::ImplThreadRenderingStats()
     : frame_count(0),
-      rasterized_pixel_count(0),
       visible_content_area(0),
       approximated_visible_content_area(0) {
 }
@@ -73,8 +72,6 @@ RenderingStats::ImplThreadRenderingStats::AsTraceableData() const {
   scoped_refptr<base::debug::TracedValue> record_data =
       new base::debug::TracedValue();
   record_data->SetInteger("frame_count", frame_count);
-  record_data->SetDouble("rasterize_time", rasterize_time.InSecondsF());
-  record_data->SetInteger("rasterized_pixel_count", rasterized_pixel_count);
   record_data->SetInteger("visible_content_area", visible_content_area);
   record_data->SetInteger("approximated_visible_content_area",
                           approximated_visible_content_area);
@@ -108,9 +105,6 @@ RenderingStats::ImplThreadRenderingStats::AsTraceableData() const {
 void RenderingStats::ImplThreadRenderingStats::Add(
     const ImplThreadRenderingStats& other) {
   frame_count += other.frame_count;
-  rasterize_time += other.rasterize_time;
-  analysis_time += other.analysis_time;
-  rasterized_pixel_count += other.rasterized_pixel_count;
   visible_content_area += other.visible_content_area;
   approximated_visible_content_area += other.approximated_visible_content_area;
 

@@ -55,9 +55,6 @@ struct CC_EXPORT RenderingStats {
     // rendering_stats.cc.
 
     int64 frame_count;
-    base::TimeDelta rasterize_time;
-    base::TimeDelta analysis_time;
-    int64 rasterized_pixel_count;
     int64 visible_content_area;
     int64 approximated_visible_content_area;
 

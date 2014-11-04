@@ -15,8 +15,6 @@ class SkCanvas;
 
 namespace cc {
 
-class RenderingStatsInstrumentation;
-
 class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
   struct CC_EXPORT SolidColorAnalysis {
@@ -32,20 +30,16 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // assumed that contents_scale has already been applied to this canvas.
   // Writes the total number of pixels rasterized and the time spent
   // rasterizing to the stats if the respective pointer is not nullptr.
-  // TODO(vmpstr): Remove RenderingStatsInstrumentation from the interface.
-  virtual void PlaybackToCanvas(
-      SkCanvas* canvas,
-      const gfx::Rect& canvas_rect,
-      float contents_scale,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation) const = 0;
+  virtual void PlaybackToCanvas(SkCanvas* canvas,
+                                const gfx::Rect& canvas_rect,
+                                float contents_scale) const = 0;
 
   // Analyze to determine if the given rect at given scale is of solid color in
   // this raster source.
   virtual void PerformSolidColorAnalysis(
       const gfx::Rect& content_rect,
       float contents_scale,
-      SolidColorAnalysis* analysis,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation) const = 0;
+      SolidColorAnalysis* analysis) const = 0;
 
   // Populate the given list with all SkPixelRefs that may overlap the given
   // rect at given scale.

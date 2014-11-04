@@ -74,14 +74,7 @@ void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
   // Translate the origin of content_rect to that of source_rect.
   canvas->translate(paint_rect().x() - source_rect.x(),
                     paint_rect().y() - source_rect.y());
-  base::TimeTicks start_time =
-      rendering_stats_instrumentation_->StartRecording();
   DrawPicture(canvas);
-  base::TimeDelta duration =
-      rendering_stats_instrumentation_->EndRecording(start_time);
-  rendering_stats_instrumentation_->AddRaster(
-      duration,
-      source_rect.width() * source_rect.height());
 }
 
 }  // namespace cc

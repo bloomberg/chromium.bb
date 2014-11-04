@@ -18,7 +18,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/tiled_layer_test_common.h"

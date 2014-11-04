@@ -62,8 +62,7 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
       const Resource* dst,
       const RasterSource* raster_source,
       const gfx::Rect& rect,
-      float scale,
-      RenderingStatsInstrumentation* stats);
+      float scale);
 
   // Issues copy operations until |sequence| has been processed. This will
   // return immediately if |sequence| has already been processed.

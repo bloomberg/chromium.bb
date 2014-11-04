@@ -56,10 +56,10 @@ class BenchmarkRasterTask : public Task {
         SkCanvas canvas(bitmap);
         RasterSource::SolidColorAnalysis analysis;
 
-        raster_source_->PerformSolidColorAnalysis(
-            content_rect_, contents_scale_, &analysis, nullptr);
-        raster_source_->PlaybackToCanvas(
-            &canvas, content_rect_, contents_scale_, nullptr);
+        raster_source_->PerformSolidColorAnalysis(content_rect_,
+                                                  contents_scale_, &analysis);
+        raster_source_->PlaybackToCanvas(&canvas, content_rect_,
+                                         contents_scale_);
 
         is_solid_color_ = analysis.is_solid_color;
 

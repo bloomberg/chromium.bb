@@ -37,19 +37,13 @@ class RasterBufferImpl : public RasterBuffer {
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
-                float scale,
-                RenderingStatsInstrumentation* stats) override {
+                float scale) override {
     if (!memory_)
       return;
 
-    RasterWorkerPool::PlaybackToMemory(memory_,
-                                       resource_->format(),
-                                       resource_->size(),
-                                       stride_,
-                                       raster_source,
-                                       rect,
-                                       scale,
-                                       stats);
+    RasterWorkerPool::PlaybackToMemory(memory_, resource_->format(),
+                                       resource_->size(), stride_,
+                                       raster_source, rect, scale);
   }
 
  private:

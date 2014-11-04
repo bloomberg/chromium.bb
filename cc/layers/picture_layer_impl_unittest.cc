@@ -268,8 +268,8 @@ class PictureLayerImplTest : public testing::Test {
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(1000, 1000);
-      active_pile->RasterDirect(
-          &mock_canvas, (*tile_iter)->content_rect(), 1.0f, nullptr);
+      active_pile->RasterDirect(&mock_canvas, (*tile_iter)->content_rect(),
+                                1.0f);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from

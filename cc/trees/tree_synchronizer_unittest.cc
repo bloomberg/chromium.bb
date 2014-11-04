@@ -16,6 +16,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/single_thread_proxy.h"

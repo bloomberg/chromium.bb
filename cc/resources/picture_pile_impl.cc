@@ -37,33 +37,25 @@ PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
 PicturePileImpl::~PicturePileImpl() {
 }
 
-void PicturePileImpl::RasterDirect(
-    SkCanvas* canvas,
-    const gfx::Rect& canvas_rect,
-    float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) const {
+void PicturePileImpl::RasterDirect(SkCanvas* canvas,
+                                   const gfx::Rect& canvas_rect,
+                                   float contents_scale) const {
   RasterCommon(canvas,
                NULL,
                canvas_rect,
                contents_scale,
-               rendering_stats_instrumentation,
                false);
 }
 
-void PicturePileImpl::RasterForAnalysis(
-    skia::AnalysisCanvas* canvas,
-    const gfx::Rect& canvas_rect,
-    float contents_scale,
-    RenderingStatsInstrumentation* stats_instrumentation) const {
-  RasterCommon(
-      canvas, canvas, canvas_rect, contents_scale, stats_instrumentation, true);
+void PicturePileImpl::RasterForAnalysis(skia::AnalysisCanvas* canvas,
+                                        const gfx::Rect& canvas_rect,
+                                        float contents_scale) const {
+  RasterCommon(canvas, canvas, canvas_rect, contents_scale, true);
 }
 
-void PicturePileImpl::PlaybackToCanvas(
-    SkCanvas* canvas,
-    const gfx::Rect& canvas_rect,
-    float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) const {
+void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
+                                       const gfx::Rect& canvas_rect,
+                                       float contents_scale) const {
   canvas->discard();
   if (clear_canvas_with_debug_color_) {
     // Any non-painted areas in the content bounds will be left in this color.
@@ -125,7 +117,6 @@ void PicturePileImpl::PlaybackToCanvas(
                NULL,
                canvas_rect,
                contents_scale,
-               rendering_stats_instrumentation,
                false);
 }
 
@@ -229,7 +220,6 @@ void PicturePileImpl::RasterCommon(
     SkDrawPictureCallback* callback,
     const gfx::Rect& canvas_rect,
     float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool is_analysis) const {
   DCHECK(contents_scale >= min_contents_scale_);
 
@@ -265,34 +255,10 @@ void PicturePileImpl::RasterCommon(
     total_clip.Union(positive_clip);
 #endif  // NDEBUG
 
-    base::TimeDelta best_duration = base::TimeDelta::Max();
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
-    int rasterized_pixel_count = 0;
 
-    for (int j = 0; j < repeat_count; ++j) {
-      base::TimeTicks start_time;
-      if (rendering_stats_instrumentation)
-        start_time = rendering_stats_instrumentation->StartRecording();
-
-      rasterized_pixel_count = picture->Raster(
-          canvas, callback, negated_clip_region, contents_scale);
-
-      if (rendering_stats_instrumentation) {
-        base::TimeDelta duration =
-            rendering_stats_instrumentation->EndRecording(start_time);
-        best_duration = std::min(best_duration, duration);
-      }
-    }
-
-    if (rendering_stats_instrumentation) {
-      if (is_analysis) {
-        rendering_stats_instrumentation->AddAnalysis(best_duration,
-                                                     rasterized_pixel_count);
-      } else {
-        rendering_stats_instrumentation->AddRaster(best_duration,
-                                                   rasterized_pixel_count);
-      }
-    }
+    for (int j = 0; j < repeat_count; ++j)
+      picture->Raster(canvas, callback, negated_clip_region, contents_scale);
   }
 
 #ifndef NDEBUG
@@ -316,7 +282,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   SkCanvas* canvas =
       recorder.beginRecording(tiling_rect.width(), tiling_rect.height());
   if (!tiling_rect.IsEmpty())
-    PlaybackToCanvas(canvas, tiling_rect, 1.0, NULL);
+    PlaybackToCanvas(canvas, tiling_rect, 1.0);
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
 
   return picture;
@@ -325,8 +291,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
 void PicturePileImpl::PerformSolidColorAnalysis(
     const gfx::Rect& content_rect,
     float contents_scale,
-    RasterSource::SolidColorAnalysis* analysis,
-    RenderingStatsInstrumentation* stats_instrumentation) const {
+    RasterSource::SolidColorAnalysis* analysis) const {
   DCHECK(analysis);
   TRACE_EVENT0("cc", "PicturePileImpl::PerformSolidColorAnalysis");
 
@@ -337,7 +302,7 @@ void PicturePileImpl::PerformSolidColorAnalysis(
 
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
 
-  RasterForAnalysis(&canvas, layer_rect, 1.0f, stats_instrumentation);
+  RasterForAnalysis(&canvas, layer_rect, 1.0f);
 
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
 }

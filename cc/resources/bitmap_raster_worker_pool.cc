@@ -26,9 +26,8 @@ class RasterBufferImpl : public RasterBuffer {
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
-                float scale,
-                RenderingStatsInstrumentation* stats) override {
-    raster_source->PlaybackToCanvas(lock_.sk_canvas(), rect, scale, stats);
+                float scale) override {
+    raster_source->PlaybackToCanvas(lock_.sk_canvas(), rect, scale);
   }
 
  private:

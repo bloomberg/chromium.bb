@@ -59,8 +59,7 @@ class TestRasterTaskImpl : public RasterTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    raster_buffer_->Playback(
-        picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0, NULL);
+    raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0);
   }
 
   // Overridden from RasterizerTask:

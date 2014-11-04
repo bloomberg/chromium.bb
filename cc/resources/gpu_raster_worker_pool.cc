@@ -36,8 +36,7 @@ class RasterBufferImpl : public RasterBuffer {
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& rect,
-                float scale,
-                RenderingStatsInstrumentation* stats) override {
+                float scale) override {
     // Turn on distance fields for layers that have ever animated.
     bool use_distance_field_text =
         use_distance_field_text_ ||
@@ -53,7 +52,7 @@ class RasterBufferImpl : public RasterBuffer {
         skia::SharePtr(recorder.beginRecording(size.width(), size.height()));
 
     canvas->save();
-    raster_source->PlaybackToCanvas(canvas.get(), rect, scale, stats);
+    raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
     canvas->restore();
 
     // Add the canvas and recorded picture to |multi_picture_draw_|.
