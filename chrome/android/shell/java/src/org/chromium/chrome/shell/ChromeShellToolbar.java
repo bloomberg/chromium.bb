@@ -25,6 +25,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.shell.omnibox.SuggestionPopup;
@@ -164,7 +165,8 @@ public class ChromeShellToolbar extends LinearLayout {
 
                 // This will set |mTab| by calling showTab().
                 // TODO(aurimas): Factor out initial tab creation to the activity level.
-                Tab tab = mTabManager.openUrl(mUrlTextView.getText().toString());
+                Tab tab = mTabManager.openUrl(
+                        UrlUtilities.fixupUrl(mUrlTextView.getText().toString()));
                 mUrlTextView.clearFocus();
                 setKeyboardVisibilityForUrl(false);
                 tab.getView().requestFocus();
