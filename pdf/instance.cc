@@ -1286,6 +1286,7 @@ void Instance::NotifyNumberOfFindResultsChanged(int total, bool final_result) {
 }
 
 void Instance::NotifySelectedFindResultChanged(int current_find_index) {
+  DCHECK_GE(current_find_index, 0);
   SelectedFindResultChanged(current_find_index);
 }
 

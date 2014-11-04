@@ -151,6 +151,26 @@ class PDFiumEngine : public PDFEngine,
     DISALLOW_COPY_AND_ASSIGN(MouseDownState);
   };
 
+  // Used to store the state of a text search.
+  class FindTextIndex {
+   public:
+    FindTextIndex();
+    ~FindTextIndex();
+
+    bool valid() const { return valid_; }
+    void Invalidate();
+
+    size_t GetIndex() const;
+    void SetIndex(size_t index);
+    size_t IncrementIndex();
+
+   private:
+    bool valid_;  // Whether |index_| is valid or not.
+    size_t index_;  // The current search result, 0-based.
+
+    DISALLOW_COPY_AND_ASSIGN(FindTextIndex);
+  };
+
   friend class SelectionChangeInvalidator;
 
   struct FileAvail : public FX_FILEAVAIL {
@@ -391,6 +411,9 @@ class PDFiumEngine : public PDFEngine,
   // Called when the selection changes.
   void OnSelectionChanged();
 
+  // Common code shared by RotateClockwise() and RotateCounterclockwise().
+  void RotateInternal();
+
   // FPDF_FORMFILLINFO callbacks.
   static void Form_Invalidate(FPDF_FORMFILLINFO* param,
                               FPDF_PAGE page,
@@ -540,9 +563,9 @@ class PDFiumEngine : public PDFEngine,
   int last_page_to_search_;
   int last_character_index_to_search_;  // -1 if search until end of page.
   // Which result the user has currently selected.
-  int current_find_index_;
+  FindTextIndex current_find_index_;
   // Where to resume searching.
-  int resume_find_index_;
+  FindTextIndex resume_find_index_;
 
   // Permissions bitfield.
   unsigned long permissions_;
