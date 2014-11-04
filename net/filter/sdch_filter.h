@@ -64,6 +64,9 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // specified dest_buffer.
   int OutputBufferExcess(char* const dest_buffer, size_t available_space);
 
+  // Add SDCH Problem to net-log and record histogram.
+  void LogSdchProblem(SdchProblemCode problem);
+
   // Context data from the owner of this filter.
   const FilterContext& filter_context_;
 

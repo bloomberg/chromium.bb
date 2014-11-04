@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "net/base/net_log.h"
 #include "net/filter/filter.h"
 #include "url/gurl.h"
 
@@ -73,6 +74,8 @@ class MockFilterContext : public FilterContext {
 
   void RecordPacketStats(StatisticSelector statistic) const override {}
 
+  const BoundNetLog& GetNetLog() const override;
+
  private:
   int buffer_size_;
   std::string mime_type_;
@@ -85,6 +88,7 @@ class MockFilterContext : public FilterContext {
   bool ok_to_call_get_url_;
   int response_code_;
   scoped_ptr<URLRequestContext> context_;
+  BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFilterContext);
 };

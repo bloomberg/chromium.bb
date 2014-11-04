@@ -785,6 +785,7 @@
       'test/data/webui/net_internals/test_view.js',
       'test/data/webui/net_internals/timeline_view.js',
       'test/data/webui/net_internals/waterfall_view.js',
+      'test/data/webui/net_internals/sdch_view.js',
       'test/data/webui/ntp4.js',
       'test/data/webui/ntp4_browsertest.cc',
       'test/data/webui/ntp4_browsertest.h',

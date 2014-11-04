@@ -44,7 +44,7 @@ class NET_EXPORT SdchDictionaryFetcher
   ~SdchDictionaryFetcher() override;
 
   // Implementation of SdchFetcher methods.
-  void Schedule(const GURL& dictionary_url) override;
+  bool Schedule(const GURL& dictionary_url) override;
   void Cancel() override;
 
   // Implementation of URLRequest::Delegate methods.
@@ -66,6 +66,9 @@ class NET_EXPORT SdchDictionaryFetcher
   int DoRequestStarted(int rv);
   int DoRead(int rv);
   int DoCompleteRequest(int rv);
+
+  // Record SDCH problem histogram and add netlog event.
+  void LogDictionaryFetchError(SdchProblemCode error);
 
   State next_state_;
   bool in_loop_;

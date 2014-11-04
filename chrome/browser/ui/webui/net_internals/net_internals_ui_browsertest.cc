@@ -350,5 +350,9 @@ bool NetInternalsTest::StartTestServer() {
   if (test_server_started_)
     return true;
   test_server_started_ = test_server()->Start();
+
+  // Sample domain for SDCH-view test. Dictionaries for localhost/127.0.0.1
+  // are forbidden.
+  host_resolver()->AddRule("testdomain.com", "127.0.0.1");
   return test_server_started_;
 }

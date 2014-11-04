@@ -60,8 +60,9 @@ class GURL;
 
 namespace net {
 
-class URLRequestContext;
+class BoundNetLog;
 class IOBuffer;
+class URLRequestContext;
 
 //------------------------------------------------------------------------------
 // Define an interface class that allows access to contextual information
@@ -122,6 +123,9 @@ class NET_EXPORT_PRIVATE FilterContext {
   // The following method forces the context to emit a specific set of
   // statistics as selected by the argument.
   virtual void RecordPacketStats(StatisticSelector statistic) const = 0;
+
+  // The BoundNetLog of the associated request.
+  virtual const BoundNetLog& GetNetLog() const = 0;
 };
 
 //------------------------------------------------------------------------------

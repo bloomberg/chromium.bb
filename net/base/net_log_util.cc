@@ -15,6 +15,7 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/sdch_manager.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -64,6 +65,14 @@ const short kNetErrors[] = {
 #define NET_ERROR(label, value) value,
 #include "net/base/net_error_list.h"
 #undef NET_ERROR
+};
+
+const StringToConstant kSdchProblems[] = {
+#define SDCH_PROBLEM_CODE(label, value) \
+  { #label, value }                     \
+  ,
+#include "net/base/sdch_problem_code_list.h"
+#undef SDCH_PROBLEM_CODE
 };
 
 const char* NetInfoSourceToString(NetInfoSource source) {
@@ -185,6 +194,17 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     }
 
     constants_dict->Set("quicRstStreamError", dict);
+  }
+
+  // Add information on the relationship between SDCH problem codes and their
+  // symbolic names.
+  {
+    base::DictionaryValue* dict = new base::DictionaryValue();
+
+    for (size_t i = 0; i < arraysize(kSdchProblems); i++)
+      dict->SetInteger(kSdchProblems[i].name, kSdchProblems[i].constant);
+
+    constants_dict->Set("sdchProblemCode", dict);
   }
 
   // Information about the relationship between event phase enums and their
@@ -453,6 +473,17 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_HTTP_CACHE),
                        info_dict);
+  }
+
+  if (info_sources & NET_INFO_SDCH) {
+    base::Value* info_dict;
+    SdchManager* sdch_manager = context->sdch_manager();
+    if (sdch_manager) {
+      info_dict = sdch_manager->SdchInfoToValue();
+    } else {
+      info_dict = new base::DictionaryValue();
+    }
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SDCH), info_dict);
   }
 
   return net_info_dict.Pass();

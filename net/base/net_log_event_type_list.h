@@ -2416,3 +2416,38 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)
 // This event is created (in a source of the same name) when the internal DNS
 // resolver creates a UDP socket to check for global IPv6 connectivity.
 EVENT_TYPE(IPV6_REACHABILITY_CHECK)
+
+// ------------------------------------------------------------------------
+// SDCH
+// ------------------------------------------------------------------------
+
+// This event is created when some problem occurs during sdch-encoded resource
+// handling. It contains the following parameters:
+//   {
+//     "sdch_problem_code": <SDCH problem code>,
+//     "net_error": <Always ERR_FAILED, present just to indicate this is a
+//                   failure>,
+//   }
+EVENT_TYPE(SDCH_DECODING_ERROR)
+
+// This event is created when SdchFilter initialization fails due to the
+// response corruption. It contains the following parameters:
+//   {
+//     "cause": <Response corruption detection cause>,
+//     "cached": <True if response was read from cache>,
+//   }
+EVENT_TYPE(SDCH_RESPONSE_CORRUPTION_DETECTION)
+
+// This event is created when some problem occurs during sdch dictionary fetch.
+// It contains the following parameters:
+//   {
+//     "dictionary_url": <Dictionary url>,
+//     "sdch_problem_code": <SDCH problem code>,
+//     "net_error": <Only present on unexpected errors. Always ERR_FAILED when
+//                   present. Used to indicate this is a real failure>,
+//   }
+EVENT_TYPE(SDCH_DICTIONARY_ERROR)
+
+// This event is created when SdchDictionaryFetcher starts fetch.  It contains
+// no parameters.
+EVENT_TYPE(SDCH_DICTIONARY_FETCH)
