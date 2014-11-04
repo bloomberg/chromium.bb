@@ -223,15 +223,10 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   ASSERT_FALSE(got_downloads());
 }
 
-// Flaky on mac bots. crbug.com/429190
-#if defined(OS_MACOSX)
-#define MAYBE_CrossSiteOnunloadCookie DISABLED_CrossSiteOnunloadCookie
-#else
-#define MAYBE_CrossSiteOnunloadCookie CrossSiteOnunloadCookie
-#endif
+// Flaky everywhere. http://crbug.com/130404
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       MAYBE_CrossSiteOnunloadCookie) {
+                       DISABLED_CrossSiteOnunloadCookie) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
@@ -343,17 +338,12 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   CheckTitleTest(url, "Title Of Awesomeness");
 }
 
-// Flaky on mac bots. crbug.com/429190
-#if defined(OS_MACOSX)
-#define MAYBE_CrossSiteNavigationErrorPage DISABLED_CrossSiteNavigationErrorPage
-#else
-#define MAYBE_CrossSiteNavigationErrorPage CrossSiteNavigationErrorPage
-#endif
+// Flaky everywhere. http://crbug.com/130404
 // Tests that a cross-site navigation to an error page (resulting in the link
 // doctor page) still runs the onunload handler and can support navigations
 // away from the link doctor page.  (Bug 1235537)
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       MAYBE_CrossSiteNavigationErrorPage) {
+                       DISABLED_CrossSiteNavigationErrorPage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/onunload_cookie.html"));
