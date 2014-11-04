@@ -90,7 +90,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   virtual void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                            uint64 cache_size,
                            const base::TimeTicks& start,
-                           bool app_on_background);
+                           bool app_on_background,
+                           const base::Closure& callback);
 
  private:
   friend class WrappedSimpleIndexFile;

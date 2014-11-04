@@ -278,18 +278,18 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
 void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                                   uint64 cache_size,
                                   const base::TimeTicks& start,
-                                  bool app_on_background) {
+                                  bool app_on_background,
+                                  const base::Closure& callback) {
   IndexMetadata index_metadata(entry_set.size(), cache_size);
   scoped_ptr<Pickle> pickle = Serialize(index_metadata, entry_set);
-  cache_thread_->PostTask(FROM_HERE,
-                          base::Bind(&SimpleIndexFile::SyncWriteToDisk,
-                                     cache_type_,
-                                     cache_directory_,
-                                     index_file_,
-                                     temp_index_file_,
-                                     base::Passed(&pickle),
-                                     base::TimeTicks::Now(),
-                                     app_on_background));
+  base::Closure task =
+      base::Bind(&SimpleIndexFile::SyncWriteToDisk,
+                 cache_type_, cache_directory_, index_file_, temp_index_file_,
+                 base::Passed(&pickle), start, app_on_background);
+  if (callback.is_null())
+    cache_thread_->PostTask(FROM_HERE, task);
+  else
+    cache_thread_->PostTaskAndReply(FROM_HERE, task, callback);
 }
 
 // static

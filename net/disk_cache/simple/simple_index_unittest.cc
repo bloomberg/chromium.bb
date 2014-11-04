@@ -68,7 +68,8 @@ class MockSimpleIndexFile : public SimpleIndexFile,
   void WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                    uint64 cache_size,
                    const base::TimeTicks& start,
-                   bool app_on_background) override {
+                   bool app_on_background,
+                   const base::Closure& callback) override {
     disk_writes_++;
     disk_write_entry_set_ = entry_set;
   }

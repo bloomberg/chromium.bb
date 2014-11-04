@@ -470,7 +470,7 @@ void SimpleIndex::WriteToDisk() {
   last_write_to_disk_ = start;
 
   index_file_->WriteToDisk(entries_set_, cache_size_,
-                           start, app_on_background_);
+                           start, app_on_background_, base::Closure());
 }
 
 }  // namespace disk_cache
