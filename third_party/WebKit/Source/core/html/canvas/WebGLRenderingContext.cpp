@@ -85,9 +85,17 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
         attrs = defaultAttrs.get();
     }
     blink::WebGraphicsContext3D::Attributes attributes = attrs->attributes(document.topDocument().url().string(), settings, 1);
-    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
+    blink::WebGLInfo glInfo;
+    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0, &glInfo));
     if (!context) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
+        String statusMessage("Could not create a WebGL context for VendorInfo = ");
+        statusMessage.append(glInfo.vendorInfo);
+        statusMessage.append(", RendererInfo = ");
+        statusMessage.append(glInfo.rendererInfo);
+        statusMessage.append(", DriverInfo = ");
+        statusMessage.append(glInfo.driverVersion);
+        statusMessage.append(".");
+        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, statusMessage));
         return nullptr;
     }
 
