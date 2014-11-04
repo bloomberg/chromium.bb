@@ -148,11 +148,6 @@ class FaviconHandler {
   // Returns true if the favicon should be saved.
   virtual bool ShouldSaveFavicon(const GURL& url);
 
-  // Notifies the driver that the favicon for the active entry was updated.
-  // |icon_url_changed| is true if a favicon with a different icon URL has been
-  // selected since the previous call to NotifyFaviconUpdated().
-  virtual void NotifyFaviconUpdated(bool icon_url_changed);
-
  private:
   friend class TestFaviconHandler; // For testing
 
@@ -226,10 +221,15 @@ class FaviconHandler {
                   const gfx::Image& image,
                   favicon_base::IconType icon_type);
 
-  // Sets the favicon's data.
-  void SetFaviconOnActivePage(const std::vector<
-      favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results);
-  void SetFaviconOnActivePage(const GURL& icon_url, const gfx::Image& image);
+  // Notifies |driver_| favicon available. See
+  // FaviconDriver::NotifyFaviconAvailable() for |is_active_favicon| in detail.
+  void NotifyFaviconAvailable(
+      const std::vector<favicon_base::FaviconRawBitmapResult>&
+          favicon_bitmap_results,
+      bool is_active_favicon);
+  void NotifyFaviconAvailable(const GURL& icon_url,
+                              const gfx::Image& image,
+                              bool is_active_favicon);
 
   // Return the current candidate if any.
   favicon::FaviconURL* current_candidate() {

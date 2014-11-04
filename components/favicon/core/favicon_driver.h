@@ -27,11 +27,6 @@ class FaviconDriver {
   // is the only result. A |max_bitmap_size| of 0 means unlimited.
   virtual int StartDownload(const GURL& url, int max_bitmap_size) = 0;
 
-  // Notifies the driver that the favicon for the active entry was updated.
-  // |icon_url_changed| is true if a favicon with a different icon URL has
-  // been selected since the previous call to NotifyFaviconUpdated().
-  virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
-
   // Returns whether the user is operating in an off-the-record context.
   virtual bool IsOffTheRecord() = 0;
 
@@ -51,16 +46,13 @@ class FaviconDriver {
   // URL otherwise.
   virtual const GURL GetActiveURL() = 0;
 
-  // Sets the bitmap of the current page's favicon. Requires GetActiveURL() to
-  // be valid.
-  virtual void SetActiveFaviconImage(gfx::Image image) = 0;
-
-  // Sets the URL of the favicon's bitmap. Requires GetActiveURL() to be valid.
-  virtual void SetActiveFaviconURL(GURL url) = 0;
-
-  // Sets whether the page's favicon is valid (if false, the default favicon is
-  // being used). Requires GetActiveURL() to be valid.
-  virtual void SetActiveFaviconValidity(bool validity) = 0;
+  // Notifies the driver a favicon image is available. |image| is not
+  // necessarily 16x16. |icon_url| is the url the image is from. If
+  // |is_active_favicon| is true the image corresponds to the favicon
+  // (possibly empty) of the page.
+  virtual void OnFaviconAvailable(const gfx::Image& image,
+                                  const GURL& icon_url,
+                                  bool is_active_favicon) = 0;
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_

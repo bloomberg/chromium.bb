@@ -398,6 +398,7 @@
       'browser/favicon/favicon_service_factory.h',
       'browser/favicon/favicon_tab_helper.cc',
       'browser/favicon/favicon_tab_helper.h',
+      'browser/favicon/favicon_tab_helper_observer.h',
       'browser/file_select_helper.cc',
       'browser/file_select_helper.h',
       'browser/file_select_helper_mac.mm',

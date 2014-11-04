@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "components/favicon/core/browser/favicon_client.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -25,6 +26,7 @@ struct FaviconStatus;
 
 class GURL;
 class FaviconHandler;
+class FaviconTabHelperObserver;
 class Profile;
 class SkBitmap;
 
@@ -70,17 +72,19 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Saves the favicon for the current page.
   void SaveFavicon();
 
+  void AddObserver(FaviconTabHelperObserver* observer);
+  void RemoveObserver(FaviconTabHelperObserver* observer);
+
   // FaviconDriver methods.
   int StartDownload(const GURL& url, int max_bitmap_size) override;
-  void NotifyFaviconUpdated(bool icon_url_changed) override;
   bool IsOffTheRecord() override;
   const gfx::Image GetActiveFaviconImage() override;
   const GURL GetActiveFaviconURL() override;
   bool GetActiveFaviconValidity() override;
   const GURL GetActiveURL() override;
-  void SetActiveFaviconImage(gfx::Image image) override;
-  void SetActiveFaviconURL(GURL url) override;
-  void SetActiveFaviconValidity(bool validity) override;
+  void OnFaviconAvailable(const gfx::Image& image,
+                          const GURL& url,
+                          bool is_active_favicon) override;
 
   // Favicon download callback.
   void DidDownloadFavicon(
@@ -102,6 +106,16 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
+  // Sets whether the page's favicon is valid (if false, the default favicon is
+  // being used). Requires GetActiveURL() to be valid.
+  void SetActiveFaviconValidity(bool validity);
+
+  // Sets the URL of the favicon's bitmap.
+  void SetActiveFaviconURL(GURL url);
+
+  // Sets the bitmap of the current page's favicon.
+  void SetActiveFaviconImage(gfx::Image image);
+
   // Helper method that returns the active navigation entry's favicon.
   content::FaviconStatus& GetFaviconStatus();
 
@@ -116,6 +130,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Handles downloading touchicons. It is NULL if
   // browser_defaults::kEnableTouchIcon is false.
   scoped_ptr<FaviconHandler> touch_icon_handler_;
+
+  ObserverList<FaviconTabHelperObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconTabHelper);
 };

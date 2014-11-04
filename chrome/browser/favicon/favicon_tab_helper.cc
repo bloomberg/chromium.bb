@@ -10,6 +10,7 @@
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_tab_helper_observer.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,6 +137,14 @@ void FaviconTabHelper::SaveFavicon() {
       entry->GetURL(), favicon.url, favicon_base::FAVICON, favicon.image);
 }
 
+void FaviconTabHelper::AddObserver(FaviconTabHelperObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void FaviconTabHelper::RemoveObserver(FaviconTabHelperObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
@@ -149,14 +158,6 @@ int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
       true,
       max_image_size,
       base::Bind(&FaviconTabHelper::DidDownloadFavicon,base::Unretained(this)));
-}
-
-void FaviconTabHelper::NotifyFaviconUpdated(bool icon_url_changed) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<WebContents>(web_contents()),
-      content::Details<bool>(&icon_url_changed));
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 bool FaviconTabHelper::IsOffTheRecord() {
@@ -193,6 +194,30 @@ void FaviconTabHelper::SetActiveFaviconURL(GURL url) {
 
 void FaviconTabHelper::SetActiveFaviconValidity(bool validity) {
   GetFaviconStatus().valid = validity;
+}
+
+void FaviconTabHelper::OnFaviconAvailable(const gfx::Image& image,
+                                          const GURL& icon_url,
+                                          bool is_active_favicon) {
+  if (is_active_favicon) {
+    // No matter what happens, we need to mark the favicon as being set.
+    SetActiveFaviconValidity(true);
+    bool icon_url_changed = GetActiveFaviconURL() != icon_url;
+    SetActiveFaviconURL(icon_url);
+
+    if (image.IsEmpty())
+      return;
+
+    SetActiveFaviconImage(image);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_FAVICON_UPDATED,
+        content::Source<WebContents>(web_contents()),
+        content::Details<bool>(&icon_url_changed));
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  }
+  if (!image.IsEmpty())
+    FOR_EACH_OBSERVER(FaviconTabHelperObserver, observer_list_,
+                      OnFaviconAvailable(image));
 }
 
 content::FaviconStatus& FaviconTabHelper::GetFaviconStatus() {
