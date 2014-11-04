@@ -11,18 +11,11 @@ scoped_ptr<PaintTimeCounter> PaintTimeCounter::Create() {
   return make_scoped_ptr(new PaintTimeCounter());
 }
 
-PaintTimeCounter::PaintTimeCounter()
-  : can_save_paint_time_delta_(false) {
+PaintTimeCounter::PaintTimeCounter() {
 }
 
-void PaintTimeCounter::SavePaintTime(const base::TimeDelta& total_paint_time) {
-  if (can_save_paint_time_delta_) {
-    base::TimeDelta paint_time = total_paint_time - last_total_paint_time_;
-    ring_buffer_.SaveToBuffer(paint_time);
-  }
-
-  last_total_paint_time_ = total_paint_time;
-  can_save_paint_time_delta_ = true;
+void PaintTimeCounter::SavePaintTime(const base::TimeDelta& paint_time) {
+  ring_buffer_.SaveToBuffer(paint_time);
 }
 
 void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
@@ -45,7 +38,6 @@ void PaintTimeCounter::GetMinAndMaxPaintTime(base::TimeDelta* min,
 
 void PaintTimeCounter::ClearHistory() {
   ring_buffer_.Clear();
-  can_save_paint_time_delta_ = false;
 }
 
 }  // namespace cc

@@ -28,6 +28,8 @@ struct CC_EXPORT RenderingStats {
 
     void Add(const TimeDeltaList& other);
 
+    base::TimeDelta GetLastTimeDelta() const;
+
    private:
     std::list<base::TimeDelta> values;
   };

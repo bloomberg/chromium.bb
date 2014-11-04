@@ -1874,9 +1874,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (debug_state_.continuous_painting) {
     const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
-    paint_time_counter_->SavePaintTime(stats.main_stats.paint_time +
-                                       stats.main_stats.record_time +
-                                       stats.impl_stats.rasterize_time);
+    // TODO(hendrikw): This requires a different metric when we commit directly
+    // to the active tree.  See crbug.com/429311.
+    paint_time_counter_->SavePaintTime(
+        stats.impl_stats.commit_to_activate_duration.GetLastTimeDelta() +
+        stats.impl_stats.draw_duration.GetLastTimeDelta());
   }
 
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())

@@ -28,6 +28,10 @@ void RenderingStats::TimeDeltaList::Add(const TimeDeltaList& other) {
   values.insert(values.end(), other.values.begin(), other.values.end());
 }
 
+base::TimeDelta RenderingStats::TimeDeltaList::GetLastTimeDelta() const {
+  return values.empty() ? base::TimeDelta() : values.back();
+}
+
 RenderingStats::MainThreadRenderingStats::MainThreadRenderingStats()
     : painted_pixel_count(0), recorded_pixel_count(0) {
 }

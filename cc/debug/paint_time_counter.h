@@ -36,8 +36,6 @@ class PaintTimeCounter {
   PaintTimeCounter();
 
   RingBufferType ring_buffer_;
-  base::TimeDelta last_total_paint_time_;
-  bool can_save_paint_time_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTimeCounter);
 };
