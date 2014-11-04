@@ -191,7 +191,9 @@ void Canvas::SizeStringFloat(const base::string16& text,
       render_text->SetText(strings[i]);
       const SizeF& string_size = render_text->GetStringSizeF();
       w = std::max(w, string_size.width());
-      h += (i > 0 && line_height > 0) ? line_height : string_size.height();
+      h += (i > 0 && line_height > 0) ?
+               std::max(static_cast<float>(line_height), string_size.height())
+                   : string_size.height();
     }
     *width = w;
     *height = h;
