@@ -359,12 +359,6 @@ public class SessionDependencyFactory {
         public void onRemoveStream(MediaStream stream) {}
 
         @Override
-        public void onRenegotiationNeeded() {
-        }
-
-        @Override
-        public void onError() {
-            assert false; // TODO(serya): add meaningful handling strategy.
-        }
+        public void onRenegotiationNeeded() {}
     }
 }
