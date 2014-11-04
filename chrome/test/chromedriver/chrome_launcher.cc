@@ -495,7 +495,10 @@ Status LaunchChrome(
   Status port_status(kOk);
 
   if (capabilities.IsAndroid()) {
-    port_status = port_manager->ReservePortFromPool(&port, &port_reservation);
+    if (port_server)
+      port_status = port_server->ReservePort(&port, &port_reservation);
+    else
+      port_status = port_manager->ReservePortFromPool(&port, &port_reservation);
     if (port_status.IsError())
       return Status(kUnknownError, "cannot reserve port for Chrome",
                     port_status);
