@@ -44,7 +44,11 @@ void CastContentRendererClient::RenderViewCreated(
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
     webview->setBaseBackgroundColor(kColorBlack);
+
+    // The following settings express consistent behaviors across Cast
+    // embedders, though Android has enabled by default for mobile browsers.
     webview->settings()->setShrinksViewportContentToFit(false);
+    webview->settings()->setMediaControlsOverlayPlayButtonEnabled(false);
   }
 }
 
