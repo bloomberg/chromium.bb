@@ -239,7 +239,7 @@ Status Status::ErrorGenerateKeyLength() {
 }
 
 Status Status::ErrorCreateKeyBadUsages() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeSyntax,
                 "Cannot create a key using the specified key usages.");
 }
 
