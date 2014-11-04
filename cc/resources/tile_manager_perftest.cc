@@ -112,7 +112,6 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   virtual void SetUp() override {
-    picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
     InitializeRenderer();
     SetTreePriority(SAME_PRIORITY_FOR_BOTH_TREES);
   }
@@ -123,12 +122,10 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
-    gfx::Size tile_size(100, 100);
-
     scoped_refptr<FakePicturePileImpl> pending_pile =
-        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
     scoped_refptr<FakePicturePileImpl> active_pile =
-        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
 
     SetupTrees(pending_pile, active_pile);
   }
@@ -360,10 +357,12 @@ class TileManagerPerfTest : public testing::Test {
     int next_id = id_ + 1;
 
     // Create the rest of the layers as children of the root layer.
+    scoped_refptr<FakePicturePileImpl> pile =
+        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
       scoped_ptr<FakePictureLayerImpl> layer =
-          FakePictureLayerImpl::CreateWithPile(
-              host_impl_.pending_tree(), next_id, picture_pile_);
+          FakePictureLayerImpl::CreateWithPile(host_impl_.pending_tree(),
+                                               next_id, pile);
       layer->SetBounds(layer_bounds);
       layers.push_back(layer.get());
       pending_root_layer_->AddChild(layer.Pass());
@@ -432,9 +431,12 @@ class TileManagerPerfTest : public testing::Test {
   FakePictureLayerImpl* pending_root_layer_;
   FakePictureLayerImpl* active_root_layer_;
   LapTimer timer_;
-  scoped_refptr<FakePicturePileImpl> picture_pile_;
   LayerTreeSettings settings_;
+
+  static const gfx::Size kDefaultTileSize;
 };
+
+const gfx::Size TileManagerPerfTest::kDefaultTileSize(100, 100);
 
 TEST_F(TileManagerPerfTest, ManageTiles) {
   RunManageTilesTest("2_100", 2, 100);
