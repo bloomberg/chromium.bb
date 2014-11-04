@@ -101,8 +101,6 @@ DevToolsSystemInfoHandler::~DevToolsSystemInfoHandler() {
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsSystemInfoHandler::OnGetInfo(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  VLOG(2) << "DevToolsSystemInfoHandler::OnGetInfo() : BEGIN";
-
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
   base::DictionaryValue* gpu_dict = new base::DictionaryValue;
 
@@ -126,8 +124,6 @@ DevToolsSystemInfoHandler::OnGetInfo(
   system_dict->SetString(kModelName, gpu_info.machine_model_name);
   system_dict->SetString(kModelVersion, gpu_info.machine_model_version);
   system_dict->Set(kGPU, gpu_dict);
-
-  VLOG(2) << "DevToolsSystemInfoHandler::OnGetInfo() : END";
   return command->SuccessResponse(system_dict);
 }
 
