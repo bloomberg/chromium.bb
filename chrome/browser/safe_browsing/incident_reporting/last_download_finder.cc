@@ -28,21 +28,54 @@ namespace safe_browsing {
 
 namespace {
 
+// The following functions are overloaded for the two object types that
+// represent the metadata for a download: history::DownloadRow and
+// ClientIncidentReport_DownloadDetails. These are used by the template
+// functions that follow.
+
+// Returns the end time of a download represented by a DownloadRow.
+int64 GetEndTime(const history::DownloadRow& row) {
+  return row.end_time.ToJavaTime();
+}
+
+// Returns the end time of a download represented by a DownloadDetails.
+int64 GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
+  return details.download_time_msec();
+}
+
+// Returns true if a download represented by a DownloadRow is binary file.
+bool IsBinaryDownload(const history::DownloadRow& row) {
+  // TODO(grt): Peek into archives to see if they contain binaries;
+  // http://crbug.com/386915.
+  return (download_protection_util::IsBinaryFile(row.target_path) &&
+          !download_protection_util::IsArchiveFile(row.target_path));
+}
+
+// Returns true if a download represented by a DownloadDetails is binary file.
+bool IsBinaryDownload(const ClientIncidentReport_DownloadDetails& details) {
+  // DownloadDetails are only generated for binary downloads.
+  return true;
+}
+
+// Returns true if a download represented by a DownloadRow has been opened.
+bool HasBeenOpened(const history::DownloadRow& row) {
+  return row.opened;
+}
+
+// Returns true if a download represented by a DownloadDetails has been opened.
+bool HasBeenOpened(const ClientIncidentReport_DownloadDetails& details) {
+  return details.has_open_time_msec() && details.open_time_msec();
+}
+
 // Returns true if |first| is more recent than |second|, preferring opened over
 // non-opened for downloads that completed at the same time (extraordinarily
 // unlikely). Only files that look like some kind of executable are considered.
-bool IsMoreInterestingThan(const history::DownloadRow& first,
-                           const history::DownloadRow& second) {
-  if (first.end_time < second.end_time)
+template <class A, class B>
+bool IsMoreInterestingThan(const A& first, const B& second) {
+  if (GetEndTime(first) < GetEndTime(second) || !IsBinaryDownload(first))
     return false;
-  // TODO(grt): Peek into archives to see if they contain binaries;
-  // http://crbug.com/386915.
-  if (!download_protection_util::IsBinaryFile(first.target_path) ||
-      download_protection_util::IsArchiveFile(first.target_path)) {
-    return false;
-  }
-  return (first.end_time != second.end_time ||
-          (first.opened && !second.opened));
+  return (GetEndTime(first) != GetEndTime(second) ||
+          (HasBeenOpened(first) && !HasBeenOpened(second)));
 }
 
 // Returns a pointer to the most interesting completed download in |downloads|.
@@ -60,9 +93,20 @@ const history::DownloadRow* FindMostInteresting(
   return most_recent_row;
 }
 
+// Returns true if |candidate| is more interesting than whichever of |details|
+// or |best_row| is present.
+template <class D>
+bool IsMostInteresting(const D& candidate,
+                       const ClientIncidentReport_DownloadDetails* details,
+                       const history::DownloadRow& best_row) {
+  return details ?
+      IsMoreInterestingThan(candidate, *details) :
+      IsMoreInterestingThan(candidate, best_row);
+}
+
 // Populates the |details| protobuf with information pertaining to |download|.
-void PopulateDetails(const history::DownloadRow& download,
-                     ClientIncidentReport_DownloadDetails* details) {
+void PopulateDetailsFromRow(const history::DownloadRow& download,
+                            ClientIncidentReport_DownloadDetails* details) {
   ClientDownloadRequest* download_request = details->mutable_download();
   download_request->set_url(download.url_chain.back().spec());
   // digests is a required field, so force it to exist.
@@ -103,11 +147,14 @@ LastDownloadFinder::~LastDownloadFinder() {
 
 // static
 scoped_ptr<LastDownloadFinder> LastDownloadFinder::Create(
+    const DownloadDetailsGetter& download_details_getter,
     const LastDownloadCallback& callback) {
   scoped_ptr<LastDownloadFinder> finder(make_scoped_ptr(new LastDownloadFinder(
-      g_browser_process->profile_manager()->GetLoadedProfiles(), callback)));
+      download_details_getter,
+      g_browser_process->profile_manager()->GetLoadedProfiles(),
+      callback)));
   // Return NULL if there is no work to do.
-  if (finder->profiles_.empty())
+  if (finder->profile_states_.empty())
     return scoped_ptr<LastDownloadFinder>();
   return finder.Pass();
 }
@@ -115,9 +162,13 @@ scoped_ptr<LastDownloadFinder> LastDownloadFinder::Create(
 LastDownloadFinder::LastDownloadFinder() : weak_ptr_factory_(this) {
 }
 
-LastDownloadFinder::LastDownloadFinder(const std::vector<Profile*>& profiles,
-                                       const LastDownloadCallback& callback)
-    : callback_(callback), weak_ptr_factory_(this) {
+LastDownloadFinder::LastDownloadFinder(
+    const DownloadDetailsGetter& download_details_getter,
+    const std::vector<Profile*>& profiles,
+    const LastDownloadCallback& callback)
+    : download_details_getter_(download_details_getter),
+      callback_(callback),
+      weak_ptr_factory_(this) {
   // Observe profile lifecycle events so that the finder can begin or abandon
   // the search in profiles while it is running.
   notification_registrar_.Add(this,
@@ -148,31 +199,61 @@ void LastDownloadFinder::SearchInProfile(Profile* profile) {
   // Exit early if already processing this profile. This could happen if, for
   // example, NOTIFICATION_PROFILE_ADDED arrives after construction while
   // waiting for NOTIFICATION_HISTORY_LOADED.
-  if (std::find(profiles_.begin(), profiles_.end(), profile) !=
-      profiles_.end()) {
+  if (profile_states_.count(profile))
     return;
+
+  // Initiate a metadata search.
+  profile_states_[profile] = WAITING_FOR_METADATA;
+  download_details_getter_.Run(profile,
+                               base::Bind(&LastDownloadFinder::OnMetadataQuery,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          profile));
+}
+
+void LastDownloadFinder::OnMetadataQuery(
+    Profile* profile,
+    scoped_ptr<ClientIncidentReport_DownloadDetails> details) {
+  auto iter = profile_states_.find(profile);
+  // Early-exit if the search for this profile was abandoned.
+  if (iter == profile_states_.end())
+    return;
+
+  if (details) {
+    if (IsMostInteresting(*details, details_.get(), most_recent_row_)) {
+      details_ = details.Pass();
+      most_recent_row_.end_time = base::Time();
+    }
+
+    RemoveProfileAndReportIfDone(iter);
+  } else {
+    // Search history since no metadata was found.
+    iter->second = WAITING_FOR_HISTORY;
+    HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+    // No history service is returned for profiles that do not save history.
+    if (!history_service) {
+      RemoveProfileAndReportIfDone(iter);
+      return;
+    }
+    if (history_service->BackendLoaded()) {
+      history_service->QueryDownloads(
+          base::Bind(&LastDownloadFinder::OnDownloadQuery,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     profile));
+    }  // else wait until history is loaded.
   }
-
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
-  // No history service is returned for profiles that do not save history.
-  if (!history_service)
-    return;
-
-  profiles_.push_back(profile);
-  if (history_service->BackendLoaded()) {
-    history_service->QueryDownloads(
-        base::Bind(&LastDownloadFinder::OnDownloadQuery,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   profile));
-  }  // else wait until history is loaded.
 }
 
 void LastDownloadFinder::OnProfileHistoryLoaded(
     Profile* profile,
     HistoryService* history_service) {
-  if (std::find(profiles_.begin(), profiles_.end(), profile) !=
-      profiles_.end()) {
+  auto iter = profile_states_.find(profile);
+  if (iter == profile_states_.end())
+    return;
+
+  // Start the query in the history service if the finder was waiting for the
+  // service to load.
+  if (iter->second == WAITING_FOR_HISTORY) {
     history_service->QueryDownloads(
         base::Bind(&LastDownloadFinder::OnDownloadQuery,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -182,56 +263,60 @@ void LastDownloadFinder::OnProfileHistoryLoaded(
 
 void LastDownloadFinder::AbandonSearchInProfile(Profile* profile) {
   // |profile| may not be present in the set of profiles.
-  std::vector<Profile*>::iterator it =
-      std::find(profiles_.begin(), profiles_.end(), profile);
-  if (it != profiles_.end())
-    RemoveProfileAndReportIfDone(it);
+  auto iter = profile_states_.find(profile);
+  if (iter != profile_states_.end())
+    RemoveProfileAndReportIfDone(iter);
 }
 
 void LastDownloadFinder::OnDownloadQuery(
     Profile* profile,
     scoped_ptr<std::vector<history::DownloadRow> > downloads) {
   // Early-exit if the history search for this profile was abandoned.
-  std::vector<Profile*>::iterator it =
-      std::find(profiles_.begin(), profiles_.end(), profile);
-  if (it == profiles_.end())
+  auto iter = profile_states_.find(profile);
+  if (iter == profile_states_.end())
     return;
 
   // Find the most recent from this profile and use it if it's better than
   // anything else found so far.
   const history::DownloadRow* profile_best = FindMostInteresting(*downloads);
-  if (profile_best && IsMoreInterestingThan(*profile_best, most_recent_row_))
+  if (profile_best &&
+      IsMostInteresting(*profile_best, details_.get(), most_recent_row_)) {
+    details_.reset();
     most_recent_row_ = *profile_best;
+  }
 
-  RemoveProfileAndReportIfDone(it);
+  RemoveProfileAndReportIfDone(iter);
 }
 
 void LastDownloadFinder::RemoveProfileAndReportIfDone(
-    std::vector<Profile*>::iterator it) {
-  DCHECK(it != profiles_.end());
-
-  *it = profiles_.back();
-  profiles_.resize(profiles_.size() - 1);
+    std::map<Profile*, ProfileWaitState>::iterator iter) {
+  DCHECK(iter != profile_states_.end());
+  profile_states_.erase(iter);
 
   // Finish processing if all results are in.
-  if (profiles_.empty())
+  if (profile_states_.empty())
     ReportResults();
-  // Do not touch this instance after reporting results.
+  // Do not touch this LastDownloadFinder after reporting results.
 }
 
 void LastDownloadFinder::ReportResults() {
-  DCHECK(profiles_.empty());
-  if (most_recent_row_.end_time.is_null()) {
-    callback_.Run(scoped_ptr<ClientIncidentReport_DownloadDetails>());
-    // Do not touch this instance after running the callback, since it may have
-    // been deleted.
-  } else {
+  DCHECK(profile_states_.empty());
+  if (details_) {
+    callback_.Run(make_scoped_ptr(new ClientIncidentReport_DownloadDetails(
+                                      *details_)).Pass());
+    // Do not touch this LastDownloadFinder after running the callback, since it
+    // may have been deleted.
+  } else if (!most_recent_row_.end_time.is_null()) {
     scoped_ptr<ClientIncidentReport_DownloadDetails> details(
         new ClientIncidentReport_DownloadDetails());
-    PopulateDetails(most_recent_row_, details.get());
+    PopulateDetailsFromRow(most_recent_row_, details.get());
     callback_.Run(details.Pass());
-    // Do not touch this instance after running the callback, since it may have
-    // been deleted.
+    // Do not touch this LastDownloadFinder after running the callback, since it
+    // may have been deleted.
+  } else {
+    callback_.Run(scoped_ptr<ClientIncidentReport_DownloadDetails>());
+    // Do not touch this LastDownloadFinder after running the callback, since it
+    // may have been deleted.
   }
 }
 

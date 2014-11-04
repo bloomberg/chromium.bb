@@ -39,6 +39,10 @@ namespace base {
 class Thread;
 }
 
+namespace content {
+class DownloadManager;
+}
+
 namespace net {
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -130,6 +134,9 @@ class SafeBrowsingService
   // process.
   void RegisterDelayedAnalysisCallback(
       const safe_browsing::DelayedAnalysisCallback& callback);
+
+  // Adds |download_manager| to the set monitored by safe browsing.
+  void AddDownloadManager(content::DownloadManager* download_manager);
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.

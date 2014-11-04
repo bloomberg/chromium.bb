@@ -451,3 +451,9 @@ message ClientIncidentResponse {
 
   repeated EnvironmentRequest environment_requests = 3;
 }
+
+message DownloadMetadata {
+  optional uint32 download_id = 1;
+
+  optional ClientIncidentReport.DownloadDetails download = 2;
+}

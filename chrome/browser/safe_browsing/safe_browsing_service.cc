@@ -280,8 +280,8 @@ void SafeBrowsingService::ShutDown() {
   // dtor executes now since it may call the dtor of URLFetcher which relies
   // on it.
   csd_service_.reset();
-  download_service_.reset();
   incident_service_.reset();
+  download_service_.reset();
 
   url_request_context_getter_ = NULL;
   BrowserThread::PostNonNestableTask(
@@ -344,6 +344,14 @@ void SafeBrowsingService::RegisterDelayedAnalysisCallback(
 #if defined(FULL_SAFE_BROWSING)
   if (incident_service_)
     incident_service_->RegisterDelayedAnalysisCallback(callback);
+#endif
+}
+
+void SafeBrowsingService::AddDownloadManager(
+    content::DownloadManager* download_manager) {
+#if defined(FULL_SAFE_BROWSING)
+  if (incident_service_)
+    incident_service_->AddDownloadManager(download_manager);
 #endif
 }
 

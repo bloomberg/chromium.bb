@@ -249,8 +249,9 @@ IncidentReportingService::UploadContext::~UploadContext() {
 IncidentReportingService::IncidentReportingService(
     SafeBrowsingService* safe_browsing_service,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter)
-    : database_manager_(safe_browsing_service ?
-                        safe_browsing_service->database_manager() : NULL),
+    : database_manager_(safe_browsing_service
+                            ? safe_browsing_service->database_manager()
+                            : NULL),
       url_request_context_getter_(request_context_getter),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
@@ -268,6 +269,7 @@ IncidentReportingService::IncidentReportingService(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
+      download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
@@ -276,6 +278,16 @@ IncidentReportingService::IncidentReportingService(
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
+  DownloadProtectionService* download_protection_service =
+      (safe_browsing_service ?
+       safe_browsing_service->download_protection_service() :
+       NULL);
+  if (download_protection_service) {
+    client_download_request_subscription_ =
+        download_protection_service->RegisterClientDownloadRequestCallback(
+            base::Bind(&IncidentReportingService::OnClientDownloadRequest,
+                       base::Unretained(this)));
+  }
 }
 
 IncidentReportingService::~IncidentReportingService() {
@@ -333,13 +345,19 @@ void IncidentReportingService::RegisterDelayedAnalysisCallback(
     delayed_analysis_callbacks_.Start();
 }
 
+void IncidentReportingService::AddDownloadManager(
+    content::DownloadManager* download_manager) {
+  download_metadata_manager_.AddDownloadManager(download_manager);
+}
+
 IncidentReportingService::IncidentReportingService(
     SafeBrowsingService* safe_browsing_service,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     base::TimeDelta delayed_task_interval,
     const scoped_refptr<base::TaskRunner>& delayed_task_runner)
-    : database_manager_(safe_browsing_service ?
-                        safe_browsing_service->database_manager() : NULL),
+    : database_manager_(safe_browsing_service
+                            ? safe_browsing_service->database_manager()
+                            : NULL),
       url_request_context_getter_(request_context_getter),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
@@ -353,6 +371,7 @@ IncidentReportingService::IncidentReportingService(
                        this,
                        &IncidentReportingService::OnCollationTimeout),
       delayed_analysis_callbacks_(delayed_task_interval, delayed_task_runner),
+      download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(this,
@@ -427,7 +446,10 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
 
 scoped_ptr<LastDownloadFinder> IncidentReportingService::CreateDownloadFinder(
     const LastDownloadFinder::LastDownloadCallback& callback) {
-  return LastDownloadFinder::Create(callback).Pass();
+  return LastDownloadFinder::Create(
+             base::Bind(&DownloadMetadataManager::GetDownloadDetails,
+                        base::Unretained(&download_metadata_manager_)),
+             callback).Pass();
 }
 
 scoped_ptr<IncidentReportUploader> IncidentReportingService::StartReportUpload(
@@ -943,6 +965,13 @@ void IncidentReportingService::OnReportUploadResult(
   if (result == IncidentReportUploader::UPLOAD_SUCCESS)
     HandleResponse(*upload);
   // else retry?
+}
+
+void IncidentReportingService::OnClientDownloadRequest(
+    content::DownloadItem* download,
+    const ClientDownloadRequest* request) {
+  if (!download->GetBrowserContext()->IsOffTheRecord())
+    download_metadata_manager_.SetRequest(download, request);
 }
 
 void IncidentReportingService::Observe(

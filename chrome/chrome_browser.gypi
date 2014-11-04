@@ -2620,6 +2620,8 @@
       'browser/safe_browsing/incident_reporting/delayed_analysis_callback.h',
       'browser/safe_browsing/incident_reporting/delayed_callback_runner.cc',
       'browser/safe_browsing/incident_reporting/delayed_callback_runner.h',
+      'browser/safe_browsing/incident_reporting/download_metadata_manager.cc',
+      'browser/safe_browsing/incident_reporting/download_metadata_manager.h',
       'browser/safe_browsing/incident_reporting/environment_data_collection.cc',
       'browser/safe_browsing/incident_reporting/environment_data_collection.h',
       'browser/safe_browsing/incident_reporting/environment_data_collection_win.cc',

@@ -18,9 +18,11 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/add_incident_callback.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_callback_runner.h"
+#include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
 #include "chrome/browser/safe_browsing/incident_reporting/last_download_finder.h"
 #include "content/public/browser/notification_observer.h"
@@ -36,6 +38,7 @@ class TaskRunner;
 }
 
 namespace content {
+class DownloadManager;
 class NotificationDetails;
 class NotificationSource;
 }
@@ -46,6 +49,7 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
+class ClientDownloadRequest;
 class ClientIncidentReport;
 class ClientIncidentReport_DownloadDetails;
 class ClientIncidentReport_EnvironmentData;
@@ -89,6 +93,10 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Registers |callback| to be run after some delay following process launch.
   void RegisterDelayedAnalysisCallback(const DelayedAnalysisCallback& callback);
+
+  // Adds |download_manager| to the set monitored for client download request
+  // storage.
+  void AddDownloadManager(content::DownloadManager* download_manager);
 
  protected:
   // A pointer to a function that populates a protobuf with environment data.
@@ -232,6 +240,10 @@ class IncidentReportingService : public content::NotificationObserver {
                             IncidentReportUploader::Result result,
                             scoped_ptr<ClientIncidentResponse> response);
 
+  // DownloadProtectionService::ClientDownloadRequestCallback implementation.
+  void OnClientDownloadRequest(content::DownloadItem* download,
+                               const ClientDownloadRequest* request);
+
   // content::NotificationObserver methods.
   void Observe(int type,
                const content::NotificationSource& source,
@@ -259,6 +271,11 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Registrar for observing profile lifecycle notifications.
   content::NotificationRegistrar notification_registrar_;
+
+  // A subscription for ClientDownloadRequests, used to persist them for later
+  // use.
+  DownloadProtectionService::ClientDownloadRequestSubscription
+      client_download_request_subscription_;
 
   // True when the asynchronous environment collection task has been fired off
   // but has not yet completed.
@@ -295,6 +312,8 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // Callbacks registered for performing delayed analysis.
   DelayedCallbackRunner delayed_analysis_callbacks_;
+
+  DownloadMetadataManager download_metadata_manager_;
 
   // The collection of uploads in progress.
   ScopedVector<UploadContext> uploads_;

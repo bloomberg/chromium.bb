@@ -593,6 +593,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
       VLOG(2) << url << " is on the download whitelist.";
       RecordCountOfSignedOrWhitelistedDownload();
+      // TODO(grt): Continue processing without uploading so that
+      // ClientDownloadRequest callbacks can be run even for this type of safe
+      // download.
       PostFinishTask(SAFE, REASON_WHITELISTED_URL);
       return;
     }
@@ -602,6 +605,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
         if (CertificateChainIsWhitelisted(
                 signature_info_.certificate_chain(i))) {
+          // TODO(grt): Continue processing without uploading so that
+          // ClientDownloadRequest callbacks can be run even for this type of
+          // safe download.
           PostFinishTask(SAFE, REASON_TRUSTED_EXECUTABLE);
           return;
         }
@@ -732,6 +738,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
 
+    service_->client_download_request_callbacks_.Notify(item_, &request);
+
     VLOG(2) << "Sending a request for URL: "
             << item_->GetUrlChain().back();
     fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
@@ -781,6 +789,15 @@ class DownloadProtectionService::CheckClientDownloadRequest
         UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestTimeoutDuration",
                             base::TimeTicks::Now() - timeout_start_time_);
       }
+    }
+    if (result == SAFE && (reason == REASON_WHITELISTED_URL ||
+                           reason == REASON_TRUSTED_EXECUTABLE)) {
+      // Due to the short-circuit logic in CheckWhitelists (see TODOs there), a
+      // ClientDownloadRequest was not generated for this download and callbacks
+      // were not run. Run them now with null to indicate that a download has
+      // taken place.
+      // TODO(grt): persist metadata for these downloads as well.
+      service_->client_download_request_callbacks_.Notify(item_, nullptr);
     }
     if (service_) {
       VLOG(2) << "SafeBrowsing download verdict for: "
@@ -959,6 +976,13 @@ bool DownloadProtectionService::IsSupportedDownload(
 #else
   return false;
 #endif
+}
+
+DownloadProtectionService::ClientDownloadRequestSubscription
+DownloadProtectionService::RegisterClientDownloadRequestCallback(
+    const ClientDownloadRequestCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return client_download_request_callbacks_.Add(callback);
 }
 
 void DownloadProtectionService::CancelPendingRequests() {
