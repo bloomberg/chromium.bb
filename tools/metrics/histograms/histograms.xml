@@ -10193,6 +10193,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="HttpCache.Vary" enum="VaryType">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The type of Vary header for a given GET response.</summary>
 </histogram>

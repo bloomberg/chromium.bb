@@ -215,23 +215,6 @@ void RecordOfflineStatus(int load_flags, RequestOfflineStatus status) {
   }
 }
 
-// TODO(rvargas): Remove once we get the data.
-void RecordVaryHeaderHistogram(const net::HttpResponseInfo* response) {
-  enum VaryType {
-    VARY_NOT_PRESENT,
-    VARY_UA,
-    VARY_OTHER,
-    VARY_MAX
-  };
-  VaryType vary = VARY_NOT_PRESENT;
-  if (response->vary_data.is_valid()) {
-    vary = VARY_OTHER;
-    if (response->headers->HasHeaderValue("vary", "user-agent"))
-      vary = VARY_UA;
-  }
-  UMA_HISTOGRAM_ENUMERATION("HttpCache.Vary", vary, VARY_MAX);
-}
-
 void RecordNoStoreHeaderHistogram(int load_flags,
                                   const net::HttpResponseInfo* response) {
   if (load_flags & net::LOAD_MAIN_FRAME) {
@@ -1227,7 +1210,6 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     cache_->DoomMainEntryForUrl(request_->url);
   }
 
-  RecordVaryHeaderHistogram(new_response);
   RecordNoStoreHeaderHistogram(request_->load_flags, new_response);
 
   if (new_response_->headers->response_code() == 416 &&
@@ -1361,10 +1343,7 @@ int HttpCache::Transaction::DoCreateEntryComplete(int result) {
     return OK;
   }
 
-  if (result == OK) {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.OpenToCreateRace", false);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("HttpCache.OpenToCreateRace", true);
+  if (result != OK) {
     // We have a race here: Maybe we failed to open the entry and decided to
     // create one, but by the time we called create, another transaction already
     // created the entry. If we want to eliminate this issue, we need an atomic
