@@ -30,6 +30,8 @@ def container_context(union_type, interfaces_info):
 
     # These variables refer to member contexts if the given union type has
     # corresponding types. They are used for V8 -> impl conversion.
+    array_buffer_type = None
+    array_buffer_view_type = None
     boolean_type = None
     dictionary_type = None
     interface_types = []
@@ -38,7 +40,15 @@ def container_context(union_type, interfaces_info):
     for member in union_type.member_types:
         context = member_context(member, interfaces_info)
         members.append(context)
-        if member.is_interface_type:
+        if member.base_type == 'ArrayBuffer':
+            if array_buffer_type:
+                raise Exception('%s is ambiguous.' % union_type.name)
+            array_buffer_type = context
+        elif member.base_type == 'ArrayBufferView':
+            if array_buffer_view_type:
+                raise Exception('%s is ambiguous.' % union_type.name)
+            array_buffer_view_type = context
+        elif member.is_interface_type:
             interface_types.append(context)
         elif member.is_dictionary:
             if dictionary_type:
@@ -60,6 +70,8 @@ def container_context(union_type, interfaces_info):
             raise Exception('%s is not supported as an union member.' % member.name)
 
     return {
+        'array_buffer_type': array_buffer_type,
+        'array_buffer_view_type': array_buffer_view_type,
         'boolean_type': boolean_type,
         'cpp_class': union_type.name,
         'dictionary_type': dictionary_type,
@@ -76,7 +88,7 @@ def member_context(member, interfaces_info):
     interface_info = interfaces_info.get(member.name, None)
     if interface_info:
         cpp_includes.update(interface_info.get('dependencies_include_paths', []))
-        header_forward_decls.add(member.name)
+        header_forward_decls.add(member.implemented_as)
     return {
         'cpp_name': v8_utilities.uncapitalize(member.name),
         'cpp_type': member.cpp_type_args(used_in_cpp_sequence=True),

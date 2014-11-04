@@ -7,6 +7,13 @@
 #include "config.h"
 #include "{{header_filename}}"
 
+{% macro assign_and_return_if_hasinstance(member) %}
+if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
+    {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+    impl.set{{member.type_name}}(cppValue);
+    return;
+}
+{% endmacro %}
 {% for filename in cpp_includes %}
 #include "{{filename}}"
 {% endfor %}
@@ -56,13 +63,20 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
        FIXME: Implement all necessary steps #}
     {# 3. Platform objects (interfaces) #}
     {% for interface in container.interface_types %}
-    if (V8{{interface.type_name}}::hasInstance(v8Value, isolate)) {
-        {{interface.cpp_local_type}} cppValue = V8{{interface.type_name}}::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
-        impl.set{{interface.type_name}}(cppValue);
-        return;
-    }
+    {{assign_and_return_if_hasinstance(interface) | indent}}
 
     {% endfor %}
+    {# 8. ArrayBuffer #}
+    {% if container.array_buffer_type %}
+    {{assign_and_return_if_hasinstance(container.array_buffer_type) | indent}}
+
+    {% endif %}
+    {# 9., 10. ArrayBufferView #}
+    {# FIXME: Individual typed arrays (e.g. Uint8Array) aren't supported yet. #}
+    {% if container.array_buffer_view_type %}
+    {{assign_and_return_if_hasinstance(container.array_buffer_view_type) | indent}}
+
+    {% endif %}
     {% if container.dictionary_type %}
     {# 12. Dictionaries #}
     {# FIXME: This should also check "object but not Date or RegExp". Add checks

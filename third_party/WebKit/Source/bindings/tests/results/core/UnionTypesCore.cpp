@@ -7,6 +7,8 @@
 #include "config.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 
+#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "bindings/core/v8/V8TestDictionary.h"
@@ -179,6 +181,94 @@ v8::Handle<v8::Value> toV8(NodeOrNodeList& impl, v8::Handle<v8::Object> creation
 
     if (impl.isNodeList())
         return toV8(impl.getAsNodeList(), creationContext, isolate);
+
+    ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Value>();
+}
+
+StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView()
+    : m_type(SpecificTypeNone)
+{
+}
+
+String StringOrArrayBufferOrArrayBufferView::getAsString()
+{
+    ASSERT(isString());
+    return m_string;
+}
+
+void StringOrArrayBufferOrArrayBufferView::setString(String value)
+{
+    ASSERT(isNull());
+    m_string = value;
+    m_type = SpecificTypeString;
+}
+
+PassRefPtr<TestArrayBuffer> StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer()
+{
+    ASSERT(isArrayBuffer());
+    return m_arrayBuffer;
+}
+
+void StringOrArrayBufferOrArrayBufferView::setArrayBuffer(PassRefPtr<TestArrayBuffer> value)
+{
+    ASSERT(isNull());
+    m_arrayBuffer = value;
+    m_type = SpecificTypeArrayBuffer;
+}
+
+PassRefPtr<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView()
+{
+    ASSERT(isArrayBufferView());
+    return m_arrayBufferView;
+}
+
+void StringOrArrayBufferOrArrayBufferView::setArrayBufferView(PassRefPtr<TestArrayBufferView> value)
+{
+    ASSERT(isNull());
+    m_arrayBufferView = value;
+    m_type = SpecificTypeArrayBufferView;
+}
+
+void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
+        RefPtr<TestArrayBuffer> cppValue = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setArrayBuffer(cppValue);
+        return;
+    }
+
+    if (V8ArrayBufferView::hasInstance(v8Value, isolate)) {
+        RefPtr<TestArrayBufferView> cppValue = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setArrayBufferView(cppValue);
+        return;
+    }
+
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        impl.setString(cppValue);
+        return;
+    }
+
+    exceptionState.throwTypeError("Not a valid union member.");
+}
+
+v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (impl.isNull())
+        return v8::Null(isolate);
+
+    if (impl.isString())
+        return v8String(isolate, impl.getAsString());
+
+    if (impl.isArrayBuffer())
+        return toV8(impl.getAsArrayBuffer(), creationContext, isolate);
+
+    if (impl.isArrayBufferView())
+        return toV8(impl.getAsArrayBufferView(), creationContext, isolate);
 
     ASSERT_NOT_REACHED();
     return v8::Handle<v8::Value>();

@@ -355,6 +355,7 @@ interface TestObject {
     (boolean or DOMString or unrestricted double) booleanOrDOMStringOrUnrestrictedDoubleMethod();
     (TestInterface or long) testInterfaceOrLongMethod();
     void voidMethodDOMStringOrDouble((DOMString or double) arg);
+    void voidMethodDOMStringOrArrayBufferOrArrayBufferView((DOMString or ArrayBuffer or ArrayBufferView) arg);
     // Currently only used on interface type arguments
     void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types

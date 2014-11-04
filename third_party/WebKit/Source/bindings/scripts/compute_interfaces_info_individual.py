@@ -143,6 +143,10 @@ def collect_union_types_from_definitions(definitions):
             this_union_types.update(union_types_from(operation.arguments))
             if operation.idl_type.is_union_type:
                 this_union_types.add(operation.idl_type)
+        for constructor in interface.constructors:
+            this_union_types.update(union_types_from(constructor.arguments))
+        for constructor in interface.custom_constructors:
+            this_union_types.update(union_types_from(constructor.arguments))
     for callback_function in definitions.callback_functions.itervalues():
         this_union_types.update(union_types_from(callback_function.arguments))
         if callback_function.idl_type.is_union_type:

@@ -15,10 +15,12 @@ namespace blink {
 
 class Node;
 class NodeList;
+class TestArrayBuffer;
+class TestArrayBufferView;
 class TestDictionary;
-class TestInterface;
 class TestInterfaceEmpty;
 class TestInterfaceGarbageCollected;
+class TestInterfaceImplementation;
 class TestInterfaceWillBeGarbageCollected;
 
 class BooleanOrStringOrUnrestrictedDouble final {
@@ -103,6 +105,51 @@ v8::Handle<v8::Value> toV8(NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+class StringOrArrayBufferOrArrayBufferView final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    StringOrArrayBufferOrArrayBufferView();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isString() const { return m_type == SpecificTypeString; }
+    String getAsString();
+    void setString(String);
+
+    bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
+    PassRefPtr<TestArrayBuffer> getAsArrayBuffer();
+    void setArrayBuffer(PassRefPtr<TestArrayBuffer>);
+
+    bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
+    PassRefPtr<TestArrayBufferView> getAsArrayBufferView();
+    void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeString,
+        SpecificTypeArrayBuffer,
+        SpecificTypeArrayBufferView,
+    };
+    SpecificTypes m_type;
+
+    String m_string;
+    RefPtr<TestArrayBuffer> m_arrayBuffer;
+    RefPtr<TestArrayBufferView> m_arrayBufferView;
+};
+
+class V8StringOrArrayBufferOrArrayBufferView final {
+public:
+    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, StringOrArrayBufferOrArrayBufferView&, ExceptionState&);
+};
+
+v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBufferOrArrayBufferView& impl)
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
