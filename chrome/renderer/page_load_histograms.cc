@@ -110,25 +110,38 @@ void PltHistogramWithGwsPreview(const char* name,
 
 // In addition to PLT_HISTOGRAM, add the *_DataReductionProxy variant
 // conditionally. This macro runs only in one thread.
-#define PLT_HISTOGRAM_DRP(name, sample, data_reduction_proxy_was_used) \
+#define PLT_HISTOGRAM_DRP(                                              \
+    name, sample, data_reduction_proxy_was_used, scheme_type)           \
   do {                                                                  \
     static base::HistogramBase* counter(NULL);                          \
     static base::HistogramBase* drp_counter(NULL);                      \
+    static base::HistogramBase* https_drp_counter(NULL);                \
     if (!counter) {                                                     \
       DCHECK(drp_counter == NULL);                                      \
+      DCHECK(https_drp_counter == NULL);                                \
       counter = base::Histogram::FactoryTimeGet(                        \
           name, kPLTMin(), kPLTMax(), kPLTCount,                        \
           base::Histogram::kUmaTargetedHistogramFlag);                  \
     }                                                                   \
     counter->AddTime(sample);                                           \
     if (!data_reduction_proxy_was_used) break;                          \
-    if (!drp_counter) {                                                 \
-      drp_counter = base::Histogram::FactoryTimeGet(                    \
-          std::string(name) + "_DataReductionProxy",                    \
-          kPLTMin(), kPLTMax(), kPLTCount,                              \
-          base::Histogram::kUmaTargetedHistogramFlag);                  \
+    if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {                \
+      if (!https_drp_counter) {                                         \
+        https_drp_counter = base::Histogram::FactoryTimeGet(            \
+            std::string(name) + "_DataReductionProxy",                  \
+            kPLTMin(), kPLTMax(), kPLTCount,                            \
+            base::Histogram::kUmaTargetedHistogramFlag);                \
+      }                                                                 \
+      https_drp_counter->AddTime(sample);                               \
+    } else {                                                            \
+      if (!drp_counter) {                                               \
+        drp_counter = base::Histogram::FactoryTimeGet(                  \
+            std::string(name) + "_HTTPS_DataReductionProxy",            \
+            kPLTMin(), kPLTMax(), kPLTCount,                            \
+            base::Histogram::kUmaTargetedHistogramFlag);                \
+      }                                                                 \
+      drp_counter->AddTime(sample);                                     \
     }                                                                   \
-    drp_counter->AddTime(sample);                                       \
   } while (0)
 
 // Returns the scheme type of the given URL if its type is one for which we
@@ -154,31 +167,6 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
       frame->dataSource()->response().httpHeaderField(kViaHeaderName).utf8(),
       ',', &values);
   return std::find(values.begin(), values.end(), via_value) != values.end();
-}
-
-// Returns true if the data reduction proxy was used. Note, this function will
-// produce a false positive if a page is fetched using SPDY and using a proxy,
-// and the data reduction proxy's via value is added to the Via header.
-// TODO(bengr): Plumb the hostname of the proxy and check if it matches
-// |SPDY_PROXY_AUTH_ORIGIN|.
-bool DataReductionProxyWasUsed(WebFrame* frame) {
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame->dataSource());
-  if (!document_state->was_fetched_via_proxy())
-    return false;
-
-  std::string via_header =
-      base::UTF16ToUTF8(frame->dataSource()->response().httpHeaderField("Via"));
-
-  if (via_header.empty())
-    return false;
-  std::string headers = "HTTP/1.1 200 OK\nVia: " + via_header + "\n\n";
-  // Produce raw headers, expected by the |HttpResponseHeaders| constructor.
-  std::replace(headers.begin(), headers.end(), '\n', '\0');
-  scoped_refptr<net::HttpResponseHeaders> response_headers(
-      new net::HttpResponseHeaders(headers));
-  return data_reduction_proxy::HasDataReductionProxyViaHeader(
-      response_headers.get(), NULL);
 }
 
 // Returns true if the provided URL is a referrer string that came from
@@ -227,7 +215,8 @@ void DumpHistograms(const WebPerformance& performance,
                     bool data_reduction_proxy_was_used,
                     bool came_from_websearch,
                     int websearch_chrome_joint_experiment_id,
-                    bool is_preview) {
+                    bool is_preview,
+                    URLPattern::SchemeMasks scheme_type) {
   // This function records new histograms based on the Navigation Timing
   // records. As such, the histograms should not depend on the deprecated timing
   // information collected in DocumentState. However, here for some reason we
@@ -279,61 +268,80 @@ void DumpHistograms(const WebPerformance& performance,
   document_state->set_web_timing_histograms_recorded(true);
 
   if (!redirect_start.is_null() && !redirect_end.is_null()) {
-    PLT_HISTOGRAM_DRP("PLT.NT_Redirect", redirect_end - redirect_start,
-                      data_reduction_proxy_was_used);
+    PLT_HISTOGRAM_DRP("PLT.NT_Redirect",
+                      redirect_end - redirect_start,
+                      data_reduction_proxy_was_used,
+                      scheme_type);
     PLT_HISTOGRAM_DRP(
         "PLT.NT_DelayBeforeFetchRedirect",
         (fetch_start - navigation_start) - (redirect_end - redirect_start),
-        data_reduction_proxy_was_used);
+        data_reduction_proxy_was_used,
+        scheme_type);
   } else {
     PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeFetch",
                       fetch_start - navigation_start,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
   PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomainLookup",
                     domain_lookup_start - fetch_start,
-                    data_reduction_proxy_was_used);
+                    data_reduction_proxy_was_used,
+                    scheme_type);
   PLT_HISTOGRAM_DRP("PLT.NT_DomainLookup",
                     domain_lookup_end - domain_lookup_start,
-                    data_reduction_proxy_was_used);
+                    data_reduction_proxy_was_used,
+                    scheme_type);
   PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeConnect",
                     connect_start - domain_lookup_end,
-                    data_reduction_proxy_was_used);
-  PLT_HISTOGRAM_DRP("PLT.NT_Connect", connect_end - connect_start,
-                    data_reduction_proxy_was_used);
+                    data_reduction_proxy_was_used,
+                    scheme_type);
+  PLT_HISTOGRAM_DRP("PLT.NT_Connect",
+                    connect_end - connect_start,
+                    data_reduction_proxy_was_used,
+                    scheme_type);
   PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeRequest",
                     request_start - connect_end,
-                    data_reduction_proxy_was_used);
-  PLT_HISTOGRAM_DRP("PLT.NT_Request", response_start - request_start,
-                    data_reduction_proxy_was_used);
-  PLT_HISTOGRAM_DRP("PLT.NT_Response", response_end - response_start,
-                    data_reduction_proxy_was_used);
+                    data_reduction_proxy_was_used,
+                    scheme_type);
+  PLT_HISTOGRAM_DRP("PLT.NT_Request",
+                    response_start - request_start,
+                    data_reduction_proxy_was_used,
+                    scheme_type);
+  PLT_HISTOGRAM_DRP("PLT.NT_Response",
+                    response_end - response_start,
+                    data_reduction_proxy_was_used,
+                    scheme_type);
 
   if (!dom_loading.is_null()) {
     PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomLoading",
                       dom_loading - response_start,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
   if (!dom_interactive.is_null() && !dom_loading.is_null()) {
     PLT_HISTOGRAM_DRP("PLT.NT_DomLoading",
                       dom_interactive - dom_loading,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
   if (!dom_content_loaded_start.is_null() && !dom_interactive.is_null()) {
     PLT_HISTOGRAM_DRP("PLT.NT_DomInteractive",
                       dom_content_loaded_start - dom_interactive,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
   if (!dom_content_loaded_start.is_null() &&
       !dom_content_loaded_end.is_null() ) {
     PLT_HISTOGRAM_DRP("PLT.NT_DomContentLoaded",
                       dom_content_loaded_end - dom_content_loaded_start,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
   if (!dom_content_loaded_end.is_null() && !load_event_start.is_null()) {
     PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeLoadEvent",
                       load_event_start - dom_content_loaded_end,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
   }
 
   // TODO(simonjam): There is no way to distinguish between abandonment and
@@ -356,12 +364,21 @@ void DumpHistograms(const WebPerformance& performance,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
     if (data_reduction_proxy_was_used) {
-      PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_DataReductionProxy",
-                    load_event_start - begin);
-      PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_DataReductionProxy",
-                    load_event_start - response_start);
-      PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_DataReductionProxy",
-                    load_event_start - navigation_start);
+      if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
+        PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_DataReductionProxy",
+                      load_event_start - begin);
+        PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_DataReductionProxy",
+                      load_event_start - response_start);
+        PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_DataReductionProxy",
+                      load_event_start - navigation_start);
+      } else {
+        PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_HTTPS_DataReductionProxy",
+                      load_event_start - begin);
+        PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_HTTPS_DataReductionProxy",
+                      load_event_start - response_start);
+        PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_HTTPS_DataReductionProxy",
+                      load_event_start - navigation_start);
+      }
     }
   }
   if (!load_event_end.is_null()) {
@@ -386,14 +403,25 @@ void DumpHistograms(const WebPerformance& performance,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
     if (data_reduction_proxy_was_used) {
-      PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy",
-                    load_event_end - begin);
-      PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy",
-                    load_event_end - response_start);
-      PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy",
-                    load_event_end - navigation_start);
-      PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
-                    load_event_end - request_start);
+      if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
+        PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy",
+                      load_event_end - begin);
+        PLT_HISTOGRAM("PLT.PT_CommitToFinish_DataReductionProxy",
+                      load_event_end - response_start);
+        PLT_HISTOGRAM("PLT.PT_RequestToFinish_DataReductionProxy",
+                      load_event_end - navigation_start);
+        PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
+                      load_event_end - request_start);
+      } else {
+        PLT_HISTOGRAM("PLT.PT_BeginToFinish_HTTPS_DataReductionProxy",
+                      load_event_end - begin);
+        PLT_HISTOGRAM("PLT.PT_CommitToFinish_HTTPS_DataReductionProxy",
+                      load_event_end - response_start);
+        PLT_HISTOGRAM("PLT.PT_RequestToFinish_HTTPS_DataReductionProxy",
+                      load_event_end - navigation_start);
+        PLT_HISTOGRAM("PLT.PT_StartToFinish_HTTPS_DataReductionProxy",
+                      load_event_end - request_start);
+      }
     }
   }
   if (!load_event_start.is_null() && !load_event_end.is_null()) {
@@ -401,11 +429,18 @@ void DumpHistograms(const WebPerformance& performance,
                   load_event_end - load_event_start);
     PLT_HISTOGRAM_DRP("PLT.NT_LoadEvent",
                       load_event_end - load_event_start,
-                      data_reduction_proxy_was_used);
+                      data_reduction_proxy_was_used,
+                      scheme_type);
 
-    if (data_reduction_proxy_was_used)
-      PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
-                    load_event_end - load_event_start);
+    if (data_reduction_proxy_was_used) {
+      if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
+        PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
+                      load_event_end - load_event_start);
+      } else {
+        PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_HTTPS_DataReductionProxy",
+                      load_event_end - load_event_start);
+      }
+    }
   }
   if (!dom_content_loaded_start.is_null()) {
     PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.PT_RequestToDomContentLoaded",
@@ -413,9 +448,16 @@ void DumpHistograms(const WebPerformance& performance,
                                    came_from_websearch,
                                    websearch_chrome_joint_experiment_id,
                                    is_preview);
-    if (data_reduction_proxy_was_used)
-      PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
-                    dom_content_loaded_start - navigation_start);
+    if (data_reduction_proxy_was_used) {
+      if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
+        PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
+                      dom_content_loaded_start - navigation_start);
+      } else {
+        PLT_HISTOGRAM(
+            "PLT.PT_RequestToDomContentLoaded_HTTPS_DataReductionProxy",
+            dom_content_loaded_start - navigation_start);
+      }
+    }
   }
   PLT_HISTOGRAM_WITH_GWS_VARIANT("PLT.PT_BeginToCommit",
                                  response_start - begin,
@@ -438,14 +480,25 @@ void DumpHistograms(const WebPerformance& performance,
                                  websearch_chrome_joint_experiment_id,
                                  is_preview);
   if (data_reduction_proxy_was_used) {
-    PLT_HISTOGRAM("PLT.PT_BeginToCommit_DataReductionProxy",
-                  response_start - begin);
-    PLT_HISTOGRAM("PLT.PT_RequestToStart_DataReductionProxy",
-                  request_start - navigation_start);
-    PLT_HISTOGRAM("PLT.PT_StartToCommit_DataReductionProxy",
-                  response_start - request_start);
-    PLT_HISTOGRAM("PLT.PT_RequestToCommit_DataReductionProxy",
-                  response_start - navigation_start);
+    if ((scheme_type & URLPattern::SCHEME_HTTPS) == 0) {
+      PLT_HISTOGRAM("PLT.PT_BeginToCommit_DataReductionProxy",
+                    response_start - begin);
+      PLT_HISTOGRAM("PLT.PT_RequestToStart_DataReductionProxy",
+                    request_start - navigation_start);
+      PLT_HISTOGRAM("PLT.PT_StartToCommit_DataReductionProxy",
+                    response_start - request_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToCommit_DataReductionProxy",
+                    response_start - navigation_start);
+    } else {
+      PLT_HISTOGRAM("PLT.PT_BeginToCommit_HTTPS_DataReductionProxy",
+                    response_start - begin);
+      PLT_HISTOGRAM("PLT.PT_RequestToStart_HTTPS_DataReductionProxy",
+                    request_start - navigation_start);
+      PLT_HISTOGRAM("PLT.PT_StartToCommit_HTTPS_DataReductionProxy",
+                    response_start - request_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToCommit_HTTPS_DataReductionProxy",
+                    response_start - navigation_start);
+    }
   }
 }
 
@@ -671,7 +724,11 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
 }  // namespace
 
 PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
+    : content::RenderViewObserver(render_view),
+      data_reduction_proxy_params_(
+          data_reduction_proxy::DataReductionProxyParams::kAllowed |
+          data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed |
+          data_reduction_proxy::DataReductionProxyParams::kAlternativeAllowed) {
 }
 
 void PageLoadHistograms::Dump(WebFrame* frame) {
@@ -693,7 +750,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
 
-  bool data_reduction_proxy_was_used = DataReductionProxyWasUsed(frame);
+  bool data_reduction_proxy_was_used =
+      data_reduction_proxy_params_.IsDataReductionProxy(
+          document_state->proxy_server(), NULL);
   bool came_from_websearch =
       IsFromGoogleSearchResult(frame->document().url(),
                                GURL(frame->document().referrer()));
@@ -711,7 +770,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                  data_reduction_proxy_was_used,
                  came_from_websearch,
                  websearch_chrome_joint_experiment_id,
-                 is_preview);
+                 is_preview,
+                 scheme_type);
 
   // Old metrics based on the timing information stored in DocumentState. These
   // are deprecated and should go away.
