@@ -1428,7 +1428,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
     test_name = "/cross-site"
     if not self._ShouldHandleRequest(test_name):
-      print "CSRH: not handling request for " + test_name
       return False
 
     params = urllib.unquote(self.path[(len(test_name) + 1):])
