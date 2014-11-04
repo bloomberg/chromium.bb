@@ -84,6 +84,11 @@ void WebRuntimeFeatures::enableDecodeToYUV(bool enable)
     RuntimeEnabledFeatures::setDecodeToYUVEnabled(enable);
 }
 
+void WebRuntimeFeatures::forceDisplayList2dCanvas(bool enable)
+{
+    RuntimeEnabledFeatures::setForceDisplayList2dCanvasEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable)
 {
     RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);
