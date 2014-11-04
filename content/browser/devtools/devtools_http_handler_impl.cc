@@ -250,7 +250,6 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& active_port_output_directory) {
-  VLOG(2) << "DevToolsHttpHandler::Start";
   DevToolsHttpHandlerImpl* http_handler =
       new DevToolsHttpHandlerImpl(server_socket_factory.Pass(),
                                   frontend_url,
