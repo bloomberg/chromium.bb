@@ -63,13 +63,9 @@ static String algorithmToString(HashAlgorithm algorithm)
         {  HashAlgorithmSha512, "SHA-512" }
     };
 
-    // See comment in parseIntegrityAttribute about why sizeof() is used
-    // instead of WTF_ARRAY_LENGTH.
-    size_t i = 0;
-    size_t kSupportedAlgorithmsLength = sizeof(kAlgorithmToString) / sizeof(kAlgorithmToString[0]);
-    for (; i < kSupportedAlgorithmsLength; i++) {
-        if (kAlgorithmToString[i].algorithm == algorithm)
-            return kAlgorithmToString[i].name;
+    for (const auto& algorithmToString : kAlgorithmToString) {
+        if (algorithmToString.algorithm == algorithm)
+            return algorithmToString.name;
     }
 
     ASSERT_NOT_REACHED();

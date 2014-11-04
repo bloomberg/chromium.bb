@@ -376,13 +376,11 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
 
     StringUTF8Adaptor normalizedSource(source, StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 
-    // See comment in CSPSourceList::parseHash about why we are using this sizeof
-    // calculation instead of WTF_ARRAY_LENGTH.
-    for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
+    for (const auto& algorithmMap : kAlgorithmMap) {
         DigestValue digest;
-        if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
-            bool digestSuccess = computeDigest(kAlgorithmMap[i].algorithm, normalizedSource.data(), normalizedSource.length(), digest);
-            if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
+        if (algorithmMap.cspHashAlgorithm & hashAlgorithmsUsed) {
+            bool digestSuccess = computeDigest(algorithmMap.algorithm, normalizedSource.data(), normalizedSource.length(), digest);
+            if (digestSuccess && isAllowedByAllWithHash<allowed>(policies, CSPHashValue(algorithmMap.cspHashAlgorithm, digest)))
                 return true;
         }
     }
