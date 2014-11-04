@@ -437,10 +437,20 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,
     key_state_diff[i] = evdev->key_state_bitmask[i] ^ prev_key_state_[i];
 
   // Dispatch events for changed keys.
-  for (unsigned long i = 0; i < KEY_CNT; ++i) {
-    if (EvdevBitIsSet(key_state_diff, i)) {
-      bool value = EvdevBitIsSet(evdev->key_state_bitmask, i);
-      keyboard_->OnKeyChange(i, value);
+  for (unsigned long key = 0; key < KEY_CNT; ++key) {
+    if (EvdevBitIsSet(key_state_diff, key)) {
+      bool value = EvdevBitIsSet(evdev->key_state_bitmask, key);
+
+      // Mouse buttons are handled by DispatchMouseButton.
+      if (key >= BTN_MOUSE && key < BTN_JOYSTICK)
+        continue;
+
+      // Ignore digi buttons (e.g. BTN_TOOL_FINGER).
+      if (key >= BTN_DIGI && key < BTN_WHEEL)
+        continue;
+
+      // Dispatch key press or release to keyboard.
+      keyboard_->OnKeyChange(key, value);
     }
   }
 
