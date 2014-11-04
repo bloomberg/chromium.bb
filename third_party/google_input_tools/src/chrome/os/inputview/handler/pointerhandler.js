@@ -89,6 +89,16 @@ PointerHandler.prototype.previousPointerActionBundle_ = null;
 
 
 /**
+ * Pointer action bundle for mouse down.
+ * This is used in mouse up handler because mouse up event may have different
+ * target than the mouse down event.
+ *
+ * @private {i18n.input.chrome.inputview.handler.PointerActionBundle}
+ */
+PointerHandler.prototype.pointerActionBundleForMouseDown_ = null;
+
+
+/**
  * Creates a new pointer handler.
  *
  * @param {!Node} target .
@@ -122,6 +132,7 @@ PointerHandler.prototype.onPointerDown_ = function(e) {
   pointerActionBundle.handlePointerDown(e);
   if (e.type == goog.events.EventType.MOUSEDOWN) {
     this.mouseDownTick_ = new Date();
+    this.pointerActionBundleForMouseDown_ = pointerActionBundle;
   }
 };
 
@@ -139,6 +150,11 @@ PointerHandler.prototype.onPointerUp_ = function(e) {
     // flash.
     if (this.mouseDownTick_ && new Date() - this.mouseDownTick_ < 10) {
       goog.Timer.callOnce(this.onPointerUp_.bind(this, e), 50);
+      return;
+    }
+    if (this.pointerActionBundleForMouseDown_) {
+      this.pointerActionBundleForMouseDown_.handlePointerUp(e);
+      this.pointerActionBundleForMouseDown_ = null;
       return;
     }
   }

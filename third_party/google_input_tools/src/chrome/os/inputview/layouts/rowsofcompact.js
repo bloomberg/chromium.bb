@@ -14,6 +14,7 @@
 goog.provide('i18n.input.chrome.inputview.layouts.RowsOfCompact');
 goog.provide('i18n.input.chrome.inputview.layouts.RowsOfCompactAzerty');
 goog.provide('i18n.input.chrome.inputview.layouts.RowsOfCompactNordic');
+goog.provide('i18n.input.chrome.inputview.layouts.RowsOfCompactZhuyin');
 
 goog.require('i18n.input.chrome.inputview.layouts.util');
 
@@ -176,4 +177,77 @@ i18n.input.chrome.inputview.layouts.RowsOfCompactNordic.create = function() {
         rightKeyWithPadding, shiftRightKey]
   });
   return [row1, row2, row3];
+};
+
+
+/**
+ * Creates the top rows of compact zhuyin.
+ *
+ * @return {!Array.<!Object>} The rows.
+ */
+i18n.input.chrome.inputview.layouts.RowsOfCompactZhuyin.create = function() {
+   var baseKeySpec = {
+    'widthInWeight': 1.01,
+    'heightInWeight': 3
+  };
+
+  // Row1
+  var keysOfRow1 = i18n.input.chrome.inputview.layouts.util.
+      createKeySequence(baseKeySpec, 10);
+  var row1 = i18n.input.chrome.inputview.layouts.util.createLinearLayout({
+    'id': 'row1',
+    'children': [keysOfRow1]
+  });
+
+  // Row2
+  var keysOfRow2 = i18n.input.chrome.inputview.layouts.util.
+      createKeySequence(baseKeySpec, 10);
+  var row2 = i18n.input.chrome.inputview.layouts.util.createLinearLayout({
+    'id': 'row2',
+    'children': [keysOfRow2]
+  });
+
+  //Row3
+  var keysOfRow3 = i18n.input.chrome.inputview.layouts.util.
+      createKeySequence(baseKeySpec, 10);
+  var row3 = i18n.input.chrome.inputview.layouts.util.createLinearLayout({
+    'id': 'row3',
+    'children': [keysOfRow3]
+  });
+
+  // Row4
+  var keysOfRow4 = i18n.input.chrome.inputview.layouts.util.
+      createKeySequence(baseKeySpec, 10);
+  var row4 = i18n.input.chrome.inputview.layouts.util.createLinearLayout({
+    'id': 'row4',
+    'children': [keysOfRow4]
+  });
+
+  var topFourRows =
+      i18n.input.chrome.inputview.layouts.util.createVerticalLayout({
+    'id': 'topFourRows',
+    'children': [row1, row2, row3, row4]
+  });
+
+  var sideKeySpec = {
+    'widthInWeight': 1.1,
+    'heightInWeight': 4
+  };
+  var backspaceKey =
+      i18n.input.chrome.inputview.layouts.util.createKey(sideKeySpec);
+  var enterKey =
+      i18n.input.chrome.inputview.layouts.util.createKey(sideKeySpec);
+  var shiftKey =
+      i18n.input.chrome.inputview.layouts.util.createKey(sideKeySpec);
+
+  var sideKeys = i18n.input.chrome.inputview.layouts.util.createVerticalLayout({
+    'id': 'sideKeys',
+    'children': [backspaceKey, enterKey, shiftKey]
+  });
+
+  var topRows = i18n.input.chrome.inputview.layouts.util.createLinearLayout({
+    'id': 'topRows',
+    'children': [topFourRows, sideKeys]
+  });
+  return [topRows];
 };

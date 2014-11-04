@@ -23,7 +23,9 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   // Keyboard view.
   var keyboardView = i18n.input.chrome.inputview.layouts.util.createLayoutView({
     'id': 'keyboardView',
-    'children': [rows]
+    'children': [rows],
+    'widthPercent': 50,
+    'heightPercent': 100
   });
 
   var keyboardContainer = i18n.input.chrome.inputview.layouts.util.
@@ -36,6 +38,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
     'layoutID': 'compactkbd-numberpad',
     'widthInWeight': 6.45,
     'children': [keyboardContainer],
+    'disableCandidateView': true,
     'widthPercent' : {
          'HORIZONTAL' : 0.56,
          'VERTICAL' : 0.56,

@@ -199,7 +199,7 @@ Adapter.prototype.sendKeyUpEvent = function(key, code, opt_keyCode,
  */
 Adapter.prototype.sendKeyEvent_ = function(keyData) {
   chrome.runtime.sendMessage(
-      goog.object.create(Name.MSG_TYPE, Type.SEND_KEY_EVENT, Name.KEY_DATA,
+      goog.object.create(Name.TYPE, Type.SEND_KEY_EVENT, Name.KEY_DATA,
           keyData));
 };
 
@@ -283,7 +283,7 @@ Adapter.prototype.getContextType = function() {
  */
 Adapter.prototype.sendHwtRequest = function(payload) {
   chrome.runtime.sendMessage(goog.object.create(
-      Name.MSG_TYPE, Type.HWT_REQUEST, Name.MSG, payload
+      Name.TYPE, Type.HWT_REQUEST, Name.MSG, payload
       ));
 };
 
@@ -332,8 +332,8 @@ Adapter.prototype.onContextFocus_ = function(contextType) {
 Adapter.prototype.initBackground_ = function(languageCode) {
   chrome.runtime.getBackgroundPage((function() {
     chrome.runtime.sendMessage(
-        goog.object.create(Name.MSG_TYPE, Type.CONNECT));
-    chrome.runtime.sendMessage(goog.object.create(Name.MSG_TYPE,
+        goog.object.create(Name.TYPE, Type.CONNECT));
+    chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
         Type.VISIBILITY_CHANGE, Name.VISIBILITY, !document.webkitHidden));
     if (languageCode) {
       this.setLanguage(languageCode);
@@ -456,7 +456,7 @@ Adapter.prototype.onVisibilityChange_ = function() {
   this.isVisible = !document.webkitHidden;
   this.dispatchEvent(new goog.events.Event(i18n.input.chrome.inputview.
       events.EventType.VISIBILITY_CHANGE));
-  chrome.runtime.sendMessage(goog.object.create(Name.MSG_TYPE,
+  chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
       Type.VISIBILITY_CHANGE, Name.VISIBILITY, !document.webkitHidden));
 };
 
@@ -473,7 +473,7 @@ Adapter.prototype.sendCompletionRequest = function(query, opt_spatialData) {
     spatialData[Name.SOURCES] = opt_spatialData.sources;
     spatialData[Name.POSSIBILITIES] = opt_spatialData.possibilities;
   }
-  chrome.runtime.sendMessage(goog.object.create(Name.MSG_TYPE,
+  chrome.runtime.sendMessage(goog.object.create(Name.TYPE,
       Type.COMPLETION, Name.TEXT, query, Name.SPATIAL_DATA, spatialData));
 };
 
@@ -485,7 +485,7 @@ Adapter.prototype.sendCompletionRequest = function(query, opt_spatialData) {
  */
 Adapter.prototype.selectCandidate = function(candidate) {
   chrome.runtime.sendMessage(goog.object.create(
-      Name.MSG_TYPE, Type.SELECT_CANDIDATE, Name.CANDIDATE, candidate));
+      Name.TYPE, Type.SELECT_CANDIDATE, Name.CANDIDATE, candidate));
 };
 
 
@@ -496,7 +496,7 @@ Adapter.prototype.selectCandidate = function(candidate) {
  */
 Adapter.prototype.commitText = function(text) {
   chrome.runtime.sendMessage(goog.object.create(
-      Name.MSG_TYPE, Type.COMMIT_TEXT, Name.TEXT, text));
+      Name.TYPE, Type.COMMIT_TEXT, Name.TEXT, text));
 };
 
 
@@ -507,7 +507,7 @@ Adapter.prototype.commitText = function(text) {
  */
 Adapter.prototype.setLanguage = function(language) {
   chrome.runtime.sendMessage(goog.object.create(
-      Name.MSG_TYPE, Type.SET_LANGUAGE, Name.LANGUAGE, language));
+      Name.TYPE, Type.SET_LANGUAGE, Name.LANGUAGE, language));
 };
 
 
@@ -540,7 +540,7 @@ Adapter.prototype.hideKeyboard = function() {
 Adapter.prototype.setInputToolCode = function(inputToolCode) {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.HWT_SET_INPUTTOOL,
           Name.MSG,
           inputToolCode));
@@ -553,7 +553,7 @@ Adapter.prototype.setInputToolCode = function(inputToolCode) {
 Adapter.prototype.doubleClickOnSpaceKey = function() {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.DOUBLE_CLICK_ON_SPACE_KEY));
 };
 
@@ -565,7 +565,7 @@ Adapter.prototype.doubleClickOnSpaceKey = function() {
 Adapter.prototype.setEmojiInputToolCode = function() {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.EMOJI_SET_INPUTTOOL));
 };
 
@@ -578,7 +578,7 @@ Adapter.prototype.setEmojiInputToolCode = function() {
 Adapter.prototype.toggleLanguageState = function(inputToolValue) {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.TOGGLE_LANGUAGE_STATE,
           Name.MSG,
           inputToolValue));
@@ -591,7 +591,7 @@ Adapter.prototype.toggleLanguageState = function(inputToolValue) {
 Adapter.prototype.unsetInputToolCode = function() {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.HWT_UNSET_INPUTTOOL));
 };
 
@@ -603,7 +603,7 @@ Adapter.prototype.unsetInputToolCode = function() {
 Adapter.prototype.unsetEmojiInputToolCode = function() {
   chrome.runtime.sendMessage(
       goog.object.create(
-          Name.MSG_TYPE,
+          Name.TYPE,
           Type.EMOJI_UNSET_INPUTTOOL));
 };
 
@@ -620,7 +620,7 @@ Adapter.prototype.unsetEmojiInputToolCode = function() {
  * @private
  */
 Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
-  var type = request[Name.MSG_TYPE];
+  var type = request[Name.TYPE];
   var msg = request[Name.MSG];
   switch (type) {
     case Type.CANDIDATES_BACK:
@@ -651,7 +651,7 @@ Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
  */
 Adapter.prototype.sendHwtPrivacyConfirmMessage = function() {
   chrome.runtime.sendMessage(
-      goog.object.create(Name.MSG_TYPE, Type.HWT_PRIVACY_GOT_IT));
+      goog.object.create(Name.TYPE, Type.HWT_PRIVACY_GOT_IT));
   this.dispatchEvent(
       new goog.events.Event(Type.HWT_PRIVACY_GOT_IT));
 };

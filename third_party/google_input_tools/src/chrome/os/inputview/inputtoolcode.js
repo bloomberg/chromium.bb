@@ -74,6 +74,7 @@ i18n.input.lang.InputToolCode = {
   INPUTMETHOD_TRANSLITERATION_VIETNAMESE: 'vi-t-i0-und',
   INPUTMETHOD_WUBI_CHINESE_SIMPLIFIED: 'zh-t-i0-wubi-1986',
   INPUTMETHOD_ZHUYIN_CHINESE_TRADITIONAL: 'zh-hant-t-i0-und',
+  INPUTMETHOD_ZHUYIN_CHINESE_TRADITIONAL_BOPOMOFO: 'zh-hant-t-i0-bopomofo',
 
   // For keyboard
   KEYBOARD_ALBANIAN: 'sq-t-k0-und',
@@ -171,6 +172,7 @@ i18n.input.lang.InputToolCode = {
   KEYBOARD_RUSSIAN: 'ru-t-k0-und',
   KEYBOARD_RUSSIAN_PHONETIC: 'ru-t-k0-qwerty',
   KEYBOARD_SANSKRIT_PHONETIC: 'sa-t-und-latn-k0-und',
+  KEYBOARD_SENECA: 'see-t-k0-und',
   KEYBOARD_SERBIAN_CYRILLIC: 'sr-cyrl-t-k0-und',
   KEYBOARD_SERBIAN_LATIN: 'sr-latn-t-k0-und',
   KEYBOARD_SINHALA: 'si-t-k0-und',
@@ -271,6 +273,7 @@ i18n.input.lang.InputToolCode = {
   HANDWRIT_MAORI: 'mi-t-i0-handwrit',
   HANDWRIT_MARATHI: 'mr-t-i0-handwrit',
   HANDWRIT_MONGOLIAN: 'mn-t-i0-handwrit',
+  HANDWRIT_NEPALI: 'ne-t-i0-handwrit',
   HANDWRIT_NORWEGIAN: 'no-t-i0-handwrit',
   HANDWRIT_NORWEGIAN_BOKMAL: 'nb-t-i0-handwrit',
   HANDWRIT_NORWEGIAN_NYNORSK: 'nn-t-i0-handwrit',
@@ -297,6 +300,7 @@ i18n.input.lang.InputToolCode = {
   HANDWRIT_THAI: 'th-t-i0-handwrit',
   HANDWRIT_TURKISH: 'tr' + '-t-i0-handwrit',
   HANDWRIT_UKRAINIAN: 'uk-t-i0-handwrit',
+  HANDWRIT_URDU: 'ur-t-i0-handwrit',
   HANDWRIT_VIETNAMESE: 'vi-t-i0-handwrit',
   HANDWRIT_WELSH: 'cy-t-i0-handwrit',
   HANDWRIT_XHOSA: 'xh-t-i0-handwrit',

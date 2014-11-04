@@ -135,7 +135,6 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
     result[SpecNodeName.MAPPING] = mapping;
     result[SpecNodeName.LAYOUT] = 'jpkbd';
     result[SpecNodeName.HAS_ALTGR_KEY] = false;
-    result[SpecNodeName.HAS_COMPACT_KEYBOARD] = false;
     result[SpecNodeName.SHOW_MENU_KEY] = true;
     return result;
   };

@@ -103,15 +103,6 @@ KeyboardContainer.HANDWRITING_PADDING_ = 22;
 
 
 /**
- * The padding of emoji keyset.
- *
- * @type {number}
- * @private
- */
-KeyboardContainer.EMOJI_PADDING_ = 22;
-
-
-/**
  * An div to wrapper candidate view and keyboard set view.
  *
  * @private {Element}
@@ -260,8 +251,10 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
   elem.style.paddingLeft = elem.style.paddingRight = padding + 'px';
 
   var w = width - 2 * padding;
-  h = this.currentKeysetView.disableCandidateView ?
-      h - KeyboardContainer.EMOJI_PADDING_ : h - candidateViewHeight;
+
+  // Reduce height if candidate view is enabled
+  h = this.currentKeysetView.disableCandidateView ? h :
+      h - candidateViewHeight;
 
   this.candidateView.setWidthInWeight(
       this.currentKeysetView.getWidthInWeight());

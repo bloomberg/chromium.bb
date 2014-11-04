@@ -63,7 +63,6 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
   result[SpecNodeName.MAPPING] = mapping;
   result[SpecNodeName.LAYOUT] = 'handwriting';
   result[SpecNodeName.HAS_ALTGR_KEY] = false;
-  result[SpecNodeName.HAS_COMPACT_KEYBOARD] = false;
   result['id'] = 'hwt';
   google.ime.chrome.inputview.onConfigLoaded(result);
 }) ();

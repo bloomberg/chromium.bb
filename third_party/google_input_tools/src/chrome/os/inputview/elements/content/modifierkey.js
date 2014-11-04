@@ -117,9 +117,10 @@ ModifierKey.prototype.createDom = function() {
 ModifierKey.prototype.update = function() {
   var isStateEnabled = this.stateManager_.hasState(this.toState);
   var isSticky = this.stateManager_.isSticky(this.toState);
+  var isFinalSticky = this.stateManager_.isFinalSticky(this.toState);
   this.setHighlighted(isStateEnabled);
   if (this.dotIcon_) {
-    if (isStateEnabled && isSticky) {
+    if (isStateEnabled && isSticky && isFinalSticky) {
       goog.dom.classlist.add(this.dotIcon_,
           i18n.input.chrome.inputview.Css.CAPSLOCK_DOT_HIGHLIGHT);
     } else {

@@ -13,6 +13,11 @@ _BASE_REGEX_STRING = '^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
 require_regex = re.compile(_BASE_REGEX_STRING % 'require')
 provide_regex = re.compile(_BASE_REGEX_STRING % 'provide')
 
+base = os.path.join('third_party',
+                    'closure_library',
+                    'closure',
+                    'goog',
+                    'base.js')
 
 def ProcessFile(filename):
   """Extracts provided and required namespaces.
@@ -94,8 +99,9 @@ def Export(target_file, source_filename, providers, requirements, processed):
         if dependency:
           Export(target_file, dependency, providers, requirements, processed)
 
-  # Export file
   processed.add(source_filename)
+
+  # Export file
   for name in providers:
     if providers[name] == source_filename:
       target_file.write('// %s%s' % (name, os.linesep))
@@ -103,9 +109,8 @@ def Export(target_file, source_filename, providers, requirements, processed):
   try:
     comment_block = False
     for line in source_file:
-      # Skip require and provide statements.
-      if (not re.match(require_regex, line) and not
-          re.match(provide_regex, line)):
+      # Skip require statements.
+      if (not re.match(require_regex, line)):
         formatted = line.rstrip()
         if comment_block:
           # Scan for trailing */ in multi-line comment.
@@ -115,10 +120,9 @@ def Export(target_file, source_filename, providers, requirements, processed):
             comment_block = False
           else:
             formatted = ''
-        # Remove // style comments.
-        index = formatted.find('//')
-        if index >= 0:
-          formatted = formatted[:index]
+        # Remove full-line // style comments.
+        if formatted.lstrip().startswith('//'):
+          formatted = '';
         # Remove /* */ style comments.
         start_comment = formatted.find('/*')
         end_comment = formatted.find('*/')
@@ -190,7 +194,12 @@ def main():
     ExtractDependencies(file, providers, requirements)
 
   with open(options.target[0], 'w') as target_file:
+    target_file.write('var CLOSURE_NO_DEPS=true;%s' % os.linesep)
     processed = set()
+    base_path = base
+    if options.path:
+      base_path = os.path.join(options.path, base_path)
+    Export(target_file, base_path, providers, requirements, processed)
     for source_filename in sources:
       Export(target_file, source_filename, providers, requirements, processed)
 

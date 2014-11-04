@@ -26,6 +26,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
 goog.require('i18n.input.chrome.inputview.elements.content.CanvasView');
 goog.require('i18n.input.chrome.inputview.elements.content.CharacterKey');
 goog.require('i18n.input.chrome.inputview.elements.content.CompactKey');
+goog.require('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiKey');
 goog.require('i18n.input.chrome.inputview.elements.content.EnSwitcherKey');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
@@ -54,6 +55,8 @@ var content = i18n.input.chrome.inputview.elements.content;
 var layout = i18n.input.chrome.inputview.elements.layout;
 var Css = i18n.input.chrome.inputview.Css;
 var util = i18n.input.chrome.inputview.util;
+var CompactKeyModel =
+    i18n.input.chrome.inputview.elements.content.CompactKeyModel;
 
 
 
@@ -257,6 +260,10 @@ KeysetView.prototype.createDom = function() {
   var elem = this.getElement();
   elem.id = this.keyboardCode_.replace(/\./g, '-');
   goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.VIEW);
+  if (this.disableCandidateView) {
+    goog.dom.classlist.add(
+      elem, i18n.input.chrome.inputview.Css.CANDIDATE_VIEW_DISABLED);
+  }
 
   var children = this.layoutData_['children'];
   for (var i = 0; i < children.length; i++) {
@@ -544,8 +551,7 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
   var iconCssClass = spec[SpecNodeName.ICON_CSS_CLASS];
   var textCssClass = spec[SpecNodeName.TEXT_CSS_CLASS];
   var toKeyset = spec[SpecNodeName.TO_KEYSET];
-  var toKeysetName = spec[SpecNodeName.
-      TO_KEYSET_NAME];
+  var toKeysetName = spec[SpecNodeName.TO_KEYSET_NAME];
   var elem = null;
   switch (type) {
     case ElementType.MODIFIER_KEY:
@@ -606,9 +612,16 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
       var marginRightPercent = spec[SpecNodeName.MARGIN_RIGHT_PERCENT];
       var isGrey = spec[SpecNodeName.IS_GREY];
       var moreKeys = spec[SpecNodeName.MORE_KEYS];
+      var contextMap = spec[SpecNodeName.ON_CONTEXT];
+      var title = spec[SpecNodeName.TITLE];
+      var onShift = spec[SpecNodeName.ON_SHIFT];
+      var moreKeysShiftType = spec[SpecNodeName.MORE_KEYS_SHIFT_OPERATION];
+      var compactKeyModel = new CompactKeyModel(marginLeftPercent,
+          marginRightPercent, isGrey, moreKeys, moreKeysShiftType, onShift,
+          contextMap, textCssClass, title);
       elem = new content.CompactKey(
           id, text, hintText, this.dataModel_.stateManager, this.hasShift,
-          marginLeftPercent, marginRightPercent, isGrey, moreKeys);
+          compactKeyModel, undefined);
       break;
     case ElementType.CHARACTER_KEY:
       var isLetterKey = i18n.input.chrome.inputview.util.isLetterKey(
@@ -709,11 +722,13 @@ KeysetView.prototype.getChildViewById = function(id) {
  * @param {string} rawKeyset The raw keyset.
  */
 KeysetView.prototype.activate = function(rawKeyset) {
-  if (goog.array.contains(util.KEYSETS_HAVE_EN_SWTICHER, rawKeyset)) {
-    this.updateCondition(ConditionName.SHOW_EN_SWITCHER_KEY, true);
-    var elem = this.getElement();
-    var name = rawKeyset.replace(/\-.*$/, '').toUpperCase();
-    goog.dom.classlist.add(elem, Css[name]);
+  var haveEnSwitcher =
+      goog.array.contains(util.KEYSETS_HAVE_EN_SWTICHER, rawKeyset);
+  this.updateCondition(ConditionName.SHOW_EN_SWITCHER_KEY, haveEnSwitcher);
+  if (haveEnSwitcher) {
+    goog.dom.classlist.add(this.getElement(), Css.PINYIN);
+  } else {
+    goog.dom.classlist.remove(this.getElement(), Css.PINYIN);
   }
 };
 

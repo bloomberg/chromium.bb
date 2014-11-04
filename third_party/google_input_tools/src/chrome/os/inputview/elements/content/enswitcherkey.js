@@ -21,7 +21,6 @@ goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
 
 
-
 goog.scope(function() {
 
 var Type = i18n.input.chrome.message.Type;

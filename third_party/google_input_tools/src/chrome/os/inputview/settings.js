@@ -48,10 +48,6 @@ Settings.prototype.autoCorrection = false;
 
 
 /** @type {boolean} */
-Settings.prototype.supportCompact = false;
-
-
-/** @type {boolean} */
 Settings.prototype.enableLongPress = true;
 
 

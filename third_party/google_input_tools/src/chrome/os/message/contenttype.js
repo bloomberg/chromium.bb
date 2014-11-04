@@ -24,7 +24,8 @@ i18n.input.chrome.message.ContextType = {
   EMAIL: 'email',
   PASSWORD: 'password',
   URL: 'url',
-  NUMBER: 'number'
+  NUMBER: 'number',
+  PHONE: 'tel'
 };
 
 

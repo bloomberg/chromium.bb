@@ -166,6 +166,13 @@ goog.require('i18n.input.chrome.message.ContextType');
       compact.numberpad.keyNumberpadCharacters();
   inputTypeToKeysetSpecMap[ContextType.NUMBER] = numberKeysetSpec;
 
+  var phoneKeysetSpec = {};
+  phoneKeysetSpec[keysetSpecNode.ID] = 'no.compact.phonepad';
+  phoneKeysetSpec[keysetSpecNode.LAYOUT] = 'compactkbd-numberpad';
+  phoneKeysetSpec[keysetSpecNode.DATA] = i18n.input.chrome.inputview.content.
+      compact.numberpad.keyPhonepadCharacters();
+  inputTypeToKeysetSpecMap[ContextType.PHONE] = phoneKeysetSpec;
+
   i18n.input.chrome.inputview.content.ContextlayoutUtil.generateContextLayouts(
       inputTypeToKeysetSpecMap, google.ime.chrome.inputview.onConfigLoaded);
 }) ();

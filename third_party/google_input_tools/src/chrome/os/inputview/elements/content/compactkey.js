@@ -21,17 +21,23 @@ goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.MoreKeysShiftOperation');
+goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.inputview.elements.content.GaussianEstimator');
+goog.require('i18n.input.chrome.message.ContextType');
 
 
 
 goog.scope(function() {
+var CompactKeyModel =
+    i18n.input.chrome.inputview.elements.content.CompactKeyModel;
+var ContextType = i18n.input.chrome.message.ContextType;
 var MoreKeysShiftOperation = i18n.input.chrome.inputview.MoreKeysShiftOperation;
-
+var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 
 
 /**
@@ -43,22 +49,16 @@ var MoreKeysShiftOperation = i18n.input.chrome.inputview.MoreKeysShiftOperation;
  * @param {!i18n.input.chrome.inputview.StateManager} stateManager The state
  *     manager.
  * @param {boolean} hasShift True if the compact key has shift.}
- * @param {number=} opt_marginLeftPercent The percent of the left margin.
- * @param {number=} opt_marginRightPercent The percent of the right margin.
- * @param {boolean=} opt_isGrey True if it is grey.
- * @param {!Array.<string>=} opt_moreKeys The more keys characters.
- * @param {MoreKeysShiftOperation=} opt_moreKeysShiftType
- *     The type of opearation when the shift key is down.
+ * @param {!CompactKeyModel} compactKeyModel The attributes of compact key.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.content.FunctionalKey}
  */
 i18n.input.chrome.inputview.elements.content.CompactKey = function(id, text,
-    hintText, stateManager, hasShift, opt_marginLeftPercent,
-    opt_marginRightPercent, opt_isGrey, opt_moreKeys,
-    opt_moreKeysShiftType, opt_eventTarget) {
+    hintText, stateManager, hasShift, compactKeyModel, opt_eventTarget) {
+  var textCssClass = compactKeyModel.textCssClass;
   goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
-      COMPACT_KEY, text, '', opt_eventTarget);
+      COMPACT_KEY, text, '', opt_eventTarget, textCssClass);
 
   /**
    * The hint text.
@@ -67,24 +67,8 @@ i18n.input.chrome.inputview.elements.content.CompactKey = function(id, text,
    */
   this.hintText = hintText;
 
-  /**
-   * The left margin.
-   *
-   * @type {number}
-   * @private
-   */
-  this.marginLeftPercent_ = opt_marginLeftPercent || 0;
-
   /** @private {boolean} */
   this.hasShift_ = hasShift;
-
-  /**
-   * The right margin.
-   *
-   * @type {number}
-   * @private
-   */
-  this.marginRightPercent_ = opt_marginRightPercent || 0;
 
   /**
    * The state manager.
@@ -95,27 +79,11 @@ i18n.input.chrome.inputview.elements.content.CompactKey = function(id, text,
   this.stateManager_ = stateManager;
 
   /**
-   * True if it is grey.
+   * The attributes of compact key.
    *
-   * @type {boolean}
-   * @private
+   * @private {CompactKeyModel}
    */
-  this.isGrey_ = !!opt_isGrey;
-
-  /**
-   * The more keys array.
-   *
-   * @type {!Array.<string>}
-   */
-  this.moreKeys = opt_moreKeys || [];
-
-  /**
-   * The type of shift operation of moreKeys.
-   *
-   * @private {MoreKeysShiftOperation}
-   */
-  this.moreKeysShiftOperation_ = goog.isDef(opt_moreKeysShiftType) ?
-      opt_moreKeysShiftType : MoreKeysShiftOperation.TO_UPPER_CASE;
+  this.compactKeyModel_ = compactKeyModel;
 
   this.pointerConfig.longPressWithPointerUp = true;
   this.pointerConfig.flickerDirection =
@@ -141,7 +109,7 @@ CompactKey.prototype.createDom = function() {
 
   goog.dom.classlist.add(this.tableCell,
       i18n.input.chrome.inputview.Css.COMPACT_KEY);
-  if (!this.isGrey_) {
+  if (!this.compactKeyModel_.isGrey) {
     goog.dom.classlist.remove(this.bgElem,
         i18n.input.chrome.inputview.Css.SPECIAL_KEY_BG);
   }
@@ -149,13 +117,13 @@ CompactKey.prototype.createDom = function() {
   if (this.hintText) {
     var dom = this.getDomHelper();
     dom.removeChildren(this.tableCell);
-    var inlineWrap = dom.createDom(goog.dom.TagName.DIV,
+    this.inlineWrap = dom.createDom(goog.dom.TagName.DIV,
         i18n.input.chrome.inputview.Css.INLINE_DIV);
-    dom.appendChild(this.tableCell, inlineWrap);
+    dom.appendChild(this.tableCell, this.inlineWrap);
     this.hintTextElem = dom.createDom(goog.dom.TagName.DIV,
         i18n.input.chrome.inputview.Css.HINT_TEXT, this.hintText);
-    dom.appendChild(inlineWrap, this.hintTextElem);
-    dom.appendChild(inlineWrap, this.textElem);
+    dom.appendChild(this.inlineWrap, this.hintTextElem);
+    dom.appendChild(this.inlineWrap, this.textElem);
   }
 };
 
@@ -163,12 +131,13 @@ CompactKey.prototype.createDom = function() {
 /** @override */
 CompactKey.prototype.resize = function(width, height) {
   var elem = this.getElement();
-  var marginLeft = Math.floor(width * this.marginLeftPercent_);
+  var marginLeft = Math.floor(width * this.compactKeyModel_.marginLeftPercent);
   if (marginLeft > 0) {
     marginLeft -= 5;
     elem.style.marginLeft = marginLeft + 'px';
   }
-  var marginRight = Math.floor(width * this.marginRightPercent_);
+  var marginRight =
+      Math.floor(width * this.compactKeyModel_.marginRightPercent);
   // TODO: Remove this ugly hack. The default margin right is 10px, we
   // need to add the default margin here to make all the keys have the same
   // look.
@@ -191,6 +160,40 @@ CompactKey.prototype.resize = function(width, height) {
 
 
 /**
+ * Gets the active character factoring in the current input type context.
+ *
+ * @private
+ */
+CompactKey.prototype.getContextOptimizedText_ = function() {
+  var context = this.stateManager_.contextType;
+  // Remove all old css rules.
+  for (var contextType in this.compactKeyModel_.textOnContext) {
+    var oldCss =
+        this.compactKeyModel_.
+        textOnContext[contextType][SpecNodeName.TEXT_CSS_CLASS];
+    goog.dom.classlist.remove(this.tableCell, oldCss);
+  }
+  var text;
+  if (context && this.compactKeyModel_.textOnContext[context]) {
+    text = this.compactKeyModel_.textOnContext[context][SpecNodeName.TEXT];
+    var newCss =
+        this.compactKeyModel_.
+        textOnContext[context][SpecNodeName.TEXT_CSS_CLASS];
+    goog.dom.classlist.add(this.tableCell, newCss);
+  } else if (this.hasShift_ && this.stateManager_.hasState(
+      i18n.input.chrome.inputview.StateType.SHIFT)) {
+    // When there is specific text to display when shift is pressed down,
+    // the text should be set accordingly.
+    text = this.compactKeyModel_.textOnShift ?
+        this.compactKeyModel_.textOnShift : this.text.toUpperCase();
+  } else {
+    text = this.text;
+  }
+  return text;
+};
+
+
+/**
  * Get the active character. It may be upper case |text| when shift is pressed
  * or flickerred character when swipe. Note this should replace Compactkey.text
  * for compact keys.
@@ -199,9 +202,7 @@ CompactKey.prototype.getActiveCharacter = function() {
   if (this.flickerredCharacter) {
     return this.flickerredCharacter;
   } else {
-    return this.hasShift_ && this.stateManager_.hasState(
-        i18n.input.chrome.inputview.StateType.SHIFT) ? this.text.toUpperCase() :
-        this.text;
+    return this.getContextOptimizedText_();
   }
 };
 
@@ -210,9 +211,21 @@ CompactKey.prototype.getActiveCharacter = function() {
 CompactKey.prototype.update = function() {
   goog.base(this, 'update');
 
-  var text = this.hasShift_ && this.stateManager_.hasState(
-      i18n.input.chrome.inputview.StateType.SHIFT) ? this.text.toUpperCase() :
-      this.text;
+  var text = this.getContextOptimizedText_();
+  var displayHintText = this.stateManager_.contextType != ContextType.PASSWORD;
+  if (this.compactKeyModel_.textOnShift) {
+    if (this.hasShift_ && this.stateManager_.hasState(
+      i18n.input.chrome.inputview.StateType.SHIFT)) {
+      // Deal with the case that when shift is pressed down,
+      // only one character should show in the compact key.
+      displayHintText = false;
+      text = this.compactKeyModel_.textOnShift;
+    }
+  }
+  this.hintTextElem &&
+      goog.style.setElementShown(this.hintTextElem, displayHintText);
+  text = this.compactKeyModel_.title ?
+    chrome.i18n.getMessage(this.compactKeyModel_.title) : text;
   goog.dom.setTextContent(this.textElem, text);
 };
 
@@ -223,13 +236,13 @@ CompactKey.prototype.update = function() {
  * @return {!Array.<string>} The characters.
  */
 CompactKey.prototype.getMoreCharacters = function() {
-  var moreCharacters = goog.array.clone(this.moreKeys);
-  switch (this.moreKeysShiftOperation_) {
+  var moreCharacters = goog.array.clone(this.compactKeyModel_.moreKeys);
+  switch (this.compactKeyModel_.moreKeysShiftOperation) {
     case MoreKeysShiftOperation.TO_UPPER_CASE:
       if (this.getActiveCharacter().toLowerCase() !=
           this.getActiveCharacter()) {
-        for (var i = 0; i < this.moreKeys.length; i++) {
-          moreCharacters[i] = this.moreKeys[i].toUpperCase();
+        for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
+          moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toUpperCase();
         }
         goog.array.removeDuplicates(moreCharacters);
       }
@@ -237,8 +250,8 @@ CompactKey.prototype.getMoreCharacters = function() {
     case MoreKeysShiftOperation.TO_LOWER_CASE:
       if (this.hasShift_ && this.stateManager_.hasState(
           i18n.input.chrome.inputview.StateType.SHIFT)) {
-        for (var i = 0; i < this.moreKeys.length; i++) {
-          moreCharacters[i] = this.moreKeys[i].toLowerCase();
+        for (var i = 0; i < this.compactKeyModel_.moreKeys.length; i++) {
+          moreCharacters[i] = this.compactKeyModel_.moreKeys[i].toLowerCase();
         }
         goog.array.removeDuplicates(moreCharacters);
       }

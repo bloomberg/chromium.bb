@@ -78,7 +78,38 @@ util.KEYSETS_USE_US = [
 util.KEYSETS_HAVE_EN_SWTICHER = [
   // When other keysets that use us add the enswitcher key,
   // should move them to this array.
-  'pinyin-zh-CN'
+  'array',
+  'cangjie',
+  'dayi',
+  'pinyin-zh-CN',
+  'pinyin-zh-TW',
+  'quick',
+  'wubi',
+  'zhuyin'
+];
+
+
+/**
+ * The keysets that have compact keyset.
+ *
+ * @type {!Array.<string>}
+ */
+util.KEYSETS_HAVE_COMPACT = [
+  'be',
+  'ca',
+  'ca-eng',
+  'de',
+  'dk',
+  'fi',
+  'fr',
+  'gb-extd',
+  'ie',
+  'is',
+  'no',
+  'pinyin-zh-CN',
+  'se',
+  'us',
+  'zhuyin'
 ];
 
 
@@ -185,7 +216,7 @@ util.getPropertyValue = function(elem, property) {
  */
 util.toUpper = function(character) {
   if (character == '\u00b5') {
-    return '\u005b5';
+    return '\u00b5';
   } else {
     return character.toUpperCase();
   }

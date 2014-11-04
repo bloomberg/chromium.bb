@@ -519,7 +519,6 @@ i18n.input.chrome.inputview.content.util.createData = function(keyCharacters,
   result[SpecNodeName.MAPPING] = mapping;
   result[SpecNodeName.LAYOUT] = layout;
   result[SpecNodeName.HAS_ALTGR_KEY] = hasAltGrKey;
-  result[SpecNodeName.HAS_COMPACT_KEYBOARD] = !!opt_compactKeyboardId;
   result[SpecNodeName.SHOW_MENU_KEY] = true;
   return result;
 };

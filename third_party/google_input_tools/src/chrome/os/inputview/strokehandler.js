@@ -191,30 +191,30 @@ i18n.input.hwt.StrokeHandler.prototype.disposeInternal = function() {
  *
  * @param {number} x The x.
  * @param {number} y The y.
- * @param {number} time The time in milisecond.
+ * @param {number} time The time in miliseconds.
  * @constructor
  */
 i18n.input.hwt.StrokeHandler.Point = function(x, y, time) {
   /**
-   * The left offset relative to the canvas.
+   * The left offset relative to the canvas, rounded to 2 decimal places.
    *
    * @type {number}
    */
-  this.x = x;
+  this.x = Math.round(x * 100.0) * 0.01;
 
   /**
-   * The top offset relative to the canvas.
+   * The top offset relative to the canvas, rounded to 2 decimal places.
    *
    * @type {number}
    */
-  this.y = y;
+  this.y = Math.round(y * 100.0) * 0.01;
 
   /**
-   * The time.
+   * The time, rounded to the nearest millisecond.
    *
    * @type {number}
    */
-  this.time = time;
+  this.time = Math.round(time);
 };
 
 

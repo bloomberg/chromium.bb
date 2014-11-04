@@ -41,7 +41,7 @@ i18n.input.chrome.message.Name = {
   LANGUAGE: 'language',
   MATCHED_LENGTHS: 'matchedLengths',
   MSG: 'msg',
-  MSG_TYPE: 'type',
+  TYPE: 'type',
   OPTION_PREFIX: 'optionPrefix',
   OPTION_TYPE: 'optionType',
   PAGE_SIZE: 'pageSize',

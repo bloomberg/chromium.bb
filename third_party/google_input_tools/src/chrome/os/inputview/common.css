@@ -2,6 +2,12 @@
   position: relative;
   -webkit-user-select: none;
 }
+#emoji.candidate-view-disabled .inputview-layoutview {
+  margin-top: 22px;
+}
+.candidate-view-disabled .inputview-layoutview {
+  margin-top: 8px;
+}
 .inputview-canvasview,
 .inputview-skv {
   display: inline-block;
@@ -40,6 +46,8 @@
 .inputview-digit-character.inputview-ch {
   font-size: 20px;
 }
+.inputview-font-small.inputview-special-key-name,
+.inputview-font-small.inputview-compact-key,
 .inputview-a11y .inputview-digit-character.inputview-ch {
   font-size: 16px;
 }
@@ -498,6 +506,14 @@
  * please keep it in the end of the file
  */
 
+.inputview-handwriting {
+  font-size: 16px;
+}
+
+.inputview-a11y.inputview-handwriting .inputview-modifier {
+  font-size: 16px;
+}
+
 .inputview-handwriting .inputview-wrapper{
   background-color: #ffffff;
   box-shadow: 1px -2px 7px 2px rgba(192, 192, 192, 0.65);
@@ -514,7 +530,6 @@
 
 .inputview-handwriting-back {
   float: right;
-  font-size: 18px;
   color: #111111;
   text-align: center;
 }
@@ -538,7 +553,6 @@
 .inputview-handwriting .inputview-sk {
   background-color: #E9E9E9;
   margin: 0 0 10 0;
-  font-size: 20px;
 }
 
 .inputview-handwriting .inputview-element-highlight {
@@ -560,10 +574,9 @@
 
 .inputview-handwriting-network-error {
   background: no-repeat url('images/error.png');
-  font-size: 16;
   padding: 0 0 0 50px;
   position: absolute;
-  width: 300px;
+  width: 600px;
   height: 100px;
 }
 
@@ -578,7 +591,7 @@
 
 .inputview-handwriting-privacy-info {
   position: absolute;
-  width: 300px;
+  width: 600px;
   height: 100px;
   z-index: 2;
 }
@@ -591,10 +604,6 @@
 
 .inputview-handwriting-privacy-info .inputview-sk {
   margin-top: 10px;
-}
-
-.inputview-handwriting-privacy-info .inputview-special-key-name {
-  font-size: 16px;
 }
 
 .inputview-jp-ime-switch {

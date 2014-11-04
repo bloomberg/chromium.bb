@@ -15,6 +15,9 @@ goog.provide('i18n.input.chrome.inputview.StateManager');
 
 goog.require('i18n.input.chrome.inputview.Covariance');
 
+goog.scope(function() {
+
+
 
 /**
  * The state for the input view keyboard.
@@ -22,48 +25,68 @@ goog.require('i18n.input.chrome.inputview.Covariance');
  * @constructor
  */
 i18n.input.chrome.inputview.StateManager = function() {
-  /**
-   * The state of the keyboard.
-   *
-   * @type {number}
-   * @private
-   */
-  this.state_ = 0;
-
-  /**
-   * The sticky state.
-   *
-   * @type {number}
-   * @private
-   */
-  this.sticky_ = 0;
-
-  /**
-   * Bits to indicate which state key is down.
-   *
-   * @type {number}
-   * @private
-   */
-  this.stateKeyDown_ = 0;
-
-  /**
-   * Bits to track which state is in chording.
-   *
-   * @type {number}
-   * @private
-   */
-  this.chording_ = 0;
-
-  /**
-   * Whether the current keyset is in English mode.
-   *
-   * @type {boolean}
-   */
-  this.isEnMode = false;
-
   /** @type {!i18n.input.chrome.inputview.Covariance} */
   this.covariance = new i18n.input.chrome.inputview.Covariance();
 };
+var StateManager = i18n.input.chrome.inputview.StateManager;
+
+
+/** @type {string} */
+StateManager.prototype.contextType = '';
+
+
+/**
+ * The state of the keyboard.
+ *
+ * @type {number}
+ * @private
+ */
+StateManager.prototype.state_ = 0;
+
+
+/**
+ * The sticky state.
+ *
+ * @type {number}
+ * @private
+ */
+StateManager.prototype.sticky_ = 0;
+
+
+/**
+ * Bits to indicate which state key is down.
+ *
+ * @type {number}
+ * @private
+ */
+StateManager.prototype.stateKeyDown_ = 0;
+
+
+/**
+ * Bits to track which state is in chording.
+ *
+ * @type {number}
+ * @private
+ */
+StateManager.prototype.chording_ = 0;
+
+
+/**
+ * A flag to temporary compatible with the current modifier key state
+ * managerment, this bit indicates the sticky is set by double_click or long
+ * press which won't be canceled by keyup or text commit.
+ *
+ * @private {number}
+ */
+StateManager.prototype.finalSticky_ = 0;
+
+
+/**
+ * Whether the current keyset is in English mode.
+ *
+ * @type {boolean}
+ */
+StateManager.prototype.isEnMode = false;
 
 
 /**
@@ -113,6 +136,34 @@ i18n.input.chrome.inputview.StateManager.prototype.triggerChording =
 i18n.input.chrome.inputview.StateManager.prototype.isChording = function(
     stateType) {
   return (this.chording_ & stateType) != 0;
+};
+
+
+/**
+ * Is a state in final sticky.
+ *
+ * @param {i18n.input.chrome.inputview.StateType} stateType .
+ * @return {boolean} .
+ */
+i18n.input.chrome.inputview.StateManager.prototype.isFinalSticky = function(
+    stateType) {
+  return (this.finalSticky_ & stateType) != 0;
+};
+
+
+/**
+ * Sets a specific state to be final sticky.
+ *
+ * @param {i18n.input.chrome.inputview.StateType} stateType .
+ * @param {boolean} isFinalSticky .
+ */
+i18n.input.chrome.inputview.StateManager.prototype.setFinalSticky = function(
+    stateType, isFinalSticky) {
+  if (isFinalSticky) {
+    this.finalSticky_ |= stateType;
+  } else {
+    this.finalSticky_ &= ~stateType;
+  }
 };
 
 
@@ -231,3 +282,5 @@ i18n.input.chrome.inputview.StateManager.prototype.reset = function() {
   this.state_ = 0;
   this.sticky_ = 0;
 };
+
+});  // goog.scope

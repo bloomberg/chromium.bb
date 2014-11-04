@@ -225,7 +225,7 @@ CanvasView.prototype.resize = function(width, height) {
   this.networkErrorDiv_.style.top = this.privacyDiv_.style.top =
       Math.round(height / 2 - 50) + 'px';
   this.networkErrorDiv_.style.left = this.privacyDiv_.style.left =
-      Math.round(width / 2 - 150) + 'px';
+      Math.round(width / 2 - 220) + 'px';
   this.confirmBtn_.resize(100, 60);
 
   this.canvas_.setSize(height, width);
