@@ -245,10 +245,6 @@ class ExtensionServiceObserverBridge
 
   void ToolbarVisibleCountChanged() override {}
 
-  void OnToolbarReorderNecessary(content::WebContents* web_contents) override {
-    // TODO(devlin): Implement on mac.
-  }
-
   void ToolbarHighlightModeChanged(bool is_highlighting) override {}
 
   Browser* GetBrowser() override { return browser_; }
@@ -359,7 +355,9 @@ class ExtensionServiceObserverBridge
 }
 
 - (void)resizeContainerAndAnimate:(BOOL)animate {
-  int iconCount = toolbarModel_->visible_icon_count();
+  int iconCount = toolbarModel_->GetVisibleIconCount();
+  if (iconCount < 0)  // If no buttons are hidden.
+    iconCount = [self buttonCount];
 
   [containerView_ resizeToWidth:[self containerWidthWithButtonCount:iconCount]
                         animate:animate];
@@ -379,8 +377,9 @@ class ExtensionServiceObserverBridge
   if (!toolbarModel_)
     return 0;
 
-  int savedButtonCount = toolbarModel_->visible_icon_count();
-  if (static_cast<NSUInteger>(savedButtonCount) > [self buttonCount])
+  int savedButtonCount = toolbarModel_->GetVisibleIconCount();
+  if (savedButtonCount < 0 ||  // all icons are visible
+      static_cast<NSUInteger>(savedButtonCount) > [self buttonCount])
     savedButtonCount = [self buttonCount];
   return [self containerWidthWithButtonCount:savedButtonCount];
 }

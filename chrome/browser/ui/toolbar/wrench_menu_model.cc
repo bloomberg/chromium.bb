@@ -716,7 +716,7 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
   extensions::ExtensionToolbarModel* toolbar_model =
       extensions::ExtensionToolbarModel::Get(browser_->profile());
   // A count of -1 means all actions are visible.
-  if (!toolbar_model->all_icons_visible())
+  if (toolbar_model->GetVisibleIconCount() != -1)
     AddSeparator(ui::UPPER_SEPARATOR);
 #endif  // defined(TOOLKIT_VIEWS)
 }
