@@ -39,7 +39,7 @@ public class AwTestContainerView extends FrameLayout {
     private AwContents.NativeGLDelegate mNativeGLDelegate;
     private AwContents.InternalAccessDelegate mInternalAccessDelegate;
 
-    HardwareView mHardwareView = null;
+    private HardwareView mHardwareView = null;
     private boolean mAttachedContents = false;
 
     private class HardwareView extends GLSurfaceView {
@@ -232,7 +232,7 @@ public class AwTestContainerView extends FrameLayout {
         if (allowHardwareAcceleration) {
             mHardwareView = createHardwareViewOnlyOnce(context);
         }
-        if (mHardwareView != null) {
+        if (isBackedByHardwareView()) {
             addView(mHardwareView,
                     new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
@@ -249,10 +249,14 @@ public class AwTestContainerView extends FrameLayout {
 
     public void initialize(AwContents awContents) {
         mAwContents = awContents;
-        if (mHardwareView != null) {
+        if (isBackedByHardwareView()) {
             mHardwareView.initialize(
                     mAwContents.getAwDrawGLFunction(), mAwContents.getAwDrawGLViewContext());
         }
+    }
+
+    public boolean isBackedByHardwareView() {
+        return mHardwareView != null;
     }
 
     public ContentViewCore getContentViewCore() {
@@ -380,7 +384,7 @@ public class AwTestContainerView extends FrameLayout {
 
     @Override
     public void onDraw(Canvas canvas) {
-        if (mHardwareView != null) {
+        if (isBackedByHardwareView()) {
             mHardwareView.updateScroll(getScrollX(), getScrollY());
         }
         mAwContents.onDraw(canvas);
@@ -417,14 +421,14 @@ public class AwTestContainerView extends FrameLayout {
         @Override
         public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion,
                 View containerview) {
-            if (mHardwareView == null) return false;
+            if (!isBackedByHardwareView()) return false;
             mHardwareView.requestRender(canvas, waitForCompletion);
             return true;
         }
 
         @Override
         public void detachGLFunctor() {
-            if (mHardwareView != null) mHardwareView.detachGLFunctor();
+            if (isBackedByHardwareView()) mHardwareView.detachGLFunctor();
         }
     }
 
@@ -466,7 +470,7 @@ public class AwTestContainerView extends FrameLayout {
         public void super_scrollTo(int scrollX, int scrollY) {
             // We're intentionally not calling super.scrollTo here to make testing easier.
             AwTestContainerView.this.scrollTo(scrollX, scrollY);
-            if (mHardwareView != null) {
+            if (isBackedByHardwareView()) {
                 // Undo the scroll that will be applied because of mHardwareView
                 // being a child of |this|.
                 mHardwareView.setTranslationX(scrollX);

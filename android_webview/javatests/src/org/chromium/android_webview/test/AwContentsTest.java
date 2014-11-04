@@ -500,4 +500,15 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
+    // This is a meta test that we don't accidentally turn of hardware
+    // acceleration in instrumentation tests without notice. Do not add the
+    // @DisableHardwareAccelerationForTest annotation for this test.
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testHardwareModeWorks() throws Throwable {
+        AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+        assertTrue(testContainer.isHardwareAccelerated());
+        assertTrue(testContainer.isBackedByHardwareView());
+    }
 }
