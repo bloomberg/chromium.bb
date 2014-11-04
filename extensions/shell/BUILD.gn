@@ -129,14 +129,16 @@ source_set("app_shell_lib") {
   }
 }
 
-executable("app_shell") {
-  # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
-  testonly = true
-  deps = [
-    ":app_shell_lib",
-    "//extensions:shell_and_test_pak",
-  ]
-  sources = [ "app/shell_main.cc" ]
+if (!is_chromeos) {
+    executable("app_shell") {
+    # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
+    testonly = true
+    deps = [
+        ":app_shell_lib",
+        "//extensions:shell_and_test_pak",
+    ]
+    sources = [ "app/shell_main.cc" ]
+    }
 }
 
 action("version_header") {
