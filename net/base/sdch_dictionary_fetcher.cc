@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
-#include "net/base/sdch_net_log_params.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -41,18 +40,22 @@ SdchDictionaryFetcher::~SdchDictionaryFetcher() {
   DCHECK(CalledOnValidThread());
 }
 
-bool SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
+void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   DCHECK(CalledOnValidThread());
 
   // Avoid pushing duplicate copy onto queue. We may fetch this url again later
   // and get a different dictionary, but there is no reason to have it in the
   // queue twice at one time.
-  if (!fetch_queue_.empty() && fetch_queue_.back() == dictionary_url)
-    return false;
-
-  if (attempted_load_.find(dictionary_url) != attempted_load_.end())
-    return false;
-
+  if (!fetch_queue_.empty() && fetch_queue_.back() == dictionary_url) {
+    SdchManager::SdchErrorRecovery(
+        SdchManager::DICTIONARY_ALREADY_SCHEDULED_TO_DOWNLOAD);
+    return;
+  }
+  if (attempted_load_.find(dictionary_url) != attempted_load_.end()) {
+    SdchManager::SdchErrorRecovery(
+        SdchManager::DICTIONARY_ALREADY_TRIED_TO_DOWNLOAD);
+    return;
+  }
   attempted_load_.insert(dictionary_url);
   fetch_queue_.push(dictionary_url);
 
@@ -62,8 +65,6 @@ bool SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
   // and Schedule() is only called from user code, so this call to DoLoop()
   // does not require an |if (in_loop_) return;| guard.
   DoLoop(OK);
-
-  return true;
 }
 
 void SdchDictionaryFetcher::Cancel() {
@@ -166,7 +167,6 @@ int SdchDictionaryFetcher::DoDispatchRequest(int rv) {
 
   next_state_ = STATE_REQUEST_STARTED;
   current_request_->Start();
-  current_request_->net_log().AddEvent(NetLog::TYPE_SDCH_DICTIONARY_FETCH);
 
   return OK;
 }
@@ -208,7 +208,7 @@ int SdchDictionaryFetcher::DoRead(int rv) {
       // an infinite loop.  It's not clear how to handle a read failure
       // without a promise to invoke the callback at some point in the future,
       // so the request is failed.
-      LogDictionaryFetchError(SDCH_DICTIONARY_FETCH_READ_FAILED);
+      SdchManager::SdchErrorRecovery(SdchManager::DICTIONARY_FETCH_READ_FAILED);
       DLOG(FATAL) <<
           "URLRequest::Read() returned false without IO pending or error!";
       return ERR_FAILED;
@@ -229,12 +229,8 @@ int SdchDictionaryFetcher::DoCompleteRequest(int rv) {
   DCHECK(CalledOnValidThread());
 
   // If the dictionary was successfully fetched, add it to the manager.
-  if (rv == OK) {
-    SdchProblemCode problem =
-        consumer_->AddSdchDictionary(dictionary_, current_request_->url());
-    if (problem != SDCH_OK)
-      LogDictionaryFetchError(problem);
-  }
+  if (rv == OK)
+    consumer_->AddSdchDictionary(dictionary_, current_request_->url());
 
   current_request_.reset();
   buffer_ = NULL;
@@ -243,17 +239,6 @@ int SdchDictionaryFetcher::DoCompleteRequest(int rv) {
   next_state_ = STATE_IDLE;
 
   return OK;
-}
-
-void SdchDictionaryFetcher::LogDictionaryFetchError(SdchProblemCode error) {
-  CHECK(current_request_.get());
-  SdchManager::SdchErrorRecovery(error);
-  current_request_->net_log().AddEvent(
-      NetLog::TYPE_SDCH_DICTIONARY_ERROR,
-      base::Bind(&NetLogSdchDictionaryFetchProblemCallback,
-                 error,
-                 current_request_->url(),
-                 true));
 }
 
 }  // namespace net

@@ -86,11 +86,10 @@ class SdchTestDelegate : public SdchFetcher::Delegate {
     GURL dictionary_url;
   };
 
-  SdchProblemCode AddSdchDictionary(const std::string& dictionary_text,
-                                    const GURL& dictionary_url) override {
+  void AddSdchDictionary(const std::string& dictionary_text,
+                         const GURL& dictionary_url) override {
     dictionary_additions.push_back(
         DictionaryAdditions(dictionary_text, dictionary_url));
-    return SDCH_OK;
   }
 
   void GetDictionaryAdditions(std::vector<DictionaryAdditions>* out) {

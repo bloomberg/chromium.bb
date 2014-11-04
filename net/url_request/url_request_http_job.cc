@@ -23,7 +23,6 @@
 #include "net/base/net_util.h"
 #include "net/base/network_delegate.h"
 #include "net/base/sdch_manager.h"
-#include "net/base/sdch_net_log_params.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_content_disposition.h"
@@ -70,7 +69,6 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   int GetResponseCode() const override;
   const URLRequestContext* GetURLRequestContext() const override;
   void RecordPacketStats(StatisticSelector statistic) const override;
-  const BoundNetLog& GetNetLog() const override;
 
   // Method to allow us to reset filter context for a response that should have
   // been SDCH encoded when there is an update due to an explicit HTTP header.
@@ -78,10 +76,6 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
 
  private:
   URLRequestHttpJob* job_;
-
-  // URLRequestHttpJob may be detached from URLRequest, but we still need to
-  // return something.
-  BoundNetLog dummy_log_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpFilterContext);
 };
@@ -150,10 +144,6 @@ URLRequestHttpJob::HttpFilterContext::GetURLRequestContext() const {
 void URLRequestHttpJob::HttpFilterContext::RecordPacketStats(
     StatisticSelector statistic) const {
   job_->RecordPacketStats(statistic);
-}
-
-const BoundNetLog& URLRequestHttpJob::HttpFilterContext::GetNetLog() const {
-  return job_->request() ? job_->request()->net_log() : dummy_log_;
 }
 
 // TODO(darin): make sure the port blocking code is not lost
@@ -330,45 +320,21 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessPublicKeyPinsHeader();
 
   SdchManager* sdch_manager(request()->context()->sdch_manager());
-  if (sdch_manager) {
-    SdchProblemCode rv = sdch_manager->IsInSupportedDomain(request()->url());
-    if (rv != SDCH_OK) {
-      // If SDCH is just disabled, it is not a real error.
-      if (rv != SDCH_DISABLED && rv != SDCH_SECURE_SCHEME_NOT_SUPPORTED) {
-        SdchManager::SdchErrorRecovery(rv);
-        request()->net_log().AddEvent(
-            NetLog::TYPE_SDCH_DECODING_ERROR,
-            base::Bind(&NetLogSdchResourceProblemCallback, rv));
-      }
-    } else {
-      const std::string name = "Get-Dictionary";
-      std::string url_text;
-      void* iter = NULL;
-      // TODO(jar): We need to not fetch dictionaries the first time they are
-      // seen, but rather wait until we can justify their usefulness.
-      // For now, we will only fetch the first dictionary, which will at least
-      // require multiple suggestions before we get additional ones for this
-      // site. Eventually we should wait until a dictionary is requested
-      // several times
-      // before we even download it (so that we don't waste memory or
-      // bandwidth).
-      if (GetResponseHeaders()->EnumerateHeader(&iter, name, &url_text)) {
-        // Resolve suggested URL relative to request url.
-        GURL sdch_dictionary_url = request_->url().Resolve(url_text);
-        if (sdch_dictionary_url.is_valid()) {
-          rv = sdch_manager->FetchDictionary(request_->url(),
-                                             sdch_dictionary_url);
-          if (rv != SDCH_OK) {
-            SdchManager::SdchErrorRecovery(rv);
-            request_->net_log().AddEvent(
-                NetLog::TYPE_SDCH_DICTIONARY_ERROR,
-                base::Bind(
-                    &NetLogSdchDictionaryFetchProblemCallback,
-                    rv,
-                    sdch_dictionary_url,
-                    rv != SDCH_DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD));
-          }
-        }
+  if (sdch_manager && sdch_manager->IsInSupportedDomain(request_->url())) {
+    const std::string name = "Get-Dictionary";
+    std::string url_text;
+    void* iter = NULL;
+    // TODO(jar): We need to not fetch dictionaries the first time they are
+    // seen, but rather wait until we can justify their usefulness.
+    // For now, we will only fetch the first dictionary, which will at least
+    // require multiple suggestions before we get additional ones for this site.
+    // Eventually we should wait until a dictionary is requested several times
+    // before we even download it (so that we don't waste memory or bandwidth).
+    if (GetResponseHeaders()->EnumerateHeader(&iter, name, &url_text)) {
+      // Resolve suggested URL relative to request url.
+      GURL sdch_dictionary_url = request_->url().Resolve(url_text);
+      if (sdch_dictionary_url.is_valid()) {
+        sdch_manager->FetchDictionary(request_->url(), sdch_dictionary_url);
       }
     }
   }
@@ -516,24 +482,13 @@ void URLRequestHttpJob::AddExtraHeaders() {
   // simple_data_source.
   if (!request_info_.extra_headers.HasHeader(
       HttpRequestHeaders::kAcceptEncoding)) {
-    // We don't support SDCH responses to POST as there is a possibility
-    // of having SDCH encoded responses returned (e.g. by the cache)
-    // which we cannot decode, and in those situations, we will need
-    // to retransmit the request without SDCH, which is illegal for a POST.
-    bool advertise_sdch = sdch_manager != NULL && request()->method() != "POST";
-    if (advertise_sdch) {
-      SdchProblemCode rv = sdch_manager->IsInSupportedDomain(request()->url());
-      if (rv != SDCH_OK) {
-        advertise_sdch = false;
-        // If SDCH is just disabled, it is not a real error.
-        if (rv != SDCH_DISABLED && rv != SDCH_SECURE_SCHEME_NOT_SUPPORTED) {
-          SdchManager::SdchErrorRecovery(rv);
-          request()->net_log().AddEvent(
-              NetLog::TYPE_SDCH_DECODING_ERROR,
-              base::Bind(&NetLogSdchResourceProblemCallback, rv));
-        }
-      }
-    }
+    bool advertise_sdch = sdch_manager &&
+        // We don't support SDCH responses to POST as there is a possibility
+        // of having SDCH encoded responses returned (e.g. by the cache)
+        // which we cannot decode, and in those situations, we will need
+        // to retransmit the request without SDCH, which is illegal for a POST.
+        request()->method() != "POST" &&
+        sdch_manager->IsInSupportedDomain(request_->url());
     std::string avail_dictionaries;
     if (advertise_sdch) {
       sdch_manager->GetAvailDictionaryList(request_->url(),

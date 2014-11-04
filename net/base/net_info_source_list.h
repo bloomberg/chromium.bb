@@ -20,4 +20,3 @@ NET_INFO_SOURCE(SPDY_STATUS, "spdyStatus",                               1 << 6)
 NET_INFO_SOURCE(SPDY_ALT_PROTO_MAPPINGS, "spdyAlternateProtocolMappings",
                                                                          1 << 7)
 NET_INFO_SOURCE(HTTP_CACHE, "httpCacheInfo",                             1 << 8)
-NET_INFO_SOURCE(SDCH, "sdchInfo",                                        1 << 9)

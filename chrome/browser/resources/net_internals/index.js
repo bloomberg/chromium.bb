@@ -49,7 +49,6 @@
 <include src="prerender_view.js">
 <include src="chromeos_view.js">
 <include src="bandwidth_view.js">
-<include src="sdch_view.js">
 <include src="cros_log_visualizer_view.js">
 <include src="cros_log_entry.js">
 <include src="cros_log_visualizer.js" >

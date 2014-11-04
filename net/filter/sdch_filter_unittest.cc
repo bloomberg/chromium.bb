@@ -67,7 +67,14 @@ class SdchFilterTest : public testing::Test {
   // the attempt succeeded.
   bool AddSdchDictionary(const std::string& dictionary_text,
                          const GURL& gurl) {
-    return sdch_manager_->AddSdchDictionary(dictionary_text, gurl) == SDCH_OK;
+    std::string list;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list);
+    sdch_manager_->AddSdchDictionary(dictionary_text, gurl);
+    std::string list2;
+    sdch_manager_->GetAvailDictionaryList(gurl, &list2);
+
+    // The list of hashes should change iff the addition succeeds.
+    return (list != list2);
   }
 
   MockFilterContext* filter_context() { return filter_context_.get(); }
@@ -405,10 +412,9 @@ TEST_F(SdchFilterTest, BasicBadDictionary) {
   EXPECT_EQ(0, output_bytes_or_buffer_size);
   EXPECT_EQ(Filter::FILTER_ERROR, status);
 
-  EXPECT_EQ(SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET,
-            sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_FALSE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
   sdch_manager_->ClearBlacklistings();
-  EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_TRUE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
 }
 
 TEST_F(SdchFilterTest, DictionaryAddOnce) {
@@ -661,11 +667,10 @@ TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
                               filter.get(), &output));
   EXPECT_EQ(output.size(), 0u);  // No output written.
 
-  EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(GURL(url_string)));
-  EXPECT_EQ(SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET,
-            sdch_manager_->IsInSupportedDomain(wrong_domain_url));
+  EXPECT_TRUE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_FALSE(sdch_manager_->IsInSupportedDomain(wrong_domain_url));
   sdch_manager_->ClearBlacklistings();
-  EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(wrong_domain_url));
+  EXPECT_TRUE(sdch_manager_->IsInSupportedDomain(wrong_domain_url));
 }
 
 TEST_F(SdchFilterTest, DictionaryPathValidation) {
@@ -718,10 +723,9 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
                               output_block_size, filter.get(), &output));
   EXPECT_EQ(output.size(), 0u);  // No output written.
 
-  EXPECT_EQ(SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET,
-            sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_FALSE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
   sdch_manager_->ClearBlacklistings();
-  EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_TRUE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
 }
 
 TEST_F(SdchFilterTest, DictionaryPortValidation) {
@@ -785,10 +789,9 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
                               output_block_size, filter.get(), &output));
   EXPECT_EQ(output.size(), 0u);  // No output written.
 
-  EXPECT_EQ(SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET,
-            sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_FALSE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
   sdch_manager_->ClearBlacklistings();
-  EXPECT_EQ(SDCH_OK, sdch_manager_->IsInSupportedDomain(GURL(url_string)));
+  EXPECT_TRUE(sdch_manager_->IsInSupportedDomain(GURL(url_string)));
 }
 
 //------------------------------------------------------------------------------

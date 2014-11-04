@@ -9,7 +9,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_http_job.h"
@@ -83,8 +82,7 @@ SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,
 SdchManager::Dictionary::~Dictionary() {
 }
 
-SdchProblemCode SdchManager::Dictionary::CanAdvertise(
-    const GURL& target_url) const {
+bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
   /* The specific rules of when a dictionary should be advertised in an
      Avail-Dictionary header are modeled after the rules for cookie scoping. The
      terms "domain-match" and "pathmatch" are defined in RFC 2965 [6]. A
@@ -101,28 +99,28 @@ SdchProblemCode SdchManager::Dictionary::CanAdvertise(
      url scheme.
     */
   if (!DomainMatch(target_url, domain_))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_DOMAIN;
+    return false;
   if (!ports_.empty() && 0 == ports_.count(target_url.EffectiveIntPort()))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_PORT_LIST;
+    return false;
   if (path_.size() && !PathMatch(target_url.path(), path_))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_PATH;
+    return false;
   if (!SdchManager::secure_scheme_supported() && target_url.SchemeIsSecure())
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
+    return false;
   if (target_url.SchemeIsSecure() != url_.SchemeIsSecure())
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
+    return false;
   if (base::Time::Now() > expiration_)
-    return SDCH_DICTIONARY_FOUND_EXPIRED;
-  return SDCH_OK;
+    return false;
+  return true;
 }
 
 //------------------------------------------------------------------------------
 // Security functions restricting loads and use of dictionaries.
 
 // static
-SdchProblemCode SdchManager::Dictionary::CanSet(const std::string& domain,
-                                                const std::string& path,
-                                                const std::set<int>& ports,
-                                                const GURL& dictionary_url) {
+bool SdchManager::Dictionary::CanSet(const std::string& domain,
+                                     const std::string& path,
+                                     const std::set<int>& ports,
+                                     const GURL& dictionary_url) {
   /*
   A dictionary is invalid and must not be stored if any of the following are
   true:
@@ -141,17 +139,20 @@ SdchProblemCode SdchManager::Dictionary::CanSet(const std::string& domain,
   // and hence the conservative approach is to not allow any redirects (if there
   // were any... then don't allow the dictionary to be set).
 
-  if (domain.empty())
-    return SDCH_DICTIONARY_MISSING_DOMAIN_SPECIFIER;  // Domain is required.
-
-  if (registry_controlled_domains::GetDomainAndRegistry(
-          domain, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)
-          .empty()) {
-    return SDCH_DICTIONARY_SPECIFIES_TOP_LEVEL_DOMAIN;  // domain was a TLD.
+  if (domain.empty()) {
+    SdchErrorRecovery(DICTIONARY_MISSING_DOMAIN_SPECIFIER);
+    return false;  // Domain is required.
   }
-
-  if (!Dictionary::DomainMatch(dictionary_url, domain))
-    return SDCH_DICTIONARY_DOMAIN_NOT_MATCHING_SOURCE_URL;
+  if (registry_controlled_domains::GetDomainAndRegistry(
+        domain,
+        registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES).empty()) {
+    SdchErrorRecovery(DICTIONARY_SPECIFIES_TOP_LEVEL_DOMAIN);
+    return false;  // domain was a TLD.
+  }
+  if (!Dictionary::DomainMatch(dictionary_url, domain)) {
+    SdchErrorRecovery(DICTIONARY_DOMAIN_NOT_MATCHING_SOURCE_URL);
+    return false;
+  }
 
   std::string referrer_url_host = dictionary_url.host();
   size_t postfix_domain_index = referrer_url_host.rfind(domain);
@@ -159,20 +160,23 @@ SdchProblemCode SdchManager::Dictionary::CanSet(const std::string& domain,
   if (referrer_url_host.size() == postfix_domain_index + domain.size()) {
     // It is a postfix... so check to see if there's a dot in the prefix.
     size_t end_of_host_index = referrer_url_host.find_first_of('.');
-    if (referrer_url_host.npos != end_of_host_index &&
+    if (referrer_url_host.npos != end_of_host_index  &&
         end_of_host_index < postfix_domain_index) {
-      return SDCH_DICTIONARY_REFERER_URL_HAS_DOT_IN_PREFIX;
+      SdchErrorRecovery(DICTIONARY_REFERER_URL_HAS_DOT_IN_PREFIX);
+      return false;
     }
   }
 
-  if (!ports.empty() && 0 == ports.count(dictionary_url.EffectiveIntPort()))
-    return SDCH_DICTIONARY_PORT_NOT_MATCHING_SOURCE_URL;
-
-  return SDCH_OK;
+  if (!ports.empty()
+      && 0 == ports.count(dictionary_url.EffectiveIntPort())) {
+    SdchErrorRecovery(DICTIONARY_PORT_NOT_MATCHING_SOURCE_URL);
+    return false;
+  }
+  return true;
 }
 
-SdchProblemCode SdchManager::Dictionary::CanUse(
-    const GURL& referring_url) const {
+// static
+bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
   /*
     1. The request URL's host name domain-matches the Domain attribute of the
       dictionary.
@@ -184,30 +188,39 @@ SdchProblemCode SdchManager::Dictionary::CanUse(
     HTTPS support AND the dictionary acquisition scheme matches the target
      url scheme.
   */
-  if (!DomainMatch(referring_url, domain_))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_DOMAIN;
-
-  if (!ports_.empty() && 0 == ports_.count(referring_url.EffectiveIntPort()))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_PORT_LIST;
-
-  if (path_.size() && !PathMatch(referring_url.path(), path_))
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_PATH;
-
-  if (!SdchManager::secure_scheme_supported() && referring_url.SchemeIsSecure())
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
-
-  if (referring_url.SchemeIsSecure() != url_.SchemeIsSecure())
-    return SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
+  if (!DomainMatch(referring_url, domain_)) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_DOMAIN);
+    return false;
+  }
+  if (!ports_.empty()
+      && 0 == ports_.count(referring_url.EffectiveIntPort())) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_PORT_LIST);
+    return false;
+  }
+  if (path_.size() && !PathMatch(referring_url.path(), path_)) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_PATH);
+    return false;
+  }
+  if (!SdchManager::secure_scheme_supported() &&
+      referring_url.SchemeIsSecure()) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
+    return false;
+  }
+  if (referring_url.SchemeIsSecure() != url_.SchemeIsSecure()) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
+    return false;
+  }
 
   // TODO(jar): Remove overly restrictive failsafe test (added per security
   // review) when we have a need to be more general.
-  if (!referring_url.SchemeIsHTTPOrHTTPS())
-    return SDCH_ATTEMPT_TO_DECODE_NON_HTTP_DATA;
+  if (!referring_url.SchemeIsHTTPOrHTTPS()) {
+    SdchErrorRecovery(ATTEMPT_TO_DECODE_NON_HTTP_DATA);
+    return false;
+  }
 
-  return SDCH_OK;
+  return true;
 }
 
-// static
 bool SdchManager::Dictionary::PathMatch(const std::string& path,
                                         const std::string& restriction) {
   /*  Must be either:
@@ -260,9 +273,8 @@ void SdchManager::ClearData() {
 }
 
 // static
-void SdchManager::SdchErrorRecovery(SdchProblemCode problem) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sdch3.ProblemCodes_5", problem, SDCH_MAX_PROBLEM_CODE);
+void SdchManager::SdchErrorRecovery(ProblemCodes problem) {
+  UMA_HISTOGRAM_ENUMERATION("Sdch3.ProblemCodes_4", problem, MAX_PROBLEM_CODE);
 }
 
 void SdchManager::set_sdch_fetcher(scoped_ptr<SdchFetcher> fetcher) {
@@ -281,7 +293,7 @@ void SdchManager::EnableSecureSchemeSupport(bool enabled) {
 }
 
 void SdchManager::BlacklistDomain(const GURL& url,
-                                  SdchProblemCode blacklist_reason) {
+                                  ProblemCodes blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
   BlacklistInfo* blacklist_info =
@@ -302,7 +314,7 @@ void SdchManager::BlacklistDomain(const GURL& url,
 }
 
 void SdchManager::BlacklistDomainForever(const GURL& url,
-                                         SdchProblemCode blacklist_reason) {
+                                         ProblemCodes blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
 
   BlacklistInfo* blacklist_info =
@@ -320,7 +332,7 @@ void SdchManager::ClearDomainBlacklisting(const std::string& domain) {
   BlacklistInfo* blacklist_info = &blacklisted_domains_[
       base::StringToLowerASCII(domain)];
   blacklist_info->count = 0;
-  blacklist_info->reason = SDCH_OK;
+  blacklist_info->reason = MIN_PROBLEM_CODE;
 }
 
 int SdchManager::BlackListDomainCount(const std::string& domain) {
@@ -339,55 +351,48 @@ int SdchManager::BlacklistDomainExponential(const std::string& domain) {
   return blacklisted_domains_[domain_lower].exponential_count;
 }
 
-SdchProblemCode SdchManager::IsInSupportedDomain(const GURL& url) {
+bool SdchManager::IsInSupportedDomain(const GURL& url) {
   DCHECK(CalledOnValidThread());
   if (!g_sdch_enabled_ )
-    return SDCH_DISABLED;
+    return false;
 
   if (!secure_scheme_supported() && url.SchemeIsSecure())
-    return SDCH_SECURE_SCHEME_NOT_SUPPORTED;
+    return false;
 
   if (blacklisted_domains_.empty())
-    return SDCH_OK;
+    return true;
 
   DomainBlacklistInfo::iterator it =
       blacklisted_domains_.find(base::StringToLowerASCII(url.host()));
   if (blacklisted_domains_.end() == it || it->second.count == 0)
-    return SDCH_OK;
+    return true;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sdch3.BlacklistReason", it->second.reason, SDCH_MAX_PROBLEM_CODE);
+  UMA_HISTOGRAM_ENUMERATION("Sdch3.BlacklistReason", it->second.reason,
+                            MAX_PROBLEM_CODE);
+  SdchErrorRecovery(DOMAIN_BLACKLIST_INCLUDES_TARGET);
 
   int count = it->second.count - 1;
   if (count > 0) {
     it->second.count = count;
   } else {
     it->second.count = 0;
-    it->second.reason = SDCH_OK;
+    it->second.reason = MIN_PROBLEM_CODE;
   }
 
-  return SDCH_DOMAIN_BLACKLIST_INCLUDES_TARGET;
+  return false;
 }
 
-SdchProblemCode SdchManager::FetchDictionary(const GURL& request_url,
-                                             const GURL& dictionary_url) {
+void SdchManager::FetchDictionary(const GURL& request_url,
+                                  const GURL& dictionary_url) {
   DCHECK(CalledOnValidThread());
-  SdchProblemCode rv = CanFetchDictionary(request_url, dictionary_url);
-  if (rv != SDCH_OK)
-    return rv;
-
-  if (fetcher_.get()) {
+  if (CanFetchDictionary(request_url, dictionary_url) && fetcher_.get()) {
     ++fetches_count_for_testing_;
-    if (fetcher_->Schedule(dictionary_url))
-      return SDCH_DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD;
+    fetcher_->Schedule(dictionary_url);
   }
-
-  return SDCH_OK;
 }
 
-SdchProblemCode SdchManager::CanFetchDictionary(
-    const GURL& referring_url,
-    const GURL& dictionary_url) const {
+bool SdchManager::CanFetchDictionary(const GURL& referring_url,
+                                     const GURL& dictionary_url) const {
   DCHECK(CalledOnValidThread());
   /* The user agent may retrieve a dictionary from the dictionary URL if all of
      the following are true:
@@ -402,40 +407,41 @@ SdchProblemCode SdchManager::CanFetchDictionary(
   // Item (1) above implies item (2).  Spec should be updated.
   // I take "host name match" to be "is identical to"
   if (referring_url.host() != dictionary_url.host() ||
-      referring_url.scheme() != dictionary_url.scheme())
-    return SDCH_DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST;
-
-  if (!secure_scheme_supported() && referring_url.SchemeIsSecure())
-    return SDCH_DICTIONARY_SELECTED_FOR_SSL;
+      referring_url.scheme() != dictionary_url.scheme()) {
+    SdchErrorRecovery(DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST);
+    return false;
+  }
+  if (!secure_scheme_supported() && referring_url.SchemeIsSecure()) {
+    SdchErrorRecovery(DICTIONARY_SELECTED_FOR_SSL);
+    return false;
+  }
 
   // TODO(jar): Remove this failsafe conservative hack which is more restrictive
   // than current SDCH spec when needed, and justified by security audit.
-  if (!referring_url.SchemeIsHTTPOrHTTPS())
-    return SDCH_DICTIONARY_SELECTED_FROM_NON_HTTP;
+  if (!referring_url.SchemeIsHTTPOrHTTPS()) {
+    SdchErrorRecovery(DICTIONARY_SELECTED_FROM_NON_HTTP);
+    return false;
+  }
 
-  return SDCH_OK;
+  return true;
 }
 
-SdchProblemCode SdchManager::GetVcdiffDictionary(
+void SdchManager::GetVcdiffDictionary(
     const std::string& server_hash,
     const GURL& referring_url,
     scoped_refptr<Dictionary>* dictionary) {
   DCHECK(CalledOnValidThread());
   *dictionary = NULL;
   DictionaryMap::iterator it = dictionaries_.find(server_hash);
-  if (it == dictionaries_.end())
-    return SDCH_DICTIONARY_HASH_NOT_FOUND;
-
+  if (it == dictionaries_.end()) {
+    return;
+  }
   scoped_refptr<Dictionary> matching_dictionary = it->second;
-
-  SdchProblemCode rv = IsInSupportedDomain(referring_url);
-  if (rv != SDCH_OK)
-    return rv;
-
-  rv = matching_dictionary->CanUse(referring_url);
-  if (rv == SDCH_OK)
-    *dictionary = matching_dictionary;
-  return rv;
+  if (!IsInSupportedDomain(referring_url))
+    return;
+  if (!matching_dictionary->CanUse(referring_url))
+    return;
+  *dictionary = matching_dictionary;
 }
 
 // TODO(jar): If we have evictions from the dictionaries_, then we need to
@@ -447,11 +453,9 @@ void SdchManager::GetAvailDictionaryList(const GURL& target_url,
   int count = 0;
   for (DictionaryMap::iterator it = dictionaries_.begin();
        it != dictionaries_.end(); ++it) {
-    SdchProblemCode rv = IsInSupportedDomain(target_url);
-    if (rv != SDCH_OK)
+    if (!IsInSupportedDomain(target_url))
       continue;
-
-    if (it->second->CanAdvertise(target_url) != SDCH_OK)
+    if (!it->second->CanAdvertise(target_url))
       continue;
     ++count;
     if (!list->empty())
@@ -496,31 +500,35 @@ void SdchManager::SetAllowLatencyExperiment(const GURL& url, bool enable) {
   ExperimentSet::iterator it = allow_latency_experiment_.find(url.host());
   if (allow_latency_experiment_.end() == it)
     return;  // It was already erased, or never allowed.
-  SdchErrorRecovery(SDCH_LATENCY_TEST_DISALLOWED);
+  SdchErrorRecovery(LATENCY_TEST_DISALLOWED);
   allow_latency_experiment_.erase(it);
 }
 
-SdchProblemCode SdchManager::AddSdchDictionary(
-    const std::string& dictionary_text,
+void SdchManager::AddSdchDictionary(const std::string& dictionary_text,
     const GURL& dictionary_url) {
   DCHECK(CalledOnValidThread());
   std::string client_hash;
   std::string server_hash;
   GenerateHash(dictionary_text, &client_hash, &server_hash);
-  if (dictionaries_.find(server_hash) != dictionaries_.end())
-    return SDCH_DICTIONARY_ALREADY_LOADED;  // Already loaded.
+  if (dictionaries_.find(server_hash) != dictionaries_.end()) {
+    SdchErrorRecovery(DICTIONARY_ALREADY_LOADED);
+    return;                             // Already loaded.
+  }
 
   std::string domain, path;
   std::set<int> ports;
   base::Time expiration(base::Time::Now() + base::TimeDelta::FromDays(30));
 
-  if (dictionary_text.empty())
-    return SDCH_DICTIONARY_HAS_NO_TEXT;  // Missing header.
+  if (dictionary_text.empty()) {
+    SdchErrorRecovery(DICTIONARY_HAS_NO_TEXT);
+    return;                             // Missing header.
+  }
 
   size_t header_end = dictionary_text.find("\n\n");
-  if (std::string::npos == header_end)
-    return SDCH_DICTIONARY_HAS_NO_HEADER;  // Missing header.
-
+  if (std::string::npos == header_end) {
+    SdchErrorRecovery(DICTIONARY_HAS_NO_HEADER);
+    return;                             // Missing header.
+  }
   size_t line_start = 0;  // Start of line being parsed.
   while (1) {
     size_t line_end = dictionary_text.find('\n', line_start);
@@ -528,9 +536,10 @@ SdchProblemCode SdchManager::AddSdchDictionary(
     DCHECK_LE(line_end, header_end);
 
     size_t colon_index = dictionary_text.find(':', line_start);
-    if (std::string::npos == colon_index)
-      return SDCH_DICTIONARY_HEADER_LINE_MISSING_COLON;  // Illegal line missing
-                                                         // a colon.
+    if (std::string::npos == colon_index) {
+      SdchErrorRecovery(DICTIONARY_HEADER_LINE_MISSING_COLON);
+      return;                         // Illegal line missing a colon.
+    }
 
     if (colon_index > line_end)
       break;
@@ -549,7 +558,7 @@ SdchProblemCode SdchManager::AddSdchDictionary(
         path = value;
       } else if (name == "format-version") {
         if (value != "1.0")
-          return SDCH_DICTIONARY_UNSUPPORTED_VERSION;
+          return;
       } else if (name == "max-age") {
         int64 seconds;
         base::StringToInt64(value, &seconds);
@@ -571,23 +580,24 @@ SdchProblemCode SdchManager::AddSdchDictionary(
   GURL dictionary_url_normalized(dictionary_url);
   StripTrailingDot(&dictionary_url_normalized);
 
-  SdchProblemCode rv = IsInSupportedDomain(dictionary_url_normalized);
-  if (rv != SDCH_OK)
-    return rv;
+  if (!IsInSupportedDomain(dictionary_url_normalized))
+    return;
 
-  rv = Dictionary::CanSet(domain, path, ports, dictionary_url_normalized);
-  if (rv != SDCH_OK)
-    return rv;
+  if (!Dictionary::CanSet(domain, path, ports, dictionary_url_normalized))
+    return;
 
   // TODO(jar): Remove these hacks to preclude a DOS attack involving piles of
   // useless dictionaries.  We should probably have a cache eviction plan,
   // instead of just blocking additions.  For now, with the spec in flux, it
   // is probably not worth doing eviction handling.
-  if (kMaxDictionarySize < dictionary_text.size())
-    return SDCH_DICTIONARY_IS_TOO_LARGE;
-
-  if (kMaxDictionaryCount <= dictionaries_.size())
-    return SDCH_DICTIONARY_COUNT_EXCEEDED;
+  if (kMaxDictionarySize < dictionary_text.size()) {
+    SdchErrorRecovery(DICTIONARY_IS_TOO_LARGE);
+    return;
+  }
+  if (kMaxDictionaryCount <= dictionaries_.size()) {
+    SdchErrorRecovery(DICTIONARY_COUNT_EXCEEDED);
+    return;
+  }
 
   UMA_HISTOGRAM_COUNTS("Sdch3.Dictionary size loaded", dictionary_text.size());
   DVLOG(1) << "Loaded dictionary with client hash " << client_hash
@@ -597,7 +607,7 @@ SdchProblemCode SdchManager::AddSdchDictionary(
                      dictionary_url_normalized, domain,
                      path, expiration, ports);
   dictionaries_[server_hash] = dictionary;
-  return SDCH_OK;
+  return;
 }
 
 // static
@@ -608,51 +618,6 @@ void SdchManager::UrlSafeBase64Encode(const std::string& input,
   base::Base64Encode(input, output);
   std::replace(output->begin(), output->end(), '+', '-');
   std::replace(output->begin(), output->end(), '/', '_');
-}
-
-base::Value* SdchManager::SdchInfoToValue() const {
-  base::DictionaryValue* value = new base::DictionaryValue();
-
-  value->SetBoolean("sdch_enabled", sdch_enabled());
-  value->SetBoolean("secure_scheme_support", secure_scheme_supported());
-
-  base::ListValue* entry_list = new base::ListValue();
-  for (DictionaryMap::const_iterator it = dictionaries_.begin();
-       it != dictionaries_.end();
-       ++it) {
-    base::DictionaryValue* entry_dict = new base::DictionaryValue();
-    entry_dict->SetString("url", it->second->url().spec());
-    entry_dict->SetString("client_hash", it->second->client_hash());
-    entry_dict->SetString("domain", it->second->domain());
-    entry_dict->SetString("path", it->second->path());
-    base::ListValue* port_list = new base::ListValue();
-    for (std::set<int>::const_iterator port_it = it->second->ports().begin();
-         port_it != it->second->ports().end();
-         ++port_it) {
-      port_list->AppendInteger(*port_it);
-    }
-    entry_dict->Set("ports", port_list);
-    entry_dict->SetString("server_hash", it->first);
-    entry_list->Append(entry_dict);
-  }
-  value->Set("dictionaries", entry_list);
-
-  entry_list = new base::ListValue();
-  for (DomainBlacklistInfo::const_iterator it = blacklisted_domains_.begin();
-       it != blacklisted_domains_.end();
-       ++it) {
-    if (it->second.count == 0)
-      continue;
-    base::DictionaryValue* entry_dict = new base::DictionaryValue();
-    entry_dict->SetString("domain", it->first);
-    if (it->second.count != INT_MAX)
-      entry_dict->SetInteger("tries", it->second.count);
-    entry_dict->SetInteger("reason", it->second.reason);
-    entry_list->Append(entry_dict);
-  }
-  value->Set("blacklisted", entry_list);
-
-  return value;
 }
 
 }  // namespace net

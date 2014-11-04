@@ -52,7 +52,6 @@ var BrowserBridge = (function() {
     this.addNetInfoPollableDataHelper('spdyAlternateProtocolMappings',
                                       'onSpdyAlternateProtocolMappingsChanged');
     this.addNetInfoPollableDataHelper('quicInfo', 'onQuicInfoChanged');
-    this.addNetInfoPollableDataHelper('sdchInfo', 'onSdchInfoChanged');
     this.addNetInfoPollableDataHelper('httpCacheInfo',
                                       'onHttpCacheInfoChanged');
 
@@ -629,17 +628,6 @@ var BrowserBridge = (function() {
         this.pollableDataHelpers_.systemLog.addObserver(
             observer, ignoreWhenUnchanged);
       }
-    },
-
-    /**
-     * Adds a listener of SDCH information. |observer| will be called
-     * back when data is received, through:
-     *
-     *   observer.onSdchInfoChanged(sdchInfo)
-     */
-    addSdchInfoObserver: function(observer, ignoreWhenUnchanged) {
-      this.pollableDataHelpers_.sdchInfo.addObserver(
-          observer, ignoreWhenUnchanged);
     },
 
     /**
