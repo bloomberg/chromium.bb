@@ -116,8 +116,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
                       uint32 system_code,
                       const std::string& error_description);
 
-  // On a successful Update() or SessionReady event, trigger playback to resume.
-  void ResumePlayback();
+  void AttemptToResumePlayback();
 
   // Callback to notify that a fatal error happened in |plugin_cdm_delegate_|.
   // The error is terminal and |plugin_cdm_delegate_| should not be used after

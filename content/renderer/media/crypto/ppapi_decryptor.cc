@@ -7,9 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -17,70 +14,12 @@
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_promise.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
 namespace content {
-
-// This class is needed so that resolving an Update() promise triggers playback
-// of the stream. It intercepts the resolve() call to invoke an additional
-// callback.
-class SessionUpdatedPromise : public media::CdmPromiseTemplate<> {
- public:
-  SessionUpdatedPromise(scoped_ptr<media::SimpleCdmPromise> caller_promise,
-                        const base::Closure& additional_resolve_cb)
-      : caller_promise_(caller_promise.Pass()),
-        additional_resolve_cb_(additional_resolve_cb) {}
-
-  void resolve() override {
-    MarkPromiseSettled();
-    additional_resolve_cb_.Run();
-    caller_promise_->resolve();
-  }
-
-  void reject(media::MediaKeys::Exception exception_code,
-              uint32 system_code,
-              const std::string& error_message) override {
-    MarkPromiseSettled();
-    caller_promise_->reject(exception_code, system_code, error_message);
-  }
-
- protected:
-  scoped_ptr<media::SimpleCdmPromise> caller_promise_;
-  base::Closure additional_resolve_cb_;
-};
-
-// This class is needed so that resolving a SessionLoaded() promise triggers
-// playback of the stream. It intercepts the resolve() call to invoke an
-// additional callback. This is only needed until KeysChange event gets passed
-// through Pepper.
-class SessionLoadedPromise : public media::CdmPromiseTemplate<std::string> {
- public:
-  SessionLoadedPromise(scoped_ptr<media::NewSessionCdmPromise> caller_promise,
-                       const base::Closure& additional_resolve_cb)
-      : caller_promise_(caller_promise.Pass()),
-        additional_resolve_cb_(additional_resolve_cb) {}
-
-  void resolve(const std::string& web_session_id) override {
-    MarkPromiseSettled();
-    additional_resolve_cb_.Run();
-    caller_promise_->resolve(web_session_id);
-  }
-
-  void reject(media::MediaKeys::Exception exception_code,
-              uint32 system_code,
-              const std::string& error_message) override {
-    MarkPromiseSettled();
-    caller_promise_->reject(exception_code, system_code, error_message);
-  }
-
- protected:
-  scoped_ptr<media::NewSessionCdmPromise> caller_promise_;
-  base::Closure additional_resolve_cb_;
-};
 
 scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
@@ -201,15 +140,7 @@ void PpapiDecryptor::LoadSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
-
-  // TODO(jrummell): Intercepting the promise should not be necessary once
-  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
-  scoped_ptr<SessionLoadedPromise> session_loaded_promise(
-      new SessionLoadedPromise(promise.Pass(),
-                               base::Bind(&PpapiDecryptor::ResumePlayback,
-                                          weak_ptr_factory_.GetWeakPtr())));
-
-  CdmDelegate()->LoadSession(web_session_id, session_loaded_promise.Pass());
+  CdmDelegate()->LoadSession(web_session_id, promise.Pass());
 }
 
 void PpapiDecryptor::UpdateSession(
@@ -223,17 +154,8 @@ void PpapiDecryptor::UpdateSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
-
-  // TODO(jrummell): Intercepting the promise should not be necessary once
-  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
-  scoped_ptr<SessionUpdatedPromise> session_updated_promise(
-      new SessionUpdatedPromise(promise.Pass(),
-                                base::Bind(&PpapiDecryptor::ResumePlayback,
-                                           weak_ptr_factory_.GetWeakPtr())));
-  CdmDelegate()->UpdateSession(web_session_id,
-                               response,
-                               response_length,
-                               session_updated_promise.Pass());
+  CdmDelegate()->UpdateSession(web_session_id, response, response_length,
+                               promise.Pass());
 }
 
 void PpapiDecryptor::CloseSession(const std::string& web_session_id,
@@ -492,7 +414,7 @@ void PpapiDecryptor::OnSessionKeysChange(const std::string& web_session_id,
   // TODO(jrummell): Handling resume playback should be done in the media
   // player, not in the Decryptors. http://crbug.com/413413.
   if (has_additional_usable_key)
-    ResumePlayback();
+    AttemptToResumePlayback();
 
   session_keys_change_cb_.Run(web_session_id, has_additional_usable_key);
 }
@@ -506,10 +428,6 @@ void PpapiDecryptor::OnSessionExpirationUpdate(
 
 void PpapiDecryptor::OnSessionReady(const std::string& web_session_id) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-
-  // TODO(jrummell): Calling ResumePlayback() here should not be necessary once
-  // OnSessionKeysChange() is called in all cases. http://crbug.com/413413.
-  ResumePlayback();
   session_ready_cb_.Run(web_session_id);
 }
 
@@ -527,10 +445,7 @@ void PpapiDecryptor::OnSessionError(const std::string& web_session_id,
       web_session_id, exception_code, system_code, error_description);
 }
 
-void PpapiDecryptor::ResumePlayback() {
-  // Based on the spec, we need to resume playback when update() completes
-  // successfully, or when a session is successfully loaded (triggered by
-  // OnSessionReady()). So we choose to call the NewKeyCBs here.
+void PpapiDecryptor::AttemptToResumePlayback() {
   if (!new_audio_key_cb_.is_null())
     new_audio_key_cb_.Run();
 
