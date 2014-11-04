@@ -1242,10 +1242,10 @@ void SigninScreenHandler::HandleAccountPickerReady() {
   is_account_picker_showing_first_time_ = true;
   gaia_screen_handler_->MaybePreloadAuthExtension();
 
+  ScreenlockBridge::Get()->SetLockHandler(this);
   if (ScreenLocker::default_screen_locker()) {
     ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
   }
-  ScreenlockBridge::Get()->SetLockHandler(this);
 
   if (delegate_)
     delegate_->OnSigninScreenReady();

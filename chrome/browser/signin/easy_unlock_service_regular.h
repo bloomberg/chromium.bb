@@ -12,6 +12,10 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
+#endif
+
 namespace base {
 class DictionaryValue;
 class ListValue;
@@ -50,6 +54,9 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   void ShutdownInternal() override;
   bool IsAllowedInternal() override;
 
+  // Opens the component packaged app responsible for setting up Smart Lock.
+  void OpenSetupApp();
+
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
@@ -59,10 +66,19 @@ class EasyUnlockServiceRegular : public EasyUnlockService {
   // Callback invoked when turn off flow has finished.
   void OnTurnOffFlowFinished(bool success);
 
+#if defined(OS_CHROMEOS)
+  void OnUserContextFromReauth(const chromeos::UserContext& user_context);
+  void OnKeysRefreshedForSetDevices(bool success);
+
+  scoped_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
+#endif
+
   PrefChangeRegistrar registrar_;
 
   TurnOffFlowStatus turn_off_flow_status_;
   scoped_ptr<EasyUnlockToggleFlow> turn_off_flow_;
+
+  base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };

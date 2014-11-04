@@ -200,6 +200,13 @@ cr.define('login', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
+     * The id of the icon being shown.
+     * @type {string}
+     * @private
+     */
+    iconId_: '',
+
+    /**
      * Tooltip to be shown when the user hovers over the icon. The icon
      * properties may be set so the tooltip is shown automatically when the icon
      * is updated. The tooltip is shown in a bubble attached to the icon
@@ -286,6 +293,7 @@ cr.define('login', function() {
      *    one of the ids listed in {@code UserPodCustomIcon.ICONS}.
      */
     setIcon: function(id) {
+      this.iconId_ = id;
       UserPodCustomIcon.ICONS.forEach(function(icon) {
         this.iconElement.classList.toggle(icon.class, id == icon.id);
       }, this);
@@ -477,7 +485,9 @@ cr.define('login', function() {
       bubbleContent.textContent = this.tooltip_;
 
       /** @const */ var BUBBLE_OFFSET = CUSTOM_ICON_CONTAINER_SIZE / 2;
-      /** @const */ var BUBBLE_PADDING = 8;
+      // TODO(tengs): Introduce a special reauth state for the account picker,
+      // instead of showing the tooltip bubble here (crbug.com/409427).
+      /** @const */ var BUBBLE_PADDING = 8 + (this.iconId_ ? 0 : 23);
       $('bubble').showContentForElement(this,
                                         cr.ui.Bubble.Attachment.RIGHT,
                                         bubbleContent,
@@ -2265,10 +2275,11 @@ cr.define('login', function() {
         return;
       }
 
-      if (!icon.id)
+      if (!icon.id && !icon.tooltip)
         return;
 
-      pod.customIconElement.setIcon(icon.id);
+      if (icon.id)
+        pod.customIconElement.setIcon(icon.id);
 
       if (icon.hardlockOnClick) {
         pod.customIconElement.setInteractive(

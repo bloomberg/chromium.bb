@@ -62,9 +62,6 @@ scoped_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::string icon_id = GetIdForIcon(icon_);
-  if (icon_id.empty())
-    return result.Pass();
-
   result->SetString("id", icon_id);
 
   if (!tooltip_.empty()) {
