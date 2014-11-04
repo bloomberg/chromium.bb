@@ -688,7 +688,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
 
         if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.backgroundRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerBackground, fragment.backgroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.backgroundRect, paintFlags, *clipRecorder);
+            applyRoundedRectClips(localPaintingInfo, context, fragment.backgroundRect, paintFlags, *clipRecorder, DoNotIncludeSelfForBorderRadius); // Background painting will handle clipping to self.
         }
 
         // Paint the background.
@@ -873,7 +873,8 @@ void LayerPainter::paintTransformedLayerIntoFragments(GraphicsContext* context, 
         OwnPtr<ClipRecorder> clipRecorder;
         if (needsToClip(paintingInfo, clipRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent(), context, DisplayItem::ClipLayerFragmentParent, clipRect));
-            LayerPainter(*m_renderLayer.parent()).applyRoundedRectClips(paintingInfo, context, clipRect, paintFlags, *clipRecorder, DoNotIncludeSelfForBorderRadius); // Child clipping mask painting will handle clipping to self.
+            // FIXME: why should we have to deal with rounded rect clips here at all?
+            LayerPainter(*m_renderLayer.parent()).applyRoundedRectClips(paintingInfo, context, clipRect, paintFlags, *clipRecorder);
         }
 
         paintLayerByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
