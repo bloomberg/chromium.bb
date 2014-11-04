@@ -4,10 +4,8 @@
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-#include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 #include "content/public/browser/browser_context.h"
 
 #ifndef NDEBUG
