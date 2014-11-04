@@ -39,10 +39,8 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
     Profile* profile,
-    gfx::NativeWindow parent,
     ExtensionUninstallDialog::Delegate* delegate)
     : profile_(profile),
-      parent_(parent),
       delegate_(delegate),
       extension_(NULL),
       triggering_extension_(NULL),

@@ -25,9 +25,7 @@ namespace {
 class ExtensionUninstallDialogCocoa
     : public extensions::ExtensionUninstallDialog {
  public:
-  ExtensionUninstallDialogCocoa(Profile* profile,
-                                gfx::NativeWindow parent,
-                                Delegate* delegate);
+  ExtensionUninstallDialogCocoa(Profile* profile, Delegate* delegate);
   ~ExtensionUninstallDialogCocoa() override;
 
  private:
@@ -36,9 +34,8 @@ class ExtensionUninstallDialogCocoa
 
 ExtensionUninstallDialogCocoa::ExtensionUninstallDialogCocoa(
     Profile* profile,
-    gfx::NativeWindow parent,
     extensions::ExtensionUninstallDialog::Delegate* delegate)
-    : extensions::ExtensionUninstallDialog(profile, parent, delegate) {
+    : extensions::ExtensionUninstallDialog(profile, delegate) {
 }
 
 ExtensionUninstallDialogCocoa::~ExtensionUninstallDialogCocoa() {}
@@ -73,5 +70,5 @@ extensions::ExtensionUninstallDialog*
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
                                              gfx::NativeWindow parent,
                                              Delegate* delegate) {
-  return new ExtensionUninstallDialogCocoa(profile, parent, delegate);
+  return new ExtensionUninstallDialogCocoa(profile, delegate);
 }

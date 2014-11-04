@@ -63,16 +63,10 @@ class ExtensionUninstallDialog
 
  protected:
   // Constructor used by the derived classes.
-  ExtensionUninstallDialog(Profile* profile,
-                           gfx::NativeWindow parent,
-                           Delegate* delegate);
+  ExtensionUninstallDialog(Profile* profile, Delegate* delegate);
 
   // TODO(sashab): Remove protected members: crbug.com/397395
   Profile* const profile_;
-
-  // TODO(sashab): Investigate lifetime issue of this window variable:
-  // crbug.com/397396
-  gfx::NativeWindow parent_;
 
   // The delegate we will call Accepted/Canceled on after confirmation dialog.
   Delegate* delegate_;
