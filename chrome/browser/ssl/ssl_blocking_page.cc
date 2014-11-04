@@ -233,7 +233,7 @@ void LaunchDateAndTimeSettings() {
       "'com.android.settings/.Settings$DateTimeSettingsActivity'");
 #elif defined(OS_IOS)
   // iOS does not have a way to launch the date and time settings.
-  return;
+  NOTREACHED();
 #elif defined(OS_LINUX)
   struct ClockCommand {
     const char* pathname;
@@ -432,6 +432,12 @@ std::string SSLBlockingPage::GetHTMLContents() {
     load_time_data.SetBoolean("bad_clock", true);
     load_time_data.SetBoolean("overridable", false);
 
+#if defined(OS_IOS)
+    load_time_data.SetBoolean("hide_primary_button", true);
+#else
+    load_time_data.SetBoolean("hide_primary_button", false);
+#endif
+
     // We're showing the SSL clock warning to be helpful, but we haven't warned
     // them about the risks. (And there might still be an SSL error after they
     // fix their clock.) Thus, we don't allow the "danger" override in this
@@ -457,9 +463,9 @@ std::string SSLBlockingPage::GetHTMLContents() {
     load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_UPDATE_DATE_AND_TIME));
-    load_time_data.SetString(
-       "openDetails",
-       l10n_util::GetStringUTF16(IDS_SSL_RELOAD));
+
+    // We set the "Advanced" link to be empty so that it doesn't appear.
+    load_time_data.SetString("openDetails", std::string());
 
     // The interstitial template expects these strings, but we're not using
     // them. So we send blank strings for now.

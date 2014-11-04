@@ -67,6 +67,8 @@ function setupEvents() {
   var overridable = loadTimeData.getBoolean('overridable');
   var ssl = loadTimeData.getString('type') === 'SSL';
   var badClock = ssl && loadTimeData.getBoolean('bad_clock');
+  var hidePrimaryButton = badClock && loadTimeData.getBoolean(
+      'hide_primary_button');
 
   if (ssl) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
@@ -76,16 +78,20 @@ function setupEvents() {
     $('body').classList.add('safe-browsing');
   }
 
-  $('primary-button').addEventListener('click', function() {
-    if (!ssl)
-      sendCommand(SB_CMD_TAKE_ME_BACK);
-    else if (badClock)
-      sendCommand(SSL_CMD_CLOCK);
-    else if (overridable)
-      sendCommand(SSL_CMD_DONT_PROCEED);
-    else
-      sendCommand(SSL_CMD_RELOAD);
-  });
+  if (hidePrimaryButton) {
+    $('primary-button').classList.add('hidden');
+  } else {
+    $('primary-button').addEventListener('click', function() {
+      if (!ssl)
+        sendCommand(SB_CMD_TAKE_ME_BACK);
+      else if (badClock)
+        sendCommand(SSL_CMD_CLOCK);
+      else if (overridable)
+        sendCommand(SSL_CMD_DONT_PROCEED);
+      else
+        sendCommand(SSL_CMD_RELOAD);
+    });
+  }
 
   if (overridable) {
     $('proceed-link').addEventListener('click', function(event) {
@@ -110,18 +116,14 @@ function setupEvents() {
   }
 
   $('details-button').addEventListener('click', function(event) {
-    if (badClock) {
-      sendCommand(SSL_CMD_RELOAD);
-    } else {
-      var hiddenDetails = $('details').classList.toggle('hidden');
-      $('details-button').innerText = hiddenDetails ?
-          loadTimeData.getString('openDetails') :
-          loadTimeData.getString('closeDetails');
-      if (!expandedDetails) {
-        // Record a histogram entry only the first time that details is opened.
-        sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
-        expandedDetails = true;
-      }
+    var hiddenDetails = $('details').classList.toggle('hidden');
+    $('details-button').innerText = hiddenDetails ?
+        loadTimeData.getString('openDetails') :
+        loadTimeData.getString('closeDetails');
+    if (!expandedDetails) {
+      // Record a histogram entry only the first time that details is opened.
+      sendCommand(ssl ? SSL_CMD_MORE : SB_CMD_EXPANDED_SEE_MORE);
+      expandedDetails = true;
     }
   });
 
