@@ -24,6 +24,8 @@ const QuicPacketCount kMinimumCongestionWindow = 2;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
+const float kRenoBeta = 0.7f;  // Reno backoff factor.
+const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
 }  // namespace
 
 TcpCubicSender::TcpCubicSender(
@@ -37,7 +39,7 @@ TcpCubicSender::TcpCubicSender(
       rtt_stats_(rtt_stats),
       stats_(stats),
       reno_(reno),
-      num_connections_(2),
+      num_connections_(kDefaultNumConnections),
       congestion_window_count_(0),
       largest_sent_sequence_number_(0),
       largest_acked_sequence_number_(0),
@@ -73,6 +75,14 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
 void TcpCubicSender::SetNumEmulatedConnections(int num_connections) {
   num_connections_ = max(1, num_connections);
   cubic_.SetNumConnections(num_connections_);
+}
+
+float TcpCubicSender::RenoBeta() const {
+  // kNConnectionBeta is the backoff factor after loss for our N-connection
+  // emulation, which emulates the effective backoff of an ensemble of N
+  // TCP-Reno connections on a single loss event. The effective multiplier is
+  // computed as:
+  return (num_connections_ - 1 + kRenoBeta) / num_connections_;
 }
 
 void TcpCubicSender::OnCongestionEvent(
@@ -133,7 +143,7 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
   prr_.OnPacketLost(bytes_in_flight);
 
   if (reno_) {
-    congestion_window_ = congestion_window_ >> 1;
+    congestion_window_ = congestion_window_ * RenoBeta();
   } else {
     congestion_window_ =
         cubic_.CongestionWindowAfterPacketLoss(congestion_window_);

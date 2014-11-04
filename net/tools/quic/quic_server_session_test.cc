@@ -339,11 +339,18 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       bandwidth_estimate_kbytes_per_second * 1.6;
   session_->OnCongestionWindowChange(now);
 
-  // Bandwidth estimate has now changed sufficiently and enough time has passed.
+  // Bandwidth estimate has now changed sufficiently and enough time has passed,
+  // but not enough packets have been sent.
   int64 srtt_ms =
       sent_packet_manager->GetRttStats()->SmoothedRtt().ToMilliseconds();
   now = now.Add(QuicTime::Delta::FromMilliseconds(
       kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));
+  session_->OnCongestionWindowChange(now);
+
+  // Bandwidth estimate has now changed sufficiently, enough time has passed,
+  // and enough packets have been sent.
+  QuicConnectionPeer::SetSequenceNumberOfLastSentPacket(
+      session_->connection(), kMinPacketsBetweenServerConfigUpdates);
 
   // Verify that the proto has exactly the values we expect.
   CachedNetworkParameters expected_network_params;

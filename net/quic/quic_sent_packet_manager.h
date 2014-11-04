@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     virtual ~NetworkChangeVisitor() {}
 
     // Called when congestion window may have changed.
-    virtual void OnCongestionWindowChange(QuicByteCount congestion_window) = 0;
+    virtual void OnCongestionWindowChange() = 0;
     // TODO(jri): Add OnRttStatsChange() to this class as well.
   };
 
@@ -97,6 +97,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   virtual ~QuicSentPacketManager();
 
   virtual void SetFromConfig(const QuicConfig& config);
+
+  void SetNumOpenStreams(size_t num_streams);
 
   void SetHandshakeConfirmed() { handshake_confirmed_ = true; }
 
@@ -345,6 +347,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   RttStats rtt_stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;
+  bool n_connection_simulation_;
 
   // Receiver side buffer in bytes.
   QuicByteCount receive_buffer_bytes_;

@@ -100,7 +100,10 @@ class QuicServerSession : public QuicSession {
   string serving_region_;
 
   // Time at which we send the last SCUP to the client.
-  QuicTime last_server_config_update_time_;
+  QuicTime last_scup_time_;
+
+  // Number of packets sent to the peer, at the time we last sent a SCUP.
+  int64 last_scup_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);
 };

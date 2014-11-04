@@ -178,6 +178,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
   }
+
  private:
   QuicClient* client_;
 };

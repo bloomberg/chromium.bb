@@ -70,6 +70,9 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
  private:
   friend class test::TcpCubicSenderPeer;
 
+  // Compute the TCP Reno beta based on the current number of connections.
+  float RenoBeta() const;
+
   // TODO(ianswett): Remove these and migrate to OnCongestionEvent.
   void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                      QuicByteCount acked_bytes,

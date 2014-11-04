@@ -21,5 +21,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_drop_junk_packets;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_bbr;
 NET_EXPORT_PRIVATE extern bool FLAGS_allow_truncated_connection_ids_for_quic;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_too_many_outstanding_packets;
+NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_delay_forward_security;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

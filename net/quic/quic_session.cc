@@ -48,8 +48,8 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
-  void OnWindowUpdateFrames(
-      const vector<QuicWindowUpdateFrame>& frames) override {
+  void OnWindowUpdateFrames(const vector<QuicWindowUpdateFrame>& frames)
+      override {
     session_->OnWindowUpdateFrames(frames);
     session_->PostProcessAfterData();
   }
@@ -428,6 +428,8 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
 
   stream_map_.erase(it);
   stream->OnClose();
+  // Decrease the number of streams being emulated when a new one is opened.
+  connection_->SetNumOpenStreams(stream_map_.size());
 }
 
 void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
@@ -595,6 +597,8 @@ void QuicSession::ActivateStream(QuicDataStream* stream) {
            << ". activating " << stream->id();
   DCHECK_EQ(stream_map_.count(stream->id()), 0u);
   stream_map_[stream->id()] = stream;
+  // Increase the number of streams being emulated when a new one is opened.
+  connection_->SetNumOpenStreams(stream_map_.size());
 }
 
 QuicStreamId QuicSession::GetNextStreamId() {

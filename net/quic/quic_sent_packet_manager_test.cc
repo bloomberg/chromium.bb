@@ -15,6 +15,7 @@
 using std::vector;
 using testing::AnyNumber;
 using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::Pair;
 using testing::Pointwise;
 using testing::Return;
@@ -99,18 +100,14 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   void ExpectAck(QuicPacketSequenceNumber largest_observed) {
     EXPECT_CALL(*send_algorithm_, OnCongestionEvent(
-        true, _, ElementsAre(Pair(largest_observed, _)), _));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(100 * kDefaultTCPMSS));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+        true, _, ElementsAre(Pair(largest_observed, _)), IsEmpty()));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   }
 
   void ExpectUpdatedRtt(QuicPacketSequenceNumber largest_observed) {
     EXPECT_CALL(*send_algorithm_,
-                OnCongestionEvent(true, _, _, _));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(100 * kDefaultTCPMSS));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+                OnCongestionEvent(true, _, IsEmpty(), IsEmpty()));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   }
 
   void ExpectAckAndLoss(bool rtt_updated,
@@ -119,9 +116,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, OnCongestionEvent(
         rtt_updated, _, ElementsAre(Pair(largest_observed, _)),
         ElementsAre(Pair(lost_packet, _))));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(100 * kDefaultTCPMSS));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   }
 
   // |packets_acked| and |packets_lost| should be in sequence number order.
@@ -142,9 +137,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                 OnCongestionEvent(rtt_updated, _,
                                   Pointwise(KeyEq(), ack_vector),
                                   Pointwise(KeyEq(), lost_vector)));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillRepeatedly(Return(100 * kDefaultTCPMSS));
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_)).
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange()).
         Times(AnyNumber());
   }
 
@@ -395,9 +388,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
 
   // Fire the RTO, which will mark 2 for retransmission (but will not send it).
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(2 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
@@ -839,9 +830,7 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
 
   // The final RTO abandons all of them.
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(2 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(2u, stats_.tlp_count);
@@ -1077,9 +1066,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
   }
 
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(2 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_FALSE(manager_.MaybeRetransmitTailLossProbe());
   manager_.OnRetransmissionTimeout();
 }
@@ -1171,9 +1158,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
   // Retransmit the packet by invoking the retransmission timeout.
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(2 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   clock_.AdvanceTime(expected_rto_delay);
   manager_.OnRetransmissionTimeout();
@@ -1219,9 +1204,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(2 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
     EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
@@ -1247,9 +1230,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelay) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
-    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(2 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
     EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
@@ -1297,9 +1278,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
   options.push_back(kTIME);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(config);
 
   EXPECT_EQ(kTime,
@@ -1314,7 +1293,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
 
   options.push_back(kRENO);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(config);
   EXPECT_EQ(kReno, QuicSentPacketManagerPeer::GetSendAlgorithm(
       manager_)->GetCongestionControlType());
@@ -1324,7 +1303,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
   options.clear();
   options.push_back(kTBBR);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(config);
   EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetSendAlgorithm(
       manager_)->GetCongestionControlType());
@@ -1337,22 +1316,35 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {
 
   options.push_back(k1CON);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(1));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(config);
 
   QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
   QuicConfig client_config;
   client_config.SetConnectionOptionsToSend(options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(1));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(client_config);
+}
+
+TEST_F(QuicSentPacketManagerTest, NegotiateNConnectionFromOptions) {
+  // By default, changing the number of open streams does nothing.
+  manager_.SetNumOpenStreams(5);
+
+  QuicConfig config;
+  QuicTagVector options;
+
+  options.push_back(kNCON);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+
+  EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(5));
+  manager_.SetNumOpenStreams(5);
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtServer) {
@@ -1361,9 +1353,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtServer) {
 
   options.push_back(kNTLP);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(config);
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
@@ -1376,9 +1366,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtClient) {
   options.push_back(kNTLP);
   QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
   client_config.SetConnectionOptionsToSend(options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(client_config);
   EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetMaxTailLossProbes(&manager_));
@@ -1391,9 +1379,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   QuicTagVector options;
   options.push_back(kPACE);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(config);
 
@@ -1408,9 +1394,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
   QuicConfig client_config;
   QuicConfigPeer::SetReceivedSocketReceiveBuffer(&client_config, 1024);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(client_config);
 
   EXPECT_EQ(kMinSocketReceiveBuffer,
@@ -1441,9 +1425,7 @@ TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
   QuicConfig config;
   config.SetInitialRoundTripTimeUsToSend(initial_rtt_us);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(100 * kDefaultTCPMSS));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(config);
 
   EXPECT_EQ(initial_rtt_us,

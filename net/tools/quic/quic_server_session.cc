@@ -20,7 +20,8 @@ QuicServerSession::QuicServerSession(const QuicConfig& config,
     : QuicSession(connection, config),
       visitor_(visitor),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
-      last_server_config_update_time_(QuicTime::Zero()) {}
+      last_scup_time_(QuicTime::Zero()),
+      last_scup_sequence_number_(0) {}
 
 QuicServerSession::~QuicServerSession() {}
 
@@ -69,14 +70,18 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   }
 
   // If not enough time has passed since the last time we sent an update to the
-  // client, then return early.
+  // client, or not enough packets have been sent, then return early.
   const QuicSentPacketManager& sent_packet_manager =
       connection()->sent_packet_manager();
   int64 srtt_ms =
       sent_packet_manager.GetRttStats()->SmoothedRtt().ToMilliseconds();
-  int64 now_ms = now.Subtract(last_server_config_update_time_).ToMilliseconds();
+  int64 now_ms = now.Subtract(last_scup_time_).ToMilliseconds();
+  int64 packets_since_last_scup =
+      connection()->sequence_number_of_last_sent_packet() -
+      last_scup_sequence_number_;
   if (now_ms < (kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms) ||
-      now_ms < kMinIntervalBetweenServerConfigUpdatesMs) {
+      now_ms < kMinIntervalBetweenServerConfigUpdatesMs ||
+      packets_since_last_scup < kMinPacketsBetweenServerConfigUpdates) {
     return;
   }
 
@@ -135,7 +140,9 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   }
 
   crypto_stream_->SendServerConfigUpdate(&cached_network_params);
-  last_server_config_update_time_ = now;
+  last_scup_time_ = now;
+  last_scup_sequence_number_ =
+      connection()->sequence_number_of_last_sent_packet();
 }
 
 bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {

@@ -257,6 +257,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets connection parameters from the supplied |config|.
   void SetFromConfig(const QuicConfig& config);
 
+  // Sets the number of active streams on the connection for congestion control.
+  void SetNumOpenStreams(size_t num_streams);
+
   // Send the data in |data| to the peer in as few packets as possible.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data
@@ -372,7 +375,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void OnSerializedPacket(const SerializedPacket& packet) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
-  void OnCongestionWindowChange(QuicByteCount congestion_window) override;
+  void OnCongestionWindowChange() override;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of
@@ -426,6 +429,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets (or resets) the idle state connection timeout. Also, checks and times
   // out the connection if network timer has expired for |timeout|.
   void SetIdleNetworkTimeout(QuicTime::Delta timeout);
+
   // Sets (or resets) the total time delta the connection can be alive for.
   // Also, checks and times out the connection if timer has expired for
   // |timeout|. Used to limit the time a connection can be alive before crypto
@@ -526,6 +530,10 @@ class NET_EXPORT_PRIVATE QuicConnection
     bool already_in_batch_mode_;
   };
 
+  QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
+    return sequence_number_of_last_sent_packet_;
+  }
+
  protected:
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.
@@ -565,10 +573,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicPacketWriter* writer() const { return writer_; }
 
   bool peer_port_changed() const { return peer_port_changed_; }
-
-  QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
-    return sequence_number_of_last_sent_packet_;
-  }
 
  private:
   friend class test::QuicConnectionPeer;
@@ -678,7 +682,14 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicPacketWriter* writer_;  // Owned or not depending on |owns_writer_|.
   bool owns_writer_;
+  // Encryption level for new packets. Should only be changed via
+  // SetDefaultEncryptionLevel().
   EncryptionLevel encryption_level_;
+  bool has_forward_secure_encrypter_;
+  // The sequence number of the first packet which will be encrypted with the
+  // foward-secure encrypter, even if the peer has not started sending
+  // forward-secure packets.
+  QuicPacketSequenceNumber first_required_forward_secure_packet_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
 

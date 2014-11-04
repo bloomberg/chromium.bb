@@ -28,17 +28,17 @@ class QuicClientSession : public QuicClientSessionBase {
   QuicClientSession(const QuicConfig& config, QuicConnection* connection);
   ~QuicClientSession() override;
 
-  // QuicClientSessionBase methods:
-  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
-  void OnProofVerifyDetailsAvailable(
-      const ProofVerifyDetails& verify_details) override;
-
   void InitializeSession(const QuicServerId& server_id,
                          QuicCryptoClientConfig* config);
 
   // QuicSession methods:
   QuicSpdyClientStream* CreateOutgoingDataStream() override;
   QuicCryptoClientStream* GetCryptoStream() override;
+
+  // QuicClientSessionBase methods:
+  void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
+  void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) override;
 
   // Performs a crypto handshake with the server. Returns true if the crypto
   // handshake is started successfully.

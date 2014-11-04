@@ -58,3 +58,7 @@ bool FLAGS_allow_truncated_connection_ids_for_quic = false;
 // If true, close the connection when there are too many outstanding QUIC
 // packets in the sent or received packet managers.
 bool FLAGS_quic_too_many_outstanding_packets = false;
+
+// If true, QUIC connections will delay moving to forward security until the
+// client starts sending foward secure encrypted packets.
+bool FLAGS_enable_quic_delay_forward_security = true;

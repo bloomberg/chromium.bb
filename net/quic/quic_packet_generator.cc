@@ -84,7 +84,6 @@ QuicPacketGenerator::~QuicPacketGenerator() {
   }
 }
 
-// NetworkChangeVisitor method.
 void QuicPacketGenerator::OnCongestionWindowChange(
     QuicByteCount congestion_window) {
   packet_creator_.set_max_packets_per_fec_group(

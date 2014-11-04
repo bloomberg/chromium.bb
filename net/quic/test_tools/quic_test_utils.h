@@ -538,7 +538,7 @@ class MockNetworkChangeVisitor :
   MockNetworkChangeVisitor();
   virtual ~MockNetworkChangeVisitor();
 
-  MOCK_METHOD1(OnCongestionWindowChange, void(QuicByteCount));
+  MOCK_METHOD0(OnCongestionWindowChange, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);

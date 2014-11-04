@@ -78,6 +78,7 @@ QuicSentPacketManager::QuicSentPacketManager(
                                                      congestion_control_type,
                                                      stats)),
       loss_algorithm_(LossDetectionInterface::Create(loss_type)),
+      n_connection_simulation_(false),
       receive_buffer_bytes_(kDefaultSocketReceiveBuffer),
       least_packet_awaited_by_peer_(1),
       first_rto_transmission_(0),
@@ -125,6 +126,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (HasClientSentConnectionOption(config, k1CON)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
+  if (HasClientSentConnectionOption(config, kNCON)) {
+    n_connection_simulation_ = true;
+  }
   if (HasClientSentConnectionOption(config, kNTLP)) {
     max_tail_loss_probes_ = 0;
   }
@@ -140,7 +144,15 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   send_algorithm_->SetFromConfig(config, is_server_);
 
   if (network_change_visitor_ != nullptr) {
-    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
+    network_change_visitor_->OnCongestionWindowChange();
+  }
+}
+
+void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
+  if (n_connection_simulation_) {
+    // Ensure the number of connections is between 1 and 5.
+    send_algorithm_->SetNumEmulatedConnections(
+        min<size_t>(5, max<size_t>(1, num_streams)));
   }
 }
 
@@ -225,7 +237,7 @@ void QuicSentPacketManager::MaybeInvokeCongestionEvent(
   packets_acked_.clear();
   packets_lost_.clear();
   if (network_change_visitor_ != nullptr) {
-    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
+    network_change_visitor_->OnCongestionWindowChange();
   }
 }
 
@@ -650,7 +662,7 @@ void QuicSentPacketManager::RetransmitAllPackets() {
   }
 
   if (network_change_visitor_ != nullptr) {
-    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
+    network_change_visitor_->OnCongestionWindowChange();
   }
 }
 
@@ -818,8 +830,7 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedRtt();
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
-        srtt.Multiply(2),
-        srtt.Multiply(1.5).Add(
+        srtt.Multiply(2), srtt.Multiply(1.5).Add(
             QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs / 2)));
   }
   return QuicTime::Delta::FromMilliseconds(

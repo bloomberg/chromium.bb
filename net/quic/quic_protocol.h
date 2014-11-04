@@ -133,6 +133,9 @@ const int kMinIntervalBetweenServerConfigUpdatesRTTs = 10;
 // Minimum time between Server Config Updates (SCUP) sent to client.
 const int kMinIntervalBetweenServerConfigUpdatesMs = 1000;
 
+// Minimum number of packets between Server Config Updates (SCUP).
+const int kMinPacketsBetweenServerConfigUpdates = 100;
+
 // The number of open streams that a server will accept is set to be slightly
 // larger than the negotiated limit. Immediately closing the connection if the
 // client opens slightly too many streams is not ideal: the client may have sent

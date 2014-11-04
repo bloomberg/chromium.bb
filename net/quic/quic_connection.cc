@@ -196,6 +196,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       writer_(writer_factory.Create(this)),
       owns_writer_(owns_writer),
       encryption_level_(ENCRYPTION_NONE),
+      has_forward_secure_encrypter_(false),
+      first_required_forward_secure_packet_(0),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
       connection_id_(connection_id),
@@ -283,6 +285,10 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
         config.ReceivedBytesForConnectionId());
   }
   max_undecryptable_packets_ = config.max_undecryptable_packets();
+}
+
+void QuicConnection::SetNumOpenStreams(size_t num_streams) {
+  sent_packet_manager_.SetNumOpenStreams(num_streams);
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -457,6 +463,14 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   last_decrypted_packet_level_ = level;
   last_packet_decrypted_ = true;
+  // If this packet was foward-secure encrypted and the forward-secure encrypter
+  // is not being used, start using it.
+  if (FLAGS_enable_quic_delay_forward_security &&
+      encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+      has_forward_secure_encrypter_ &&
+      level == ENCRYPTION_FORWARD_SECURE) {
+    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  }
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
@@ -1553,6 +1567,16 @@ void QuicConnection::OnWriteError(int error_code) {
 
 void QuicConnection::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
+  // If a forward-secure encrypter is available but is not being used and this
+  // packet's sequence number is after the first packet which requires
+  // forward security, start using the forward-secure encrypter.
+  if (FLAGS_enable_quic_delay_forward_security &&
+      encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+      has_forward_secure_encrypter_ &&
+      serialized_packet.sequence_number >=
+          first_required_forward_secure_packet_) {
+    SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  }
   if (serialized_packet.retransmittable_frames) {
     serialized_packet.retransmittable_frames->
         set_encryption_level(encryption_level_);
@@ -1560,8 +1584,9 @@ void QuicConnection::OnSerializedPacket(
   SendOrQueuePacket(QueuedPacket(serialized_packet, encryption_level_));
 }
 
-void QuicConnection::OnCongestionWindowChange(QuicByteCount congestion_window) {
-  packet_generator_.OnCongestionWindowChange(congestion_window);
+void QuicConnection::OnCongestionWindowChange() {
+  packet_generator_.OnCongestionWindowChange(
+      sent_packet_manager_.GetCongestionWindow());
   visitor_->OnCongestionWindowChange(clock_->ApproximateNow());
 }
 
@@ -1653,6 +1678,16 @@ void QuicConnection::OnRetransmissionTimeout() {
 void QuicConnection::SetEncrypter(EncryptionLevel level,
                                   QuicEncrypter* encrypter) {
   framer_.SetEncrypter(level, encrypter);
+  if (FLAGS_enable_quic_delay_forward_security &&
+      level == ENCRYPTION_FORWARD_SECURE) {
+    has_forward_secure_encrypter_ = true;
+    first_required_forward_secure_packet_ =
+        sequence_number_of_last_sent_packet_ +
+        // 3 times the current congestion window (in slow start) should cover
+        // about two full round trips worth of packets, which should be
+        // sufficient.
+        3 * sent_packet_manager_.GetCongestionWindow() / max_packet_length();
+  }
 }
 
 const QuicEncrypter* QuicConnection::encrypter(EncryptionLevel level) const {
