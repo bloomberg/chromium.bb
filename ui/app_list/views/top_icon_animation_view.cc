@@ -49,12 +49,13 @@ void TopIconAnimationView::TransformView() {
   set_owned_by_client();
 
   // Transform used for scaling down the icon and move it back inside to the
-  // original folder icon.
-  const float kIconTransformScale = 0.33333f;
+  // original folder icon. The transform's origin is this view's origin.
   gfx::Transform transform;
-  transform.Translate(scaled_rect_.x() - layer()->bounds().x(),
-                      scaled_rect_.y() - layer()->bounds().y());
-  transform.Scale(kIconTransformScale, kIconTransformScale);
+  transform.Translate(scaled_rect_.x() - bounds().x(),
+                      scaled_rect_.y() - bounds().y());
+  transform.Scale(
+      static_cast<double>(scaled_rect_.width()) / bounds().width(),
+      static_cast<double>(scaled_rect_.height()) / bounds().height());
 
   if (open_folder_) {
     // Transform to a scaled down icon inside the original folder icon.
