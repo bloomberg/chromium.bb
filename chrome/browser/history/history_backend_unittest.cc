@@ -65,18 +65,6 @@ typedef base::Callback<void(const history::URLRow*,
                             const history::URLRow*)>
     SimulateNotificationCallback;
 
-// Comparison functions as to make it easier to check results of
-// GetFaviconBitmaps() and GetIconMappingsForPageURL().
-bool IconMappingLessThan(const history::IconMapping& a,
-                         const history::IconMapping& b) {
-  return a.icon_url < b.icon_url;
-}
-
-bool FaviconBitmapLessThan(const history::FaviconBitmap& a,
-                           const history::FaviconBitmap& b) {
-  return a.pixel_size.GetArea() < b.pixel_size.GetArea();
-}
-
 class HistoryClientMock : public history::HistoryClientFakeBookmarks {
  public:
   MOCK_METHOD0(BlockUntilBookmarksLoaded, void());
@@ -368,7 +356,9 @@ class HistoryBackendTest : public HistoryBackendTestBase {
       return false;
     }
     std::sort(icon_mappings->begin(), icon_mappings->end(),
-              IconMappingLessThan);
+              [](const history::IconMapping& a, const history::IconMapping& b) {
+      return a.icon_url < b.icon_url;
+    });
     return true;
   }
 
@@ -378,8 +368,11 @@ class HistoryBackendTest : public HistoryBackendTestBase {
                                std::vector<FaviconBitmap>* favicon_bitmaps) {
     if (!backend_->thumbnail_db_->GetFaviconBitmaps(icon_id, favicon_bitmaps))
       return false;
-    std::sort(favicon_bitmaps->begin(), favicon_bitmaps->end(),
-              FaviconBitmapLessThan);
+    std::sort(
+        favicon_bitmaps->begin(), favicon_bitmaps->end(),
+        [](const history::FaviconBitmap& a, const history::FaviconBitmap& b) {
+          return a.pixel_size.GetArea() < b.pixel_size.GetArea();
+        });
     return true;
   }
 

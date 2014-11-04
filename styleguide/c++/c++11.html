@@ -116,6 +116,23 @@ enum classes and regular enums.</td>
 </tr>
 
 <tr>
+<td>Lambda Expressions</td>
+<td><code>[<i>captures</i>](<i>params</i>) -&gt; <i>ret</i> { <i>body</i> }</code></td>
+<td>Anonymous functions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda">Lambda functions</a></td>
+<td>Do not bind or store lambdas; use <code>base::Bind</code> and
+<code>base::Callback</code> instead, because they offer protection against a
+large class of object lifetime mistakes. Don't use default captures
+(<code>[=]</code>, <code>[&amp;]</code> &ndash; <a
+  href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>).
+Lambdas are typically useful as a parameter to methods or
+functions that will use them immediately, such as those in
+<code>&lt;algorithm&gt;</code>. <a
+  href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/D9UnnxBnciQ">Discussion
+  thread</a></td>
+</tr>
+
+<tr>
 <td>Local Types as Template Arguments</td>
 <td></td>
 <td>Allows local and unnamed types as template arguments</td>
@@ -412,14 +429,6 @@ synthetic function such as a copy constructor</td>
 <td>Allows better versioning of namespaces</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/namespace">Namespaces</a></td>
 <td>Unclear how it will work with components</td>
-</tr>
-
-<tr>
-<td>Lambda Expressions</td>
-<td><code>[<i>captures</i>](<i>params</i>) -&gt; <i>ret</i> { <i>body</i> }</code></td>
-<td>Anonymous functions</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/lambda">Lambda functions</a></td>
-<td>No default captures (<a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Lambda_expressions">Google Style Guide</a>). <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/D9UnnxBnciQ">Discussion thread</a></td>
 </tr>
 
 <tr>
