@@ -80,7 +80,7 @@ cr.define('cr.ui', function() {
         row = this.rows.length - 1;
 
       if (!this.rows[row])
-        return;
+        return false;
 
       var colIndex = keyRow.items.indexOf(e.target);
       var col = Math.min(colIndex, this.rows[row].items.length - 1);
@@ -88,6 +88,12 @@ cr.define('cr.ui', function() {
       this.rows[row].focusIndex(col);
 
       e.preventDefault();
+      return true;
+    },
+
+    /** @override */
+    onMousedown: function(row, e) {
+      return false;
     },
 
     /**

@@ -212,7 +212,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     if (!isMobileVersion()) {
       // Clicking anywhere in the entryBox will check/uncheck the checkbox.
       entryBox.setAttribute('for', checkbox.id);
-      entryBox.addEventListener('mousedown', entryBoxMousedown);
+      entryBox.addEventListener('mousedown', this.handleMousedown_.bind(this));
       entryBox.addEventListener('click', entryBoxClick);
       entryBox.addEventListener('keydown', this.handleKeydown_.bind(this));
     }
@@ -496,6 +496,20 @@ Visit.prototype.handleKeydown_ = function(e) {
   // Delete or Backspace should delete the entry if allowed.
   if (e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'U+007F')
     this.removeEntryFromHistory_(e);
+};
+
+/**
+ * @param {Event} event A mousedown event.
+ * @private
+ */
+Visit.prototype.handleMousedown_ = function(event) {
+  // Prevent text selection when shift-clicking to select multiple entries.
+  if (event.shiftKey) {
+    event.preventDefault();
+
+    if (this.model_.getView().isInFocusGrid(event.target))
+      event.target.focus();
+  }
 };
 
 /**
@@ -898,6 +912,28 @@ HistoryFocusObserver.prototype = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// HistoryFocusGrid:
+
+/**
+ * @param {Node=} opt_boundary
+ * @param {cr.ui.FocusRow.Observer=} opt_observer
+ * @constructor
+ * @extends {cr.ui.FocusGrid}
+ */
+function HistoryFocusGrid(opt_boundary, opt_observer) {
+  cr.ui.FocusGrid.apply(this, arguments);
+}
+
+HistoryFocusGrid.prototype = {
+  __proto__: cr.ui.FocusGrid.prototype,
+
+  /** @override */
+  onMousedown: function(row, e) {
+    return !!findAncestorByClass(e.target, 'menu-button');
+  },
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // HistoryView:
 
 /**
@@ -911,8 +947,8 @@ function HistoryView(model) {
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
-  this.focusGrid_ = new cr.ui.FocusGrid(this.resultDiv_,
-                                        new HistoryFocusObserver);
+  this.focusGrid_ = new HistoryFocusGrid(this.resultDiv_,
+                                         new HistoryFocusObserver);
   this.pageDiv_ = $('results-pagination');
   this.model_ = model;
   this.pageIndex_ = 0;
@@ -1252,6 +1288,14 @@ HistoryView.prototype.positionNotificationBar = function() {
   } else {
     bar.classList.remove('alone');
   }
+};
+
+/**
+ * @param {Element} el An element to look for.
+ * @return {boolean} Whether |el| is in |this.focusGrid_|.
+ */
+HistoryView.prototype.isInFocusGrid = function(el) {
+  return !!this.focusGrid_.getPositionForTarget(el);
 };
 
 // HistoryView, private: ------------------------------------------------------
@@ -2161,12 +2205,6 @@ function updateParentCheckbox(checkbox) {
   var groupCheckbox = entry.querySelector('.site-domain-wrapper input');
   if (groupCheckbox)
     groupCheckbox.checked = false;
-}
-
-function entryBoxMousedown(event) {
-  // Prevent text selection when shift-clicking to select multiple entries.
-  if (event.shiftKey)
-    event.preventDefault();
 }
 
 /**

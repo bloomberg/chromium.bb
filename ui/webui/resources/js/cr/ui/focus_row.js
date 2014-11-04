@@ -56,7 +56,7 @@ cr.define('cr.ui', function() {
       if (item != document.activeElement)
         item.tabIndex = -1;
 
-      this.eventTracker_.add(item, 'click', this.onClick_.bind(this));
+      this.eventTracker_.add(item, 'mousedown', this.onMousedown_.bind(this));
     }, this);
 
     /**
@@ -75,9 +75,17 @@ cr.define('cr.ui', function() {
      * Called when a key is pressed while an item in |this.items| is focused. If
      * |e|'s default is prevented, further processing is skipped.
      * @param {cr.ui.FocusRow} row The row that detected a keydown.
-     * @param {Event} e The keydown event.
+     * @param {Event} e
+     * @return {boolean} Whether the event was handled.
      */
     onKeydown: assertNotReached,
+
+    /**
+     * @param {cr.ui.FocusRow} row The row that detected the mouse going down.
+     * @param {Event} e
+     * @return {boolean} Whether the event was handled.
+     */
+    onMousedown: assertNotReached,
   };
 
   /** @interface */
@@ -157,10 +165,7 @@ cr.define('cr.ui', function() {
       if (item < 0)
         return;
 
-      if (this.delegate_)
-        this.delegate_.onKeydown(this, e);
-
-      if (e.defaultPrevented)
+      if (this.delegate_ && this.delegate_.onKeydown(this, e))
         return;
 
       var index = -1;
@@ -185,7 +190,10 @@ cr.define('cr.ui', function() {
      * @param {Event} e A click event.
      * @private
      */
-    onClick_: function(e) {
+    onMousedown_: function(e) {
+      if (this.delegate_ && this.delegate_.onMousedown(this, e))
+        return;
+
       if (!e.button)
         this.activeIndex = this.items.indexOf(e.currentTarget);
     },
