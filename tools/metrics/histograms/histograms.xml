@@ -28753,6 +28753,66 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ResourceScheduler.RequestTimeDeferred_Active">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time the ResourceScheduler is throttling a request after
+    WillStartRequest is called for a request in a client that was
+    user-observable at creation and start time.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeDeferred_Background">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time the ResourceScheduler is throttling a request after
+    WillStartRequest is called for a request in a client that was background at
+    creation and start time.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeDeferred_Other">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time the ResourceScheduler is throttling a request after
+    WillStartRequest is called on a request without a Client or a request in a
+    Client which is in a different state since the request was made. Note that
+    this won't capture requests which have switched state an even number of
+    times. Switching from Active to Background back to Active will be recorded
+    in the Active version of this histogram.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeThrottled_Active">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the request was created and when the
+    ResourceScheduler stops throttling the request in a client that was
+    user-observable at creation and start time.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeThrottled_Background">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the request was created and when the
+    ResourceScheduler stops throttling the request in a client that was
+    background at creation and start time.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeThrottled_Other">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the request was created and when the
+    ResourceScheduler stops throttling a request without a client or a request
+    in a Client which is in a different state since the request was made. Note
+    that this won't capture requests which have switched state an even number of
+    times. Switching from Active to Background back to Active will be recorded
+    in the Active version of this histogram.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.EnabledSettingChanged" enum="BooleanEnabled">
   <owner>feng@chromium.org</owner>
   <summary>

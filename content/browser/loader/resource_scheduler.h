@@ -151,6 +151,15 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   bool IsClientVisibleForTesting(int child_id, int route_id);
 
  private:
+  enum ClientState {
+    // Observable client.
+    ACTIVE,
+    // Non-observable client.
+    BACKGROUND,
+    // No client found.
+    UNKNOWN,
+  };
+
   class RequestQueue;
   class ScheduledResourceRequest;
   struct RequestPriorityParams;
@@ -187,6 +196,10 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   void LoadCoalescedRequests();
 
   size_t CountCoalescedClients() const;
+
+  // Returns UNKNOWN if the corresponding client is not found, else returns
+  // whether the client is ACTIVE (user-observable) or BACKGROUND.
+  ClientState GetClientState(ClientId client_id) const;
 
   // Update the queue position for |request|, possibly causing it to start
   // loading.
