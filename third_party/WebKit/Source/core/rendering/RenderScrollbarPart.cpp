@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderScrollbarPart.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
@@ -45,9 +46,38 @@ RenderScrollbarPart::~RenderScrollbarPart()
 {
 }
 
+static void recordScrollbarPartStats(Document& document, ScrollbarPart part)
+{
+    switch (part) {
+    case BackButtonStartPart:
+    case ForwardButtonStartPart:
+    case BackButtonEndPart:
+    case ForwardButtonEndPart:
+        UseCounter::count(document, UseCounter::CSSSelectorPseudoScrollbarButton);
+        break;
+    case BackTrackPart:
+    case ForwardTrackPart:
+        UseCounter::count(document, UseCounter::CSSSelectorPseudoScrollbarTrackPiece);
+        break;
+    case ThumbPart:
+        UseCounter::count(document, UseCounter::CSSSelectorPseudoScrollbarThumb);
+        break;
+    case TrackBGPart:
+        UseCounter::count(document, UseCounter::CSSSelectorPseudoScrollbarTrack);
+        break;
+    case ScrollbarBGPart:
+        UseCounter::count(document, UseCounter::CSSSelectorPseudoScrollbar);
+        break;
+    case NoPart:
+    case AllParts:
+        break;
+    }
+}
+
 RenderScrollbarPart* RenderScrollbarPart::createAnonymous(Document* document, RenderScrollbar* scrollbar, ScrollbarPart part)
 {
     RenderScrollbarPart* renderer = new RenderScrollbarPart(scrollbar, part);
+    recordScrollbarPartStats(*document, part);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }

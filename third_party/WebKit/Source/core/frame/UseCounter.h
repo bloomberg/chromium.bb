@@ -549,6 +549,11 @@ public:
         TimelineStart = 579,
         ElementBaseURIFromXMLBase = 580,
         XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload = 581,
+        CSSSelectorPseudoScrollbar = 582,
+        CSSSelectorPseudoScrollbarButton = 583,
+        CSSSelectorPseudoScrollbarThumb = 584,
+        CSSSelectorPseudoScrollbarTrack = 585,
+        CSSSelectorPseudoScrollbarTrackPiece = 586,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
