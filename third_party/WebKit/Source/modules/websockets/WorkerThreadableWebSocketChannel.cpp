@@ -43,7 +43,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "modules/websockets/NewWebSocketChannelImpl.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/ArrayBuffer.h"
@@ -201,7 +201,7 @@ void Peer::initializeInternal(ExecutionContext* context, const String& sourceURL
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
-    m_mainWebSocketChannel = NewWebSocketChannelImpl::create(document, this, sourceURL, lineNumber);
+    m_mainWebSocketChannel = DocumentWebSocketChannel::create(document, this, sourceURL, lineNumber);
     m_syncHelper->signalWorkerThread();
 }
 

@@ -38,7 +38,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "modules/websockets/NewWebSocketChannelImpl.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
@@ -63,7 +63,7 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
     }
 
     Document* document = toDocument(context);
-    return NewWebSocketChannelImpl::create(document, client, sourceURL, lineNumber);
+    return DocumentWebSocketChannel::create(document, client, sourceURL, lineNumber);
 }
 
 } // namespace blink

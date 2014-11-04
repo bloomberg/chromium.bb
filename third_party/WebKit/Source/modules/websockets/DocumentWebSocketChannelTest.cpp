@@ -9,7 +9,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/websockets/NewWebSocketChannelImpl.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -87,19 +87,19 @@ public:
     MOCK_METHOD2(close, void(unsigned short, const WebString&));
 };
 
-class NewWebSocketChannelImplTest : public ::testing::Test {
+class DocumentWebSocketChannelTest : public ::testing::Test {
 public:
-    NewWebSocketChannelImplTest()
+    DocumentWebSocketChannelTest()
         : m_pageHolder(DummyPageHolder::create())
         , m_channelClient(MockWebSocketChannelClient::create())
         , m_handle(MockWebSocketHandle::create())
-        , m_channel(NewWebSocketChannelImpl::create(&m_pageHolder->document(), m_channelClient.get(), String(), 0, handle()))
+        , m_channel(DocumentWebSocketChannel::create(&m_pageHolder->document(), m_channelClient.get(), String(), 0, handle()))
         , m_sumOfConsumedBufferedAmount(0)
     {
-        ON_CALL(*channelClient(), didConsumeBufferedAmount(_)).WillByDefault(Invoke(this, &NewWebSocketChannelImplTest::didConsumeBufferedAmount));
+        ON_CALL(*channelClient(), didConsumeBufferedAmount(_)).WillByDefault(Invoke(this, &DocumentWebSocketChannelTest::didConsumeBufferedAmount));
     }
 
-    ~NewWebSocketChannelImplTest()
+    ~DocumentWebSocketChannelTest()
     {
         channel()->disconnect();
     }
@@ -145,7 +145,7 @@ public:
     OwnPtr<DummyPageHolder> m_pageHolder;
     Persistent<MockWebSocketChannelClient> m_channelClient;
     MockWebSocketHandle* m_handle;
-    Persistent<NewWebSocketChannelImpl> m_channel;
+    Persistent<DocumentWebSocketChannel> m_channel;
     unsigned long m_sumOfConsumedBufferedAmount;
 };
 
@@ -159,7 +159,7 @@ MATCHER_P2(MemEq, p, len,
     return memcmp(arg, p, len) == 0;
 }
 
-TEST_F(NewWebSocketChannelImplTest, connectSuccess)
+TEST_F(DocumentWebSocketChannelTest, connectSuccess)
 {
     Checkpoint checkpoint;
     {
@@ -175,7 +175,7 @@ TEST_F(NewWebSocketChannelImplTest, connectSuccess)
     handleClient()->didConnect(handle(), false, WebString("a"), WebString("b"));
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendText)
+TEST_F(DocumentWebSocketChannelTest, sendText)
 {
     connect();
     {
@@ -195,7 +195,7 @@ TEST_F(NewWebSocketChannelImplTest, sendText)
     EXPECT_EQ(9ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendTextContinuation)
+TEST_F(DocumentWebSocketChannelTest, sendTextContinuation)
 {
     connect();
     Checkpoint checkpoint;
@@ -228,7 +228,7 @@ TEST_F(NewWebSocketChannelImplTest, sendTextContinuation)
     EXPECT_EQ(62ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1)
+TEST_F(DocumentWebSocketChannelTest, sendTextNonLatin1)
 {
     connect();
     {
@@ -249,7 +249,7 @@ TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1)
     EXPECT_EQ(6ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1Continuation)
+TEST_F(DocumentWebSocketChannelTest, sendTextNonLatin1Continuation)
 {
     connect();
     Checkpoint checkpoint;
@@ -279,7 +279,7 @@ TEST_F(NewWebSocketChannelImplTest, sendTextNonLatin1Continuation)
     EXPECT_EQ(18ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInVector)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector)
 {
     connect();
     {
@@ -297,7 +297,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVector)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorWithNullBytes)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes)
 {
     connect();
     {
@@ -335,7 +335,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorWithNullBytes)
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8)
 {
     connect();
     EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeBinary, MemEq("\xe7\x8b\x90", 3), 3));
@@ -350,7 +350,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonUTF8)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8)
 {
     connect();
     EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeBinary, MemEq("\x80\xff\xe7", 3), 3));
@@ -365,7 +365,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonUTF8)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8Continuation)
 {
     connect();
     Checkpoint checkpoint;
@@ -389,7 +389,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation)
     EXPECT_EQ(18ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBuffer)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBuffer)
 {
     connect();
     {
@@ -406,7 +406,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBuffer)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferPartial)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferPartial)
 {
     connect();
     {
@@ -430,7 +430,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferPartial)
     EXPECT_EQ(10ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferWithNullBytes)
 {
     connect();
     {
@@ -464,7 +464,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes)
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8)
 {
     connect();
     EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeBinary, MemEq("\xe7\x8b\x90", 3), 3));
@@ -478,7 +478,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonUTF8)
 {
     connect();
     EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeBinary, MemEq("\x80\xff\xe7", 3), 3));
@@ -492,7 +492,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8)
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8Continuation)
+TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8Continuation)
 {
     connect();
     Checkpoint checkpoint;
@@ -517,7 +517,7 @@ TEST_F(NewWebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8Continua
 
 // FIXME: Add tests for WebSocketChannel::send(PassRefPtr<BlobDataHandle>)
 
-TEST_F(NewWebSocketChannelImplTest, receiveText)
+TEST_F(DocumentWebSocketChannelTest, receiveText)
 {
     connect();
     {
@@ -530,7 +530,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveText)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeText, "BARX", 3);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveTextContinuation)
+TEST_F(DocumentWebSocketChannelTest, receiveTextContinuation)
 {
     connect();
     EXPECT_CALL(*channelClient(), didReceiveTextMessage(String("BAZ")));
@@ -540,7 +540,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveTextContinuation)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeContinuation, "ZX", 1);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1)
+TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1)
 {
     connect();
     UChar nonLatin1String[] = {
@@ -553,7 +553,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeText, "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1Continuation)
+TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1Continuation)
 {
     connect();
     UChar nonLatin1String[] = {
@@ -569,7 +569,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveTextNonLatin1Continuation)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeContinuation, "\x94", 1);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinary)
+TEST_F(DocumentWebSocketChannelTest, receiveBinary)
 {
     connect();
     Vector<char> fooVector;
@@ -579,7 +579,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinary)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "FOOx", 3);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinaryContinuation)
+TEST_F(DocumentWebSocketChannelTest, receiveBinaryContinuation)
 {
     connect();
     Vector<char> bazVector;
@@ -591,7 +591,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryContinuation)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeContinuation, "Zx", 1);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinaryWithNullBytes)
+TEST_F(DocumentWebSocketChannelTest, receiveBinaryWithNullBytes)
 {
     connect();
     {
@@ -624,7 +624,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryWithNullBytes)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "\0\0\0", 3);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8)
+TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8)
 {
     connect();
     Vector<char> v;
@@ -634,7 +634,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8Continuation)
+TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8Continuation)
 {
     connect();
     Vector<char> v;
@@ -647,7 +647,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonLatin1UTF8Continuation)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeContinuation, "\x94", 1);
 }
 
-TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonUTF8)
+TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonUTF8)
 {
     connect();
     Vector<char> v;
@@ -657,7 +657,7 @@ TEST_F(NewWebSocketChannelImplTest, receiveBinaryNonUTF8)
     handleClient()->didReceiveData(handle(), true, WebSocketHandle::MessageTypeBinary, "\x80\xff", 2);
 }
 
-TEST_F(NewWebSocketChannelImplTest, closeFromBrowser)
+TEST_F(DocumentWebSocketChannelTest, closeFromBrowser)
 {
     connect();
     Checkpoint checkpoint;
@@ -686,7 +686,7 @@ TEST_F(NewWebSocketChannelImplTest, closeFromBrowser)
     channel()->disconnect();
 }
 
-TEST_F(NewWebSocketChannelImplTest, closeFromWebSocket)
+TEST_F(DocumentWebSocketChannelTest, closeFromWebSocket)
 {
     connect();
     Checkpoint checkpoint;
@@ -709,7 +709,7 @@ TEST_F(NewWebSocketChannelImplTest, closeFromWebSocket)
     channel()->disconnect();
 }
 
-TEST_F(NewWebSocketChannelImplTest, failFromBrowser)
+TEST_F(DocumentWebSocketChannelTest, failFromBrowser)
 {
     connect();
     {
@@ -722,7 +722,7 @@ TEST_F(NewWebSocketChannelImplTest, failFromBrowser)
     handleClient()->didFail(handle(), "fail message");
 }
 
-TEST_F(NewWebSocketChannelImplTest, failFromWebSocket)
+TEST_F(DocumentWebSocketChannelTest, failFromWebSocket)
 {
     connect();
     {

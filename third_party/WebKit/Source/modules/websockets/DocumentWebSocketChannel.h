@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewWebSocketChannelImpl_h
-#define NewWebSocketChannelImpl_h
+#ifndef DocumentWebSocketChannel_h
+#define DocumentWebSocketChannel_h
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
@@ -57,19 +57,20 @@ class WebSocketHandshakeRequest;
 class WebSocketHandshakeRequestInfo;
 class WebSocketHandshakeResponseInfo;
 
-// This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
+// This class is a WebSocketChannel subclass that works with a Document in a
+// DOMWindow (i.e. works in the main thread).
+class DocumentWebSocketChannel final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static NewWebSocketChannelImpl* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
+    static DocumentWebSocketChannel* create(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
     {
-        return new NewWebSocketChannelImpl(context, client, sourceURL, lineNumber, handle);
+        return new DocumentWebSocketChannel(context, client, sourceURL, lineNumber, handle);
     }
-    virtual ~NewWebSocketChannelImpl();
+    virtual ~DocumentWebSocketChannel();
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) override;
@@ -121,7 +122,7 @@ private:
 
     class BlobLoader;
 
-    NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
+    DocumentWebSocketChannel(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
     void sendInternal();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
@@ -187,4 +188,4 @@ private:
 
 } // namespace blink
 
-#endif // NewWebSocketChannelImpl_h
+#endif // DocumentWebSocketChannel_h

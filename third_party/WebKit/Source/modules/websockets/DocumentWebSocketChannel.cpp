@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/websockets/NewWebSocketChannelImpl.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -60,9 +60,9 @@ using blink::WebSocketHandle;
 
 namespace blink {
 
-class NewWebSocketChannelImpl::BlobLoader final : public GarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
+class DocumentWebSocketChannel::BlobLoader final : public GarbageCollectedFinalized<DocumentWebSocketChannel::BlobLoader>, public FileReaderLoaderClient {
 public:
-    BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
+    BlobLoader(PassRefPtr<BlobDataHandle>, DocumentWebSocketChannel*);
     virtual ~BlobLoader() { }
 
     void cancel();
@@ -79,37 +79,37 @@ public:
     }
 
 private:
-    Member<NewWebSocketChannelImpl> m_channel;
+    Member<DocumentWebSocketChannel> m_channel;
     FileReaderLoader m_loader;
 };
 
-NewWebSocketChannelImpl::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, NewWebSocketChannelImpl* channel)
+DocumentWebSocketChannel::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, DocumentWebSocketChannel* channel)
     : m_channel(channel)
     , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
 {
     m_loader.start(channel->executionContext(), blobDataHandle);
 }
 
-void NewWebSocketChannelImpl::BlobLoader::cancel()
+void DocumentWebSocketChannel::BlobLoader::cancel()
 {
     m_loader.cancel();
     // didFail will be called immediately.
     // |this| is deleted here.
 }
 
-void NewWebSocketChannelImpl::BlobLoader::didFinishLoading()
+void DocumentWebSocketChannel::BlobLoader::didFinishLoading()
 {
     m_channel->didFinishLoadingBlob(m_loader.arrayBufferResult());
     // |this| is deleted here.
 }
 
-void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode)
+void DocumentWebSocketChannel::BlobLoader::didFail(FileError::ErrorCode errorCode)
 {
     m_channel->didFailLoadingBlob(errorCode);
     // |this| is deleted here.
 }
 
-NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber, WebSocketHandle *handle)
+DocumentWebSocketChannel::DocumentWebSocketChannel(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber, WebSocketHandle *handle)
     : ContextLifecycleObserver(context)
     , m_handle(adoptPtr(handle ? handle : Platform::current()->createWebSocketHandle()))
     , m_client(client)
@@ -124,14 +124,14 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebS
         m_identifier = createUniqueIdentifier();
 }
 
-NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
+DocumentWebSocketChannel::~DocumentWebSocketChannel()
 {
     ASSERT(!m_blobLoader);
 }
 
-bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
+bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p connect()", this);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p connect()", this);
     if (!m_handle)
         return false;
 
@@ -172,9 +172,9 @@ bool NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     return true;
 }
 
-void NewWebSocketChannelImpl::send(const String& message)
+void DocumentWebSocketChannel::send(const String& message)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendText(%s)", this, message.utf8().data());
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -185,9 +185,9 @@ void NewWebSocketChannelImpl::send(const String& message)
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
+void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -200,9 +200,9 @@ void NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
+void DocumentWebSocketChannel::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -215,9 +215,9 @@ void NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffse
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::send(PassOwnPtr<Vector<char> > data)
+void DocumentWebSocketChannel::send(PassOwnPtr<Vector<char> > data)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -227,18 +227,18 @@ void NewWebSocketChannelImpl::send(PassOwnPtr<Vector<char> > data)
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::close(int code, const String& reason)
+void DocumentWebSocketChannel::close(int code, const String& reason)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p close(%d, %s)", this, code, reason.utf8().data());
     ASSERT(m_handle);
     unsigned short codeToSend = static_cast<unsigned short>(code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
     m_messages.append(adoptPtr(new Message(codeToSend, reason)));
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
+void DocumentWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p fail(%s)", this, reason.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p fail(%s)", this, reason.utf8().data());
     // m_handle and m_client can be null here.
 
     if (m_identifier)
@@ -254,9 +254,9 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
     // handleDidClose may delete this object.
 }
 
-void NewWebSocketChannelImpl::disconnect()
+void DocumentWebSocketChannel::disconnect()
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p disconnect()", this);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p disconnect()", this);
     if (m_identifier) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "WebSocketDestroy", "data", InspectorWebSocketEvent::data(document(), m_identifier));
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
@@ -269,38 +269,38 @@ void NewWebSocketChannelImpl::disconnect()
     m_identifier = 0;
 }
 
-void NewWebSocketChannelImpl::suspend()
+void DocumentWebSocketChannel::suspend()
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p suspend()", this);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p suspend()", this);
 }
 
-void NewWebSocketChannelImpl::resume()
+void DocumentWebSocketChannel::resume()
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p resume()", this);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p resume()", this);
 }
 
-NewWebSocketChannelImpl::Message::Message(const String& text)
+DocumentWebSocketChannel::Message::Message(const String& text)
     : type(MessageTypeText)
     , text(text.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD)) { }
 
-NewWebSocketChannelImpl::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
+DocumentWebSocketChannel::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
     : type(MessageTypeBlob)
     , blobDataHandle(blobDataHandle) { }
 
-NewWebSocketChannelImpl::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
+DocumentWebSocketChannel::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
     : type(MessageTypeArrayBuffer)
     , arrayBuffer(arrayBuffer) { }
 
-NewWebSocketChannelImpl::Message::Message(PassOwnPtr<Vector<char> > vectorData)
+DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char> > vectorData)
     : type(MessageTypeVector)
     , vectorData(vectorData) { }
 
-NewWebSocketChannelImpl::Message::Message(unsigned short code, const String& reason)
+DocumentWebSocketChannel::Message::Message(unsigned short code, const String& reason)
     : type(MessageTypeClose)
     , code(code)
     , reason(reason) { }
 
-void NewWebSocketChannelImpl::sendInternal()
+void DocumentWebSocketChannel::sendInternal()
 {
     ASSERT(m_handle);
     unsigned long consumedBufferedAmount = 0;
@@ -364,7 +364,7 @@ void NewWebSocketChannelImpl::sendInternal()
         m_client->didConsumeBufferedAmount(consumedBufferedAmount);
 }
 
-void NewWebSocketChannelImpl::flowControlIfNecessary()
+void DocumentWebSocketChannel::flowControlIfNecessary()
 {
     if (!m_handle || m_receivedDataSizeForFlowControl < receivedDataSizeForFlowControlHighWaterMark) {
         return;
@@ -373,7 +373,7 @@ void NewWebSocketChannelImpl::flowControlIfNecessary()
     m_receivedDataSizeForFlowControl = 0;
 }
 
-void NewWebSocketChannelImpl::abortAsyncOperations()
+void DocumentWebSocketChannel::abortAsyncOperations()
 {
     if (m_blobLoader) {
         m_blobLoader->cancel();
@@ -381,7 +381,7 @@ void NewWebSocketChannelImpl::abortAsyncOperations()
     }
 }
 
-void NewWebSocketChannelImpl::handleDidClose(bool wasClean, unsigned short code, const String& reason)
+void DocumentWebSocketChannel::handleDidClose(bool wasClean, unsigned short code, const String& reason)
 {
     m_handle.clear();
     abortAsyncOperations();
@@ -396,7 +396,7 @@ void NewWebSocketChannelImpl::handleDidClose(bool wasClean, unsigned short code,
     // client->didClose may delete this object.
 }
 
-Document* NewWebSocketChannelImpl::document()
+Document* DocumentWebSocketChannel::document()
 {
     ASSERT(m_identifier);
     ExecutionContext* context = executionContext();
@@ -404,9 +404,9 @@ Document* NewWebSocketChannelImpl::document()
     return toDocument(context);
 }
 
-void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
+void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -420,9 +420,9 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
     m_client->didConnect(selectedProtocol, extensions);
 }
 
-void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeRequestInfo& request)
+void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeRequestInfo& request)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didStartOpeningHandshake(%p)", this, handle);
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -436,9 +436,9 @@ void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, 
     }
 }
 
-void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponseInfo& response)
+void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponseInfo& response)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didFinishOpeningHandshake(%p)", this, handle);
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -451,9 +451,9 @@ void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle,
     m_handshakeRequest.clear();
 }
 
-void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebString& message)
+void DocumentWebSocketChannel::didFail(WebSocketHandle* handle, const WebString& message)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didFail(%p, %s)", this, handle, message.utf8().data());
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -465,9 +465,9 @@ void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebString& 
     // |this| may be deleted.
 }
 
-void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
+void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveData(%p, %d, %d, (%p, %zu))", this, handle, fin, type, data, size);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didReceiveData(%p, %d, %d, (%p, %zu))", this, handle, fin, type, data, size);
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -518,9 +518,9 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
     }
 }
 
-void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebString& reason)
+void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebString& reason)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -539,9 +539,9 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, u
     // handleDidClose may delete this object.
 }
 
-void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int64_t quota)
+void DocumentWebSocketChannel::didReceiveFlowControl(WebSocketHandle* handle, int64_t quota)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -550,9 +550,9 @@ void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::didStartClosingHandshake(WebSocketHandle* handle)
+void DocumentWebSocketChannel::didStartClosingHandshake(WebSocketHandle* handle)
 {
-    WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartClosingHandshake(%p)", this, handle);
+    WTF_LOG(Network, "DocumentWebSocketChannel %p didStartClosingHandshake(%p)", this, handle);
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
@@ -561,7 +561,7 @@ void NewWebSocketChannelImpl::didStartClosingHandshake(WebSocketHandle* handle)
         m_client->didStartClosingHandshake();
 }
 
-void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)
+void DocumentWebSocketChannel::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)
 {
     m_blobLoader.clear();
     ASSERT(m_handle);
@@ -572,7 +572,7 @@ void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffe
     sendInternal();
 }
 
-void NewWebSocketChannelImpl::didFailLoadingBlob(FileError::ErrorCode errorCode)
+void DocumentWebSocketChannel::didFailLoadingBlob(FileError::ErrorCode errorCode)
 {
     m_blobLoader.clear();
     if (errorCode == FileError::ABORT_ERR) {
@@ -584,7 +584,7 @@ void NewWebSocketChannelImpl::didFailLoadingBlob(FileError::ErrorCode errorCode)
     // |this| can be deleted here.
 }
 
-void NewWebSocketChannelImpl::trace(Visitor* visitor)
+void DocumentWebSocketChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_blobLoader);
     visitor->trace(m_client);
