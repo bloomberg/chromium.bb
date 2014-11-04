@@ -1099,6 +1099,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
+  VLOG(2) << "PreMainMessageLoopRunImpl : BEGIN";
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)
@@ -1307,6 +1308,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
+  VLOG(2) << "PreMainMessageLoopRunImpl : PostProfileInit";
   PostProfileInit();
 
   // Retrieve cached GL strings from local state and use them for GPU
@@ -1426,6 +1428,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
+  VLOG(2) << "PreMainMessageLoopRunImpl : HandleTestParameters";
   HandleTestParameters(parsed_command_line());
   browser_process_->metrics_service()->RecordBreakpadHasDebugger(
       base::debug::BeingDebugged());
@@ -1481,6 +1484,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Make sure initial prefs are recorded
   PrefMetricsService::Factory::GetForProfile(profile_);
 
+  VLOG(2) << "PreMainMessageLoopRunImpl : PreBrowserStart";
   PreBrowserStart();
 
   // Instantiate the notification UI manager, as this triggers a perf timer
@@ -1520,6 +1524,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
 
+  VLOG(2) << "PreMainMessageLoopRunImpl : browser_creator_->Start";
   if (browser_creator_->Start(parsed_command_line(), base::FilePath(),
                               profile_, last_opened_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -1538,6 +1543,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     upgrade_util::SaveLastModifiedTimeOfExe();
 #endif
 
+    VLOG(2) << "PreMainMessageLoopRunImpl : SetLastRunTime";
     // Record now as the last successful chrome start.
     GoogleUpdateSettings::SetLastRunTime();
 
@@ -1574,12 +1580,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   } else {
     run_message_loop_ = false;
   }
+  VLOG(2) << "PreMainMessageLoopRunImpl : browser_creator_.reset()";
   browser_creator_.reset();
 
   process_power_collector_.reset(new ProcessPowerCollector);
   process_power_collector_->Initialize();
 #endif  // !defined(OS_ANDROID)
 
+  VLOG(2) << "PreMainMessageLoopRunImpl : PostBrowserStart";
   PostBrowserStart();
 
   if (parameters().ui_task) {
@@ -1595,11 +1603,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     RecordBrowserStartupTime();
   }
 #endif
+  VLOG(2) << "PreMainMessageLoopRunImpl : END";
   return result_code_;
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::MainMessageLoopRun");
+  VLOG(2) << "MainMessageLoopRun : BEGIN";
 #if defined(OS_ANDROID)
   // Chrome on Android does not use default MessageLoop. It has its own
   // Android specific MessageLoop
@@ -1616,6 +1626,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // across versions.
   RecordBrowserStartupTime();
 
+  VLOG(2) << "MainMessageLoopRun : RunLoop";
   DCHECK(base::MessageLoopForUI::IsCurrent());
   base::RunLoop run_loop;
 
@@ -1626,6 +1637,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
       g_browser_process->local_state());
   run_loop.Run();
 
+  VLOG(2) << "MainMessageLoopRun : END";
   return true;
 #endif
 }
