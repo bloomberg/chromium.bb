@@ -38,15 +38,17 @@ bool MaybeBypassProxyAndPrepareToRetry(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     DataReductionProxyBypassType* proxy_bypass_type);
 
-// Configure |result| to proceed directly to the origin if |result|'s current
-// proxy is the data reduction proxy, the
-// |net::LOAD_BYPASS_DATA_REDUCTION_PROXY| |load_flag| is set, and the
-// DataCompressionProxyCriticalBypass Finch trial is set.
-// This handler is intended to be invoked only by
-// |ChromeNetworkDelegate.NotifyResolveProxy|.
+// Adds data reduction proxies to |result|, where applicable, if result
+// otherwise uses a direct connection for |url|, the proxy service's effective
+// proxy configuration is not the data reduction proxy configuration, and the
+// data reduction proxy is not bypassed. Also, configures |result| to proceed
+// directly to the origin if |result|'s current proxy is the data
+// reduction proxy, the |net::LOAD_BYPASS_DATA_REDUCTION_PROXY| |load_flag| is
+// set, and the DataCompressionProxyCriticalBypass Finch trial is set.
 void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
+                           const net::ProxyConfig& proxy_service_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyParams* params,
                            net::ProxyInfo* result);

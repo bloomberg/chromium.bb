@@ -140,11 +140,13 @@ bool MaybeBypassProxyAndPrepareToRetry(
 void OnResolveProxyHandler(const GURL& url,
                            int load_flags,
                            const net::ProxyConfig& data_reduction_proxy_config,
+                           const net::ProxyConfig& proxy_service_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyParams* params,
                            net::ProxyInfo* result) {
   if (data_reduction_proxy_config.is_valid() &&
-      result->proxy_server().is_direct()) {
+      result->proxy_server().is_direct() &&
+      !data_reduction_proxy_config.Equals(proxy_service_proxy_config)) {
     net::ProxyInfo data_reduction_proxy_info;
     data_reduction_proxy_config.proxy_rules().Apply(
         url, &data_reduction_proxy_info);

@@ -210,7 +210,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   }
 
   // Returns the current configuration being used by ProxyConfigService.
-  const ProxyConfig& config() {
+  const ProxyConfig& config() const {
     return config_;
   }
 
