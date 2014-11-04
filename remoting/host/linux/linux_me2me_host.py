@@ -395,8 +395,7 @@ class Desktop:
 
     # Wait for X to be active.
     for _test in range(20):
-      proc = subprocess.Popen("xdpyinfo", env=self.child_env, stdout=devnull)
-      _pid, retcode = os.waitpid(proc.pid, 0)
+      retcode = subprocess.call("xdpyinfo", env=self.child_env, stdout=devnull)
       if retcode == 0:
         break
       time.sleep(0.5)
@@ -411,9 +410,8 @@ class Desktop:
     # Reconfigure the X server to use "evdev" keymap rules.  The X server must
     # be started with -noreset otherwise it'll reset as soon as the command
     # completes, since there are no other X clients running yet.
-    proc = subprocess.Popen("setxkbmap -rules evdev", env=self.child_env,
-                            shell=True)
-    _pid, retcode = os.waitpid(proc.pid, 0)
+    retcode = subprocess.call("setxkbmap -rules evdev", env=self.child_env,
+                              shell=True)
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
