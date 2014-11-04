@@ -118,11 +118,6 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
 void TranslateScript::OnScriptFetchComplete(
     int id, bool success, const std::string& data) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 TranslateScript::OnScriptFetchComplete"));
-
   DCHECK_EQ(kFetcherId, id);
 
   scoped_ptr<const TranslateURLFetcher> delete_ptr(fetcher_.release());

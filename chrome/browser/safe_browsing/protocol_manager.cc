@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -227,11 +226,6 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              required, the SafeBrowsing servers will tell us to get it again.
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 SafeBrowsingProtocolManager::OnURLFetchComplete"));
-
   DCHECK(CalledOnValidThread());
   scoped_ptr<const net::URLFetcher> fetcher;
 

@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -492,11 +491,6 @@ void ExtensionDownloader::CreateManifestFetcher() {
 }
 
 void ExtensionDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 ExtensionDownloader::OnURLFetchComplete"));
-
   VLOG(2) << source->GetResponseCode() << " " << source->GetURL();
 
   if (source == manifest_fetcher_.get()) {

@@ -5,7 +5,6 @@
 #include "sync/internal_api/public/http_bridge.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -345,11 +344,6 @@ void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher) {
 }
 
 void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 HttpBridge::OnURLFetchComplete"));
-
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(fetch_state_lock_);
   if (fetch_state_.aborted)

@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -481,11 +480,6 @@ std::string DeviceManagementService::GetServerUrl() {
 
 void DeviceManagementService::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 DeviceManagementService::OnURLFetchComplete"));
-
   JobFetcherMap::iterator entry(pending_jobs_.find(source));
   if (entry == pending_jobs_.end()) {
     NOTREACHED() << "Callback from foreign URL fetcher";

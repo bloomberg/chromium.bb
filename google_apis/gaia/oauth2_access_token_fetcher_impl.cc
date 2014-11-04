@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -259,11 +258,6 @@ void OAuth2AccessTokenFetcherImpl::OnGetTokenFailure(
 
 void OAuth2AccessTokenFetcherImpl::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 OAuth2AccessTokenFetcherImpl::OnURLFetchComplete"));
-
   CHECK(source);
   CHECK(state_ == GET_ACCESS_TOKEN_STARTED);
   EndGetAccessToken(source);

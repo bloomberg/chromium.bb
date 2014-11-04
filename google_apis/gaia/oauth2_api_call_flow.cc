@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
@@ -67,11 +66,6 @@ std::string OAuth2ApiCallFlow::CreateApiCallBodyContentType() {
 }
 
 void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422577 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422577 OAuth2ApiCallFlow::OnURLFetchComplete"));
-
   CHECK(source);
   CHECK_EQ(API_CALL_STARTED, state_);
   EndApiCall(source);
