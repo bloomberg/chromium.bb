@@ -182,6 +182,13 @@ function FileManager() {
   this.searchController_ = null;
 
   /**
+   * Controller for spinner.
+   * @type {SpinnerController}
+   * @private
+   */
+  this.spinnerController_ = null;
+
+  /**
    * Banners in the file list.
    * @type {FileListBannerController}
    * @private
@@ -330,25 +337,11 @@ function FileManager() {
   this.currentList_ = null;
 
   /**
-   * Spinner on file list which is shown while loading.
-   * @type {HTMLDivElement}
-   * @private
-   */
-  this.spinner_ = null;
-
-  /**
    * The container element of the dialog.
    * @type {HTMLDivElement}
    * @private
    */
   this.dialogContainer_ = null;
-
-  /**
-   * The container element of the file list.
-   * @type {HTMLDivElement}
-   * @private
-   */
-  this.listContainer_ = null;
 
   /**
    * Open-with command in the context menu.
@@ -411,13 +404,6 @@ function FileManager() {
    * @private
    */
   this.scanUpdatedTimer_ = 0;
-
-  /**
-   * Timer ID to delay showing spinner after a scan starts.
-   * @type {number}
-   * @private
-   */
-  this.showSpinnerTimeout_ = 0;
 
   // --------------------------------------------------------------------------
   // Search states.
@@ -1085,8 +1071,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     cr.ui.contextMenuHandler.setContextMenu(this.renameInput_,
                                             this.textContextMenu_);
     this.registerInputCommands_(this.renameInput_);
-    this.document_.addEventListener('command',
-                                    this.setNoHover_.bind(this, true));
+    this.document_.addEventListener(
+        'command',
+        this.ui_.listContainer.clearHover.bind(this.ui_.listContainer));
   };
 
   /**
@@ -1303,10 +1290,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var taskItems = queryRequiredElement(dom, '#tasks');
     this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
 
-    var spinner = queryRequiredElement(dom, '#list-container > .spinner-layer');
-    this.spinner_ = /** @type {HTMLDivElement} */ (spinner);
-    this.showSpinner_(true);
-
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
     var table = queryRequiredElement(dom, '.detail-table');
     var grid = queryRequiredElement(dom, '.thumbnail-grid');
@@ -1362,14 +1345,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ui_.dialogFooter.filenameInput.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
-    this.listContainer_ = /** @type {!HTMLDivElement} */
-        (this.dialogDom_.querySelector('#list-container'));
-    this.listContainer_.addEventListener(
+    this.ui_.listContainer =
+        new ListContainer(queryRequiredElement(dom, '#list-container'));
+    this.ui_.listContainer.element.addEventListener(
         'keydown', this.onListKeyDown_.bind(this));
-    this.listContainer_.addEventListener(
-        'keypress', this.onListKeyPress_.bind(this));
-    this.listContainer_.addEventListener(
-        'mousemove', this.onListMouseMove_.bind(this));
+    this.ui_.listContainer.element.addEventListener(
+        ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
 
     this.ui_.dialogFooter.okButton.addEventListener(
         'click', this.onOk_.bind(this));
@@ -1568,6 +1549,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.namingController_ = new NamingController(
         this.fileFilter_,
         this.ui_.alertDialog);
+
+    // Create spinner controller.
+    this.spinnerController_ = new SpinnerController(
+        this.ui_.listContainer.spinner, this.directoryModel_);
+    this.spinnerController_.show();
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
@@ -3064,11 +3050,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.scanUpdatedTimer_ = 0;
     }
 
-    if (this.spinner_.hidden) {
-      this.cancelSpinnerTimeout_();
-      this.showSpinnerTimeout_ =
-          setTimeout(this.showSpinner_.bind(this, true), 500);
-    }
+    this.spinnerController_.showLater();
   };
 
   /**
@@ -3082,7 +3064,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
-    this.hideSpinnerLater_();
+    this.spinnerController_.hide();
 
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
@@ -3122,7 +3104,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // We need to hide the spinner only once.
       if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
         this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-        this.hideSpinnerLater_();
+        this.spinnerController_.hide();
       }
 
       // Update the UI.
@@ -3147,7 +3129,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
-    this.hideSpinnerLater_();
+    this.spinnerController_.hide();
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
       this.scanCompletedTimer_ = 0;
@@ -3172,39 +3154,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onRescanCompleted_ = function() {
     this.selectionHandler_.onFileSelectionChanged();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.cancelSpinnerTimeout_ = function() {
-    if (this.showSpinnerTimeout_) {
-      clearTimeout(this.showSpinnerTimeout_);
-      this.showSpinnerTimeout_ = 0;
-    }
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.hideSpinnerLater_ = function() {
-    this.cancelSpinnerTimeout_();
-    this.showSpinner_(false);
-  };
-
-  /**
-   * @param {boolean} on True to show, false to hide.
-   * @private
-   */
-  FileManager.prototype.showSpinner_ = function(on) {
-    if (on && this.directoryModel_ && this.directoryModel_.isScanning())
-      this.spinner_.hidden = false;
-
-    if (!on && (!this.directoryModel_ ||
-                !this.directoryModel_.isScanning() ||
-                this.directoryModel_.getFileList().length != 0)) {
-      this.spinner_.hidden = true;
-    }
   };
 
   FileManager.prototype.createNewFolder = function() {
@@ -3342,11 +3291,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onListKeyDown_ = function(event) {
-    if (event.srcElement.tagName == 'INPUT') {
-      // Ignore keydown handler in the rename input box.
-      return;
-    }
-
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case '8':  // Backspace => Up one directory.
         event.preventDefault();
@@ -3377,65 +3321,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         }
         break;
     }
-
-    switch (event.keyIdentifier) {
-      case 'Home':
-      case 'End':
-      case 'Up':
-      case 'Down':
-      case 'Left':
-      case 'Right':
-        // When navigating with keyboard we hide the distracting mouse hover
-        // highlighting until the user moves the mouse again.
-        this.setNoHover_(true);
-        break;
-    }
-  };
-
-  /**
-   * Suppress/restore hover highlighting in the list container.
-   * @param {boolean} on True to temporarity hide hover state.
-   * @private
-   */
-  FileManager.prototype.setNoHover_ = function(on) {
-    if (on) {
-      this.listContainer_.classList.add('nohover');
-    } else {
-      this.listContainer_.classList.remove('nohover');
-    }
-  };
-
-  /**
-   * KeyPress event handler for the div#list-container element.
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onListKeyPress_ = function(event) {
-    if (event.srcElement.tagName == 'INPUT') {
-      // Ignore keypress handler in the rename input box.
-      return;
-    }
-
-    if (event.ctrlKey || event.metaKey || event.altKey)
-      return;
-
-    var now = new Date();
-    var char = String.fromCharCode(event.charCode).toLowerCase();
-    var text = now - this.textSearchState_.date > 1000 ? '' :
-        this.textSearchState_.text;
-    this.textSearchState_ = {text: text + char, date: now};
-
-    this.doTextSearch_();
-  };
-
-  /**
-   * Mousemove event handler for the div#list-container element.
-   * @param {Event} event Mouse event.
-   * @private
-   */
-  FileManager.prototype.onListMouseMove_ = function(event) {
-    // The user grabbed the mouse, restore the hover highlighting.
-    this.setNoHover_(false);
   };
 
   /**
@@ -3443,11 +3328,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * starting with entered text (case-insensitive).
    * @private
    */
-  FileManager.prototype.doTextSearch_ = function() {
-    var text = this.textSearchState_.text;
-    if (!text)
-      return;
-
+  FileManager.prototype.onTextSearch_ = function() {
+    var text = this.ui_.listContainer.textSearchState.text;
     var dm = this.directoryModel_.getFileList();
     for (var index = 0; index < dm.length; ++index) {
       var name = dm.item(index).name;
@@ -3457,7 +3339,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
     }
 
-    this.textSearchState_.text = '';
+    this.ui_.listContainer.textSearchState.text = '';
   };
 
   /**

@@ -97,6 +97,7 @@
 //<include src="progress_center_item_group.js">
 //<include src="search_controller.js">
 //<include src="share_client.js">
+//<include src="spinner_controller.js">
 //<include src="thumbnail_loader.js">
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_action_dialog.js">
@@ -108,6 +109,7 @@
 //<include src="ui/file_grid.js">
 //<include src="ui/file_manager_ui.js">
 //<include src="ui/file_table.js">
+//<include src="ui/list_container.js">
 //<include src="ui/location_line.js">
 //<include src="ui/multi_profile_share_dialog.js">
 //<include src="ui/preview_panel.js">

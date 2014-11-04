@@ -104,6 +104,12 @@ function FileManagerUI(element, dialogType) {
   this.toggleViewButton = null;
 
   /**
+   * List container.
+   * @type {ListContainer}
+   */
+  this.listContainer = null;
+
+  /**
    * Dialog footer.
    * @type {DialogFooter}
    */
