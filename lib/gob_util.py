@@ -157,18 +157,19 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
       raise
 
     # Normal/good responses.
+    response_body = response.read()
     if response.status == 404 and ignore_404:
       return StringIO()
     elif response.status == 200:
-      return StringIO(response.read())
+      return StringIO(response_body)
 
     # Bad responses.
     LOGGER.debug('response msg:\n%s', response.msg)
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    msg = ('%s %s %s\n%s %d %s\nResponse body: %s' %
+    msg = ('%s %s %s\n%s %d %s\nResponse body: %r' %
            (reqtype, conn.req_params['url'], http_version,
             http_version, response.status, response.reason,
-            response.read()))
+            response_body))
 
     # Ones we can retry.
     if response.status >= 500:
