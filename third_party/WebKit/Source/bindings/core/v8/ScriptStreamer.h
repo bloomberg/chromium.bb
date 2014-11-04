@@ -44,7 +44,7 @@ public:
         return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
     }
 
-    v8::ScriptCompiler::StreamedSource* source() { return &m_source; }
+    v8::ScriptCompiler::StreamedSource* source() { return m_source.get(); }
     ScriptResource* resource() const { return m_resource; }
 
     // Called when the script is not needed any more (e.g., loading was
@@ -62,7 +62,7 @@ public:
     void suppressStreaming();
     bool streamingSuppressed() const { return m_streamingSuppressed; }
 
-    unsigned cachedDataType() const { return m_cachedDataType; }
+    unsigned cachedDataType() const;
 
     void addClient(ScriptResourceClient* client)
     {
@@ -97,7 +97,7 @@ private:
     // streamed. Non-const for testing.
     static size_t kSmallScriptThreshold;
 
-    ScriptStreamer(ScriptResource*, v8::ScriptCompiler::StreamedSource::Encoding, PendingScript::Type, ScriptStreamingMode);
+    ScriptStreamer(ScriptResource*, PendingScript::Type, ScriptStreamingMode, ScriptState*, v8::ScriptCompiler::CompileOptions);
 
     void streamingComplete();
     void notifyFinishedToClient();
@@ -121,9 +121,8 @@ private:
     bool m_detached;
 
     SourceStream* m_stream;
-    v8::ScriptCompiler::StreamedSource m_source;
+    OwnPtr<v8::ScriptCompiler::StreamedSource> m_source;
     ScriptResourceClient* m_client;
-    WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> m_task;
     bool m_loadingFinished; // Whether loading from the network is done.
     // Whether the V8 side processing is done. Will be used by the main thread
     // and the streamer thread; guarded by m_mutex.
@@ -136,7 +135,9 @@ private:
     bool m_streamingSuppressed;
 
     // What kind of cached data V8 produces during streaming.
-    unsigned m_cachedDataType;
+    v8::ScriptCompiler::CompileOptions m_compileOptions;
+
+    RefPtr<ScriptState> m_scriptState;
 
     // For recording metrics for different types of scripts separately.
     PendingScript::Type m_scriptType;

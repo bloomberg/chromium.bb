@@ -336,6 +336,34 @@ TEST_P(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
+TEST_P(ScriptStreamingTest, EncodingChanges)
+{
+    // It's possible that the encoding of the Resource changes after we start
+    // loading it.
+    m_resource->setEncoding("windows-1252");
+
+    ScriptStreamer::startStreaming(pendingScript(), m_settings.get(), m_scope.scriptState(), PendingScript::ParsingBlocking);
+    TestScriptResourceClient client;
+    pendingScript().watchForLoad(&client);
+
+    m_resource->setEncoding("UTF-8");
+    // \xec\x92\x81 are the raw bytes for \uc481.
+    appendData("function foo() { var foob\xec\x92\x81r = 13; return foob\xec\x92\x81r; } foo();");
+
+    finish();
+
+    processTasksUntilStreamingComplete();
+    EXPECT_TRUE(client.finished());
+    bool errorOccurred = false;
+    ScriptSourceCode sourceCode = pendingScript().getSource(KURL(), errorOccurred);
+    EXPECT_FALSE(errorOccurred);
+    EXPECT_TRUE(sourceCode.streamer());
+    v8::TryCatch tryCatch;
+    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
+    EXPECT_FALSE(script.IsEmpty());
+    EXPECT_FALSE(tryCatch.HasCaught());
+}
+
 INSTANTIATE_TEST_CASE_P(ScriptStreamingInstantiation, ScriptStreamingTest, ::testing::Values(false, true));
 
 } // namespace
