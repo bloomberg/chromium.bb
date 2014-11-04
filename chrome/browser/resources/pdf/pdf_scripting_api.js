@@ -160,7 +160,7 @@ PDFScriptingAPI.prototype = {
  * Creates a PDF viewer with a scripting interface. This is basically 1) an
  * iframe which is navigated to the PDF viewer extension and 2) a scripting
  * interface which provides access to various features of the viewer for use
- * by print preview and accessbility.
+ * by print preview and accessibility.
  * @param {string} src the source URL of the PDF to load initially.
  * @return {HTMLIFrameElement} the iframe element containing the PDF viewer.
  */

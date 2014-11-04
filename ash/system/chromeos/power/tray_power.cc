@@ -77,7 +77,7 @@ class PowerTrayView : public views::ImageView {
   void SetupNotifyBadCharger() {
     // Poll with a shorter duration timer to notify the charger issue
     // for the first time after the charger dialog is displayed.
-    spring_charger_accessility_timer_.Start(
+    spring_charger_accessibility_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(
             kSpringChargerAccessibilityTimerFirstTimeNotifyInSeconds),
         this, &PowerTrayView::NotifyChargerIssue);
@@ -95,26 +95,26 @@ class PowerTrayView : public views::ImageView {
 
     if (!Shell::GetInstance()->system_tray_delegate()->
             IsSpringChargerReplacementDialogVisible()) {
-      spring_charger_accessility_timer_.Stop();
+      spring_charger_accessibility_timer_.Stop();
       return;
     }
 
-    accessible_name_ =  ui::ResourceBundle::GetSharedInstance().
-        GetLocalizedString(IDS_CHARGER_REPLACEMENT_ACCESSIBILTY_NOTIFICATION);
+    accessible_name_ = ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION);
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     ++spring_charger_spoken_notification_count_;
 
     if (spring_charger_spoken_notification_count_ == 1) {
       // After notify the charger issue for the first time, repeat the
       // notification with a longer duration timer.
-      spring_charger_accessility_timer_.Stop();
-      spring_charger_accessility_timer_.Start(
+      spring_charger_accessibility_timer_.Stop();
+      spring_charger_accessibility_timer_.Start(
           FROM_HERE, base::TimeDelta::FromMinutes(
               kSpringChargerAccessibilityTimerRepeatInMinutes),
           this, &PowerTrayView::NotifyChargerIssue);
     } else if (spring_charger_spoken_notification_count_ >=
         kMaxSpringChargerAccessibilityNotifyCount) {
-      spring_charger_accessility_timer_.Stop();
+      spring_charger_accessibility_timer_.Stop();
     }
   }
 
@@ -124,7 +124,7 @@ class PowerTrayView : public views::ImageView {
   // notification has been spoken.
   int spring_charger_spoken_notification_count_;
 
-  base::RepeatingTimer<PowerTrayView> spring_charger_accessility_timer_;
+  base::RepeatingTimer<PowerTrayView> spring_charger_accessibility_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };

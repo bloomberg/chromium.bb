@@ -138,7 +138,7 @@
                   },
                   "a11ymode": {
                     "type": "boolean",
-                    "description": "True if accessbility virtual keyboard is enabled."
+                    "description": "True if accessibility virtual keyboard is enabled."
                   },
                   "experimental": {
                     "type": "boolean",

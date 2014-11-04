@@ -34,7 +34,7 @@ class ASH_EXPORT AccessibilityObserver {
  public:
   virtual ~AccessibilityObserver() {}
 
-  // Notifies when accessibilty mode changes.
+  // Notifies when accessibility mode changes.
   virtual void OnAccessibilityModeChanged(
       ui::AccessibilityNotificationVisibility notify) = 0;
 };

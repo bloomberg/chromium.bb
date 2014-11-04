@@ -368,7 +368,7 @@ Polymer('kb-keyboard', {
    * Otherwise, the keyboard layout for 'text' type will be loaded.
    */
   inputTypeChanged: function() {
-    // Disable layout switching at accessbility mode.
+    // Disable layout switching at accessibility mode.
     if (this.config && this.config.a11ymode)
       return;
 

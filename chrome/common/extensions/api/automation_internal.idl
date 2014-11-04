@@ -38,7 +38,7 @@ namespace automationInternal {
     long nodeIdToClear;
 
     // A vector of nodes to update according to the rules described in
-    // ui/accesibility/ax_tree_update.h.
+    // ui/accessibility/ax_tree_update.h.
     AXNodeData[] nodes;
   };
 

@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   EXPECT_TRUE(IsBrailleImeActive());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AcessibilityMenuVisibility) {
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   // Log in.
   user_manager::UserManager::Get()->UserLoggedIn(
       kTestUserName, kTestUserName, true);

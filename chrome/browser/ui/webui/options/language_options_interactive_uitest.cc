@@ -24,7 +24,7 @@ namespace {
 // This class will test the language options settings.
 // This test is part of the interactive_ui_tests isntead of browser_tests
 // because it is necessary to emulate pushing a button in order to properly
-// test accessiblity.
+// test accessibility.
 class LanguageOptionsWebUITest : public InProcessBrowserTest {
  public:
   LanguageOptionsWebUITest() {}

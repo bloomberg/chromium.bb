@@ -1361,7 +1361,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   return NO;
 }
 
-// Returns whether or not this object should be ignored in the accessibilty
+// Returns whether or not this object should be ignored in the accessibility
 // tree.
 - (BOOL)accessibilityIsIgnored {
   if (!browserAccessibility_)
@@ -1370,7 +1370,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   return [self isIgnored];
 }
 
-// Performs the given accessibilty action on the webkit accessibility object
+// Performs the given accessibility action on the webkit accessibility object
 // that backs this object.
 - (void)accessibilityPerformAction:(NSString*)action {
   if (!browserAccessibility_)

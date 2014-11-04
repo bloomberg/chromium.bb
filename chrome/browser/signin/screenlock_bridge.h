@@ -64,7 +64,7 @@ class ScreenlockBridge {
     // shown with the icon.
     void SetTooltip(const base::string16& tooltip, bool autoshow);
 
-    // Sets the accessiblity label of the icon. If this attribute is not
+    // Sets the accessibility label of the icon. If this attribute is not
     // provided, then the tooltip will be used.
     void SetAriaLabel(const base::string16& aria_label);
 
