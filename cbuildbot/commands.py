@@ -1196,16 +1196,7 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
     cmd += ['--output-path', cros_build_lib.ToChrootPath(f.name)]
     RunBuildScript(buildroot, cmd, enter_chroot=True,
                    chromite_cmd=True, capture_output=True, extra_env=env)
-    raw_deps = f.read()
-    try:
-      # TODO(yjhong): Let the exception propagate and remove extra logging
-      # after crbug.com/428824 is fixed.
-      deps = json.loads(raw_deps)
-    except ValueError as e:
-      logging.warning('%s: %s', e, raw_deps)
-      deps = {}
-
-  return deps
+    return json.loads(f.read())
 
 
 def GenerateCPEExport(buildroot, board, useflags=None):
