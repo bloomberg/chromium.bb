@@ -362,17 +362,15 @@ void PluginList::GetPluginPathsFromRegistry(
 
   std::set<base::FilePath> plugin_dirs;
 
+  // Search for plugins from HKCU and HKLM.  THis will only find plugins that
+  // are correctly registered in the correct WOW64 registry hive.
   GetPluginsInRegistryDirectory(HKEY_CURRENT_USER,
                                 kRegistryMozillaPlugins,
                                 0,
                                 &plugin_dirs);
   GetPluginsInRegistryDirectory(HKEY_LOCAL_MACHINE,
                                 kRegistryMozillaPlugins,
-                                KEY_WOW64_64KEY,
-                                &plugin_dirs);
-  GetPluginsInRegistryDirectory(HKEY_LOCAL_MACHINE,
-                                kRegistryMozillaPlugins,
-                                KEY_WOW64_32KEY,
+                                0,
                                 &plugin_dirs);
 
   for (std::set<base::FilePath>::iterator i = plugin_dirs.begin();
