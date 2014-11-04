@@ -305,12 +305,12 @@ const Experiment::Choice kOverlayScrollbarChoices[] = {
 };
 #endif
 
-const Experiment::Choice kZeroCopyChoices[] = {
+const Experiment::Choice kOneCopyChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    switches::kEnableZeroCopy, ""},
+    switches::kEnableOneCopy, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kDisableZeroCopy, ""}
+    switches::kDisableOneCopy, ""}
 };
 
 #if defined(OS_ANDROID)
@@ -1550,14 +1550,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ONE_COPY_NAME,
     IDS_FLAGS_ONE_COPY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableOneCopy)
+    MULTI_VALUE_TYPE(kOneCopyChoices)
   },
   {
     "enable-zero-copy",
     IDS_FLAGS_ZERO_COPY_NAME,
     IDS_FLAGS_ZERO_COPY_DESCRIPTION,
     kOsAll,
-    MULTI_VALUE_TYPE(kZeroCopyChoices)
+    SINGLE_VALUE_TYPE(switches::kEnableZeroCopy)
   },
 #if defined(OS_CHROMEOS)
   {

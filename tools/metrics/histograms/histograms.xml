@@ -47507,6 +47507,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
+  <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>

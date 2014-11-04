@@ -205,6 +205,10 @@ const char kDisableLogging[]                = "disable-logging";
 // Disables Media Source API (i.e., the MediaSource object).
 const char kDisableMediaSource[]            = "disable-media-source";
 
+// Disable rasterizer that writes directly to GPU memory.
+// Overrides the kEnableOneCopy flag.
+const char kDisableOneCopy[]                = "disable-one-copy";
+
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -270,10 +274,6 @@ const char kDisableXSLT[]                   = "disable-xslt";
 
 // Disables Blink's XSSAuditor. The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
-
-// Disable rasterizer that writes directly to GPU memory associated with tiles.
-// Overrides the kEnableZeroCopy flag.
-const char kDisableZeroCopy[]               = "disable-zero-copy";
 
 // Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially

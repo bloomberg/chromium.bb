@@ -493,10 +493,13 @@ void RenderThreadImpl::Init() {
   cc_blink::WebLayerImpl::SetImplSidePaintingEnabled(
       is_impl_side_painting_enabled_);
 
-  is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy) &&
-                          !command_line.HasSwitch(switches::kDisableZeroCopy);
+  is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   is_one_copy_enabled_ = command_line.HasSwitch(switches::kEnableOneCopy);
+#else
+  is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
+#endif
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
