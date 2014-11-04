@@ -40,18 +40,16 @@ AutomationNodeImpl.prototype = {
   },
 
   parent: function() {
-    return this.rootImpl.get(this.parentID);
+    return this.hostTree || this.rootImpl.get(this.parentID);
   },
 
   firstChild: function() {
-    var node = this.rootImpl.get(this.childIds[0]);
-    return node;
+    return this.childTree || this.rootImpl.get(this.childIds[0]);
   },
 
   lastChild: function() {
     var childIds = this.childIds;
-    var node = this.rootImpl.get(childIds[childIds.length - 1]);
-    return node;
+    return this.childTree || this.rootImpl.get(childIds[childIds.length - 1]);
   },
 
   children: function() {
@@ -113,12 +111,18 @@ AutomationNodeImpl.prototype = {
     }
   },
 
+  toJSON: function() {
+    return { treeID: this.treeID,
+             id: this.id,
+             role: this.role,
+             attributes: this.attributes };
+  },
+
   dispatchEvent: function(eventType) {
     var path = [];
     var parent = this.parent();
     while (parent) {
       path.push(parent);
-      // TODO(aboxhall/dtseng): handle unloaded parent node
       parent = parent.parent();
     }
     var event = new AutomationEvent(eventType, this.wrapper);
@@ -194,8 +198,7 @@ AutomationNodeImpl.prototype = {
 
   performAction_: function(actionType, opt_args) {
     // Not yet initialized.
-    if (this.rootImpl.processID === undefined ||
-        this.rootImpl.routingID === undefined ||
+    if (this.rootImpl.treeID === undefined ||
         this.id === undefined) {
       return;
     }
@@ -206,8 +209,7 @@ AutomationNodeImpl.prototype = {
           ' {"interact": true} in the "automation" manifest key.');
     }
 
-    automationInternal.performAction({ processID: this.rootImpl.processID,
-                                       routingID: this.rootImpl.routingID,
+    automationInternal.performAction({ treeID: this.rootImpl.treeID,
                                        automationNodeID: this.id,
                                        actionType: actionType },
                                      opt_args || {});
@@ -255,6 +257,7 @@ var ATTRIBUTE_NAME_TO_ATTRIBUTE_ID = {
  * @const
  */
 var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
+                           'childTreeId': true,
                            'controlsIds': true,
                            'describedbyIds': true,
                            'flowtoIds': true,
@@ -276,14 +279,13 @@ var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
  * AutomationNode object.
  * Thus, tree traversals amount to a lookup in our hash.
  *
- * The tree itself is identified by the process id and routing id of the
+ * The tree itself is identified by the accessibility tree id of the
  * renderer widget host.
  * @constructor
  */
-function AutomationRootNodeImpl(processID, routingID) {
+function AutomationRootNodeImpl(treeID) {
   AutomationNodeImpl.call(this, this);
-  this.processID = processID;
-  this.routingID = routingID;
+  this.treeID = treeID;
   this.axNodeDataCache_ = {};
 }
 
@@ -351,6 +353,10 @@ AutomationRootNodeImpl.prototype = {
   },
 
   destroy: function() {
+    if (this.hostTree)
+      this.hostTree.childTree = undefined;
+    this.hostTree = undefined;
+
     this.dispatchEvent(schema.EventType.destroyed);
     this.invalidate_(this.wrapper);
   },
@@ -406,17 +412,8 @@ AutomationRootNodeImpl.prototype = {
       nodeImpl[key] = AutomationAttributeDefaults[key];
     }
     nodeImpl.childIds = [];
-    nodeImpl.loaded = false;
     nodeImpl.id = id;
     delete this.axNodeDataCache_[id];
-  },
-
-  load: function(callback) {
-    // TODO(dtseng/aboxhall): Implement.
-    if (!this.loaded)
-      throw 'Unsupported state: root node is not loaded.';
-
-    setTimeout(callback, 0);
   },
 
   deleteOldChildren_: function(node, newChildIds) {
@@ -457,6 +454,7 @@ AutomationRootNodeImpl.prototype = {
   createNewChildren_: function(node, newChildIds, updateState) {
     logging.CHECK(node);
     var success = true;
+
     for (var i = 0; i < newChildIds.length; i++) {
       var childId = newChildIds[i];
       var childNode = this.axNodeDataCache_[childId];
@@ -495,6 +493,23 @@ AutomationRootNodeImpl.prototype = {
 
   setData_: function(node, nodeData) {
     var nodeImpl = privates(node).impl;
+
+    // TODO(dtseng): Make into set listing all hosting node roles.
+    if (nodeData.role == schema.RoleType.webView) {
+      if (nodeImpl.pendingChildFrame === undefined)
+        nodeImpl.pendingChildFrame = true;
+
+      if (nodeImpl.pendingChildFrame) {
+        nodeImpl.childTreeID = nodeData.intAttributes.childTreeId;
+        automationInternal.enableFrame(nodeImpl.childTreeID);
+        automationUtil.storeTreeCallback(nodeImpl.childTreeID, function(root) {
+          nodeImpl.pendingChildFrame = false;
+          nodeImpl.childTree = root;
+          privates(root).impl.hostTree = node;
+          nodeImpl.dispatchEvent(schema.EventType.childrenChanged);
+        });
+      }
+    }
     for (var key in AutomationAttributeDefaults) {
       if (key in nodeData)
         nodeImpl[key] = nodeData[key];
@@ -599,19 +614,19 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'makeVisible',
                                                 'setSelection',
                                                 'addEventListener',
-                                                'removeEventListener'],
+                                                'removeEventListener',
+                                                'toJSON'],
                                     readonly: ['isRootNode',
                                                'role',
                                                'state',
                                                'location',
                                                'attributes',
+                                               'indexInParent',
                                                'root'] });
 
 var AutomationRootNode = utils.expose('AutomationRootNode',
                                       AutomationRootNodeImpl,
-                                      { superclass: AutomationNode,
-                                        functions: ['load'],
-                                        readonly: ['loaded'] });
+                                      { superclass: AutomationNode });
 
 exports.AutomationNode = AutomationNode;
 exports.AutomationRootNode = AutomationRootNode;

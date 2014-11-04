@@ -44,8 +44,6 @@ void AutomationManagerAsh::HandleEvent(BrowserContext* context,
     return;
   }
 
-  // TODO(dtseng): Events should only be delivered to extensions with the
-  // desktop permission.
   views::Widget* widget = view->GetWidget();
   if (!widget)
     return;
@@ -83,7 +81,8 @@ void AutomationManagerAsh::SetSelection(int32 id, int32 start, int32 end) {
   current_tree_->SetSelection(id, start, end);
 }
 
-AutomationManagerAsh::AutomationManagerAsh() : enabled_(false) {}
+AutomationManagerAsh::AutomationManagerAsh() : enabled_(false) {
+}
 
 AutomationManagerAsh::~AutomationManagerAsh() {}
 

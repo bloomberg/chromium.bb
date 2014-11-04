@@ -58,6 +58,15 @@ class AutomationInternalPerformActionFunction
       AutomationActionAdapter* adapter);
 };
 
+class AutomationInternalEnableFrameFunction : public UIThreadExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION("automationInternal.enableFrame",
+                             AUTOMATIONINTERNAL_PERFORMACTION)
+ protected:
+  ~AutomationInternalEnableFrameFunction() override {}
+
+  ExtensionFunction::ResponseAction Run() override;
+};
+
 class AutomationInternalEnableDesktopFunction
     : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableDesktop",

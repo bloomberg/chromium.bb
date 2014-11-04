@@ -189,6 +189,7 @@
     tooltip,
     value_indicator,
     web_area,
+    web_view,
     window
   };
 
@@ -293,7 +294,13 @@
     color_value_blue,
 
     // Inline text attributes.
-    text_direction
+    text_direction,
+
+    // Uniquely identifies an AXTree.
+    tree_id,
+
+    // Identifies a child tree which this node hosts.
+    child_tree_id
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXFloatAttribute {

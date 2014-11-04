@@ -210,7 +210,7 @@ void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 }
 
 void WebView::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_GROUP;
+  state->role = ui::AX_ROLE_WEB_VIEW;
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {

@@ -1331,6 +1331,8 @@ int32 NativeViewAccessibilityWin::MSAARole(ui::AXRole role) {
       return ROLE_SYSTEM_TITLEBAR;
     case ui::AX_ROLE_TOOLBAR:
       return ROLE_SYSTEM_TOOLBAR;
+    case ui::AX_ROLE_WEB_VIEW:
+      return ROLE_SYSTEM_GROUPING;
     case ui::AX_ROLE_WINDOW:
       return ROLE_SYSTEM_WINDOW;
     case ui::AX_ROLE_CLIENT:

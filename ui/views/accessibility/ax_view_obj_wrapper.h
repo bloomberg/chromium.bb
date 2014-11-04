@@ -16,6 +16,8 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   explicit AXViewObjWrapper(View* view);
   ~AXViewObjWrapper() override;
 
+  View* view() { return view_; }
+
   // AXAuraObjWrapper overrides.
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;

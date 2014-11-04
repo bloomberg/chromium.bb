@@ -42,6 +42,7 @@ void AXViewObjWrapper::GetChildren(
 void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   ui::AXViewState view_data;
   view_->GetAccessibleState(&view_data);
+
   out_node_data->id = GetID();
   out_node_data->role = view_data.role;
 
@@ -58,10 +59,13 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->AddStringAttribute(
       ui::AX_ATTR_VALUE, base::UTF16ToUTF8(view_data.value));
 
-  out_node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
-                                 view_data.selection_start);
-  out_node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END,
-                                 view_data.selection_end);
+  if (view_data.selection_start > -1 && view_data.selection_end > -1) {
+    out_node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
+                                   view_data.selection_start);
+
+    out_node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END,
+                                   view_data.selection_end);
+  }
 }
 
 int32 AXViewObjWrapper::GetID() {

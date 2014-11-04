@@ -180,6 +180,7 @@
     tooltip,
     valueIndicator,
     webArea,
+    webView,
     window
   };
 
@@ -238,13 +239,10 @@
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
-    AutomationRootNode root;
+    AutomationNode root;
 
-    // Whether this AutomationNode is an AutomationRootNode.
+    // Whether this AutomationNode is root node.
     boolean isRootNode;
-
-    // Unique ID to identify this node.
-    long id;
 
     // The role of this node.
     automation.RoleType role;
@@ -293,35 +291,8 @@
         EventType eventType, AutomationListener listener, boolean capture);
   };
 
-  // Called when the <code>AutomationRootNode</code> for the page is available.
-  callback RootCallback = void(AutomationRootNode rootNode);
-
-  // The root node of the automation tree for a single frame or desktop.
-  // This may be:
-  // <ul>
-  //   <li> The desktop
-  //   <li> The top frame of a page
-  //   <li> A frame or iframe within a page
-  // </ul>
-  // Thus, an <code>AutomationRootNode</code> may be a descendant of one or
-  // more <code>AutomationRootNode</code>s, and in turn have one or more
-  // <code>AutomationRootNode</code>s in its descendants. Thus, the
-  // <code>root</code> property of the <code>AutomationRootNode</code> will be
-  // the immediate parent <code>AutomationRootNode</code>, or <code>null</code>
-  // if this is the top-level <code>AutomationRootNode</code>.
-  //
-  // Extends $(ref:automation.AutomationNode).
-  [nocompile, noinline_doc] dictionary AutomationRootNode {
-    // TODO(aboxhall/dtseng): implement loading. Kept separate to not include
-    // in generated docs.
-
-    // Whether this AutomationRootNode is loaded or not. If false, call load()
-    // to get the contents.
-    boolean loaded;
-
-    // Load the accessibility tree for this AutomationRootNode.
-    static void load(RootCallback callback);
-  };
+  // Called when the <code>AutomationNode</code> for the page is available.
+  callback RootCallback = void(AutomationNode rootNode);
 
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current

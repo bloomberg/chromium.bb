@@ -159,6 +159,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "actions.html"))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopLoadTabs) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "load_tabs.html"))
+      << message_;
+}
 #else
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop",
@@ -336,9 +341,9 @@ class FakeAutomationInternalEnableTabFunction
           base::Bind(&TreeSerializationState::InitializeTree0,
                      base::Unretained(&state),
                      base::Unretained(browser_context())));
-      return RespondNow(
-          ArgumentList(api::automation_internal::EnableTab::Results::Create(
-              kPid, kTab0Rid)));
+      // TODO(aboxhall): Need to rewrite this test in terms of tree ids.
+      return RespondNow(ArgumentList(
+          api::automation_internal::EnableTab::Results::Create(0)));
     }
     if (tab_id == 1) {
       // tab 1 <--> tree1
@@ -347,9 +352,8 @@ class FakeAutomationInternalEnableTabFunction
           base::Bind(&TreeSerializationState::InitializeTree1,
                      base::Unretained(&state),
                      base::Unretained(browser_context())));
-      return RespondNow(
-          ArgumentList(api::automation_internal::EnableTab::Results::Create(
-              kPid, kTab1Rid)));
+      return RespondNow(ArgumentList(
+          api::automation_internal::EnableTab::Results::Create(0)));
     }
     return RespondNow(Error("Unrecognised tab_id"));
   }

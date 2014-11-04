@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -35,9 +37,7 @@ class AutomationWebContentsObserver;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::AutomationWebContentsObserver);
 
 namespace {
-const int kDesktopProcessID = 0;
-const int kDesktopRoutingID = 0;
-
+const int kDesktopTreeID = 0;
 const char kCannotRequestAutomationOnPage[] =
     "Cannot request automation tree on url \"*\". "
     "Extension manifest must request permission to access this host.";
@@ -164,10 +164,35 @@ AutomationInternalEnableTabFunction::Run() {
   }
   AutomationWebContentsObserver::CreateForWebContents(contents);
   contents->EnableTreeOnlyAccessibilityMode();
-  return RespondNow(
-      ArgumentList(api::automation_internal::EnableTab::Results::Create(
-          rfh->GetProcess()->GetID(), rfh->GetRoutingID())));
-  }
+  int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
+      rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  return RespondNow(ArgumentList(
+      api::automation_internal::EnableTab::Results::Create(ax_tree_id)));
+}
+
+ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
+// TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
+#if defined(OS_CHROMEOS)
+  using api::automation_internal::EnableFrame::Params;
+
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  AXTreeIDRegistry::FrameID frame_id =
+      AXTreeIDRegistry::GetInstance()->GetFrameID(params->tree_id);
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
+  if (!rfh)
+    return RespondNow(Error("unable to load tab"));
+
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  AutomationWebContentsObserver::CreateForWebContents(contents);
+  contents->EnableTreeOnlyAccessibilityMode();
+
+  return RespondNow(NoArguments());
+#endif
+  return RespondNow(Error("enableFrame is only supported on Chrome OS"));
+}
 
 ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::Run() {
@@ -178,8 +203,7 @@ AutomationInternalPerformActionFunction::Run() {
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->args.process_id == kDesktopProcessID &&
-      params->args.routing_id == kDesktopRoutingID) {
+  if (params->args.tree_id == kDesktopTreeID) {
 #if defined(OS_CHROMEOS)
     return RouteActionToAdapter(
         params.get(), AutomationManagerAsh::GetInstance());
@@ -189,9 +213,10 @@ AutomationInternalPerformActionFunction::Run() {
                             " platform does not support desktop automation"));
 #endif  // defined(OS_CHROMEOS)
   }
+  AXTreeIDRegistry::FrameID frame_id =
+      AXTreeIDRegistry::GetInstance()->GetFrameID(params->args.tree_id);
   content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(params->args.process_id,
-                                       params->args.routing_id);
+      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
   if (!rfh)
     return RespondNow(Error("Ignoring action on destroyed node"));
 

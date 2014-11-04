@@ -1916,6 +1916,8 @@
       'browser/accessibility/accessibility_events.h',
       'browser/accessibility/accessibility_extension_api_constants.cc',
       'browser/accessibility/accessibility_extension_api_constants.h',
+      'browser/accessibility/ax_tree_id_registry.cc',
+      'browser/accessibility/ax_tree_id_registry.h',
       'browser/accessibility/invert_bubble_prefs.cc',
       'browser/accessibility/invert_bubble_prefs.h',
       'browser/auto_launch_trial.cc',

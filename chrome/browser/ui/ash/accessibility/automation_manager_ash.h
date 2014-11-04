@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/ash/accessibility/ax_tree_source_ash.h"
 #include "ui/accessibility/ax_tree_serializer.h"

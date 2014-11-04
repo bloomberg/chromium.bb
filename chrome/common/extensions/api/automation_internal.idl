@@ -46,11 +46,8 @@ namespace automationInternal {
   // tree. See ui/accessibility/ax_tree_update.h for an extended explanation of
   // the tree update format.
   dictionary AXEventParams {
-    // The process id of the renderer host.
-    long processID;
-
-    // The routing id of the web contents that this update is for.
-    long routingID;
+    // The tree id of the web contents that this update is for.
+    long treeID;
 
     // ID of the node that the event applies to.
     long targetID;
@@ -73,8 +70,7 @@ namespace automationInternal {
 
   // Arguments required for all actions supplied to performAction.
   dictionary PerformActionRequiredParams {
-    long processID;
-    long routingID;
+    long treeID;
     long automationNodeID;
     ActionType actionType;
   };
@@ -85,18 +81,21 @@ namespace automationInternal {
     long endIndex;
   };
 
-  // Returns the process id and routing id of the tab whose accessibility was
-  // enabled using enable().
-  callback EnableTabCallback = void(long processID, long routingID);
+  // Returns the accessibility tree id of the web contents who's accessibility
+  // was enabled using enableTab().
+  callback EnableTabCallback = void(long tree_id);
 
   // Callback called when enableDesktop() returns.
   callback EnableDesktopCallback = void();
 
   interface Functions {
     // Enable automation of the tab with the given id, or the active tab if no
-    // tab id is given, and retrieves its process and routing ids for use in
+    // tab id is given, and retrieves accessibility tree id for use in
     // future updates.
     static void enableTab(optional long tabId, EnableTabCallback callback);
+
+    // Enable automation of the frame with the given tree id.
+    static void enableFrame(long tree_id);
 
     // Enables desktop automation.
     static void enableDesktop(EnableDesktopCallback callback);
@@ -110,6 +109,6 @@ namespace automationInternal {
     // Fired when an accessibility event occurs
     static void onAccessibilityEvent(AXEventParams update);
 
-    static void onAccessibilityTreeDestroyed(long processID, long routingID);
+    static void onAccessibilityTreeDestroyed(long treeID);
   };
 };

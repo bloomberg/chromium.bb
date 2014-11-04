@@ -6,6 +6,9 @@ chrome.test.runWithModuleSystem(function(moduleSystem) {
   window.AutomationRootNode =
       moduleSystem.require('automationNode').AutomationRootNode;
   window.privates = moduleSystem.privates;
+  // Unused.
+  window.automationUtil = function() {};
+  window.automationUtil.storeTreeCallback = function() {};
 });
 
 var assertEq = chrome.test.assertEq;

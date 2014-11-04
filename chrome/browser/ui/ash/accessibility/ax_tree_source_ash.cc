@@ -6,8 +6,15 @@
 
 #include <vector>
 
+#include "chrome/browser/accessibility/ax_tree_id_registry.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_view_obj_wrapper.h"
+#include "ui/views/controls/webview/webview.h"
 
 using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;
@@ -90,6 +97,20 @@ AXAuraObjWrapper* AXTreeSourceAsh::GetNull() const {
 void AXTreeSourceAsh::SerializeNode(
     AXAuraObjWrapper* node, ui::AXNodeData* out_data) const {
   node->Serialize(out_data);
+
+  if (out_data->role == ui::AX_ROLE_WEB_VIEW) {
+    views::View* view = static_cast<views::AXViewObjWrapper*>(node)->view();
+    content::WebContents* contents =
+        static_cast<views::WebView*>(view)->GetWebContents();
+    content::RenderFrameHost* rfh = contents->GetMainFrame();
+    if (rfh) {
+      int process_id = rfh->GetProcess()->GetID();
+      int routing_id = rfh->GetRoutingID();
+      int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
+          process_id, routing_id);
+      out_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID, ax_tree_id);
+    }
+  }
 }
 
 std::string AXTreeSourceAsh::ToString(
