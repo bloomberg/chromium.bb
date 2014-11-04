@@ -34,7 +34,6 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
     return;
 
   cursor_ = cursor;
-  ShowCursor();
 }
 
 void DriCursor::ShowCursor() {

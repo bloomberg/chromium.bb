@@ -28,6 +28,9 @@ class DriCursor : public CursorDelegateEvdev {
                      DriWindowManager* window_manager);
   virtual ~DriCursor();
 
+  // Set's platform_cursor for widget. SetCursor is not responsible for showing
+  // the cursor. ShowCursor needs  to be explicitly called to make the cursor
+  // visible.
   void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor platform_cursor);
   void ShowCursor();
   void HideCursor();
