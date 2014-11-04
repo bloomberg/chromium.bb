@@ -4,6 +4,11 @@
 
 import("//build/config/ui.gni")
 
+declare_args() {
+  # Use the PCI lib to collect GPU information on Linux.
+  use_libpci = true
+}
+
 source_set("config") {
   sources = [
     "dx_diag_node.cc",
@@ -62,7 +67,10 @@ source_set("config") {
       ]
     }
   }
-  if (is_linux && (use_x11 || use_ozone)) {
+  if (use_libpci) {
+    defines += [ "USE_LIBPCI=1" ]
+  }
+  if (is_linux && use_libpci && (use_x11 || use_ozone)) {
     deps += [
       "//build/config/linux:libpci",
     ]

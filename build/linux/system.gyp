@@ -466,6 +466,74 @@
         },
       ],
     }],
+    ['use_libpci==1', {
+      'targets': [
+        {
+          'target_name': 'libpci',
+          'type': 'static_library',
+          'cflags': [
+            '<!@(<(pkg-config) --cflags libpci)',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)',
+            ],
+            'conditions': [
+              ['linux_link_libpci==1', {
+                'link_settings': {
+                  'ldflags': [
+                    '<!@(<(pkg-config) --libs-only-L --libs-only-other libpci)',
+                  ],
+                  'libraries': [
+                    '<!@(<(pkg-config) --libs-only-l libpci)',
+                  ],
+                }
+              }],
+            ],
+          },
+          'include_dirs': [
+            '../..',
+          ],
+          'hard_dependency': 1,
+          'actions': [
+            {
+              'variables': {
+                'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libpci.h',
+                'output_cc': '<(INTERMEDIATE_DIR)/libpci_loader.cc',
+                'generator': '../../tools/generate_library_loader/generate_library_loader.py',
+              },
+              'action_name': 'generate_libpci_loader',
+              'inputs': [
+                '<(generator)',
+              ],
+              'outputs': [
+                '<(output_h)',
+                '<(output_cc)',
+              ],
+              'action': ['python',
+                         '<(generator)',
+                         '--name', 'LibPciLoader',
+                         '--output-h', '<(output_h)',
+                         '--output-cc', '<(output_cc)',
+                         '--header', '<pci/pci.h>',
+                         # TODO(phajdan.jr): Report problem to pciutils project
+                         # and get it fixed so that we don't need --use-extern-c.
+                         '--use-extern-c',
+                         '--link-directly=<(linux_link_libpci)',
+                         'pci_alloc',
+                         'pci_init',
+                         'pci_cleanup',
+                         'pci_scan_bus',
+                         'pci_fill_info',
+                         'pci_lookup_name',
+              ],
+              'message': 'Generating libpci library loader',
+              'process_outputs_as_sources': 1,
+            },
+          ],
+        },
+      ],
+    }],
   ],  # conditions
   'targets': [
     {
@@ -839,70 +907,6 @@
           '-lcap',
         ],
       },
-    },
-    {
-      'target_name': 'libpci',
-      'type': 'static_library',
-      'cflags': [
-        '<!@(<(pkg-config) --cflags libpci)',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)',
-        ],
-        'conditions': [
-          ['linux_link_libpci==1', {
-            'link_settings': {
-              'ldflags': [
-                '<!@(<(pkg-config) --libs-only-L --libs-only-other libpci)',
-              ],
-              'libraries': [
-                '<!@(<(pkg-config) --libs-only-l libpci)',
-              ],
-            }
-          }],
-        ],
-      },
-      'include_dirs': [
-        '../..',
-      ],
-      'hard_dependency': 1,
-      'actions': [
-        {
-          'variables': {
-            'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libpci.h',
-            'output_cc': '<(INTERMEDIATE_DIR)/libpci_loader.cc',
-            'generator': '../../tools/generate_library_loader/generate_library_loader.py',
-          },
-          'action_name': 'generate_libpci_loader',
-          'inputs': [
-            '<(generator)',
-          ],
-          'outputs': [
-            '<(output_h)',
-            '<(output_cc)',
-          ],
-          'action': ['python',
-                     '<(generator)',
-                     '--name', 'LibPciLoader',
-                     '--output-h', '<(output_h)',
-                     '--output-cc', '<(output_cc)',
-                     '--header', '<pci/pci.h>',
-                     # TODO(phajdan.jr): Report problem to pciutils project
-                     # and get it fixed so that we don't need --use-extern-c.
-                     '--use-extern-c',
-                     '--link-directly=<(linux_link_libpci)',
-                     'pci_alloc',
-                     'pci_init',
-                     'pci_cleanup',
-                     'pci_scan_bus',
-                     'pci_fill_info',
-                     'pci_lookup_name',
-          ],
-          'message': 'Generating libpci library loader',
-          'process_outputs_as_sources': 1,
-        },
-      ],
     },
     {
       'target_name': 'libresolv',
