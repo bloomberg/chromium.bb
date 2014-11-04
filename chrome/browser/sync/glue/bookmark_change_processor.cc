@@ -409,6 +409,23 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarkChangeProcessor::BookmarkNodeFaviconChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
+  if (!CanSyncNode(node)) {
+    return;
+  }
+
+  // We shouldn't see changes to the top-level nodes.
+  if (model->is_permanent_node(node)) {
+    NOTREACHED() << "Saw Favicon update to permanent node!";
+    return;
+  }
+
+  // Ignore changes with empty images. This can happen if the favicon is
+  // still being loaded.
+  const gfx::Image& favicon = model->GetFavicon(node);
+  if (favicon.IsEmpty()) {
+    return;
+  }
+
   BookmarkNodeChanged(model, node);
 }
 
