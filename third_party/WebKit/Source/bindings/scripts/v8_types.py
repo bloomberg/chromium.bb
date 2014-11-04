@@ -314,6 +314,13 @@ def gc_type(idl_type):
 IdlTypeBase.gc_type = property(gc_type)
 
 
+def is_traceable(idl_type):
+    return (idl_type.is_garbage_collected
+            or idl_type.is_will_be_garbage_collected)
+
+IdlTypeBase.is_traceable = property(is_traceable)
+
+
 ################################################################################
 # Includes
 ################################################################################

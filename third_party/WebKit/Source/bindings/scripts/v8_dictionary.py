@@ -141,8 +141,7 @@ def member_impl_context(member, interfaces_info, header_includes):
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
         'is_object': is_object,
-        'is_traceable': (idl_type.is_garbage_collected or
-                         idl_type.is_will_be_garbage_collected),
+        'is_traceable': idl_type.is_traceable,
         'member_cpp_type': member_cpp_type(),
         'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'setter_name': setter_name_for_dictionary_member(member),
