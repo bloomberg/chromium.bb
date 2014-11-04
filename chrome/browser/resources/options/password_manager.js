@@ -214,6 +214,10 @@ cr.define('options', function() {
       item.showPassword(password);
     },
 
+    /**
+     * @param {boolean} visible Whether the link should be visible.
+     * @private
+     */
     setManageAccountLinkVisibility_: function(visible) {
       $('manage-passwords-span').hidden = !visible;
     },
