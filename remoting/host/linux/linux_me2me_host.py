@@ -394,7 +394,7 @@ class Desktop:
       self.child_env["SSH_AUTH_SOCK"] = self.ssh_auth_sockname
 
     # Wait for X to be active.
-    for _test in range(5):
+    for _test in range(20):
       proc = subprocess.Popen("xdpyinfo", env=self.child_env, stdout=devnull)
       _pid, retcode = os.waitpid(proc.pid, 0)
       if retcode == 0:
