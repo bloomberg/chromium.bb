@@ -8,15 +8,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 class CookieSettings;
 class Profile;
 
 class ChromeSigninClient : public SigninClient,
-                           public content::NotificationObserver,
                            public content::RenderProcessHostObserver {
  public:
   explicit ChromeSigninClient(Profile* profile);
@@ -57,27 +54,16 @@ class ChromeSigninClient : public SigninClient,
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   std::string GetProductVersion() override;
-  scoped_ptr<CookieChangedCallbackList::Subscription> AddCookieChangedCallback(
-      const CookieChangedCallback& callback) override;
+  scoped_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+      const GURL& url,
+      const std::string& name,
+      const net::CookieStore::CookieChangedCallback& callback) override;
   void GoogleSigninSucceeded(const std::string& account_id,
                              const std::string& username,
                              const std::string& password) override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
-  void RegisterForCookieChangedNotification();
-  void UnregisterForCookieChangedNotification();
-
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
-
-  // The callbacks that will be called when notifications about cookie changes
-  // are received.
-  base::CallbackList<void(const net::CanonicalCookie* cookie)> callbacks_;
 
   // See SetSigninProcess. Tracks the currently active signin process
   // by ID, if there is one.

@@ -10,13 +10,14 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "net/cookies/cookie_store.h"
+#include "url/gurl.h"
 
 class PrefService;
 class SigninManagerBase;
 class TokenWebData;
 
 namespace net {
-class CanonicalCookie;
 class URLRequestContextGetter;
 }
 
@@ -32,11 +33,11 @@ class ProfileOAuth2TokenServiceIOSProvider;
 // embedder.
 class SigninClient : public KeyedService {
  public:
-  typedef base::Callback<void(const net::CanonicalCookie* cookie)>
-      CookieChangedCallback;
-
-  typedef base::CallbackList<void(const net::CanonicalCookie* cookie)>
-      CookieChangedCallbackList;
+  // The subcription for cookie changed notifications.
+  class CookieChangedSubscription {
+   public:
+    virtual ~CookieChangedSubscription() {};
+  };
 
   ~SigninClient() override {}
 
@@ -70,12 +71,14 @@ class SigninClient : public KeyedService {
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;
 
-  // Adds or removes a callback that should be called when a cookie changes.
-  // TODO(blundell): Eliminate this interface in favor of having core signin
-  // code observe cookie changes once //chrome/browser/net has been
-  // componentized.
-  virtual scoped_ptr<CookieChangedCallbackList::Subscription>
-      AddCookieChangedCallback(const CookieChangedCallback& callback) = 0;
+  // Adds a callback to be called each time a cookie for |url| with name |name|
+  // changes.
+  // Note that |callback| will always be called on the thread that
+  // |AddCookieChangedCallback| was called on.
+  virtual scoped_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+      const GURL& url,
+      const std::string& name,
+      const net::CookieStore::CookieChangedCallback& callback) = 0;
 
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& account_id,

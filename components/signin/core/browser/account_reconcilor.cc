@@ -121,6 +121,8 @@ void AccountReconcilor::RegisterForCookieChanges() {
   // go off in some embedders on reauth (e.g., ChromeSigninClient).
   UnregisterForCookieChanges();
   cookie_changed_subscription_ = client_->AddCookieChangedCallback(
+      GaiaUrls::GetInstance()->gaia_url(),
+      "LSID",
       base::Bind(&AccountReconcilor::OnCookieChanged, base::Unretained(this)));
 }
 
@@ -160,10 +162,11 @@ bool AccountReconcilor::IsProfileConnected() {
   return signin_manager_->IsAuthenticated();
 }
 
-void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
-  if (cookie->Name() == "LSID" &&
-      cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
-      cookie->IsSecure() && cookie->IsHttpOnly()) {
+void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie& cookie,
+                                        bool removed) {
+  DCHECK_EQ("LSID", cookie.Name());
+  DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url().host(), cookie.Domain());
+  if (cookie.IsSecure() && cookie.IsHttpOnly()) {
     VLOG(1) << "AccountReconcilor::OnCookieChanged: LSID changed";
 
     // It is possible that O2RT is not available at this moment.

@@ -79,10 +79,13 @@ bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
   return true;
 }
 
-scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+scoped_ptr<SigninClient::CookieChangedSubscription>
 TestSigninClient::AddCookieChangedCallback(
-    const SigninClient::CookieChangedCallback& callback) {
-  return cookie_callbacks_.Add(callback);
+    const GURL& url,
+    const std::string& name,
+    const net::CookieStore::CookieChangedCallback& callback) {
+  return scoped_ptr<SigninClient::CookieChangedSubscription>(
+      new SigninClient::CookieChangedSubscription);
 }
 
 #if defined(OS_IOS)

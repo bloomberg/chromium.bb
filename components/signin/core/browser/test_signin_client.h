@@ -65,9 +65,12 @@ class TestSigninClient : public SigninClient {
   // Returns true.
   bool ShouldMergeSigninCredentialsIntoCookieJar() override;
 
-  // Does nothing.
-  scoped_ptr<CookieChangedCallbackList::Subscription> AddCookieChangedCallback(
-      const CookieChangedCallback& callback) override;
+  // Registers |callback| and returns the subscription.
+  // Note that |callback| will never be called.
+  scoped_ptr<SigninClient::CookieChangedSubscription> AddCookieChangedCallback(
+      const GURL& url,
+      const std::string& name,
+      const net::CookieStore::CookieChangedCallback& callback) override;
 
 #if defined(OS_IOS)
   ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
@@ -89,8 +92,6 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
-  CookieChangedCallbackList cookie_callbacks_;
-
   PrefService* pref_service_;
 
 #if defined(OS_IOS)

@@ -135,7 +135,7 @@ class AccountReconcilor : public KeyedService,
   // Note internally that this |account_id| is added to the cookie jar.
   bool MarkAccountAsAddedToCookie(const std::string& account_id);
 
-  void OnCookieChanged(const net::CanonicalCookie* cookie);
+  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
 
   // Overriden from GaiaAuthConsumer.
   void OnListAccountsSuccess(const std::string& data) override;
@@ -194,7 +194,7 @@ class AccountReconcilor : public KeyedService,
 
   std::deque<GetAccountsFromCookieCallback> get_gaia_accounts_callbacks_;
 
-  scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+  scoped_ptr<SigninClient::CookieChangedSubscription>
       cookie_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);

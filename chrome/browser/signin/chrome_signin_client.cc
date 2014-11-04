@@ -8,22 +8,21 @@
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/signin_cookie_changed_subscription.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -49,14 +48,9 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
 ChromeSigninClient::ChromeSigninClient(Profile* profile)
     : profile_(profile), signin_host_id_(ChildProcessHost::kInvalidUniqueID) {
-  callbacks_.set_removal_callback(
-    base::Bind(&ChromeSigninClient::UnregisterForCookieChangedNotification,
-               base::Unretained(this)));
 }
 
 ChromeSigninClient::~ChromeSigninClient() {
-  UnregisterForCookieChangedNotification();
-
   std::set<RenderProcessHost*>::iterator i;
   for (i = signin_hosts_observed_.begin(); i != signin_hosts_observed_.end();
        ++i) {
@@ -200,12 +194,16 @@ base::Time ChromeSigninClient::GetInstallDate() {
       g_browser_process->metrics_service()->GetInstallDate());
 }
 
-scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+scoped_ptr<SigninClient::CookieChangedSubscription>
 ChromeSigninClient::AddCookieChangedCallback(
-    const CookieChangedCallback& callback) {
-  scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
-    subscription = callbacks_.Add(callback);
-  RegisterForCookieChangedNotification();
+    const GURL& url,
+    const std::string& name,
+    const net::CookieStore::CookieChangedCallback& callback) {
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
+      profile_->GetRequestContext();
+  DCHECK(context_getter.get());
+  scoped_ptr<SigninCookieChangedSubscription> subscription(
+      new SigninCookieChangedSubscription(context_getter, url, name, callback));
   return subscription.Pass();
 }
 
@@ -217,42 +215,4 @@ void ChromeSigninClient::GoogleSigninSucceeded(const std::string& account_id,
   if (switches::IsNewProfileManagement())
     chrome::SetLocalAuthCredentials(profile_, password);
 #endif
-}
-
-void ChromeSigninClient::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_COOKIE_CHANGED: {
-      DCHECK(!callbacks_.empty());
-      const net::CanonicalCookie* cookie =
-          content::Details<ChromeCookieDetails>(details).ptr()->cookie;
-      callbacks_.Notify(cookie);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void ChromeSigninClient::RegisterForCookieChangedNotification() {
-  if (callbacks_.empty())
-    return;
-  content::Source<Profile> source(profile_);
-  if (!registrar_.IsRegistered(
-      this, chrome::NOTIFICATION_COOKIE_CHANGED, source))
-  registrar_.Add(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
-}
-
-void ChromeSigninClient::UnregisterForCookieChangedNotification() {
-  if (!callbacks_.empty())
-    return;
-  // Note that it's allowed to call this method multiple times without an
-  // intervening call to |RegisterForCookieChangedNotification()|.
-  content::Source<Profile> source(profile_);
-  if (!registrar_.IsRegistered(
-      this, chrome::NOTIFICATION_COOKIE_CHANGED, source))
-    return;
-  registrar_.Remove(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
 }

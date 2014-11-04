@@ -182,7 +182,7 @@ class AboutSigninInternals
 
   // Called when a cookie changes. If the cookie relates to a GAIA LSID cookie,
   // then we call ListAccounts and update the UI element.
-  void OnCookieChanged(const net::CanonicalCookie* cookie);
+  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
 
   // Weak pointer to the token service.
   ProfileOAuth2TokenService* token_service_;
@@ -202,7 +202,7 @@ class AboutSigninInternals
 
   ObserverList<Observer> signin_observers_;
 
-  scoped_ptr<SigninClient::CookieChangedCallbackList::Subscription>
+  scoped_ptr<SigninClient::CookieChangedSubscription>
       cookie_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);

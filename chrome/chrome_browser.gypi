@@ -1152,6 +1152,8 @@
       'browser/signin/profile_oauth2_token_service_factory.h',
       'browser/signin/screenlock_bridge.cc',
       'browser/signin/screenlock_bridge.h',
+      'browser/signin/signin_cookie_changed_subscription.cc',
+      'browser/signin/signin_cookie_changed_subscription.h',
       'browser/signin/signin_manager_factory.cc',
       'browser/signin/signin_manager_factory.h',
       'browser/signin/signin_names_io_thread.cc',
