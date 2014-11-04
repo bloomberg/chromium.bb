@@ -132,11 +132,9 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionSta
     bool selectIsMenuList = select && select->usesMenuList();
     int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
 
-    // Handle the common special case where there's exactly 1 child node, and it's a text node.
-    Node* child = firstChild();
-    if (child && child->isTextNode() && !child->nextSibling())
-        toText(child)->setData(text);
-    else {
+    if (hasOneTextChild()) {
+        toText(firstChild())->setData(text);
+    } else {
         removeChildren();
         appendChild(Text::create(document(), text), exceptionState);
     }
