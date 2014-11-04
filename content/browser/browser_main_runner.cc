@@ -20,6 +20,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 
 #if defined(OS_WIN)
+#include <dwrite.h>
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "net/cert/sha256_legacy_support_win.h"
@@ -140,7 +141,7 @@ void MaybeEnableDirectWriteFontRendering() {
                                    __uuidof(IDWriteFactory),
                                    reinterpret_cast<IUnknown**>(&factory))));
     SetDefaultSkiaFactory(SkFontMgr_New_DirectWrite(factory));
-    gfx::PlatformFontWin::set_direct_write_factory(factory);
+    gfx::PlatformFontWin::set_use_skia_for_font_metrics(true);
   }
 }
 
