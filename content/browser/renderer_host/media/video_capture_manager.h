@@ -131,6 +131,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     return video_capture_device_factory_.get();
   }
 
+#if defined(OS_WIN)
+  void set_device_task_runner(
+      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
+    device_task_runner_ = device_task_runner;
+  }
+#endif
+
  private:
   ~VideoCaptureManager() override;
   struct DeviceEntry;
