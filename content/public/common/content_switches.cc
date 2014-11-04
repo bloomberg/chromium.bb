@@ -715,6 +715,9 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
+// Handles frame scrolls via the root RenderLayer instead of the FrameView.
+const char kRootLayerScrolls[]              = "root-layer-scrolls";
+
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
 

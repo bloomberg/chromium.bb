@@ -751,6 +751,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseTransitionCompositing(device_scale_factor_));
   webview()->settings()->setThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
+  webview()->settings()->setRootLayerScrolls(
+      command_line.HasSwitch(switches::kRootLayerScrolls));
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
