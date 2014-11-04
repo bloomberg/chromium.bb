@@ -4,20 +4,17 @@
 
 #include "remoting/host/continue_window.h"
 
-#include "remoting/base/string_resources.h"
-#include "remoting/host/chromeos/message_box.h"
-#include "ui/base/l10n/l10n_util.h"
-
 namespace remoting {
 
 namespace {
 
+// A place holder implementation for the ContinueWindow on
+// ChromeOS. Remote assistance on Chrome OS is currently under a flag so it is
+// secure to leave it unimplemented for now.
 class ContinueWindowAura : public ContinueWindow {
  public:
   ContinueWindowAura();
   ~ContinueWindowAura() override;
-
-  void OnMessageBoxResult(MessageBox::Result result);
 
  protected:
   // ContinueWindow interface.
@@ -25,38 +22,23 @@ class ContinueWindowAura : public ContinueWindow {
   void HideUi() override;
 
  private:
-  scoped_ptr<MessageBox> message_box_;
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowAura);
 };
 
 ContinueWindowAura::ContinueWindowAura() {
-  message_box_.reset(new MessageBox(
-      l10n_util::GetStringUTF16(IDS_MODE_IT2ME),           // title
-      l10n_util::GetStringUTF16(IDS_CONTINUE_PROMPT),      // dialog label
-      l10n_util::GetStringUTF16(IDS_CONTINUE_BUTTON),      // ok label
-      l10n_util::GetStringUTF16(IDS_STOP_SHARING_BUTTON),  // cancel label
-      base::Bind(&ContinueWindowAura::OnMessageBoxResult,
-                 base::Unretained(this))));
 }
 
 ContinueWindowAura::~ContinueWindowAura() {
-  message_box_->Hide();
-}
-
-void ContinueWindowAura::OnMessageBoxResult(MessageBox::Result result) {
-  if (result == MessageBox::OK) {
-    ContinueSession();
-  } else {
-    DisconnectSession();
-  }
 }
 
 void ContinueWindowAura::ShowUi() {
-  message_box_->Show();
+  // TODO(kelvinp): Implement this on Chrome OS (See crbug.com/424908).
+  NOTIMPLEMENTED();
 }
 
 void ContinueWindowAura::HideUi() {
-  message_box_->Hide();
+  // TODO(kelvinp): Implement this on Chrome OS (See crbug.com/424908).
+  NOTIMPLEMENTED();
 }
 
 }  // namespace

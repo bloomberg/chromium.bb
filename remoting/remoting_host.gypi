@@ -74,8 +74,6 @@
             'host/capture_scheduler.h',
             'host/chromeos/aura_desktop_capturer.cc',
             'host/chromeos/aura_desktop_capturer.h',
-            'host/chromeos/message_box.cc',
-            'host/chromeos/message_box.h',
             'host/chromium_port_allocator_factory.cc',
             'host/chromium_port_allocator_factory.h',
             'host/chromoting_host.cc',
@@ -345,8 +343,6 @@
                'sources!' : [
                  'host/chromeos/aura_desktop_capturer.cc',
                  'host/chromeos/aura_desktop_capturer.h',
-                 'host/chromeos/message_box.cc',
-                 'host/chromeos/message_box.h',
                  'host/continue_window_chromeos.cc',
                  'host/disconnect_window_chromeos.cc',
                  'host/policy_hack/policy_watcher_chromeos.cc',
