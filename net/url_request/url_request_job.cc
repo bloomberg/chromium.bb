@@ -326,18 +326,44 @@ void URLRequestJob::NotifyHeadersComplete() {
   // survival until we can get out of this method.
   scoped_refptr<URLRequestJob> self_preservation(this);
 
-  if (request_)
+  if (request_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 1"));
+
     request_->OnHeadersComplete();
+  }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLRequestJob::NotifyHeadersComplete 2"));
 
   GURL new_location;
   int http_status_code;
   if (IsRedirectResponse(&new_location, &http_status_code)) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 3"));
+
     // Redirect response bodies are not read. Notify the transaction
     // so it does not treat being stopped as an error.
     DoneReadingRedirectResponse();
 
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 4"));
+
     RedirectInfo redirect_info =
         ComputeRedirectInfo(new_location, http_status_code);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 5"));
 
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(redirect_info, &defer_redirect);
@@ -346,6 +372,11 @@ void URLRequestJob::NotifyHeadersComplete() {
     // NotifyReceivedRedirect
     if (!request_ || !request_->has_delegate())
       return;
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 6"));
 
     // If we were not cancelled, then maybe follow the redirect.
     if (request_->status().is_success()) {
@@ -357,8 +388,19 @@ void URLRequestJob::NotifyHeadersComplete() {
       return;
     }
   } else if (NeedsAuth()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile7(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 7"));
+
     scoped_refptr<AuthChallengeInfo> auth_info;
     GetAuthChallengeInfo(&auth_info);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile8(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLRequestJob::NotifyHeadersComplete 8"));
+
     // Need to check for a NULL auth_info because the server may have failed
     // to send a challenge with the 401 response.
     if (auth_info.get()) {
@@ -367,6 +409,11 @@ void URLRequestJob::NotifyHeadersComplete() {
       return;
     }
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile9(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLRequestJob::NotifyHeadersComplete 9"));
 
   has_handled_response_ = true;
   if (request_->status().is_success())
@@ -378,6 +425,11 @@ void URLRequestJob::NotifyHeadersComplete() {
     if (!content_length.empty())
       base::StringToInt64(content_length, &expected_content_size_);
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile10(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLRequestJob::NotifyHeadersComplete 10"));
 
   request_->NotifyResponseStarted();
 }

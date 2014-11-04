@@ -5,6 +5,7 @@
 #include "net/base/network_delegate.h"
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
@@ -18,6 +19,10 @@ int NetworkDelegate::NotifyBeforeURLRequest(
   DCHECK(CalledOnValidThread());
   DCHECK(request);
   DCHECK(!callback.is_null());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnBeforeURLRequest"));
   return OnBeforeURLRequest(request, callback, new_url);
 }
 
@@ -28,6 +33,10 @@ void NetworkDelegate::NotifyResolveProxy(
     ProxyInfo* result) {
   DCHECK(CalledOnValidThread());
   DCHECK(result);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnResolveProxy"));
   OnResolveProxy(url, load_flags, proxy_service, result);
 }
 
@@ -35,6 +44,10 @@ void NetworkDelegate::NotifyProxyFallback(
     const ProxyServer& bad_proxy,
     int net_error) {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnProxyFallback"));
   OnProxyFallback(bad_proxy, net_error);
 }
 
@@ -44,6 +57,10 @@ int NetworkDelegate::NotifyBeforeSendHeaders(
   DCHECK(CalledOnValidThread());
   DCHECK(headers);
   DCHECK(!callback.is_null());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnBeforeSendHeaders"));
   return OnBeforeSendHeaders(request, callback, headers);
 }
 
@@ -53,12 +70,20 @@ void NetworkDelegate::NotifyBeforeSendProxyHeaders(
     HttpRequestHeaders* headers) {
   DCHECK(CalledOnValidThread());
   DCHECK(headers);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnBeforeSendProxyHeaders"));
   OnBeforeSendProxyHeaders(request, proxy_info, headers);
 }
 
 void NetworkDelegate::NotifySendHeaders(URLRequest* request,
                                         const HttpRequestHeaders& headers) {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnSendHeaders"));
   OnSendHeaders(request, headers);
 }
 
@@ -71,6 +96,10 @@ int NetworkDelegate::NotifyHeadersReceived(
   DCHECK(CalledOnValidThread());
   DCHECK(original_response_headers);
   DCHECK(!callback.is_null());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnHeadersReceived"));
   return OnHeadersReceived(request,
                            callback,
                            original_response_headers,
@@ -81,12 +110,20 @@ int NetworkDelegate::NotifyHeadersReceived(
 void NetworkDelegate::NotifyResponseStarted(URLRequest* request) {
   DCHECK(CalledOnValidThread());
   DCHECK(request);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnResponseStarted"));
   OnResponseStarted(request);
 }
 
 void NetworkDelegate::NotifyRawBytesRead(const URLRequest& request,
                                          int bytes_read) {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnRawBytesRead"));
   OnRawBytesRead(request, bytes_read);
 }
 
@@ -94,24 +131,39 @@ void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,
                                            const GURL& new_location) {
   DCHECK(CalledOnValidThread());
   DCHECK(request);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnBeforeRedirect"));
   OnBeforeRedirect(request, new_location);
 }
 
 void NetworkDelegate::NotifyCompleted(URLRequest* request, bool started) {
   DCHECK(CalledOnValidThread());
   DCHECK(request);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 NetworkDelegate::OnCompleted"));
   OnCompleted(request, started);
 }
 
 void NetworkDelegate::NotifyURLRequestDestroyed(URLRequest* request) {
   DCHECK(CalledOnValidThread());
   DCHECK(request);
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnURLRequestDestroyed"));
   OnURLRequestDestroyed(request);
 }
 
 void NetworkDelegate::NotifyPACScriptError(int line_number,
                                            const base::string16& error) {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnPACScriptError"));
   OnPACScriptError(line_number, error);
 }
 
@@ -130,6 +182,10 @@ int NetworkDelegate::NotifyBeforeSocketStreamConnect(
   DCHECK(CalledOnValidThread());
   DCHECK(socket);
   DCHECK(!callback.is_null());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnBeforeSocketStreamConnect"));
   return OnBeforeSocketStreamConnect(socket, callback);
 }
 
@@ -137,6 +193,10 @@ bool NetworkDelegate::CanGetCookies(const URLRequest& request,
                                     const CookieList& cookie_list) {
   DCHECK(CalledOnValidThread());
   DCHECK(!(request.load_flags() & net::LOAD_DO_NOT_SEND_COOKIES));
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCanGetCookies"));
   return OnCanGetCookies(request, cookie_list);
 }
 
@@ -145,17 +205,29 @@ bool NetworkDelegate::CanSetCookie(const URLRequest& request,
                                    CookieOptions* options) {
   DCHECK(CalledOnValidThread());
   DCHECK(!(request.load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES));
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCanSetCookie"));
   return OnCanSetCookie(request, cookie_line, options);
 }
 
 bool NetworkDelegate::CanAccessFile(const URLRequest& request,
                                     const base::FilePath& path) const {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCanAccessFile"));
   return OnCanAccessFile(request, path);
 }
 
 bool NetworkDelegate::CanThrottleRequest(const URLRequest& request) const {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCanThrottleRequest"));
   return OnCanThrottleRequest(request);
 }
 
@@ -163,6 +235,10 @@ bool NetworkDelegate::CanEnablePrivacyMode(
     const GURL& url,
     const GURL& first_party_for_cookies) const {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCanEnablePrivacyMode"));
   return OnCanEnablePrivacyMode(url, first_party_for_cookies);
 }
 
@@ -171,6 +247,10 @@ bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(
     const GURL& target_url,
     const GURL& referrer_url) const {
   DCHECK(CalledOnValidThread());
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 NetworkDelegate::OnCancelURLRequestWithPolicy..."));
   return OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       request, target_url, referrer_url);
 }
