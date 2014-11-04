@@ -289,7 +289,6 @@ component("net") {
     }
     if (is_win) {
       sources -= [
-        "cert/cert/sha256_legacy_support_openssl_win.cc",
         "ssl/openssl_platform_key_win.cc",
       ]
     }

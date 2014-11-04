@@ -46,7 +46,9 @@ config("default_include_dirs") {
 }
 
 # TODO(GYP): is_ubsan, is_ubsan_vptr
-using_sanitizer = is_asan || is_lsan || is_tsan || is_msan
+if (!is_win) {
+  using_sanitizer = is_asan || is_lsan || is_tsan || is_msan
+}
 
 # compiler ---------------------------------------------------------------------
 #
