@@ -201,6 +201,14 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   }
 }
 
+void DisplayConfigurator::TakeControl() {
+  NOTIMPLEMENTED();
+}
+
+void DisplayConfigurator::RelinquishControl() {
+  NOTIMPLEMENTED();
+}
+
 void DisplayConfigurator::ForceInitialConfigure(
     uint32_t background_color_argb) {
   if (!configure_display_)

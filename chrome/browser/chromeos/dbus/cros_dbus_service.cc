@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/chromeos/dbus/console_service_provider.h"
 #include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
 #include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
@@ -130,6 +131,7 @@ void CrosDBusService::Initialize() {
 #endif
     service->RegisterServiceProvider(new LivenessServiceProvider);
     service->RegisterServiceProvider(new ScreenLockServiceProvider);
+    service->RegisterServiceProvider(new ConsoleServiceProvider);
     g_cros_dbus_service = service;
     service->Start();
   } else {

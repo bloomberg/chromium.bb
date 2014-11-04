@@ -77,6 +77,8 @@
         'browser/chromeos/display/display_preferences.h',
         'browser/chromeos/display/overscan_calibrator.cc',
         'browser/chromeos/display/overscan_calibrator.h',
+        'browser/chromeos/dbus/console_service_provider.cc',
+        'browser/chromeos/dbus/console_service_provider.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
         'browser/chromeos/dbus/display_power_service_provider.cc',
