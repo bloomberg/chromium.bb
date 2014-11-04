@@ -39795,6 +39795,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.BWE.InitialVsConvergedDiff" units="kbits/s">
+  <owner>holmer@chromium.org</owner>
+  <summary>
+    The difference between the bandwidth estimate at 2 seconds and 20 seconds
+    into a WebRTC call, with a min at 0, which is supposed to capture the how
+    much the initial bandwidth estimate overshot the actual bandwidth available.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
   <owner>perkj@chromium.org</owner>
   <summary>
