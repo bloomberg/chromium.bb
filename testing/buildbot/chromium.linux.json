@@ -201,6 +201,12 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux Tests (dbg)(1)": {
@@ -300,6 +306,20 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux Clang (dbg)": {

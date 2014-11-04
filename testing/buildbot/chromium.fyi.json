@@ -49,6 +49,20 @@
       "mojo_surfaces_lib_unittests",
       "mojo_system_unittests",
       "nacl_loader_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux Trusty (dbg)": {
@@ -101,6 +115,20 @@
       "mojo_surfaces_lib_unittests",
       "mojo_system_unittests",
       "nacl_loader_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux Trusty (32)": {
@@ -153,6 +181,20 @@
       "mojo_surfaces_lib_unittests",
       "mojo_system_unittests",
       "nacl_loader_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux Trusty (dbg)(32)": {
@@ -205,6 +247,20 @@
       "mojo_surfaces_lib_unittests",
       "mojo_system_unittests",
       "nacl_loader_unittests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux ARM Cross-Compile": {
@@ -256,6 +312,20 @@
       "unit_tests",
       "url_unittests",
       "browser_tests"
+    ],
+    "scripts": [
+      {
+        "name": "telemetry_unittests",
+        "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_perf_unittests",
+        "script": "telemetry_perf_unittests.py"
+      },
+      {
+        "name": "nacl_integration",
+        "script": "nacl_integration.py"
+      }
     ]
   },
   "Linux ChromiumOS Athena Tests (1)": {
