@@ -1063,6 +1063,26 @@ enum DeviceStatus {
 };
 }  // namespace wimax_manager
 
+namespace bluetooth_plugin {
+// Service identifiers for the plugin interface added to the /org/bluez object.
+const char kBluetoothPluginServiceName[] = "org.bluez";
+const char kBluetoothPluginInterface[] = "org.chromium.Bluetooth";
+
+// Bluetooth plugin properties.
+const char kSupportsLEServices[] = "SupportsLEServices";
+const char kSupportsConnInfo[] = "SupportsConnInfo";
+}  // namespace bluetooth_plugin
+
+namespace bluetooth_plugin_device {
+// Service identifiers for the plugin interface added to Bluetooth Device
+// objects.
+const char kBluetoothPluginServiceName[] = "org.bluez";
+const char kBluetoothPluginInterface[] = "org.chromium.BluetoothDevice";
+
+// Bluetooth Device plugin methods.
+const char kGetConnInfo[] = "GetConnInfo";
+}  // namespace bluetooth_plugin_device
+
 namespace bluetooth_adapter {
 // Bluetooth Adapter service identifiers.
 const char kBluetoothAdapterServiceName[] = "org.bluez";
@@ -1151,8 +1171,10 @@ const char kConnectProfile[] = "ConnectProfile";
 const char kDisconnectProfile[] = "DisconnectProfile";
 const char kPair[] = "Pair";
 const char kCancelPairing[] = "CancelPairing";
-const char kStartConnectionMonitor[] = "StartConnectionMonitor";
-const char kStopConnectionMonitor[] = "StopConnectionMonitor";
+// TODO(tengs): Remove deprecated constants after they are removed in the Chrome
+// codebase. (See crbug.com/430665).
+const char kStartConnectionMonitor[] = "StartConnectionMonitor";  // DEPRECATED
+const char kStopConnectionMonitor[] = "StopConnectionMonitor";    // DEPRECATED
 
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
@@ -1170,9 +1192,11 @@ const char kAdapterProperty[] = "Adapter";
 const char kLegacyPairingProperty[] = "LegacyPairing";
 const char kModaliasProperty[] = "Modalias";
 const char kRSSIProperty[] = "RSSI";
-const char kConnectionRSSI[] = "ConnectionRSSI";
-const char kConnectionTXPower[] = "ConnectionTXPower";
-const char kConnectionTXPowerMax[] = "ConnectionTXPowerMax";
+// TODO(tengs): Remove deprecated constants after they are removed in the Chrome
+// codebase. (See crbug.com/430665).
+const char kConnectionRSSI[] = "ConnectionRSSI";             // DEPRECATED
+const char kConnectionTXPower[] = "ConnectionTXPower";       // DEPRECATED
+const char kConnectionTXPowerMax[] = "ConnectionTXPowerMax"; // DEPRECATED
 
 // Bluetooth Device errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
