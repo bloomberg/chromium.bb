@@ -3620,9 +3620,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_MARQUEE:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       break;
-    case ui::AX_ROLE_MATH_ELEMENT:
+    case ui::AX_ROLE_MATH:
       ia_role_ = ROLE_SYSTEM_EQUATION;
-      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_MENU:
     case ui::AX_ROLE_MENU_BUTTON:

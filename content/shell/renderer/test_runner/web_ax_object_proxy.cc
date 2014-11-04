@@ -142,8 +142,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Main");
     case blink::WebAXRoleMarquee:
       return result.append("Marquee");
-    case blink::WebAXRoleMathElement:
-      return result.append("MathElement");
     case blink::WebAXRoleMath:
       return result.append("Math");
     case blink::WebAXRoleMatte:
