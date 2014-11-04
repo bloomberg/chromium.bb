@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerThreadableWebSocketChannel_h
-#define WorkerThreadableWebSocketChannel_h
+#ifndef WorkerWebSocketChannel_h
+#define WorkerWebSocketChannel_h
 
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -48,18 +48,18 @@ class BlobDataHandle;
 class KURL;
 class ExecutionContext;
 class ExecutionContextTask;
-class ThreadableWebSocketChannelSyncHelper;
+class WebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 
-class WorkerThreadableWebSocketChannel final : public WebSocketChannel {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadableWebSocketChannel);
+class WorkerWebSocketChannel final : public WebSocketChannel {
+    WTF_MAKE_NONCOPYABLE(WorkerWebSocketChannel);
 public:
     static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     {
-        return new WorkerThreadableWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber);
+        return new WorkerWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber);
     }
-    virtual ~WorkerThreadableWebSocketChannel();
+    virtual ~WorkerWebSocketChannel();
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) override;
@@ -84,7 +84,7 @@ public:
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
-        Peer(Bridge*, WorkerLoaderProxy&, ThreadableWebSocketChannelSyncHelper*);
+        Peer(Bridge*, WorkerLoaderProxy&, WebSocketChannelSyncHelper*);
         virtual ~Peer();
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
@@ -120,7 +120,7 @@ public:
         Member<Bridge> m_bridge;
         WorkerLoaderProxy& m_loaderProxy;
         Member<WebSocketChannel> m_mainWebSocketChannel;
-        Member<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
+        Member<WebSocketChannelSyncHelper> m_syncHelper;
     };
 
     // Bridge for Peer. Running on the worker thread.
@@ -153,12 +153,12 @@ public:
         Member<WebSocketChannelClient> m_client;
         RefPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
-        Member<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
+        Member<WebSocketChannelSyncHelper> m_syncHelper;
         Member<Peer> m_peer;
     };
 
 private:
-    WorkerThreadableWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
+    WorkerWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
     Member<Bridge> m_bridge;
     String m_sourceURLAtConnection;
@@ -167,4 +167,4 @@ private:
 
 } // namespace blink
 
-#endif // WorkerThreadableWebSocketChannel_h
+#endif // WorkerWebSocketChannel_h

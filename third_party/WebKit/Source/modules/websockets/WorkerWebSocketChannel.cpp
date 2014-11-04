@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
+#include "modules/websockets/WorkerWebSocketChannel.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
@@ -54,20 +54,20 @@
 
 namespace blink {
 
-typedef WorkerThreadableWebSocketChannel::Bridge Bridge;
-typedef WorkerThreadableWebSocketChannel::Peer Peer;
+typedef WorkerWebSocketChannel::Bridge Bridge;
+typedef WorkerWebSocketChannel::Peer Peer;
 
 // Created and destroyed on the worker thread. All setters of this class are
 // called on the main thread, while all getters are called on the worker
 // thread. signalWorkerThread() must be called before any getters are called.
-class ThreadableWebSocketChannelSyncHelper : public GarbageCollectedFinalized<ThreadableWebSocketChannelSyncHelper> {
+class WebSocketChannelSyncHelper : public GarbageCollectedFinalized<WebSocketChannelSyncHelper> {
 public:
-    static ThreadableWebSocketChannelSyncHelper* create(PassOwnPtr<WebWaitableEvent> event)
+    static WebSocketChannelSyncHelper* create(PassOwnPtr<WebWaitableEvent> event)
     {
-        return new ThreadableWebSocketChannelSyncHelper(event);
+        return new WebSocketChannelSyncHelper(event);
     }
 
-    ~ThreadableWebSocketChannelSyncHelper()
+    ~WebSocketChannelSyncHelper()
     {
     }
 
@@ -97,7 +97,7 @@ public:
     void trace(Visitor* visitor) { }
 
 private:
-    explicit ThreadableWebSocketChannelSyncHelper(PassOwnPtr<WebWaitableEvent> event)
+    explicit WebSocketChannelSyncHelper(PassOwnPtr<WebWaitableEvent> event)
         : m_event(event)
         , m_connectRequestResult(false)
     {
@@ -107,7 +107,7 @@ private:
     bool m_connectRequestResult;
 };
 
-WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : m_bridge(new Bridge(client, workerGlobalScope))
     , m_sourceURLAtConnection(sourceURL)
     , m_lineNumberAtConnection(lineNumber)
@@ -115,42 +115,42 @@ WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalS
     m_bridge->initialize(sourceURL, lineNumber);
 }
 
-WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
+WorkerWebSocketChannel::~WorkerWebSocketChannel()
 {
     ASSERT(!m_bridge);
 }
 
-bool WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
+bool WorkerWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
     ASSERT(m_bridge);
     return m_bridge->connect(url, protocol);
 }
 
-void WorkerThreadableWebSocketChannel::send(const String& message)
+void WorkerWebSocketChannel::send(const String& message)
 {
     ASSERT(m_bridge);
     m_bridge->send(message);
 }
 
-void WorkerThreadableWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void WorkerWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
     ASSERT(m_bridge);
     m_bridge->send(binaryData, byteOffset, byteLength);
 }
 
-void WorkerThreadableWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
+void WorkerWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
 {
     ASSERT(m_bridge);
     m_bridge->send(blobData);
 }
 
-void WorkerThreadableWebSocketChannel::close(int code, const String& reason)
+void WorkerWebSocketChannel::close(int code, const String& reason)
 {
     ASSERT(m_bridge);
     m_bridge->close(code, reason);
 }
 
-void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
+void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     if (!m_bridge)
         return;
@@ -171,19 +171,19 @@ void WorkerThreadableWebSocketChannel::fail(const String& reason, MessageLevel l
     }
 }
 
-void WorkerThreadableWebSocketChannel::disconnect()
+void WorkerWebSocketChannel::disconnect()
 {
     m_bridge->disconnect();
     m_bridge.clear();
 }
 
-void WorkerThreadableWebSocketChannel::trace(Visitor* visitor)
+void WorkerWebSocketChannel::trace(Visitor* visitor)
 {
     visitor->trace(m_bridge);
     WebSocketChannel::trace(visitor);
 }
 
-Peer::Peer(Bridge* bridge, WorkerLoaderProxy& loaderProxy, ThreadableWebSocketChannelSyncHelper* syncHelper)
+Peer::Peer(Bridge* bridge, WorkerLoaderProxy& loaderProxy, WebSocketChannelSyncHelper* syncHelper)
     : m_bridge(bridge)
     , m_loaderProxy(loaderProxy)
     , m_mainWebSocketChannel(nullptr)
@@ -375,7 +375,7 @@ Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalSc
     : m_client(client)
     , m_workerGlobalScope(workerGlobalScope)
     , m_loaderProxy(m_workerGlobalScope->thread()->workerLoaderProxy())
-    , m_syncHelper(ThreadableWebSocketChannelSyncHelper::create(adoptPtr(Platform::current()->createWaitableEvent())))
+    , m_syncHelper(WebSocketChannelSyncHelper::create(adoptPtr(Platform::current()->createWaitableEvent())))
     , m_peer(new Peer(this, m_loaderProxy, m_syncHelper))
 {
 }

@@ -40,7 +40,7 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
+#include "modules/websockets/WorkerWebSocketChannel.h"
 
 namespace blink {
 
@@ -59,7 +59,7 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
 
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        return WorkerThreadableWebSocketChannel::create(*workerGlobalScope, client, sourceURL, lineNumber);
+        return WorkerWebSocketChannel::create(*workerGlobalScope, client, sourceURL, lineNumber);
     }
 
     Document* document = toDocument(context);

@@ -77,7 +77,7 @@ public:
     virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
     virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
-    // For WorkerThreadableWebSocketChannel.
+    // For WorkerWebSocketChannel.
     virtual void send(PassOwnPtr<Vector<char> >) = 0;
 
     // Do not call |send| after calling this method.
