@@ -2639,7 +2639,7 @@ weston_subsurface_is_synchronized(struct weston_subsurface *sub)
 		sub = weston_surface_to_subsurface(sub->parent);
 	}
 
-	return true;
+	return false;
 }
 
 static void
