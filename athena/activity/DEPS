@@ -6,4 +6,5 @@ include_rules = [
   "+ui/base",
   "+ui/gfx",
   "+ui/views",
+  "+ui/wm",
 ]

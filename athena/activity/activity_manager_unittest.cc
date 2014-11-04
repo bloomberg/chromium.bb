@@ -9,6 +9,7 @@
 #include "athena/test/base/athena_test_base.h"
 #include "athena/test/base/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 
@@ -56,6 +57,27 @@ TEST_F(ActivityManagerTest, GetActivityForWindow) {
 
   scoped_ptr<aura::Window> window = test::CreateNormalWindow(nullptr, nullptr);
   EXPECT_EQ(nullptr, manager->GetActivityForWindow(window.get()));
+}
+
+TEST_F(ActivityManagerTest, ActivationBringsActivityToTop) {
+  ActivityManager* manager = ActivityManager::Get();
+  ActivityFactory* factory = ActivityFactory::Get();
+
+  Activity* activity1 =
+      factory->CreateWebActivity(nullptr, base::string16(), GURL());
+  Activity* activity2 =
+      factory->CreateWebActivity(nullptr, base::string16(), GURL());
+  activity1->GetWindow()->Show();
+  activity2->GetWindow()->Show();
+
+  ASSERT_EQ(2u, manager->GetActivityList().size());
+  EXPECT_EQ(activity2, manager->GetActivityList()[0]);
+  EXPECT_EQ(activity1, manager->GetActivityList()[1]);
+
+  wm::ActivateWindow(activity1->GetWindow());
+  ASSERT_EQ(2u, manager->GetActivityList().size());
+  EXPECT_EQ(activity1, manager->GetActivityList()[0]);
+  EXPECT_EQ(activity2, manager->GetActivityList()[1]);
 }
 
 }  // namespace athena

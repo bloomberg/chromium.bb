@@ -10,9 +10,12 @@
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_manager_observer.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "athena/screen/public/screen_manager.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace athena {
 
@@ -46,9 +49,16 @@ views::Widget* GetWidget(Activity* activity) {
 ActivityManagerImpl::ActivityManagerImpl() {
   CHECK(!instance);
   instance = this;
+
+  aura::Window* root_window =
+      ScreenManager::Get()->GetContext()->GetRootWindow();
+  aura::client::GetActivationClient(root_window)->AddObserver(this);
 }
 
 ActivityManagerImpl::~ActivityManagerImpl() {
+  aura::Window* root_window =
+      ScreenManager::Get()->GetContext()->GetRootWindow();
+  aura::client::GetActivationClient(root_window)->RemoveObserver(this);
   while (!activities_.empty())
     Activity::Delete(activities_.front());
 
@@ -59,9 +69,9 @@ ActivityManagerImpl::~ActivityManagerImpl() {
 void ActivityManagerImpl::AddActivity(Activity* activity) {
   CHECK(activities_.end() ==
         std::find(activities_.begin(), activities_.end(), activity));
-  activities_.push_back(activity);
+  activities_.insert(activities_.begin(), activity);
   views::Widget* widget = CreateWidget(activity);
-  widget->AddObserver(this);
+  widget->GetNativeView()->AddObserver(this);
   FOR_EACH_OBSERVER(ActivityManagerObserver,
                     observers_,
                     OnActivityStarted(activity));
@@ -76,7 +86,7 @@ void ActivityManagerImpl::RemoveActivity(Activity* activity) {
         ActivityManagerObserver, observers_, OnActivityEnding(activity));
     activities_.erase(find);
     views::Widget* widget = GetWidget(activity);
-    widget->RemoveObserver(this);
+    widget->GetNativeView()->RemoveObserver(this);
     widget->Close();
   }
 }
@@ -85,6 +95,10 @@ void ActivityManagerImpl::UpdateActivity(Activity* activity) {
   views::Widget* widget = GetWidget(activity);
   widget->UpdateWindowIcon();
   widget->UpdateWindowTitle();
+}
+
+const ActivityList& ActivityManagerImpl::GetActivityList() {
+  return activities_;
 }
 
 Activity* ActivityManagerImpl::GetActivityForWindow(aura::Window* window) {
@@ -108,12 +122,31 @@ void ActivityManagerImpl::RemoveObserver(ActivityManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ActivityManagerImpl::OnWidgetDestroying(views::Widget* widget) {
-  Activity* activity = GetActivityForWindow(widget->GetNativeWindow());
+void ActivityManagerImpl::OnWindowDestroying(aura::Window* window) {
+  Activity* activity = GetActivityForWindow(window);
   if (activity) {
-    widget->RemoveObserver(this);
+    window->RemoveObserver(this);
     Activity::Delete(activity);
   }
+}
+
+void ActivityManagerImpl::OnWindowActivated(aura::Window* gained_active,
+                                            aura::Window* lost_active) {
+  Activity* activity = GetActivityForWindow(gained_active);
+  if (!activity)
+    return;
+  CHECK(!activities_.empty());
+  if (activity == activities_.front())
+    return;
+  // Move the activity for |gained_active| at the front of the list.
+  ActivityList::reverse_iterator iter = std::find(activities_.rbegin(),
+                                                  activities_.rend(),
+                                                  activity);
+  CHECK(iter != activities_.rend());
+  std::rotate(iter, iter + 1, activities_.rend());
+  FOR_EACH_OBSERVER(ActivityManagerObserver,
+                    observers_,
+                    OnActivityOrderChanged());
 }
 
 // static

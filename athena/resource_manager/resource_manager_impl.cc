@@ -16,6 +16,7 @@
 #include "athena/wm/public/window_list_provider_observer.h"
 #include "athena/wm/public/window_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -51,16 +52,15 @@ class ResourceManagerImpl : public ResourceManager,
     } else {
       DCHECK(pause_);
       --pause_;
-      if (!pause && queued_command_) {
-        UpdateActivityOrder();
+      if (!pause && queued_command_)
         ManageResource();
-      }
     }
   }
 
   // ActivityManagerObserver:
   virtual void OnActivityStarted(Activity* activity) override;
   virtual void OnActivityEnding(Activity* activity) override;
+  virtual void OnActivityOrderChanged() override;
 
   // WindowManagerObserver:
   virtual void OnOverviewModeEnter() override;
@@ -88,11 +88,6 @@ class ResourceManagerImpl : public ResourceManager,
   // Check if activities can be unloaded to reduce memory pressure.
   void TryToUnloadAnActivity();
 
-  // Order our activity list to the order of activities of the stream.
-  // TODO(skuhne): Once the ActivityManager is responsible to create this list
-  // for us, we can remove this code here.
-  void UpdateActivityOrder();
-
   // Resources were released and a quiet period is needed before we release
   // more since it takes a while to trickle through the system.
   void OnResourcesReleased();
@@ -104,11 +99,6 @@ class ResourceManagerImpl : public ResourceManager,
   // Returns true when the previous memory release was long enough ago to try
   // unloading another activity.
   bool AllowedToUnloadActivity();
-
-  // The sorted (new(front) -> old(back)) activity list.
-  // TODO(skuhne): Once the ActivityManager is responsible to create this list
-  // for us, we can remove this code here.
-  std::vector<Activity*> activity_list_;
 
   // The resource manager delegate.
   scoped_ptr<ResourceManagerDelegate> delegate_;
@@ -177,9 +167,6 @@ ResourceManagerImpl::~ResourceManagerImpl() {
   ActivityManager::Get()->RemoveObserver(this);
   WindowManager::Get()->GetWindowListProvider()->RemoveObserver(this);
   WindowManager::Get()->RemoveObserver(this);
-
-  while (!activity_list_.empty())
-    OnActivityEnding(activity_list_.front());
 }
 
 void ResourceManagerImpl::SetMemoryPressureAndStopMonitoring(
@@ -189,24 +176,16 @@ void ResourceManagerImpl::SetMemoryPressureAndStopMonitoring(
 }
 
 void ResourceManagerImpl::OnActivityStarted(Activity* activity) {
-  // As long as we have to manage the list of activities ourselves, we need to
-  // order it here.
-  activity_list_.push_back(activity);
-  UpdateActivityOrder();
   // Update the activity states.
   ManageResource();
-  // Remember that the activity order has changed.
   activity_order_changed_ = true;
 }
 
 void ResourceManagerImpl::OnActivityEnding(Activity* activity) {
-  DCHECK(activity->GetWindow());
-  // Remove the activity from the list again.
-  std::vector<Activity*>::iterator it =
-      std::find(activity_list_.begin(), activity_list_.end(), activity);
-  DCHECK(it != activity_list_.end());
-  activity_list_.erase(it);
-  // Remember that the activity order has changed.
+  activity_order_changed_ = true;
+}
+
+void ResourceManagerImpl::OnActivityOrderChanged() {
   activity_order_changed_ = true;
 }
 
@@ -216,9 +195,6 @@ void ResourceManagerImpl::OnOverviewModeEnter() {
 
 void ResourceManagerImpl::OnOverviewModeExit() {
   in_overview_mode_ = false;
-  // Reorder the activities and manage the resources again since an order change
-  // might have caused a visibility change.
-  UpdateActivityOrder();
   ManageResource();
 }
 
@@ -236,7 +212,6 @@ void ResourceManagerImpl::OnSplitViewModeExit() {
 }
 
 void ResourceManagerImpl::OnWindowStackingChangedInList() {
-  activity_order_changed_ = true;
   if (pause_) {
     queued_command_ = true;
     return;
@@ -245,10 +220,6 @@ void ResourceManagerImpl::OnWindowStackingChangedInList() {
   // No need to do anything while being in overview mode.
   if (in_overview_mode_)
     return;
-
-  // As long as we have to manage the list of activities ourselves, we need to
-  // order it here.
-  UpdateActivityOrder();
 
   // Manage the resources of each activity.
   ManageResource();
@@ -267,7 +238,7 @@ ResourceManagerDelegate* ResourceManagerImpl::GetDelegate() {
 
 void ResourceManagerImpl::ManageResource() {
   // If there is none or only one app running we cannot do anything.
-  if (activity_list_.size() <= 1U)
+  if (ActivityManager::Get()->GetActivityList().size() <= 1U)
     return;
 
   if (pause_) {
@@ -296,47 +267,46 @@ void ResourceManagerImpl::UpdateVisibilityStates() {
   if (current_memory_pressure_ == MEMORY_PRESSURE_CRITICAL)
     max_activities = in_split_view_mode_ ? 2 : 1;
 
-  // Restart and / or bail if the order of activities changes due to our calls.
-  activity_order_changed_ = false;
+  do {
+    activity_order_changed_ = false;
 
-  // Change the visibility of our activities in a pre-processing step. This is
-  // required since it might change the order/number of activities.
-  size_t index = 0;
-  while (index < activity_list_.size()) {
-    Activity* activity = activity_list_[index];
-    Activity::ActivityState state = activity->GetCurrentState();
+    // Change the visibility of our activities in a pre-processing step. This is
+    // required since it might change the order/number of activities.
+    size_t count = 0;
+    for (Activity* activity : ActivityManager::Get()->GetActivityList()) {
+      Activity::ActivityState state = activity->GetCurrentState();
 
-    // The first |kMaxVisibleActivities| entries should be visible, all others
-    // invisible or at a lower activity state.
-    if (index < max_activities ||
-        (state == Activity::ACTIVITY_INVISIBLE ||
-         state == Activity::ACTIVITY_VISIBLE)) {
-      Activity::ActivityState visiblity_state =
-          index < max_activities ? Activity::ACTIVITY_VISIBLE :
-                                   Activity::ACTIVITY_INVISIBLE;
-      // Only change the state when it changes. Note that when the memory
-      // pressure is critical, only the primary activities (1 or 2) are made
-      // visible. Furthermore, in relaxed mode we only want to turn visible,
-      // never invisible.
-      if (visiblity_state != state &&
-          (current_memory_pressure_ != MEMORY_PRESSURE_LOW ||
-           visiblity_state == Activity::ACTIVITY_VISIBLE)) {
-        activity->SetCurrentState(visiblity_state);
-        // If we turned an activity invisible, we are already releasing memory
-        // and can hold off releasing more for now.
-        if (visiblity_state == Activity::ACTIVITY_INVISIBLE)
-          OnResourcesReleased();
+      // The first |kMaxVisibleActivities| entries should be visible, all others
+      // invisible or at a lower activity state.
+      if (count < max_activities ||
+          (state == Activity::ACTIVITY_INVISIBLE ||
+           state == Activity::ACTIVITY_VISIBLE)) {
+        Activity::ActivityState visiblity_state =
+            count < max_activities ? Activity::ACTIVITY_VISIBLE :
+                                     Activity::ACTIVITY_INVISIBLE;
+        // Only change the state when it changes. Note that when the memory
+        // pressure is critical, only the primary activities (1 or 2) are made
+        // visible. Furthermore, in relaxed mode we only want to turn visible,
+        // never invisible.
+        if (visiblity_state != state &&
+            (current_memory_pressure_ != MEMORY_PRESSURE_LOW ||
+             visiblity_state == Activity::ACTIVITY_VISIBLE)) {
+          activity->SetCurrentState(visiblity_state);
+          // If we turned an activity invisible, we are already releasing memory
+          // and can hold off releasing more for now.
+          if (visiblity_state == Activity::ACTIVITY_INVISIBLE)
+            OnResourcesReleased();
+        }
       }
-    }
 
-    // See which index we should handle next.
-    if (activity_order_changed_) {
-      activity_order_changed_ = false;
-      index = 0;
-    } else {
-      ++index;
+      // See which count we should handle next.
+      if (activity_order_changed_)
+        break;
+      ++count;
     }
-  }
+    // If we stopped iterating over the list of activities because of the change
+    // in ordering, then restart processing the activities from the beginning.
+  } while (activity_order_changed_);
 }
 
 void ResourceManagerImpl::TryToUnloadAnActivity() {
@@ -365,25 +335,28 @@ void ResourceManagerImpl::TryToUnloadAnActivity() {
 
   // Check if / which activity we want to unload.
   Activity* oldest_media_activity = nullptr;
-  std::vector<Activity*> unloadable_activities;
-  for (std::vector<Activity*>::iterator it = activity_list_.begin();
-       it != activity_list_.end(); ++it) {
-    Activity::ActivityState state = (*it)->GetCurrentState();
+  Activity* oldest_unloadable_activity = nullptr;
+  size_t unloadable_activity_count = 0;
+  const ActivityList& activity_list = ActivityManager::Get()->GetActivityList();
+  for (Activity* activity : activity_list) {
+    Activity::ActivityState state = activity->GetCurrentState();
     // The activity should neither be unloaded nor visible.
     if (state != Activity::ACTIVITY_UNLOADED &&
         state != Activity::ACTIVITY_VISIBLE) {
-      if ((*it)->GetMediaState() == Activity::ACTIVITY_MEDIA_STATE_NONE) {
+      if (activity->GetMediaState() == Activity::ACTIVITY_MEDIA_STATE_NONE) {
         // Does not play media - so we can unload this immediately.
-        unloadable_activities.push_back(*it);
+        ++unloadable_activity_count;
+        oldest_unloadable_activity = activity;
       } else {
-        oldest_media_activity = *it;
+        oldest_media_activity = activity;
       }
     }
   }
 
-  if (unloadable_activities.size() > max_running_activities) {
+  if (unloadable_activity_count > max_running_activities) {
+    CHECK(oldest_unloadable_activity);
     OnResourcesReleased();
-    unloadable_activities.back()->SetCurrentState(Activity::ACTIVITY_UNLOADED);
+    oldest_unloadable_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
     return;
   } else if (current_memory_pressure_ == MEMORY_PRESSURE_CRITICAL) {
     if (oldest_media_activity) {
@@ -402,39 +375,10 @@ void ResourceManagerImpl::TryToUnloadAnActivity() {
     LOG(WARNING) << "[ResourceManager]: No way to release memory pressure (" <<
         current_memory_pressure_ <<
         "), Activities (running, allowed, unloadable)=(" <<
-        activity_list_.size() << ", " <<
+        activity_list.size() << ", " <<
         max_running_activities << ", " <<
-        unloadable_activities.size() << ")";
+        unloadable_activity_count << ")";
   }
-}
-
-void ResourceManagerImpl::UpdateActivityOrder() {
-  queued_command_ = true;
-  if (activity_list_.empty())
-    return;
-  std::vector<Activity*> new_activity_list;
-  const aura::Window::Windows children =
-      WindowManager::Get()->GetWindowListProvider()->GetWindowList();
-  // Find the first window in the container which is part of the application.
-  for (aura::Window::Windows::const_reverse_iterator child_iterator =
-         children.rbegin();
-      child_iterator != children.rend(); ++child_iterator) {
-    for (std::vector<Activity*>::iterator activity_iterator =
-             activity_list_.begin();
-        activity_iterator != activity_list_.end(); ++activity_iterator) {
-      if (*child_iterator == (*activity_iterator)->GetWindow()) {
-        new_activity_list.push_back(*activity_iterator);
-        activity_list_.erase(activity_iterator);
-        break;
-      }
-    }
-  }
-  // At this point the old list should be empty and we can swap the lists.
-  DCHECK(!activity_list_.size());
-  activity_list_ = new_activity_list;
-
-  // Remember that the activity order has changed.
-  activity_order_changed_ = true;
 }
 
 void ResourceManagerImpl::OnResourcesReleased() {

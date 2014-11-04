@@ -25,6 +25,9 @@ void ActivityLifetimeTracker::OnActivityEnding(Activity* activity) {
   deleted_activity_ = activity;
 }
 
+void ActivityLifetimeTracker::OnActivityOrderChanged() {
+}
+
 Activity* ActivityLifetimeTracker::GetNewActivityAndReset() {
   Activity* activity = new_activity_;
   new_activity_ = nullptr;

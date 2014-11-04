@@ -20,6 +20,9 @@ class ATHENA_EXPORT ActivityManagerObserver {
 
   // Called before an |activity| gets destroyed.
   virtual void OnActivityEnding(Activity* activity) = 0;
+
+  // Called when the order of the activities in the list has changed.
+  virtual void OnActivityOrderChanged() = 0;
 };
 
 }  // namespace athena
