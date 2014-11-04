@@ -121,10 +121,12 @@ bool UsbMidiOutputStream::PushSysCommonMessage(
   uint8 first_byte = Get(data, index);
   DCHECK_LE(0xf1, first_byte);
   DCHECK_LE(first_byte, 0xf7);
+  DCHECK_EQ(0xf0, first_byte & 0xf8);
+  // There are only 6 message types (0xf1 - 0xf7), so the table size is 8.
   const size_t message_size_table[8] = {
     0, 2, 3, 2, 1, 1, 1, 0,
   };
-  size_t message_size = message_size_table[first_byte & 0x0f];
+  size_t message_size = message_size_table[first_byte & 0x07];
   DCHECK_NE(0u, message_size);
   DCHECK_LE(message_size, 3u);
 
@@ -161,13 +163,17 @@ bool UsbMidiOutputStream::PushChannelMessage(const std::vector<uint8>& data,
                                            std::vector<uint8>* data_to_send) {
   size_t index = *current;
   uint8 first_byte = Get(data, index);
+
   DCHECK_LE(0x80, (first_byte & 0xf0));
   DCHECK_LE((first_byte & 0xf0), 0xe0);
-
+  // There are only 7 message types (0x8-0xe in the higher four bits), so the
+  // table size is 8.
   const size_t message_size_table[8] = {
     3, 3, 3, 3, 2, 3, 3, 0,
   };
   uint8 code_index = first_byte >> 4;
+  DCHECK_LE(0x08, code_index);
+  DCHECK_LE(code_index, 0x0e);
   size_t message_size = message_size_table[code_index & 0x7];
   DCHECK_NE(0u, message_size);
   DCHECK_LE(message_size, 3u);
