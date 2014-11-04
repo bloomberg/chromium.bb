@@ -2167,6 +2167,34 @@ internal_beaglebone_paladin.add_config('beaglebone_servo-paladin',
   important=False,
 )
 
+
+def ShardHWTestsBetweenBuilders(*args):
+  """Divide up the hardware tests between the given list of config names.
+
+  Each of the config names must have the same hardware test suites, and the
+  number of suites must be equal to the number of config names.
+
+  Args:
+    *args: A list of config names.
+  """
+  # List of config names.
+  names = args
+
+  # Verify sanity before sharding the HWTests.
+  for name in names:
+    assert len(config[name].hw_tests) == len(names), \
+      '%s should have %d tests, but found %d' % (
+          name, len(names), len(config[name].hw_tests))
+  for name in names[1:]:
+    for test1, test2 in zip(config[name].hw_tests, config[names[0]].hw_tests):
+      assert test1.__dict__ == test2.__dict__, \
+          '%s and %s have different hw_tests configured' % (names[0], name)
+
+  # Assign each config the Nth HWTest.
+  for i, name in enumerate(names):
+    config[name]['hw_tests'] = [config[name].hw_tests[i]]
+
+
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
 )
