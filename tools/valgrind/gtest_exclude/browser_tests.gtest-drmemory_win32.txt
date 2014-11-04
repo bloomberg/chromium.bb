@@ -160,6 +160,8 @@ Req*.Per*ion
 # S*
 Sa*
 Sea*Pr*
+# SerialApiTest.SerialFakeHardware_1 (http://crbug.com/372452)
+Ser*
 Ses*
 Set*
 Scr*
