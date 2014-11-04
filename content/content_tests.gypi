@@ -1074,6 +1074,11 @@
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],
             }],
+            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         },
         {
@@ -1452,6 +1457,11 @@
                 '../third_party/mesa/mesa.gyp:osmesa',
               ],
             }],
+            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         },
         {
@@ -1473,6 +1483,13 @@
           ],
           'sources': [
             'common/gpu/client/gl_helper_benchmark.cc',
+          ],
+          'conditions': [
+            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         },
       ],

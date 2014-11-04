@@ -476,6 +476,11 @@
                 'components.gyp:constrained_window',
               ]
             }],
+            ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
             ['OS != "ios"', {
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
@@ -879,6 +884,11 @@
            ['OS == "android"', {
              'dependencies': [
                '../testing/android/native_test.gyp:native_test_native_code',
+             ],
+           }],
+           ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+             'dependencies': [
+               '<(DEPTH)/base/allocator/allocator.gyp:allocator',
              ],
            }],
          ],

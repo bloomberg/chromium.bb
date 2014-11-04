@@ -2578,6 +2578,11 @@
             }],
           ],
         }],
+        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],  # conditions
     },  # target performance_browser_tests
     {

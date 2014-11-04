@@ -1254,6 +1254,11 @@
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
           ],
         }],
+        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
     },
     {
@@ -1279,6 +1284,11 @@
         ['chromeos==1', {
           'dependencies': [
             '../ui/display/display.gyp:display',
+          ],
+        }],
+        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],

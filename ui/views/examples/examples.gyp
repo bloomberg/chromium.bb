@@ -189,6 +189,11 @@
             '../../../content/content.gyp:content_startup_helper_win',
           ],
         }],
+        ['OS=="win" and component!="shared_library" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
     },  # target_name: views_examples_with_content_exe
   ],
