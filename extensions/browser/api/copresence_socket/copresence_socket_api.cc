@@ -269,8 +269,14 @@ ExtensionFunction::ResponseAction CopresenceSocketSendFunction::Execute() {
             core_api::copresence_socket::SOCKET_STATUS_INVALID_SOCKET)));
   }
 
-  socket->socket()->Send(new net::StringIOBuffer(CreateMessage(params->data)),
-                         params->data.size());
+  const std::string& message = CreateMessage(params->data);
+  VLOG(3) << "Sending message to socket_id = " << params->socket_id
+          << " with data[0] = " << static_cast<int>(message[0])
+          << ", data[1] = " << static_cast<int>(message[1]) << ", data[2:] = "
+          << std::string((message.c_str() + 2), message.size() - 2);
+
+  socket->socket()->Send(new net::StringIOBuffer(message), message.size());
+
   return RespondNow(
       ArgumentList(core_api::copresence_socket::Send::Results::Create(
           core_api::copresence_socket::SOCKET_STATUS_NO_ERROR)));
