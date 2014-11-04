@@ -10,6 +10,16 @@
     "args": ["--enable-accelerated-2d-canvas"]
   },
   {
+    "prefix": "display_list_2d_canvas",
+    "base": "fast/canvas",
+    "args": ["--enable-display-list-2d-canvas"]
+  },
+  {
+    "prefix": "display_list_2d_canvas",
+    "base": "canvas/philip",
+    "args": ["--enable-display-list-2d-canvas"]
+  },
+  {
     "prefix": "threaded",
     "base": "compositing/visibility",
     "args": ["--enable-threaded-compositing"]

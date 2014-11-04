@@ -1,0 +1,12 @@
+Test the behavior of canvas recovery after a gpu context loss
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS contextLostTest is false
+PASS ctx.isContextLost() is false
+Aborting test: Graphics context loss did not destroy canvas contents. This is expected if canvas is not accelerated.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
