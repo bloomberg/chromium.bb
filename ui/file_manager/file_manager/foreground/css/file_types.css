@@ -202,6 +202,20 @@ list.autocomplete-suggestions [selected] [file-type-icon='gform'] {
       url('chrome://theme/IDR_FILETYPE_FORM_WHITE@2x') 2x);
 }
 
+[file-type-icon='gmap'] {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_FILETYPE_GMAP') 1x,
+      url('chrome://theme/IDR_FILETYPE_GMAP@2x') 2x);
+}
+
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gmap'],
+list:focus [selected] [file-type-icon='gmap'],
+list.autocomplete-suggestions [selected] [file-type-icon='gmap'] {
+  background-image: -webkit-image-set(
+      url('chrome://theme/IDR_FILETYPE_GMAP_WHITE') 1x,
+      url('chrome://theme/IDR_FILETYPE_GMAP_WHITE@2x') 2x);
+}
+
 [file-type-icon='image'] {
   background-image: -webkit-image-set(
       url('chrome://theme/IDR_FILETYPE_IMAGE') 1x,

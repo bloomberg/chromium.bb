@@ -155,6 +155,12 @@ FileType.types = [
     type: 'hosted', icon: 'gform', name: 'GFORM_DOCUMENT_FILE_TYPE',
     subtype: 'form', pattern: /\.gform$/i
   },
+  {
+    // We use extension ".gmaps" to avoid conflict, but use singular form
+    // (gmap/map) in other parts to be consistent with other file type.
+    type: 'hosted', icon: 'gmap', name: 'GMAP_DOCUMENT_FILE_TYPE',
+    subtype: 'map', pattern: /\.gmaps$/i
+  },
 
   // Others
   {

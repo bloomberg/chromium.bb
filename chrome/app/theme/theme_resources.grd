@@ -280,6 +280,8 @@
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GENERIC_WHITE" file="cros/file_types/generic_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GLINK" file="cros/file_types/glink.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GLINK_WHITE" file="cros/file_types/glink_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GMAP" file="cros/file_types/gmap.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GMAP_WHITE" file="cros/file_types/gmap_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSHEET" file="cros/file_types/gsheet.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSHEET_WHITE" file="cros/file_types/gsheet_white.png" />
         <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSLIDES" file="cros/file_types/gslides.png" />

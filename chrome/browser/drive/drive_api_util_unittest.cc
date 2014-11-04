@@ -178,6 +178,8 @@ TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {
   EXPECT_TRUE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gform")));
   EXPECT_TRUE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gmaps")));
+  EXPECT_TRUE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.glink")));
 
   EXPECT_FALSE(
@@ -186,6 +188,8 @@ TEST(DriveAPIUtilTest, HasHostedDocumentExtension) {
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.docx")));
   EXPECT_FALSE(
       HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.jpg")));
+  EXPECT_FALSE(
+      HasHostedDocumentExtension(base::FilePath::FromUTF8Unsafe("xx.gmap")));
 }
 
 }  // namespace util

@@ -90,6 +90,7 @@
         "filesystem:*.gdraw",
         "filesystem:*.gtable",
         "filesystem:*.gform",
+        "filesystem:*.gmaps",
         "filesystem:*.glink"
       ]
     },
