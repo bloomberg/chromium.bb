@@ -96,11 +96,12 @@ public:
 #endif
 
 private:
-    bool isRepaint(PaintList::iterator, const DisplayItem&);
-    // Update m_paintList with any invalidations or new paints.
+    PaintList::iterator findDisplayItem(PaintList::iterator, const DisplayItem&);
+    bool wasInvalidated(const DisplayItem&) const;
     void updatePaintList();
 
     PaintList m_paintList;
+    HashSet<const RenderObject*> m_paintListRenderers;
     HashSet<const RenderObject*> m_invalidated;
     PaintList m_newPaints;
 };

@@ -24,7 +24,7 @@ const PaintList& ViewDisplayList::paintList()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     updatePaintList();
-    return m_newPaints;
+    return m_paintList;
 }
 
 void ViewDisplayList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
@@ -39,20 +39,80 @@ void ViewDisplayList::invalidate(const RenderObject* renderer)
     m_invalidated.add(renderer);
 }
 
-bool ViewDisplayList::isRepaint(PaintList::iterator begin, const DisplayItem& displayItem)
+PaintList::iterator ViewDisplayList::findDisplayItem(PaintList::iterator begin, const DisplayItem& displayItem)
 {
-    notImplemented();
-    return false;
+    PaintList::iterator end = m_paintList.end();
+    if (displayItem.renderer() && !m_paintListRenderers.contains(displayItem.renderer()))
+        return end;
+
+    for (PaintList::iterator it = begin; it != end; ++it) {
+        DisplayItem& existing = **it;
+        if (existing.idsEqual(displayItem))
+            return it;
+    }
+
+    // FIXME: Properly handle clips.
+    ASSERT(!displayItem.renderer());
+    return end;
 }
 
-// Update the existing paintList by removing invalidated entries, updating repainted existing ones, and
-// appending new items.
+bool ViewDisplayList::wasInvalidated(const DisplayItem& displayItem) const
+{
+    // FIXME: Use a bit on RenderObject instead of tracking m_invalidated.
+    return displayItem.renderer() && m_invalidated.contains(displayItem.renderer());
+}
+
+static void appendDisplayItem(PaintList& list, HashSet<const RenderObject*>& renderers, WTF::PassOwnPtr<DisplayItem> displayItem)
+{
+    if (const RenderObject* renderer = displayItem->renderer())
+        renderers.add(renderer);
+    list.append(displayItem);
+}
+
+// Update the existing paintList by removing invalidated entries, updating
+// repainted ones, and appending new items.
 //
-// The algorithm should be O(|existing paint list| + |newly painted list|). By using the ordering
-// implied by the existing paint list, extra treewalks are avoided.
+// The algorithm is O(|existing paint list| + |newly painted list|): by using
+// the ordering implied by the existing paint list, extra treewalks are avoided.
 void ViewDisplayList::updatePaintList()
 {
-    notImplemented();
+    PaintList updatedList;
+    HashSet<const RenderObject*> updatedRenderers;
+
+    if (int maxCapacity = m_newPaints.size() + std::max(0, (int)m_paintList.size() - (int)m_invalidated.size()))
+        updatedList.reserveCapacity(maxCapacity);
+
+    PaintList::iterator paintListIt = m_paintList.begin();
+    PaintList::iterator paintListEnd = m_paintList.end();
+
+    for (OwnPtr<DisplayItem>& newDisplayItem : m_newPaints) {
+        if (!wasInvalidated(*newDisplayItem)) {
+            PaintList::iterator repaintIt = findDisplayItem(paintListIt, *newDisplayItem);
+            if (repaintIt != paintListEnd) {
+                // Copy all of the existing items over until we hit the repaint.
+                for (; paintListIt != repaintIt; ++paintListIt) {
+                    if (!wasInvalidated(**paintListIt))
+                        appendDisplayItem(updatedList, updatedRenderers, paintListIt->release());
+                }
+                paintListIt++;
+            }
+        }
+        // Copy over the new item.
+        appendDisplayItem(updatedList, updatedRenderers, newDisplayItem.release());
+    }
+
+    // Copy over any remaining items that were not invalidated.
+    for (; paintListIt != paintListEnd; ++paintListIt) {
+        if (!wasInvalidated(**paintListIt))
+            appendDisplayItem(updatedList, updatedRenderers, paintListIt->release());
+    }
+
+    m_invalidated.clear();
+    m_newPaints.clear();
+    m_paintList.clear();
+    m_paintList.swap(updatedList);
+    m_paintListRenderers.clear();
+    m_paintListRenderers.swap(updatedRenderers);
 }
 
 #ifndef NDEBUG
