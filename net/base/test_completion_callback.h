@@ -5,6 +5,7 @@
 #ifndef NET_BASE_TEST_COMPLETION_CALLBACK_H_
 #define NET_BASE_TEST_COMPLETION_CALLBACK_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/tuple.h"
 #include "net/base/completion_callback.h"
@@ -34,6 +35,8 @@ class TestCompletionCallbackBaseInternal {
 
  protected:
   TestCompletionCallbackBaseInternal();
+  virtual ~TestCompletionCallbackBaseInternal();
+
   void DidSetResult();
   void WaitForResult();
 
@@ -48,7 +51,7 @@ template <typename R>
 class TestCompletionCallbackTemplate
     : public TestCompletionCallbackBaseInternal {
  public:
-  virtual ~TestCompletionCallbackTemplate() {}
+  virtual ~TestCompletionCallbackTemplate() override {}
 
   R WaitForResult() {
     TestCompletionCallbackBaseInternal::WaitForResult();
@@ -77,6 +80,22 @@ class TestCompletionCallbackTemplate
 
 }  // namespace internal
 
+class TestClosure
+    : public internal::TestCompletionCallbackBaseInternal {
+ public:
+  using internal::TestCompletionCallbackBaseInternal::WaitForResult;
+
+  TestClosure();
+  virtual ~TestClosure() override;
+
+  const base::Closure& closure() const { return closure_; }
+
+ private:
+  const base::Closure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestClosure);
+};
+
 // Base class overridden by custom implementations of TestCompletionCallback.
 typedef internal::TestCompletionCallbackTemplate<int>
     TestCompletionCallbackBase;
@@ -87,7 +106,7 @@ typedef internal::TestCompletionCallbackTemplate<int64>
 class TestCompletionCallback : public TestCompletionCallbackBase {
  public:
   TestCompletionCallback();
-  ~TestCompletionCallback() override;
+  virtual ~TestCompletionCallback() override;
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -100,7 +119,7 @@ class TestCompletionCallback : public TestCompletionCallbackBase {
 class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
  public:
   TestInt64CompletionCallback();
-  ~TestInt64CompletionCallback() override;
+  virtual ~TestInt64CompletionCallback() override;
 
   const Int64CompletionCallback& callback() const { return callback_; }
 
@@ -114,7 +133,7 @@ class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
 class ReleaseBufferCompletionCallback: public TestCompletionCallback {
  public:
   explicit ReleaseBufferCompletionCallback(IOBuffer* buffer);
-  ~ReleaseBufferCompletionCallback() override;
+  virtual ~ReleaseBufferCompletionCallback() override;
 
  private:
   void SetResult(int result) override;

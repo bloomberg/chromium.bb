@@ -35,11 +35,21 @@ TestCompletionCallbackBaseInternal::TestCompletionCallbackBaseInternal()
       waiting_for_result_(false) {
 }
 
+TestCompletionCallbackBaseInternal::~TestCompletionCallbackBaseInternal() {
+}
+
 }  // namespace internal
+
+TestClosure::TestClosure()
+    : closure_(base::Bind(&TestClosure::DidSetResult, base::Unretained(this))) {
+}
+
+TestClosure::~TestClosure() {
+}
 
 TestCompletionCallback::TestCompletionCallback()
     : callback_(base::Bind(&TestCompletionCallback::SetResult,
-                base::Unretained(this))) {
+                           base::Unretained(this))) {
 }
 
 TestCompletionCallback::~TestCompletionCallback() {
@@ -47,7 +57,7 @@ TestCompletionCallback::~TestCompletionCallback() {
 
 TestInt64CompletionCallback::TestInt64CompletionCallback()
     : callback_(base::Bind(&TestInt64CompletionCallback::SetResult,
-                base::Unretained(this))) {
+                           base::Unretained(this))) {
 }
 
 TestInt64CompletionCallback::~TestInt64CompletionCallback() {

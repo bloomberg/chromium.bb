@@ -422,18 +422,6 @@ template <size_t N>
   return ::testing::MakeMatcher(new EqualsFramesMatcher<N>(&frames));
 }
 
-// TestClosure works like TestCompletionCallback, but doesn't take an argument.
-class TestClosure {
- public:
-  base::Closure closure() { return base::Bind(callback_.callback(), OK); }
-
-  void WaitForResult() { callback_.WaitForResult(); }
-
- private:
-  // Delegate to TestCompletionCallback for the implementation.
-  TestCompletionCallback callback_;
-};
-
 // A GoogleMock action to run a Closure.
 ACTION_P(InvokeClosure, closure) { closure.Run(); }
 

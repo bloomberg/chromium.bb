@@ -13,9 +13,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-typedef PlatformTest TestCompletionCallbackTest;
+namespace {
 
 const int kMagicResult = 8888;
+
+void CallClosureAfterCheckingResult(const base::Closure& closure,
+                                    bool* did_check_result,
+                                    int result) {
+  DCHECK_EQ(result, kMagicResult);
+  *did_check_result = true;
+  closure.Run();
+}
 
 // ExampleEmployer is a toy version of HostResolver
 // TODO: restore damage done in extracting example from real code
@@ -111,13 +119,32 @@ bool ExampleEmployer::DoSomething(const net::CompletionCallback& callback) {
   return true;
 }
 
+}  // namespace
+
+typedef PlatformTest TestCompletionCallbackTest;
+
 TEST_F(TestCompletionCallbackTest, Simple) {
   ExampleEmployer boss;
   net::TestCompletionCallback callback;
   bool queued = boss.DoSomething(callback.callback());
-  EXPECT_EQ(queued, true);
+  EXPECT_TRUE(queued);
   int result = callback.WaitForResult();
   EXPECT_EQ(result, kMagicResult);
+}
+
+TEST_F(TestCompletionCallbackTest, Closure) {
+  ExampleEmployer boss;
+  net::TestClosure closure;
+  bool did_check_result = false;
+  net::CompletionCallback completion_callback =
+      base::Bind(&CallClosureAfterCheckingResult,
+                 closure.closure(), base::Unretained(&did_check_result));
+  bool queued = boss.DoSomething(completion_callback);
+  EXPECT_TRUE(queued);
+
+  EXPECT_FALSE(did_check_result);
+  closure.WaitForResult();
+  EXPECT_TRUE(did_check_result);
 }
 
 // TODO: test deleting ExampleEmployer while work outstanding
