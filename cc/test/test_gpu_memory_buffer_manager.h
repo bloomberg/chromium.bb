@@ -21,6 +21,8 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       gfx::GpuMemoryBuffer::Usage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
+  void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
+                               uint32 sync_point) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestGpuMemoryBufferManager);

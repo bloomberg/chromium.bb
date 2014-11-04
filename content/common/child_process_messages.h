@@ -198,9 +198,10 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             gfx::GpuMemoryBufferHandle)
 
 // Informs the browser that the child deleted a gpu memory buffer.
-IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
+IPC_MESSAGE_CONTROL3(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
                      gfx::GpuMemoryBufferType,
-                     gfx::GpuMemoryBufferId)
+                     gfx::GpuMemoryBufferId,
+                     uint32 /* sync_point */)
 
 // Asks the browser to create a block of discardable shared memory for the
 // child process.

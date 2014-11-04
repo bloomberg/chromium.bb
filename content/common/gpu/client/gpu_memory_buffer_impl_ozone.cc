@@ -60,7 +60,24 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
 void GpuMemoryBufferImpl::DeletedByChildProcess(
     gfx::GpuMemoryBufferType type,
     const gfx::GpuMemoryBufferId& id,
-    base::ProcessHandle child_process) {
+    base::ProcessHandle child_process,
+    int child_client_id,
+    uint32_t sync_point) {
+  switch (type) {
+    case gfx::SHARED_MEMORY_BUFFER:
+      break;
+    case gfx::OZONE_NATIVE_BUFFER:
+      if (id.secondary_id != child_client_id) {
+        LOG(ERROR)
+            << "Child attempting to delete GpuMemoryBuffer it does not own";
+      } else {
+        GpuMemoryBufferImplOzoneNativeBuffer::DeletedByChildProcess(id,
+                                                                    sync_point);
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 // static

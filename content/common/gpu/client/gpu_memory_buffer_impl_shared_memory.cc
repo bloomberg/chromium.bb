@@ -11,7 +11,7 @@
 namespace content {
 namespace {
 
-void Noop() {
+void Noop(uint32 sync_point) {
 }
 
 }  // namespace

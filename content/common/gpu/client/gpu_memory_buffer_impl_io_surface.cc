@@ -15,7 +15,10 @@ namespace {
 
 base::StaticAtomicSequenceNumber g_next_buffer_id;
 
-void Noop() {
+void GpuMemoryBufferDeleted(const gfx::GpuMemoryBufferHandle& handle,
+                            uint32 sync_point) {
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
+                                                                    sync_point);
 }
 
 void GpuMemoryBufferCreated(
@@ -26,7 +29,7 @@ void GpuMemoryBufferCreated(
   DCHECK_EQ(gfx::IO_SURFACE_BUFFER, handle.type);
 
   callback.Run(GpuMemoryBufferImplIOSurface::CreateFromHandle(
-      handle, size, format, base::Bind(&Noop)));
+      handle, size, format, base::Bind(&GpuMemoryBufferDeleted, handle)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -100,6 +103,16 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplIOSurface(
       size, format, callback, io_surface.get()));
+}
+
+void GpuMemoryBufferImplIOSurface::DeletedByChildProcess(
+    const gfx::GpuMemoryBufferId& id,
+    uint32_t sync_point) {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::IO_SURFACE_BUFFER;
+  handle.global_id = id;
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
+                                                                    sync_point);
 }
 
 // static

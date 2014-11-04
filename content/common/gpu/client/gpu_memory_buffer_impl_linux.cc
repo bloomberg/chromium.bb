@@ -45,7 +45,9 @@ void GpuMemoryBufferImpl::AllocateForChildProcess(
 void GpuMemoryBufferImpl::DeletedByChildProcess(
     gfx::GpuMemoryBufferType type,
     const gfx::GpuMemoryBufferId& id,
-    base::ProcessHandle child_process) {
+    base::ProcessHandle child_process,
+    int child_client_id,
+    uint32 sync_point) {
 }
 
 // static

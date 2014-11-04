@@ -24,6 +24,24 @@ void GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
     const CreateGpuMemoryBufferCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBufferOnIO,
+                 base::Unretained(this),
+                 handle,
+                 size,
+                 format,
+                 usage,
+                 callback));
+}
+
+void GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBufferOnIO(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
+    const CreateGpuMemoryBufferCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
@@ -46,6 +64,18 @@ void GpuMemoryBufferFactoryHostImpl::CreateGpuMemoryBuffer(
 }
 
 void GpuMemoryBufferFactoryHostImpl::DestroyGpuMemoryBuffer(
+    const gfx::GpuMemoryBufferHandle& handle,
+    int32 sync_point) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GpuMemoryBufferFactoryHostImpl::DestroyGpuMemoryBufferOnIO,
+                 base::Unretained(this),
+                 handle,
+                 sync_point));
+}
+
+void GpuMemoryBufferFactoryHostImpl::DestroyGpuMemoryBufferOnIO(
     const gfx::GpuMemoryBufferHandle& handle,
     int32 sync_point) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

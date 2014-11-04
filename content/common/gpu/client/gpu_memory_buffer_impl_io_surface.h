@@ -31,6 +31,9 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
       Format format,
       const DestructionCallback& callback);
 
+  static void DeletedByChildProcess(const gfx::GpuMemoryBufferId& id,
+                                    uint32_t sync_point);
+
   static bool IsFormatSupported(Format format);
   static bool IsUsageSupported(Usage usage);
   static bool IsConfigurationSupported(Format format, Usage usage);

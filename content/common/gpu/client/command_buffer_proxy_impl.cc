@@ -308,17 +308,19 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
 
   int32 new_id = channel_->ReserveImageId();
 
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+      channel_->gpu_memory_buffer_manager();
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
-      channel_->gpu_memory_buffer_manager()->GpuMemoryBufferFromClientBuffer(
-          buffer);
+      gpu_memory_buffer_manager->GpuMemoryBufferFromClientBuffer(buffer);
   DCHECK(gpu_memory_buffer);
 
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the CreateImage IPC below.
+  bool requires_sync_point = false;
   gfx::GpuMemoryBufferHandle handle =
-      channel_->ShareGpuMemoryBufferToGpuProcess(
-          gpu_memory_buffer->GetHandle());
+      channel_->ShareGpuMemoryBufferToGpuProcess(gpu_memory_buffer->GetHandle(),
+                                                 &requires_sync_point);
 
   DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internalformat, gpu_memory_buffer->GetFormat()));
@@ -329,6 +331,11 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
                                                 gpu_memory_buffer->GetFormat(),
                                                 internalformat))) {
     return -1;
+  }
+
+  if (requires_sync_point) {
+    gpu_memory_buffer_manager->SetDestructionSyncPoint(gpu_memory_buffer,
+                                                       InsertSyncPoint());
   }
 
   return new_id;

@@ -27,6 +27,10 @@ class GPU_EXPORT GpuMemoryBufferManager {
   virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) = 0;
 
+  // Associates destruction sync point with |buffer|.
+  virtual void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
+                                       uint32 sync_point) = 0;
+
  protected:
   virtual ~GpuMemoryBufferManager();
 };

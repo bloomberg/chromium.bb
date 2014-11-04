@@ -14,7 +14,10 @@ namespace {
 
 base::StaticAtomicSequenceNumber g_next_buffer_id;
 
-void Noop() {
+void GpuMemoryBufferDeleted(const gfx::GpuMemoryBufferHandle& handle,
+                            uint32 sync_point) {
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
+                                                                    sync_point);
 }
 
 void GpuMemoryBufferCreated(
@@ -25,7 +28,7 @@ void GpuMemoryBufferCreated(
   DCHECK_EQ(gfx::OZONE_NATIVE_BUFFER, handle.type);
 
   callback.Run(GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
-      handle, size, format, base::Bind(&Noop)));
+      handle, size, format, base::Bind(&GpuMemoryBufferDeleted, handle)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -97,6 +100,17 @@ GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplOzoneNativeBuffer(
           size, format, callback, handle.global_id));
+}
+
+// static
+void GpuMemoryBufferImplOzoneNativeBuffer::DeletedByChildProcess(
+    const gfx::GpuMemoryBufferId& id,
+    uint32_t sync_point) {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::OZONE_NATIVE_BUFFER;
+  handle.global_id = id;
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
+                                                                    sync_point);
 }
 
 // static

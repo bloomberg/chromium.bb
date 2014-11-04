@@ -344,7 +344,8 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
 
 void ChildProcessHostImpl::OnDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferType type,
-    const gfx::GpuMemoryBufferId& id) {
+    const gfx::GpuMemoryBufferId& id,
+    uint32 sync_point) {
   // Note: Nothing to do here as ownership of shared memory backed
   // GpuMemoryBuffers is passed with IPC.
 }

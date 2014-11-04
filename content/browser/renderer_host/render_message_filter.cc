@@ -1272,9 +1272,10 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
 
 void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferType type,
-    const gfx::GpuMemoryBufferId& id) {
+    const gfx::GpuMemoryBufferId& id,
+    uint32 sync_point) {
   BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      type, id, PeerHandle());
+      type, id, PeerHandle(), render_process_id_, sync_point);
 }
 
 }  // namespace content

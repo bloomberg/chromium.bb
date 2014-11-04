@@ -30,6 +30,13 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHostImpl
   void set_gpu_host_id(int gpu_host_id) { gpu_host_id_ = gpu_host_id; }
 
  private:
+  void CreateGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
+                                 const gfx::Size& size,
+                                 gfx::GpuMemoryBuffer::Format format,
+                                 gfx::GpuMemoryBuffer::Usage usage,
+                                 const CreateGpuMemoryBufferCallback& callback);
+  void DestroyGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
+                                  int32 sync_point);
   void OnGpuMemoryBufferCreated(uint32 request_id,
                                 const gfx::GpuMemoryBufferHandle& handle);
 

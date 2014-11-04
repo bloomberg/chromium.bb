@@ -22,6 +22,8 @@ class ChildGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       gfx::GpuMemoryBuffer::Usage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
+  void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
+                               uint32 sync_point) override;
 
  private:
   scoped_refptr<ThreadSafeSender> sender_;

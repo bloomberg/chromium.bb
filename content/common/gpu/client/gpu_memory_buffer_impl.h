@@ -19,7 +19,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       CreationCallback;
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
-  typedef base::Closure DestructionCallback;
+  typedef base::Callback<void(uint32 sync_point)> DestructionCallback;
 
   ~GpuMemoryBufferImpl() override;
 
@@ -44,7 +44,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Notify that GPU memory buffer has been deleted by |child_process|.
   static void DeletedByChildProcess(gfx::GpuMemoryBufferType type,
                                     const gfx::GpuMemoryBufferId& id,
-                                    base::ProcessHandle child_process);
+                                    base::ProcessHandle child_process,
+                                    int child_client_id,
+                                    uint32 sync_point);
 
   // Creates an instance from the given |handle|. |size| and |internalformat|
   // should match what was used to allocate the |handle|. |callback| is
@@ -68,6 +70,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   Format GetFormat() const override;
   ClientBuffer AsClientBuffer() override;
 
+  void set_destruction_sync_point(uint32 sync_point) {
+    destruction_sync_point_ = sync_point;
+  }
+
  protected:
   GpuMemoryBufferImpl(const gfx::Size& size,
                       Format format,
@@ -77,6 +83,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   const Format format_;
   const DestructionCallback callback_;
   bool mapped_;
+  uint32 destruction_sync_point_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };

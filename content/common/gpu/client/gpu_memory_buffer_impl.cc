@@ -11,11 +11,15 @@ namespace content {
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(const gfx::Size& size,
                                          Format format,
                                          const DestructionCallback& callback)
-    : size_(size), format_(format), callback_(callback), mapped_(false) {
+    : size_(size),
+      format_(format),
+      callback_(callback),
+      mapped_(false),
+      destruction_sync_point_(0) {
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
-  callback_.Run();
+  callback_.Run(destruction_sync_point_);
 }
 
 // static

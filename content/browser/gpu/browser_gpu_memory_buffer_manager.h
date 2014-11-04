@@ -30,6 +30,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::GpuMemoryBuffer::Usage usage) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
+  void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
+                               uint32 sync_point) override;
 
   void AllocateGpuMemoryBufferForChildProcess(
       const gfx::Size& size,
@@ -41,7 +43,9 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   void ChildProcessDeletedGpuMemoryBuffer(
       gfx::GpuMemoryBufferType type,
       const gfx::GpuMemoryBufferId& id,
-      base::ProcessHandle child_process_handle);
+      base::ProcessHandle child_process_handle,
+      int child_client_id,
+      uint32 sync_point);
   void ProcessRemoved(base::ProcessHandle process_handle);
 
  private:
