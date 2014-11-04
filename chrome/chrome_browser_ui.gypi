@@ -2229,6 +2229,7 @@
       'browser/ui/views/accessibility/accessibility_event_router_views.h',
       'browser/ui/views/chrome_browser_main_extra_parts_views.cc',
       'browser/ui/views/chrome_browser_main_extra_parts_views.h',
+      'browser/ui/views/chrome_constrained_window_views_client_mac.cc',
       'browser/ui/views/chrome_views_delegate.cc',
       'browser/ui/views/chrome_views_delegate.h',
       'browser/ui/views/find_bar_host.cc',
@@ -2782,6 +2783,9 @@
         }],
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],
+          'dependencies': [
+            '<(DEPTH)/components/components.gyp:constrained_window',
+          ],
           'conditions': [
             ['chromeos == 0 and OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_chromeos_sources)' ],
@@ -2792,7 +2796,6 @@
             ['OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
               'dependencies': [
-                '<(DEPTH)/components/components.gyp:constrained_window',
                 '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
               ],
             }],

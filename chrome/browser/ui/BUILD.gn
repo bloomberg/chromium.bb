@@ -218,6 +218,7 @@ static_library("ui") {
   if (toolkit_views) {
     sources += rebase_path(gypi_values.chrome_browser_ui_views_sources,
                            ".", "//chrome")
+    deps += [ "//components/constrained_window" ]
     if (!is_chromeos) {
       sources += rebase_path(
           gypi_values.chrome_browser_ui_views_non_chromeos_sources,
@@ -228,7 +229,6 @@ static_library("ui") {
           gypi_values.chrome_browser_ui_views_non_mac_sources,
           ".", "//chrome")
       deps += [
-        "//components/constrained_window",
         "//extensions/components/native_app_window",
       ]
     }

@@ -147,13 +147,13 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
   DCHECK_EQ(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
   web_modal::PopupManager* popup_manager =
       web_modal::PopupManager::FromWebContents(web_contents);
-  const gfx::NativeWindow parent = popup_manager->GetHostView();
+  const gfx::NativeView parent = popup_manager->GetHostView();
   return views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
 }
 
 // TODO(gbillock): Replace this with PopupManager calls.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
-                                             gfx::NativeWindow parent) {
+                                             gfx::NativeView parent) {
   views::Widget* widget =
       views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
   if (!dialog->UseNewStyleForThisDialog())

@@ -26,7 +26,7 @@ class ChromeConstrainedWindowViewsClient
         guest_view->embedder_web_contents() : initiator_web_contents;
   }
   web_modal::ModalDialogHost* GetModalDialogHost(
-      gfx::NativeWindow parent) override {
+      gfx::NativeView parent) override {
     // Get the browser dialog management and hosting components from |parent|.
     Browser* browser = chrome::FindBrowserWithWindow(parent);
     if (browser) {

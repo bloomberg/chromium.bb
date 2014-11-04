@@ -51,6 +51,6 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 // Create a widget for |dialog| that is modal to the browser window |parent|.
 // This places the dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
-                                             gfx::NativeWindow parent);
+                                             gfx::NativeView parent);
 
 #endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_

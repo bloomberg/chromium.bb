@@ -24,9 +24,9 @@ class ConstrainedWindowViewsClient {
   virtual content::WebContents* GetEmbedderWebContents(
       content::WebContents* initiator_web_contents) = 0;
 
-  // Returns the modal window host for the |parent| native window.
+  // Returns the modal window host for the |parent| native view.
   virtual web_modal::ModalDialogHost* GetModalDialogHost(
-      gfx::NativeWindow parent) = 0;
+      gfx::NativeView parent) = 0;
 };
 
 #endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_
