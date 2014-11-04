@@ -90,6 +90,12 @@ class RefreshServlet(Servlet):
     commit_tracker = CommitTracker(server_instance.object_store_creator)
     refresh_tracker = RefreshTracker(server_instance.object_store_creator)
 
+    # If no commit was given, use the ID of the last cached master commit.
+    # This allows sources external to the chromium repository to be updated
+    # independently from individual refresh cycles.
+    if commit is None:
+      commit = commit_tracker.Get('master').Get()
+
     success = True
     try:
       if source_name == 'platform_bundle':

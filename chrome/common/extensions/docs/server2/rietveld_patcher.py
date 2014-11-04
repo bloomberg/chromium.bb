@@ -52,8 +52,8 @@ class RietveldPatcher(Patcher):
       raise RietveldPatcherError('Cannot parse issue %s.' % self._issue)
 
     if not issue_json.get('base_url') in _CHROMIUM_REPO_BASEURLS:
-      raise RietveldPatcherError('Issue %s\'s base url is unknown.' %
-          self._issue)
+      raise RietveldPatcherError('Issue %s\'s base url (%s) is unknown.' %
+          (self._issue, issue_json.get('base_url')))
 
     return str(patchsets[-1])
 
