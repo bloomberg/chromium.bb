@@ -7,7 +7,6 @@ package org.chromium.components.devtools_bridge;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -277,76 +276,12 @@ public class LocalSessionBridge {
         }
     }
 
-    private ServerSessionProxy createServerSessionProxy(SessionBase.ServerSessionInterface proxee) {
-        return new ServerSessionProxy(mServerExecutor, mClientExecutor, proxee, mDelayMs);
-    }
+    private SessionBase.ServerSessionInterface createServerSessionProxy(
+            SessionBase.ServerSessionInterface serverSession) {
+        String sessionId = "";
 
-    /**
-     * Helper proxy that binds client and server sessions living on different executors.
-     * Exchange java objects instead of serialized messages.
-     */
-    public static final class ServerSessionProxy implements SessionBase.ServerSessionInterface {
-        private static final String SESSION_ID = "";
-        private final SignalingReceiverProxy mProxy;
-
-        public ServerSessionProxy(
-                SessionBase.Executor serverExecutor, SessionBase.Executor clientExecutor,
-                SessionBase.ServerSessionInterface proxee, int delayMs) {
-            mProxy = new SignalingReceiverProxy(
-                    serverExecutor, clientExecutor, new ServerSessionAdaptor(proxee), delayMs);
-        }
-
-        public SessionBase.Executor serverExecutor() {
-            return mProxy.serverExecutor();
-        }
-
-        public SessionBase.Executor clientExecutor() {
-            return mProxy.clientExecutor();
-        }
-
-        @Override
-        public void startSession(
-                RTCConfiguration config, String offer, SessionBase.NegotiationCallback callback) {
-            mProxy.startSession(SESSION_ID, config, offer, callback);
-        }
-
-        @Override
-        public void renegotiate(String offer, SessionBase.NegotiationCallback callback) {
-            mProxy.renegotiate(SESSION_ID, offer, callback);
-        }
-
-        @Override
-        public void iceExchange(
-                List<String> clientCandidates, SessionBase.IceExchangeCallback callback) {
-            mProxy.iceExchange(SESSION_ID, clientCandidates, callback);
-        }
-    }
-
-    private static final class ServerSessionAdaptor implements SignalingReceiver {
-        private final SessionBase.ServerSessionInterface mAdaptee;
-
-        public ServerSessionAdaptor(SessionBase.ServerSessionInterface adaptee) {
-            mAdaptee = adaptee;
-        }
-
-        @Override
-        public void startSession(
-                String sessionId, RTCConfiguration config, String offer,
-                SessionBase.NegotiationCallback callback) {
-            mAdaptee.startSession(config, offer, callback);
-        }
-
-        @Override
-        public void renegotiate(
-                String sessionId, String offer, SessionBase.NegotiationCallback callback) {
-            mAdaptee.renegotiate(offer, callback);
-        }
-
-        @Override
-        public void iceExchange(
-                String sessionId, List<String> clientCandidates,
-                SessionBase.IceExchangeCallback callback) {
-            mAdaptee.iceExchange(clientCandidates, callback);
-        }
+        return new SignalingReceiverProxy(
+                mServerExecutor, mClientExecutor, serverSession, sessionId, mDelayMs)
+                .asServerSession(sessionId);
     }
 }

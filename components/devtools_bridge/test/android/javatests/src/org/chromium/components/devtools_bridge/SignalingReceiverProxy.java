@@ -8,6 +8,8 @@ import org.chromium.components.devtools_bridge.commands.Command;
 import org.chromium.components.devtools_bridge.commands.CommandReceiver;
 import org.chromium.components.devtools_bridge.commands.CommandSender;
 
+import java.util.List;
+
 /**
  * Helper proxy that binds client and server sessions living on different executors.
  */
@@ -26,6 +28,17 @@ final class SignalingReceiverProxy extends CommandSender {
         mClientExecutor = clientExecutor;
         mReceiver = new CommandReceiver(server);
         mDelayMs = delayMs;
+    }
+
+    public SignalingReceiverProxy(
+            SessionBase.Executor serverExecutor,
+            SessionBase.Executor clientExecutor,
+            SessionBase.ServerSessionInterface serverSession,
+            String sessionId,
+            int delayMs) {
+        this(serverExecutor, clientExecutor,
+                new SignalingReceiverAdaptor(serverSession, sessionId),
+                delayMs);
     }
 
     public SessionBase.Executor serverExecutor() {
@@ -52,5 +65,73 @@ final class SignalingReceiverProxy extends CommandSender {
                         });
                     }
                 });
+    }
+
+    public SessionBase.ServerSessionInterface asServerSession(String sessionId) {
+        return new ServerSessionAdapter(this, sessionId);
+    }
+
+    private static final class ServerSessionAdapter implements SessionBase.ServerSessionInterface {
+        private final SignalingReceiver mAdaptee;
+        private final String mSessionId;
+
+        public ServerSessionAdapter(SignalingReceiver adaptee, String sessionId) {
+            mAdaptee = adaptee;
+            mSessionId = sessionId;
+        }
+
+        @Override
+        public void startSession(
+                RTCConfiguration config, String offer, SessionBase.NegotiationCallback callback) {
+            mAdaptee.startSession(mSessionId, config, offer, callback);
+        }
+
+        @Override
+        public void renegotiate(String offer, SessionBase.NegotiationCallback callback) {
+            mAdaptee.renegotiate(mSessionId, offer, callback);
+        }
+
+        @Override
+        public void iceExchange(
+                List<String> clientCandidates, SessionBase.IceExchangeCallback callback) {
+            mAdaptee.iceExchange(mSessionId, clientCandidates, callback);
+        }
+    }
+
+    private static final class SignalingReceiverAdaptor implements SignalingReceiver {
+        private final SessionBase.ServerSessionInterface mAdaptee;
+        private final String mSessionId;
+
+        public SignalingReceiverAdaptor(
+                SessionBase.ServerSessionInterface adaptee, String sessionId) {
+            mAdaptee = adaptee;
+            mSessionId = sessionId;
+        }
+
+        @Override
+        public void startSession(
+                String sessionId, RTCConfiguration config, String offer,
+                SessionBase.NegotiationCallback callback) {
+            if (mSessionId.equals(sessionId)) {
+                mAdaptee.startSession(config, offer, callback);
+            }
+        }
+
+        @Override
+        public void renegotiate(
+                String sessionId, String offer, SessionBase.NegotiationCallback callback) {
+            if (mSessionId.equals(sessionId)) {
+                mAdaptee.renegotiate(offer, callback);
+            }
+        }
+
+        @Override
+        public void iceExchange(
+                String sessionId, List<String> clientCandidates,
+                SessionBase.IceExchangeCallback callback) {
+            if (mSessionId.equals(sessionId)) {
+                mAdaptee.iceExchange(clientCandidates, callback);
+            }
+        }
     }
 }
