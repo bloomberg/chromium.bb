@@ -117,13 +117,17 @@ remoting.init = function() {
 
   remoting.initModalDialogs();
 
-  if (isHostModeSupported_()) {
-    var noShare = document.getElementById('chrome-os-no-share');
-    noShare.parentNode.removeChild(noShare);
-  } else {
-    var button = document.getElementById('share-button');
-    button.disabled = true;
-  }
+  isHostModeSupported_().then(
+    /** @param {Boolean} supported */
+    function(supported){
+      if (supported) {
+        var noShare = document.getElementById('chrome-os-no-share');
+        noShare.parentNode.removeChild(noShare);
+      } else {
+        var button = document.getElementById('share-button');
+        button.disabled = true;
+      }
+    });
 
   /**
    * @return {Promise} A promise that resolves to the id of the current
@@ -204,16 +208,6 @@ remoting.init = function() {
 };
 
 /**
- * Returns whether or not IT2Me is supported via the host NPAPI plugin.
- *
- * @return {boolean}
- */
-function isIT2MeSupported_() {
-  // Currently, IT2Me on Chromebooks is not supported.
-  return !remoting.runningOnChromeOS();
-}
-
-/**
  * Returns true if the current platform is fully supported. It's only used when
  * we detect that host native messaging components are not installed. In that
  * case the result of this function determines if the webapp should show the
@@ -249,7 +243,6 @@ remoting.onEmail = function(email) {
  */
 remoting.initHomeScreenUi = function() {
   remoting.hostController = new remoting.HostController();
-  document.getElementById('share-button').disabled = !isIT2MeSupported_();
   remoting.setMode(remoting.AppMode.HOME);
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
@@ -401,13 +394,20 @@ function pluginGotCopy_(eventUncast) {
 }
 
 /**
- * Returns whether Host mode is supported on this platform.
+ * Returns whether Host mode is supported on this platform for It2me.
+ * TODO(kelvinp): Remove this function once It2me is enabled on Chrome OS (See
+ * crbug.com/429860).
  *
- * @return {boolean} True if Host mode is supported.
+ * @return {Promise} Resolves to true if Host mode is supported.
  */
 function isHostModeSupported_() {
-  // Currently, sharing on Chromebooks is not supported.
-  return !remoting.runningOnChromeOS();
+  if (!remoting.platformIsChromeOS()) {
+    return Promise.resolve(true);
+  }
+  // Sharing on Chrome OS is currently behind a flag.
+  // isInstalled() will return false if the flag is disabled.
+  var hostInstaller = new remoting.HostInstaller();
+  return hostInstaller.isInstalled();
 }
 
 /**

@@ -716,7 +716,7 @@ remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
   // By default, under ChromeOS, remap the right Control key to the right
   // Win / Cmd key.
   var remapKeys = this.remapKeys_;
-  if (remapKeys == '' && remoting.runningOnChromeOS()) {
+  if (remapKeys == '' && remoting.platformIsChromeOS()) {
     remapKeys = '0x0700e4>0x0700e7';
   }
 

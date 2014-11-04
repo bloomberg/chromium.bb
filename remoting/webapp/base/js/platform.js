@@ -30,12 +30,3 @@ remoting.getChromeMajorVersion = function() {
   }
   return 0;
 };
-
-/**
- * Returns whether the app is running on ChromeOS.
- *
- * @return {boolean} True if the app is running on ChromeOS.
- */
-remoting.runningOnChromeOS = function() {
-  return !!navigator.userAgent.match(/\bCrOS\b/);
-}
