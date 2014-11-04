@@ -150,6 +150,12 @@ IntSize PageScaleConstraintsSet::mainFrameSize(int contentWidthIncludingScrollba
         && m_userAgentConstraints.minimumScale < finalConstraints().minimumScale
         && contentWidthIncludingScrollbar
         && m_viewSize.width()) {
+
+        // Special case where the contents are exactly as wide as the viewport to prevent an off-by-one due
+        // to floating point imprecision in the aspect ratio height calculation.
+        if (contentWidthIncludingScrollbar == m_viewSize.width())
+            return m_viewSize;
+
         return expandedIntSize(FloatSize(
             contentWidthIncludingScrollbar,
             computeHeightByAspectRatio(contentWidthIncludingScrollbar, m_viewSize)));
