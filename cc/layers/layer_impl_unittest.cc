@@ -499,7 +499,13 @@ TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
 
 class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
  public:
-  void SetTotalScrollOffset(const gfx::ScrollOffset& new_value) override {}
+  void SetTotalScrollOffset(const gfx::ScrollOffset& new_value) override {
+    last_attempted_set_offset_ = new_value;
+  }
+  gfx::ScrollOffset last_attempted_set_offset() const {
+    return last_attempted_set_offset_;
+  }
+
   gfx::ScrollOffset GetTotalScrollOffset() override {
     return gfx::ScrollOffset(fixed_offset_);
   }
@@ -511,6 +517,7 @@ class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
   }
 
  private:
+  gfx::ScrollOffset last_attempted_set_offset_;
   gfx::Vector2dF fixed_offset_;
 };
 
@@ -633,6 +640,8 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
   layer()->ApplySentScrollDeltasFromAbortedCommit();
+
+  EXPECT_VECTOR_EQ(fixed_offset, delegate.last_attempted_set_offset());
 
   EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(gfx::ScrollOffsetWithDelta(scroll_offset, sent_scroll_delta),
