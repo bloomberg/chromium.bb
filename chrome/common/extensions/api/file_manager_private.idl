@@ -167,6 +167,12 @@ dictionary FileTask {
 
   // True if this task is a default task for the selected files.
   boolean isDefault;
+
+  // True if this task is from generic file handler. Generic file handler is a
+  // file handler which handles any type of files (e.g. extensions: ["*"],
+  // types: ["*/*"]). Partial wild card (e.g. types: ["image/*"]) is not
+  // generic file handler.
+  boolean isGenericFileHandler;
 };
 
 // Additional entry properties.

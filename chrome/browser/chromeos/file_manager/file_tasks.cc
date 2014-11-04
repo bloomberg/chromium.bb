@@ -134,11 +134,13 @@ FullTaskDescriptor::FullTaskDescriptor(
     const TaskDescriptor& task_descriptor,
     const std::string& task_title,
     const GURL& icon_url,
-    bool is_default)
+    bool is_default,
+    bool is_generic_file_handler)
     : task_descriptor_(task_descriptor),
       task_title_(task_title),
       icon_url_(icon_url),
-      is_default_(is_default) {
+      is_default_(is_default),
+      is_generic_file_handler_(is_generic_file_handler) {
 }
 
 void UpdateDefaultTask(PrefService* pref_service,
@@ -354,8 +356,16 @@ void FindDriveAppTasks(
         FullTaskDescriptor(descriptor,
                            app_info.app_name,
                            icon_url,
-                           false /* is_default */));
+                           false /* is_default */,
+                           false /* is_generic_file_handler */));
   }
+}
+
+bool IsGenericFileHandler(
+    const extensions::FileHandlerInfo& file_handler_info) {
+  return file_handler_info.extensions.count("*") > 0 ||
+      file_handler_info.types.count("*") > 0 ||
+      file_handler_info.types.count("*/*") > 0;
 }
 
 void FindFileHandlerTasks(
@@ -367,6 +377,7 @@ void FindFileHandlerTasks(
 
   const extensions::ExtensionSet& enabled_extensions =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+
   for (extensions::ExtensionSet::const_iterator iter =
            enabled_extensions.begin();
        iter != enabled_extensions.end();
@@ -400,8 +411,19 @@ void FindFileHandlerTasks(
       continue;
     }
 
-    // Only show the first matching handler from each app.
-    const extensions::FileHandlerInfo* file_handler = file_handlers.front();
+    // Show the first matching non-generic handler of each app. If there doesn't
+    // exist such handler, show the first matching handler of the app.
+    const extensions::FileHandlerInfo* file_handler = nullptr;
+    for (auto handler : file_handlers) {
+      if (!IsGenericFileHandler(*handler)) {
+        file_handler = handler;
+        break;
+      }
+    }
+    if (file_handler == nullptr) {
+      file_handler = file_handlers.front();
+    }
+
     std::string task_id = file_tasks::MakeTaskID(
         extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, file_handler->id);
 
@@ -418,7 +440,8 @@ void FindFileHandlerTasks(
                                           file_handler->id),
                            extension->name(),
                            best_icon,
-                           false /* is_default */));
+                           false /* is_default */,
+                           IsGenericFileHandler(*file_handler)));
   }
 }
 
@@ -460,7 +483,8 @@ void FindFileBrowserHandlerTasks(
                        handler->id()),
         handler->title(),
         icon_url,
-        false /* is_default */));
+        false /* is_default */,
+        false /* is_generic_file_handler */));
   }
 }
 

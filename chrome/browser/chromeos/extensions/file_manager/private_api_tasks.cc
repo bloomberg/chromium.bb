@@ -186,6 +186,7 @@ void FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected(
       converted->icon_url = task.icon_url().spec();
     converted->title = task.task_title();
     converted->is_default = task.is_default();
+    converted->is_generic_file_handler = task.is_generic_file_handler();
     results.push_back(converted);
   }
 
