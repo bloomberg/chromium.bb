@@ -881,39 +881,40 @@ enum OperandKind {
   operand_states |= OPERAND_SANDBOX_UNRESTRICTED << ((INDEX) << 3)
 #define CHECK_OPERAND(INDEX, REGISTER_NAME, KIND)                              \
   ((operand_states &                                                           \
-    ((REG_MASK | OPERAND_KIND_MASK) << ((INDEX) << 3))) ==                     \
+    ((NC_REG_MASK | OPERAND_KIND_MASK) << ((INDEX) << 3))) ==                  \
     (((KIND) | (REGISTER_NAME)) << ((INDEX) << 3)))
 #define CHECK_OPERAND_R15_MODIFIED(INDEX)                                      \
-  (CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_8BIT) ||                    \
-   CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_RESTRICTED) ||              \
-   CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_UNRESTRICTED))
+  (CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_8BIT) ||                 \
+   CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_RESTRICTED) ||           \
+   CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_UNRESTRICTED))
 /*
  * Note that macroses below access operand_states variable and also rex_prefix
  * variable.  This is to distinguish %ah from %spl, as well as %ch from %bpl.
  */
 #define CHECK_OPERAND_BP_MODIFIED(INDEX)                                       \
-  ((CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_RESTRICTED) ||             \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_RESTRICTED) ||          \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_SP_MODIFIED(INDEX)                                       \
-  ((CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_RESTRICTED) ||             \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))             \
+  ((CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_RESTRICTED) ||          \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))          \
 /*
  * This is for Process?OperandsZeroExtends functions: in this case %esp or %ebp
  * can be written to, but %spl/%sp/%rsp or %bpl/%bp/%rbp can not be modified.
  */
 #define CHECK_OPERAND_BP_INVALID_MODIFICATION(INDEX)                           \
-  ((CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_SP_INVALID_MODIFICATION(INDEX)                           \
-  ((CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_RESTRICTED(INDEX)                                        \
   ((operand_states &                                                           \
     (OPERAND_KIND_MASK << ((INDEX) << 3))) ==                                  \
      OPERAND_SANDBOX_RESTRICTED << ((INDEX) << 3))
-#define GET_OPERAND_NAME(INDEX) ((operand_states >> ((INDEX) << 3)) & REG_MASK)
+#define GET_OPERAND_NAME(INDEX)                                                \
+  ((operand_states >> ((INDEX) << 3)) & NC_REG_MASK)
 
 static INLINE void CheckMemoryAccess(ptrdiff_t instruction_begin,
                                      enum OperandName base,
@@ -921,9 +922,9 @@ static INLINE void CheckMemoryAccess(ptrdiff_t instruction_begin,
                                      uint8_t restricted_register,
                                      bitmap_word *valid_targets,
                                      uint32_t *instruction_info_collected) {
-  if ((base == REG_RIP) || (base == REG_R15) ||
-      (base == REG_RSP) || (base == REG_RBP)) {
-    if ((index == NO_REG) || (index == REG_RIZ))
+  if ((base == NC_REG_RIP) || (base == NC_REG_R15) ||
+      (base == NC_REG_RSP) || (base == NC_REG_RBP)) {
+    if ((index == NC_NO_REG) || (index == NC_REG_RIZ))
       { /* do nothing. */ }
     else if (index == restricted_register)
       BitmapClearBit(valid_targets, instruction_begin),
@@ -942,9 +943,9 @@ static FORCEINLINE uint32_t CheckValidityOfRegularInstruction(
    * zero-extension state by appropriate "special" instruction, not with
    * regular instruction.
    */
-  if (restricted_register == REG_RBP)
+  if (restricted_register == NC_REG_RBP)
     return RESTRICTED_RBP_UNPROCESSED;
-  if (restricted_register == REG_RSP)
+  if (restricted_register == NC_REG_RSP)
     return RESTRICTED_RSP_UNPROCESSED;
   return 0;
 }
@@ -954,7 +955,7 @@ static INLINE void Process0Operands(enum OperandName *restricted_register,
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process1Operand(enum OperandName *restricted_register,
@@ -970,7 +971,7 @@ static INLINE void Process1Operand(enum OperandName *restricted_register,
   if (CHECK_OPERAND_SP_MODIFIED(0))
     *instruction_info_collected |= SP_MODIFIED;
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process1OperandZeroExtends(
@@ -981,7 +982,7 @@ static INLINE void Process1OperandZeroExtends(
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
   if (CHECK_OPERAND_R15_MODIFIED(0))
     *instruction_info_collected |= R15_MODIFIED;
   if (CHECK_OPERAND_BP_INVALID_MODIFICATION(0))
@@ -1005,7 +1006,7 @@ static INLINE void Process2Operands(enum OperandName *restricted_register,
   if (CHECK_OPERAND_SP_MODIFIED(0) || CHECK_OPERAND_SP_MODIFIED(1))
     *instruction_info_collected |= SP_MODIFIED;
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process2OperandsZeroExtends(
@@ -1016,7 +1017,7 @@ static INLINE void Process2OperandsZeroExtends(
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
   if (CHECK_OPERAND_R15_MODIFIED(0) ||
       CHECK_OPERAND_R15_MODIFIED(1))
     *instruction_info_collected |= R15_MODIFIED;
@@ -1033,9 +1034,9 @@ static INLINE void Process2OperandsZeroExtends(
      * ignore it completely though, since it can modify %rsp or %rbp which must
      * follow special rules.  In this case NaCl forbids the instruction.
      */
-    if (CHECK_OPERAND(1, REG_RSP, OPERAND_SANDBOX_RESTRICTED))
+    if (CHECK_OPERAND(1, NC_REG_RSP, OPERAND_SANDBOX_RESTRICTED))
       *instruction_info_collected |= RESTRICTED_RSP_UNPROCESSED;
-    if (CHECK_OPERAND(1, REG_RBP, OPERAND_SANDBOX_RESTRICTED))
+    if (CHECK_OPERAND(1, NC_REG_RBP, OPERAND_SANDBOX_RESTRICTED))
       *instruction_info_collected |= RESTRICTED_RBP_UNPROCESSED;
   } else if (CHECK_OPERAND_RESTRICTED(1)) {
     *restricted_register = GET_OPERAND_NAME(1);
@@ -1407,8 +1408,8 @@ Bool ValidateChunkAMD64(const uint8_t codeblock[],
      * mode.
      */
     uint32_t operand_states = 0;
-    enum OperandName base = NO_REG;
-    enum OperandName index = NO_REG;
+    enum OperandName base = NC_NO_REG;
+    enum OperandName index = NC_NO_REG;
     enum OperandName restricted_register =
       EXTRACT_RESTRICTED_REGISTER_INITIAL_VALUE(options);
     uint8_t rex_prefix = FALSE;
@@ -1462,7 +1463,7 @@ switch (_dfa_transitions[current_state][*current_position][0]) {
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     break;
   case 2:
@@ -1472,8 +1473,8 @@ current_state = 2; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     break;
   case 4:
@@ -1481,7 +1482,7 @@ current_state = 2; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     break;
   case 5:
@@ -1510,7 +1511,7 @@ current_state = 9; current_position++; goto _again;
   case 9:
 
     SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_BASE(NC_NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
                                     IndexExtentionFromREX(GET_REX_PREFIX()) |
                                     IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
@@ -2003,21 +2004,21 @@ current_state = 255; current_position++; goto _again;
 current_state = 256; current_position++; goto _again;
   break;
   case 170:
- if (restricted_register == REG_RSP)
+ if (restricted_register == NC_REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
-       restricted_register = NO_REG;
+       restricted_register = NC_NO_REG;
        UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
       break;
   case 171:
- if (restricted_register == REG_RBP)
+ if (restricted_register == NC_REG_RBP)
          /* RESTRICTED_REGISTER_USED is informational flag used in tests.  */
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
          /* UNRESTRICTED_RSP_PROCESSED is error flag used in production.  */
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
-       restricted_register = NO_REG;
+       restricted_register = NC_NO_REG;
        UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
       break;
   case 172:
@@ -3129,7 +3130,7 @@ current_state = 6; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -3191,8 +3192,8 @@ current_state = 6; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -3205,7 +3206,7 @@ current_state = 6; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -3225,7 +3226,7 @@ current_state = 6; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -3353,7 +3354,7 @@ current_state = 17; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -3416,8 +3417,8 @@ current_state = 17; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 22; current_position++; goto _again;
   break;
@@ -3430,7 +3431,7 @@ current_state = 17; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 26; current_position++; goto _again;
   break;
@@ -3450,7 +3451,7 @@ current_state = 17; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 22; current_position++; goto _again;
   break;
@@ -3772,7 +3773,7 @@ current_state = 33; current_position++; goto _again;
    current_state = 770; current_position++; goto _again;
   break;
   case 46:
- SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RDX);  
+ SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, NC_REG_RDX);  
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
    
@@ -3811,7 +3812,7 @@ current_state = 33; current_position++; goto _again;
    current_state = 770; current_position++; goto _again;
   break;
   case 47:
- SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, REG_RCX);  
+ SET_CPU_FEATURE(CPUFeature_MON);         SET_OPERAND_NAME(0, NC_REG_RCX);  
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
    
@@ -3855,7 +3856,7 @@ current_state = 33; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     Process0Operands(&restricted_register, &instruction_info_collected);
@@ -3901,8 +3902,8 @@ current_state = 37; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 38; current_position++; goto _again;
   break;
@@ -3911,7 +3912,7 @@ current_state = 37; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 42; current_position++; goto _again;
   break;
@@ -3923,7 +3924,7 @@ current_state = 43; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 38; current_position++; goto _again;
   break;
@@ -4100,7 +4101,7 @@ current_state = 51; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -4153,8 +4154,8 @@ current_state = 2; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 3; current_position++; goto _again;
   break;
@@ -4163,7 +4164,7 @@ current_state = 2; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 7; current_position++; goto _again;
   break;
@@ -4175,7 +4176,7 @@ current_state = 8; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 3; current_position++; goto _again;
   break;
@@ -4192,7 +4193,7 @@ current_state = 9; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -4254,8 +4255,8 @@ current_state = 9; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -4268,7 +4269,7 @@ current_state = 9; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -4288,7 +4289,7 @@ current_state = 9; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -4305,7 +4306,7 @@ current_state = 9; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -4323,8 +4324,8 @@ current_state = 68; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 69; current_position++; goto _again;
   break;
@@ -4333,7 +4334,7 @@ current_state = 68; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 73; current_position++; goto _again;
   break;
@@ -4345,7 +4346,7 @@ current_state = 74; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 69; current_position++; goto _again;
   break;
@@ -4400,7 +4401,7 @@ current_state = 73; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -4462,8 +4463,8 @@ current_state = 73; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -4476,7 +4477,7 @@ current_state = 73; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -4496,7 +4497,7 @@ current_state = 73; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -4870,13 +4871,13 @@ current_state = 113; current_position++; goto _again;
 current_state = 114; current_position++; goto _again;
   break;
   case 126:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 29; current_position++; goto _again;
+ SET_OPERAND_NAME(0, NC_REG_RAX);  current_state = 29; current_position++; goto _again;
   break;
   case 127:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 30; current_position++; goto _again;
+ SET_OPERAND_NAME(0, NC_REG_RAX);  current_state = 30; current_position++; goto _again;
   break;
   case 128:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 102; current_position++; goto _again;
+ SET_OPERAND_NAME(0, NC_REG_RAX);  current_state = 102; current_position++; goto _again;
   break;
   case 129:
  SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);  
@@ -4922,7 +4923,7 @@ current_state = 114; current_position++; goto _again;
     SET_OPERAND_NAME(0, RegFromOpcode(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+    SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, NC_REG_RAX);  
     Process2OperandsZeroExtends(&restricted_register,
                                 &instruction_info_collected, rex_prefix,
                                 operand_states);
@@ -4962,7 +4963,7 @@ current_state = 114; current_position++; goto _again;
    current_state = 770; current_position++; goto _again;
   break;
   case 131:
- SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_32_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_32_BIT);   SET_OPERAND_NAME(1, NC_REG_RAX);  
     Process2OperandsZeroExtends(&restricted_register,
                                 &instruction_info_collected, rex_prefix,
                                 operand_states);
@@ -5024,7 +5025,7 @@ current_state = 182; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -5050,8 +5051,8 @@ current_state = 182; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 119; current_position++; goto _again;
   break;
@@ -5064,7 +5065,7 @@ current_state = 182; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 123; current_position++; goto _again;
   break;
@@ -5084,7 +5085,7 @@ current_state = 182; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 119; current_position++; goto _again;
   break;
@@ -5143,7 +5144,7 @@ current_state = 123; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -5169,8 +5170,8 @@ current_state = 123; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 129; current_position++; goto _again;
   break;
@@ -5183,7 +5184,7 @@ current_state = 123; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 133; current_position++; goto _again;
   break;
@@ -5203,7 +5204,7 @@ current_state = 123; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 129; current_position++; goto _again;
   break;
@@ -5558,7 +5559,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -5624,8 +5625,8 @@ current_state = 142; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -5640,7 +5641,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -5664,7 +5665,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -5689,7 +5690,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -5756,8 +5757,8 @@ current_state = 142; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 22; current_position++; goto _again;
   break;
@@ -5772,7 +5773,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 26; current_position++; goto _again;
   break;
@@ -5796,7 +5797,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 22; current_position++; goto _again;
   break;
@@ -5819,7 +5820,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     Process1OperandZeroExtends(&restricted_register,
@@ -5875,8 +5876,8 @@ current_state = 142; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 160; current_position++; goto _again;
   break;
@@ -5889,7 +5890,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 164; current_position++; goto _again;
   break;
@@ -5909,7 +5910,7 @@ current_state = 142; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 160; current_position++; goto _again;
   break;
@@ -5981,7 +5982,7 @@ current_state = 164; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -5999,8 +6000,8 @@ current_state = 138; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 139; current_position++; goto _again;
   break;
@@ -6009,7 +6010,7 @@ current_state = 138; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 143; current_position++; goto _again;
   break;
@@ -6021,7 +6022,7 @@ current_state = 144; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 139; current_position++; goto _again;
   break;
@@ -6029,7 +6030,7 @@ current_state = 144; current_position++; goto _again;
 current_state = 145; current_position++; goto _again;
   break;
   case 216:
- SET_CPU_FEATURE(CPUFeature_x87);         SET_OPERAND_NAME(0, REG_RAX);  
+ SET_CPU_FEATURE(CPUFeature_x87);         SET_OPERAND_NAME(0, NC_REG_RAX);  
     Process1Operand(&restricted_register, &instruction_info_collected,
                     rex_prefix, operand_states);
    
@@ -6118,7 +6119,7 @@ current_state = 185; current_position++; goto _again;
    current_state = 770; current_position++; goto _again;
   break;
   case 221:
- SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_64_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_64_BIT);   SET_OPERAND_NAME(1, NC_REG_RAX);  
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
    
@@ -6376,7 +6377,7 @@ current_state = 185; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -6402,8 +6403,8 @@ current_state = 185; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 207; current_position++; goto _again;
   break;
@@ -6416,7 +6417,7 @@ current_state = 185; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 211; current_position++; goto _again;
   break;
@@ -6436,7 +6437,7 @@ current_state = 185; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 207; current_position++; goto _again;
   break;
@@ -6495,7 +6496,7 @@ current_state = 211; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -6521,8 +6522,8 @@ current_state = 211; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 216; current_position++; goto _again;
   break;
@@ -6535,7 +6536,7 @@ current_state = 211; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 220; current_position++; goto _again;
   break;
@@ -6555,7 +6556,7 @@ current_state = 211; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 216; current_position++; goto _again;
   break;
@@ -6693,7 +6694,7 @@ current_state = 220; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     Process1Operand(&restricted_register, &instruction_info_collected,
@@ -6748,8 +6749,8 @@ current_state = 220; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 230; current_position++; goto _again;
   break;
@@ -6762,7 +6763,7 @@ current_state = 220; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 234; current_position++; goto _again;
   break;
@@ -6782,7 +6783,7 @@ current_state = 220; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 230; current_position++; goto _again;
   break;
@@ -7122,7 +7123,7 @@ current_state = 292; current_position++; goto _again;
 current_state = 293; current_position++; goto _again;
   break;
   case 306:
- SET_OPERAND_NAME(0, REG_RAX);  current_state = 301; current_position++; goto _again;
+ SET_OPERAND_NAME(0, NC_REG_RAX);  current_state = 301; current_position++; goto _again;
   break;
   case 307:
 current_state = 339; current_position++; goto _again;
@@ -7170,7 +7171,7 @@ current_state = 370; current_position++; goto _again;
    current_state = 770; current_position++; goto _again;
   break;
   case 310:
- SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_OPERAND_NAME(1, REG_RAX);  
+ SET_OPERAND_FORMAT(1, OPERAND_FORMAT_16_BIT);   SET_OPERAND_FORMAT(0, OPERAND_FORMAT_16_BIT);   SET_OPERAND_NAME(1, NC_REG_RAX);  
     Process2Operands(&restricted_register, &instruction_info_collected,
                      rex_prefix, operand_states);
    
@@ -7399,7 +7400,7 @@ current_state = 338; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -7425,8 +7426,8 @@ current_state = 338; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 343; current_position++; goto _again;
   break;
@@ -7439,7 +7440,7 @@ current_state = 338; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 347; current_position++; goto _again;
   break;
@@ -7459,7 +7460,7 @@ current_state = 338; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 343; current_position++; goto _again;
   break;
@@ -7590,7 +7591,7 @@ current_state = 356; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -7608,8 +7609,8 @@ current_state = 352; current_position++; goto _again;
 
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 353; current_position++; goto _again;
   break;
@@ -7618,7 +7619,7 @@ current_state = 352; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 357; current_position++; goto _again;
   break;
@@ -7630,7 +7631,7 @@ current_state = 358; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 353; current_position++; goto _again;
   break;
@@ -8217,7 +8218,7 @@ current_state = 462; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -8237,7 +8238,7 @@ current_state = 462; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 211; current_position++; goto _again;
   break;
@@ -8250,7 +8251,7 @@ current_state = 462; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 207; current_position++; goto _again;
   break;
@@ -8274,8 +8275,8 @@ current_state = 467; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 207; current_position++; goto _again;
   break;
@@ -8352,7 +8353,7 @@ current_state = 504; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -8406,7 +8407,7 @@ current_state = 504; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -8417,7 +8418,7 @@ current_state = 504; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -8570,8 +8571,8 @@ current_state = 519; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -8751,7 +8752,7 @@ current_state = 582; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -8807,7 +8808,7 @@ current_state = 582; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -8820,7 +8821,7 @@ current_state = 582; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -8937,8 +8938,8 @@ current_state = 602; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -8997,7 +8998,7 @@ current_state = 624; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9051,7 +9052,7 @@ current_state = 624; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9062,7 +9063,7 @@ current_state = 624; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9122,8 +9123,8 @@ current_state = 631; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9152,7 +9153,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9214,8 +9215,8 @@ current_state = 660; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9228,7 +9229,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9248,7 +9249,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9269,7 +9270,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9331,8 +9332,8 @@ current_state = 660; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9345,7 +9346,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9365,7 +9366,7 @@ current_state = 660; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9479,7 +9480,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9541,8 +9542,8 @@ current_state = 674; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9555,7 +9556,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9575,7 +9576,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9596,7 +9597,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9658,8 +9659,8 @@ current_state = 674; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9672,7 +9673,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9692,7 +9693,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9752,7 +9753,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9814,8 +9815,8 @@ current_state = 674; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9828,7 +9829,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -9848,7 +9849,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9908,7 +9909,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    
     CheckMemoryAccess(instruction_begin - codeblock,
@@ -9970,8 +9971,8 @@ current_state = 674; current_position++; goto _again;
    
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -9984,7 +9985,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 17; current_position++; goto _again;
   break;
@@ -10004,7 +10005,7 @@ current_state = 674; current_position++; goto _again;
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
    current_state = 13; current_position++; goto _again;
   break;
@@ -10939,15 +10940,15 @@ _done: ;
      * Ragel DFA accepted the bundle, but we still need to make sure the last
      * instruction haven't left %rbp or %rsp in restricted state.
      */
-    if (restricted_register == REG_RBP)
+    if (restricted_register == NC_REG_RBP)
       result &= user_callback(end_position, end_position,
                               RESTRICTED_RBP_UNPROCESSED |
-                              ((REG_RBP << RESTRICTED_REGISTER_SHIFT) &
+                              ((NC_REG_RBP << RESTRICTED_REGISTER_SHIFT) &
                                RESTRICTED_REGISTER_MASK), callback_data);
-    else if (restricted_register == REG_RSP)
+    else if (restricted_register == NC_REG_RSP)
       result &= user_callback(end_position, end_position,
                               RESTRICTED_RSP_UNPROCESSED |
-                              ((REG_RSP << RESTRICTED_REGISTER_SHIFT) &
+                              ((NC_REG_RSP << RESTRICTED_REGISTER_SHIFT) &
                                RESTRICTED_REGISTER_MASK), callback_data);
   }
 

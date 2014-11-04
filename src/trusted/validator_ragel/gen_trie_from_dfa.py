@@ -55,14 +55,14 @@ def CheckAndFormatRRInfo(input_rr_set, output_rr):
   # restricted incoming would cause the instruction to be valid but '%r8'
   # being restricted on the input would cause an invalid instruction.
   if len(input_rr_set) > 1:
-    if (input_rr_set != (ALL_CONDITIONS - set((validator.REG_RSP,
-                                               validator.REG_RBP)))):
+    if (input_rr_set != (ALL_CONDITIONS - set((validator.NC_REG_RSP,
+                                               validator.NC_REG_RBP)))):
       raise ValueError('Invalid input rr set', input_rr_set)
     input_rr_str = 'any_nonspecial'
   else:
     input_rr_str = validator.REGISTER_NAMES[input_rr_set.pop()]
 
-  if output_rr == validator.REG_R15:
+  if output_rr == validator.NC_REG_R15:
     raise ValueError('Instruction produces R15 as a restricted register.')
 
   if output_rr is None:

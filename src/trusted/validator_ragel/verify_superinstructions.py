@@ -35,14 +35,15 @@ def ValidateSuperinstruction(superinstruction, validator_inst, bitness):
 
   result = validator_inst.ValidateChunk(bundle, bitness=bitness)
 
-  # Superinstructions are accepted if restricted_register != REG_RSP or REG_RBP
+  # Superinstructions are accepted if restricted_register != NC_REG_RSP or
+  # NC_REG_RBP
   if bitness == 64:
     for register in validator.ALL_REGISTERS:
       # restricted_register can not be ever equal to %r15
-      if register == validator.REG_R15:
+      if register == validator.NC_REG_R15:
         continue
-      expected = result and register not in (validator.REG_RBP,
-                                             validator.REG_RSP)
+      expected = result and register not in (validator.NC_REG_RBP,
+                                             validator.NC_REG_RSP)
       assert validator_inst.ValidateChunk(bundle,
                                           restricted_register=register,
                                           bitness=bitness) == expected

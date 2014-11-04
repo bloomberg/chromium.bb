@@ -51,7 +51,7 @@ In def format, operand is defined by two properties: 'type' and 'size'. 'Type' s
 </p>
 
 <p>
-Example: 16-bit push instruction has single operand with 'type' r (REGISTER_IN_OPCODE) and 'size' w (16-bit word). Gen_dfa determines that it's 'source' is 'from_opcode' and it's 'format' is '16bit'. So it annotates the automaton with two actions: operand0_16bit and operand0_from_opcode. operand0_from_opcode action looks into three least significant bits of the opcode byte and sets them as operand0 'name'. Suppose we are parsing instruction 'push ax'. Least significant bits of the opcode would therefore be 000 and 'name' would be 0 (actually 'name' is an enum, and in this particular case it's value would be REG_RAX=0). But, in order to display it as '%ax', disassembler needs to know it's format ('16bit'). Were it '8bit', for instance, '%al' would be displayed instead.
+Example: 16-bit push instruction has single operand with 'type' r (REGISTER_IN_OPCODE) and 'size' w (16-bit word). Gen_dfa determines that it's 'source' is 'from_opcode' and it's 'format' is '16bit'. So it annotates the automaton with two actions: operand0_16bit and operand0_from_opcode. operand0_from_opcode action looks into three least significant bits of the opcode byte and sets them as operand0 'name'. Suppose we are parsing instruction 'push ax'. Least significant bits of the opcode would therefore be 000 and 'name' would be 0 (actually 'name' is an enum, and in this particular case it's value would be NC_REG_RAX=0). But, in order to display it as '%ax', disassembler needs to know it's format ('16bit'). Were it '8bit', for instance, '%al' would be displayed instead.
 </p>
 
 <p>

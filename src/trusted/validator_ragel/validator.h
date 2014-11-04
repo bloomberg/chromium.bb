@@ -142,10 +142,11 @@ enum ValidationOptions {
   PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM   = 0x00000200
 };
 
-/* NO_REG is default value for restricted register */
-#define PACK_RESTRICTED_REGISTER_INITIAL_VALUE(register) ((register) ^ NO_REG)
+/* NC_NO_REG is default value for restricted register */
+#define PACK_RESTRICTED_REGISTER_INITIAL_VALUE(register) \
+  ((register) ^ NC_NO_REG)
 #define EXTRACT_RESTRICTED_REGISTER_INITIAL_VALUE(option) \
-  (((option) & RESTRICTED_REGISTER_INITIAL_VALUE_MASK) ^ NO_REG)
+  (((option) & RESTRICTED_REGISTER_INITIAL_VALUE_MASK) ^ NC_NO_REG)
 
 /*
  * Callback is invoked by ValidateChunk* for all erroneous instructions

@@ -243,11 +243,11 @@ static FORCEINLINE uint64_t AnyFieldValue64bit(const uint8_t *start) {
 }
 
 static const uint8_t index_registers[] = {
-  /* Note how REG_RIZ falls out of the pattern. */
-  REG_RAX, REG_RCX, REG_RDX, REG_RBX,
-  REG_RIZ, REG_RBP, REG_RSI, REG_RDI,
-  REG_R8,  REG_R9,  REG_R10, REG_R11,
-  REG_R12, REG_R13, REG_R14, REG_R15
+  /* Note how NC_REG_RIZ falls out of the pattern. */
+  NC_REG_RAX, NC_REG_RCX, NC_REG_RDX, NC_REG_RBX,
+  NC_REG_RIZ, NC_REG_RBP, NC_REG_RSI, NC_REG_RDI,
+  NC_REG_R8,  NC_REG_R9,  NC_REG_R10, NC_REG_R11,
+  NC_REG_R12, NC_REG_R13, NC_REG_R14, NC_REG_R15
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODING_H_ */

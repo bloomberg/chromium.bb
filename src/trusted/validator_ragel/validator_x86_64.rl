@@ -142,13 +142,13 @@
     #
     # Check this precondition and mark the beginning of the instruction as
     # invalid jump for target.
-    @{ if (restricted_register == REG_RBP)
+    @{ if (restricted_register == NC_REG_RBP)
          /* RESTRICTED_REGISTER_USED is informational flag used in tests.  */
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
          /* UNRESTRICTED_RSP_PROCESSED is error flag used in production.  */
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
-       restricted_register = NO_REG;
+       restricted_register = NC_NO_REG;
        UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
     };
 
@@ -202,11 +202,11 @@
     #
     # Check this precondition and mark the beginning of the instruction as
     # invalid jump for target.
-    @{ if (restricted_register == REG_RSP)
+    @{ if (restricted_register == NC_REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
-       restricted_register = NO_REG;
+       restricted_register = NC_NO_REG;
        UnmarkValidJumpTarget((instruction_begin - codeblock), valid_targets);
     };
 
@@ -730,39 +730,40 @@ enum OperandKind {
   operand_states |= OPERAND_SANDBOX_UNRESTRICTED << ((INDEX) << 3)
 #define CHECK_OPERAND(INDEX, REGISTER_NAME, KIND)                              \
   ((operand_states &                                                           \
-    ((REG_MASK | OPERAND_KIND_MASK) << ((INDEX) << 3))) ==                     \
+    ((NC_REG_MASK | OPERAND_KIND_MASK) << ((INDEX) << 3))) ==                  \
     (((KIND) | (REGISTER_NAME)) << ((INDEX) << 3)))
 #define CHECK_OPERAND_R15_MODIFIED(INDEX)                                      \
-  (CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_8BIT) ||                    \
-   CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_RESTRICTED) ||              \
-   CHECK_OPERAND((INDEX), REG_R15, OPERAND_SANDBOX_UNRESTRICTED))
+  (CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_8BIT) ||                 \
+   CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_RESTRICTED) ||           \
+   CHECK_OPERAND((INDEX), NC_REG_R15, OPERAND_SANDBOX_UNRESTRICTED))
 /*
  * Note that macroses below access operand_states variable and also rex_prefix
  * variable.  This is to distinguish %ah from %spl, as well as %ch from %bpl.
  */
 #define CHECK_OPERAND_BP_MODIFIED(INDEX)                                       \
-  ((CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_RESTRICTED) ||             \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_RESTRICTED) ||          \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_SP_MODIFIED(INDEX)                                       \
-  ((CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_RESTRICTED) ||             \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))             \
+  ((CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_RESTRICTED) ||          \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))          \
 /*
  * This is for Process?OperandsZeroExtends functions: in this case %esp or %ebp
  * can be written to, but %spl/%sp/%rsp or %bpl/%bp/%rbp can not be modified.
  */
 #define CHECK_OPERAND_BP_INVALID_MODIFICATION(INDEX)                           \
-  ((CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RBP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_SP_INVALID_MODIFICATION(INDEX)                           \
-  ((CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) ||    \
-    CHECK_OPERAND((INDEX), REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))
+  ((CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_8BIT) && rex_prefix) || \
+    CHECK_OPERAND((INDEX), NC_REG_RSP, OPERAND_SANDBOX_UNRESTRICTED))
 #define CHECK_OPERAND_RESTRICTED(INDEX)                                        \
   ((operand_states &                                                           \
     (OPERAND_KIND_MASK << ((INDEX) << 3))) ==                                  \
      OPERAND_SANDBOX_RESTRICTED << ((INDEX) << 3))
-#define GET_OPERAND_NAME(INDEX) ((operand_states >> ((INDEX) << 3)) & REG_MASK)
+#define GET_OPERAND_NAME(INDEX)                                                \
+  ((operand_states >> ((INDEX) << 3)) & NC_REG_MASK)
 
 static INLINE void CheckMemoryAccess(ptrdiff_t instruction_begin,
                                      enum OperandName base,
@@ -770,9 +771,9 @@ static INLINE void CheckMemoryAccess(ptrdiff_t instruction_begin,
                                      uint8_t restricted_register,
                                      bitmap_word *valid_targets,
                                      uint32_t *instruction_info_collected) {
-  if ((base == REG_RIP) || (base == REG_R15) ||
-      (base == REG_RSP) || (base == REG_RBP)) {
-    if ((index == NO_REG) || (index == REG_RIZ))
+  if ((base == NC_REG_RIP) || (base == NC_REG_R15) ||
+      (base == NC_REG_RSP) || (base == NC_REG_RBP)) {
+    if ((index == NC_NO_REG) || (index == NC_REG_RIZ))
       { /* do nothing. */ }
     else if (index == restricted_register)
       BitmapClearBit(valid_targets, instruction_begin),
@@ -791,9 +792,9 @@ static FORCEINLINE uint32_t CheckValidityOfRegularInstruction(
    * zero-extension state by appropriate "special" instruction, not with
    * regular instruction.
    */
-  if (restricted_register == REG_RBP)
+  if (restricted_register == NC_REG_RBP)
     return RESTRICTED_RBP_UNPROCESSED;
-  if (restricted_register == REG_RSP)
+  if (restricted_register == NC_REG_RSP)
     return RESTRICTED_RSP_UNPROCESSED;
   return 0;
 }
@@ -803,7 +804,7 @@ static INLINE void Process0Operands(enum OperandName *restricted_register,
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process1Operand(enum OperandName *restricted_register,
@@ -819,7 +820,7 @@ static INLINE void Process1Operand(enum OperandName *restricted_register,
   if (CHECK_OPERAND_SP_MODIFIED(0))
     *instruction_info_collected |= SP_MODIFIED;
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process1OperandZeroExtends(
@@ -830,7 +831,7 @@ static INLINE void Process1OperandZeroExtends(
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
   if (CHECK_OPERAND_R15_MODIFIED(0))
     *instruction_info_collected |= R15_MODIFIED;
   if (CHECK_OPERAND_BP_INVALID_MODIFICATION(0))
@@ -854,7 +855,7 @@ static INLINE void Process2Operands(enum OperandName *restricted_register,
   if (CHECK_OPERAND_SP_MODIFIED(0) || CHECK_OPERAND_SP_MODIFIED(1))
     *instruction_info_collected |= SP_MODIFIED;
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
 }
 
 static INLINE void Process2OperandsZeroExtends(
@@ -865,7 +866,7 @@ static INLINE void Process2OperandsZeroExtends(
   *instruction_info_collected |=
     CheckValidityOfRegularInstruction(*restricted_register);
   /* Every instruction clears restricted register even if it is not modified. */
-  *restricted_register = NO_REG;
+  *restricted_register = NC_NO_REG;
   if (CHECK_OPERAND_R15_MODIFIED(0) ||
       CHECK_OPERAND_R15_MODIFIED(1))
     *instruction_info_collected |= R15_MODIFIED;
@@ -882,9 +883,9 @@ static INLINE void Process2OperandsZeroExtends(
      * ignore it completely though, since it can modify %rsp or %rbp which must
      * follow special rules.  In this case NaCl forbids the instruction.
      */
-    if (CHECK_OPERAND(1, REG_RSP, OPERAND_SANDBOX_RESTRICTED))
+    if (CHECK_OPERAND(1, NC_REG_RSP, OPERAND_SANDBOX_RESTRICTED))
       *instruction_info_collected |= RESTRICTED_RSP_UNPROCESSED;
-    if (CHECK_OPERAND(1, REG_RBP, OPERAND_SANDBOX_RESTRICTED))
+    if (CHECK_OPERAND(1, NC_REG_RBP, OPERAND_SANDBOX_RESTRICTED))
       *instruction_info_collected |= RESTRICTED_RBP_UNPROCESSED;
   } else if (CHECK_OPERAND_RESTRICTED(1)) {
     *restricted_register = GET_OPERAND_NAME(1);
@@ -1256,8 +1257,8 @@ Bool ValidateChunkAMD64(const uint8_t codeblock[],
      * mode.
      */
     uint32_t operand_states = 0;
-    enum OperandName base = NO_REG;
-    enum OperandName index = NO_REG;
+    enum OperandName base = NC_NO_REG;
+    enum OperandName index = NC_NO_REG;
     enum OperandName restricted_register =
       EXTRACT_RESTRICTED_REGISTER_INITIAL_VALUE(options);
     uint8_t rex_prefix = FALSE;
@@ -1280,15 +1281,15 @@ Bool ValidateChunkAMD64(const uint8_t codeblock[],
      * Ragel DFA accepted the bundle, but we still need to make sure the last
      * instruction haven't left %rbp or %rsp in restricted state.
      */
-    if (restricted_register == REG_RBP)
+    if (restricted_register == NC_REG_RBP)
       result &= user_callback(end_position, end_position,
                               RESTRICTED_RBP_UNPROCESSED |
-                              ((REG_RBP << RESTRICTED_REGISTER_SHIFT) &
+                              ((NC_REG_RBP << RESTRICTED_REGISTER_SHIFT) &
                                RESTRICTED_REGISTER_MASK), callback_data);
-    else if (restricted_register == REG_RSP)
+    else if (restricted_register == NC_REG_RSP)
       result &= user_callback(end_position, end_position,
                               RESTRICTED_RSP_UNPROCESSED |
-                              ((REG_RSP << RESTRICTED_REGISTER_SHIFT) &
+                              ((NC_REG_RSP << RESTRICTED_REGISTER_SHIFT) &
                                RESTRICTED_REGISTER_MASK), callback_data);
   }
 

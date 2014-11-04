@@ -53,9 +53,9 @@ def RestrictedRegisterNumberToCondition(rr):
   assert rr is None or rr in validator.ALL_REGISTERS, rr
   if rr is None:
     return spec.Condition()
-  elif rr == validator.REG_RBP:
+  elif rr == validator.NC_REG_RBP:
     return spec.Condition(restricted_instead_of_sandboxed='%rbp')
-  elif rr == validator.REG_RSP:
+  elif rr == validator.NC_REG_RSP:
     return spec.Condition(restricted_instead_of_sandboxed='%rsp')
   else:
     return spec.Condition(validator.REGISTER_NAMES[rr])

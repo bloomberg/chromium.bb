@@ -18,74 +18,74 @@
      */
     SET_VEX_PREFIX3((*current_position) &amp; (~VEX_W));
   </text></action>
-      <action id="2" name="disp8_operand" line="689" col="24"><text>
+      <action id="2" name="disp8_operand" line="690" col="24"><text>
     SET_DISPLACEMENT_FORMAT(DISP8);
     SET_DISPLACEMENT_POINTER(current_position);
   </text></action>
-      <action id="3" name="disp32_operand" line="693" col="25"><text>
+      <action id="3" name="disp32_operand" line="694" col="25"><text>
     SET_DISPLACEMENT_FORMAT(DISP32);
     SET_DISPLACEMENT_POINTER(current_position - 3);
   </text></action>
-      <action id="4" name="any_byte" line="706" col="19"></action>
-      <action id="5" name="imm8_operand" line="720" col="23"><text>
+      <action id="4" name="any_byte" line="707" col="19"></action>
+      <action id="5" name="imm8_operand" line="721" col="23"><text>
     SET_IMMEDIATE_FORMAT(IMM8);
     SET_IMMEDIATE_POINTER(current_position);
   </text></action>
-      <action id="6" name="imm8_second_operand" line="724" col="30"><text>
+      <action id="6" name="imm8_second_operand" line="725" col="30"><text>
     SET_SECOND_IMMEDIATE_FORMAT(IMM8);
     SET_SECOND_IMMEDIATE_POINTER(current_position);
   </text></action>
-      <action id="7" name="imm16_operand" line="728" col="24"><text>
+      <action id="7" name="imm16_operand" line="729" col="24"><text>
     SET_IMMEDIATE_FORMAT(IMM16);
     SET_IMMEDIATE_POINTER(current_position - 1);
   </text></action>
-      <action id="8" name="imm32_operand" line="736" col="24"><text>
+      <action id="8" name="imm32_operand" line="737" col="24"><text>
     SET_IMMEDIATE_FORMAT(IMM32);
     SET_IMMEDIATE_POINTER(current_position - 3);
   </text></action>
-      <action id="9" name="rel8_operand" line="791" col="23"><text>
+      <action id="9" name="rel8_operand" line="792" col="23"><text>
     Rel8Operand(current_position + 1, codeblock, jump_dests, size,
                 &amp;instruction_info_collected);
   </text></action>
-      <action id="10" name="rel32_operand" line="805" col="24"><text>
+      <action id="10" name="rel32_operand" line="806" col="24"><text>
     Rel32Operand(current_position + 1, codeblock, jump_dests, size,
                  &amp;instruction_info_collected);
   </text></action>
-      <action id="11" name="last_byte_is_not_immediate" line="815" col="37"><text>
+      <action id="11" name="last_byte_is_not_immediate" line="816" col="37"><text>
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   </text></action>
-      <action id="12" name="CPUFeature_3DNOW" line="831" col="35"><text> SET_CPU_FEATURE(CPUFeature_3DNOW);     </text></action>
-      <action id="13" name="CPUFeature_3DPRFTCH" line="832" col="35"><text> SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  </text></action>
-      <action id="14" name="CPUFeature_AES" line="833" col="35"><text> SET_CPU_FEATURE(CPUFeature_AES);       </text></action>
-      <action id="15" name="CPUFeature_AESAVX" line="834" col="35"><text> SET_CPU_FEATURE(CPUFeature_AESAVX);    </text></action>
-      <action id="16" name="CPUFeature_AVX" line="836" col="35"><text> SET_CPU_FEATURE(CPUFeature_AVX);       </text></action>
-      <action id="17" name="CPUFeature_BMI1" line="837" col="35"><text> SET_CPU_FEATURE(CPUFeature_BMI1);      </text></action>
-      <action id="18" name="CPUFeature_CLMUL" line="839" col="35"><text> SET_CPU_FEATURE(CPUFeature_CLMUL);     </text></action>
-      <action id="19" name="CPUFeature_CLMULAVX" line="840" col="35"><text> SET_CPU_FEATURE(CPUFeature_CLMULAVX);  </text></action>
-      <action id="20" name="CPUFeature_CMOV" line="841" col="35"><text> SET_CPU_FEATURE(CPUFeature_CMOV);      </text></action>
-      <action id="21" name="CPUFeature_CMOVx87" line="842" col="35"><text> SET_CPU_FEATURE(CPUFeature_CMOVx87);   </text></action>
-      <action id="22" name="CPUFeature_CX8" line="844" col="35"><text> SET_CPU_FEATURE(CPUFeature_CX8);       </text></action>
-      <action id="23" name="CPUFeature_E3DNOW" line="845" col="35"><text> SET_CPU_FEATURE(CPUFeature_E3DNOW);    </text></action>
-      <action id="24" name="CPUFeature_EMMXSSE" line="847" col="35"><text> SET_CPU_FEATURE(CPUFeature_EMMXSSE);   </text></action>
-      <action id="25" name="CPUFeature_F16C" line="848" col="35"><text> SET_CPU_FEATURE(CPUFeature_F16C);      </text></action>
-      <action id="26" name="CPUFeature_FXSR" line="851" col="35"><text> SET_CPU_FEATURE(CPUFeature_FXSR);      </text></action>
-      <action id="27" name="CPUFeature_LWP" line="853" col="35"><text> SET_CPU_FEATURE(CPUFeature_LWP);       </text></action>
-      <action id="28" name="CPUFeature_LZCNT" line="854" col="35"><text> SET_CPU_FEATURE(CPUFeature_LZCNT);     </text></action>
-      <action id="29" name="CPUFeature_MMX" line="855" col="35"><text> SET_CPU_FEATURE(CPUFeature_MMX);       </text></action>
-      <action id="30" name="CPUFeature_MON" line="856" col="35"><text> SET_CPU_FEATURE(CPUFeature_MON);       </text></action>
-      <action id="31" name="CPUFeature_MOVBE" line="857" col="35"><text> SET_CPU_FEATURE(CPUFeature_MOVBE);     </text></action>
-      <action id="32" name="CPUFeature_POPCNT" line="859" col="35"><text> SET_CPU_FEATURE(CPUFeature_POPCNT);    </text></action>
-      <action id="33" name="CPUFeature_SSE" line="863" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE);       </text></action>
-      <action id="34" name="CPUFeature_SSE2" line="864" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE2);      </text></action>
-      <action id="35" name="CPUFeature_SSE3" line="865" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE3);      </text></action>
-      <action id="36" name="CPUFeature_SSE41" line="866" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE41);     </text></action>
-      <action id="37" name="CPUFeature_SSE42" line="867" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE42);     </text></action>
-      <action id="38" name="CPUFeature_SSE4A" line="868" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE4A);     </text></action>
-      <action id="39" name="CPUFeature_SSSE3" line="869" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSSE3);     </text></action>
-      <action id="40" name="CPUFeature_TBM" line="872" col="35"><text> SET_CPU_FEATURE(CPUFeature_TBM);       </text></action>
-      <action id="41" name="CPUFeature_TSC" line="873" col="35"><text> SET_CPU_FEATURE(CPUFeature_TSC);       </text></action>
-      <action id="42" name="CPUFeature_TZCNT" line="875" col="35"><text> SET_CPU_FEATURE(CPUFeature_TZCNT);     </text></action>
-      <action id="43" name="CPUFeature_x87" line="877" col="35"><text> SET_CPU_FEATURE(CPUFeature_x87);       </text></action>
+      <action id="12" name="CPUFeature_3DNOW" line="832" col="35"><text> SET_CPU_FEATURE(CPUFeature_3DNOW);     </text></action>
+      <action id="13" name="CPUFeature_3DPRFTCH" line="833" col="35"><text> SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  </text></action>
+      <action id="14" name="CPUFeature_AES" line="834" col="35"><text> SET_CPU_FEATURE(CPUFeature_AES);       </text></action>
+      <action id="15" name="CPUFeature_AESAVX" line="835" col="35"><text> SET_CPU_FEATURE(CPUFeature_AESAVX);    </text></action>
+      <action id="16" name="CPUFeature_AVX" line="837" col="35"><text> SET_CPU_FEATURE(CPUFeature_AVX);       </text></action>
+      <action id="17" name="CPUFeature_BMI1" line="838" col="35"><text> SET_CPU_FEATURE(CPUFeature_BMI1);      </text></action>
+      <action id="18" name="CPUFeature_CLMUL" line="840" col="35"><text> SET_CPU_FEATURE(CPUFeature_CLMUL);     </text></action>
+      <action id="19" name="CPUFeature_CLMULAVX" line="841" col="35"><text> SET_CPU_FEATURE(CPUFeature_CLMULAVX);  </text></action>
+      <action id="20" name="CPUFeature_CMOV" line="842" col="35"><text> SET_CPU_FEATURE(CPUFeature_CMOV);      </text></action>
+      <action id="21" name="CPUFeature_CMOVx87" line="843" col="35"><text> SET_CPU_FEATURE(CPUFeature_CMOVx87);   </text></action>
+      <action id="22" name="CPUFeature_CX8" line="845" col="35"><text> SET_CPU_FEATURE(CPUFeature_CX8);       </text></action>
+      <action id="23" name="CPUFeature_E3DNOW" line="846" col="35"><text> SET_CPU_FEATURE(CPUFeature_E3DNOW);    </text></action>
+      <action id="24" name="CPUFeature_EMMXSSE" line="848" col="35"><text> SET_CPU_FEATURE(CPUFeature_EMMXSSE);   </text></action>
+      <action id="25" name="CPUFeature_F16C" line="849" col="35"><text> SET_CPU_FEATURE(CPUFeature_F16C);      </text></action>
+      <action id="26" name="CPUFeature_FXSR" line="852" col="35"><text> SET_CPU_FEATURE(CPUFeature_FXSR);      </text></action>
+      <action id="27" name="CPUFeature_LWP" line="854" col="35"><text> SET_CPU_FEATURE(CPUFeature_LWP);       </text></action>
+      <action id="28" name="CPUFeature_LZCNT" line="855" col="35"><text> SET_CPU_FEATURE(CPUFeature_LZCNT);     </text></action>
+      <action id="29" name="CPUFeature_MMX" line="856" col="35"><text> SET_CPU_FEATURE(CPUFeature_MMX);       </text></action>
+      <action id="30" name="CPUFeature_MON" line="857" col="35"><text> SET_CPU_FEATURE(CPUFeature_MON);       </text></action>
+      <action id="31" name="CPUFeature_MOVBE" line="858" col="35"><text> SET_CPU_FEATURE(CPUFeature_MOVBE);     </text></action>
+      <action id="32" name="CPUFeature_POPCNT" line="860" col="35"><text> SET_CPU_FEATURE(CPUFeature_POPCNT);    </text></action>
+      <action id="33" name="CPUFeature_SSE" line="864" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE);       </text></action>
+      <action id="34" name="CPUFeature_SSE2" line="865" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE2);      </text></action>
+      <action id="35" name="CPUFeature_SSE3" line="866" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE3);      </text></action>
+      <action id="36" name="CPUFeature_SSE41" line="867" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE41);     </text></action>
+      <action id="37" name="CPUFeature_SSE42" line="868" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE42);     </text></action>
+      <action id="38" name="CPUFeature_SSE4A" line="869" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSE4A);     </text></action>
+      <action id="39" name="CPUFeature_SSSE3" line="870" col="35"><text> SET_CPU_FEATURE(CPUFeature_SSSE3);     </text></action>
+      <action id="40" name="CPUFeature_TBM" line="873" col="35"><text> SET_CPU_FEATURE(CPUFeature_TBM);       </text></action>
+      <action id="41" name="CPUFeature_TSC" line="874" col="35"><text> SET_CPU_FEATURE(CPUFeature_TSC);       </text></action>
+      <action id="42" name="CPUFeature_TZCNT" line="876" col="35"><text> SET_CPU_FEATURE(CPUFeature_TZCNT);     </text></action>
+      <action id="43" name="CPUFeature_x87" line="878" col="35"><text> SET_CPU_FEATURE(CPUFeature_x87);       </text></action>
       <action id="44" line="76" col="6"><text>
       instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;

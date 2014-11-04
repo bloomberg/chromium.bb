@@ -252,23 +252,23 @@
   action modrm_only_base {
     SET_DISPLACEMENT_FORMAT(DISPNONE);
     SET_MODRM_BASE(RMFromModRM(*current_position));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_base_disp {
     SET_MODRM_BASE(RMFromModRM(*current_position));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_disp {
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_index {
     SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_BASE(NC_NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position)]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
@@ -288,26 +288,26 @@
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_base_disp {
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
                    BaseExtentionFromVEX(GET_VEX_PREFIX2()));
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_disp {
     // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     // In 64-bit mode it corresponds to RIP-relative addressing.
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_index {
     SET_DISPLACEMENT_FORMAT(DISPNONE);
-    SET_MODRM_BASE(NO_REG);
+    SET_MODRM_BASE(NC_NO_REG);
     SET_MODRM_INDEX(index_registers[IndexFromSIB(*current_position) |
                                     IndexExtentionFromREX(GET_REX_PREFIX()) |
                                     IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
@@ -460,21 +460,22 @@
   # (so, technically, they extract zero bits from instruction encoding).
 
   # Note: operand_source_actions_XXX_common machines only work with operands
-  # that are registers (REG_RAX to REG_R15), operand_source_actions_XXX_decoder
-  # machines deal with "special" operand names (such as JMP_TO or REG_IMM).
+  # that are registers (NC_REG_RAX to NC_REG_R15),
+  # operand_source_actions_XXX_decoder machines deal with "special" operand
+  # names (such as NC_JMP_TO or NC_REG_IMM).
 
-  action operand0_rax              { SET_OPERAND_NAME(0, REG_RAX); }
-  action operand0_rcx              { SET_OPERAND_NAME(0, REG_RCX); }
-  action operand0_rdx              { SET_OPERAND_NAME(0, REG_RDX); }
-  action operand0_rbx              { SET_OPERAND_NAME(0, REG_RBX); }
-  action operand0_rsp              { SET_OPERAND_NAME(0, REG_RSP); }
-  action operand0_rbp              { SET_OPERAND_NAME(0, REG_RBP); }
+  action operand0_rax              { SET_OPERAND_NAME(0, NC_REG_RAX); }
+  action operand0_rcx              { SET_OPERAND_NAME(0, NC_REG_RCX); }
+  action operand0_rdx              { SET_OPERAND_NAME(0, NC_REG_RDX); }
+  action operand0_rbx              { SET_OPERAND_NAME(0, NC_REG_RBX); }
+  action operand0_rsp              { SET_OPERAND_NAME(0, NC_REG_RSP); }
+  action operand0_rbp              { SET_OPERAND_NAME(0, NC_REG_RBP); }
 
-  action operand1_rax              { SET_OPERAND_NAME(1, REG_RAX); }
-  action operand1_rcx              { SET_OPERAND_NAME(1, REG_RCX); }
+  action operand1_rax              { SET_OPERAND_NAME(1, NC_REG_RAX); }
+  action operand1_rcx              { SET_OPERAND_NAME(1, NC_REG_RCX); }
 
-  action operand2_rax              { SET_OPERAND_NAME(2, REG_RAX); }
-  action operand2_rcx              { SET_OPERAND_NAME(2, REG_RCX); }
+  action operand2_rax              { SET_OPERAND_NAME(2, NC_REG_RAX); }
+  action operand2_rcx              { SET_OPERAND_NAME(2, NC_REG_RCX); }
 
   action operand0_from_modrm_reg_norex {
     SET_OPERAND_NAME(0, RegFromModRM(*current_position));
@@ -508,33 +509,33 @@
 %%{
   machine operand_source_actions_decoder;
 
-  action operand0_ds_rbx           { SET_OPERAND_NAME(0, REG_DS_RBX); }
-  action operand0_ds_rsi           { SET_OPERAND_NAME(0, REG_DS_RSI); }
-  action operand0_es_rdi           { SET_OPERAND_NAME(0, REG_ES_RDI); }
-  action operand0_immediate        { SET_OPERAND_NAME(0, REG_IMM); }
-  action operand0_jmp_to           { SET_OPERAND_NAME(0, JMP_TO); }
-  action operand0_port_dx          { SET_OPERAND_NAME(0, REG_PORT_DX); }
-  action operand0_rm               { SET_OPERAND_NAME(0, REG_RM); }
-  action operand0_second_immediate { SET_OPERAND_NAME(0, REG_IMM2); }
-  action operand0_st               { SET_OPERAND_NAME(0, REG_ST); }
+  action operand0_ds_rbx           { SET_OPERAND_NAME(0, NC_REG_DS_RBX); }
+  action operand0_ds_rsi           { SET_OPERAND_NAME(0, NC_REG_DS_RSI); }
+  action operand0_es_rdi           { SET_OPERAND_NAME(0, NC_REG_ES_RDI); }
+  action operand0_immediate        { SET_OPERAND_NAME(0, NC_REG_IMM); }
+  action operand0_jmp_to           { SET_OPERAND_NAME(0, NC_JMP_TO); }
+  action operand0_port_dx          { SET_OPERAND_NAME(0, NC_REG_PORT_DX); }
+  action operand0_rm               { SET_OPERAND_NAME(0, NC_REG_RM); }
+  action operand0_second_immediate { SET_OPERAND_NAME(0, NC_REG_IMM2); }
+  action operand0_st               { SET_OPERAND_NAME(0, NC_REG_ST); }
 
-  action operand1_ds_rsi           { SET_OPERAND_NAME(1, REG_DS_RSI); }
-  action operand1_es_rdi           { SET_OPERAND_NAME(1, REG_ES_RDI); }
-  action operand1_immediate        { SET_OPERAND_NAME(1, REG_IMM); }
-  action operand1_port_dx          { SET_OPERAND_NAME(1, REG_PORT_DX); }
-  action operand1_rm               { SET_OPERAND_NAME(1, REG_RM); }
-  action operand1_second_immediate { SET_OPERAND_NAME(1, REG_IMM2); }
-  action operand1_st               { SET_OPERAND_NAME(1, REG_ST); }
+  action operand1_ds_rsi           { SET_OPERAND_NAME(1, NC_REG_DS_RSI); }
+  action operand1_es_rdi           { SET_OPERAND_NAME(1, NC_REG_ES_RDI); }
+  action operand1_immediate        { SET_OPERAND_NAME(1, NC_REG_IMM); }
+  action operand1_port_dx          { SET_OPERAND_NAME(1, NC_REG_PORT_DX); }
+  action operand1_rm               { SET_OPERAND_NAME(1, NC_REG_RM); }
+  action operand1_second_immediate { SET_OPERAND_NAME(1, NC_REG_IMM2); }
+  action operand1_st               { SET_OPERAND_NAME(1, NC_REG_ST); }
 
-  action operand2_immediate        { SET_OPERAND_NAME(2, REG_IMM); }
-  action operand2_rm               { SET_OPERAND_NAME(2, REG_RM); }
-  action operand2_second_immediate { SET_OPERAND_NAME(2, REG_IMM2); }
+  action operand2_immediate        { SET_OPERAND_NAME(2, NC_REG_IMM); }
+  action operand2_rm               { SET_OPERAND_NAME(2, NC_REG_RM); }
+  action operand2_second_immediate { SET_OPERAND_NAME(2, NC_REG_IMM2); }
 
-  action operand3_immediate        { SET_OPERAND_NAME(3, REG_IMM); }
-  action operand3_rm               { SET_OPERAND_NAME(3, REG_RM); }
-  action operand3_second_immediate { SET_OPERAND_NAME(3, REG_IMM2); }
+  action operand3_immediate        { SET_OPERAND_NAME(3, NC_REG_IMM); }
+  action operand3_rm               { SET_OPERAND_NAME(3, NC_REG_RM); }
+  action operand3_second_immediate { SET_OPERAND_NAME(3, NC_REG_IMM2); }
 
-  action operand4_immediate        { SET_OPERAND_NAME(4, REG_IMM); }
+  action operand4_immediate        { SET_OPERAND_NAME(4, NC_REG_IMM); }
 }%%
 
 %%{
@@ -588,16 +589,16 @@
   include operand_source_actions_ia32_common;
 
   action operand0_absolute_disp {
-    SET_OPERAND_NAME(0, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(NO_REG);
+    SET_OPERAND_NAME(0, NC_REG_RM);
+    SET_MODRM_BASE(NC_NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
 
   action operand1_absolute_disp {
-    SET_OPERAND_NAME(1, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(NO_REG);
+    SET_OPERAND_NAME(1, NC_REG_RM);
+    SET_MODRM_BASE(NC_NO_REG);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
   }
 }%%
@@ -669,16 +670,16 @@
   include operand_source_actions_amd64_common;
 
   action operand0_absolute_disp {
-    SET_OPERAND_NAME(0, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(REG_RIZ);
+    SET_OPERAND_NAME(0, NC_REG_RM);
+    SET_MODRM_BASE(NC_NO_REG);
+    SET_MODRM_INDEX(NC_REG_RIZ);
     SET_MODRM_SCALE(0);
   }
 
   action operand1_absolute_disp {
-    SET_OPERAND_NAME(1, REG_RM);
-    SET_MODRM_BASE(NO_REG);
-    SET_MODRM_INDEX(REG_RIZ);
+    SET_OPERAND_NAME(1, NC_REG_RM);
+    SET_MODRM_BASE(NC_NO_REG);
+    SET_MODRM_INDEX(NC_REG_RIZ);
     SET_MODRM_SCALE(0);
   }
 }%%
@@ -762,22 +763,22 @@
   machine relative_fields_decoder_actions;
 
   action rel8_operand {
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISPLACEMENT_FORMAT(DISP8);
     SET_DISPLACEMENT_POINTER(current_position);
   }
   action rel16_operand {
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISPLACEMENT_FORMAT(DISP16);
     SET_DISPLACEMENT_POINTER(current_position - 1);
   }
   action rel32_operand {
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
+    SET_MODRM_BASE(NC_REG_RIP);
+    SET_MODRM_INDEX(NC_NO_REG);
     SET_MODRM_SCALE(0);
     SET_DISPLACEMENT_FORMAT(DISP32);
     SET_DISPLACEMENT_POINTER(current_position - 3);

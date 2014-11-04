@@ -20,53 +20,53 @@ BAD_JUMP_TARGET = 0x40000000
 RESTRICTED_REGISTER_MASK = 0x00001f00
 RESTRICTED_REGISTER_SHIFT = 8
 
-REG_RAX = 0
-REG_RCX = 1
-REG_RDX = 2
-REG_RBX = 3
-REG_RSP = 4
-REG_RBP = 5
-REG_RSI = 6
-REG_RDI = 7
-REG_R8 = 8
-REG_R9 = 9
-REG_R10 = 10
-REG_R11 = 11
-REG_R12 = 12
-REG_R13 = 13
-REG_R14 = 14
-REG_R15 = 15
-ALL_REGISTERS = range(REG_RAX, REG_R15 + 1)
-NO_REG = 0x19
+NC_REG_RAX = 0
+NC_REG_RCX = 1
+NC_REG_RDX = 2
+NC_REG_RBX = 3
+NC_REG_RSP = 4
+NC_REG_RBP = 5
+NC_REG_RSI = 6
+NC_REG_RDI = 7
+NC_REG_R8 = 8
+NC_REG_R9 = 9
+NC_REG_R10 = 10
+NC_REG_R11 = 11
+NC_REG_R12 = 12
+NC_REG_R13 = 13
+NC_REG_R14 = 14
+NC_REG_R15 = 15
+ALL_REGISTERS = range(NC_REG_RAX, NC_REG_R15 + 1)
+NC_NO_REG = 0x19
 
 RESTRICTED_REGISTER_INITIAL_VALUE_MASK = 0x000000ff
 CALL_USER_CALLBACK_ON_EACH_INSTRUCTION = 0x00000100
 
 # Macroses from validator.h
 def PACK_RESTRICTED_REGISTER_INITIAL_VALUE(register):
-  return register ^ NO_REG
+  return register ^ NC_NO_REG
 
 
 BUNDLE_SIZE = 32
 
 
 REGISTER_NAMES = {
-    REG_RAX: '%rax',
-    REG_RCX: '%rcx',
-    REG_RDX: '%rdx',
-    REG_RBX: '%rbx',
-    REG_RSP: '%rsp',
-    REG_RBP: '%rbp',
-    REG_RSI: '%rsi',
-    REG_RDI: '%rdi',
-    REG_R8: '%r8',
-    REG_R9: '%r9',
-    REG_R10: '%r10',
-    REG_R11: '%r11',
-    REG_R12: '%r12',
-    REG_R13: '%r13',
-    REG_R14: '%r14',
-    REG_R15: '%r15'}
+    NC_REG_RAX: '%rax',
+    NC_REG_RCX: '%rcx',
+    NC_REG_RDX: '%rdx',
+    NC_REG_RBX: '%rbx',
+    NC_REG_RSP: '%rsp',
+    NC_REG_RBP: '%rbp',
+    NC_REG_RSI: '%rsi',
+    NC_REG_RDI: '%rdi',
+    NC_REG_R8: '%r8',
+    NC_REG_R9: '%r9',
+    NC_REG_R10: '%r10',
+    NC_REG_R11: '%r11',
+    NC_REG_R12: '%r12',
+    NC_REG_R13: '%r13',
+    NC_REG_R14: '%r14',
+    NC_REG_R15: '%r15'}
 
 REGISTER_BY_NAME = dict(map(reversed, REGISTER_NAMES.items()))
 
@@ -209,7 +209,7 @@ class Validator(object):
       self, data, actual_size, initial_rr):
     assert initial_rr is None or initial_rr in ALL_REGISTERS
     if initial_rr is None:
-      initial_rr = NO_REG
+      initial_rr = NC_NO_REG
 
     data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
 
@@ -222,7 +222,7 @@ class Validator(object):
         p)
 
     if result:
-      if p[0] == NO_REG:
+      if p[0] == NC_NO_REG:
         resulting_rr = None
       else:
         resulting_rr = p[0]

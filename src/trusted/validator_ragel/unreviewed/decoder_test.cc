@@ -93,14 +93,14 @@ const char *RegisterNameAsString(
     Bool rex) {
   /* There are not 16, but 20 8-bit registers: handle %ah/%ch/%dh/%bh case.  */
   if (!rex && format == OPERAND_FORMAT_8_BIT &&
-      name >= REG_RSP && name <= REG_RDI) {
-    static const char *kRegisterNames[REG_RDI - REG_RSP + 1] = {
+      name >= NC_REG_RSP && name <= NC_REG_RDI) {
+    static const char *kRegisterNames[NC_REG_RDI - NC_REG_RSP + 1] = {
       "ah", "ch", "dh", "bh"
     };
-    return kRegisterNames[name - REG_RSP];
-  } else if (name <= REG_R15 && format <= OPERAND_FORMATS_REGISTER_MAX) {
+    return kRegisterNames[name - NC_REG_RSP];
+  } else if (name <= NC_REG_R15 && format <= OPERAND_FORMATS_REGISTER_MAX) {
     static const char
-        *kRegisterNames[REG_R15 + 1][OPERAND_FORMATS_REGISTER_MAX] =
+        *kRegisterNames[NC_REG_R15 + 1][OPERAND_FORMATS_REGISTER_MAX] =
     {
       {   "al",   "ax",  "eax",  "rax", "st(0)", "mm0",  "xmm0",  "ymm0",
           "es",  "cr0",  "db0",  "tr0" },
@@ -332,7 +332,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       !instruction->prefix.rex_w_spurious) {
     if (operands_count > 0)
       for (i=0; i<operands_count; ++i)
-        if (instruction->operands[i].name == REG_RM &&
+        if (instruction->operands[i].name == NC_REG_RM &&
             instruction->rm.disp_type != DISP64) {
           spurious_rex_prefix = FALSE;
           break;
@@ -349,7 +349,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                      "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js",
                      "jecxz", "jrcxz", "loop", "loope", "loopne",
                      "call", "jmp", NULL) &&
-        instruction->operands[0].name == JMP_TO &&
+        instruction->operands[0].name == NC_JMP_TO &&
         instruction->operands[0].format != OPERAND_FORMAT_8_BIT)
       spurious_rex_prefix = FALSE;
     /*
@@ -359,7 +359,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
      * it here and not in decoder.
      */
     if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
-        operands_count >=2 && instruction->operands[1].name != REG_RM)
+        operands_count >=2 && instruction->operands[1].name != NC_REG_RM)
       spurious_rex_prefix = FALSE;
   }
 
@@ -370,7 +370,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
    */
   if (!spurious_rex_prefix && (rex_prefix & 0x08) &&
       ((IsNameInList(instruction_name, "call", "jmp", "lcall", "ljmp", NULL) &&
-        instruction->operands[0].name != JMP_TO) ||
+        instruction->operands[0].name != NC_JMP_TO) ||
        IsNameInList(instruction_name,
                     "fldenvs", "fnstenvs", "fnsaves",
                     "frstors", "fsaves", "fstenvs",
@@ -428,7 +428,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
          * "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
          */
         if (instruction->operands[i].format == OPERAND_FORMAT_8_BIT &&
-            instruction->operands[i].name <= REG_RDI) {
+            instruction->operands[i].name <= NC_REG_RDI) {
           empty_rex_prefix_ok = TRUE;
         }
     if (!empty_rex_prefix_ok)
@@ -464,7 +464,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   }
 
   if (strcmp(instruction_name, "mov") == 0 &&
-      instruction->operands[1].name == REG_IMM &&
+      instruction->operands[1].name == NC_REG_IMM &&
       instruction->operands[1].format == OPERAND_FORMAT_64_BIT)
     print_name("abs");
 
@@ -510,7 +510,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   for (i=operands_count-1; i>=0; --i) {
     printf("%c", delimeter);
     if (IsNameInList(instruction_name, "call", "jmp", "lcall", "ljmp", NULL) &&
-        instruction->operands[i].name != JMP_TO)
+        instruction->operands[i].name != NC_JMP_TO)
       printf("*");
     /*
      * Both AMD manual and Intel manual agree that mov from general purpose
@@ -529,32 +529,32 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       operand_format = instruction->operands[i].format;
     }
     switch (instruction->operands[i].name) {
-      case REG_RAX:
-      case REG_RCX:
-      case REG_RDX:
-      case REG_RBX:
-      case REG_RSP:
-      case REG_RBP:
-      case REG_RSI:
-      case REG_RDI:
-      case  REG_R8:
-      case  REG_R9:
-      case REG_R10:
-      case REG_R11:
-      case REG_R12:
-      case REG_R13:
-      case REG_R14:
-      case REG_R15:
+      case NC_REG_RAX:
+      case NC_REG_RCX:
+      case NC_REG_RDX:
+      case NC_REG_RBX:
+      case NC_REG_RSP:
+      case NC_REG_RBP:
+      case NC_REG_RSI:
+      case NC_REG_RDI:
+      case  NC_REG_R8:
+      case  NC_REG_R9:
+      case NC_REG_R10:
+      case NC_REG_R11:
+      case NC_REG_R12:
+      case NC_REG_R13:
+      case NC_REG_R14:
+      case NC_REG_R15:
         printf("%%%s", RegisterNameAsString(
             instruction->operands[i].name,
             static_cast<OperandFormat>(operand_format),
             static_cast<Bool>(rex_prefix != 0)));
         break;
-      case REG_ST:
+      case NC_REG_ST:
         assert(operand_format == OPERAND_FORMAT_ST);
         printf("%%st");
         break;
-      case REG_RM:
+      case NC_REG_RM:
         if (instruction->rm.disp_type != DISPNONE) {
           if ((instruction->rm.disp_type == DISP64) ||
               (instruction->rm.offset >= 0))
@@ -563,82 +563,82 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             printf("-0x%"NACL_PRIx64, -instruction->rm.offset);
         }
         if (((struct DecodeState *)userdata)->ia32_mode) {
-          if ((rm_base != NO_REG) ||
-              (rm_index != NO_REG) ||
+          if ((rm_base != NC_NO_REG) ||
+              (rm_index != NC_NO_REG) ||
               (instruction->rm.scale != 0))
             printf("(");
-          if (rm_base != NO_REG)
+          if (rm_base != NC_NO_REG)
             printf("%%%s",
                    RegisterNameAsString(rm_base, OPERAND_FORMAT_32_BIT, FALSE));
-          if (rm_index == REG_RIZ) {
-            if ((rm_base != REG_RSP) || (instruction->rm.scale != 0))
+          if (rm_index == NC_REG_RIZ) {
+            if ((rm_base != NC_REG_RSP) || (instruction->rm.scale != 0))
               printf(",%%eiz,%d", 1 << instruction->rm.scale);
-          } else if (rm_index != NO_REG) {
+          } else if (rm_index != NC_NO_REG) {
             printf(",%%%s,%d",
                    RegisterNameAsString(rm_index, OPERAND_FORMAT_32_BIT, FALSE),
                    1 << instruction->rm.scale);
           }
-          if ((rm_base != NO_REG) ||
-              (rm_index != NO_REG) ||
+          if ((rm_base != NC_NO_REG) ||
+              (rm_index != NC_NO_REG) ||
               (instruction->rm.scale != 0))
             printf(")");
         } else {
-          if ((rm_base != NO_REG) ||
-              (rm_index != REG_RIZ) ||
+          if ((rm_base != NC_NO_REG) ||
+              (rm_index != NC_REG_RIZ) ||
               (instruction->rm.scale != 0))
             printf("(");
-          if (rm_base == REG_RIP) {
+          if (rm_base == NC_REG_RIP) {
             printf("%%rip");
             print_rip = TRUE;
-          } else if (rm_base != NO_REG) {
+          } else if (rm_base != NC_NO_REG) {
             printf("%%%s",
                    RegisterNameAsString(rm_base, OPERAND_FORMAT_64_BIT, FALSE));
           }
-          if (rm_index == REG_RIZ) {
-            if ((rm_base != NO_REG &&
-                 rm_base != REG_RSP &&
-                 rm_base != REG_R12) ||
+          if (rm_index == NC_REG_RIZ) {
+            if ((rm_base != NC_NO_REG &&
+                 rm_base != NC_REG_RSP &&
+                 rm_base != NC_REG_R12) ||
                 instruction->rm.scale != 0)
               printf(",%%riz,%d",1 << instruction->rm.scale);
-          } else if (rm_index != NO_REG) {
+          } else if (rm_index != NC_NO_REG) {
             printf(",%%%s,%d",
                    RegisterNameAsString(rm_index, OPERAND_FORMAT_64_BIT, FALSE),
                    1 << instruction->rm.scale);
           }
-          if ((rm_base != NO_REG) ||
-              (rm_index != REG_RIZ) ||
+          if ((rm_base != NC_NO_REG) ||
+              (rm_index != NC_REG_RIZ) ||
               (instruction->rm.scale != 0))
             printf(")");
         }
         break;
-      case REG_IMM:
+      case NC_REG_IMM:
         printf("$0x%"NACL_PRIx64,instruction->imm[0]);
         break;
-      case REG_IMM2:
+      case NC_REG_IMM2:
         printf("$0x%"NACL_PRIx64,instruction->imm[1]);
         break;
-      case REG_PORT_DX:
+      case NC_REG_PORT_DX:
         printf("(%%dx)");
         break;
-      case REG_DS_RBX:
+      case NC_REG_DS_RBX:
         if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%ds:(%%ebx)");
         else
           printf("%%ds:(%%rbx)");
         break;
-      case REG_ES_RDI:
+      case NC_REG_ES_RDI:
         if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%es:(%%edi)");
         else
           printf("%%es:(%%rdi)");
         break;
-      case REG_DS_RSI:
+      case NC_REG_DS_RSI:
         if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%ds:(%%esi)");
         else
           printf("%%ds:(%%rsi)");
         break;
-      case JMP_TO:
+      case NC_JMP_TO:
         if (instruction->operands[0].format == OPERAND_FORMAT_16_BIT)
           printf("0x%lx", (long)((end + instruction->rm.offset -
                          (((struct DecodeState *)userdata)->offset)) & 0xffff));
@@ -646,9 +646,9 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           printf("0x%lx", (long)(end + instruction->rm.offset -
                                    (((struct DecodeState *)userdata)->offset)));
         break;
-      case REG_RIP:
-      case REG_RIZ:
-      case NO_REG:
+      case NC_REG_RIP:
+      case NC_REG_RIZ:
+      case NC_NO_REG:
         assert(FALSE);
     }
     delimeter = ',';

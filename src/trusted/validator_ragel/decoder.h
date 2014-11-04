@@ -54,45 +54,46 @@ enum OperandFormat {
 };
 
 /*
- * Instruction operand NAME: register number (REG_RAX means any of the following
- * registers: %al/%ax/%eax/%rax/%st(0)/%mm0/%xmm0/%ymm0/%es/%cr0/%db0/%tr0), or
- * non-register operand (REG_RM means address in memory specified via "ModR/M
- * byte" (plus may be "SIB byte" or displacement), REG_DS_RBX is special operand
- * of "xlat" instruction, REG_ST is to of x87 stack and so on - see below for
- * for the full list).
+ * Instruction operand NAME: register number (NC_REG_RAX means any of the
+ * following registers:
+ * %al/%ax/%eax/%rax/%st(0)/%mm0/%xmm0/%ymm0/%es/%cr0/%db0/%tr0), or
+ * non-register operand (NC_REG_RM means address in memory specified via "ModR/M
+ * byte" (plus may be "SIB byte" or displacement), NC_REG_DS_RBX is special
+ * operand of "xlat" instruction, NC_REG_ST is to of x87 stack and so on - see
+ * below for for the full list).
  */
 enum OperandName {
   /* First 16 registers are compatible with encoding of registers in x86 ABI. */
-  REG_RAX,
-  REG_RCX,
-  REG_RDX,
-  REG_RBX,
-  REG_RSP,
-  REG_RBP,
-  REG_RSI,
-  REG_RDI,
-  REG_R8,
-  REG_R9,
-  REG_R10,
-  REG_R11,
-  REG_R12,
-  REG_R13,
-  REG_R14,
-  REG_R15,
-  REG_MASK = 0x0f,
+  NC_REG_RAX,
+  NC_REG_RCX,
+  NC_REG_RDX,
+  NC_REG_RBX,
+  NC_REG_RSP,
+  NC_REG_RBP,
+  NC_REG_RSI,
+  NC_REG_RDI,
+  NC_REG_R8,
+  NC_REG_R9,
+  NC_REG_R10,
+  NC_REG_R11,
+  NC_REG_R12,
+  NC_REG_R13,
+  NC_REG_R14,
+  NC_REG_R15,
+  NC_REG_MASK = 0x0f,
   /* These are different kinds of operands used in special cases.             */
-  REG_RM,           /* Address in memory via ModR/M (+SIB).                   */
-  REG_RIP,          /* RIP - used as base in x86-64 mode.                     */
-  REG_RIZ,          /* EIZ/RIZ - used as "always zero index" register.        */
-  REG_IMM,          /* Fixed value in imm field.                              */
-  REG_IMM2,         /* Fixed value in second imm field.                       */
-  REG_DS_RBX,       /* For xlat: %ds:(%rbx).                                  */
-  REG_ES_RDI,       /* For string instructions: %es:(%rsi).                   */
-  REG_DS_RSI,       /* For string instructions: %ds:(%rdi).                   */
-  REG_PORT_DX,      /* 16-bit DX: for in/out instructions.                    */
-  NO_REG,           /* For modrm: both index and base can be absent.          */
-  REG_ST,           /* For x87 instructions: implicit %st.                    */
-  JMP_TO            /* Operand is jump target address: usually %rip+offset.   */
+  NC_REG_RM,        /* Address in memory via ModR/M (+SIB).                   */
+  NC_REG_RIP,       /* RIP - used as base in x86-64 mode.                     */
+  NC_REG_RIZ,       /* EIZ/RIZ - used as "always zero index" register.        */
+  NC_REG_IMM,       /* Fixed value in imm field.                              */
+  NC_REG_IMM2,      /* Fixed value in second imm field.                       */
+  NC_REG_DS_RBX,    /* For xlat: %ds:(%rbx).                                  */
+  NC_REG_ES_RDI,    /* For string instructions: %es:(%rsi).                   */
+  NC_REG_DS_RSI,    /* For string instructions: %ds:(%rdi).                   */
+  NC_REG_PORT_DX,   /* 16-bit DX: for in/out instructions.                    */
+  NC_NO_REG,        /* For modrm: both index and base can be absent.          */
+  NC_REG_ST,        /* For x87 instructions: implicit %st.                    */
+  NC_JMP_TO         /* Operand is jump target address: usually %rip+offset.   */
 };
 
 /*
