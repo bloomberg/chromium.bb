@@ -25,6 +25,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
+#include "components/query_parser/query_parser.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/BookmarksBridge_jni.h"
@@ -665,6 +666,7 @@ void BookmarksBridge::SearchBookmarks(JNIEnv* env,
   bookmark_model_->GetBookmarksMatching(
       base::android::ConvertJavaStringToUTF16(env, j_query),
       max_results,
+      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
       &results);
   for (const bookmarks::BookmarkMatch& match : results) {
     const BookmarkNode* node = match.node;
