@@ -4643,13 +4643,11 @@
 
       <state id="152">
       <state_actions>x x 0</state_actions>
-      <trans_list length="13">
+      <trans_list length="11">
         <t>0 19 x 0</t>
         <t>20 21 153 x</t>
         <t>22 83 x 0</t>
-        <t>84 87 153 x</t>
-        <t>88 88 1 x</t>
-        <t>89 89 153 x</t>
+        <t>84 89 153 x</t>
         <t>90 91 x 0</t>
         <t>92 95 153 x</t>
         <t>96 123 x 0</t>
