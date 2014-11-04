@@ -4,15 +4,9 @@
  * found in the LICENSE file.
  */
 
-
-/*
- * Stub routine for `sigprocmask' for porting support.
- */
-
 #include <signal.h>
 #include <errno.h>
 
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
-  errno = ENOSYS;
-  return -1;
+  return pthread_sigmask(how, set, oldset);
 }

@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 int gethostname(char *name, size_t len) {
-  static const char* hostname = "naclhost";
+  static const char *hostname = "naclhost";
   if (len <= strlen(hostname)) {
     errno = ENAMETOOLONG;
     return -1;

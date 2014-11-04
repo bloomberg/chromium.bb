@@ -31,6 +31,7 @@
 #ifndef __GLIBC__
 extern "C" int gethostname(char *name, size_t len);
 extern "C" int utimes(const char *filename, const struct timeval times[2]);
+extern "C" int eaccess(const char *pathname, int mode);
 #endif
 
 /*
@@ -396,34 +397,39 @@ bool test_chmod(const char *test_file) {
   return passed("test_chmod", "all");
 }
 
+static void test_access_call(const char *path, int mode, int expected_result) {
+  ASSERT_EQ(access(path, mode), expected_result);
+  ASSERT_EQ(eaccess(path, mode), expected_result);
+}
+
 bool test_access(const char *test_file) {
   char temp_access[PATH_MAX];
   snprintf(temp_access, PATH_MAX, "%s.tmp_access", test_file);
 
-  ASSERT_EQ(access(test_file, F_OK), 0);
-  ASSERT_EQ(access(test_file, R_OK), 0);
-  ASSERT_EQ(access(test_file, W_OK), 0);
+  test_access_call(test_file, F_OK, 0);
+  test_access_call(test_file, R_OK, 0);
+  test_access_call(test_file, W_OK, 0);
 
-  ASSERT_EQ(access(temp_access, F_OK), -1);
-  ASSERT_EQ(access(temp_access, R_OK), -1);
-  ASSERT_EQ(access(temp_access, W_OK), -1);
+  test_access_call(temp_access, F_OK, -1);
+  test_access_call(temp_access, R_OK, -1);
+  test_access_call(temp_access, W_OK, -1);
 
   /*
    * We can't test the X bit here since it's not consistent across platforms.
    * On win32 there is no equivalent so we always return true.  On Mac/Linux
    * the underlying X bit is reported.
    */
-  // ASSERT_EQ(access(test_file, X_OK), -1);
-  // ASSERT_EQ(access(temp_access, X_OK), -1);
+  // test_access_call(test_file, X_OK, -1);
+  // test_access_call(temp_access, X_OK, -1);
 
   // Create a read-only file
   int fd = open(temp_access, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR);
   ASSERT(fd > 0);
   ASSERT_EQ(close(fd), 0);
 
-  ASSERT_EQ(access(temp_access, F_OK), 0);
-  ASSERT_EQ(access(temp_access, R_OK), 0);
-  ASSERT_EQ(access(temp_access, W_OK), -1);
+  test_access_call(temp_access, F_OK, 0);
+  test_access_call(temp_access, R_OK, 0);
+  test_access_call(temp_access, W_OK, -1);
   ASSERT_EQ(remove(temp_access), 0);
 
   return passed("test_access", "all");
