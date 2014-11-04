@@ -2,13 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/services/public/interfaces/geometry/geometry.mojom";
 import "mojo/services/public/interfaces/input_events/input_events.mojom";
 
-module mojo {
+// WindowManagerInternal is an interface provided by the WindowManager
+// exclusively to the ViewManager.
+interface WindowManagerInternal {
+  // Creates a connection to the WindowManager specifically for a connection to
+  // the ViewManager. |connection_id| is the id of the connection to the
+  // ViewManager. See view_manager.mojom for details on the id.
+  CreateWindowManagerForViewManagerClient(
+      uint16 connection_id,
+      handle<message_pipe> window_manager_pipe);
+};
 
-// ViewManager provides this interface to the WindowManager. It enables
-// capabilities specific to the WindowManager.
+// WindowManagerInternalClient is an interface provide by the ViewManager
+// exclusively to the WindowManager. It provides functionality only available
+// to the WindowManager.
 interface WindowManagerInternalClient {
   // Dispatches the specified input event to the specified view.
   DispatchInputEventToView(uint32 view_id, mojo.Event event);
@@ -16,5 +28,3 @@ interface WindowManagerInternalClient {
   // Sets the native viewport size.
   SetViewportSize(mojo.Size size);
 };
-
-}

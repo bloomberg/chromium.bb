@@ -7,9 +7,9 @@ import argparse
 import sys
 import re
 
-IMPORT_TEMPLATE = '<link rel="import" href="/%s.html" as="%s" />'
+IMPORT_TEMPLATE = '<import src="/%s.sky" as="%s" />'
 PREAMBLE_TEMPLATE = '<script>'
-POSTAMBLE_TEMPLATE = '  this.exports = exports;\n</script>'
+POSTAMBLE_TEMPLATE = '  module.exports = exports;\n</script>'
 
 class Import(object):
   def __init__(self, path, name):
@@ -42,7 +42,7 @@ def AddImportNames(module, unparsed_names):
     module.imports[i].name = names[i]
 
 def RewritePathNames(path):
-  return path.replace("mojo/public/js/bindings", "mojo/public/html")
+  return path.replace("mojo/public/js/bindings", "mojo/public/sky")
 
 def Parse(amd_module):
   module = Module()

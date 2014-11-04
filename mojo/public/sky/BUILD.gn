@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-action_foreach("html") {
-  script = "convert_amd_modules_to_html.py"
+action_foreach("sky") {
+  script = "convert_amd_modules_to_sky.py"
   sources = [
     "//mojo/public/js/bindings/buffer.js",
     "//mojo/public/js/bindings/codec.js",
@@ -14,12 +14,12 @@ action_foreach("html") {
     "//mojo/public/js/bindings/validator.js",
   ]
   outputs = [
-    "$target_gen_dir/{{source_name_part}}.html",
+    "$target_gen_dir/{{source_name_part}}.sky",
   ]
   args = [
     "--input",
     "{{source}}",
     "--output",
-    rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.html"
+    rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.sky"
   ]
 }

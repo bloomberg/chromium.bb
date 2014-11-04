@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "sample_import.mojom";
-
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.imported"]
-module imported {
+module imported;
+
+import "sample_import.mojom";
 
 // This sample adds more types and constants to the "imported" namespace,
 // to test a bug with importing multiple modules with the same namespace.
@@ -26,5 +26,3 @@ struct Thing {
   Point location;
   Size size;
 };
-
-}  // module imported

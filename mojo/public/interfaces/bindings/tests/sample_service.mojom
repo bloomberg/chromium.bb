@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+[JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
+module sample;
+
 import "sample_import.mojom";
 import "sample_import2.mojom";
-
-[JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
-module sample {
 
 const uint8 kTwelve = 12;
 const uint64 kTooBigForSignedInt64 = 9999999999999999999;
@@ -124,5 +124,3 @@ interface ServiceClient {
 interface Port {
   PostMessage@0(string message_text@0, Port port@1);
 };
-
-}

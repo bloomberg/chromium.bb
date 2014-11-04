@@ -8,7 +8,7 @@
 // TODO(blundell): Investigate killing content::Geoposition in favor of using
 // this struct everywhere (and renaming it to Geoposition).
 
-module content {
+module content;
 
 struct MojoGeoposition {
   // These values follow the W3C geolocation specification and can be returned
@@ -54,5 +54,3 @@ struct MojoGeoposition {
   // Human-readable error message.
   string error_message;
 };
-
-}

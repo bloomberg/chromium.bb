@@ -52,7 +52,7 @@
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/module_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/module.amd.tmpl',
-        '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/module.html.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/module.sky.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/struct_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/python_templates/module_macros.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/python_templates/module.py.tmpl',

@@ -71,40 +71,46 @@ class Parser(object):
   # renaming "module" -> "package".) Then we'll be able to have a single rule
   # for root (by making module "optional").
   def p_root_1(self, p):
-    """root : import_list module LBRACE definition_list RBRACE"""
-    p[0] = ast.Mojom(p[2], p[1], p[4])
+    """root : """
+    p[0] = ast.Mojom(None, ast.ImportList(), [])
 
   def p_root_2(self, p):
-    """root : import_list definition_list"""
-    p[0] = ast.Mojom(None, p[1], p[2])
-
-  def p_import_list_1(self, p):
-    """import_list : """
-    p[0] = ast.ImportList()
-
-  def p_import_list_2(self, p):
-    """import_list : import_list import"""
+    """root : root module"""
+    if p[1].module is not None:
+      raise ParseError(self.filename,
+                       "Multiple \"module\" statements not allowed:",
+                       p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
+    if p[1].import_list.items or p[1].definition_list:
+      raise ParseError(
+          self.filename,
+          "\"module\" statements must precede imports and definitions:",
+          p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
     p[0] = p[1]
-    p[0].Append(p[2])
+    p[0].module = p[2]
+
+  def p_root_3(self, p):
+    """root : root import"""
+    if p[1].definition_list:
+      raise ParseError(self.filename,
+                       "\"import\" statements must precede definitions:",
+                       p[2].lineno, snippet=self._GetSnippet(p[2].lineno))
+    p[0] = p[1]
+    p[0].import_list.Append(p[2])
+
+  def p_root_4(self, p):
+    """root : root definition"""
+    p[0] = p[1]
+    p[0].definition_list.append(p[2])
 
   def p_import(self, p):
     """import : IMPORT STRING_LITERAL SEMI"""
     # 'eval' the literal to strip the quotes.
     # TODO(vtl): This eval is dubious. We should unquote/unescape ourselves.
-    p[0] = ast.Import(eval(p[2]))
+    p[0] = ast.Import(eval(p[2]), filename=self.filename, lineno=p.lineno(2))
 
   def p_module(self, p):
-    """module : attribute_section MODULE identifier_wrapped """
+    """module : attribute_section MODULE identifier_wrapped SEMI"""
     p[0] = ast.Module(p[3], p[1], filename=self.filename, lineno=p.lineno(2))
-
-  def p_definition_list(self, p):
-    """definition_list : definition definition_list
-                       | """
-    if len(p) > 1:
-      p[0] = p[2]
-      p[0].insert(0, p[1])
-    else:
-      p[0] = []
 
   def p_definition(self, p):
     """definition : struct
@@ -271,7 +277,7 @@ class Parser(object):
     """fixed_array : ARRAY LANGLE typename COMMA INT_CONST_DEC RANGLE"""
     value = int(p[5])
     if value == 0 or value > _MAX_ARRAY_SIZE:
-      raise ParseError(self.filename, "Fixed array size %d invalid" % value,
+      raise ParseError(self.filename, "Fixed array size %d invalid:" % value,
                        lineno=p.lineno(5),
                        snippet=self._GetSnippet(p.lineno(5)))
     p[0] = p[3] + "[" + p[5] + "]"

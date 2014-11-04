@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/services/public/interfaces/network/url_loader.mojom";
+module mojo;
 
-module mojo {
+import "mojo/services/public/interfaces/network/url_loader.mojom";
 
 // Expresses a preference for where a navigation will be performed.
 enum Target {
@@ -26,5 +26,3 @@ interface NavigatorHost {
   // locally. For example, pushState() navigations in an HTML application.
   DidNavigateLocally(string url);
 };
-
-}

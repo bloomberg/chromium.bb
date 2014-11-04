@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "media/mojo/interfaces/media_types.mojom";
+module mojo;
 
-module mojo {
+import "media/mojo/interfaces/media_types.mojom";
 
 // DemuxerStream is modeled after media::DemuxerStream using mojo in order to
 // enable proxying between a media::Pipeline and media::Renderer living in two
@@ -50,5 +50,3 @@ interface DemuxerStreamClient {
   // in a Read() callback or over the DataPipe).
   OnAudioDecoderConfigChanged(AudioDecoderConfig config);
 };
-
-}  // module mojo

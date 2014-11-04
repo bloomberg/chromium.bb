@@ -48,6 +48,11 @@ source_set("standalone") {
 
 source_set("test_support") {
   testonly = true
+  sources = [
+    "application_test_base.h",
+    "lib/application_test_base.cc",
+  ]
+
   deps = [
     ":application",
     "//mojo/public/cpp/bindings",
@@ -55,10 +60,15 @@ source_set("test_support") {
     "//mojo/public/cpp/system",
     "//testing/gtest",
   ]
+}
 
-  sources = [
-    "application_test_base.h",
-    "lib/application_test_base.cc",
-    "lib/application_test_main.cc",
+source_set("test_support_standalone") {
+  testonly = true
+  sources = [ "lib/application_test_main.cc", ]
+  public_deps = [ ":test_support", ]
+  deps = [
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/application",
+    "//mojo/public/cpp/system",
   ]
 }

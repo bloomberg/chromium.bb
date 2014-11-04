@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
+  // An Environment instance is needed to construct run loops.
   mojo::Environment environment;
 
   {

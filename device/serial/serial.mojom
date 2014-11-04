@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "data_stream.mojom";
+module device.serial;
 
-module device.serial {
+import "data_stream.mojom";
 
 struct DeviceInfo {
   string path;
@@ -104,5 +104,3 @@ interface Connection {
   GetControlSignals() => (DeviceControlSignals? signals);
   Flush() => (bool success);
 };
-
-}

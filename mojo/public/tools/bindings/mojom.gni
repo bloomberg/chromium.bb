@@ -60,7 +60,7 @@ template("mojom") {
     "$generator_root/generators/js_templates/enum_definition.tmpl",
     "$generator_root/generators/js_templates/interface_definition.tmpl",
     "$generator_root/generators/js_templates/module.amd.tmpl",
-    "$generator_root/generators/js_templates/module.html.tmpl",
+    "$generator_root/generators/js_templates/module.sky.tmpl",
     "$generator_root/generators/js_templates/module_definition.tmpl",
     "$generator_root/generators/js_templates/struct_definition.tmpl",
     "$generator_root/generators/python_templates/module_macros.tmpl",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 // Cross platform keyboard codes.
 //
@@ -184,5 +184,3 @@ enum KeyboardCode {
   // VK_OEM_AX to represent AltGr, matching the behaviour of Firefox on Linux.
   ALTGR                     = 0xE1,
 };
-
-}  // module mojo

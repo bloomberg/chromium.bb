@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/services/public/interfaces/network/network_error.mojom";
+module mojo;
 
-module mojo {
+import "mojo/services/public/interfaces/network/network_error.mojom";
 
 interface WebSocket {
   enum MessageType {
@@ -58,5 +58,3 @@ interface WebSocketClient {
   // didFinishOpeningHandshake
   // didStartClosingHandshake
 };
-
-}

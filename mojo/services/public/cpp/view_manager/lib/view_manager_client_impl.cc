@@ -94,10 +94,6 @@ class RootObserver : public ViewObserver {
 ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
                                              Shell* shell)
     : connected_(false), connection_id_(0), next_id_(1), delegate_(delegate) {
-  InterfacePtr<ServiceProvider> sp;
-  shell->ConnectToApplication("mojo:window_manager", GetProxy(&sp));
-  ConnectToService(sp.get(), &window_manager_);
-  window_manager_.set_client(this);
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
@@ -170,6 +166,9 @@ void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
 }
 
 void ViewManagerClientImpl::SetFocus(Id view_id) {
+  // In order for us to get here we had to have exposed a view, which implies we
+  // got a connection.
+  DCHECK(window_manager_.get());
   window_manager_->FocusWindow(view_id, ActionCompletedCallback());
 }
 
@@ -245,7 +244,8 @@ void ViewManagerClientImpl::OnEmbed(
     ConnectionSpecificId connection_id,
     const String& creator_url,
     ViewDataPtr root_data,
-    InterfaceRequest<ServiceProvider> service_provider) {
+    InterfaceRequest<ServiceProvider> parent_services,
+    ScopedMessagePipeHandle window_manager_pipe) {
   if (!connected_) {
     connected_ = true;
     connection_id_ = connection_id;
@@ -264,12 +264,14 @@ void ViewManagerClientImpl::OnEmbed(
   ServiceProviderImpl* exported_services = nullptr;
   scoped_ptr<ServiceProvider> remote;
 
-  if (service_provider.is_pending()) {
+  if (parent_services.is_pending()) {
     // BindToRequest() binds the lifetime of |exported_services| to the pipe.
     exported_services = new ServiceProviderImpl;
-    BindToRequest(exported_services, &service_provider);
+    BindToRequest(exported_services, &parent_services);
     remote.reset(exported_services->CreateRemoteServiceProvider());
   }
+  window_manager_.Bind(window_manager_pipe.Pass());
+  window_manager_.set_client(this);
   delegate_->OnEmbed(this, root, exported_services, remote.Pass());
 }
 
@@ -360,9 +362,7 @@ void ViewManagerClientImpl::OnViewInputEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, WindowManagerClient2 implementation:
-
-void ViewManagerClientImpl::OnWindowManagerReady() {}
+// ViewManagerClientImpl, WindowManagerClient implementation:
 
 void ViewManagerClientImpl::OnCaptureChanged(Id old_capture_view_id,
                                              Id new_capture_view_id) {}

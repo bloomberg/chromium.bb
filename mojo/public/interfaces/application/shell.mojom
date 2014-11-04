@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/public/interfaces/application/application.mojom";
 import "mojo/public/interfaces/application/service_provider.mojom";
-
-module mojo {
 
 // The Shell is the finder and launcher of Applications. An Application uses
 // it's Shell interface to connect to other Applications.
@@ -15,5 +15,3 @@ interface Shell {
   // --origin flag to the shell being used.
   ConnectToApplication(string? application_url, ServiceProvider&? provider);
 };
-
-}

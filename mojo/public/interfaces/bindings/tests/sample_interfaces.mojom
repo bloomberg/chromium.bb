@@ -5,7 +5,7 @@
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.sample",
  JavaConstantsClassName="InterfaceConstants",
  Foo = "hello world"]
-module sample {
+module sample;
 
 const uint64 kLong = 4405;
 
@@ -24,5 +24,3 @@ interface Provider {
 // TODO(darin): We shouldn't need this, but JS bindings don't work without it.
 interface ProviderClient {
 };
-
-}

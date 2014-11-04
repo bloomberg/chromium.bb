@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "sample_import.mojom";
-
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.sample"]
-module sample {
+module sample;
+
+import "sample_import.mojom";
 
 // This sample shows how handles to MessagePipes can be sent as both parameters
 // to methods as well as fields on structs.
@@ -44,5 +44,3 @@ interface FactoryClient {
   DidStuff(Response response, string text);
   DidStuff2(string text);
 };
-
-}  // module sample

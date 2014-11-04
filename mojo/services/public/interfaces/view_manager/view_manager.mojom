@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/public/interfaces/application/service_provider.mojom";
 import "mojo/services/public/interfaces/geometry/geometry.mojom";
 import "mojo/services/public/interfaces/input_events/input_events.mojom";
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom";
 import "mojo/services/public/interfaces/view_manager/view_manager_constants.mojom";
-
-module mojo {
 
 struct ViewData {
   uint32 parent_id;
@@ -136,11 +136,13 @@ interface ViewManagerService {
 [Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
-  // See Embed() on ViewManagerService for more details.
+  // See Embed() on ViewManagerService for more details. |window_manager_pipe|
+  // is a pipe to the WindowManager.
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
-          ServiceProvider&? service_provider);
+          ServiceProvider&? parent_service_provider,
+          handle<message_pipe> window_manager_pipe);
 
   // Invoked when a view's bounds have changed.
   OnViewBoundsChanged(uint32 view,
@@ -188,5 +190,3 @@ interface ViewManagerClient {
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
 };
-
-}

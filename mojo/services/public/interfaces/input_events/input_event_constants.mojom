@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 // This mirrors ui::EventType
 enum EventType {
@@ -75,5 +75,3 @@ enum MouseEventFlags {
 
   // TODO(erg): Move accessibility flags and maybe synthetic touch events here.
 };
-
-}  // module mojo

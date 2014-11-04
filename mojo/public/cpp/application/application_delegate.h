@@ -19,10 +19,6 @@ class ApplicationDelegate {
   ApplicationDelegate();
   virtual ~ApplicationDelegate();
 
-  // Implement this method to create the specific subclass of
-  // ApplicationDelegate. Ownership is taken by the caller. It will be deleted.
-  static ApplicationDelegate* Create();
-
   virtual void Initialize(ApplicationImpl* app);
 
   // Override this method to configure what services a connection supports when

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module extensions {
+module extensions;
 
 // A stashed client object. This contains the serialized bytes and handles,
 // stored in |data| and |handles|, respectively, of a mojo struct of the
@@ -28,5 +28,3 @@ interface StashService {
   // Returns all stashed objects.
   RetrieveStash() => (array<StashedObject> stash);
 };
-
-}

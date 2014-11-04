@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/services/public/interfaces/network/net_address.mojom";
 import "mojo/services/public/interfaces/network/network_error.mojom";
-
-module mojo {
 
 // UDPSocket and UDPSocketClient represent a UDP socket and its client. The
 // typical flow of using the interfaces is:
@@ -104,5 +104,3 @@ interface UDPSocketClient {
   // failure, |result.code| is a network error code.
   OnReceived(NetworkError result, NetAddress? src_addr, array<uint8>? data);
 };
-
-}

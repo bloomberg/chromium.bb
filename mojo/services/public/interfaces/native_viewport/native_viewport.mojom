@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/services/public/interfaces/geometry/geometry.mojom";
 import "mojo/services/public/interfaces/gpu/command_buffer.mojom";
 import "mojo/services/public/interfaces/input_events/input_events.mojom";
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom";
-
-module mojo {
 
 [Client=NativeViewportClient]
 interface NativeViewport {
@@ -32,5 +32,3 @@ interface NativeViewportClient {
   OnSizeChanged(Size size);
   OnDestroyed();
 };
-
-}

@@ -33,6 +33,7 @@ inline bool operator==(const Point& lhs, const Point& rhs) {
 inline bool operator!=(const Point& lhs, const Point& rhs) {
   return !(lhs == rhs);
 }
+
 }
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_GEOMETRY_GEOMETRY_UTIL_H_

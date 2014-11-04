@@ -4,7 +4,7 @@
 
 
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.mojo"]
-module mojo.test {
+module mojo.test;
 
 struct StructA {
   uint64 i;
@@ -58,5 +58,3 @@ interface IntegrationTestInterface1 {
 interface IntegrationTestInterface2 {
   Method0() => (array<uint8> param0);
 };
-
-}

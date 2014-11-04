@@ -35,7 +35,6 @@ source_set("view_manager") {
     "//mojo/services/public/interfaces/surfaces:surface_id",
     "//mojo/services/public/interfaces/view_manager",
     "//mojo/services/public/interfaces/window_manager",
-    "//mojo/services/public/interfaces/window_manager2",
   ]
 }
 

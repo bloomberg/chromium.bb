@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "mojo/services/public/interfaces/network/network_error.mojom";
+module mojo;
 
-module mojo {
+import "mojo/services/public/interfaces/network/network_error.mojom";
 
 struct URLRequest {
   // The URL to load.
@@ -102,5 +102,3 @@ interface URLLoader {
   // Query status about the URLLoader.
   QueryStatus() => (URLLoaderStatus? status);
 };
-
-}

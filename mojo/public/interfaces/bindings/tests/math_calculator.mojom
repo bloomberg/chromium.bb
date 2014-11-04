@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.math"]
-module math {
+module math;
 
 [Client=CalculatorUI]
 interface Calculator {
@@ -15,5 +15,3 @@ interface Calculator {
 interface CalculatorUI {
   Output@0(double value@0);
 };
-
-}

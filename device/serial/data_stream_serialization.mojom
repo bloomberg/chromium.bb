@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "data_stream.mojom";
+module device.serial;
 
-module device.serial {
+import "data_stream.mojom";
 
 // A serialized form of a DataSender.
 struct SerializedDataSender {
@@ -48,5 +48,3 @@ struct SerializedDataReceiver {
 
   array<array<uint8>> pending_data;
 };
-
-}

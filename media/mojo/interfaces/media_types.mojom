@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 // See media/base/buffering_state.h for descriptions.
 // Kept in sync with media::BufferingState via COMPILE_ASSERTs.
@@ -123,5 +123,3 @@ struct MediaDecoderBuffer {
   // for now for prototyping audio.
   handle<data_pipe_consumer>? data;
 };
-
-}  // module mojo

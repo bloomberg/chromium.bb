@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "content/public/common/mojo_geoposition.mojom";
+module content;
 
-module content {
+import "content/public/common/mojo_geoposition.mojom";
 
 // The Geolocation service provides updates on the device's location to its
 // client. By default, it provides updates with low accuracy, but
@@ -17,5 +17,3 @@ interface GeolocationService {
 interface GeolocationServiceClient {
   OnLocationUpdate(MojoGeoposition geoposition);
 };
-
-}

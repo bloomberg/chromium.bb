@@ -2,12 +2,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="/mojo/public/html/codec.html" as="codec" />
-<link rel="import" href="/mojo/public/html/validator.html" as="validator" />
+<import src="/mojo/public/sky/codec.sky" as="codec" />
+<import src="/mojo/public/sky/validator.sky" as="validator" />
 {%- for import in imports %}
-<link rel="import" href="/{{import.module.path}}.html" as="{{import.unique_name}}" />
+<import src="/{{import.module.path}}.sky" as="{{import.unique_name}}" />
 {%- endfor %}
 <script>
 {%- include "module_definition.tmpl" %}
-  this.exports = exports;
+  module.exports = exports;
 </script>

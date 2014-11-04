@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 // ServiceProvider is used to establish connections to services in a bi-
 // directional fashion between two applications.
@@ -12,5 +12,3 @@ interface ServiceProvider {
   // service does not exist, then the handle will be closed.
   ConnectToService(string? interface_name, handle<message_pipe>? pipe);
 };
-
-}

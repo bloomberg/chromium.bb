@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 interface Clipboard {
   enum Type {
@@ -41,5 +41,3 @@ interface Clipboard {
   // clear the clipboard.
   WriteClipboardData(Type clipboard_type, map<string, array<uint8>>? data);
 };
-
-}  // module mojo

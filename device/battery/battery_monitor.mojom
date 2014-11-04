@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import "device/battery/battery_status.mojom";
+module device;
 
-module device {
+import "device/battery/battery_status.mojom";
 
 // A BatteryMonitor will periodically call its client's DidChange method.
 [Client=BatteryStatusObserver]
@@ -14,5 +14,3 @@ interface BatteryMonitor {
 interface BatteryStatusObserver {
   DidChange(BatteryStatus status);
 };
-
-}

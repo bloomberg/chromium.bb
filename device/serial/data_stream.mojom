@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device.serial {
+module device.serial;
 
 [Client=DataSourceClient]
 interface DataSource {
@@ -51,5 +51,3 @@ interface DataSinkClient {
   // when it is ready to resume sending data.
   ReportBytesSentAndError(uint32 bytes_sent, int32 error) => ();
 };
-
-}

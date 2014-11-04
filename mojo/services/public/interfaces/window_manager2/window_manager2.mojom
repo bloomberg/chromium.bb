@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo {
+module mojo;
 
 // TODO(sky): rethink these, and if we do in fact need it come up with a better
 // name.
@@ -27,5 +27,3 @@ interface WindowManagerClient2 {
   OnFocusChanged(uint32 old_focused_node_id, uint32 new_focused_node_id);
   OnActiveWindowChanged(uint32 old_focused_window, uint32 new_focused_window);
 };
-
-}

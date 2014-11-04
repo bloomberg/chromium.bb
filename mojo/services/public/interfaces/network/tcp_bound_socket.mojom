@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+module mojo;
+
 import "mojo/services/public/interfaces/network/net_address.mojom";
 import "mojo/services/public/interfaces/network/network_error.mojom";
 import "mojo/services/public/interfaces/network/tcp_connected_socket.mojom";
 import "mojo/services/public/interfaces/network/tcp_server_socket.mojom";
-
-module mojo {
 
 // Represents a TCP socket that is bound to a local address and port, but
 // is not yet in a listening or connected state.
@@ -37,5 +37,3 @@ interface TCPBoundSocket {
           TCPConnectedSocket& client_socket)
       => (NetworkError result);
 };
-
-}

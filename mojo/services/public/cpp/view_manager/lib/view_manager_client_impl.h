@@ -13,7 +13,7 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
-#include "mojo/services/public/interfaces/window_manager2/window_manager2.mojom.h"
+#include "mojo/services/public/interfaces/window_manager/window_manager.mojom.h"
 
 namespace mojo {
 class Shell;
@@ -24,7 +24,7 @@ class ViewManagerTransaction;
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public InterfaceImpl<ViewManagerClient>,
-                              public WindowManagerClient2 {
+                              public WindowManagerClient {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate, Shell* shell);
   ~ViewManagerClientImpl() override;
@@ -90,7 +90,8 @@ class ViewManagerClientImpl : public ViewManager,
   void OnEmbed(ConnectionSpecificId connection_id,
                const String& creator_url,
                ViewDataPtr root,
-               InterfaceRequest<ServiceProvider> services) override;
+               InterfaceRequest<ServiceProvider> parent_services,
+               ScopedMessagePipeHandle window_manager_pipe) override;
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
                            RectPtr new_bounds) override;
@@ -111,8 +112,7 @@ class ViewManagerClientImpl : public ViewManager,
                         EventPtr event,
                         const Callback<void()>& callback) override;
 
-  // Overridden from WindowManagerClient2:
-  void OnWindowManagerReady() override;
+  // Overridden from WindowManagerClient:
   void OnCaptureChanged(Id old_capture_view_id,
                         Id new_capture_view_id) override;
   void OnFocusChanged(Id old_focused_view_id, Id new_focused_view_id) override;
@@ -143,7 +143,7 @@ class ViewManagerClientImpl : public ViewManager,
 
   ViewManagerService* service_;
 
-  WindowManagerService2Ptr window_manager_;
+  WindowManagerPtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

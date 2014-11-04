@@ -13,7 +13,7 @@ group("public") {
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
-    "//mojo/public/html",
+    "//mojo/public/sky",
   ]
 
   if (is_linux) {

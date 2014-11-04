@@ -249,7 +249,7 @@ class Module(NodeBase):
 
 
 class Mojom(NodeBase):
-  """Represents an entire .mojom file. (This is the root node."""
+  """Represents an entire .mojom file. (This is the root node.)"""
 
   def __init__(self, module, import_list, definition_list, **kwargs):
     assert module is None or isinstance(module, Module)

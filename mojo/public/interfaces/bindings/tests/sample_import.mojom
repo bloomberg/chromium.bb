@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [JavaPackage="org.chromium.mojo.bindings.test.mojom.imported"]
-module imported {
+module imported;
 
 // This sample just defines some types that are imported into
 // sample_service.mojom, to show how import works.
@@ -36,5 +36,3 @@ struct Point {
 interface ImportedInterface {
   DoSomething();
 };
-
-}  // module imported
