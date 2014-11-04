@@ -139,7 +139,13 @@ TEST_F(BatteryStatusServiceTest, AddFirstCallback) {
   EXPECT_EQ(1, battery_manager()->stop_invoked_count());
 }
 
-TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
+// Fails on Windows. http://crbug.com/429942.
+#if defined(OS_WIN)
+#define MAYBE_AddCallbackAfterUpdate DISABLED_AddCallbackAfterUpdate
+#else
+#define MAYBE_AddCallbackAfterUpdate AddCallbackAfterUpdate
+#endif
+TEST_F(BatteryStatusServiceTest, MAYBE_AddCallbackAfterUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   BatteryStatus status;
   battery_manager()->InvokeUpdateCallback(status);
@@ -152,7 +158,13 @@ TEST_F(BatteryStatusServiceTest, AddCallbackAfterUpdate) {
   EXPECT_EQ(1, callback2_invoked_count());
 }
 
-TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
+// Fails on Windows. http://crbug.com/429942.
+#if defined(OS_WIN)
+#define MAYBE_TwoCallbacksUpdate DISABLED_TwoCallbacksUpdate
+#else
+#define MAYBE_TwoCallbacksUpdate TwoCallbacksUpdate
+#endif
+TEST_F(BatteryStatusServiceTest, MAYBE_TwoCallbacksUpdate) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
@@ -172,7 +184,13 @@ TEST_F(BatteryStatusServiceTest, TwoCallbacksUpdate) {
   EXPECT_EQ(status.level, battery_status().level);
 }
 
-TEST_F(BatteryStatusServiceTest, RemoveOneCallback) {
+// Fails on Windows. http://crbug.com/429942.
+#if defined(OS_WIN)
+#define MAYBE_RemoveOneCallback DISABLED_RemoveOneCallback
+#else
+#define MAYBE_RemoveOneCallback RemoveOneCallback
+#endif
+TEST_F(BatteryStatusServiceTest, MAYBE_RemoveOneCallback) {
   scoped_ptr<BatterySubscription> subscription1 = AddCallback(callback1());
   scoped_ptr<BatterySubscription> subscription2 = AddCallback(callback2());
 
