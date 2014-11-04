@@ -153,7 +153,7 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
 #if defined(USE_AURA)
   gfx::PointF origin_f = origin;
   origin_f.Scale(device_scale_factor_);
-  origin.SetPoint(origin_f.x(), origin_f.y());
+  origin = gfx::ToFlooredPoint(origin_f);
 #endif
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }

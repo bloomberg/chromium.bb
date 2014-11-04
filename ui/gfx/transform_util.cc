@@ -102,7 +102,7 @@ bool Normalize(SkMatrix44& m) {
     // Cannot normalize.
     return false;
 
-  SkMScalar scale = 1.0 / m.get(3, 3);
+  SkMScalar scale = SK_MScalar1 / m.get(3, 3);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
       m.set(i, j, m.get(i, j) * scale);
@@ -143,15 +143,15 @@ SkMatrix44 BuildRotationMatrix(const DecomposedTransform& decomp) {
   SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
 
   // Implicitly calls matrix.setIdentity()
-  matrix.set3x3(1.0 - 2.0 * (y * y + z * z),
-                2.0 * (x * y + z * w),
-                2.0 * (x * z - y * w),
-                2.0 * (x * y - z * w),
-                1.0 - 2.0 * (x * x + z * z),
-                2.0 * (y * z + x * w),
-                2.0 * (x * z + y * w),
-                2.0 * (y * z - x * w),
-                1.0 - 2.0 * (x * x + y * y));
+  matrix.set3x3(SkDoubleToMScalar(1.0 - 2.0 * (y * y + z * z)),
+                SkDoubleToMScalar(2.0 * (x * y + z * w)),
+                SkDoubleToMScalar(2.0 * (x * z - y * w)),
+                SkDoubleToMScalar(2.0 * (x * y - z * w)),
+                SkDoubleToMScalar(1.0 - 2.0 * (x * x + z * z)),
+                SkDoubleToMScalar(2.0 * (y * z + x * w)),
+                SkDoubleToMScalar(2.0 * (x * z + y * w)),
+                SkDoubleToMScalar(2.0 * (y * z - x * w)),
+                SkDoubleToMScalar(1.0 - 2.0 * (x * x + y * y)));
   return matrix;
 }
 
@@ -417,14 +417,17 @@ bool DecomposeTransform(DecomposedTransform* decomp,
     }
   }
 
-  decomp->quaternion[0] =
-      0.5 * std::sqrt(std::max(1.0 + row[0][0] - row[1][1] - row[2][2], 0.0));
-  decomp->quaternion[1] =
-      0.5 * std::sqrt(std::max(1.0 - row[0][0] + row[1][1] - row[2][2], 0.0));
-  decomp->quaternion[2] =
-      0.5 * std::sqrt(std::max(1.0 - row[0][0] - row[1][1] + row[2][2], 0.0));
-  decomp->quaternion[3] =
-      0.5 * std::sqrt(std::max(1.0 + row[0][0] + row[1][1] + row[2][2], 0.0));
+  double row00 = SkMScalarToDouble(row[0][0]);
+  double row11 = SkMScalarToDouble(row[1][1]);
+  double row22 = SkMScalarToDouble(row[2][2]);
+  decomp->quaternion[0] = SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 + row00 - row11 - row22, 0.0)));
+  decomp->quaternion[1] = SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 - row00 + row11 - row22, 0.0)));
+  decomp->quaternion[2] = SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 - row00 - row11 + row22, 0.0)));
+  decomp->quaternion[3] = SkDoubleToMScalar(
+      0.5 * std::sqrt(std::max(1.0 + row00 + row11 + row22, 0.0)));
 
   if (row[2][1] > row[1][2])
       decomp->quaternion[0] = -decomp->quaternion[0];

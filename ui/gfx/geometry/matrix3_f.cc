@@ -105,15 +105,24 @@ Matrix3F Matrix3F::Inverse() const {
     return inverse;  // Singular matrix. Return Zeros().
 
   inverse.set(
-      (data_[M11] * data_[M22] - data_[M12] * data_[M21]) / determinant,
-      (data_[M02] * data_[M21] - data_[M01] * data_[M22]) / determinant,
-      (data_[M01] * data_[M12] - data_[M02] * data_[M11]) / determinant,
-      (data_[M12] * data_[M20] - data_[M10] * data_[M22]) / determinant,
-      (data_[M00] * data_[M22] - data_[M02] * data_[M20]) / determinant,
-      (data_[M02] * data_[M10] - data_[M00] * data_[M12]) / determinant,
-      (data_[M10] * data_[M21] - data_[M11] * data_[M20]) / determinant,
-      (data_[M01] * data_[M20] - data_[M00] * data_[M21]) / determinant,
-      (data_[M00] * data_[M11] - data_[M01] * data_[M10]) / determinant);
+      static_cast<float>((data_[M11] * data_[M22] - data_[M12] * data_[M21]) /
+          determinant),
+      static_cast<float>((data_[M02] * data_[M21] - data_[M01] * data_[M22]) /
+          determinant),
+      static_cast<float>((data_[M01] * data_[M12] - data_[M02] * data_[M11]) /
+          determinant),
+      static_cast<float>((data_[M12] * data_[M20] - data_[M10] * data_[M22]) /
+          determinant),
+      static_cast<float>((data_[M00] * data_[M22] - data_[M02] * data_[M20]) /
+          determinant),
+      static_cast<float>((data_[M02] * data_[M10] - data_[M00] * data_[M12]) /
+          determinant),
+      static_cast<float>((data_[M10] * data_[M21] - data_[M11] * data_[M20]) /
+          determinant),
+      static_cast<float>((data_[M01] * data_[M20] - data_[M00] * data_[M21]) /
+          determinant),
+      static_cast<float>((data_[M00] * data_[M11] - data_[M01] * data_[M10]) /
+          determinant));
   return inverse;
 }
 

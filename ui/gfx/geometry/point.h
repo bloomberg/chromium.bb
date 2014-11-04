@@ -90,7 +90,7 @@ class GFX_EXPORT Point {
   }
 
   operator PointF() const {
-    return PointF(x(), y());
+    return PointF(static_cast<float>(x()), static_cast<float>(y()));
   }
 
   // Returns a string representation of point.

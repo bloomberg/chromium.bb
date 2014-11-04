@@ -331,8 +331,8 @@ void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
                                            InterpolatedTransform* xform) {
   gfx::Transform to_pivot;
   gfx::Transform from_pivot;
-  to_pivot.Translate(-pivot.x(), -pivot.y());
-  from_pivot.Translate(pivot.x(), pivot.y());
+  to_pivot.Translate(SkIntToMScalar(-pivot.x()), SkIntToMScalar(-pivot.y()));
+  from_pivot.Translate(SkIntToMScalar(pivot.x()), SkIntToMScalar(pivot.y()));
 
   scoped_ptr<InterpolatedTransform> pre_transform(
     new InterpolatedConstantTransform(to_pivot));

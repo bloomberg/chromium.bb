@@ -96,7 +96,7 @@ TEST(SafeIntegerConversions, ToRoundedInt) {
   EXPECT_EQ(-100, ToRoundedInt(-100.1f));
   EXPECT_EQ(-101, ToRoundedInt(-100.5f));
   EXPECT_EQ(-101, ToRoundedInt(-100.9f));
-  EXPECT_EQ(0, ToRoundedInt(0));
+  EXPECT_EQ(0, ToRoundedInt(0.f));
   EXPECT_EQ(100, ToRoundedInt(100.1f));
   EXPECT_EQ(101, ToRoundedInt(100.5f));
   EXPECT_EQ(101, ToRoundedInt(100.9f));

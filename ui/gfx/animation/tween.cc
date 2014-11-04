@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 #include "ui/gfx/safe_integer_conversions.h"
 
@@ -71,7 +72,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 
 namespace {
 uint8 FloatToColorByte(float f) {
-  return std::min(std::max(ToRoundedInt(f * 255.f), 0), 255);
+  return base::saturated_cast<uint8>(ToRoundedInt(f * 255.f));
 }
 
 uint8 BlendColorComponents(uint8 start,
@@ -149,7 +150,8 @@ int Tween::IntValueBetween(double value, int start, int target) {
 
 //static
 int Tween::LinearIntValueBetween(double value, int start, int target) {
-  return std::floor(0.5 + DoubleValueBetween(value, start, target));
+  // NOTE: Do not use ToRoundedInt()!  See comments on function declaration.
+  return ToFlooredInt(0.5 + DoubleValueBetween(value, start, target));
 }
 
 // static

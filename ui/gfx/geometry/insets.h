@@ -34,7 +34,8 @@ class GFX_EXPORT Insets : public InsetsBase<Insets, int> {
   }
 
   operator InsetsF() const {
-    return InsetsF(top(), left(), bottom(), right());
+    return InsetsF(static_cast<float>(top()), static_cast<float>(left()),
+                   static_cast<float>(bottom()), static_cast<float>(right()));
   }
 
   // Returns a string representation of the insets.

@@ -48,7 +48,7 @@ double LinearAnimation::GetCurrentValue() const {
 void LinearAnimation::SetCurrentValue(double new_value) {
   new_value = std::max(0.0, std::min(1.0, new_value));
   base::TimeDelta time_delta = base::TimeDelta::FromMicroseconds(
-      duration_.InMicroseconds() * (new_value - state_));
+      static_cast<int64>(duration_.InMicroseconds() * (new_value - state_)));
   SetStartTime(start_time() - time_delta);
   state_ = new_value;
 }

@@ -60,7 +60,9 @@ class GFX_EXPORT Vector2d {
 
   std::string ToString() const;
 
-  operator Vector2dF() const { return Vector2dF(x_, y_); }
+  operator Vector2dF() const {
+    return Vector2dF(static_cast<float>(x()), static_cast<float>(y()));
+  }
 
  private:
   int x_;

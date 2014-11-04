@@ -153,13 +153,13 @@ void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
     matrix_.setRotateDegreesAbout(SkFloatToMScalar(axis.x()),
                                   SkFloatToMScalar(axis.y()),
                                   SkFloatToMScalar(axis.z()),
-                                  degrees);
+                                  SkDoubleToMScalar(degrees));
   } else {
     SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
     rot.setRotateDegreesAbout(SkFloatToMScalar(axis.x()),
                               SkFloatToMScalar(axis.y()),
                               SkFloatToMScalar(axis.z()),
-                              degrees);
+                              SkDoubleToMScalar(degrees));
     matrix_.preConcat(rot);
   }
 }
@@ -179,9 +179,9 @@ void Transform::Translate3d(SkMScalar x, SkMScalar y, SkMScalar z) {
 }
 
 void Transform::SkewX(double angle_x) {
-  if (matrix_.isIdentity())
+  if (matrix_.isIdentity()) {
     matrix_.set(0, 1, TanDegrees(angle_x));
-  else {
+  } else {
     SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
     skew.set(0, 1, TanDegrees(angle_x));
     matrix_.preConcat(skew);
@@ -189,9 +189,9 @@ void Transform::SkewX(double angle_x) {
 }
 
 void Transform::SkewY(double angle_y) {
-  if (matrix_.isIdentity())
+  if (matrix_.isIdentity()) {
     matrix_.set(1, 0, TanDegrees(angle_y));
-  else {
+  } else {
     SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
     skew.set(1, 0, TanDegrees(angle_y));
     matrix_.preConcat(skew);
@@ -201,11 +201,11 @@ void Transform::SkewY(double angle_y) {
 void Transform::ApplyPerspectiveDepth(SkMScalar depth) {
   if (depth == 0)
     return;
-  if (matrix_.isIdentity())
-    matrix_.set(3, 2, -1.0 / depth);
-  else {
+  if (matrix_.isIdentity()) {
+    matrix_.set(3, 2, -SK_MScalar1 / depth);
+  } else {
     SkMatrix44 m(SkMatrix44::kIdentity_Constructor);
-    m.set(3, 2, -1.0 / depth);
+    m.set(3, 2, -SK_MScalar1 / depth);
     matrix_.preConcat(m);
   }
 }
@@ -516,7 +516,7 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkFloatToMScalar(point->x()), SkFloatToMScalar(point->y()),
+  SkMScalar p[4] = {SkIntToMScalar(point->x()), SkIntToMScalar(point->y()),
                     0, 1};
 
   xform.mapMScalars(p);

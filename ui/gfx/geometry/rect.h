@@ -16,6 +16,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -59,7 +60,8 @@ class GFX_EXPORT Rect {
 #endif
 
   operator RectF() const {
-    return RectF(origin().x(), origin().y(), size().width(), size().height());
+    return RectF(static_cast<float>(x()), static_cast<float>(y()),
+                 static_cast<float>(width()), static_cast<float>(height()));
   }
 
   int x() const { return origin_.x(); }
@@ -220,10 +222,24 @@ GFX_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
 inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float x_scale,
                                  float y_scale) {
-  int x = std::floor(rect.x() * x_scale);
-  int y = std::floor(rect.y() * y_scale);
-  int r = rect.width() == 0 ? x : std::ceil(rect.right() * x_scale);
-  int b = rect.height() == 0 ? y : std::ceil(rect.bottom() * y_scale);
+  // These next functions cast instead of using e.g. ToFlooredInt() because we
+  // haven't checked to ensure that the clamping behavior of the helper
+  // functions doesn't degrade performance, and callers shouldn't be passing
+  // values that cause overflow anyway.
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::floor(rect.x() * x_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::floor(rect.y() * y_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::ceil(rect.right() * x_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::ceil(rect.bottom() * y_scale)));
+  int x = static_cast<int>(std::floor(rect.x() * x_scale));
+  int y = static_cast<int>(std::floor(rect.y() * y_scale));
+  int r = rect.width() == 0 ?
+      x : static_cast<int>(std::ceil(rect.right() * x_scale));
+  int b = rect.height() == 0 ?
+      y : static_cast<int>(std::ceil(rect.bottom() * y_scale));
   return Rect(x, y, r - x, b - y);
 }
 
@@ -234,10 +250,20 @@ inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
 inline Rect ScaleToEnclosedRect(const Rect& rect,
                                 float x_scale,
                                 float y_scale) {
-  int x = std::ceil(rect.x() * x_scale);
-  int y = std::ceil(rect.y() * y_scale);
-  int r = rect.width() == 0 ? x : std::floor(rect.right() * x_scale);
-  int b = rect.height() == 0 ? y : std::floor(rect.bottom() * y_scale);
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::ceil(rect.x() * x_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::ceil(rect.y() * y_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::floor(rect.right() * x_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::floor(rect.bottom() * y_scale)));
+  int x = static_cast<int>(std::ceil(rect.x() * x_scale));
+  int y = static_cast<int>(std::ceil(rect.y() * y_scale));
+  int r = rect.width() == 0 ?
+      x : static_cast<int>(std::floor(rect.right() * x_scale));
+  int b = rect.height() == 0 ?
+      y : static_cast<int>(std::floor(rect.bottom() * y_scale));
   return Rect(x, y, r - x, b - y);
 }
 

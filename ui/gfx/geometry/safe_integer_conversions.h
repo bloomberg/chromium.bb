@@ -47,6 +47,15 @@ inline int ToRoundedInt(float value) {
   return ClampToInt(rounded);
 }
 
+inline int ToRoundedInt(double value) {
+  double rounded;
+  if (value >= 0.0)
+    rounded = std::floor(value + 0.5);
+  else
+    rounded = std::ceil(value - 0.5);
+  return ClampToInt(rounded);
+}
+
 inline bool IsExpressibleAsInt(float value) {
   if (value != value)
     return false; // no int NaN.

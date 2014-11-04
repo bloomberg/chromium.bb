@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #if defined(OS_WIN)
 #include "skia/ext/skia_utils_win.h"
@@ -77,10 +78,10 @@ double ContrastRatio(double foreground_luminance, double background_luminance) {
 // ----------------------------------------------------------------------------
 
 unsigned char GetLuminanceForColor(SkColor color) {
-  int luma = static_cast<int>((0.3 * SkColorGetR(color)) +
-                              (0.59 * SkColorGetG(color)) +
-                              (0.11 * SkColorGetB(color)));
-  return std::max(std::min(luma, 255), 0);
+  return base::saturated_cast<unsigned char>(
+      (0.3 * SkColorGetR(color)) +
+      (0.59 * SkColorGetG(color)) +
+      (0.11 * SkColorGetB(color)));
 }
 
 double RelativeLuminance(SkColor color) {
@@ -136,7 +137,7 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
     else if (lightness >= 1.0)
       light = 255;
     else
-      light = SkDoubleToFixed(lightness) >> 8;
+      light = static_cast<uint8>(SkDoubleToFixed(lightness) >> 8);
 
     return SkColorSetARGB(alpha, light, light, light);
   }
@@ -198,7 +199,7 @@ bool IsWithinHSLRange(const HSL& hsl,
 
 SkColor HSLShift(SkColor color, const HSL& shift) {
   HSL hsl;
-  int alpha = SkColorGetA(color);
+  SkAlpha alpha = SkColorGetA(color);
   SkColorToHSL(color, &hsl);
 
   // Replace the hue with the tint's hue.

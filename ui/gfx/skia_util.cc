@@ -174,7 +174,7 @@ void ConvertSkiaToRGBA(const unsigned char* skia,
     const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[i]);
 
     // Pack the components here.
-    int alpha = SkGetPackedA32(pixel_in);
+    SkAlpha alpha = SkGetPackedA32(pixel_in);
     if (alpha != 0 && alpha != 255) {
       SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
       rgba[i + 0] = SkColorGetR(unmultiplied);
