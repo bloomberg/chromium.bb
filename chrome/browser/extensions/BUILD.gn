@@ -119,6 +119,11 @@ static_library("extensions") {
     sources += rebase_path(
       gypi_values.chrome_browser_extensions_non_athena_sources,
         ".", "//chrome")
+    if (is_chromeos) {
+      sources += rebase_path(
+        gypi_values.chrome_browser_extensions_chromeos_non_athena_sources,
+        ".", "//chrome")
+    }
   }
 
   if (is_linux) {

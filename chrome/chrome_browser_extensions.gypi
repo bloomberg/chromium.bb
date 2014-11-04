@@ -47,6 +47,14 @@
       'browser/extensions/api/messaging/native_process_launcher.h',
       'browser/extensions/api/messaging/native_process_launcher_posix.cc',
       'browser/extensions/api/messaging/native_process_launcher_win.cc',
+      'browser/extensions/global_shortcut_listener_mac.h',
+      'browser/extensions/global_shortcut_listener_mac.mm',
+      'browser/extensions/global_shortcut_listener_ozone.cc',
+      'browser/extensions/global_shortcut_listener_ozone.h',
+      'browser/extensions/global_shortcut_listener_win.cc',
+      'browser/extensions/global_shortcut_listener_win.h',
+      'browser/extensions/global_shortcut_listener_x11.cc',
+      'browser/extensions/global_shortcut_listener_x11.h',
     ],
     'chrome_browser_extensions_enabled_sources': [
       'browser/apps/app_launch_for_metro_restart_win.cc',
@@ -694,16 +702,6 @@
       'browser/extensions/favicon_downloader.h',
       'browser/extensions/global_shortcut_listener.cc',
       'browser/extensions/global_shortcut_listener.h',
-      'browser/extensions/global_shortcut_listener_chromeos.cc',
-      'browser/extensions/global_shortcut_listener_chromeos.h',
-      'browser/extensions/global_shortcut_listener_mac.h',
-      'browser/extensions/global_shortcut_listener_mac.mm',
-      'browser/extensions/global_shortcut_listener_ozone.cc',
-      'browser/extensions/global_shortcut_listener_ozone.h',
-      'browser/extensions/global_shortcut_listener_win.cc',
-      'browser/extensions/global_shortcut_listener_win.h',
-      'browser/extensions/global_shortcut_listener_x11.cc',
-      'browser/extensions/global_shortcut_listener_x11.h',
       'browser/extensions/install_observer.cc',
       'browser/extensions/install_observer.h',
       'browser/extensions/install_signer.cc',
@@ -876,11 +874,17 @@
       'browser/extensions/display_info_provider_chromeos.h',
       'browser/extensions/extension_tab_util.cc',
     ],
+    'chrome_browser_extensions_chromeos_non_athena_sources': [
+      'browser/extensions/global_shortcut_listener_chromeos.cc',
+      'browser/extensions/global_shortcut_listener_chromeos.h',
+    ],
     'chrome_browser_extensions_athena_sources': [
       'browser/extensions/api/tabs/tabs_api_athena.cc',
       'browser/extensions/display_info_provider_athena.cc',
       'browser/extensions/display_info_provider_athena.h',
       'browser/extensions/extension_tab_util_athena.cc',
+      'browser/extensions/global_shortcut_listener_athena.cc',
+      'browser/extensions/global_shortcut_listener_athena.h',
     ],
   },
   # ----------------------------------------------------------------------------
@@ -1005,6 +1009,11 @@
           'sources': ['<@(chrome_browser_extensions_athena_sources)'],
         }, {
           'sources': ['<@(chrome_browser_extensions_non_athena_sources)'],
+          'conditions': [
+            ['chromeos==1', {
+              'sources': [ '<@(chrome_browser_extensions_chromeos_non_athena_sources)'],
+            }],
+          ],
         }],
         ['OS=="linux"', {
           'conditions': [
