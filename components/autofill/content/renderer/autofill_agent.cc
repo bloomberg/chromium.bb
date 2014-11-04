@@ -318,13 +318,22 @@ void AutofillAgent::FormControlElementClicked(
 
   bool show_full_suggestion_list = element.isAutofilled() || was_focused;
   bool show_password_suggestions_only = !was_focused;
-  ShowSuggestions(element,
-                  true,
-                  false,
-                  true,
-                  false,
-                  show_full_suggestion_list,
-                  show_password_suggestions_only);
+
+  // TODO(gcasto): Remove after crbug.com/423464 has been fixed.
+  bool show_suggestions = true;
+#if defined(OS_ANDROID)
+  show_suggestions = was_focused;
+#endif
+
+  if (show_suggestions) {
+    ShowSuggestions(element,
+                    true,
+                    false,
+                    true,
+                    false,
+                    show_full_suggestion_list,
+                    show_password_suggestions_only);
+  }
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {

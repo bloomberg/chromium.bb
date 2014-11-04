@@ -1442,6 +1442,9 @@ TEST_F(PasswordAutofillAgentTest, SendsLoggingStateUpdatePingOnConstruction) {
   EXPECT_TRUE(message);
 }
 
+// TODO(gcasto): Re-enabled these tests after crbug.com/423464 has been fixed.
+#if !defined(OS_ANDROID)
+
 // Tests that one user click on a username field is sufficient to bring up a
 // credential suggestion popup, and the user can autocomplete the password by
 // selecting the credential from the popup.
@@ -1502,6 +1505,8 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
       ->FormControlElementClicked(username_element_, true);
   ExpectAllCredentials();
 }
+
+#endif  // !defined(OS_ANDROID)
 
 // The user types in a password, but then just before sending the form off, a
 // script clears that password. This test checks that PasswordAutofillAgent can
