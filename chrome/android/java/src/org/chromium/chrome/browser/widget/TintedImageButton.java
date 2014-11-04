@@ -68,7 +68,6 @@ public class TintedImageButton extends ImageButton {
     private void setTintInternal(ColorStateList tint) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setImageTintList(tint);
-            setImageTintMode(PorterDuff.Mode.SRC_ATOP);
         } else {
             mTint = tint;
         }
@@ -76,6 +75,6 @@ public class TintedImageButton extends ImageButton {
 
     private void updateTintColor() {
         if (mTint == null || !mTint.isStateful()) return;
-        setColorFilter(mTint.getColorForState(getDrawableState(), 0));
+        setColorFilter(mTint.getColorForState(getDrawableState(), 0), PorterDuff.Mode.SRC_IN);
     }
 }

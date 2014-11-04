@@ -7,6 +7,8 @@
 <resources>
     <!-- Common colors -->
     <color name="default_text_color">#333</color>
+    <color name="default_normal_button_color">#5A5A5A</color>
+    <color name="default_active_button_color">#4285F4</color>
 
     <!-- Infobar colors -->
     <color name="infobar_background">#fff</color>

@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -183,8 +184,10 @@ class AppMenuAdapter extends BaseAdapter {
                 if (convertView == null) {
                     holder = new TwoButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.two_button_menu_item, parent, false);
-                    holder.buttons[0] = (ImageButton) convertView.findViewById(R.id.button_one);
-                    holder.buttons[1] = (ImageButton) convertView.findViewById(R.id.button_two);
+                    holder.buttons[0] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_one);
+                    holder.buttons[1] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_two);
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildIconItemEnterAnimator(holder.buttons, hasMenuButton));
@@ -207,9 +210,12 @@ class AppMenuAdapter extends BaseAdapter {
                 if (convertView == null) {
                     holder = new ThreeButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.three_button_menu_item, parent, false);
-                    holder.buttons[0] = (ImageButton) convertView.findViewById(R.id.button_one);
-                    holder.buttons[1] = (ImageButton) convertView.findViewById(R.id.button_two);
-                    holder.buttons[2] = (ImageButton) convertView.findViewById(R.id.button_three);
+                    holder.buttons[0] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_one);
+                    holder.buttons[1] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_two);
+                    holder.buttons[2] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_three);
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildIconItemEnterAnimator(holder.buttons, hasMenuButton));
@@ -233,10 +239,14 @@ class AppMenuAdapter extends BaseAdapter {
                 if (convertView == null) {
                     holder = new FourButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.four_button_menu_item, parent, false);
-                    holder.buttons[0] = (ImageButton) convertView.findViewById(R.id.button_one);
-                    holder.buttons[1] = (ImageButton) convertView.findViewById(R.id.button_two);
-                    holder.buttons[2] = (ImageButton) convertView.findViewById(R.id.button_three);
-                    holder.buttons[3] = (ImageButton) convertView.findViewById(R.id.button_four);
+                    holder.buttons[0] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_one);
+                    holder.buttons[1] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_two);
+                    holder.buttons[2] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_three);
+                    holder.buttons[3] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_four);
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildIconItemEnterAnimator(holder.buttons, hasMenuButton));
@@ -263,7 +273,7 @@ class AppMenuAdapter extends BaseAdapter {
                     holder = new TitleButtonMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
                     holder.title = (TextView) convertView.findViewById(R.id.title);
-                    holder.button = (ImageButton) convertView.findViewById(R.id.button);
+                    holder.button = (TintedImageButton) convertView.findViewById(R.id.button);
 
                     View animatedView = hasMenuButton ? holder.title : convertView;
 
@@ -321,8 +331,9 @@ class AppMenuAdapter extends BaseAdapter {
         });
     }
 
-    private void setupMenuButton(ImageButton button) {
-        button.setImageResource(R.drawable.btn_menu_pressed);
+    private void setupMenuButton(TintedImageButton button) {
+        button.setImageResource(R.drawable.btn_menu);
+        button.setTint(button.getResources().getColorStateList(R.color.button_tint_menu));
         button.setContentDescription(button.getResources().getString(R.string.menu_dismiss_btn));
         button.setEnabled(true);
         button.setFocusable(true);
@@ -422,19 +433,19 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     static class TwoButtonMenuItemViewHolder {
-        public ImageButton[] buttons = new ImageButton[2];
+        public TintedImageButton[] buttons = new TintedImageButton[2];
     }
 
     static class ThreeButtonMenuItemViewHolder {
-        public ImageButton[] buttons = new ImageButton[3];
+        public TintedImageButton[] buttons = new TintedImageButton[3];
     }
 
     static class FourButtonMenuItemViewHolder {
-        public ImageButton[] buttons = new ImageButton[4];
+        public TintedImageButton[] buttons = new TintedImageButton[4];
     }
 
     static class TitleButtonMenuItemViewHolder {
         public TextView title;
-        public ImageButton button;
+        public TintedImageButton button;
     }
 }

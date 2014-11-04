@@ -20,7 +20,7 @@
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
 
-    <ImageButton
+    <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button"
         android:layout_width="56dp"
         android:layout_height="match_parent"

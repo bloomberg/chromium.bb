@@ -10,7 +10,7 @@
     android:layout_gravity="top|start"
     android:orientation="horizontal">
 
-    <ImageButton
+    <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button_one"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -18,7 +18,7 @@
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
-    <ImageButton
+    <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button_two"
         android:layout_width="0dp"
         android:layout_height="match_parent"

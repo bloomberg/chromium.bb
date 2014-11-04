@@ -48,7 +48,7 @@
             android:id="@+id/menu_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/btn_menu_white_normal"
+            android:src="@drawable/btn_menu"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"/>
     </org.chromium.chrome.shell.ChromeShellToolbar>

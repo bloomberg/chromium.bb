@@ -4,9 +4,9 @@
      found in the LICENSE file.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:color="#4285F4" />
-    <item android:state_focused="true" android:color="#4285F4" />
-    <item android:state_pressed="true" android:color="#4285F4" />
-    <item android:state_enabled="false" android:color="#515a5a5a" />
-    <item android:color="#5a5a5a"/>
+    <item android:state_selected="true" android:color="@color/default_active_button_color" />
+    <item android:state_focused="true" android:color="@color/default_active_button_color" />
+    <item android:state_pressed="true" android:color="@color/default_active_button_color" />
+    <item android:state_enabled="false" android:color="#335a5a5a" />
+    <item android:color="@color/default_normal_button_color"/>
 </selector>
