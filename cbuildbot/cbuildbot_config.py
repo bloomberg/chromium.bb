@@ -750,7 +750,7 @@ class HWTestConfig(object):
     Optional arguments may be overridden in `kwargs`, except that
     the `blocking` setting cannot be provided.
     """
-    return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
+    return [cls(constants.HWTEST_BVT_SUITE, **kwargs),
             cls(constants.HWTEST_COMMIT_SUITE, **kwargs)]
 
   @classmethod
