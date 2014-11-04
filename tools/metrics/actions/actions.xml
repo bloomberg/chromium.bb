@@ -11457,11 +11457,17 @@ should be able to be added at any place in this file.
 <action name="WebsiteSettings_CookiesDialogOpened">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Superseded by the WebsiteSettings.Action histogram on 2014-10-30.
+  </obsolete>
 </action>
 
 <action name="WebsiteSettings_Opened">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Superseded by the WebsiteSettings.Action histogram on 2014-10-30.
+  </obsolete>
 </action>
 
 <action name="Win7ASHRestart">

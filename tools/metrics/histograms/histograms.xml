@@ -40125,6 +40125,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time for capturing one frame in window capturing.</summary>
 </histogram>
 
+<histogram name="WebsiteSettings.Action" enum="WebsiteSettingsAction">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    Tracks actions with the website setting (a.k.a. page info / origin info)
+    bubble, such as opening it up or clicking on the Connection tab.
+  </summary>
+</histogram>
+
+<histogram name="WebsiteSettings.Action.HttpsUrl" enum="WebsiteSettingsAction">
+  <owner>lgarron@chromium.org</owner>
+  <summary>
+    Tracks WebsiteSettings actions that take place on an HTTPS URL. This
+    completely disregards security status.
+  </summary>
+</histogram>
+
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
   <owner>jackhou@chromium.org</owner>
   <summary>
@@ -55519,6 +55535,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebsiteSettingsAction" type="int">
+  <int value="0" label="Opened"/>
+  <int value="1" label="Selected Permissions tab"/>
+  <int value="2" label="Selected Connection tab"/>
+  <int value="3" label="Connection tab shown immediately"/>
+  <int value="4" label="Cookies dialog opened"/>
+  <int value="5" label="Changed permission"/>
+  <int value="6" label="Certificate dialog opened"/>
+  <int value="7" label="Transparency viewer opened"/>
+  <int value="8" label="Connection help opened"/>
 </enum>
 
 <enum name="WebSocketHandshakeResult" type="int">

@@ -202,17 +202,38 @@ WebsiteSettings::WebsiteSettings(
 
   // Every time the Website Settings UI is opened a |WebsiteSettings| object is
   // created. So this counts how ofter the Website Settings UI is opened.
-  content::RecordAction(base::UserMetricsAction("WebsiteSettings_Opened"));
+  RecordWebsiteSettingsAction(WEBSITE_SETTINGS_OPENED);
 }
 
 WebsiteSettings::~WebsiteSettings() {
 }
+
+void WebsiteSettings::RecordWebsiteSettingsAction(
+    WebsiteSettingsAction action) {
+  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action",
+                            action,
+                            WEBSITE_SETTINGS_COUNT);
+
+  // Use a separate histogram to record actions if they are done on a page with
+  // an HTTPS URL. Note that this *disregards* security status.
+  if (site_url_.SchemeIs(url::kHttpsScheme)) {
+    UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action.HttpsUrl",
+                              action,
+                              WEBSITE_SETTINGS_COUNT);
+  }
+}
+
 
 void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
                                               ContentSetting setting) {
   // Count how often a permission for a specific content type is changed using
   // the Website Settings UI.
   UMA_HISTOGRAM_COUNTS("WebsiteSettings.PermissionChanged", type);
+
+  // This is technically redundant given the histogram above, but putting the
+  // total count of permission changes in another histogram makes it easier to
+  // compare it against other kinds of actions in WebsiteSettings[PopupView].
+  RecordWebsiteSettingsAction(WEBSITE_SETTINGS_CHANGED_PERMISSION);
 
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
@@ -627,8 +648,11 @@ void WebsiteSettings::Init(Profile* profile,
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||
       site_identity_status_ ==
-          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM)
+          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM) {
     tab_id = WebsiteSettingsUI::TAB_ID_CONNECTION;
+    RecordWebsiteSettingsAction(
+      WEBSITE_SETTINGS_CONNECTION_TAB_SHOWN_IMMEDIATELY);
+  }
   ui_->SetSelectedTab(tab_id);
 }
 

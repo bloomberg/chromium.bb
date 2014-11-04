@@ -522,14 +522,16 @@ NSColor* IdentityVerifiedTextColor() {
 // Handler for the link button below the list of cookies.
 - (void)showCookiesAndSiteData:(id)sender {
   DCHECK(webContents_);
-  content::RecordAction(
-      base::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+  presenter_->RecordWebsiteSettingsAction(
+      WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
   chrome::ShowCollectedCookiesDialog(webContents_);
 }
 
 // Handler for the link button to show certificate information.
 - (void)showCertificateInfo:(id)sender {
   DCHECK(certificateId_);
+  presenter_->RecordWebsiteSettingsAction(
+      WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
   ShowCertificateViewerByID(webContents_, [self parentWindow], certificateId_);
 }
 
@@ -542,6 +544,8 @@ NSColor* IdentityVerifiedTextColor() {
 
 // Handler for the link to show help information about the connection tab.
 - (void)showHelpPage:(id)sender {
+  presenter_->RecordWebsiteSettingsAction(
+      WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
   webContents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
       NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
@@ -939,7 +943,20 @@ NSColor* IdentityVerifiedTextColor() {
 
 // Called when the user changes the selected segment in the segmented control.
 - (void)tabSelected:(id)sender {
-  [tabView_ selectTabViewItemAtIndex:[segmentedControl_ selectedSegment]];
+  NSInteger index = [segmentedControl_ selectedSegment];
+  switch (index) {
+    case WebsiteSettingsUI::TAB_ID_PERMISSIONS:
+      presenter_->RecordWebsiteSettingsAction(
+          WebsiteSettings::WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED);
+      break;
+    case WebsiteSettingsUI::TAB_ID_CONNECTION:
+      presenter_->RecordWebsiteSettingsAction(
+          WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_TAB_SELECTED);
+      break;
+    default:
+      NOTREACHED();
+  }
+  [tabView_ selectTabViewItemAtIndex:index];
 }
 
 // Adds a new row to the UI listing the permissions. Returns the amount of

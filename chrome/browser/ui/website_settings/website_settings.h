@@ -71,6 +71,21 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
   };
 
+  // UMA statistics for WebsiteSettings. Do not reorder or remove existing
+  // fields.
+  enum WebsiteSettingsAction {
+    WEBSITE_SETTINGS_OPENED = 0,
+    WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED,
+    WEBSITE_SETTINGS_CONNECTION_TAB_SELECTED,
+    WEBSITE_SETTINGS_CONNECTION_TAB_SHOWN_IMMEDIATELY,
+    WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED,
+    WEBSITE_SETTINGS_CHANGED_PERMISSION,
+    WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED,
+    WEBSITE_SETTINGS_TRANSPARENCY_VIEWER_OPENED,
+    WEBSITE_SETTINGS_CONNECTION_HELP_OPENED,
+    WEBSITE_SETTINGS_COUNT
+  };
+
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection. The
   // |WebsiteSettings| takes ownership of the |ui|.
@@ -82,6 +97,8 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
   ~WebsiteSettings() override;
+
+  void RecordWebsiteSettingsAction(WebsiteSettingsAction action);
 
   // This method is called when ever a permission setting is changed.
   void OnSitePermissionChanged(ContentSettingsType type,
