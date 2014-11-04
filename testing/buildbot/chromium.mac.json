@@ -1,5 +1,5 @@
 {
-  "Mac10.6 Tests (1)": {
+  "Mac10.6 Tests": {
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
@@ -97,7 +97,7 @@
       }
     ]
   },
-  "Mac10.7 Tests (1)": {
+  "Mac10.8 Tests": {
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
@@ -195,7 +195,7 @@
       }
     ]
   },
-  "Mac 10.6 Tests (dbg)(1)": {
+  "Mac10.9 Tests": {
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
@@ -293,7 +293,7 @@
       }
     ]
   },
-  "Mac 10.7 Tests (dbg)(1)": {
+  "Mac10.9 Tests (dbg)": {
     "gtest_tests": [
       "accessibility_unittests",
       "app_list_unittests",
