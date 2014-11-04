@@ -65,6 +65,8 @@
       'sources': [
         'copresence/test/audio_test_support.cc',
         'copresence/test/audio_test_support.h',
+        'copresence/test/stub_whispernet_client.cc',
+        'copresence/test/stub_whispernet_client.h',
       ],
     },
     {

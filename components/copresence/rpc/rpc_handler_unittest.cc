@@ -17,15 +17,16 @@
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
+#include "components/copresence/test/stub_whispernet_client.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using google::protobuf::MessageLite;
 using google::protobuf::RepeatedPtrField;
 
+using testing::ElementsAre;
 using testing::Property;
 using testing::SizeIs;
-using testing::ElementsAre;
 
 namespace copresence {
 
@@ -43,21 +44,20 @@ void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
 }
 
 // TODO(ckehoe): Make DirectiveHandler an interface.
-class FakeDirectiveHandler : public DirectiveHandler {
+class FakeDirectiveHandler final : public DirectiveHandler {
  public:
   FakeDirectiveHandler() {}
-  ~FakeDirectiveHandler() override {}
 
-  const std::vector<Directive>& added_directives() const {
+  const std::vector<std::string>& added_directives() const {
     return added_directives_;
   }
 
-  void Start(WhispernetClient* whispernet_client) override {
+  void Start(WhispernetClient* /* whispernet_client */) override {
     NOTREACHED();
   }
 
   void AddDirective(const Directive& directive) override {
-    added_directives_.push_back(directive);
+    added_directives_.push_back(directive.subscription_id());
   }
 
   void RemoveDirectives(const std::string& op_id) override {
@@ -69,7 +69,7 @@ class FakeDirectiveHandler : public DirectiveHandler {
   }
 
  private:
-  std::vector<Directive> added_directives_;
+  std::vector<std::string> added_directives_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDirectiveHandler);
 };
@@ -78,18 +78,23 @@ class FakeDirectiveHandler : public DirectiveHandler {
 
 class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
-  RpcHandlerTest() : rpc_handler_(this, &directive_handler_), status_(SUCCESS) {
-    rpc_handler_.server_post_callback_ =
-        base::Bind(&RpcHandlerTest::CaptureHttpPost, base::Unretained(this));
-  }
+  RpcHandlerTest()
+    : whispernet_client_(new StubWhispernetClient),
+      rpc_handler_(this,
+                   &directive_handler_,
+                   base::Bind(&RpcHandlerTest::CaptureHttpPost,
+                              base::Unretained(this))),
+      status_(SUCCESS) {}
 
   // CopresenceDelegate implementation
 
-  void HandleMessages(const std::string& app_id,
+  void HandleMessages(const std::string& /* app_id */,
                       const std::string& subscription_id,
                       const std::vector<Message>& messages) override {
     // app_id is unused for now, pending a server fix.
-    messages_by_subscription_[subscription_id] = messages;
+    for (const Message& message : messages) {
+      messages_by_subscription_[subscription_id].push_back(message.payload());
+    }
   }
 
   net::URLRequestContextGetter* GetRequestContext() const override {
@@ -108,7 +113,9 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return auth_token_;
   }
 
-  WhispernetClient* GetWhispernetClient() override { return nullptr; }
+  WhispernetClient* GetWhispernetClient() override {
+    return whispernet_client_.get();
+  }
 
  protected:
   void InvokeReportResponseHandler(int status_code,
@@ -137,15 +144,16 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   // For rpc_handler_.invalid_audio_token_cache_
   base::MessageLoop message_loop_;
 
+  scoped_ptr<WhispernetClient> whispernet_client_;
   FakeDirectiveHandler directive_handler_;
   RpcHandler rpc_handler_;
-  CopresenceStatus status_;
 
+  CopresenceStatus status_;
   std::string rpc_name_;
   std::string api_key_;
   std::string auth_token_;
   ScopedVector<MessageLite> request_protos_;
-  std::map<std::string, std::vector<Message>> messages_by_subscription_;
+  std::map<std::string, std::vector<std::string>> messages_by_subscription_;
 
  private:
   void CaptureHttpPost(
@@ -272,17 +280,13 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
   EXPECT_EQ(SUCCESS, status_);
   EXPECT_TRUE(TokenIsInvalid("bad token"));
 
-  EXPECT_THAT(messages_by_subscription_["Subscription 1"], ElementsAre(
-      Property(&Message::payload, "Message A"),
-      Property(&Message::payload, "Message C")));
+  EXPECT_THAT(messages_by_subscription_["Subscription 1"],
+              ElementsAre("Message A", "Message C"));
+  EXPECT_THAT(messages_by_subscription_["Subscription 2"],
+              ElementsAre("Message B", "Message C"));
 
-  EXPECT_THAT(messages_by_subscription_["Subscription 2"], ElementsAre(
-      Property(&Message::payload, "Message B"),
-      Property(&Message::payload, "Message C")));
-
-  EXPECT_THAT(directive_handler_.added_directives(), ElementsAre(
-      Property(&Directive::subscription_id, "Subscription 1"),
-      Property(&Directive::subscription_id, "Subscription 2")));
+  EXPECT_THAT(directive_handler_.added_directives(),
+              ElementsAre("Subscription 1", "Subscription 2"));
 }
 
 }  // namespace copresence

@@ -153,16 +153,21 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
 // Public methods
 
 RpcHandler::RpcHandler(CopresenceDelegate* delegate,
-                       DirectiveHandler* directive_handler)
+                       DirectiveHandler* directive_handler,
+                       const PostCallback& server_post_callback)
     : delegate_(delegate),
       directive_handler_(directive_handler),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
           kMaxInvalidTokens),
-      server_post_callback_(base::Bind(&RpcHandler::SendHttpPost,
-                                       base::Unretained(this))) {
+      server_post_callback_(server_post_callback) {
     DCHECK(delegate_);
     DCHECK(directive_handler_);
+
+    if (server_post_callback_.is_null()) {
+      server_post_callback_ =
+          base::Bind(&RpcHandler::SendHttpPost, base::Unretained(this));
+    }
   }
 
 RpcHandler::~RpcHandler() {
@@ -170,13 +175,11 @@ RpcHandler::~RpcHandler() {
     delete post;
   }
 
-  if (delegate_->GetWhispernetClient()) {
-    // TODO(ckehoe): Use CancelableCallbacks instead.
-    delegate_->GetWhispernetClient()->RegisterTokensCallback(
-        WhispernetClient::TokensCallback());
-    delegate_->GetWhispernetClient()->RegisterSamplesCallback(
-        WhispernetClient::SamplesCallback());
-  }
+  // TODO(ckehoe): Register and cancel these callbacks in the same class.
+  delegate_->GetWhispernetClient()->RegisterTokensCallback(
+      WhispernetClient::TokensCallback());
+  delegate_->GetWhispernetClient()->RegisterSamplesCallback(
+      WhispernetClient::SamplesCallback());
 }
 
 void RpcHandler::RegisterForToken(const std::string& auth_token,

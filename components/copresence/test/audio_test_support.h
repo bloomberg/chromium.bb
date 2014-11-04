@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_COMMON_AUDIO_TEST_SUPPORT_
-#define COMPONENTS_COPRESENCE_COMMON_AUDIO_TEST_SUPPORT_
+#ifndef COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_
+#define COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_
 
 #include <cstddef>
 
@@ -31,4 +31,4 @@ scoped_refptr<media::AudioBusRefCounted>
 
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_COMMON_AUDIO_TEST_SUPPORT_
+#endif  // COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_

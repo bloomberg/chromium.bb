@@ -31,12 +31,38 @@ class RpcHandler {
   // A callback to indicate whether handler initialization succeeded.
   typedef base::Callback<void(bool)> SuccessCallback;
 
+  // An HttpPost::ResponseCallback along with an HttpPost object to be deleted.
+  // Arguments:
+  // HttpPost*: The handler should take ownership of (i.e. delete) this object.
+  // int: The HTTP status code of the response.
+  // string: The contents of the response.
+  typedef base::Callback<void(HttpPost*, int, const std::string&)>
+      PostCleanupCallback;
+
+  // Callback to allow tests to stub out HTTP POST behavior.
+  // Arguments:
+  // URLRequestContextGetter: Context for the HTTP POST request.
+  // string: Name of the rpc to invoke. URL format: server.google.com/rpc_name
+  // string: The API key to pass in the request.
+  // string: The auth token to pass with the request.
+  // MessageLite: Contents of POST request to be sent. This needs to be
+  //     a (scoped) pointer to ease handling of the abstract MessageLite class.
+  // PostCleanupCallback: Receives the response to the request.
+  typedef base::Callback<void(net::URLRequestContextGetter*,
+                              const std::string&,
+                              const std::string&,
+                              const std::string&,
+                              scoped_ptr<google::protobuf::MessageLite>,
+                              const PostCleanupCallback&)> PostCallback;
+
   // Report rpc name to send to Apiary.
   static const char kReportRequestRpcName[];
 
   // Constructor. |delegate| and |directive_handler|
   // are owned by the caller and must outlive the RpcHandler.
-  RpcHandler(CopresenceDelegate* delegate, DirectiveHandler* directive_handler);
+  RpcHandler(CopresenceDelegate* delegate,
+             DirectiveHandler* directive_handler,
+             const PostCallback& server_post_callback = PostCallback());
 
   virtual ~RpcHandler();
 
@@ -66,30 +92,6 @@ class RpcHandler {
   void ReportTokens(const std::vector<AudioToken>& tokens);
 
  private:
-  // An HttpPost::ResponseCallback along with an HttpPost object to be deleted.
-  // Arguments:
-  // HttpPost*: The handler should take ownership of (i.e. delete) this object.
-  // int: The HTTP status code of the response.
-  // string: The contents of the response.
-  typedef base::Callback<void(HttpPost*, int, const std::string&)>
-      PostCleanupCallback;
-
-  // Callback to allow tests to stub out HTTP POST behavior.
-  // Arguments:
-  // URLRequestContextGetter: Context for the HTTP POST request.
-  // string: Name of the rpc to invoke. URL format: server.google.com/rpc_name
-  // string: The API key to pass in the request.
-  // string: The auth token to pass with the request.
-  // MessageLite: Contents of POST request to be sent. This needs to be
-  //     a (scoped) pointer to ease handling of the abstract MessageLite class.
-  // PostCleanupCallback: Receives the response to the request.
-  typedef base::Callback<void(net::URLRequestContextGetter*,
-                              const std::string&,
-                              const std::string&,
-                              const std::string&,
-                              scoped_ptr<google::protobuf::MessageLite>,
-                              const PostCleanupCallback&)> PostCallback;
-
   friend class RpcHandlerTest;
 
   // Server call response handlers.
@@ -143,7 +145,6 @@ class RpcHandler {
 
   TimedMap<std::string, bool> invalid_audio_token_cache_;
 
-  // TODO(ckehoe): Allow passing this into the constructor for testing.
   PostCallback server_post_callback_;
 
   std::map<std::string, std::string> device_id_by_auth_token_;
