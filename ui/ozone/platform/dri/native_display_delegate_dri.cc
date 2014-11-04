@@ -150,8 +150,7 @@ void NativeDisplayDelegateDri::ForceDPMSOn() {
     DisplaySnapshotDri* dri_output = cached_displays_[i];
     if (dri_output->dpms_property())
       dri_->SetProperty(dri_output->connector(),
-                        dri_output->dpms_property()->prop_id,
-                        DRM_MODE_DPMS_ON);
+                        dri_output->dpms_property()->prop_id, DRM_MODE_DPMS_ON);
   }
 }
 
@@ -162,13 +161,12 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
   for (size_t i = 0;
-       i < displays.size() && cached_displays_.size() < kMaxDisplayCount;
-       ++i) {
+       i < displays.size() && cached_displays_.size() < kMaxDisplayCount; ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
         dri_, displays[i]->connector(), displays[i]->crtc(), i);
     cached_displays_.push_back(display);
-    cached_modes_.insert(
-        cached_modes_.end(), display->modes().begin(), display->modes().end());
+    cached_modes_.insert(cached_modes_.end(), display->modes().begin(),
+                         display->modes().end());
   }
 
   NotifyScreenManager(cached_displays_.get(), old_displays.get());
@@ -195,9 +193,7 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
 
   if (mode) {
     if (!screen_manager_->ConfigureDisplayController(
-            dri_output.crtc(),
-            dri_output.connector(),
-            origin,
+            dri_output.crtc(), dri_output.connector(), origin,
             static_cast<const DisplayModeDri*>(mode)->mode_info())) {
       VLOG(1) << "Failed to configure: crtc=" << dri_output.crtc()
               << " connector=" << dri_output.connector();
@@ -270,8 +266,7 @@ bool NativeDisplayDelegateDri::SetHDCPState(const DisplaySnapshot& output,
   }
 
   return dri_->SetProperty(
-      dri_output.connector(),
-      hdcp_property->prop_id,
+      dri_output.connector(), hdcp_property->prop_id,
       GetContentProtectionValue(hdcp_property.get(), state));
 }
 
@@ -303,8 +298,8 @@ void NativeDisplayDelegateDri::OnDeviceEvent(const DeviceEvent& event) {
 
   if (event.action_type() == DeviceEvent::CHANGE) {
     VLOG(1) << "Got display changed event";
-    FOR_EACH_OBSERVER(
-        NativeDisplayObserver, observers_, OnConfigurationChanged());
+    FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
+                      OnConfigurationChanged());
   }
 }
 
@@ -313,8 +308,7 @@ void NativeDisplayDelegateDri::NotifyScreenManager(
     const std::vector<DisplaySnapshotDri*>& old_displays) const {
   for (size_t i = 0; i < old_displays.size(); ++i) {
     const std::vector<DisplaySnapshotDri*>::const_iterator it =
-        std::find_if(new_displays.begin(),
-                     new_displays.end(),
+        std::find_if(new_displays.begin(), new_displays.end(),
                      DisplaySnapshotComparator(old_displays[i]));
 
     if (it == new_displays.end())
@@ -323,13 +317,12 @@ void NativeDisplayDelegateDri::NotifyScreenManager(
 
   for (size_t i = 0; i < new_displays.size(); ++i) {
     const std::vector<DisplaySnapshotDri*>::const_iterator it =
-        std::find_if(old_displays.begin(),
-                     old_displays.end(),
+        std::find_if(old_displays.begin(), old_displays.end(),
                      DisplaySnapshotComparator(new_displays[i]));
 
     if (it == old_displays.end())
-      screen_manager_->AddDisplayController(
-          dri_, new_displays[i]->crtc(), new_displays[i]->connector());
+      screen_manager_->AddDisplayController(dri_, new_displays[i]->crtc(),
+                                            new_displays[i]->connector());
   }
 }
 

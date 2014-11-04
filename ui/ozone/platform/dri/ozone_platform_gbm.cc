@@ -97,11 +97,8 @@ class OzonePlatformGbm : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
-        new DriWindow(delegate,
-                      bounds,
-                      gpu_platform_support_host_.get(),
-                      event_factory_ozone_.get(),
-                      window_manager_.get()));
+        new DriWindow(delegate, bounds, gpu_platform_support_host_.get(),
+                      event_factory_ozone_.get(), window_manager_.get()));
     platform_window->Initialize();
     return platform_window.Pass();
   }
@@ -133,13 +130,11 @@ class OzonePlatformGbm : public OzonePlatform {
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
-    surface_factory_ozone_->InitializeGpu(dri_.get(),
-                                          buffer_generator_->device(),
-                                          screen_manager_.get(),
-                                          window_delegate_manager_.get());
+    surface_factory_ozone_->InitializeGpu(
+        dri_.get(), buffer_generator_->device(), screen_manager_.get(),
+        window_delegate_manager_.get());
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
-        surface_factory_ozone_.get(),
-        window_delegate_manager_.get(),
+        surface_factory_ozone_.get(), window_delegate_manager_.get(),
         screen_manager_.get(),
         scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
             dri_.get(), screen_manager_.get(), NULL))));

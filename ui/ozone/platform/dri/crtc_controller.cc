@@ -31,10 +31,8 @@ CrtcController::~CrtcController() {
 }
 
 bool CrtcController::Modeset(const OverlayPlane& plane, drmModeModeInfo mode) {
-  if (!drm_->SetCrtc(crtc_,
-                     plane.buffer->GetFramebufferId(),
-                     std::vector<uint32_t>(1, connector_),
-                     &mode)) {
+  if (!drm_->SetCrtc(crtc_, plane.buffer->GetFramebufferId(),
+                     std::vector<uint32_t>(1, connector_), &mode)) {
     LOG(ERROR) << "Failed to modeset: error='" << strerror(errno)
                << "' crtc=" << crtc_ << " connector=" << connector_
                << " framebuffer_id=" << plane.buffer->GetFramebufferId()
@@ -94,10 +92,8 @@ bool CrtcController::SchedulePageFlip(const OverlayPlaneList& overlays) {
     const gfx::Size& size = plane.buffer->GetSize();
     gfx::RectF crop_rect = plane.crop_rect;
     crop_rect.Scale(size.width(), size.height());
-    if (!drm_->PageFlipOverlay(crtc_,
-                               plane.buffer->GetFramebufferId(),
-                               plane.display_bounds,
-                               crop_rect,
+    if (!drm_->PageFlipOverlay(crtc_, plane.buffer->GetFramebufferId(),
+                               plane.display_bounds, crop_rect,
                                plane.overlay_plane)) {
       LOG(ERROR) << "Cannot display on overlay: " << strerror(errno);
       return false;

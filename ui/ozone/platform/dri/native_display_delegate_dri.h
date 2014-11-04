@@ -51,8 +51,8 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate,
   virtual bool SetHDCPState(const DisplaySnapshot& output,
                             HDCPState state) override;
   virtual std::vector<ui::ColorCalibrationProfile>
-      GetAvailableColorCalibrationProfiles(
-          const ui::DisplaySnapshot& output) override;
+  GetAvailableColorCalibrationProfiles(
+      const ui::DisplaySnapshot& output) override;
   virtual bool SetColorCalibrationProfile(
       const ui::DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) override;

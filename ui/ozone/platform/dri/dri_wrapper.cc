@@ -89,11 +89,7 @@ bool DriWrapper::SetCrtc(uint32_t crtc_id,
   DCHECK(!connectors.empty());
   DCHECK(mode);
 
-  TRACE_EVENT2("dri",
-               "DriWrapper::SetCrtc",
-               "crtc",
-               crtc_id,
-               "size",
+  TRACE_EVENT2("dri", "DriWrapper::SetCrtc", "crtc", crtc_id, "size",
                gfx::Size(mode->hdisplay, mode->vdisplay).ToString());
   return !drmModeSetCrtc(fd_,
                          crtc_id,

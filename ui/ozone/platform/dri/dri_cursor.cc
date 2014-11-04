@@ -39,18 +39,16 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
 void DriCursor::ShowCursor() {
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
   if (cursor_.get())
-    hardware_->SetHardwareCursor(cursor_window_,
-                                 cursor_->bitmaps(),
-                                 bitmap_location(),
-                                 cursor_->frame_delay_ms());
+    hardware_->SetHardwareCursor(cursor_window_, cursor_->bitmaps(),
+                                 bitmap_location(), cursor_->frame_delay_ms());
   else
     HideCursor();
 }
 
 void DriCursor::HideCursor() {
   DCHECK_NE(cursor_window_, gfx::kNullAcceleratedWidget);
-  hardware_->SetHardwareCursor(
-      cursor_window_, std::vector<SkBitmap>(), gfx::Point(), 0);
+  hardware_->SetHardwareCursor(cursor_window_, std::vector<SkBitmap>(),
+                               gfx::Point(), 0);
 }
 
 void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,

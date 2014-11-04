@@ -123,10 +123,8 @@ void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget widget,
 
   if (cursor_frame_delay_ms_)
     cursor_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(cursor_frame_delay_ms_),
-        this,
-        &DriSurfaceFactory::OnCursorAnimationTimeout);
+        FROM_HERE, base::TimeDelta::FromMilliseconds(cursor_frame_delay_ms_),
+        this, &DriSurfaceFactory::OnCursorAnimationTimeout);
 
   if (state_ != INITIALIZED)
     return;

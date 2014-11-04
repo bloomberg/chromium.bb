@@ -151,9 +151,8 @@ bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
 
 uint32_t EgltestWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
   DispatchEventFromNativeUiEvent(
-      native_event,
-      base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                 base::Unretained(delegate_)));
+      native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                               base::Unretained(delegate_)));
 
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }

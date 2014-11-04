@@ -69,9 +69,7 @@ GbmPixmap::GbmPixmap(scoped_refptr<GbmBuffer> buffer)
 }
 
 bool GbmPixmap::Initialize(DriWrapper* dri) {
-  if (drmPrimeHandleToFD(dri->get_fd(),
-                         buffer_->GetHandle(),
-                         DRM_CLOEXEC,
+  if (drmPrimeHandleToFD(dri->get_fd(), buffer_->GetHandle(), DRM_CLOEXEC,
                          &dma_buf_)) {
     LOG(ERROR) << "Failed to export buffer to dma_buf";
     return false;

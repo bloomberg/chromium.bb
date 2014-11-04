@@ -56,8 +56,8 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
                                                uint32_t connector,
                                                const gfx::Point& origin,
                                                const drmModeModeInfo& mode) {
-  gfx::Rect modeset_bounds(
-      origin.x(), origin.y(), mode.hdisplay, mode.vdisplay);
+  gfx::Rect modeset_bounds(origin.x(), origin.y(), mode.hdisplay,
+                           mode.vdisplay);
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
   DCHECK(controllers_.end() != it) << "Display controller (crtc=" << crtc
                                    << ") doesn't exist.";
@@ -164,8 +164,7 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
                       dpms->prop_id,
                       DRM_MODE_DPMS_ON);
 
-  AddDisplayController(dri_,
-                       displays[0]->crtc()->crtc_id,
+  AddDisplayController(dri_, displays[0]->crtc()->crtc_id,
                        displays[0]->connector()->connector_id);
   ConfigureDisplayController(displays[0]->crtc()->crtc_id,
                              displays[0]->connector()->connector_id,

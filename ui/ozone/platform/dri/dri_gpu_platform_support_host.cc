@@ -49,10 +49,8 @@ void DriGpuPlatformSupportHost::RemoveChannelObserver(
 
 void DriGpuPlatformSupportHost::OnChannelEstablished(int host_id,
                                                      IPC::Sender* sender) {
-  TRACE_EVENT1("dri",
-               "DriGpuPlatformSupportHost::OnChannelEstablished",
-               "host_id",
-               host_id);
+  TRACE_EVENT1("dri", "DriGpuPlatformSupportHost::OnChannelEstablished",
+               "host_id", host_id);
   host_id_ = host_id;
   sender_ = sender;
 
@@ -64,21 +62,19 @@ void DriGpuPlatformSupportHost::OnChannelEstablished(int host_id,
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->OnChannelEstablished(host_id, sender);
 
-  FOR_EACH_OBSERVER(
-      ChannelObserver, channel_observers_, OnChannelEstablished());
+  FOR_EACH_OBSERVER(ChannelObserver, channel_observers_,
+                    OnChannelEstablished());
 }
 
 void DriGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
-  TRACE_EVENT1("dri",
-               "DriGpuPlatformSupportHost::OnChannelDestroyed",
-               "host_id",
-               host_id);
+  TRACE_EVENT1("dri", "DriGpuPlatformSupportHost::OnChannelDestroyed",
+               "host_id", host_id);
   if (host_id_ == host_id) {
     host_id_ = -1;
     sender_ = NULL;
 
-    FOR_EACH_OBSERVER(
-        ChannelObserver, channel_observers_, OnChannelDestroyed());
+    FOR_EACH_OBSERVER(ChannelObserver, channel_observers_,
+                      OnChannelDestroyed());
   }
 
   for (size_t i = 0; i < handlers_.size(); ++i)

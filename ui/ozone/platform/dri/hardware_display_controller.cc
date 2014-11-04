@@ -175,8 +175,7 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
 scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     uint32_t crtc) {
   for (ScopedVector<CrtcController>::iterator it = crtc_controllers_.begin();
-       it != crtc_controllers_.end();
-       ++it) {
+       it != crtc_controllers_.end(); ++it) {
     if ((*it)->crtc() == crtc) {
       scoped_ptr<CrtcController> controller(*it);
       crtc_controllers_.weak_erase(it);

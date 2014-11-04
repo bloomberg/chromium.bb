@@ -48,11 +48,10 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
                                           unsigned internalformat)
       : GLImageLinuxDMABuffer(size, internalformat) {}
 
-  bool Initialize(NativePixmap* pixmap,
-                  gfx::GpuMemoryBuffer::Format format) {
+  bool Initialize(NativePixmap* pixmap, gfx::GpuMemoryBuffer::Format format) {
     base::FileDescriptor handle(pixmap->GetDmaBufFd(), false);
-    if (!GLImageLinuxDMABuffer::Initialize(
-            handle, format, pixmap->GetDmaBufPitch()))
+    if (!GLImageLinuxDMABuffer::Initialize(handle, format,
+                                           pixmap->GetDmaBufPitch()))
       return false;
     pixmap_ = pixmap;
     return true;

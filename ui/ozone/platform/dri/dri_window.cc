@@ -111,9 +111,8 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
 
 uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
   DispatchEventFromNativeUiEvent(
-      native_event,
-      base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                 base::Unretained(delegate_)));
+      native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                               base::Unretained(delegate_)));
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 

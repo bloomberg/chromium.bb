@@ -155,8 +155,8 @@ void NativeDisplayDelegateProxy::OnUpdateNativeDisplays(
   for (size_t i = 0; i < displays.size(); ++i)
     displays_.push_back(new DisplaySnapshotProxy(displays[i]));
 
-  FOR_EACH_OBSERVER(
-      NativeDisplayObserver, observers_, OnConfigurationChanged());
+  FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
+                    OnConfigurationChanged());
 }
 
 }  // namespace ui

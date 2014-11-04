@@ -34,12 +34,8 @@ HardwareDisplayController* DriWindowDelegateImpl::GetController() {
 }
 
 void DriWindowDelegateImpl::OnBoundsChanged(const gfx::Rect& bounds) {
-  TRACE_EVENT2("dri",
-               "DriWindowDelegateImpl::OnBoundsChanged",
-               "widget",
-               widget_,
-               "bounds",
-               bounds.ToString());
+  TRACE_EVENT2("dri", "DriWindowDelegateImpl::OnBoundsChanged", "widget",
+               widget_, "bounds", bounds.ToString());
   controller_ = screen_manager_->GetDisplayController(bounds);
 }
 

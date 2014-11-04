@@ -66,18 +66,16 @@ class DemoWindow : public ui::PlatformWindowDelegate {
    }
 
   // PlatformWindowDelegate:
-  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
-  virtual void OnDamageRect(const gfx::Rect& damaged_region) override {}
-  virtual void DispatchEvent(ui::Event* event) override {}
-  virtual void OnCloseRequest() override {
-    Quit();
-  }
-  virtual void OnClosed() override {}
-  virtual void OnWindowStateChanged(
-      ui::PlatformWindowState new_state) override {}
-  virtual void OnLostCapture() override {}
-  virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) override {
+   virtual void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+   virtual void OnDamageRect(const gfx::Rect& damaged_region) override {}
+   virtual void DispatchEvent(ui::Event* event) override {}
+   virtual void OnCloseRequest() override { Quit(); }
+   virtual void OnClosed() override {}
+   virtual void OnWindowStateChanged(
+       ui::PlatformWindowState new_state) override {}
+   virtual void OnLostCapture() override {}
+   virtual void OnAcceleratedWidgetAvailable(
+       gfx::AcceleratedWidget widget) override {
     DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
     widget_ = widget;
   }

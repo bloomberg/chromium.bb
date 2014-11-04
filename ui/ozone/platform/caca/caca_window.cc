@@ -104,9 +104,8 @@ void CacaWindow::OnCacaQuit() {
 
 void CacaWindow::OnCacaEvent(ui::Event* event) {
   DispatchEventFromNativeUiEvent(
-      event,
-      base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                 base::Unretained(delegate_)));
+      event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                        base::Unretained(delegate_)));
 }
 
 gfx::Rect CacaWindow::GetBounds() { return gfx::Rect(bitmap_size_); }

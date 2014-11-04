@@ -139,8 +139,7 @@ void DriGpuPlatformSupport::OnRefreshNativeDisplays(
   // their configuration immediately.
   for (size_t i = 0; i < native_displays.size(); ++i) {
     std::vector<DisplaySnapshot_Params>::const_iterator it =
-        std::find_if(cached_displays.begin(),
-                     cached_displays.end(),
+        std::find_if(cached_displays.begin(), cached_displays.end(),
                      FindDisplayById(native_displays[i]->display_id()));
 
     if (it == cached_displays.end())
@@ -183,8 +182,8 @@ void DriGpuPlatformSupport::OnConfigureNativeDisplay(
   // support panel fitting and they can use different modes even if the mode
   // isn't explicitly declared).
   if (!mode)
-    mode = ndd_->FindDisplayMode(
-        mode_param.size, mode_param.is_interlaced, mode_param.refresh_rate);
+    mode = ndd_->FindDisplayMode(mode_param.size, mode_param.is_interlaced,
+                                 mode_param.refresh_rate);
 
   if (!mode) {
     LOG(ERROR) << "Failed to find mode: size=" << mode_param.size.ToString()
