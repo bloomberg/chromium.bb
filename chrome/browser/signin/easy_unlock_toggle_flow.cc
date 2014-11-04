@@ -88,11 +88,14 @@ GURL EasyUnlockToggleFlow::ToggleApiCall::CreateApiCallUrl() {
 }
 
 std::string EasyUnlockToggleFlow::ToggleApiCall::CreateApiCallBody() {
-  const char kBodyFormat[] = "{\"enable\":%s,\"publicKey\":\"%s\"}";
-  return base::StringPrintf(
-      kBodyFormat,
-      toggle_enable_ ? "true" : "false",
-      phone_public_key_.c_str());
+  const char kEnableBodyFormat[] = "{\"enable\": true,\"publicKey\":\"%s\"}";
+  const char kDisableBodyFormat[] =
+      "{ \"enable\": false, \"applyToAll\": true }";
+
+  if (toggle_enable_)
+    return base::StringPrintf(kEnableBodyFormat, phone_public_key_.c_str());
+  else
+    return std::string(kDisableBodyFormat);
 }
 
 std::string
