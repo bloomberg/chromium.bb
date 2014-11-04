@@ -7,7 +7,6 @@ package org.chromium.components.devtools_bridge;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -287,146 +286,67 @@ public class LocalSessionBridge {
      * Exchange java objects instead of serialized messages.
      */
     public static final class ServerSessionProxy implements SessionBase.ServerSessionInterface {
-        private final SessionBase.ServerSessionInterface mProxee;
-        private final SessionBase.Executor mServerExecutor;
-        private final SessionBase.Executor mClientExecutor;
-        private final int mDelayMs;
+        private static final String SESSION_ID = "";
+        private final SignalingReceiverProxy mProxy;
 
         public ServerSessionProxy(
                 SessionBase.Executor serverExecutor, SessionBase.Executor clientExecutor,
                 SessionBase.ServerSessionInterface proxee, int delayMs) {
-            mServerExecutor = serverExecutor;
-            mClientExecutor = clientExecutor;
-            mProxee = proxee;
-            mDelayMs = delayMs;
+            mProxy = new SignalingReceiverProxy(
+                    serverExecutor, clientExecutor, new ServerSessionAdaptor(proxee), delayMs);
         }
 
         public SessionBase.Executor serverExecutor() {
-            return mServerExecutor;
+            return mProxy.serverExecutor();
         }
 
         public SessionBase.Executor clientExecutor() {
-            return mClientExecutor;
+            return mProxy.clientExecutor();
         }
 
         @Override
-        public void startSession(final RTCConfiguration config,
-                                 final String offer,
-                                 final SessionBase.NegotiationCallback callback) {
-            Log.d(TAG, "Starting session: " + offer);
-            mServerExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.startSession(config, offer, wrap(callback));
-                }
-            });
+        public void startSession(
+                RTCConfiguration config, String offer, SessionBase.NegotiationCallback callback) {
+            mProxy.startSession(SESSION_ID, config, offer, callback);
         }
 
         @Override
-        public void renegotiate(final String offer,
-                                final SessionBase.NegotiationCallback callback) {
-            Log.d(TAG, "Renegotiation: " + offer);
-            mServerExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.renegotiate(offer, wrap(callback));
-                }
-            });
+        public void renegotiate(String offer, SessionBase.NegotiationCallback callback) {
+            mProxy.renegotiate(SESSION_ID, offer, callback);
         }
 
         @Override
-        public void iceExchange(final List<String> clientCandidates,
-                                final SessionBase.IceExchangeCallback callback) {
-            Log.d(TAG, "Client ice candidates " + Integer.toString(clientCandidates.size()));
-            mServerExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.iceExchange(clientCandidates, wrap(callback));
-                }
-            });
-        }
-
-        private NegotiationCallbackProxy wrap(SessionBase.NegotiationCallback callback) {
-            return new NegotiationCallbackProxy(callback, mClientExecutor, mDelayMs);
-        }
-
-        private IceExchangeCallbackProxy wrap(SessionBase.IceExchangeCallback callback) {
-            return new IceExchangeCallbackProxy(callback, mClientExecutor, mDelayMs);
+        public void iceExchange(
+                List<String> clientCandidates, SessionBase.IceExchangeCallback callback) {
+            mProxy.iceExchange(SESSION_ID, clientCandidates, callback);
         }
     }
 
-    private static final class NegotiationCallbackProxy implements SessionBase.NegotiationCallback {
-        private final SessionBase.NegotiationCallback mProxee;
-        private final SessionBase.Executor mClientExecutor;
-        private final int mDelayMs;
+    private static final class ServerSessionAdaptor implements SignalingReceiver {
+        private final SessionBase.ServerSessionInterface mAdaptee;
 
-        public NegotiationCallbackProxy(SessionBase.NegotiationCallback callback,
-                                        SessionBase.Executor clientExecutor,
-                                        int delayMs) {
-            mProxee = callback;
-            mClientExecutor = clientExecutor;
-            mDelayMs = delayMs;
+        public ServerSessionAdaptor(SessionBase.ServerSessionInterface adaptee) {
+            mAdaptee = adaptee;
         }
 
         @Override
-        public void onSuccess(final String answer) {
-            Log.d(TAG, "Sending answer:  " + answer);
-            mClientExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.onSuccess(answer);
-                }
-            });
+        public void startSession(
+                String sessionId, RTCConfiguration config, String offer,
+                SessionBase.NegotiationCallback callback) {
+            mAdaptee.startSession(config, offer, callback);
         }
 
         @Override
-        public void onFailure(final String message) {
-            mClientExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.onFailure(message);
-                }
-            });
-        }
-    }
-
-    private static final class IceExchangeCallbackProxy implements SessionBase.IceExchangeCallback {
-        private final SessionBase.IceExchangeCallback mProxee;
-        private final SessionBase.Executor mClientExecutor;
-        private final int mDelayMs;
-
-        public IceExchangeCallbackProxy(SessionBase.IceExchangeCallback callback,
-                                        SessionBase.Executor clientExecutor,
-                                        int delayMs) {
-            mProxee = callback;
-            mClientExecutor = clientExecutor;
-            mDelayMs = delayMs;
+        public void renegotiate(
+                String sessionId, String offer, SessionBase.NegotiationCallback callback) {
+            mAdaptee.renegotiate(offer, callback);
         }
 
         @Override
-        public void onSuccess(List<String> serverCandidates) {
-            Log.d(TAG, "Server ice candidates " + Integer.toString(serverCandidates.size()));
-
-            final List<String> serverCandidatesCopy = new ArrayList<String>();
-            serverCandidatesCopy.addAll(serverCandidates);
-
-            mClientExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.onSuccess(serverCandidatesCopy);
-                }
-            });
-        }
-
-        @Override
-        public void onFailure(final String message) {
-            Log.d(TAG, "Ice exchange falure: " + message);
-            mClientExecutor.postOnSessionThread(mDelayMs, new Runnable() {
-                @Override
-                public void run() {
-                    mProxee.onFailure(message);
-                }
-            });
+        public void iceExchange(
+                String sessionId, List<String> clientCandidates,
+                SessionBase.IceExchangeCallback callback) {
+            mAdaptee.iceExchange(clientCandidates, callback);
         }
     }
 }
