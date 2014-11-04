@@ -75,7 +75,15 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422489 URLRequestResourceBundleJob::GetData 1"));
 
-    *data = rb.GetRawDataResource(resource_id_).as_string();
+    const base::StringPiece resource_as_string_piece =
+        rb.GetRawDataResource(resource_id_);
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
+    tracked_objects::ScopedTracker tracking_profile15(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422489 URLRequestResourceBundleJob::GetData 1.5"));
+
+    *data = resource_as_string_piece.as_string();
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/422489 is fixed.
     tracked_objects::ScopedTracker tracking_profile2(
