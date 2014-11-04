@@ -28835,14 +28835,14 @@
     "sandybridge-full-group": {
         "archive_build_debug": true,
         "boards": [
-            "lumpy"
+            "parrot"
         ],
         "build_type": "full",
         "child_configs": [
             {
                 "archive_build_debug": true,
                 "boards": [
-                    "lumpy"
+                    "parrot"
                 ],
                 "build_type": "full",
                 "chrome_sdk": true,
@@ -28856,11 +28856,38 @@
                     "test",
                     "factory_install"
                 ],
-                "name": "lumpy-full",
+                "name": "parrot-full",
                 "prebuilts": "public",
                 "trybot_list": true,
                 "usepkg_build_packages": false,
                 "usepkg_toolchain": false
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "lumpy"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "lumpy-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "usepkg_build_packages": false,
+                "usepkg_toolchain": false,
+                "vm_tests": []
             },
             {
                 "archive_build_debug": true,
@@ -28882,33 +28909,6 @@
                     "factory_install"
                 ],
                 "name": "butterfly-full",
-                "prebuilts": "public",
-                "trybot_list": true,
-                "unittests": null,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
-                "vm_tests": []
-            },
-            {
-                "archive_build_debug": true,
-                "boards": [
-                    "parrot"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "full",
-                "chrome_sdk": true,
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "description": "Full Builds",
-                "git_sync": true,
-                "grouped": true,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test",
-                    "factory_install"
-                ],
-                "name": "parrot-full",
                 "prebuilts": "public",
                 "trybot_list": true,
                 "unittests": null,
@@ -28946,7 +28946,7 @@
         ],
         "chrome_sdk": true,
         "chroot_replace": true,
-        "description": "Full Builds; Group config (boards: lumpy, butterfly, parrot, stumpy)",
+        "description": "Full Builds; Group config (boards: parrot, lumpy, butterfly, stumpy)",
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -28967,7 +28967,7 @@
         "binhost_bucket": "gs://chromeos-dev-installer",
         "binhost_key": "RELEASE_BINHOST",
         "boards": [
-            "lumpy"
+            "parrot"
         ],
         "build_type": "canary",
         "child_configs": [
@@ -28978,10 +28978,66 @@
                 "binhost_bucket": "gs://chromeos-dev-installer",
                 "binhost_key": "RELEASE_BINHOST",
                 "boards": [
-                    "lumpy"
+                    "parrot"
                 ],
                 "build_type": "canary",
                 "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "critical_for_chrome": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "parrot-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "chrome_internal",
+                    "-cros-debug",
+                    "-highdpi"
+                ],
+                "usepkg_build_packages": false,
+                "usepkg_toolchain": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "lumpy"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
                 "chromeos_official": true,
                 "chroot_replace": true,
                 "critical_for_chrome": true,
@@ -29011,6 +29067,7 @@
                 "push_image": true,
                 "signer_tests": true,
                 "trybot_list": true,
+                "unittests": null,
                 "upload_symbols": true,
                 "useflags": [
                     "chrome_internal",
@@ -29019,11 +29076,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_toolchain": false,
-                "vm_tests": [
-                    "smoke_suite",
-                    "dev_mode_test",
-                    "cros_vm_test"
-                ]
+                "vm_tests": []
             },
             {
                 "afdo_use": true,
@@ -29061,59 +29114,6 @@
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
                 "name": "butterfly-release",
-                "overlays": "both",
-                "paygen": true,
-                "push_image": true,
-                "signer_tests": true,
-                "trybot_list": true,
-                "unittests": null,
-                "upload_symbols": true,
-                "useflags": [
-                    "chrome_internal",
-                    "-cros-debug",
-                    "-highdpi"
-                ],
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
-                "vm_tests": []
-            },
-            {
-                "afdo_use": true,
-                "archive_build_debug": true,
-                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
-                "binhost_bucket": "gs://chromeos-dev-installer",
-                "binhost_key": "RELEASE_BINHOST",
-                "boards": [
-                    "parrot"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "canary",
-                "chrome_sdk": true,
-                "chrome_sdk_build_chrome": false,
-                "chromeos_official": true,
-                "chroot_replace": true,
-                "critical_for_chrome": true,
-                "description": "Release Builds (canary) (internal)",
-                "dev_installer_prebuilts": true,
-                "grouped": true,
-                "hw_tests": [
-                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
-                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
-                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
-                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-                ],
-                "hwqual": true,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test",
-                    "factory_install"
-                ],
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "parrot-release",
                 "overlays": "both",
                 "paygen": true,
                 "push_image": true,
@@ -29187,7 +29187,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "critical_for_chrome": true,
-        "description": "Release Builds (canary) (internal); Group config (boards: lumpy, butterfly, parrot, stumpy)",
+        "description": "Release Builds (canary) (internal); Group config (boards: parrot, lumpy, butterfly, stumpy)",
         "dev_installer_prebuilts": true,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",

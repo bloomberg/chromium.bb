@@ -2665,9 +2665,9 @@ _AddGroupConfig('pineview', 'x86-mario', (
 ))
 
 # sandybridge chipset boards
-_AddGroupConfig('sandybridge', 'lumpy', (
+_AddGroupConfig('sandybridge', 'parrot', (
+    'lumpy',
     'butterfly',
-    'parrot',
     'stumpy',
 ))
 
