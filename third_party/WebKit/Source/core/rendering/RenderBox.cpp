@@ -1284,6 +1284,8 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground()))) {
         layerRenderers.append(document().documentElement()->renderer());
         layerRenderers.append(view());
+        if (view()->frameView())
+            view()->frameView()->setNeedsFullPaintInvalidation();
     } else {
         layerRenderers.append(this);
     }

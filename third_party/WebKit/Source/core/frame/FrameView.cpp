@@ -991,8 +991,6 @@ void FrameView::layout(bool allowSubtree)
 
     layer->updateLayerPositionsAfterLayout();
 
-    if (m_doFullPaintInvalidation)
-        renderView()->compositor()->fullyInvalidatePaint();
     renderView()->compositor()->didLayout();
 
     m_layoutCount++;
@@ -1048,6 +1046,9 @@ void FrameView::invalidateTreeIfNeeded()
 
     PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation);
 
+    if (m_doFullPaintInvalidation)
+        renderView()->compositor()->fullyInvalidatePaint();
+
     rootForPaintInvalidation.invalidateTreeIfNeeded(rootPaintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
@@ -1057,7 +1058,7 @@ void FrameView::invalidateTreeIfNeeded()
         invalidateRect(horizontalBarDamage());
     resetScrollbarDamage();
 
-    m_doFullPaintInvalidation = false;
+
 #ifndef NDEBUG
     renderView()->assertSubtreeClearedPaintInvalidationState();
 #endif
@@ -1714,6 +1715,8 @@ void FrameView::scrollbarExistenceDidChange()
     // http://crbug.com/269692
     bool useOverlayScrollbars = ScrollbarTheme::theme()->usesOverlayScrollbars();
 
+    // FIXME: this call to layout() could be called within FrameView::layout(), but before performLayout(),
+    // causing double-layout. See also crbug.com/429242.
     if (!useOverlayScrollbars && needsLayout())
         layout();
 
@@ -2599,6 +2602,8 @@ void FrameView::invalidateTreeIfNeededRecursive()
 
         toLocalFrame(child)->view()->invalidateTreeIfNeededRecursive();
     }
+
+    m_doFullPaintInvalidation = false;
 }
 
 void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)

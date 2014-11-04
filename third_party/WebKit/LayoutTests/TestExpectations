@@ -1,3 +1,6 @@
+crbug.com/425872 fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ NeedsRebaseline ]
+crbug.com/425872 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 

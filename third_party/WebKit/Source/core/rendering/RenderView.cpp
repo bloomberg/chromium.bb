@@ -179,7 +179,7 @@ bool RenderView::shouldDoFullPaintInvalidationForNextLayout() const
             if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
                 if (backgroundRenderer->style()->hasFixedBackgroundImage()
                     && mustInvalidateFillLayersPaintOnHeightChange(backgroundRenderer->style()->backgroundLayers()))
-                return true;
+                    return true;
             }
         }
     }

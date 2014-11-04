@@ -122,6 +122,7 @@ public:
     bool layoutSizeFixedToFrameSize() { return m_layoutSizeFixedToFrameSize; }
 
     bool needsFullPaintInvalidation() const { return m_doFullPaintInvalidation; }
+    void setNeedsFullPaintInvalidation() { m_doFullPaintInvalidation = true; }
 
     void updateAcceleratedCompositingSettings();
 
