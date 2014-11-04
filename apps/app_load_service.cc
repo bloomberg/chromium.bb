@@ -28,7 +28,7 @@ using extensions::ExtensionSystem;
 namespace apps {
 
 AppLoadService::PostReloadAction::PostReloadAction()
-    : action_type(LAUNCH),
+    : action_type(LAUNCH_FOR_RELOAD),
       command_line(base::CommandLine::NO_PROGRAM) {
 }
 
@@ -71,7 +71,7 @@ bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
 
   // Schedule the app to be launched once loaded.
   PostReloadAction& action = post_reload_actions_[extension_id];
-  action.action_type = LAUNCH_WITH_COMMAND_LINE;
+  action.action_type = LAUNCH_FOR_LOAD_AND_LAUNCH;
   action.command_line = command_line;
   action.current_dir = current_dir;
   return true;
@@ -98,15 +98,18 @@ void AppLoadService::Observe(int type,
     return;
 
   switch (it->second.action_type) {
-    case LAUNCH:
-      LaunchPlatformApp(profile_, extension);
+    case LAUNCH_FOR_RELOAD:
+      LaunchPlatformApp(profile_, extension, extensions::SOURCE_RELOAD);
       break;
     case RESTART:
       RestartPlatformApp(profile_, extension);
       break;
-    case LAUNCH_WITH_COMMAND_LINE:
-      LaunchPlatformAppWithCommandLine(
-          profile_, extension, it->second.command_line, it->second.current_dir);
+    case LAUNCH_FOR_LOAD_AND_LAUNCH:
+      LaunchPlatformAppWithCommandLine(profile_,
+                                       extension,
+                                       it->second.command_line,
+                                       it->second.current_dir,
+                                       extensions::SOURCE_LOAD_AND_LAUNCH);
       break;
     default:
       NOTREACHED();
@@ -127,7 +130,7 @@ void AppLoadService::OnExtensionUnloaded(
   if (WasUnloadedForReload(extension->id(), reason) &&
       extension_prefs->IsActive(extension->id()) &&
       !HasPostReloadAction(extension->id())) {
-    post_reload_actions_[extension->id()].action_type = LAUNCH;
+    post_reload_actions_[extension->id()].action_type = LAUNCH_FOR_RELOAD;
   }
 }
 

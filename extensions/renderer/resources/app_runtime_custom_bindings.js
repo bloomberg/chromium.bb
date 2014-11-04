@@ -47,7 +47,10 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
         $Array.push(items, item);
       }
       if (--numItems === 0) {
-        var data = { isKioskSession: launchData.isKioskSession };
+        var data = {
+          isKioskSession: launchData.isKioskSession,
+          source: launchData.source
+        };
         if (items.length !== 0) {
           data.id = launchData.id;
           data.items = items;

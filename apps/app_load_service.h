@@ -30,9 +30,9 @@ class AppLoadService : public KeyedService,
                        public extensions::ExtensionRegistryObserver {
  public:
   enum PostReloadActionType {
-    LAUNCH,
+    LAUNCH_FOR_RELOAD,
     RESTART,
-    LAUNCH_WITH_COMMAND_LINE,
+    LAUNCH_FOR_LOAD_AND_LAUNCH,
   };
 
   struct PostReloadAction {

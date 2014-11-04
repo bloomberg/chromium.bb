@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -73,6 +74,10 @@ struct AppLaunchParams {
   // If non-empty, the current directory from which any relative paths on the
   // command line should be expanded from.
   base::FilePath current_directory;
+
+  // Record where the app is launched from for tracking purpose.
+  // Different app may have their own enumeration of sources.
+  extensions::AppLaunchSource source;
 };
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_LAUNCH_PARAMS_H_

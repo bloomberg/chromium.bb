@@ -122,6 +122,7 @@ void AppListControllerDelegateImpl::LaunchApp(
         extension_urls::kWebstoreSourceField,
         AppListSourceToString(source));
   }
+  params.source = extensions::SOURCE_APP_LAUNCHER;
 
   FillLaunchParams(&params);
   OpenApplication(params);

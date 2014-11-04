@@ -152,8 +152,11 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
     PerAppSettingsServiceFactory::GetForBrowserContext(profile)->
         SetDesktopLastLaunchedFrom(extension->id(), params.desktop_type);
 
-    apps::LaunchPlatformAppWithCommandLine(
-        profile, extension, params.command_line, params.current_directory);
+    apps::LaunchPlatformAppWithCommandLine(profile,
+                                           extension,
+                                           params.command_line,
+                                           params.current_directory,
+                                           params.source);
     return NULL;
   }
 

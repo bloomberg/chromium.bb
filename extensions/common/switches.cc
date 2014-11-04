@@ -99,6 +99,9 @@ const char kShowComponentExtensionOptions[] =
 // Adds the given extension ID to all the permission whitelists.
 const char kWhitelistedExtensionID[] = "whitelisted-extension-id";
 
+// Pass launch source to platform apps.
+const char kTraceAppSource[] = "enable-trace-app-source";
+
 }  // namespace switches
 
 }  // namespace extensions

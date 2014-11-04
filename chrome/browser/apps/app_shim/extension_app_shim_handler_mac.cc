@@ -28,6 +28,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
 using extensions::AppWindow;
@@ -185,7 +186,8 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   CoreAppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (files.empty()) {
-    apps::LaunchPlatformApp(profile, extension);
+    apps::LaunchPlatformApp(
+        profile, extension, extensions::SOURCE_COMMAND_LINE);
   } else {
     for (std::vector<base::FilePath>::const_iterator it = files.begin();
          it != files.end(); ++it) {

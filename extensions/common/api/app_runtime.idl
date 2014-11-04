@@ -15,6 +15,22 @@ namespace app.runtime {
     DOMString type;
   };
 
+  // Enumeration of app launch sources.
+  enum LaunchSource {
+    app_launcher,
+    new_tab_page,
+    reload,
+    restart,
+    load_and_launch,
+    command_line,
+    file_handler,
+    url_handler,
+
+    system_tray,
+    about_page,
+    keyboard
+  };
+
   // Optional data for the launch. Either <code>items</code>, or
   // the pair (<code>url, referrerUrl</code>) can be present for any given
   // launch.
@@ -40,6 +56,9 @@ namespace app.runtime {
     // href="https://support.google.com/chromebook/answer/3134673">Chrome OS
     // kiosk session</a>.
     boolean? isKioskSession;
+
+    // Where the app is launched from.
+    LaunchSource? source;
   };
 
   // This object specifies details and operations to perform on the embedding

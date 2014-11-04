@@ -17,35 +17,29 @@ namespace {
 class CommonSwitches {
  public:
   CommonSwitches()
-      : easy_off_store_install(
-            NULL,
-            FeatureSwitch::DEFAULT_DISABLED),
-        force_dev_mode_highlighting(
-            switches::kForceDevModeHighlighting,
-            FeatureSwitch::DEFAULT_DISABLED),
-        prompt_for_external_extensions(
-            NULL,
+      : easy_off_store_install(NULL, FeatureSwitch::DEFAULT_DISABLED),
+        force_dev_mode_highlighting(switches::kForceDevModeHighlighting,
+                                    FeatureSwitch::DEFAULT_DISABLED),
+        prompt_for_external_extensions(NULL,
 #if defined(OS_WIN)
-            FeatureSwitch::DEFAULT_ENABLED),
+                                       FeatureSwitch::DEFAULT_ENABLED),
 #else
-            FeatureSwitch::DEFAULT_DISABLED),
+                                       FeatureSwitch::DEFAULT_DISABLED),
 #endif
-        error_console(
-            switches::kErrorConsole,
-            FeatureSwitch::DEFAULT_DISABLED),
-        enable_override_bookmarks_ui(
-            switches::kEnableOverrideBookmarksUI,
-            FeatureSwitch::DEFAULT_DISABLED),
-        extension_action_redesign(
-            switches::kExtensionActionRedesign,
-            FeatureSwitch::DEFAULT_DISABLED),
+        error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_DISABLED),
+        enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
+                                     FeatureSwitch::DEFAULT_DISABLED),
+        extension_action_redesign(switches::kExtensionActionRedesign,
+                                  FeatureSwitch::DEFAULT_DISABLED),
         scripts_require_action(switches::kScriptsRequireAction,
                                FeatureSwitch::DEFAULT_DISABLED),
-        embedded_extension_options(
-            switches::kEmbeddedExtensionOptions,
-            FeatureSwitch::DEFAULT_DISABLED),
+        embedded_extension_options(switches::kEmbeddedExtensionOptions,
+                                   FeatureSwitch::DEFAULT_DISABLED),
         mime_handler_view(switches::kMimeHandlerView,
-                          FeatureSwitch::DEFAULT_DISABLED) {}
+                          FeatureSwitch::DEFAULT_DISABLED),
+        trace_app_source(switches::kTraceAppSource,
+                         FeatureSwitch::DEFAULT_DISABLED) {
+  }
 
   // Enables extensions to be easily installed from sites other than the web
   // store.
@@ -63,6 +57,7 @@ class CommonSwitches {
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
   FeatureSwitch mime_handler_view;
+  FeatureSwitch trace_app_source;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -96,6 +91,9 @@ FeatureSwitch* FeatureSwitch::embedded_extension_options() {
 }
 FeatureSwitch* FeatureSwitch::mime_handler_view() {
   return &g_common_switches.Get().mime_handler_view;
+}
+FeatureSwitch* FeatureSwitch::trace_app_source() {
+  return &g_common_switches.Get().trace_app_source;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

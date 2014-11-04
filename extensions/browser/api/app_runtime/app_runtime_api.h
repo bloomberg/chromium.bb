@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "extensions/common/constants.h"
 
 class GURL;
 
@@ -36,7 +37,8 @@ class AppRuntimeEventRouter {
 
   // Dispatches the onLaunched event to the given app.
   static void DispatchOnLaunchedEvent(content::BrowserContext* context,
-                                      const Extension* extension);
+                                      const Extension* extension,
+                                      extensions::AppLaunchSource source);
 
   // Dispatches the onRestarted event to the given app, providing a list of
   // restored file entries from the previous run.

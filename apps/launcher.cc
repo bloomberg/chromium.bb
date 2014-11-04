@@ -85,14 +85,6 @@ bool DoMakePathAbsolute(const base::FilePath& current_directory,
   return true;
 }
 
-// Helper method to launch the platform app |extension| with no data. This
-// should be called in the fallback case, where it has been impossible to
-// load or obtain file launch data.
-void LaunchPlatformAppWithNoData(Profile* profile, const Extension* extension) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, extension);
-}
-
 // Class to handle launching of platform apps to open specific paths.
 // An instance of this class is created for each launch. The lifetime of these
 // instances is managed by reference counted pointers. As long as an instance
@@ -120,7 +112,7 @@ class PlatformAppPathLauncher
   void Launch() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (file_paths_.empty()) {
-      LaunchPlatformAppWithNoData(profile_, extension_);
+      LaunchWithNoLaunchData();
       return;
     }
 
@@ -193,7 +185,9 @@ class PlatformAppPathLauncher
 
   void LaunchWithNoLaunchData() {
     // This method is required as an entry point on the UI thread.
-    LaunchPlatformAppWithNoData(profile_, extension_);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    AppRuntimeEventRouter::DispatchOnLaunchedEvent(
+        profile_, extension_, extensions::SOURCE_FILE_HANDLER);
   }
 
   void OnMimeTypesCollected(scoped_ptr<std::vector<std::string> > mime_types) {
@@ -313,7 +307,8 @@ class PlatformAppPathLauncher
 void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
                                       const base::CommandLine& command_line,
-                                      const base::FilePath& current_directory) {
+                                      const base::FilePath& current_directory,
+                                      extensions::AppLaunchSource source) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -344,7 +339,7 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
   // causes problems on the bots.
   if (args.empty() || (command_line.HasSwitch(switches::kTestType) &&
                        args[0] == about_blank_url)) {
-    LaunchPlatformAppWithNoData(profile, extension);
+    AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, extension, source);
     return;
   }
 
@@ -362,12 +357,15 @@ void LaunchPlatformAppWithPath(Profile* profile,
   launcher->Launch();
 }
 
-void LaunchPlatformApp(Profile* profile, const Extension* extension) {
-  LaunchPlatformAppWithCommandLine(profile,
-                                   extension,
-                                   base::CommandLine(
-                                       base::CommandLine::NO_PROGRAM),
-                                   base::FilePath());
+void LaunchPlatformApp(Profile* profile,
+                       const Extension* extension,
+                       extensions::AppLaunchSource source) {
+  LaunchPlatformAppWithCommandLine(
+      profile,
+      extension,
+      base::CommandLine(base::CommandLine::NO_PROGRAM),
+      base::FilePath(),
+      source);
 }
 
 void LaunchPlatformAppWithFileHandler(
@@ -399,8 +397,10 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
       ExtensionHasEventListener(extension->id(),
                                 app_runtime::OnLaunched::kEventName);
 
-  if (listening_to_launch && had_windows)
-    LaunchPlatformAppWithNoData(profile, extension);
+  if (listening_to_launch && had_windows) {
+    AppRuntimeEventRouter::DispatchOnLaunchedEvent(
+        profile, extension, extensions::SOURCE_RESTART);
+  }
 }
 
 void LaunchPlatformAppWithUrl(Profile* profile,

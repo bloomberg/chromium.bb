@@ -33,6 +33,7 @@ extern const char kMimeHandlerView[];
 extern const char kScriptsRequireAction[];
 extern const char kEnableScriptsRequireAction[];
 extern const char kShowComponentExtensionOptions[];
+extern const char kTraceAppSource[];
 extern const char kWhitelistedExtensionID[];
 
 }  // namespace switches

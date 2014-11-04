@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "extensions/common/constants.h"
+
 class GURL;
 class Profile;
 
@@ -26,10 +28,12 @@ namespace apps {
 // the |command_line| fields present. |extension| and |profile| must not be
 // NULL. An empty |command_line| means there is no launch data. If non-empty,
 // |current_directory| is used to expand any relative paths on the command line.
+// |source| is one of the enumerated values which trace how the app is launched.
 void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const extensions::Extension* extension,
                                       const base::CommandLine& command_line,
-                                      const base::FilePath& current_directory);
+                                      const base::FilePath& current_directory,
+                                      extensions::AppLaunchSource source);
 
 // Launches the platform app |extension| by issuing an onLaunched event
 // with the contents of |file_path| available through the launch data.
@@ -37,9 +41,11 @@ void LaunchPlatformAppWithPath(Profile* profile,
                                const extensions::Extension* extension,
                                const base::FilePath& file_path);
 
-// Launches the platform app |extension| with no launch data.
+// Launches the platform app |extension|. |source| tells us how the app is
+// launched.
 void LaunchPlatformApp(Profile* profile,
-                       const extensions::Extension* extension);
+                       const extensions::Extension* extension,
+                       extensions::AppLaunchSource source);
 
 // Launches the platform app |extension| with |handler_id| and the contents of
 // |file_paths| available through the launch data. |handler_id| corresponds to

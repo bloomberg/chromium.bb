@@ -82,7 +82,19 @@ void ShowHelpImpl(Browser* browser,
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           genius_app::kGeniusAppId,
           extensions::ExtensionRegistry::EVERYTHING);
-  OpenApplication(AppLaunchParams(profile, extension, 0, host_desktop_type));
+  AppLaunchParams params(profile, extension, 0, host_desktop_type);
+  switch (source) {
+    case HELP_SOURCE_KEYBOARD:
+      params.source = extensions::SOURCE_KEYBOARD;
+      break;
+    case HELP_SOURCE_MENU:
+      params.source = extensions::SOURCE_SYSTEM_TRAY;
+      break;
+    case HELP_SOURCE_WEBUI:
+      params.source = extensions::SOURCE_ABOUT_PAGE;
+      break;
+  }
+  OpenApplication(params);
 #else
   GURL url;
   switch (source) {

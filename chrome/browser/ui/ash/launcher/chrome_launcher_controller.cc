@@ -739,6 +739,10 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
         extension_url, extension_urls::kWebstoreSourceField, source_value);
   }
 
+  params.source = (source == ash::LAUNCH_FROM_UNKNOWN)
+                      ? extensions::SOURCE_UNTRACKED
+                      : extensions::SOURCE_APP_LAUNCHER;
+
   OpenApplication(params);
 }
 
@@ -1756,7 +1760,7 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
   else if (is_enabled && !was_enabled)
     ash::Shell::GetInstance()->CreateKeyboard();
 }
-#endif //  defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 ash::ShelfItemStatus ChromeLauncherController::GetAppState(
     const std::string& app_id) {

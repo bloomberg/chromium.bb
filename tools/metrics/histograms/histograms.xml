@@ -7632,6 +7632,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.AppLaunchSource" enum="AppLaunchSource">
+  <owner>benwells@chromium.org</owner>
+  <owner>cylee@chromium.org</owner>
+  <summary>
+    The number of times times apps are launched grouped by
+    extensions::AppLaunchSource.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.AppLocation" enum="ExtensionLocation">
   <owner>benwells@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
@@ -40363,6 +40372,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Shown"/>
   <int value="2" label="Dismissed"/>
   <int value="3" label="Learn more"/>
+</enum>
+
+<enum name="AppLaunchSource" type="int">
+  <int value="0" label="SOURCE_UNTRACKED"/>
+  <int value="1" label="SOURCE_APP_LAUNCHER"/>
+  <int value="2" label="SOURCE_NEW_TAB_PAGE"/>
+  <int value="3" label="SOURCE_RELOAD"/>
+  <int value="4" label="SOURCE_RESTART"/>
+  <int value="5" label="SOURCE_LOAD_AND_LAUNCH"/>
+  <int value="6" label="SOURCE_COMMAND_LINE"/>
+  <int value="7" label="SOURCE_FILE_HANDLER"/>
+  <int value="8" label="SOURCE_URL_HANDLER"/>
+  <int value="9" label="SOURCE_SYSTEM_TRAY"/>
+  <int value="10" label="SOURCE_ABOUT_PAGE"/>
+  <int value="11" label="SOURCE_KEYBOARD"/>
 </enum>
 
 <enum name="AppListEnableSource" type="int">

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 
+#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "extensions/browser/event_router.h"
@@ -12,6 +13,8 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/api/app_runtime.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/feature_switch.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
@@ -40,8 +43,12 @@ void DispatchOnEmbedRequestedEventImpl(
 }
 
 void DispatchOnLaunchedEventImpl(const std::string& extension_id,
+                                 app_runtime::LaunchSource source,
                                  scoped_ptr<base::DictionaryValue> launch_data,
                                  BrowserContext* context) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.AppLaunchSource", source, NUM_APP_LAUNCH_SOURCES);
+
   // "Forced app mode" is true for Chrome OS kiosk mode.
   launch_data->SetBoolean(
       "isKioskSession",
@@ -55,6 +62,38 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
       ->DispatchEventWithLazyListener(extension_id, event.Pass());
   ExtensionPrefs::Get(context)
       ->SetLastLaunchTime(extension_id, base::Time::Now());
+}
+
+app_runtime::LaunchSource getLaunchSourceEnum(
+    extensions::AppLaunchSource source) {
+  switch (source) {
+    case extensions::SOURCE_APP_LAUNCHER:
+      return app_runtime::LAUNCH_SOURCE_APP_LAUNCHER;
+    case extensions::SOURCE_NEW_TAB_PAGE:
+      return app_runtime::LAUNCH_SOURCE_NEW_TAB_PAGE;
+    case extensions::SOURCE_RELOAD:
+      return app_runtime::LAUNCH_SOURCE_RELOAD;
+    case extensions::SOURCE_RESTART:
+      return app_runtime::LAUNCH_SOURCE_RESTART;
+    case extensions::SOURCE_LOAD_AND_LAUNCH:
+      return app_runtime::LAUNCH_SOURCE_LOAD_AND_LAUNCH;
+    case extensions::SOURCE_COMMAND_LINE:
+      return app_runtime::LAUNCH_SOURCE_COMMAND_LINE;
+    case extensions::SOURCE_FILE_HANDLER:
+      return app_runtime::LAUNCH_SOURCE_FILE_HANDLER;
+    case extensions::SOURCE_URL_HANDLER:
+      return app_runtime::LAUNCH_SOURCE_URL_HANDLER;
+
+    case extensions::SOURCE_SYSTEM_TRAY:
+      return app_runtime::LAUNCH_SOURCE_SYSTEM_TRAY;
+    case extensions::SOURCE_ABOUT_PAGE:
+      return app_runtime::LAUNCH_SOURCE_ABOUT_PAGE;
+    case extensions::SOURCE_KEYBOARD:
+      return app_runtime::LAUNCH_SOURCE_KEYBOARD;
+
+    default:
+      return app_runtime::LAUNCH_SOURCE_NONE;
+  }
 }
 
 }  // namespace
@@ -71,9 +110,16 @@ void AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
 // static
 void AppRuntimeEventRouter::DispatchOnLaunchedEvent(
     BrowserContext* context,
-    const Extension* extension) {
-  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
-  DispatchOnLaunchedEventImpl(extension->id(), launch_data.Pass(), context);
+    const Extension* extension,
+    extensions::AppLaunchSource source) {
+  app_runtime::LaunchData launch_data;
+
+  app_runtime::LaunchSource source_enum = getLaunchSourceEnum(source);
+  if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
+    launch_data.source = source_enum;
+  }
+  DispatchOnLaunchedEventImpl(
+      extension->id(), source_enum, launch_data.ToValue().Pass(), context);
 }
 
 // static
@@ -99,10 +145,18 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
   // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
   scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue);
   launch_data->SetString("id", handler_id);
+
+  app_runtime::LaunchSource source_enum =
+      app_runtime::LAUNCH_SOURCE_FILE_HANDLER;
+  if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
+    launch_data->SetString("source", app_runtime::ToString(source_enum));
+  }
+
   scoped_ptr<base::ListValue> items(new base::ListValue);
   DCHECK(file_entries.size() == mime_types.size());
   for (size_t i = 0; i < file_entries.size(); ++i) {
     scoped_ptr<base::DictionaryValue> launch_item(new base::DictionaryValue);
+
     launch_item->SetString("fileSystemId", file_entries[i].filesystem_id);
     launch_item->SetString("baseName", file_entries[i].registered_name);
     launch_item->SetString("mimeType", mime_types[i]);
@@ -110,7 +164,8 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
     items->Append(launch_item.release());
   }
   launch_data->Set("items", items.release());
-  DispatchOnLaunchedEventImpl(extension->id(), launch_data.Pass(), context);
+  DispatchOnLaunchedEventImpl(
+      extension->id(), source_enum, launch_data.Pass(), context);
 }
 
 // static
@@ -121,11 +176,16 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithUrl(
     const GURL& url,
     const GURL& referrer_url) {
   app_runtime::LaunchData launch_data;
+  app_runtime::LaunchSource source_enum =
+      app_runtime::LAUNCH_SOURCE_URL_HANDLER;
   launch_data.id.reset(new std::string(handler_id));
   launch_data.url.reset(new std::string(url.spec()));
   launch_data.referrer_url.reset(new std::string(referrer_url.spec()));
+  if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
+    launch_data.source = source_enum;
+  }
   DispatchOnLaunchedEventImpl(
-      extension->id(), launch_data.ToValue().Pass(), context);
+      extension->id(), source_enum, launch_data.ToValue().Pass(), context);
 }
 
 }  // namespace extensions

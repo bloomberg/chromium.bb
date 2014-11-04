@@ -22,7 +22,9 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       desktop_type(chrome::GetActiveDesktop()),
       override_url(),
       override_bounds(),
-      command_line(CommandLine::NO_PROGRAM) {}
+      command_line(CommandLine::NO_PROGRAM),
+      source(extensions::SOURCE_UNTRACKED) {
+}
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
@@ -34,7 +36,8 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       desktop_type(chrome::GetActiveDesktop()),
       override_url(),
       override_bounds(),
-      command_line(CommandLine::NO_PROGRAM) {
+      command_line(CommandLine::NO_PROGRAM),
+      source(extensions::SOURCE_UNTRACKED) {
   // Look up the app preference to find out the right launch container. Default
   // is to launch as a regular tab.
   container =
@@ -52,7 +55,8 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       desktop_type(desktop_type),
       override_url(),
       override_bounds(),
-      command_line(CommandLine::NO_PROGRAM) {
+      command_line(CommandLine::NO_PROGRAM),
+      source(extensions::SOURCE_UNTRACKED) {
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     container = extensions::LAUNCH_CONTAINER_TAB;
   } else if (disposition == NEW_WINDOW) {

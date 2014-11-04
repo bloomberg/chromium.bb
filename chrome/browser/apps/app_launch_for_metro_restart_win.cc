@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 
 using extensions::AppRuntimeEventRouter;
 using extensions::Extension;
@@ -39,7 +40,8 @@ void LaunchAppWithId(Profile* profile,
   if (!extension)
     return;
 
-  AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, extension);
+  AppRuntimeEventRouter::DispatchOnLaunchedEvent(
+      profile, extension, extensions::SOURCE_RESTART);
 }
 
 }  // namespace

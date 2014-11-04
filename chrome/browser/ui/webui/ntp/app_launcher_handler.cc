@@ -526,6 +526,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
                                extensions::LAUNCH_CONTAINER_TAB,
                            disposition);
     params.override_url = GURL(url);
+    params.source = extensions::SOURCE_NEW_TAB_PAGE;
     OpenApplication(params);
   } else {
     // To give a more "launchy" experience when using the NTP launcher, we close
@@ -539,6 +540,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     AppLaunchParams params(profile, extension,
                            old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
     params.override_url = GURL(url);
+    params.source = extensions::SOURCE_NEW_TAB_PAGE;
     WebContents* new_contents = OpenApplication(params);
 
     // This will also destroy the handler, so do not perform any actions after.

@@ -108,6 +108,27 @@ extern const char kMimeTypePng[];
 // The extension id of the Web Store component application.
 extern const char kWebStoreAppId[];
 
+// Enumeration of possible app launch sources.
+// Note the enumeration is used in UMA histogram so entries
+// should not be re-ordered or removed.
+enum AppLaunchSource {
+  SOURCE_UNTRACKED = 0,
+  SOURCE_APP_LAUNCHER,
+  SOURCE_NEW_TAB_PAGE,
+  SOURCE_RELOAD,
+  SOURCE_RESTART,
+  SOURCE_LOAD_AND_LAUNCH,
+  SOURCE_COMMAND_LINE,
+  SOURCE_FILE_HANDLER,
+  SOURCE_URL_HANDLER,
+
+  SOURCE_SYSTEM_TRAY,
+  SOURCE_ABOUT_PAGE,
+  SOURCE_KEYBOARD,
+
+  NUM_APP_LAUNCH_SOURCES
+};
+
 }  // namespace extensions
 
 namespace extension_misc {
