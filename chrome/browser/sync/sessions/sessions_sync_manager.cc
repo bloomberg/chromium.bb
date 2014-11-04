@@ -652,6 +652,16 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
   } else if (specifics.has_tab()) {
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID::id_type tab_id = tab_s.tab_id();
+
+    const SessionTab* existing_tab;
+    if (session_tracker_.LookupSessionTab(
+            foreign_session_tag, tab_id, &existing_tab) &&
+        existing_tab->timestamp > modification_time) {
+      DVLOG(1) << "Ignoring " << foreign_session_tag << "'s session tab "
+               << tab_id << " with earlier modification time";
+      return;
+    }
+
     SessionTab* tab =
         session_tracker_.GetTab(foreign_session_tag,
                                 tab_id,
