@@ -20,8 +20,6 @@ class Image;
 
 namespace views {
 class ImageView;
-class Link;
-class View;
 }
 
 // A small summary panel with the app's name, icon, version, and various links
@@ -49,25 +47,9 @@ class AppInfoHeaderPanel : public AppInfoPanel,
   void ShowAppInWebStore();
   bool CanShowAppInWebStore() const;
 
-  // Opens the app's homepage URL as specified in the manifest. Must only be
-  // called if CanShowAppHomePage() returns true.
-  void ShowAppHomePage();
-  bool CanShowAppHomePage() const;
-
-  // Displays the licenses for the app. Must only be called if
-  // CanDisplayLicenses() returns true.
-  void DisplayLicenses();
-  bool CanDisplayLicenses() const;
-  const std::vector<GURL> GetLicenseUrls() const;
-
-  // Opens the given URL in a new browser tab.
-  void OpenLink(const GURL& url);
-
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::ImageView* app_icon_;
   views::Link* view_in_store_link_;
-  views::Link* homepage_link_;
-  views::Link* licenses_link_;
 
   base::WeakPtrFactory<AppInfoHeaderPanel> weak_ptr_factory_;
 

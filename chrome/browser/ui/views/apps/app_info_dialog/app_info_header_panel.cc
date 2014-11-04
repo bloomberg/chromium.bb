@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_system.h"
@@ -19,7 +18,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -38,15 +36,11 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
-#include "url/gurl.h"
 
 namespace {
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 64;
-
-// The horizontal spacing between the app's links in the header section.
-const int kSpacingBetweenAppLinks = 3;
 
 }  // namespace
 
@@ -55,8 +49,6 @@ AppInfoHeaderPanel::AppInfoHeaderPanel(Profile* profile,
     : AppInfoPanel(profile, app),
       app_icon_(NULL),
       view_in_store_link_(NULL),
-      homepage_link_(NULL),
-      licenses_link_(NULL),
       weak_ptr_factory_(this) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -82,14 +74,13 @@ void AppInfoHeaderPanel::CreateControls() {
                            ui::ResourceBundle::MediumFont));
   app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  if (!CanShowAppInWebStore() && !CanShowAppHomePage() &&
-      !CanDisplayLicenses()) {
-    // If there's no links, allow the app's name to take up multiple lines.
+  if (!CanShowAppInWebStore()) {
+    // If there's no link, allow the app's name to take up multiple lines.
     // TODO(sashab): Limit the number of lines to 2.
     app_name_label->SetMultiLine(true);
     AddChildView(app_name_label);
   } else {
-    // Create a vertical container to store the app's name and links.
+    // Create a vertical container to store the app's name and link.
     views::View* vertical_info_container = new views::View();
     views::BoxLayout* vertical_container_layout =
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
@@ -98,49 +89,21 @@ void AppInfoHeaderPanel::CreateControls() {
     vertical_info_container->SetLayoutManager(vertical_container_layout);
 
     vertical_info_container->AddChildView(app_name_label);
-    // Create a horizontal container to store the app's links.
-    views::View* horizontal_links_container =
-        CreateHorizontalStack(kSpacingBetweenAppLinks);
-
-    // If the app/extension has a custom home page, display a link to the
-    // developer's homepage *instead of* a link to the webstore.
-    if (CanShowAppHomePage()) {
-      homepage_link_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_HOMEPAGE_LINK));
-      homepage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      homepage_link_->set_listener(this);
-      horizontal_links_container->AddChildView(homepage_link_);
-    } else if (CanShowAppInWebStore()) {
+    if (CanShowAppInWebStore()) {
       view_in_store_link_ = new views::Link(
           l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
       view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       view_in_store_link_->set_listener(this);
-      horizontal_links_container->AddChildView(view_in_store_link_);
+      vertical_info_container->AddChildView(view_in_store_link_);
     }
-
-    if (CanDisplayLicenses()) {
-      licenses_link_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT));
-      licenses_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      licenses_link_->set_listener(this);
-      horizontal_links_container->AddChildView(licenses_link_);
-    }
-    vertical_info_container->AddChildView(horizontal_links_container);
 
     AddChildView(vertical_info_container);
   }
 }
 
 void AppInfoHeaderPanel::LinkClicked(views::Link* source, int event_flags) {
-  if (source == view_in_store_link_) {
-    ShowAppInWebStore();
-  } else if (source == homepage_link_) {
-    ShowAppHomePage();
-  } else if (source == licenses_link_) {
-    DisplayLicenses();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(source, view_in_store_link_);
+  ShowAppInWebStore();
 }
 
 void AppInfoHeaderPanel::LoadAppImageAsync() {
@@ -181,54 +144,4 @@ void AppInfoHeaderPanel::ShowAppInWebStore() {
 
 bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
   return app_->from_webstore();
-}
-
-void AppInfoHeaderPanel::ShowAppHomePage() {
-  DCHECK(CanShowAppHomePage());
-  OpenLink(extensions::ManifestURL::GetHomepageURL(app_));
-  Close();
-}
-
-bool AppInfoHeaderPanel::CanShowAppHomePage() const {
-  return extensions::ManifestURL::SpecifiedHomepageURL(app_);
-}
-
-void AppInfoHeaderPanel::DisplayLicenses() {
-  DCHECK(CanDisplayLicenses());
-  for (const auto& license_url : GetLicenseUrls())
-    OpenLink(license_url);
-  Close();
-}
-
-bool AppInfoHeaderPanel::CanDisplayLicenses() const {
-  return !GetLicenseUrls().empty();
-}
-
-const std::vector<GURL> AppInfoHeaderPanel::GetLicenseUrls() const {
-  if (!extensions::SharedModuleInfo::ImportsModules(app_))
-    return std::vector<GURL>();
-
-  std::vector<GURL> license_urls;
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(service);
-  const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
-      extensions::SharedModuleInfo::GetImports(app_);
-
-  for (const auto& shared_module : imports) {
-    const extensions::Extension* imported_module =
-        service->GetExtensionById(shared_module.extension_id, true);
-    DCHECK(imported_module);
-
-    GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
-    if (about_page != GURL::EmptyGURL())
-      license_urls.push_back(about_page);
-  }
-  return license_urls;
-}
-
-void AppInfoHeaderPanel::OpenLink(const GURL& url) {
-  DCHECK(!url.is_empty());
-  chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
 }

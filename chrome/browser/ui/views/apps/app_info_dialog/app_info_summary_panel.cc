@@ -22,11 +22,14 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
@@ -128,6 +131,8 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                                          const extensions::Extension* app)
     : AppInfoPanel(profile, app),
       size_value_(NULL),
+      homepage_link_(NULL),
+      licenses_link_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
@@ -143,24 +148,48 @@ AppInfoSummaryPanel::~AppInfoSummaryPanel() {
   RemoveAllChildViews(true);
 }
 
-void AppInfoSummaryPanel::AddDescriptionControl(views::View* vertical_stack) {
-  if (app_->description().empty())
-    return;
+void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
+    views::View* vertical_stack) {
+  views::View* description_and_labels_stack = new views::View();
+  description_and_labels_stack->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           0,
+                           0,
+                           views::kRelatedControlSmallVerticalSpacing));
 
-  // TODO(sashab): Clip the app's description to 4 lines, and use Label's
-  // built-in elide behavior to add ellipses at the end: crbug.com/358053
-  const size_t max_length = 400;
-  base::string16 text = base::UTF8ToUTF16(app_->description());
-  if (text.length() > max_length) {
-    text = text.substr(0, max_length);
-    text += base::ASCIIToUTF16(" ... ");
+  if (!app_->description().empty()) {
+    // TODO(sashab): Clip the app's description to 4 lines, and use Label's
+    // built-in elide behavior to add ellipses at the end: crbug.com/358053
+    const size_t max_length = 400;
+    base::string16 text = base::UTF8ToUTF16(app_->description());
+    if (text.length() > max_length) {
+      text = text.substr(0, max_length);
+      text += base::ASCIIToUTF16(" ... ");
+    }
+
+    views::Label* description_label = new views::Label(text);
+    description_label->SetMultiLine(true);
+    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    description_and_labels_stack->AddChildView(description_label);
   }
 
-  views::Label* description_label = new views::Label(text);
-  description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  if (CanShowAppHomePage()) {
+    homepage_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_HOMEPAGE_LINK));
+    homepage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    homepage_link_->set_listener(this);
+    description_and_labels_stack->AddChildView(homepage_link_);
+  }
 
-  vertical_stack->AddChildView(description_label);
+  if (CanDisplayLicenses()) {
+    licenses_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT));
+    licenses_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    licenses_link_->set_listener(this);
+    description_and_labels_stack->AddChildView(licenses_link_);
+  }
+
+  vertical_stack->AddChildView(description_and_labels_stack);
 }
 
 void AppInfoSummaryPanel::AddDetailsControl(views::View* vertical_stack) {
@@ -222,7 +251,7 @@ void AppInfoSummaryPanel::AddSubviews() {
       CreateVerticalStack(views::kUnrelatedControlVerticalSpacing);
   AddChildView(vertical_stack);
 
-  AddDescriptionControl(vertical_stack);
+  AddDescriptionAndLinksControl(vertical_stack);
   AddDetailsControl(vertical_stack);
   AddLaunchOptionControl(vertical_stack);
 }
@@ -231,6 +260,16 @@ void AppInfoSummaryPanel::OnPerformAction(views::Combobox* combobox) {
   if (combobox == launch_options_combobox_) {
     SetLaunchType(launch_options_combobox_model_->GetLaunchTypeAtIndex(
         launch_options_combobox_->selected_index()));
+  } else {
+    NOTREACHED();
+  }
+}
+
+void AppInfoSummaryPanel::LinkClicked(views::Link* source, int event_flags) {
+  if (source == homepage_link_) {
+    ShowAppHomePage();
+  } else if (source == licenses_link_) {
+    DisplayLicenses();
   } else {
     NOTREACHED();
   }
@@ -273,4 +312,47 @@ bool AppInfoSummaryPanel::CanSetLaunchType() const {
   // Chrome app.
   return !app_->is_platform_app() && !app_->is_extension() &&
          app_->id() != extension_misc::kChromeAppId;
+}
+void AppInfoSummaryPanel::ShowAppHomePage() {
+  DCHECK(CanShowAppHomePage());
+  OpenLink(extensions::ManifestURL::GetHomepageURL(app_));
+  Close();
+}
+
+bool AppInfoSummaryPanel::CanShowAppHomePage() const {
+  return extensions::ManifestURL::SpecifiedHomepageURL(app_);
+}
+
+void AppInfoSummaryPanel::DisplayLicenses() {
+  DCHECK(CanDisplayLicenses());
+  for (const auto& license_url : GetLicenseUrls())
+    OpenLink(license_url);
+  Close();
+}
+
+bool AppInfoSummaryPanel::CanDisplayLicenses() const {
+  return !GetLicenseUrls().empty();
+}
+
+const std::vector<GURL> AppInfoSummaryPanel::GetLicenseUrls() const {
+  if (!extensions::SharedModuleInfo::ImportsModules(app_))
+    return std::vector<GURL>();
+
+  std::vector<GURL> license_urls;
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+  const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
+      extensions::SharedModuleInfo::GetImports(app_);
+
+  for (const auto& shared_module : imports) {
+    const extensions::Extension* imported_module =
+        service->GetExtensionById(shared_module.extension_id, true);
+    DCHECK(imported_module);
+
+    GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);
+    if (about_page != GURL::EmptyGURL())
+      license_urls.push_back(about_page);
+  }
+  return license_urls;
 }

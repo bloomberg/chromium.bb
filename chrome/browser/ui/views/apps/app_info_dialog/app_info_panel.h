@@ -28,6 +28,9 @@ class AppInfoPanel : public views::View {
   // Closes the dialog.
   void Close();
 
+  // Opens the given URL in a new browser tab.
+  void OpenLink(const GURL& url);
+
   // Create a heading label with the given text.
   views::Label* CreateHeading(const base::string16& text) const;
 
