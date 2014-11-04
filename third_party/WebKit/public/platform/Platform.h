@@ -61,6 +61,7 @@ namespace blink {
 
 class WebAudioBus;
 class WebBlobRegistry;
+class WebBluetooth;
 class WebContentDecryptionModule;
 class WebClipboard;
 class WebCompositorSupport;
@@ -638,6 +639,11 @@ public:
     // Geofencing ---------------------------------------------------------
 
     virtual WebGeofencingProvider* geofencingProvider() { return 0; }
+
+    // Bluetooth ----------------------------------------------------------
+
+    // Returns pointer to client owned WebBluetooth implementation.
+    virtual WebBluetooth* bluetooth() { return 0; }
 
 protected:
     virtual ~Platform() { }
