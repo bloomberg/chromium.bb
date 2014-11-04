@@ -56,13 +56,13 @@ public:
 
     FloatRect resourceBoundingBox(const RenderObject*);
 
+    static const RenderSVGResourceType s_resourceType = ClipperResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
 
     bool hitTestClipContent(const FloatRect&, const FloatPoint&);
 
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
-    static const RenderSVGResourceType s_resourceType;
 private:
     bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
     void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);

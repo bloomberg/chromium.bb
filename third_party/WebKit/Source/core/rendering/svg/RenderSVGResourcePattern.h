@@ -48,8 +48,8 @@ public:
 
     virtual SVGPaintServer preparePaintServer(const RenderObject&) override;
 
+    static const RenderSVGResourceType s_resourceType = PatternResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
-    static const RenderSVGResourceType s_resourceType;
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const RenderObject&);

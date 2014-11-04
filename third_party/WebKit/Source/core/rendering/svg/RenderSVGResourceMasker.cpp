@@ -29,8 +29,6 @@
 
 namespace blink {
 
-const RenderSVGResourceType RenderSVGResourceMasker::s_resourceType = MaskerResourceType;
-
 RenderSVGResourceMasker::RenderSVGResourceMasker(SVGMaskElement* node)
     : RenderSVGResourceContainer(node)
 {

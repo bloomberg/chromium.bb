@@ -38,8 +38,6 @@ public:
     AffineTransform transform;
 };
 
-const RenderSVGResourceType RenderSVGResourcePattern::s_resourceType = PatternResourceType;
-
 RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
     : RenderSVGResourcePaintServer(node)
     , m_shouldCollectPatternAttributes(true)

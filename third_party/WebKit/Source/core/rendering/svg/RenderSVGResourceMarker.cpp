@@ -28,8 +28,6 @@
 
 namespace blink {
 
-const RenderSVGResourceType RenderSVGResourceMarker::s_resourceType = MarkerResourceType;
-
 RenderSVGResourceMarker::RenderSVGResourceMarker(SVGMarkerElement* node)
     : RenderSVGResourceContainer(node)
 {

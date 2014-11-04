@@ -41,8 +41,6 @@
 
 namespace blink {
 
-const RenderSVGResourceType RenderSVGResourceClipper::s_resourceType = ClipperResourceType;
-
 RenderSVGResourceClipper::RenderSVGResourceClipper(SVGClipPathElement* node)
     : RenderSVGResourceContainer(node)
     , m_inClipExpansion(false)

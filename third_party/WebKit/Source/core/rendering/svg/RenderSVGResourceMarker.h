@@ -56,8 +56,8 @@ public:
 
     const FloatRect& viewport() const { return m_viewport; }
 
+    static const RenderSVGResourceType s_resourceType = MarkerResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
-    static const RenderSVGResourceType s_resourceType;
 
 private:
     // Generates a transformation matrix usable to render marker content. Handles scaling the marker content
