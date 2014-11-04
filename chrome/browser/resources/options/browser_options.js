@@ -224,8 +224,12 @@ cr.define('options', function() {
                     ['Options_Homepage_ShowSettings']);
       };
 
-      var hotwordIndicator = $('hotword-search-setting-indicator');
-      HotwordSearchSettingIndicator.decorate(hotwordIndicator);
+      HotwordSearchSettingIndicator.decorate(
+          $('hotword-search-setting-indicator'));
+      HotwordSearchSettingIndicator.decorate(
+          $('hotword-no-dsp-search-setting-indicator'));
+      HotwordSearchSettingIndicator.decorate(
+          $('hotword-always-on-search-setting-indicator'));
       chrome.send('requestHotwordAvailable');
 
       if ($('set-wallpaper')) {
@@ -1127,34 +1131,56 @@ cr.define('options', function() {
 
     /**
      * Activates the Hotword section from the System settings page.
-     * @param {boolean} opt_enabled Current preference state for hotwording.
-     * @param {string} opt_error The error message to display.
+     * @param {string} sectionId The id of the section to display.
+     * @param {string} indicatorId The id of the indicator to display.
+     * @param {string=} opt_error The error message to display.
      * @private
      */
-    showHotwordSection_: function(opt_enabled, opt_error) {
-      $('hotword-search').hidden = false;
-      $('hotword-search-setting-indicator').setError(opt_error);
-      if (opt_enabled && opt_error)
-        $('hotword-search-setting-indicator').updateBasedOnError();
+    showHotwordCheckboxAndIndicator_: function(sectionId, indicatorId,
+                                               opt_error) {
+      $(sectionId).hidden = false;
+      $(indicatorId).setError(opt_error);
+      if (opt_error)
+        $(indicatorId).updateBasedOnError();
+    },
+
+    /**
+     * Activates the Hotword section from the System settings page.
+     * @param {string=} opt_error The error message to display.
+     * @private
+     */
+    showHotwordSection_: function(opt_error) {
+      this.showHotwordCheckboxAndIndicator_(
+          'hotword-search',
+          'hotword-search-setting-indicator',
+          opt_error);
     },
 
     /**
      * Activates the Audio History and Always-On Hotword sections from the
      * System settings page.
+     * @param {string=} opt_error The error message to display.
      * @private
      */
-    showHotwordAlwaysOnSection_: function() {
-      $('hotword-always-on-search').hidden = false;
+    showHotwordAlwaysOnSection_: function(opt_error) {
+      this.showHotwordCheckboxAndIndicator_(
+          'hotword-always-on-search',
+          'hotword-always-on-search-setting-indicator',
+          opt_error);
       $('audio-logging').hidden = false;
     },
 
     /**
      * Activates the Hotword section on devices with no DSP
      * from the System settings page.
+     * @param {string=} opt_error The error message to display.
      * @private
      */
-    showHotwordNoDSPSection_: function() {
-      $('hotword-no-dsp-search').hidden = false;
+    showHotwordNoDspSection_: function(opt_error) {
+      this.showHotwordCheckboxAndIndicator_(
+          'hotword-no-dsp-search',
+          'hotword-no-dsp-search-setting-indicator',
+          opt_error);
     },
 
     /**
@@ -2054,7 +2080,7 @@ cr.define('options', function() {
     'showCreateProfileSuccess',
     'showCreateProfileWarning',
     'showHotwordAlwaysOnSection',
-    'showHotwordNoDSPSection',
+    'showHotwordNoDspSection',
     'showHotwordSection',
     'showMouseControls',
     'showSupervisedUserImportError',

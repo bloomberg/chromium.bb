@@ -1621,25 +1621,26 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  base::FundamentalValue enabled(
-      profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
   if (group != "" && group != "Disabled" &&
       HotwordServiceFactory::IsHotwordAllowed(profile)) {
     // Update the current error value.
     HotwordServiceFactory::IsServiceAvailable(profile);
     int error = HotwordServiceFactory::GetCurrentError(profile);
+
+    std::string function_name;
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalHotwording)) {
       if (HotwordServiceFactory::IsHotwordHardwareAvailable()) {
-        web_ui()->CallJavascriptFunction(
-            "BrowserOptions.showHotwordAlwaysOnSection");
+        function_name = "BrowserOptions.showHotwordAlwaysOnSection";
       } else {
-        web_ui()->CallJavascriptFunction(
-            "BrowserOptions.showHotwordNoDSPSection");
+        function_name = "BrowserOptions.showHotwordNoDspSection";
       }
-    } else if (!error) {
-      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
-                                       enabled);
+    } else {
+      function_name = "BrowserOptions.showHotwordSection";
+    }
+
+    if (!error) {
+      web_ui()->CallJavascriptFunction(function_name);
     } else {
       base::string16 hotword_help_url =
           base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
@@ -1648,8 +1649,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
         error_message = base::StringValue(
             l10n_util::GetStringFUTF16(error, hotword_help_url));
       }
-      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
-                                       enabled, error_message);
+      web_ui()->CallJavascriptFunction(function_name, error_message);
     }
   }
 }
