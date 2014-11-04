@@ -168,8 +168,9 @@ class AppMenuAdapter extends BaseAdapter {
                 holder.image.setImageDrawable(icon);
                 holder.image.setVisibility(icon == null ? View.GONE : View.VISIBLE);
                 holder.image.setChecked(item.isChecked());
-
                 holder.text.setText(item.getTitle());
+                holder.text.setContentDescription(item.getTitleCondensed());
+
                 boolean isEnabled = item.isEnabled();
                 // Set the text color (using a color state list).
                 holder.text.setEnabled(isEnabled);
@@ -308,9 +309,10 @@ class AppMenuAdapter extends BaseAdapter {
         int currentLevel = item.getIcon().getLevel();
         button.setImageDrawable(item.getIcon());
         item.getIcon().setLevel(currentLevel);
-        button.setContentDescription(item.getTitle());
         button.setEnabled(item.isEnabled());
         button.setFocusable(item.isEnabled());
+        button.setContentDescription(item.getTitleCondensed());
+
         button.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
