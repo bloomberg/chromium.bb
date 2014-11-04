@@ -13,63 +13,69 @@ var WebViewConstants = require('webViewConstants').WebViewConstants;
 // Default implementation of a WebView attribute.
 function WebViewAttribute(name, webViewImpl) {
   this.name = name;
-  this.value = '';
   this.webViewImpl = webViewImpl;
+  this.ignoreNextMutation = false;
 }
 
+// Retrieves and returns the attribute's value.
 WebViewAttribute.prototype.getValue = function() {
-  return this.value || '';
+  return this.webViewImpl.webviewNode.getAttribute(this.name) || '';
 };
 
+// Sets the attribute's value.
 WebViewAttribute.prototype.setValue = function(value) {
-  this.value = value;
+  this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
 };
+
+// Called when the attribute's value changes.
+WebViewAttribute.prototype.handleMutation = function() {}
+
+// Attribute specifying whether transparency is allowed in the webview.
+function BooleanAttribute(name, webViewImpl) {
+  WebViewAttribute.call(this, name, webViewImpl);
+}
+
+BooleanAttribute.prototype = new WebViewAttribute();
+
+BooleanAttribute.prototype.getValue = function() {
+  // This attribute is treated as a boolean, and is retrieved as such.
+  return this.webViewImpl.webviewNode.hasAttribute(this.name);
+}
+
+BooleanAttribute.prototype.setValue = function(value) {
+  if (!value) {
+    this.webViewImpl.webviewNode.removeAttribute(this.name);
+  } else {
+    this.webViewImpl.webviewNode.setAttribute(this.name, '');
+  }
+}
 
 // Attribute representing the state of the storage partition.
 function Partition(webViewImpl) {
+  WebViewAttribute.call(this,
+                        WebViewConstants.ATTRIBUTE_PARTITION,
+                        webViewImpl);
   this.validPartitionId = true;
-  this.persistStorage = false;
-  this.storagePartitionId = '';
-  this.webViewImpl = webViewImpl;
 }
 
-Partition.prototype = new WebViewAttribute(
-    WebViewConstants.ATTRIBUTE_PARTITION);
+Partition.prototype = new WebViewAttribute();
 
-Partition.prototype.getValue = function() {
-  if (!this.validPartitionId) {
-    return '';
-  }
-  return (this.persistStorage ? 'persist:' : '') + this.storagePartitionId;
-};
+Partition.prototype.handleMutation = function(oldValue, newValue) {
+  newValue = newValue || '';
 
-Partition.prototype.setValue = function(value) {
-  var result = {};
-  var hasNavigated = !this.webViewImpl.beforeFirstNavigation;
-  if (hasNavigated) {
-    result.error = WebViewConstants.ERROR_MSG_ALREADY_NAVIGATED;
-    return result;
+  // The partition cannot change if the webview has already navigated.
+  if (!this.webViewImpl.beforeFirstNavigation) {
+    window.console.error(WebViewConstants.ERROR_MSG_ALREADY_NAVIGATED);
+    this.ignoreNextMutation = true;
+    this.webViewImpl.webviewNode.setAttribute(this.name, oldValue);
+    return;
   }
-  if (!value) {
-    value = '';
+  if (newValue == 'persist:') {
+    this.validPartitionId = false;
+    window.console.error(
+        WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE);
   }
-
-  var LEN = 'persist:'.length;
-  if (value.substr(0, LEN) == 'persist:') {
-    value = value.substr(LEN);
-    if (!value) {
-      this.validPartitionId = false;
-      result.error = WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
-      return result;
-    }
-    this.persistStorage = true;
-  } else {
-    this.persistStorage = false;
-  }
-
-  this.storagePartitionId = value;
-  return result;
-};
+}
 
 // -----------------------------------------------------------------------------
 
@@ -79,12 +85,14 @@ WebView.prototype.setupWebViewAttributes = function() {
 
   // Initialize the attributes with special behavior (and custom attribute
   // objects).
+  this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY] =
+      new BooleanAttribute(WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY, this);
+  this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE] =
+      new BooleanAttribute(WebViewConstants.ATTRIBUTE_AUTOSIZE, this);
   this.attributes[WebViewConstants.ATTRIBUTE_PARTITION] = new Partition(this);
 
   // Initialize the remaining attributes, which have default behavior.
-  var defaultAttributes = [WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY,
-                           WebViewConstants.ATTRIBUTE_AUTOSIZE,
-                           WebViewConstants.ATTRIBUTE_MAXHEIGHT,
+  var defaultAttributes = [WebViewConstants.ATTRIBUTE_MAXHEIGHT,
                            WebViewConstants.ATTRIBUTE_MAXWIDTH,
                            WebViewConstants.ATTRIBUTE_MINHEIGHT,
                            WebViewConstants.ATTRIBUTE_MINWIDTH,

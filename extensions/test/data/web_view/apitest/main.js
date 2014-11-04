@@ -71,15 +71,22 @@ embedder.test.succeed = function() {
 function testAllowTransparencyAttribute() {
   var webview = document.createElement('webview');
   webview.src = 'data:text/html,webview test';
+  embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
+  embedder.test.assertFalse(webview.allowtransparency);
   webview.allowtransparency = true;
 
   webview.addEventListener('loadstop', function(e) {
     embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
-    webview.allowtransparency = false;
     embedder.test.assertTrue(webview.allowtransparency);
-    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
-    webview.removeAttribute('allowtransparency');
+    webview.allowtransparency = false;
+    embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
     embedder.test.assertFalse(webview.allowtransparency);
+    webview.allowtransparency = '';
+    embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
+    embedder.test.assertFalse(webview.allowtransparency);
+    webview.allowtransparency = 'some string';
+    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
+    embedder.test.assertTrue(webview.allowtransparency);
     embedder.test.succeed();
   });
 
@@ -1282,21 +1289,17 @@ function testOnEventProperties() {
   document.body.appendChild(webview);
 }
 
-// This test verifies that setting the partition attribute after the src has
-// been set raises an exception.
-function testPartitionRaisesException() {
+// This test verifies that the partion attribute cannot be changed after the src
+// has been set.
+function testPartitionChangeAfterNavigation() {
   var webview = document.createElement('webview');
   var partitionAttribute = arguments.callee.name;
   webview.setAttribute('partition', partitionAttribute);
 
   var loadstopHandler = function(e) {
-    try {
-      webview.partition = 'illegal';
-      embedder.test.fail();
-    } catch (e) {
-      embedder.test.assertEq(partitionAttribute, webview.partition);
-      embedder.test.succeed();
-    }
+    webview.partition = 'illegal';
+    embedder.test.assertEq(partitionAttribute, webview.partition);
+    embedder.test.succeed();
   };
   webview.addEventListener('loadstop', loadstopHandler);
 
@@ -1707,7 +1710,7 @@ embedder.test.testList = {
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testNewWindowTwoListeners': testNewWindowTwoListeners,
   'testOnEventProperties': testOnEventProperties,
-  'testPartitionRaisesException': testPartitionRaisesException,
+  'testPartitionChangeAfterNavigation': testPartitionChangeAfterNavigation,
   'testPartitionRemovalAfterNavigationFails':
       testPartitionRemovalAfterNavigationFails,
   'testReassignSrcAttribute': testReassignSrcAttribute,

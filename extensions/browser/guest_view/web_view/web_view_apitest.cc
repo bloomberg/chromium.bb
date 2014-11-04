@@ -615,8 +615,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestOnEventProperty) {
   RunTest("testOnEventProperties", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestPartitionRaisesException) {
-  RunTest("testPartitionRaisesException", "web_view/apitest");
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestPartitionChangeAfterNavigation) {
+  RunTest("testPartitionChangeAfterNavigation", "web_view/apitest");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewAPITest,

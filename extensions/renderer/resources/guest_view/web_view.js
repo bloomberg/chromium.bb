@@ -34,7 +34,6 @@ function WebView(webviewNode) {
 
   this.beforeFirstNavigation = true;
   this.contentWindow = null;
-  this.validPartitionId = true;
   // Used to save some state upon deferred attachment.
   // If <object> bindings is not available, we defer attachment.
   // This state contains whether or not the attachment request was for
@@ -82,7 +81,6 @@ WebView.prototype.reset = function() {
     GuestViewInternal.destroyGuest(this.guestInstanceId);
     this.guestInstanceId = undefined;
     this.beforeFirstNavigation = true;
-    this.validPartitionId = true;
     this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
         true;
     this.contentWindow = null;
@@ -129,14 +127,12 @@ WebView.prototype.validateExecuteCodeCall  = function() {
 
 WebView.prototype.setupAutoSizeProperties = function() {
   $Array.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
-    this.attributes[attributeName].setValue(
-        this.webviewNode.getAttribute(attributeName));
     Object.defineProperty(this.webviewNode, attributeName, {
       get: function() {
         return this.attributes[attributeName].getValue();
       }.bind(this),
       set: function(value) {
-        this.webviewNode.setAttribute(attributeName, value);
+        this.attributes[attributeName].setValue(value);
       }.bind(this),
       enumerable: true
     });
@@ -153,9 +149,8 @@ WebView.prototype.setupWebviewNodeProperties = function() {
           getValue();
     }.bind(this),
     set: function(value) {
-      this.webviewNode.setAttribute(
-          WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY,
-          value);
+      this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
+          setValue(value);
     }.bind(this),
     enumerable: true
   });
@@ -179,7 +174,7 @@ WebView.prototype.setupWebviewNodeProperties = function() {
       return this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue();
     }.bind(this),
     set: function(value) {
-      this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_NAME, value);
+      this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(value);
     }.bind(this),
     enumerable: true
   });
@@ -190,25 +185,17 @@ WebView.prototype.setupWebviewNodeProperties = function() {
       return this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].getValue();
     }.bind(this),
     set: function(value) {
-      var result = this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].
-          setValue(value);
-      if (result.error) {
-        throw result.error;
-      }
-      this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_PARTITION,
-                                    value);
+      this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(value);
     }.bind(this),
     enumerable: true
   });
 
-  this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValue(
-      this.webviewNode.getAttribute(WebViewConstants.ATTRIBUTE_SRC));
   Object.defineProperty(this.webviewNode, WebViewConstants.ATTRIBUTE_SRC, {
     get: function() {
       return this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
     }.bind(this),
     set: function(value) {
-      this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_SRC, value);
+      this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValue(value);
     }.bind(this),
     enumerable: true
   });
@@ -223,7 +210,7 @@ WebView.prototype.setupWebViewSrcAttributeMutationObserver =
   this.srcAndPartitionObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
       var oldValue = mutation.oldValue;
-      var newValue = this.webviewNode.getAttribute(mutation.attributeName);
+      var newValue = this.attributes[mutation.attributeName].getValue();
       if (oldValue != newValue) {
         return;
       }
@@ -246,17 +233,22 @@ WebView.prototype.setupWebViewSrcAttributeMutationObserver =
 // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
 // details.
 WebView.prototype.handleWebviewAttributeMutation =
-      function(name, oldValue, newValue) {
-  if (AUTO_SIZE_ATTRIBUTES.indexOf(name) > -1) {
-    this.attributes[name].setValue(newValue);
+      function(attributeName, oldValue, newValue) {
+  // Certain changes (such as internally-initiated changes) to attributes should
+  // not be handled normally.
+  if (this.attributes[attributeName] &&
+      this.attributes[attributeName].ignoreNextMutation) {
+    this.attributes[attributeName].ignoreNextMutation = false;
+    return;
+  }
+
+  if (AUTO_SIZE_ATTRIBUTES.indexOf(attributeName) > -1) {
     if (!this.guestInstanceId) {
       return;
     }
-    // Convert autosize attribute to boolean.
-    var autosize = this.webviewNode.hasAttribute(
-        WebViewConstants.ATTRIBUTE_AUTOSIZE);
     GuestViewInternal.setAutoSize(this.guestInstanceId, {
-      'enableAutoSize': autosize,
+      'enableAutoSize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].
+          getValue(),
       'min': {
         'width': parseInt(this.
             attributes[WebViewConstants.ATTRIBUTE_MINWIDTH].getValue() || 0),
@@ -271,19 +263,13 @@ WebView.prototype.handleWebviewAttributeMutation =
       }
     });
     return;
-  } else if (name == WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY) {
+  } else if (attributeName == WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY) {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
     oldValue = oldValue || '';
     newValue = newValue || '';
 
-    if (oldValue === newValue) {
-      return;
-    }
-    this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
-        setValue(newValue != '');
-
-    if (!this.guestInstanceId) {
+    if (oldValue === newValue || !this.guestInstanceId) {
       return;
     }
 
@@ -292,7 +278,7 @@ WebView.prototype.handleWebviewAttributeMutation =
         this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
             getValue());
     return;
-  } else if (name == WebViewConstants.ATTRIBUTE_NAME) {
+  } else if (attributeName == WebViewConstants.ATTRIBUTE_NAME) {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
     oldValue = oldValue || '';
@@ -301,19 +287,19 @@ WebView.prototype.handleWebviewAttributeMutation =
     if (oldValue === newValue) {
       return;
     }
-    this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(newValue);
+
     if (!this.guestInstanceId) {
       return;
     }
     WebViewInternal.setName(this.guestInstanceId, newValue);
     return;
-  } else if (name == WebViewConstants.ATTRIBUTE_SRC) {
+  } else if (attributeName == WebViewConstants.ATTRIBUTE_SRC) {
     // We treat null attribute (attribute removed) and the empty string as
     // one case.
     oldValue = oldValue || '';
     newValue = newValue || '';
     // Once we have navigated, we don't allow clearing the src attribute.
-    // Once <webview> enters a navigated state, it cannot be return back to a
+    // Once <webview> enters a navigated state, it cannot return to a
     // placeholder state.
     if (newValue == '' && oldValue != '') {
       // src attribute changes normally initiate a navigation. We suppress
@@ -323,28 +309,23 @@ WebView.prototype.handleWebviewAttributeMutation =
       this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_SRC, oldValue);
       return;
     }
-    this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValue(newValue);
+
     if (this.ignoreNextSrcAttributeChange) {
       // Don't allow the src mutation observer to see this change.
       this.srcAndPartitionObserver.takeRecords();
       this.ignoreNextSrcAttributeChange = false;
       return;
     }
-    var result = {};
-    this.parseSrcAttribute(result);
-
-    if (result.error) {
-      throw result.error;
-    }
-  } else if (name == WebViewConstants.ATTRIBUTE_PARTITION) {
-    // Note that throwing error here won't synchronously propagate.
-    this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(newValue);
+    this.parseSrcAttribute();
+  } else if (attributeName == WebViewConstants.ATTRIBUTE_PARTITION) {
+    this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].handleMutation(
+        oldValue, newValue);
   }
 };
 
 WebView.prototype.handleBrowserPluginAttributeMutation =
-    function(name, oldValue, newValue) {
-  if (name == WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID &&
+    function(attributeName, oldValue, newValue) {
+  if (attributeName == WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID &&
       !oldValue && !!newValue) {
     this.browserPluginNode.removeAttribute(
         WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID);
@@ -417,7 +398,7 @@ WebView.prototype.onSizeChanged = function(webViewEvent) {
     minHeight = maxHeight;
   }
 
-  if (!this.webviewNode.hasAttribute(WebViewConstants.ATTRIBUTE_AUTOSIZE) ||
+  if (!this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue() ||
       (newWidth >= minWidth &&
        newWidth <= maxWidth &&
        newHeight >= minHeight &&
@@ -439,15 +420,9 @@ WebView.prototype.hasNavigated = function() {
   return !this.beforeFirstNavigation;
 };
 
-WebView.prototype.parseSrcAttribute = function(result) {
-  if (!this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId) {
-    result.error = WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE;
-    return;
-  }
-  this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValue(
-      this.webviewNode.getAttribute(WebViewConstants.ATTRIBUTE_SRC));
-
-  if (!this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue()) {
+WebView.prototype.parseSrcAttribute = function() {
+  if (!this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
+      !this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue()) {
     return;
   }
 
@@ -469,22 +444,16 @@ WebView.prototype.parseAttributes = function() {
   if (!this.elementAttached) {
     return;
   }
-  var attributeValue = this.webviewNode.getAttribute(
-      WebViewConstants.ATTRIBUTE_PARTITION);
-  var result = this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(
-      attributeValue);
-  this.parseSrcAttribute(result);
+  this.parseSrcAttribute();
 };
 
 WebView.prototype.createGuest = function() {
   if (this.pendingGuestCreation) {
     return;
   }
-  var storagePartitionId =
-      this.webviewNode.getAttribute(WebViewConstants.ATTRIBUTE_PARTITION) ||
-      this.webviewNode[WebViewConstants.ATTRIBUTE_PARTITION];
   var params = {
-    'storagePartitionId': storagePartitionId
+    'storagePartitionId': this.attributes[
+      WebViewConstants.ATTRIBUTE_PARTITION].getValue()
   };
   GuestViewInternal.createGuest(
       'webview',
@@ -502,13 +471,11 @@ WebView.prototype.createGuest = function() {
 };
 
 WebView.prototype.onFrameNameChanged = function(name) {
-  this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(name || '');
-  if (this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue() === '') {
+  name = name || '';
+  if (name === '') {
     this.webviewNode.removeAttribute(WebViewConstants.ATTRIBUTE_NAME);
   } else {
-    this.webviewNode.setAttribute(
-        WebViewConstants.ATTRIBUTE_NAME,
-        this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue());
+    this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(name);
   }
 };
 
@@ -543,7 +510,7 @@ WebView.prototype.onLoadCommit = function(
   this.currentEntryIndex = currentEntryIndex;
   this.entryCount = entryCount;
   this.processId = processId;
-  var oldValue = this.webviewNode.getAttribute(WebViewConstants.ATTRIBUTE_SRC);
+  var oldValue = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
   var newValue = url;
   if (isTopLevel && (oldValue != newValue)) {
     // Touching the src attribute triggers a navigation. To avoid
@@ -555,8 +522,6 @@ WebView.prototype.onLoadCommit = function(
 };
 
 WebView.prototype.onAttach = function(storagePartitionId) {
-  this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_PARTITION,
-                                storagePartitionId);
   this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(
       storagePartitionId);
 };
@@ -564,9 +529,8 @@ WebView.prototype.onAttach = function(storagePartitionId) {
 WebView.prototype.buildAttachParams = function(isNewWindow) {
   var params = {
     'allowtransparency': this.attributes[
-      WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue() || false,
-    'autosize': this.webviewNode.hasAttribute(
-        WebViewConstants.ATTRIBUTE_AUTOSIZE),
+      WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue(),
+    'autosize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'instanceId': this.viewInstanceId,
     'maxheight': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MAXHEIGHT].
         getValue() || 0),
@@ -590,7 +554,7 @@ WebView.prototype.buildAttachParams = function(isNewWindow) {
 };
 
 WebView.prototype.attachWindow = function(guestInstanceId,
-                                                  isNewWindow) {
+                                          isNewWindow) {
   this.guestInstanceId = guestInstanceId;
   var params = this.buildAttachParams(isNewWindow);
 

@@ -97,20 +97,28 @@ embedder.test.assertFalse = function(condition) {
 
 // Tests begin.
 
-// This test verifies that the allowtransparency property cannot be changed
-// once set. The attribute can only be deleted.
+// This test verifies that the allowtransparency property is interpreted as true
+// if it exists (regardless of its value), and can be removed by setting it to
+// to anything false.
 function testAllowTransparencyAttribute() {
   var webview = document.createElement('webview');
   webview.src = 'data:text/html,webview test';
+  embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
+  embedder.test.assertFalse(webview.allowtransparency);
   webview.allowtransparency = true;
 
   webview.addEventListener('loadstop', function(e) {
     embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
-    webview.allowtransparency = false;
     embedder.test.assertTrue(webview.allowtransparency);
-    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
-    webview.removeAttribute('allowtransparency');
+    webview.allowtransparency = false;
+    embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
     embedder.test.assertFalse(webview.allowtransparency);
+    webview.allowtransparency = '';
+    embedder.test.assertFalse(webview.hasAttribute('allowtransparency'));
+    embedder.test.assertFalse(webview.allowtransparency);
+    webview.allowtransparency = 'some string';
+    embedder.test.assertTrue(webview.hasAttribute('allowtransparency'));
+    embedder.test.assertTrue(webview.allowtransparency);
     embedder.test.succeed();
   });
 
@@ -616,7 +624,7 @@ function testLoadProgressEvent() {
 // Current expected behavior is that the second event listener will still
 // fire without crashing.
 function testDestroyOnEventListener() {
-  var webview = util.createWebViewTagInDOM(arguments.callee.name);
+  var webview = document.createElement('webview');
   var url = 'data:text/html,<body>Destroy test</body>';
 
   var loadCommitCount = 0;
@@ -647,13 +655,14 @@ function testDestroyOnEventListener() {
     loadCommitCommon(e);
   });
   webview.setAttribute('src', url);
+  document.body.appendChild(webview);
 }
 
 // This test registers two event listeners on a same event (loadcommit).
 // Each of the listener tries to change some properties on the event param,
 // which should not be possible.
 function testCannotMutateEventName() {
-  var webview = util.createWebViewTagInDOM(arguments.callee.name);
+  var webview = document.createElement('webview');
   var url = 'data:text/html,<body>Two</body>';
 
   var loadCommitACalled = false;
@@ -695,23 +704,20 @@ function testCannotMutateEventName() {
   webview.addEventListener('loadcommit', onLoadCommitA);
   webview.addEventListener('loadcommit', onLoadCommitB);
   webview.setAttribute('src', url);
+  document.body.appendChild(webview);
 }
 
-// This test verifies that setting the partition attribute after the src has
-// been set raises an exception.
-function testPartitionRaisesException() {
+// This test verifies that the partion attribute cannot be changed after the src
+// has been set.
+function testPartitionChangeAfterNavigation() {
   var webview = document.createElement('webview');
   var partitionAttribute = arguments.callee.name;
   webview.setAttribute('partition', partitionAttribute);
 
   var loadstopHandler = function(e) {
-    try {
-      webview.partition = 'illegal';
-      embedder.test.fail();
-    } catch (e) {
-      embedder.test.assertEq(partitionAttribute, webview.partition);
-      embedder.test.succeed();
-    }
+    webview.partition = 'illegal';
+    embedder.test.assertEq(partitionAttribute, webview.partition);
+    embedder.test.succeed();
   };
   webview.addEventListener('loadstop', loadstopHandler);
 
@@ -1999,7 +2005,7 @@ embedder.test.testList = {
   'testLoadProgressEvent': testLoadProgressEvent,
   'testDestroyOnEventListener': testDestroyOnEventListener,
   'testCannotMutateEventName': testCannotMutateEventName,
-  'testPartitionRaisesException': testPartitionRaisesException,
+  'testPartitionChangeAfterNavigation': testPartitionChangeAfterNavigation,
   'testPartitionRemovalAfterNavigationFails':
       testPartitionRemovalAfterNavigationFails,
   'testExecuteScriptFail': testExecuteScriptFail,
