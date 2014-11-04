@@ -236,8 +236,13 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
           file_url, output_filename)))
       continue
     # Fetch the file.
-    out_q.put('%d> Downloading %s...' % (
-        thread_num, output_filename))
+    out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
+    try:
+      os.remove(output_filename)  # Delete the file if it exists already.
+    except OSError:
+      if os.path.exists(output_filename):
+        out_q.put('%d> Warning: deleting %s failed.' % (
+            thread_num, output_filename))
     code, _, err = gsutil.check_call('cp', '-q', file_url, output_filename)
     if code != 0:
       out_q.put('%d> %s' % (thread_num, err))
