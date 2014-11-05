@@ -484,6 +484,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     const Profiles& last_opened_profiles,
     int* return_code,
     StartupBrowserCreator* browser_creator) {
+  VLOG(2) << "ProcessCmdLineImpl : BEGIN";
   DCHECK(last_used_profile);
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
@@ -512,6 +513,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 #endif  // defined(ENABLE_FULL_PRINTING)
 
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 1";
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::string allowed_ports =
         command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
@@ -526,6 +528,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     return false;
   }
 
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 2";
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (!process_startup) {
       LOG(ERROR) << "chrome is already running; you must close all running "
@@ -579,6 +582,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 3";
 #if defined(OS_MACOSX)
   if (web_app::MaybeRebuildShortcut(command_line))
     return true;
@@ -602,6 +606,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   if (silent_launch)
     return true;
 
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 4";
   // Check for --load-and-launch-app.
   if (command_line.HasSwitch(apps::kLoadAndLaunchApp) &&
       !IncognitoModePrefs::ShouldLaunchIncognito(
@@ -623,6 +628,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       return true;
   }
 
+  VLOG(2) << "ProcessCmdLineImpl: PLACE 5";
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?
       chrome::startup::IS_PROCESS_STARTUP :
       chrome::startup::IS_NOT_PROCESS_STARTUP;
@@ -637,6 +643,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // |last_used_profile| is the last used incognito profile. Restoring it will
   // create a browser window for the corresponding original profile.
   if (last_opened_profiles.empty()) {
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 6.A";
     // If the last used profile is locked or was a guest, show the user manager.
     if (switches::IsNewAvatarMenu()) {
       ProfileInfoCache& profile_info =
@@ -662,15 +669,18 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       }
     }
 
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 7.A";
     Profile* profile_to_open = last_used_profile->IsGuestSession() ?
         last_used_profile->GetOffTheRecordProfile() : last_used_profile;
 
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 8.A";
     if (!browser_creator->LaunchBrowser(command_line, profile_to_open,
                                         cur_dir, is_process_startup,
                                         is_first_run, return_code)) {
       return false;
     }
   } else {
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 6.B";
     // Guest profiles should not be reopened on startup. This can happen if
     // the last used profile was a Guest, but other profiles were also open
     // when Chrome was closed. In this case, pick a different open profile
@@ -690,6 +700,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       command_line_without_urls.AppendSwitchNative(switch_it->first,
                                                    switch_it->second);
     }
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 7.B";
     // Launch the profiles in the order they became active.
     for (Profiles::const_iterator it = last_opened_profiles.begin();
          it != last_opened_profiles.end(); ++it) {
@@ -711,10 +722,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       // We've launched at least one browser.
       is_process_startup = chrome::startup::IS_NOT_PROCESS_STARTUP;
     }
+    VLOG(2) << "ProcessCmdLineImpl: PLACE 8.B";
     // This must be done after all profiles have been launched so the observer
     // knows about all profiles to wait for before activating this one.
     profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
   }
+  VLOG(2) << "ProcessCmdLineImpl: END";
   return true;
 }
 
