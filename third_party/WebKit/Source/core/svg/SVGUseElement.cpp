@@ -434,7 +434,7 @@ void SVGUseElement::toClipPath(Path& path)
             // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
             SVGLengthContext lengthContext(this);
             path.translate(FloatSize(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext)));
-            path.transform(animatedLocalTransform());
+            path.transform(calculateAnimatedLocalTransform());
         }
     }
 }

@@ -58,7 +58,7 @@ Path RenderSVGTextPath::layoutPath() const
     // the current 'text' element, including any adjustments to the current user coordinate
     // system due to a possible transform attribute on the current 'text' element.
     // http://www.w3.org/TR/SVG/text.html#TextPathElement
-    pathData.transform(pathElement.animatedLocalTransform());
+    pathData.transform(pathElement.calculateAnimatedLocalTransform());
     return pathData;
 }
 

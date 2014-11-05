@@ -123,7 +123,7 @@ void RenderSVGShape::layout()
     }
 
     if (m_needsTransformUpdate) {
-        m_localTransform =  toSVGGraphicsElement(element())->animatedLocalTransform();
+        m_localTransform =  toSVGGraphicsElement(element())->calculateAnimatedLocalTransform();
         m_needsTransformUpdate = false;
         updateCachedBoundariesInParents = true;
     }

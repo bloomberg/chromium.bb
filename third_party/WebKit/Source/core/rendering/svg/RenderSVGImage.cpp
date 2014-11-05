@@ -123,7 +123,7 @@ void RenderSVGImage::layout()
 
     bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
     if (m_needsTransformUpdate) {
-        m_localTransform = toSVGImageElement(element())->animatedLocalTransform();
+        m_localTransform = toSVGImageElement(element())->calculateAnimatedLocalTransform();
         m_needsTransformUpdate = false;
     }
 

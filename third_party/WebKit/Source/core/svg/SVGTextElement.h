@@ -31,8 +31,6 @@ class SVGTextElement final : public SVGTextPositioningElement {
 public:
     DECLARE_NODE_FACTORY(SVGTextElement);
 
-    virtual AffineTransform animatedLocalTransform() const override;
-
 private:
     explicit SVGTextElement(Document&);
 

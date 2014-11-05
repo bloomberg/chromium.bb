@@ -100,7 +100,7 @@ bool RenderSVGTransformableContainer::calculateLocalTransform()
     if (!m_needsTransformUpdate)
         return false;
 
-    m_localTransform = element->animatedLocalTransform();
+    m_localTransform = element->calculateAnimatedLocalTransform();
     m_localTransform.translate(m_lastTranslation.width(), m_lastTranslation.height());
     m_needsTransformUpdate = false;
     return true;

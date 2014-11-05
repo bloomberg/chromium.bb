@@ -50,8 +50,8 @@ public:
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return animatedLocalTransform(); }
-    virtual AffineTransform animatedLocalTransform() const;
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return calculateAnimatedLocalTransform(); }
+    AffineTransform calculateAnimatedLocalTransform() const;
     virtual AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();

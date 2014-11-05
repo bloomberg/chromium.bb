@@ -326,7 +326,7 @@ void RenderSVGText::layout()
 
     bool updateCachedBoundariesInParents = false;
     if (m_needsTransformUpdate) {
-        m_localTransform = toSVGTextElement(node())->animatedLocalTransform();
+        m_localTransform = toSVGTextElement(node())->calculateAnimatedLocalTransform();
         m_needsTransformUpdate = false;
         updateCachedBoundariesInParents = true;
     }
