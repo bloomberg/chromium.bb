@@ -15,6 +15,8 @@
 #include "media/base/video_renderer.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/renderer_impl.h"
+#include "media/filters/video_renderer_impl.h"
+#include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 #include "media/mojo/services/renderer_config.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -33,29 +35,8 @@ static void LogMediaSourceError(const scoped_refptr<MediaLog>& media_log,
   media_log->AddEvent(media_log->CreateMediaSourceErrorEvent(error));
 }
 
-// Shim DemuxerStreamProvider wrapper for a single DemuxerStream.
-// TODO(dalecurtis): Once we support more than one DemuxerStream we'll need a
-// more complicated shim which can handle a mojo::Array<DemuxerStream>.
-class DemuxerStreamProviderShim : public DemuxerStreamProvider {
- public:
-  DemuxerStreamProviderShim(scoped_ptr<MojoDemuxerStreamAdapter> stream)
-      : stream_(stream.Pass()) {}
-
-  ~DemuxerStreamProviderShim() override {}
-
-  DemuxerStream* GetStream(DemuxerStream::Type type) override {
-    return type != stream_->type() ? nullptr : stream_.get();
-  };
-
-  Liveness GetLiveness() const override {
-    return DemuxerStreamProvider::LIVENESS_UNKNOWN;
-  }
-
- private:
-  scoped_ptr<MojoDemuxerStreamAdapter> stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemuxerStreamProviderShim);
-};
+static void PaintNothing(const scoped_refptr<VideoFrame>& frame) {
+}
 
 class MojoRendererApplication
     : public mojo::ApplicationDelegate,
@@ -102,7 +83,16 @@ MojoRendererService::MojoRendererService(
       SetDecryptorReadyCB(),
       renderer_config->GetAudioHardwareConfig(),
       media_log));
-  scoped_ptr<VideoRenderer> video_renderer(nullptr);
+
+  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+      task_runner,
+      renderer_config->GetVideoDecoders(
+                           task_runner,
+                           base::Bind(&LogMediaSourceError, media_log)).Pass(),
+      SetDecryptorReadyCB(),
+      base::Bind(&PaintNothing),
+      true,
+      media_log));
 
   // Create renderer.
   renderer_.reset(new RendererImpl(
@@ -112,7 +102,8 @@ MojoRendererService::MojoRendererService(
 MojoRendererService::~MojoRendererService() {
 }
 
-void MojoRendererService::Initialize(mojo::DemuxerStreamPtr stream,
+void MojoRendererService::Initialize(mojo::DemuxerStreamPtr audio,
+                                     mojo::DemuxerStreamPtr video,
                                      const mojo::Closure& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -120,11 +111,9 @@ void MojoRendererService::Initialize(mojo::DemuxerStreamPtr stream,
 
   state_ = STATE_INITIALIZING;
   stream_provider_.reset(new DemuxerStreamProviderShim(
-      make_scoped_ptr(new MojoDemuxerStreamAdapter(
-                          stream.Pass(),
-                          base::Bind(&MojoRendererService::OnStreamReady,
-                                     weak_this_,
-                                     callback))).Pass()));
+      audio.Pass(),
+      video.Pass(),
+      base::Bind(&MojoRendererService::OnStreamReady, weak_this_, callback)));
 }
 
 void MojoRendererService::Flush(const mojo::Closure& callback) {

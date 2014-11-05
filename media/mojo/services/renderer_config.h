@@ -12,6 +12,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
+#include "media/base/video_decoder.h"
 
 namespace media {
 
@@ -21,11 +22,15 @@ class PlatformRendererConfig {
  public:
   virtual ~PlatformRendererConfig() {};
 
-  // The list of audio decoders for use with the AudioRenderer.  Ownership of
-  // the decoders is passed to the caller.  The methods on each decoder will
-  // only be called on |media_task_runner|.  |media_log_cb| should be used to
-  // log errors or important status information.
+  // The list of audio or video decoders for use with the AudioRenderer or
+  // VideoRenderer respectively.  Ownership of the decoders is passed to the
+  // caller.  The methods on each decoder will only be called on
+  // |media_task_runner|.  |media_log_cb| should be used to log errors or
+  // important status information.
   virtual ScopedVector<AudioDecoder> GetAudioDecoders(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const LogCB& media_log_cb) = 0;
+  virtual ScopedVector<VideoDecoder> GetVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb) = 0;
 
@@ -36,7 +41,6 @@ class PlatformRendererConfig {
   // constant for the lifetime of the PlatformRendererConfig.
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
 
-  // TODO(dalecurtis): Expose methods for retrieving the video decoders.
 };
 
 class RendererConfig {
@@ -47,6 +51,9 @@ class RendererConfig {
 
   // Copy of the PlatformRendererConfig interface.
   ScopedVector<AudioDecoder> GetAudioDecoders(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const LogCB& media_log_cb);
+  ScopedVector<VideoDecoder> GetVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb);
   scoped_refptr<AudioRendererSink> GetAudioRendererSink();

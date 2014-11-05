@@ -10,8 +10,16 @@
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media.h"
-#include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
+
+#if !defined(OS_ANDROID)
+#include "media/filters/ffmpeg_audio_decoder.h"
+#include "media/filters/ffmpeg_video_decoder.h"
+#endif
+
+#if !defined(MEDIA_DISABLE_LIBVPX)
+#include "media/filters/vpx_video_decoder.h"
+#endif
 
 namespace media {
 namespace internal {
@@ -54,6 +62,25 @@ class DefaultRendererConfig : public PlatformRendererConfig {
 #endif
 
     return audio_decoders.Pass();
+  }
+
+  ScopedVector<VideoDecoder> GetVideoDecoders(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const LogCB& media_log_cb) override {
+    ScopedVector<VideoDecoder> video_decoders;
+
+    // TODO(dalecurtis): If we ever need GPU video decoders, we'll need to
+    // figure out how to retrieve the GpuVideoAcceleratorFactories...
+
+#if !defined(MEDIA_DISABLE_LIBVPX)
+    video_decoders.push_back(new VpxVideoDecoder(media_task_runner));
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+#if !defined(OS_ANDROID)
+    video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
+#endif
+
+    return video_decoders.Pass();
   }
 
   scoped_refptr<AudioRendererSink> GetAudioRendererSink() override {

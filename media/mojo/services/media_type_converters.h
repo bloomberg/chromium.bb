@@ -10,6 +10,7 @@
 
 namespace media {
 class AudioDecoderConfig;
+class VideoDecoderConfig;
 class DecoderBuffer;
 }
 
@@ -35,6 +36,15 @@ struct TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig> {
 template <>
 struct TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr> {
   static media::AudioDecoderConfig Convert(const AudioDecoderConfigPtr& input);
+};
+
+template <>
+struct TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig> {
+  static VideoDecoderConfigPtr Convert(const media::VideoDecoderConfig& input);
+};
+template <>
+struct TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr> {
+  static media::VideoDecoderConfig Convert(const VideoDecoderConfigPtr& input);
 };
 
 }  // namespace mojo

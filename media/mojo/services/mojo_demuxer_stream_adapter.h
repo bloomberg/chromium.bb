@@ -15,11 +15,11 @@
 
 namespace media {
 
-// This class acts as a MojoRendererService-side stub for a real
-// media::DemuxerStream that is part of a media::Pipeline in a remote
-// application. Roughly speaking, it takes a mojo::DemuxerStreamPtr and exposes
-// it as a media::DemuxerStream for use by media components.
-class MojoDemuxerStreamAdapter : public media::DemuxerStream,
+// This class acts as a MojoRendererService-side stub for a real DemuxerStream
+// that is part of a Pipeline in a remote application. Roughly speaking, it
+// takes a mojo::DemuxerStreamPtr and exposes it as a DemuxerStream for use by
+// media components.
+class MojoDemuxerStreamAdapter : public DemuxerStream,
                                  public mojo::DemuxerStreamClient {
  public:
   // |demuxer_stream| is connected to the mojo::DemuxerStream that |this| will
@@ -31,7 +31,7 @@ class MojoDemuxerStreamAdapter : public media::DemuxerStream,
                            const base::Closure& stream_ready_cb);
   ~MojoDemuxerStreamAdapter() override;
 
-  // media::DemuxerStream implementation.
+  // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
@@ -43,6 +43,7 @@ class MojoDemuxerStreamAdapter : public media::DemuxerStream,
   // mojo::DemuxerStreamClient implementation.
   void OnStreamReady(mojo::ScopedDataPipeConsumerHandle pipe) override;
   void OnAudioDecoderConfigChanged(mojo::AudioDecoderConfigPtr config) override;
+  void OnVideoDecoderConfigChanged(mojo::VideoDecoderConfigPtr config) override;
 
  private:
   // The callback from |demuxer_stream_| that a read operation has completed.
@@ -63,7 +64,10 @@ class MojoDemuxerStreamAdapter : public media::DemuxerStream,
 
   // The front of the queue is the current config. We pop when we observe
   // DemuxerStatus::CONFIG_CHANGED.
-  std::queue<media::AudioDecoderConfig> config_queue_;
+  std::queue<AudioDecoderConfig> audio_config_queue_;
+  std::queue<VideoDecoderConfig> video_config_queue_;
+
+  DemuxerStream::Type type_;
 
   base::WeakPtrFactory<MojoDemuxerStreamAdapter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoDemuxerStreamAdapter);

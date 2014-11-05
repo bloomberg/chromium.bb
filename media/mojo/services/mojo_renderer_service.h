@@ -39,7 +39,8 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
-  void Initialize(mojo::DemuxerStreamPtr streams,
+  void Initialize(mojo::DemuxerStreamPtr audio,
+                  mojo::DemuxerStreamPtr video,
                   const mojo::Closure& callback) override;
   void Flush(const mojo::Closure& callback) override;
   void StartPlayingFrom(int64_t time_delta_usec) override;

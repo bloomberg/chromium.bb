@@ -53,14 +53,24 @@ void MojoRendererImpl::Initialize(
   error_cb_ = error_cb;
   buffering_state_cb_ = buffering_state_cb;
 
-  // Create a mojo::DemuxerStream and bind its lifetime to the pipe.
-  mojo::DemuxerStreamPtr demuxer_stream;
-  mojo::BindToProxy(
-      new MojoDemuxerStreamImpl(
-          demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO)),
-      &demuxer_stream);
+  // Create audio and video mojo::DemuxerStream and bind its lifetime to the
+  // pipe.
+  DemuxerStream* const audio =
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* const video =
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
+
+  mojo::DemuxerStreamPtr audio_stream;
+  if (audio)
+    mojo::BindToProxy(new MojoDemuxerStreamImpl(audio), &audio_stream);
+
+  mojo::DemuxerStreamPtr video_stream;
+  if (video)
+    mojo::BindToProxy(new MojoDemuxerStreamImpl(video), &video_stream);
+
   remote_audio_renderer_->Initialize(
-      demuxer_stream.Pass(),
+      audio_stream.Pass(),
+      video_stream.Pass(),
       BindToCurrentLoop(base::Bind(&MojoRendererImpl::OnInitialized,
                                    weak_factory_.GetWeakPtr())));
 }
@@ -105,13 +115,13 @@ bool MojoRendererImpl::HasAudio() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(remote_audio_renderer_.get());  // We always bind the renderer.
-  return true;
+  return !!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
 }
 
 bool MojoRendererImpl::HasVideo() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return false;
+  return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 }
 
 void MojoRendererImpl::SetCdm(MediaKeys* cdm) {

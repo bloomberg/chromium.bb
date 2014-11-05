@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
@@ -35,8 +36,13 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   if (status == media::DemuxerStream::kConfigChanged) {
     // Send the config change so our client can read it once it parses the
     // Status obtained via Run() below.
-    client()->OnAudioDecoderConfigChanged(
-        mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
+    if (stream_->type() == media::DemuxerStream::AUDIO) {
+      client()->OnAudioDecoderConfigChanged(
+          mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
+    } else if (stream_->type() == media::DemuxerStream::VIDEO) {
+      client()->OnVideoDecoderConfigChanged(
+          mojo::VideoDecoderConfig::From(stream_->video_decoder_config()));
+    }
   }
 
   // TODO(tim): Once using DataPipe, fill via the producer handle and then
@@ -49,8 +55,13 @@ void MojoDemuxerStreamImpl::OnConnectionEstablished() {
   // This is called when our DemuxerStreamClient has connected itself and is
   // ready to receive messages.  Send an initial config and notify it that
   // we are now ready for business.
-  client()->OnAudioDecoderConfigChanged(
-      mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
+  if (stream_->type() == media::DemuxerStream::AUDIO) {
+    client()->OnAudioDecoderConfigChanged(
+        mojo::AudioDecoderConfig::From(stream_->audio_decoder_config()));
+  } else if (stream_->type() == media::DemuxerStream::VIDEO) {
+    client()->OnVideoDecoderConfigChanged(
+        mojo::VideoDecoderConfig::From(stream_->video_decoder_config()));
+  }
 
   // TODO(tim): Create a DataPipe, hold the producer handle, and pass the
   // consumer handle here.

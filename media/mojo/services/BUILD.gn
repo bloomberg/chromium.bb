@@ -10,8 +10,11 @@ source_set("lib") {
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",
+    "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//mojo/services/public/interfaces/geometry",
+    "//skia",
   ]
 
   sources = [
@@ -61,6 +64,8 @@ shared_library("renderer_app") {
   ]
 
   sources = [
+    "demuxer_stream_provider_shim.cc",
+    "demuxer_stream_provider_shim.h",
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
     "renderer_config.cc",

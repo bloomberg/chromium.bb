@@ -4,6 +4,8 @@
 
 module mojo;
 
+import "mojo/services/public/interfaces/geometry/geometry.mojom";
+
 // See media/base/buffering_state.h for descriptions.
 // Kept in sync with media::BufferingState via COMPILE_ASSERTs.
 enum BufferingState {
@@ -68,7 +70,7 @@ enum ChannelLayout {
   k_OCTAGONAL = 28,
   k_DISCRETE = 29,
   k_STEREO_AND_KEYBOARD_MIC = 30,
-  k_MAX = k_STEREO_AND_KEYBOARD_MIC
+  k_MAX = k_STEREO_AND_KEYBOARD_MIC,
 };
 
 // See media/base/sample_format.h for descriptions.
@@ -84,6 +86,63 @@ enum SampleFormat {
   Max = PlanarF32,
 };
 
+// See media/base/video_frame.h for descriptions.
+// Kept in sync with media::VideoFrame::Format via COMPILE_ASSERTs.
+enum VideoFormat {
+  UNKNOWN = 0,
+  YV12,
+  YV16,
+  I420,
+  YV12A,
+  HOLE,
+  NATIVE_TEXTURE,
+  YV12J,
+  NV12,
+  YV24,
+  FORMAT_MAX = YV24,
+};
+
+// See media/base/video_decoder_config.h for descriptions.
+// Kept in sync with media::VideoCodec via COMPILE_ASSERTs.
+enum VideoCodec {
+  UNKNOWN = 0,
+  H264,
+  VC1,
+  MPEG2,
+  MPEG4,
+  Theora,
+  VP8,
+  VP9,
+  Max = VP9,
+};
+
+// See media/base/video_decoder_config.h for descriptions.
+// Kept in sync with media::VideoCodecProfile via COMPILE_ASSERTs.
+enum VideoCodecProfile {
+  VIDEO_CODEC_PROFILE_UNKNOWN = -1,
+  VIDEO_CODEC_PROFILE_MIN = VIDEO_CODEC_PROFILE_UNKNOWN,
+  H264PROFILE_MIN = 0,
+  H264PROFILE_BASELINE = H264PROFILE_MIN,
+  H264PROFILE_MAIN = 1,
+  H264PROFILE_EXTENDED = 2,
+  H264PROFILE_HIGH = 3,
+  H264PROFILE_HIGH10PROFILE = 4,
+  H264PROFILE_HIGH422PROFILE = 5,
+  H264PROFILE_HIGH444PREDICTIVEPROFILE = 6,
+  H264PROFILE_SCALABLEBASELINE = 7,
+  H264PROFILE_SCALABLEHIGH = 8,
+  H264PROFILE_STEREOHIGH = 9,
+  H264PROFILE_MULTIVIEWHIGH = 10,
+  H264PROFILE_MAX = H264PROFILE_MULTIVIEWHIGH,
+  VP8PROFILE_MIN = 11,
+  VP8PROFILE_ANY = VP8PROFILE_MIN,
+  VP8PROFILE_MAX = VP8PROFILE_ANY,
+  VP9PROFILE_MIN = 12,
+  VP9PROFILE_ANY = VP9PROFILE_MIN,
+  VP9PROFILE_MAX = VP9PROFILE_ANY,
+  VIDEO_CODEC_PROFILE_MAX = VP9PROFILE_MAX,
+};
+
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
@@ -94,6 +153,19 @@ struct AudioDecoderConfig {
   array<uint8>? extra_data;
   int64 seek_preroll_usec;
   int32 codec_delay;
+};
+
+// This defines a mojo transport format for media::VideoDecoderConfig.
+// See media/base/video_decoder_config.h for descriptions.
+struct VideoDecoderConfig {
+  VideoCodec codec;
+  VideoCodecProfile profile;
+  VideoFormat format;
+  Size coded_size;
+  Rect visible_rect;
+  Size natural_size;
+  array<uint8>? extra_data;
+  bool is_encrypted;
 };
 
 // This defines a mojo transport format for media::DecoderBuffer.

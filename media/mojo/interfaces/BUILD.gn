@@ -11,4 +11,8 @@ mojom("interfaces") {
     "media_renderer.mojom",
     "demuxer_stream.mojom",
   ]
+
+  deps = [
+    "//mojo/services/public/interfaces/geometry",
+  ]
 }

@@ -15,7 +15,8 @@ interface DemuxerStream {
   enum Type {
     UNKNOWN,
     AUDIO,
-    LAST_TYPE = AUDIO
+    VIDEO,
+    LAST_TYPE = VIDEO,
   };
 
   // See media::DemuxerStream for descriptions.
@@ -49,4 +50,9 @@ interface DemuxerStreamClient {
   // whenever a DemuxerStream::STATUS_CONFIG_CHANGED is observed (either
   // in a Read() callback or over the DataPipe).
   OnAudioDecoderConfigChanged(AudioDecoderConfig config);
+
+  // A new VideoDecoderConfig is available. Will be sent by the DemuxerStream
+  // whenever a DemuxerStream::STATUS_CONFIG_CHANGED is observed (either
+  // in a Read() callback or over the DataPipe).
+  OnVideoDecoderConfigChanged(VideoDecoderConfig config);
 };

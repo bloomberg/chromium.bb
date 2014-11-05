@@ -24,6 +24,12 @@ ScopedVector<AudioDecoder> RendererConfig::GetAudioDecoders(
   return renderer_config_->GetAudioDecoders(media_task_runner, media_log_cb);
 }
 
+ScopedVector<VideoDecoder> RendererConfig::GetVideoDecoders(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const LogCB& media_log_cb) {
+  return renderer_config_->GetVideoDecoders(media_task_runner, media_log_cb);
+}
+
 scoped_refptr<AudioRendererSink> RendererConfig::GetAudioRendererSink() {
   return renderer_config_->GetAudioRendererSink();
 }

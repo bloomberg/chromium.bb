@@ -1038,9 +1038,11 @@
        ],
       'export_dependent_settings': [
         '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/services/public/mojo_services_public.gyp:mojo_geometry_bindings',
       ],
       'dependencies': [
         '../mojo/public/mojo_public.gyp:mojo_cpp_bindings',
+        '../mojo/services/public/mojo_services_public.gyp:mojo_geometry_bindings',
       ],
     },
     {
@@ -1053,9 +1055,12 @@
         'media',
         'media_mojo_bindings',
         '../base/base.gyp:base',
+        '../mojo/mojo_geometry_converters.gyp:mojo_geometry_lib',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/public/mojo_public.gyp:mojo_application_base',
         '../mojo/public/mojo_public.gyp:mojo_application_bindings',
+        '../skia/skia.gyp:skia',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '<(mojo_system_for_component)',
       ],
       'export_dependent_settings': [
@@ -1084,6 +1089,8 @@
         'shared_memory_support',
       ],
       'sources': [
+        'mojo/services/demuxer_stream_provider_shim.cc',
+        'mojo/services/demuxer_stream_provider_shim.h',
         'mojo/services/mojo_demuxer_stream_adapter.cc',
         'mojo/services/mojo_demuxer_stream_adapter.h',
         'mojo/services/mojo_renderer_service.cc',
