@@ -1018,9 +1018,7 @@ bool AcceleratorController::PerformAction(int action,
   }
 
   // If |action| is a debug action, run it.
-  debug::PerformDebugAction(action);
-
-  return false;
+  return debug::PerformDebugAction(action);
 }
 
 AcceleratorController::AcceleratorProcessingRestriction
