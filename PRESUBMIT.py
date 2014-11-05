@@ -1714,7 +1714,6 @@ def GetPreferredTryMasters(project, change):
       'ios_rel_device',
       'ios_rel_device_ninja',
       'linux_chromium_chromeos_rel',
-      'linux_chromium_clang_dbg',
       'linux_chromium_gn_dbg',
       'linux_chromium_gn_rel',
       'linux_chromium_rel_ng',
@@ -1734,7 +1733,6 @@ def GetPreferredTryMasters(project, change):
   if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
     builders.extend([
         'linux_chromeos_asan',
-        'linux_chromium_chromeos_clang_dbg'
     ])
 
   # If there are gyp changes to base, build, or chromeos, run a full cros build
