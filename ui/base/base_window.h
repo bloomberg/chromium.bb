@@ -38,7 +38,7 @@ class UI_BASE_EXPORT BaseWindow {
   static bool IsRestored(const BaseWindow& window);
 
   // Return a platform dependent identifier for this window.
-  virtual gfx::NativeWindow GetNativeWindow() = 0;
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
   // Returns the nonmaximized bounds of the window (even if the window is
   // currently maximized or minimized) in terms of the screen coordinates.

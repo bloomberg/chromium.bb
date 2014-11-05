@@ -43,7 +43,7 @@ class PasswordUIView {
       const ScopedVector<autofill::PasswordForm>& password_exception_list) = 0;
 #if !defined(OS_ANDROID)
   // Returns the top level NativeWindow for the view.
-  virtual gfx::NativeWindow GetNativeWindow() = 0;
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
 #endif
 };
 

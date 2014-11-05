@@ -55,7 +55,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool IsFullscreen() const override;
-  gfx::NativeWindow GetNativeWindow() override;
+  gfx::NativeWindow GetNativeWindow() const override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
   gfx::Rect GetBounds() const override;

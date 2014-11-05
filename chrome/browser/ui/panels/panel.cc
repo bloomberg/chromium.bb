@@ -247,7 +247,7 @@ bool Panel::IsFullscreen() const {
   return false;
 }
 
-gfx::NativeWindow Panel::GetNativeWindow() {
+gfx::NativeWindow Panel::GetNativeWindow() const {
   return native_panel_->GetNativePanelWindow();
 }
 

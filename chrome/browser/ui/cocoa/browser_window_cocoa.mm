@@ -244,7 +244,7 @@ bool BrowserWindowCocoa::IsActive() const {
   return [window() isKeyWindow];
 }
 
-gfx::NativeWindow BrowserWindowCocoa::GetNativeWindow() {
+gfx::NativeWindow BrowserWindowCocoa::GetNativeWindow() const {
   return window();
 }
 

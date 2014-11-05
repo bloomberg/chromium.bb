@@ -620,7 +620,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   }
   virtual ~TestBrowserWindowAura() {}
 
-  virtual gfx::NativeWindow GetNativeWindow() override {
+  virtual gfx::NativeWindow GetNativeWindow() const override {
     return native_window_.get();
   }
 
@@ -714,7 +714,7 @@ class V1App : public TestBrowserWindow {
   Browser* browser() { return browser_.get(); }
 
   // TestBrowserWindow override:
-  virtual gfx::NativeWindow GetNativeWindow() override {
+  virtual gfx::NativeWindow GetNativeWindow() const override {
     return native_window_.get();
   }
 

@@ -38,7 +38,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   void SetPasswordExceptionList(const ScopedVector<autofill::PasswordForm>&
                                     password_exception_list) override;
 #if !defined(OS_ANDROID)
-  gfx::NativeWindow GetNativeWindow() override;
+  gfx::NativeWindow GetNativeWindow() const override;
 #endif
  private:
   // Clears and then populates the list of passwords and password exceptions.

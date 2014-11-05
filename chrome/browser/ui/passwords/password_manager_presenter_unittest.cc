@@ -25,7 +25,7 @@ class MockPasswordUIView : public PasswordUIView {
   virtual ~MockPasswordUIView() {}
   virtual Profile* GetProfile() override;
 #if !defined(OS_ANDROID)
-  virtual gfx::NativeWindow GetNativeWindow() override;
+  virtual gfx::NativeWindow GetNativeWindow() const override;
 #endif
   MOCK_METHOD2(ShowPassword, void(size_t, const base::string16&));
   MOCK_METHOD2(SetPasswordList,
@@ -44,7 +44,7 @@ class MockPasswordUIView : public PasswordUIView {
 };
 
 #if !defined(OS_ANDROID)
-gfx::NativeWindow MockPasswordUIView::GetNativeWindow() { return NULL; }
+gfx::NativeWindow MockPasswordUIView::GetNativeWindow() const { return NULL; }
 #endif
 Profile* MockPasswordUIView::GetProfile() { return profile_; }
 

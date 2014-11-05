@@ -50,7 +50,9 @@ class TestBrowserWindowAura : public TestBrowserWindow {
     aura::client::GetActivationClient(
         native_window_->GetRootWindow())->ActivateWindow(native_window_.get());
   }
-  gfx::NativeWindow GetNativeWindow() override { return native_window_.get(); }
+  gfx::NativeWindow GetNativeWindow() const override {
+    return native_window_.get();
+  }
   gfx::Rect GetBounds() const override { return native_window_->bounds(); }
 
   Browser* browser() { return browser_.get(); }

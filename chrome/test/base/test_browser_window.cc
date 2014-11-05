@@ -97,7 +97,7 @@ bool TestBrowserWindow::IsAlwaysOnTop() const {
   return false;
 }
 
-gfx::NativeWindow TestBrowserWindow::GetNativeWindow() {
+gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {
   return NULL;
 }
 

@@ -61,7 +61,7 @@ bool ShellNativeAppWindow::IsFullscreen() const {
   return false;
 }
 
-gfx::NativeWindow ShellNativeAppWindow::GetNativeWindow() {
+gfx::NativeWindow ShellNativeAppWindow::GetNativeWindow() const {
   return GetWindow();
 }
 

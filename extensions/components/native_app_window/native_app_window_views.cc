@@ -88,7 +88,7 @@ bool NativeAppWindowViews::IsFullscreen() const {
   return widget_->IsFullscreen();
 }
 
-gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() {
+gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() const {
   return widget_->GetNativeWindow();
 }
 

@@ -40,7 +40,7 @@ Profile* PasswordManagerHandler::GetProfile() {
 }
 
 #if !defined(OS_ANDROID)
-gfx::NativeWindow PasswordManagerHandler::GetNativeWindow() {
+gfx::NativeWindow PasswordManagerHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetTopLevelNativeWindow();
 }
 #endif

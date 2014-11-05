@@ -33,7 +33,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   explicit TestBrowserWindowAura(aura::Window* native_window);
   ~TestBrowserWindowAura() override;
 
-  gfx::NativeWindow GetNativeWindow() override { return native_window_; }
+  gfx::NativeWindow GetNativeWindow() const override { return native_window_; }
 
  private:
   gfx::NativeWindow native_window_;

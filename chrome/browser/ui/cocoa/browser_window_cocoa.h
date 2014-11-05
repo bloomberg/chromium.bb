@@ -52,7 +52,7 @@ class BrowserWindowCocoa :
   void FlashFrame(bool flash) override;
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override;
-  gfx::NativeWindow GetNativeWindow() override;
+  gfx::NativeWindow GetNativeWindow() const override;
   BrowserWindowTesting* GetBrowserWindowTesting() override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
