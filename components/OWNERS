@@ -216,6 +216,10 @@ per-file translate.gypi=andrewhayden@chromium.org
 per-file translate.gypi=droger@chromium.org
 per-file translate.gypi=hajimehoshi@chromium.org
 per-file translate.gypi=toyoshim@chromium.org
+per-file translate_strings.grdp=andrewhayden@chromium.org
+per-file translate_strings.grdp=droger@chromium.org
+per-file translate_strings.grdp=hajimehoshi@chromium.org
+per-file translate_strings.grdp=toyoshim@chromium.org
 
 per-file startup_metric_utils.gypi=jeremy@chromium.org
 
