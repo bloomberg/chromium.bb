@@ -14,10 +14,6 @@
 namespace net {
 
 //------------------------------------------------------------------------------
-// Workaround for http://crbug.com/418975; remove when fixed.
-#if !defined(OS_IOS)
-
-//------------------------------------------------------------------------------
 // Provide sample data and compression results with a sample VCDIFF dictionary.
 // Note an SDCH dictionary has extra meta-data before the VCDIFF dictionary.
 static const char kTestVcdiffDictionary[] = "DictionaryFor"
@@ -521,12 +517,7 @@ TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
   GURL url("http://www.google.com");
   GURL secure_url("https://www.google.com");
 
-#if !defined(OS_IOS)
-  // Workaround for http://crbug.com/418975; remove when fixed.
   bool expect_https_support = true;
-#else
-  bool expect_https_support = false;
-#endif
 
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(url));
   EXPECT_EQ(expect_https_support,
@@ -571,18 +562,5 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
   EXPECT_FALSE(dictionary.get());
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(blacklist_url));
 }
-
-#else
-
-TEST(SdchManagerTest, SdchOffByDefault) {
-  GURL google_url("http://www.google.com");
-  SdchManager* sdch_manager(new SdchManager);
-
-  EXPECT_FALSE(sdch_manager->IsInSupportedDomain(google_url));
-  SdchManager::EnableSdchSupport(true);
-  EXPECT_TRUE(sdch_manager->IsInSupportedDomain(google_url));
-}
-
-#endif  // !defined(OS_IOS)
 
 }  // namespace net
