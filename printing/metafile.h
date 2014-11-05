@@ -29,8 +29,6 @@ class Rect;
 class Size;
 }
 
-class SkBaseDevice;
-
 namespace printing {
 
 // This class plays metafiles from data stream (usually PDF or EMF).
@@ -110,13 +108,6 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // on success.
   // Note: It should only be called from within the browser process.
   virtual bool InitFromData(const void* src_buffer, uint32 src_buffer_size) = 0;
-
-  // This method calls StartPage and then returns an appropriate
-  // VectorPlatformDevice implementation bound to the context created by
-  // StartPage or NULL on error.
-  virtual SkBaseDevice* StartPageForVectorCanvas(const gfx::Size& page_size,
-                                                 const gfx::Rect& content_area,
-                                                 const float& scale_factor) = 0;
 
   // Prepares a context for rendering a new page with the given |page_size|,
   // |content_area| and  a |scale_factor| to use for the drawing. The units are

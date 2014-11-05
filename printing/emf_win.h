@@ -58,9 +58,6 @@ class PRINTING_EXPORT Emf : public Metafile {
   virtual bool InitFromData(const void* src_buffer,
                             uint32 src_buffer_size) override;
 
-  virtual SkBaseDevice* StartPageForVectorCanvas(
-      const gfx::Size& page_size, const gfx::Rect& content_area,
-      const float& scale_factor) override;
   // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
   // (since StartPage and EndPage do not work in a metafile DC). Only valid
   // when hdc_ is non-NULL. |page_size|, |content_area|, and |scale_factor| are

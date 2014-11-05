@@ -15,6 +15,8 @@
 #include <windows.h>
 #endif
 
+class SkBaseDevice;
+
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {
 struct FileDescriptor;
@@ -34,10 +36,6 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   // Metafile methods.
   bool Init() override;
   bool InitFromData(const void* src_buffer, uint32 src_buffer_size) override;
-
-  SkBaseDevice* StartPageForVectorCanvas(const gfx::Size& page_size,
-                                         const gfx::Rect& content_area,
-                                         const float& scale_factor) override;
 
   bool StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
@@ -72,6 +70,12 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   // Return a new metafile containing just the current page in draft mode.
   scoped_ptr<PdfMetafileSkia> GetMetafileForCurrentPage();
 
+  // This method calls StartPage and then returns an appropriate
+  // VectorPlatformDevice implementation bound to the context created by
+  // StartPage or NULL on error.
+  SkBaseDevice* StartPageForVectorCanvas(const gfx::Size& page_size,
+                                         const gfx::Rect& content_area,
+                                         const float& scale_factor);
  private:
   scoped_ptr<PdfMetafileSkiaData> data_;
 

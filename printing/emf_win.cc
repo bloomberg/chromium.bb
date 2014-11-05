@@ -449,17 +449,6 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
   return res;
 }
 
-SkBaseDevice* Emf::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Rect& content_area,
-    const float& scale_factor) {
-  if (!StartPage(page_size, content_area, scale_factor))
-    return NULL;
-
-  return skia::VectorPlatformDeviceEmf::CreateDevice(page_size.width(),
-                                                     page_size.height(),
-                                                     true, hdc_);
-}
-
 bool Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Rect& /*content_area*/,
                     const float& /*scale_factor*/) {
