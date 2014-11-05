@@ -7,82 +7,16 @@
 #include "rlz/win/lib/process_info.h"
 
 #include <windows.h>
-#include <Sddl.h>  // For ConvertSidToStringSid.
-#include <LMCons.h>  // For UNLEN
 
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "rlz/lib/assert.h"
 
 namespace {
-
-HRESULT GetCurrentUser(std::wstring* name,
-                       std::wstring* domain,
-                       std::wstring* sid) {
-  DWORD err;
-
-  // Get the current username & domain the hard way.  (GetUserNameEx would be
-  // nice, but unfortunately requires connectivity to a domain controller.
-  // Useless.)
-
-  // (Following call doesn't work if running as a Service - because a Service
-  // runs under special accounts like LOCAL_SYSTEM, not as the logged in user.
-  // In which case, search for and use the process handle of a running
-  // Explorer.exe.)
-  HANDLE token;
-
-  CHECK(::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token));
-
-  base::win::ScopedHandle scoped_process_token(token);
-
-  // (Following call will fail with ERROR_INSUFFICIENT_BUFFER and give us the
-  // required size.)
-  scoped_ptr<char[]> token_user_bytes;
-  DWORD token_user_size;
-  DWORD token_user_size2;
-  BOOL result = ::GetTokenInformation(token, TokenUser, NULL, 0,
-                                      &token_user_size);
-  err = ::GetLastError();
-  CHECK(!result && err == ERROR_INSUFFICIENT_BUFFER);
-
-  token_user_bytes.reset(new char[token_user_size]);
-  CHECK(token_user_bytes.get());
-
-  CHECK(::GetTokenInformation(token, TokenUser, token_user_bytes.get(),
-                              token_user_size, &token_user_size2));
-
-  WCHAR user_name[UNLEN + 1];  // max username length
-  WCHAR domain_name[UNLEN + 1];
-  DWORD user_name_size = UNLEN + 1;
-  DWORD domain_name_size = UNLEN + 1;
-  SID_NAME_USE sid_type;
-  TOKEN_USER* token_user =
-      reinterpret_cast<TOKEN_USER*>(token_user_bytes.get());
-  CHECK(token_user);
-
-  PSID user_sid = token_user->User.Sid;
-  CHECK(::LookupAccountSidW(NULL, user_sid, user_name, &user_name_size,
-                            domain_name, &domain_name_size, &sid_type));
-
-  if (name != NULL) {
-    *name = user_name;
-  }
-  if (domain != NULL) {
-    *domain = domain_name;
-  }
-  if (sid != NULL) {
-    LPWSTR string_sid;
-    ConvertSidToStringSidW(user_sid, &string_sid);
-    *sid = string_sid;  // copy out to cstring
-    // free memory, as documented for ConvertSidToStringSid
-    LocalFree(string_sid);
-  }
-
-  return S_OK;
-}
 
 HRESULT GetElevationType(PTOKEN_ELEVATION_TYPE elevation) {
   if (!elevation)
@@ -149,13 +83,12 @@ bool GetUserGroup(long* group) {
 namespace rlz_lib {
 
 bool ProcessInfo::IsRunningAsSystem() {
-  static std::wstring name;
-  static std::wstring domain;
-  static std::wstring sid;
-  if (name.empty())
-    CHECK(SUCCEEDED(GetCurrentUser(&name, &domain, &sid)));
-
-  return (name == L"SYSTEM");
+  static base::string16 user_sid;
+  if (user_sid.empty()) {
+    if (!base::win::GetUserSidString(&user_sid))
+      return false;
+  }
+  return (user_sid == L"S-1-5-18");
 }
 
 bool ProcessInfo::HasAdminRights() {
