@@ -3,13 +3,20 @@
 <link href="resources/flexbox.css" rel="stylesheet">
 <style>
     .container::first-letter { line-height: 100px; }
-    .flexbox::first-letter { line-height: 200px; }
+    .flexboxFirstLetter::first-letter { line-height: 200px; }
     p { line-height: 20px; }
 </style>
 
 <script src="../../resources/check-layout.js"></script>
 <body onload="checkLayout('.flexbox')">
 <p>This test flex item should ignore container's firstLetter pseudo element.</p>
+
+<div class="container">
+    <div class="flexbox flexboxFirstLetter">
+        <p data-expected-height=20>The first item.</p>
+        <p data-expected-height=20>The second item.</p>
+    </div>
+</div>
 
 <div class="container">
     <div class="flexbox">

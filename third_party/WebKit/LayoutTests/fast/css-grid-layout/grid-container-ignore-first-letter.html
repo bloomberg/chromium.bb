@@ -8,7 +8,7 @@
 </style>
 
 <script src="../../resources/check-layout.js"></script>
-<body onload="checkLayout('.grid-first-letter');">
+<body onload="checkLayout('.grid,.inline-grid');">
 <p>This test grid item should ignore grid container's first-letter pseudo-element.</p>
 
 <div class="grid grid-first-letter">
@@ -51,6 +51,32 @@
 
 <div class="container">
     <div class="inline-grid grid-first-letter" data-expected-height=20>
+        Anonymous item.
+    </div>
+</div>
+
+<div class="container">
+    <div class="grid">
+        <div class="item" data-expected-height=20>The first item.</div>
+        <div class="item" data-expected-height=20>The second item.</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="inline-grid">
+        <div class="item" data-expected-height=20>The first item.</div>
+        <div class="item" data-expected-height=20>The second item.</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="grid" data-expected-height=20>
+        Anonymous item.
+    </div>
+</div>
+
+<div class="container">
+    <div class="inline-grid" data-expected-height=20>
         Anonymous item.
     </div>
 </div>

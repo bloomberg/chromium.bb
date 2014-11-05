@@ -3766,6 +3766,8 @@ void RenderBlock::updateFirstLetter()
             currChild = currChild->nextSibling();
         } else if (currChild->isReplaced() || currChild->isRenderButton() || currChild->isMenuList()) {
             break;
+        } else if (currChild->isFlexibleBoxIncludingDeprecated() || currChild->isRenderGrid()) {
+            return;
         } else if (currChild->style()->hasPseudoStyle(FIRST_LETTER) && currChild->canHaveGeneratedChildren())  {
             // We found a lower-level node with first-letter, which supersedes the higher-level style
             firstLetterBlock = currChild;
@@ -3775,7 +3777,7 @@ void RenderBlock::updateFirstLetter()
         }
     }
 
-    if (!currChild || !isRenderBlockFlowOrRenderButton(firstLetterBlock))
+    if (!currChild)
         return;
 
     // If the child already has style, then it has already been created, so we just want
