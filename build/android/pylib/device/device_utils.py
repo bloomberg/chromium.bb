@@ -109,7 +109,11 @@ class DeviceUtils(object):
     Raises:
       CommandTimeoutError on timeout.
     """
-    return self.adb.GetState() == 'device'
+    try:
+      return self.adb.GetState() == 'device'
+    except device_errors.BaseError as exc:
+      logging.info('Failed to get state: %s', exc)
+      return False
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def HasRoot(self, timeout=None, retries=None):
@@ -239,7 +243,7 @@ class DeviceUtils(object):
     """
     def sd_card_ready():
       return self.RunShellCommand(['ls', self.GetExternalStoragePath()],
-                                    single_line=True, check_return=True)
+                                  check_return=True)
 
     def pm_ready():
       try:

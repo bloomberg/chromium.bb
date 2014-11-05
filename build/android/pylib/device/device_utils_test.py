@@ -348,6 +348,11 @@ class DeviceUtilsIsOnlineTest(DeviceUtilsNewImplTest):
     self.assertFalse(self.device.IsOnline())
     self.adb.GetState.assert_called_once_with()
 
+  def testIsOnline_error(self):
+    self.adb.GetState = mock.Mock(
+     side_effect=device_errors.CommandFailedError('falied'))
+    self.assertFalse(self.device.IsOnline())
+    self.adb.GetState.assert_called_once_with()
 
 class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
 
@@ -474,9 +479,9 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
       with self.assertShellCallSequence([
           # sc_card_ready
           ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-          ('ls /fake/storage/path', '\r\n'),
+          ('ls /fake/storage/path', ''),
           # sc_card_ready
-          ('ls /fake/storage/path', '\r\n'),
+          ('ls /fake/storage/path', ''),
           # sc_card_ready
           ('ls /fake/storage/path', _CmdTimeout())]):
         with self.assertRaises(device_errors.CommandTimeoutError):
