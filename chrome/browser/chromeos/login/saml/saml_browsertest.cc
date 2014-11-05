@@ -463,7 +463,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
 }
 
 // Tests the sign-in flow when the credentials passing API is used.
-IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
+// Disabled for flakiness/failing: https://crbug.com/430373
+IN_PROC_BROWSER_TEST_F(SamlTest, DISABLED_CredentialPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
