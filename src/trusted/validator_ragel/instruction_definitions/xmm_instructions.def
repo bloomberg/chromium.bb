@@ -11,8 +11,7 @@ addpd Wpd Vpd, 0x66 0x0f 0x58, CPUFeature_SSE2
 vaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x58, CPUFeature_AVX
 ######## ADDPS/VADDPS ##########################################################
 addps Wps Vps, 0x0f 0x58, CPUFeature_SSE
-vaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x58,
-    CPUFeature_AVX disabled_untested
+vaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x58, CPUFeature_AVX
 ######## ADDSD/VADDSD ##########################################################
 addsd Wsd Vsd, 0xf2 0x0f 0x58, CPUFeature_SSE2
 vaddsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x58,
@@ -26,8 +25,7 @@ addsubpd Wpd Vpd, 0x66 0x0f 0xd0, CPUFeature_SSE2
 vaddsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xd0, CPUFeature_AVX
 ######## ADDSUBPS/VADDSUBPS ####################################################
 addsubps Wps Vps, 0xf2 0x0f 0xd0, CPUFeature_SSE
-vaddsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0xd0,
-    CPUFeature_AVX disabled_untested
+vaddsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0xd0, CPUFeature_AVX
 ######## AESDEC/VAESDEC ########################################################
 aesdec Wo Vo, 0x66 0x0f 0x38 0xde, CPUFeature_AES
 vaesdec Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xde, CPUFeature_AESAVX
@@ -51,15 +49,13 @@ andnpd Wpd Vpd, 0x66 0x0f 0x55, CPUFeature_SSE2
 vandnpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x55, CPUFeature_AVX
 ######## ANDNPS/VANDNPS ########################################################
 andnps Wps Vps, 0x0f 0x55, CPUFeature_SSE
-vandnps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x55,
-    CPUFeature_AVX disabled_untested
+vandnps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x55, CPUFeature_AVX
 ######## ANDPD/VANDPD ##########################################################
 andpd Wpd Vpd, 0x66 0x0f 0x54, CPUFeature_SSE2
 vandpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x54, CPUFeature_AVX
 ######## ANDPS/VANDPS ##########################################################
 andps Wps Vps, 0x0f 0x54, CPUFeature_SSE
-vandps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x54,
-    CPUFeature_AVX disabled_untested
+vandps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x54, CPUFeature_AVX
 ######## BLENDPD/VBLENDPD ######################################################
 blendpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x0d, CPUFeature_SSE41
 vblendpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x0d,
@@ -469,8 +465,7 @@ divpd Wpd Vpd, 0x66 0x0f 0x5e, CPUFeature_SSE2
 vdivpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5e, CPUFeature_AVX
 ######## DIVPS/VDIVPS ##########################################################
 divps Wps Vps, 0x0f 0x5e, CPUFeature_SSE
-vdivps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5e,
-    CPUFeature_AVX disabled_untested
+vdivps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5e, CPUFeature_AVX
 ######## DIVSD/VDIVSD ##########################################################
 divsd Wsd Vsd, 0xf2 0x0f 0x5e, CPUFeature_SSE2
 vdivsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5e,
@@ -502,15 +497,13 @@ haddpd Wpd Vpd, 0x66 0x0f 0x7c, CPUFeature_SSE3
 vhaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7c, CPUFeature_AVX
 ######## HADDPS/VHADDPS ########################################################
 haddps Wps Vps, 0xf2 0x0f 0x7c, CPUFeature_SSE3
-vhaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7c,
-    CPUFeature_AVX disabled_untested
+vhaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7c, CPUFeature_AVX
 ######## HSUBPD/VHSUBPD ########################################################
 hsubpd Wpd Vpd, 0x66 0x0f 0x7d, CPUFeature_SSE3
 vhsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7d, CPUFeature_AVX
 ######## HSUBPS/VHSUBPS ########################################################
 hsubps Wps Vps, 0xf2 0x0f 0x7d, CPUFeature_SSE3
-vhsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7d,
-    CPUFeature_AVX disabled_untested
+vhsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7d, CPUFeature_AVX
 ######## INSERTPS/VINSERTPS ####################################################
 insertps Ib Md Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
 insertps Ib Uo Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
@@ -540,8 +533,7 @@ maxpd Wpd Vpd, 0x66 0x0f 0x5f, CPUFeature_SSE2
 vmaxpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5f, CPUFeature_AVX
 ######## MAXPS/VMAXPS ##########################################################
 maxps Wps Vps, 0x0f 0x5f, CPUFeature_SSE
-vmaxps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5f,
-    CPUFeature_AVX disabled_untested
+vmaxps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5f, CPUFeature_AVX
 ######## MAXSD/VMAXSD ##########################################################
 maxsd Wsd Vsd, 0xf2 0x0f 0x5f, CPUFeature_SSE2
 vmaxsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5f,
@@ -555,8 +547,7 @@ minpd Wpd Vpd, 0x66 0x0f 0x5d, CPUFeature_SSE2
 vminpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5d, CPUFeature_AVX
 ######## MINPS/VMINPS ##########################################################
 minps Wps Vps, 0x0f 0x5d, CPUFeature_SSE
-vminps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5d,
-    CPUFeature_AVX disabled_untested
+vminps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5d, CPUFeature_AVX
 ######## MINSD/VMINSD ##########################################################
 minsd Wsd Vsd, 0xf2 0x0f 0x5d, CPUFeature_SSE2
 vminsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5d,
@@ -771,8 +762,7 @@ mulpd Wpd Vpd, 0x66 0x0f 0x59, CPUFeature_SSE2
 vmulpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x59, CPUFeature_AVX
 ######## MULPS/VMULPS ##########################################################
 mulps Wps Vps, 0x0f 0x59, CPUFeature_SSE
-vmulps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x59,
-    CPUFeature_AVX disabled_untested
+vmulps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x59, CPUFeature_AVX
 ######## MULSD/VMULSD ##########################################################
 mulsd Wsd Vsd, 0xf2 0x0f 0x59, CPUFeature_SSE2
 vmulsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x59,
@@ -786,8 +776,7 @@ orpd Wpd Vpd, 0x66 0x0f 0x56, CPUFeature_SSE2
 vorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x56, CPUFeature_AVX
 ######## ORPS/VORPS ############################################################
 orps Wpd Vpd, 0x0f 0x56, CPUFeature_SSE
-vorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x56,
-    CPUFeature_AVX disabled_untested
+vorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x56, CPUFeature_AVX
 ######## PABSB/VPABSB ##########################################################
 pabsb Wpk Vpk, 0x66 0x0f 0x38 0x1c, CPUFeature_SSSE3
 vpabsb Wpk Vpk, 0xc4 RXB.00010 x.1111.0.01 0x1c,
@@ -1441,8 +1430,7 @@ subpd Wpd Vpd, 0x66 0x0f 0x5c, CPUFeature_SSE2
 vsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5c, CPUFeature_AVX
 ######## SUBPS/VSUBPS ##########################################################
 subps Wps Vps, 0x0f 0x5c, CPUFeature_SSE
-vsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5c,
-    CPUFeature_AVX disabled_untested
+vsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5c, CPUFeature_AVX
 ######## SUBSD/VSUBSD ##########################################################
 subsd Wsd Vsd, 0xf2 0x0f 0x5c, CPUFeature_SSE2
 vsubsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5c,
@@ -1464,15 +1452,13 @@ unpckhpd Wq Vpd, 0x66 0x0f 0x15, CPUFeature_SSE2
 vunpckhpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x15, CPUFeature_AVX
 ######## UNPCKHPS/VUNPCKHPS ####################################################
 unpckhps Wps Vps, 0x0f 0x15, CPUFeature_SSE
-vunpckhps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x15,
-    CPUFeature_AVX disabled_untested
+vunpckhps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x15, CPUFeature_AVX
 ######## UNPCKLPD/VUNPCKLPD ####################################################
 unpcklpd Wq Vpd, 0x66 0x0f 0x14, CPUFeature_SSE2
 vunpcklpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x14, CPUFeature_AVX
 ######## UNPCKLPS/VUNPCKLPS ####################################################
 unpcklps Wps Vps, 0x0f 0x14, CPUFeature_SSE
-vunpcklps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x14,
-    CPUFeature_AVX disabled_untested
+vunpcklps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x14, CPUFeature_AVX
 ######## VBROADCASTF128 ########################################################
 vbroadcastf128 Mo Vdo, 0xc4 RXB.00010 0.1111.1.01 0x1a,
     CPUFeature_AVX disabled_untested
@@ -1955,8 +1941,7 @@ xorpd Wpd Vpd, 0x66 0x0f 0x57, CPUFeature_SSE2
 vxorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x57, CPUFeature_AVX
 ######## XORPS/VXORPS ##########################################################
 xorps Wpd Vpd, 0x0f 0x57, CPUFeature_SSE
-vxorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x57,
-    CPUFeature_AVX disabled_untested
+vxorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x57, CPUFeature_AVX
 ######## XGETBV ################################################################
 xgetbv, 0x0f 0x01 0xd0, CPUFeature_FXSR
 ######## XRSTOR ################################################################
