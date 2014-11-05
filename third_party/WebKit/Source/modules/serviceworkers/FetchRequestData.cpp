@@ -40,30 +40,8 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
         request->m_headerList->append(it->key, it->value);
     request->m_blobDataHandle = webRequest.blobDataHandle();
     request->m_referrer.setURL(webRequest.referrer());
-    switch (webRequest.mode()) {
-    case WebURLRequest::FetchRequestModeSameOrigin:
-        request->setMode(FetchRequestData::SameOriginMode);
-        break;
-    case WebURLRequest::FetchRequestModeNoCORS:
-        request->setMode(FetchRequestData::NoCORSMode);
-        break;
-    case WebURLRequest::FetchRequestModeCORS:
-        request->setMode(FetchRequestData::CORSMode);
-        break;
-    case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
-        request->setMode(FetchRequestData::CORSWithForcedPreflight);
-    }
-    switch (webRequest.credentialsMode()) {
-    case WebURLRequest::FetchCredentialsModeOmit:
-        request->setCredentials(FetchRequestData::OmitCredentials);
-        break;
-    case WebURLRequest::FetchCredentialsModeSameOrigin:
-        request->setCredentials(FetchRequestData::SameOriginCredentials);
-        break;
-    case WebURLRequest::FetchCredentialsModeInclude:
-        request->setCredentials(FetchRequestData::IncludeCredentials);
-        break;
-    }
+    request->setMode(webRequest.mode());
+    request->setCredentials(webRequest.credentialsMode());
     return request;
 }
 
@@ -121,8 +99,8 @@ FetchRequestData::FetchRequestData()
     , m_unsafeRequestFlag(false)
     , m_context(NullContext)
     , m_sameOriginDataURLFlag(false)
-    , m_mode(NoCORSMode)
-    , m_credentials(OmitCredentials)
+    , m_mode(WebURLRequest::FetchRequestModeNoCORS)
+    , m_credentials(WebURLRequest::FetchCredentialsModeOmit)
     , m_responseTainting(BasicTainting)
 {
 }

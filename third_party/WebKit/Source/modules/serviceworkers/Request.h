@@ -12,6 +12,7 @@
 #include "modules/serviceworkers/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -56,7 +57,7 @@ private:
     Request(ExecutionContext*, FetchRequestData*);
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
 
-    static Request* createRequestWithRequestData(ExecutionContext*, FetchRequestData*, const RequestInit&, FetchRequestData::Mode, FetchRequestData::Credentials, ExceptionState&);
+    static Request* createRequestWithRequestData(ExecutionContext*, FetchRequestData*, const RequestInit&, WebURLRequest::FetchRequestMode, WebURLRequest::FetchCredentialsMode, ExceptionState&);
     void clearHeaderList();
 
     virtual PassRefPtr<BlobDataHandle> blobDataHandle() override;
