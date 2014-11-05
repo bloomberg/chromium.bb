@@ -385,6 +385,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   const std::string min_max_text =
       base::StringPrintf("%.0f-%.0f", fps_graph_.min, fps_graph_.max);
 
+  VLOG(1) << value_text;
+
   paint.setColor(DebugColors::FPSDisplayTextAndGraphColor());
   DrawText(canvas,
            &paint,
