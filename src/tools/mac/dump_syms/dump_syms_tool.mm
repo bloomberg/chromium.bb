@@ -49,7 +49,8 @@ using google_breakpad::scoped_ptr;
 using std::vector;
 
 struct Options {
-  Options() : srcPath(), arch(), cfi(true), handle_inter_cu_refs(true) { }
+  Options()
+      : srcPath(), dsymPath(), arch(), cfi(true), handle_inter_cu_refs(true) {}
   NSString *srcPath;
   NSString *dsymPath;
   const NXArchInfo *arch;
