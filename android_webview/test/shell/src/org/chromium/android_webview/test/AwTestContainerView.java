@@ -204,11 +204,12 @@ public class AwTestContainerView extends FrameLayout {
                     mSyncLock.notifyAll();
                 }
             }
+            if (process) {
+                DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_PROCESS);
+            }
             if (draw) {
                 DrawGL.drawGL(mDrawGL, mViewContext, width, height,
                         mCommittedScrollX, mCommittedScrollY, MODE_DRAW);
-            } else if (process) {
-                DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_PROCESS);
             }
 
             if (waitForCompletion) {

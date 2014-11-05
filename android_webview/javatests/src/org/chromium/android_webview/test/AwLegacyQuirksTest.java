@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
@@ -32,9 +31,9 @@ public class AwLegacyQuirksTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String pageTemplate = "<html><head>" +
-                "<meta name='viewport' content='width=device-width, target-densityDpi=%s' />" +
-                "</head><body onload='document.title=document.body.clientWidth'></body></html>";
+        final String pageTemplate = "<html><head>"
+                + "<meta name='viewport' content='width=device-width, target-densityDpi=%s' />"
+                + "</head><body onload='document.title=document.body.clientWidth'></body></html>";
         final String pageDeviceDpi = String.format((Locale) null, pageTemplate, "device-dpi");
         final String pageHighDpi = String.format((Locale) null, pageTemplate, "high-dpi");
         final String pageDpi100 = String.format((Locale) null, pageTemplate, "100");
@@ -69,9 +68,9 @@ public class AwLegacyQuirksTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String page = "<html><head>" +
-                "<meta name='viewport' content='width=device-width, initial-scale=0.5' />" +
-                "</head><body onload='document.title=document.body.clientWidth'></body></html>";
+        final String page = "<html><head>"
+                + "<meta name='viewport' content='width=device-width, initial-scale=0.5' />"
+                + "</head><body onload='document.title=document.body.clientWidth'></body></html>";
 
         settings.setJavaScriptEnabled(true);
         settings.setUseWideViewPort(true);
@@ -95,10 +94,10 @@ public class AwLegacyQuirksTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String page = "<html><head>" +
-                "<meta name='viewport' content='width=0, height=0, initial-scale=0.0, " +
-                "    minimum-scale=0.0, maximum-scale=0.0' />" +
-                "</head><body onload='document.title=document.body.clientWidth'></body></html>";
+        final String page = "<html><head>"
+                + "<meta name='viewport' content='width=0, height=0, initial-scale=0.0, "
+                + "    minimum-scale=0.0, maximum-scale=0.0' />"
+                + "</head><body onload='document.title=document.body.clientWidth'></body></html>";
 
         settings.setJavaScriptEnabled(true);
 
@@ -134,13 +133,13 @@ public class AwLegacyQuirksTest extends AwTestBase {
         DeviceDisplayInfo deviceInfo =
                 DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
         float dipScale = (float) deviceInfo.getDIPScale();
-        float physicalDisplayWidth = deviceInfo.getPhysicalDisplayWidth() != 0 ?
-                                     deviceInfo.getPhysicalDisplayWidth() :
-                                     deviceInfo.getDisplayWidth();
+        float physicalDisplayWidth = deviceInfo.getPhysicalDisplayWidth() != 0
+                                     ? deviceInfo.getPhysicalDisplayWidth()
+                                     : deviceInfo.getDisplayWidth();
         float cssDisplayWidth = physicalDisplayWidth / dipScale;
-        float physicalDisplayHeight = deviceInfo.getPhysicalDisplayHeight() != 0 ?
-                                      deviceInfo.getPhysicalDisplayHeight() :
-                                      deviceInfo.getDisplayHeight();
+        float physicalDisplayHeight = deviceInfo.getPhysicalDisplayHeight() != 0
+                                      ? deviceInfo.getPhysicalDisplayHeight()
+                                      : deviceInfo.getDisplayHeight();
         float cssDisplayHeight = physicalDisplayHeight / dipScale;
 
         float screenWidth = Integer.parseInt(
@@ -188,11 +187,11 @@ public class AwLegacyQuirksTest extends AwTestBase {
 
         final int pageWidth = 3000;
         final float pageScale = 1.0f;
-        final String page = String.format((Locale) null, "<html><head>" +
-                "<meta name='viewport' content='width=%d' />" +
-                "<meta name='viewport' content='initial-scale=%.1f' />" +
-                "<meta name='viewport' content='user-scalable=0' />" +
-                "</head><body onload='document.title=document.body.clientWidth'></body></html>",
+        final String page = String.format((Locale) null, "<html><head>"
+                + "<meta name='viewport' content='width=%d' />"
+                + "<meta name='viewport' content='initial-scale=%.1f' />"
+                + "<meta name='viewport' content='user-scalable=0' />"
+                + "</head><body onload='document.title=document.body.clientWidth'></body></html>",
                 pageWidth, pageScale);
 
         settings.setJavaScriptEnabled(true);
@@ -225,10 +224,10 @@ public class AwLegacyQuirksTest extends AwTestBase {
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
         final int pageWidth = 3000;
-        final String page = String.format((Locale) null, "<html><head>" +
-                "<meta name='viewport' content='width=device-width' />" +
-                "<meta name='viewport' content='width=%d' />" +
-                "</head><body onload='document.title=document.body.clientWidth'></body></html>",
+        final String page = String.format((Locale) null, "<html><head>"
+                + "<meta name='viewport' content='width=device-width' />"
+                + "<meta name='viewport' content='width=%d' />"
+                + "</head><body onload='document.title=document.body.clientWidth'></body></html>",
                 pageWidth);
 
         settings.setJavaScriptEnabled(true);
@@ -249,11 +248,11 @@ public class AwLegacyQuirksTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String pageTemplate = "<html><head>" +
-                "<meta name='viewport' content='initial-scale=%d' />" +
-                "</head><body>" +
-                "<div style='width:10000px;height:200px'>A big div</div>" +
-                "</body></html>";
+        final String pageTemplate = "<html><head>"
+                + "<meta name='viewport' content='initial-scale=%d' />"
+                + "</head><body>"
+                + "<div style='width:10000px;height:200px'>A big div</div>"
+                + "</body></html>";
         final String pageScale4 = String.format((Locale) null, pageTemplate, 4);
         final String page = String.format((Locale) null, pageTemplate, 1);
 
@@ -273,8 +272,6 @@ public class AwLegacyQuirksTest extends AwTestBase {
         ensureScaleBecomes(1.0f, awContents);
     }
 
-    // This should not be run in software mode. crbug.com/428355.
-    @DisableHardwareAccelerationForTest
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testNoUserScalableQuirk() throws Throwable {
@@ -284,17 +281,17 @@ public class AwLegacyQuirksTest extends AwTestBase {
         final AwContents awContents = testContainerView.getAwContents();
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
-        final String pageScale4 = "<html><head>" +
-                "<meta name='viewport' content='initial-scale=4' />" +
-                "</head><body>" +
-                "<div style='width:10000px;height:200px'>A big div</div>" +
-                "</body></html>";
-        final String page = "<html><head>" +
-                "<meta name='viewport' " +
-                "content='width=device-width,initial-scale=2,user-scalable=no' />" +
-                "</head><body>" +
-                "<div style='width:10000px;height:200px'>A big div</div>" +
-                "</body></html>";
+        final String pageScale4 = "<html><head>"
+                + "<meta name='viewport' content='initial-scale=4' />"
+                + "</head><body>"
+                + "<div style='width:10000px;height:200px'>A big div</div>"
+                + "</body></html>";
+        final String page = "<html><head>"
+                + "<meta name='viewport' "
+                + "content='width=device-width,initial-scale=2,user-scalable=no' />"
+                + "</head><body>"
+                + "<div style='width:10000px;height:200px'>A big div</div>"
+                + "</body></html>";
 
         // Page scale updates are asynchronous. There is an issue that we can't
         // reliably check, whether the scale as NOT changed (i.e. remains to be 1.0).
@@ -322,18 +319,18 @@ public class AwLegacyQuirksTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
         final String expectedBackgroundSize = "cover";
-        final String page = "<html><head>" +
-                "<script>" +
-                "function getBackgroundSize() {" +
-                "  var e = document.getElementById('test'); " +
-                "  e.style.backgroundSize = '" + expectedBackgroundSize + "';" +
-                "  e.style.background = 'center red url(dummy://test.png) no-repeat border-box'; " +
-                "  return e.style.backgroundSize; " +
-                "}" +
-                "</script></head>" +
-                "<body onload='document.title=getBackgroundSize()'>" +
-                "  <div id='test'> </div>" +
-                "</body></html>";
+        final String page = "<html><head>"
+                + "<script>"
+                + "function getBackgroundSize() {"
+                + "  var e = document.getElementById('test'); "
+                + "  e.style.backgroundSize = '" + expectedBackgroundSize + "';"
+                + "  e.style.background = 'center red url(dummy://test.png) no-repeat border-box'; "
+                + "  return e.style.backgroundSize; "
+                + "}"
+                + "</script></head>"
+                + "<body onload='document.title=getBackgroundSize()'>"
+                + "  <div id='test'> </div>"
+                + "</body></html>";
         settings.setJavaScriptEnabled(true);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         String actualBackgroundSize = getTitleOnUiThread(awContents);
