@@ -34476,11 +34476,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="SoftwareReporter.Cleaner.ExitCode">
-  <owner>mad@chromium.org</owner>
-  <summary>The exit code of the software reporter cleaner tool.</summary>
-</histogram>
-
 <histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="BooleanCompleted">
   <owner>mad@chromium.org</owner>
   <summary>
