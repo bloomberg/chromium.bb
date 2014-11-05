@@ -180,7 +180,8 @@ class ServiceWorkerPerfTest(benchmark.Benchmark):
   page_set = page_sets.ServiceWorkerPageSet
 
 
-@benchmark.Enabled('android')
+# FIXME(nhiroki): Temporary disable the benchmark (http://crbug.com/430232).
+@benchmark.Disabled
 class ServiceWorkerMicroBenchmarkPerfTest(benchmark.Benchmark):
   """Service Worker performance test using a micro benchmark page set"""
   test = _ServiceWorkerMicroBenchmarkMeasurement
