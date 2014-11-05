@@ -2947,21 +2947,6 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization)
     webViewHelper.webView()->resize(WebSize(640, 480));
     EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
 
-    registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization-device-width-minimum-scale-1.5.html");
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-device-width-minimum-scale-1.5.html", true, 0, 0, setViewportSettings);
-    webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
-
-    registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization-device-width-minimum-scale-0.5.html");
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-device-width-minimum-scale-0.5.html", true, 0, 0, setViewportSettings);
-    webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_FALSE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
-
-    registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization-device-width-non-user-scalable.html");
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-gpu-rasterization-device-width-non-user-scalable.html", true, 0, 0, setViewportSettings);
-    webViewHelper.webView()->resize(WebSize(640, 480));
-    EXPECT_TRUE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
-
     registerMockedHttpURLLoad("viewport/viewport-inferred-values-do-not-trigger-gpu-rasterization.html");
     webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-inferred-values-do-not-trigger-gpu-rasterization.html", true, 0, 0, setViewportSettings);
     webViewHelper.webView()->resize(WebSize(640, 480));
