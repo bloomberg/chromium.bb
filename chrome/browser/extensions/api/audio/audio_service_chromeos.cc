@@ -135,13 +135,13 @@ void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
   if (!cras_audio_handler_)
     return;
 
-  cras_audio_handler_->RemoveAllActiveNodes();
-
+  chromeos::CrasAudioHandler::NodeIdList id_list;
   for (size_t i = 0; i < device_list.size(); ++i) {
     chromeos::AudioDevice device;
     if (FindDevice(GetIdFromStr(device_list[i]), &device))
-      cras_audio_handler_->AddActiveNode(device.id);
+      id_list.push_back(device.id);
   }
+  cras_audio_handler_->ChangeActiveNodes(id_list);
 }
 
 bool AudioServiceImpl::SetDeviceProperties(const std::string& device_id,

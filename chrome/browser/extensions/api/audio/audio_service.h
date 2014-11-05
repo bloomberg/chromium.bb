@@ -43,8 +43,14 @@ class AudioService {
   // The |callback| will be invoked once the query is completed.
   virtual void StartGetInfo(const GetInfoCallback& callback) = 0;
 
-  // Set the devices in the following list as active. This will only pick
-  // the first input and first active devices to set to active.
+  // Sets the active nodes to the nodes specified by |device_list|.
+  // It can pass in the "complete" active node list of either input
+  // nodes, or output nodes, or both. If only input nodes are passed in,
+  // it will only change the input nodes' active status, output nodes will NOT
+  // be changed; similarly for the case if only output nodes are passed.
+  // If the nodes specified in |new_active_ids| are already active, they will
+  // remain active. Otherwise, the old active nodes will be de-activated before
+  // we activate the new nodes with the same type(input/output).
   virtual void SetActiveDevices(const DeviceIdList& device_list) = 0;
 
   // Set the muted and volume/gain properties of a device.

@@ -35,6 +35,10 @@ bool IsSameAudioDevice(const AudioDevice& a, const AudioDevice& b) {
       && a.device_name == b.device_name;
 }
 
+bool IsInNodeList(uint64 node_id, const CrasAudioHandler::NodeIdList& id_list) {
+  return std::find(id_list.begin(), id_list.end(), node_id) != id_list.end();
+}
+
 }  // namespace
 
 CrasAudioHandler::AudioObserver::AudioObserver() {
@@ -201,12 +205,12 @@ void CrasAudioHandler::SetKeyboardMicActive(bool active) {
   // as additional active node.
   DCHECK(active_input_node_id_ && active_input_node_id_ != keyboard_mic->id);
   if (active)
-    AddActiveNode(keyboard_mic->id);
+    AddActiveNode(keyboard_mic->id, true);
   else
-    RemoveActiveNode(keyboard_mic->id);
+    RemoveActiveNodeInternal(keyboard_mic->id, true);
 }
 
-void CrasAudioHandler::AddActiveNode(uint64 node_id) {
+void CrasAudioHandler::AddActiveNode(uint64 node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
     VLOG(1) << "AddActiveInputNode: Cannot find device id="
@@ -217,40 +221,75 @@ void CrasAudioHandler::AddActiveNode(uint64 node_id) {
   // If there is no primary active device, set |node_id| to primary active node.
   if ((device->is_input && !active_input_node_id_) ||
       (!device->is_input && !active_output_node_id_)) {
-    SwitchToDevice(*device);
+    SwitchToDevice(*device, notify);
     return;
   }
-  AddAdditionalActiveNode(node_id);
+
+  AddAdditionalActiveNode(node_id, notify);
 }
 
-void CrasAudioHandler::RemoveActiveNode(uint64 node_id) {
-  const AudioDevice* device = GetDeviceFromId(node_id);
-  if (!device) {
-    VLOG(1) << "RemoveActiveInputNode: Cannot find device id="
-            << "0x" << std::hex << node_id;
-    return;
+void CrasAudioHandler::ChangeActiveNodes(const NodeIdList& new_active_ids) {
+  // Flags for whether there are input or output nodes passed in from
+  // |new_active_ids|. If there are no input nodes passed in, we will not
+  // make any change for input nodes; same for the output nodes.
+  bool request_input_change = false;
+  bool request_output_change = false;
+
+  // Flags for whether we will actually change active status of input
+  // or output nodes.
+  bool make_input_change = false;
+  bool make_output_change = false;
+
+  NodeIdList nodes_to_activate;
+  for (size_t i = 0; i < new_active_ids.size(); ++i) {
+    const AudioDevice* device = GetDeviceFromId(new_active_ids[i]);
+    if (device) {
+      if (device->is_input)
+        request_input_change = true;
+      else
+        request_output_change = true;
+
+      // If the new active device is already active, keep it as active.
+      if (device->active)
+        continue;
+
+      nodes_to_activate.push_back(new_active_ids[i]);
+      if (device->is_input)
+        make_input_change = true;
+      else
+        make_output_change = true;
+    }
   }
 
-  // We do NOT allow to remove the primary active node.
-  if (device->is_input && device->id == active_input_node_id_) {
-    VLOG(1) << "Cannot remove the primary active input node: "
-            << "0x" << std::hex << node_id;
-    return;
-  }
-  if (!device->is_input && device->id == active_output_node_id_) {
-    VLOG(1) << "Cannot remove the primary active output node: "
-            << "0x" << std::hex << node_id;
-    return;
-  }
-  RemoveActiveNodeInternal(node_id);
-}
-
-void CrasAudioHandler::RemoveAllActiveNodes() {
+  // Remove all existing active devices that are not in the |new_active_ids|
+  // list.
   for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
-       it != audio_devices_.end();
-       ++it) {
-    RemoveActiveNodeInternal(it->second.id);
+       it != audio_devices_.end(); ++it) {
+    AudioDevice device = it->second;
+    // Remove the existing active input or output nodes that are not in the new
+    // active node list if there are new input or output nodes specified.
+    if (device.active) {
+      if ((device.is_input && request_input_change &&
+           !IsInNodeList(device.id, new_active_ids))) {
+        make_input_change = true;
+        RemoveActiveNodeInternal(device.id, false);  // no notification.
+      } else if (!device.is_input && request_output_change &&
+                 !IsInNodeList(device.id, new_active_ids)) {
+        make_output_change = true;
+        RemoveActiveNodeInternal(device.id, false);  // no notification.
+      }
+    }
   }
+
+  // Adds the new active devices.
+  for (size_t i = 0; i < nodes_to_activate.size(); ++i)
+    AddActiveNode(nodes_to_activate[i], false);  // no notification.
+
+  // Notify the active nodes change now.
+  if (make_input_change)
+    NotifyActiveNodeChanged(true);
+  if (make_output_change)
+    NotifyActiveNodeChanged(false);
 }
 
 void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {
@@ -333,16 +372,18 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputMuteChanged());
 }
 
-void CrasAudioHandler::SetActiveOutputNode(uint64 node_id) {
+void CrasAudioHandler::SetActiveOutputNode(uint64 node_id, bool notify) {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetActiveOutputNode(node_id);
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
+  if (notify)
+    NotifyActiveNodeChanged(false);
 }
 
-void CrasAudioHandler::SetActiveInputNode(uint64 node_id) {
+void CrasAudioHandler::SetActiveInputNode(uint64 node_id, bool notify) {
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       SetActiveInputNode(node_id);
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+  if (notify)
+    NotifyActiveNodeChanged(true);
 }
 
 void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64 device_id,
@@ -688,17 +729,17 @@ bool CrasAudioHandler::NonActiveDeviceUnplugged(
           GetDeviceFromId(current_active_node));
 }
 
-void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
+void CrasAudioHandler::SwitchToDevice(const AudioDevice& device, bool notify) {
   if (device.is_input) {
     if (!ChangeActiveDevice(device, &active_input_node_id_))
       return;
     SetupAudioInputState();
-    SetActiveInputNode(active_input_node_id_);
+    SetActiveInputNode(active_input_node_id_, notify);
   } else {
     if (!ChangeActiveDevice(device, &active_output_node_id_))
       return;
     SetupAudioOutputState();
-    SetActiveOutputNode(active_output_node_id_);
+    SetActiveOutputNode(active_output_node_id_, notify);
   }
 }
 
@@ -740,6 +781,13 @@ bool CrasAudioHandler::FoundNewOrChangedDevice(const AudioDevice& device) {
   }
 
   return false;
+}
+
+void CrasAudioHandler::NotifyActiveNodeChanged(bool is_input) {
+  if (is_input)
+    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+  else
+    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
 }
 
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
@@ -785,13 +833,13 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
                                 audio_devices_.size(),
                                 active_input_node_id_) &&
       !input_devices_pq_.empty())
-    SwitchToDevice(input_devices_pq_.top());
+    SwitchToDevice(input_devices_pq_.top(), true);
   if (output_devices_changed &&
       !NonActiveDeviceUnplugged(old_audio_devices_size,
                                 audio_devices_.size(),
                                 active_output_node_id_) &&
       !output_devices_pq_.empty()) {
-    SwitchToDevice(output_devices_pq_.top());
+    SwitchToDevice(output_devices_pq_.top(), true);
   }
 }
 
@@ -812,7 +860,7 @@ void CrasAudioHandler::HandleGetNodesError(const std::string& error_name,
       << error_name  << ": " << error_msg;
 }
 
-void CrasAudioHandler::AddAdditionalActiveNode(uint64 node_id) {
+void CrasAudioHandler::AddAdditionalActiveNode(uint64 node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
     VLOG(1) << "AddActiveInputNode: Cannot find device id="
@@ -828,17 +876,19 @@ void CrasAudioHandler::AddAdditionalActiveNode(uint64 node_id) {
     chromeos::DBusThreadManager::Get()
         ->GetCrasAudioClient()
         ->AddActiveInputNode(node_id);
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+    if (notify)
+      NotifyActiveNodeChanged(true);
   } else {
     DCHECK(node_id != active_output_node_id_);
     chromeos::DBusThreadManager::Get()
         ->GetCrasAudioClient()
         ->AddActiveOutputNode(node_id);
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
+    if (notify)
+      NotifyActiveNodeChanged(false);
   }
 }
 
-void CrasAudioHandler::RemoveActiveNodeInternal(uint64 node_id) {
+void CrasAudioHandler::RemoveActiveNodeInternal(uint64 node_id, bool notify) {
   const AudioDevice* device = GetDeviceFromId(node_id);
   if (!device) {
     VLOG(1) << "RemoveActiveInputNode: Cannot find device id="
@@ -853,15 +903,17 @@ void CrasAudioHandler::RemoveActiveNodeInternal(uint64 node_id) {
     chromeos::DBusThreadManager::Get()
         ->GetCrasAudioClient()
         ->RemoveActiveInputNode(node_id);
-    FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveInputNodeChanged());
+    if (notify)
+      NotifyActiveNodeChanged(true);
   } else {
     if (node_id == active_output_node_id_)
       active_output_node_id_ = 0;
     chromeos::DBusThreadManager::Get()
         ->GetCrasAudioClient()
         ->RemoveActiveOutputNode(node_id);
+    if (notify)
+      NotifyActiveNodeChanged(false);
   }
-  FOR_EACH_OBSERVER(AudioObserver, observers_, OnActiveOutputNodeChanged());
 }
 
 }  // namespace chromeos

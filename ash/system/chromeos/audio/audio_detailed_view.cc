@@ -169,7 +169,7 @@ void AudioDetailedView::OnViewClicked(views::View* sender) {
     if (iter == device_map_.end())
       return;
     chromeos::AudioDevice& device = iter->second;
-    CrasAudioHandler::Get()->SwitchToDevice(device);
+    CrasAudioHandler::Get()->SwitchToDevice(device, true);
   }
 }
 

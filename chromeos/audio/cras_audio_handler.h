@@ -32,6 +32,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   typedef std::priority_queue<AudioDevice,
                               std::vector<AudioDevice>,
                               AudioDeviceCompare> AudioDevicePriorityQueue;
+  typedef std::vector<uint64> NodeIdList;
 
   class AudioObserver {
    public:
@@ -157,7 +158,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual void SetInputMute(bool mute_on);
 
   // Switches active audio device to |device|.
-  virtual void SwitchToDevice(const AudioDevice& device);
+  virtual void SwitchToDevice(const AudioDevice& device, bool notify);
 
   // Sets volume/gain level for a device.
   virtual void SetVolumeGainPercentForDevice(uint64 device_id, int value);
@@ -168,21 +169,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Activates or deactivates keyboard mic if there's one.
   virtual void SetKeyboardMicActive(bool active);
 
-  // Adds an active node.
-  // If there is no active node, |node_id| will be switched to become the
-  // primary active node. Otherwise, it will be added as an additional active
-  // node.
-  virtual void AddActiveNode(uint64 node_id);
-
-  // Removes an active audio node.
-  // If |node_id| is the only active input/output node, or is an additional
-  // active input/output node, it will be removed and becomes inactive.
-  // Note: It is not proper call this api to remove the primary active node
-  // while there are additional active nodes.
-  virtual void RemoveActiveNode(uint64 node_id);
-
-  // Removes all active audio nodes, including the primary active ones.
-  virtual void RemoveAllActiveNodes();
+  // Changes the active nodes to the nodes specified by |new_active_ids|.
+  // The caller can pass in the "complete" active node list of either input
+  // nodes, or output nodes, or both. If only input nodes are passed in,
+  // it will only change the input nodes' active status, output nodes will NOT
+  // be changed; similarly for the case if only output nodes are passed.
+  // If the nodes specified in |new_active_ids| are already active, they will
+  // remain active. Otherwise, the old active nodes will be de-activated before
+  // we activate the new nodes with the same type(input/output).
+  virtual void ChangeActiveNodes(const NodeIdList& new_active_ids);
 
   // Swaps the left and right channel of the internal speaker.
   // Swap the left and right channel if |swap| is true; otherwise, swap the left
@@ -214,8 +209,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual void EmitLoginPromptVisibleCalled() override;
 
   // Sets the active audio output/input node to the node with |node_id|.
-  void SetActiveOutputNode(uint64 node_id);
-  void SetActiveInputNode(uint64 node_id);
+  // If |notify|, notifies Active*NodeChange.
+  void SetActiveOutputNode(uint64 node_id, bool notify);
+  void SetActiveInputNode(uint64 node_id, bool notify);
 
   // Sets up the audio device state based on audio policy and audio settings
   // saved in prefs.
@@ -283,15 +279,23 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void HandleGetNodesError(const std::string& error_name,
                            const std::string& error_msg);
 
+  // Adds an active node.
+  // If there is no active node, |node_id| will be switched to become the
+  // primary active node. Otherwise, it will be added as an additional active
+  // node.
+  void AddActiveNode(uint64 node_id, bool notify);
+
   // Adds |node_id| into additional active nodes.
-  void AddAdditionalActiveNode(uint64 node_id);
+  void AddAdditionalActiveNode(uint64 node_id, bool notify);
 
   // Removes |node_id| from additional active nodes.
-  void RemoveActiveNodeInternal(uint64 node_id);
+  void RemoveActiveNodeInternal(uint64 node_id, bool notify);
 
   // Returns true if |device| is not found in audio_devices_, or it is found
   // but changed its |active| property.
   bool FoundNewOrChangedDevice(const AudioDevice& device);
+
+  void NotifyActiveNodeChanged(bool is_input);
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   ObserverList<AudioObserver> observers_;
