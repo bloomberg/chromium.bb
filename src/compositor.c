@@ -105,6 +105,7 @@ static void weston_mode_switch_finish(struct weston_output *output,
 	struct weston_seat *seat;
 	struct wl_resource *resource;
 	pixman_region32_t old_output_region;
+	int version;
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);
@@ -157,11 +158,12 @@ static void weston_mode_switch_finish(struct weston_output *output,
 					    output->current_mode->refresh);
 		}
 
-		if (scale_changed)
+		version = wl_resource_get_version(resource);
+		if (version >= WL_OUTPUT_SCALE_SINCE_VERSION && scale_changed)
 			wl_output_send_scale(resource, output->current_scale);
 
-		if (wl_resource_get_version(resource) >= 2)
-			   wl_output_send_done(resource);
+		if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
+			wl_output_send_done(resource);
 	}
 }
 
