@@ -23,6 +23,7 @@ const char* const kPublicSessionWhitelist[] = {
     "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
     "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
     "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
+    "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
