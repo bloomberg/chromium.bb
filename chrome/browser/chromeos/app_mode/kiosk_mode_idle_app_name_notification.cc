@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -57,9 +56,10 @@ KioskModeIdleAppNameNotification::KioskModeIdleAppNameNotification()
 }
 
 KioskModeIdleAppNameNotification::~KioskModeIdleAppNameNotification() {
-  if (ash::Shell::HasInstance() &&
-      ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this)) {
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  wm::UserActivityDetector* user_activity_detector =
+      wm::UserActivityDetector::Get();
+  if (user_activity_detector && user_activity_detector->HasObserver(this)) {
+    user_activity_detector->RemoveObserver(this);
     // At this time the DBusThreadManager might already be gone.
     if (chromeos::DBusThreadManager::IsInitialized())
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient(
@@ -98,8 +98,8 @@ void KioskModeIdleAppNameNotification::SuspendDone(
 }
 
 void KioskModeIdleAppNameNotification::Start() {
-  if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this)) {
-    ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+  if (!wm::UserActivityDetector::Get()->HasObserver(this)) {
+    wm::UserActivityDetector::Get()->AddObserver(this);
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         this);
   }

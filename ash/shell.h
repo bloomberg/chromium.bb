@@ -368,9 +368,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   MruWindowTracker* mru_window_tracker() {
     return mru_window_tracker_.get();
   }
-  ::wm::UserActivityDetector* user_activity_detector() {
-    return user_activity_detector_.get();
-  }
   VideoDetector* video_detector() {
     return video_detector_.get();
   }

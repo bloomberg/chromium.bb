@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -107,11 +106,14 @@ void RecommendationRestorer::Restore(bool allow_delay,
 
   if (logged_in_) {
     allow_delay = false;
-  } else if (allow_delay && ash::Shell::HasInstance()) {
+  } else if (allow_delay) {
     // Skip the delay if there has been no user input since the browser started.
     const wm::UserActivityDetector* user_activity_detector =
-        ash::Shell::GetInstance()->user_activity_detector();
-    allow_delay = !user_activity_detector->last_activity_time().is_null();
+        wm::UserActivityDetector::Get();
+    if (user_activity_detector &&
+        user_activity_detector->last_activity_time().is_null()) {
+      allow_delay = false;
+    }
   }
 
   if (allow_delay)
@@ -133,12 +135,10 @@ void RecommendationRestorer::StartTimer() {
   // Listen for user activity so that the timer can be reset while the user is
   // active, causing it to fire only when the user remains idle for
   // |kRestoreDelayInMs|.
-  if (ash::Shell::HasInstance()) {
-    wm::UserActivityDetector* user_activity_detector =
-        ash::Shell::GetInstance()->user_activity_detector();
-    if (!user_activity_detector->HasObserver(this))
-      user_activity_detector->AddObserver(this);
-  }
+  wm::UserActivityDetector* user_activity_detector =
+      wm::UserActivityDetector::Get();
+  if (user_activity_detector && !user_activity_detector->HasObserver(this))
+    user_activity_detector->AddObserver(this);
 
   // There should be a separate timer for each pref. However, in the common
   // case of the user changing settings, a single timer is sufficient. This is
@@ -156,8 +156,8 @@ void RecommendationRestorer::StartTimer() {
 
 void RecommendationRestorer::StopTimer() {
   restore_timer_.Stop();
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  if (wm::UserActivityDetector::Get())
+    wm::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 }  // namespace policy

@@ -29,6 +29,9 @@ class WM_EXPORT UserActivityDetector : public ui::EventHandler {
   UserActivityDetector();
   ~UserActivityDetector() override;
 
+  // Returns the UserActivityDetector instance if one was created.
+  static UserActivityDetector* Get();
+
   base::TimeTicks last_activity_time() const { return last_activity_time_; }
 
   void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }

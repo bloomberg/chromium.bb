@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 
-#include "ash/shell.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -106,13 +105,9 @@ UserSelectionScreen::UserSelectionScreen() : handler_(NULL) {
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
-#if !defined(USE_ATHENA)
-  // TODO(dpolukhin): crbug.com/408752
-  wm::UserActivityDetector* activity_detector =
-      ash::Shell::GetInstance()->user_activity_detector();
+  wm::UserActivityDetector* activity_detector = wm::UserActivityDetector::Get();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
-#endif
 }
 
 // static
@@ -210,13 +205,9 @@ void UserSelectionScreen::Init(const user_manager::UserList& users,
   users_ = users;
   show_guest_ = show_guest;
 
-#if !defined(USE_ATHENA)
-  // TODO(dpolukhin): crbug.com/408752
-  wm::UserActivityDetector* activity_detector =
-      ash::Shell::GetInstance()->user_activity_detector();
+  wm::UserActivityDetector* activity_detector = wm::UserActivityDetector::Get();
   if (!activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);
-#endif
 }
 
 void UserSelectionScreen::OnBeforeUserRemoved(const std::string& username) {

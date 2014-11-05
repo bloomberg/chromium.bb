@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -98,20 +97,20 @@ SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
     UpdateSessionStartTime();
   }
 
-  if (!user_activity_seen_ && ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+  if (!user_activity_seen_ && wm::UserActivityDetector::Get())
+    wm::UserActivityDetector::Get()->AddObserver(this);
 }
 
 SessionLengthLimiter::~SessionLengthLimiter() {
-  if (!user_activity_seen_ && ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  if (!user_activity_seen_ && wm::UserActivityDetector::Get())
+    wm::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 void SessionLengthLimiter::OnUserActivity(const ui::Event* event) {
   if (user_activity_seen_)
     return;
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  if (wm::UserActivityDetector::Get())
+    wm::UserActivityDetector::Get()->RemoveObserver(this);
   user_activity_seen_ = true;
 
   PrefService* local_state = g_browser_process->local_state();

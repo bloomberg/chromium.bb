@@ -42,9 +42,10 @@ KioskModeIdleLogout::KioskModeIdleLogout() {
 }
 
 KioskModeIdleLogout::~KioskModeIdleLogout() {
-  if (ash::Shell::HasInstance() &&
-      ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  wm::UserActivityDetector* user_activity_detector =
+      wm::UserActivityDetector::Get();
+  if (user_activity_detector && user_activity_detector->HasObserver(this))
+    user_activity_detector->RemoveObserver(this);
 }
 
 void KioskModeIdleLogout::Setup() {
@@ -74,8 +75,8 @@ void KioskModeIdleLogout::OnUserActivity(const ui::Event* event) {
 }
 
 void KioskModeIdleLogout::Start() {
-  if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
-    ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+  if (!wm::UserActivityDetector::Get()->HasObserver(this))
+    wm::UserActivityDetector::Get()->AddObserver(this);
   ResetTimer();
 }
 

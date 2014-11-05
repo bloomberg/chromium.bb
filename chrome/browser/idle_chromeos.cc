@@ -10,14 +10,8 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 void CalculateIdleTime(IdleTimeCallback notify) {
-#if defined(USE_ATHENA)
-  // TODO(oshima): Implement this for athena. crbug.com/408752
-  base::TimeDelta idle_time;
-  NOTIMPLEMENTED();
-#else
   base::TimeDelta idle_time = base::TimeTicks::Now() -
-      ash::Shell::GetInstance()->user_activity_detector()->last_activity_time();
-#endif
+      wm::UserActivityDetector::Get()->last_activity_time();
   notify.Run(static_cast<int>(idle_time.InSeconds()));
 }
 

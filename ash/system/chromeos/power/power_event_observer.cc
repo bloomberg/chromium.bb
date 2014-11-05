@@ -50,7 +50,7 @@ void PowerEventObserver::SuspendImminent() {
         RequestLockScreen();
   }
 
-  shell->user_activity_detector()->OnDisplayPowerChanging();
+  wm::UserActivityDetector::Get()->OnDisplayPowerChanging();
   shell->display_configurator()->SuspendDisplays();
 }
 

@@ -57,8 +57,7 @@ void DisplayPowerServiceProvider::SetDisplayPower(
     // we suspend may trigger a mouse move, which would then be incorrectly
     // reported as user activity.  Let the UserActivityDetector
     // know so that it can ignore such events.
-    ash::Shell::GetInstance()->user_activity_detector()->
-        OnDisplayPowerChanging();
+    wm::UserActivityDetector::Get()->OnDisplayPowerChanging();
 
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
     ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(

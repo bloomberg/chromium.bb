@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 
 #include "ash/screensaver/screensaver_view.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -199,10 +198,10 @@ KioskModeScreensaver::~KioskModeScreensaver() {
 
   // In case we're shutting down without ever triggering the active
   // notification and/or logging in.
-  if (ash::Shell::GetInstance() &&
-      ash::Shell::GetInstance()->user_activity_detector() &&
-      ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  wm::UserActivityDetector* user_activity_detector =
+      wm::UserActivityDetector::Get();
+  if (user_activity_detector && user_activity_detector->HasObserver(this))
+    user_activity_detector->RemoveObserver(this);
 }
 
 void KioskModeScreensaver::GetScreensaverCrxPath() {
@@ -252,7 +251,7 @@ void KioskModeScreensaver::SetupScreensaver(
   if (chromeos::LoginState::Get()->IsUserLoggedIn())
     return;
 
-  ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+  wm::UserActivityDetector::Get()->AddObserver(this);
 
   ExtensionService* extension_service = GetDefaultExtensionService();
   // Add the extension to the extension service and display the screensaver.
@@ -269,7 +268,7 @@ void KioskModeScreensaver::SetupScreensaver(
 void KioskModeScreensaver::OnUserActivity(const ui::Event* event) {
   // We don't want to handle further user notifications; we'll either login
   // the user and close out or or at least close the screensaver.
-  ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  wm::UserActivityDetector::Get()->RemoveObserver(this);
 
   // Find the retail mode login page.
   if (LoginDisplayHostImpl::default_host()) {

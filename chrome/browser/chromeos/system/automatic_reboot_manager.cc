@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <string>
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -172,8 +171,8 @@ AutomaticRebootManager::AutomaticRebootManager(
   // idle. Start listening for user activity to determine whether the user is
   // idle or not.
   if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    if (ash::Shell::HasInstance())
-      ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
+    if (wm::UserActivityDetector::Get())
+      wm::UserActivityDetector::Get()->AddObserver(this);
     notification_registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
         content::NotificationService::AllSources());
     login_screen_idle_timer_.reset(
@@ -202,8 +201,8 @@ AutomaticRebootManager::~AutomaticRebootManager() {
   DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
   dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
   dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  if (wm::UserActivityDetector::Get())
+    wm::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 void AutomaticRebootManager::AddObserver(
@@ -270,8 +269,8 @@ void AutomaticRebootManager::Observe(
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     // A session is starting. Stop listening for user activity as it no longer
     // is a relevant criterion.
-    if (ash::Shell::HasInstance())
-      ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+    if (wm::UserActivityDetector::Get())
+      wm::UserActivityDetector::Get()->RemoveObserver(this);
     notification_registrar_.Remove(
         this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
         content::NotificationService::AllSources());
