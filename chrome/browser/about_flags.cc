@@ -473,6 +473,18 @@ const Experiment::Choice kAutofillSyncCredentialChoices[] = {
     password_manager::switches::kDisallowAutofillSyncCredential, ""},
 };
 
+const Experiment::Choice kSSLVersionMinChoices[] = {
+  { IDS_FLAGS_SSL_VERSION_DEFAULT, "", "" },
+  { IDS_FLAGS_SSL_VERSION_SSLV3, switches::kSSLVersionMin,
+    switches::kSSLVersionSSLv3 },
+  { IDS_FLAGS_SSL_VERSION_TLSV1, switches::kSSLVersionMin,
+    switches::kSSLVersionTLSv1 },
+  { IDS_FLAGS_SSL_VERSION_TLSV11, switches::kSSLVersionMin,
+    switches::kSSLVersionTLSv11 },
+  { IDS_FLAGS_SSL_VERSION_TLSV12, switches::kSSLVersionMin,
+    switches::kSSLVersionTLSv12 },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2010,8 +2022,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)
-  }
+  },
 #endif  // defined(OS_CHROMEOS)
+  {
+    "ssl-version-min",
+    IDS_FLAGS_SSL_VERSION_MIN_NAME,
+    IDS_FLAGS_SSL_VERSION_MIN_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kSSLVersionMinChoices)
+  },
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

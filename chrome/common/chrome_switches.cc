@@ -1137,6 +1137,13 @@ const char kSSLVersionMin[]                 = "ssl-version-min";
 // "tls1.2") that TLS fallback will accept.
 const char kSSLVersionFallbackMin[]         = "ssl-version-fallback-min";
 
+// These values aren't switches, but rather the values that kSSLVersionMax,
+// kSSLVersionMin and kSSLVersionFallbackMin can have.
+const char kSSLVersionSSLv3[]               = "ssl3";
+const char kSSLVersionTLSv1[]               = "tls1";
+const char kSSLVersionTLSv11[]              = "tls1.1";
+const char kSSLVersionTLSv12[]              = "tls1.2";
+
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 

@@ -47778,6 +47778,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-158197254" label="enable-credential-manager-api"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-102537270" label="extension-content-verification"/>
+  <int value="-88822940" label="ssl-version-min"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>

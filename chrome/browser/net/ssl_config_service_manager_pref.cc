@@ -9,11 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -62,35 +64,17 @@ std::vector<uint16> ParseCipherSuites(
   return cipher_suites;
 }
 
-// Returns the string representation of an SSL protocol version. Returns an
-// empty string on error.
-std::string SSLProtocolVersionToString(uint16 version) {
-  switch (version) {
-    case net::SSL_PROTOCOL_VERSION_SSL3:
-      return "ssl3";
-    case net::SSL_PROTOCOL_VERSION_TLS1:
-      return "tls1";
-    case net::SSL_PROTOCOL_VERSION_TLS1_1:
-      return "tls1.1";
-    case net::SSL_PROTOCOL_VERSION_TLS1_2:
-      return "tls1.2";
-    default:
-      NOTREACHED();
-      return std::string();
-  }
-}
-
 // Returns the SSL protocol version (as a uint16) represented by a string.
 // Returns 0 if the string is invalid.
 uint16 SSLProtocolVersionFromString(const std::string& version_str) {
   uint16 version = 0;  // Invalid.
-  if (version_str == "ssl3") {
+  if (version_str == switches::kSSLVersionSSLv3) {
     version = net::SSL_PROTOCOL_VERSION_SSL3;
-  } else if (version_str == "tls1") {
+  } else if (version_str == switches::kSSLVersionTLSv1) {
     version = net::SSL_PROTOCOL_VERSION_TLS1;
-  } else if (version_str == "tls1.1") {
+  } else if (version_str == switches::kSSLVersionTLSv11) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_1;
-  } else if (version_str == "tls1.2") {
+  } else if (version_str == switches::kSSLVersionTLSv12) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_2;
   }
   return version;
@@ -229,16 +213,9 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
-  std::string version_min_str =
-      SSLProtocolVersionToString(default_config.version_min);
-  std::string version_max_str =
-      SSLProtocolVersionToString(default_config.version_max);
-  std::string version_fallback_min_str =
-      SSLProtocolVersionToString(default_config.version_fallback_min);
-  registry->RegisterStringPref(prefs::kSSLVersionMin, version_min_str);
-  registry->RegisterStringPref(prefs::kSSLVersionMax, version_max_str);
-  registry->RegisterStringPref(prefs::kSSLVersionFallbackMin,
-                               version_fallback_min_str);
+  registry->RegisterStringPref(prefs::kSSLVersionMin, "");
+  registry->RegisterStringPref(prefs::kSSLVersionMax, "");
+  registry->RegisterStringPref(prefs::kSSLVersionFallbackMin, "");
   registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
                                 !default_config.false_start_enabled);
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -291,12 +268,12 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   uint16 version_fallback_min =
       SSLProtocolVersionFromString(version_fallback_min_str);
   if (version_min) {
-    // TODO(wtc): get the minimum SSL protocol version supported by the
-    // SSLClientSocket class. Right now it happens to be the same as the
-    // default minimum SSL protocol version because we enable all supported
-    // versions by default.
-    uint16 supported_version_min = config->version_min;
-    config->version_min = std::max(supported_version_min, version_min);
+    config->version_min = version_min;
+  } else {
+    const std::string group = base::FieldTrialList::FindFullName("SSLv3");
+    if (group == "Enabled") {
+      config->version_min = net::SSL_PROTOCOL_VERSION_SSL3;
+    }
   }
   if (version_max) {
     // TODO(wtc): get the maximum SSL protocol version supported by the
