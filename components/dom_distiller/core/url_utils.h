@@ -21,6 +21,10 @@ const GURL GetDistillerViewUrlFromEntryId(const std::string& scheme,
 const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
                                       const GURL& view_url);
 
+// Returns the original URL from the distilled URL.
+// If the URL is not distilled, it is returned as is.
+const GURL GetOriginalUrlFromDistillerUrl(const GURL& distilled_url);
+
 // Returns the value of the query parameter for the given |key| for a given URL.
 // If the URL is invalid or if the key is not found, returns an empty string.
 // If there are multiple keys found in the URL, returns the value for the first

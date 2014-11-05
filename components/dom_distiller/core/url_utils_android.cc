@@ -43,9 +43,8 @@ jstring GetOriginalUrlFromDistillerUrl(JNIEnv* env,
   if (!url.is_valid())
     return NULL;
 
-  std::string original_url_str;
-  net::GetValueForKeyInQuery(url, kUrlKey, &original_url_str);
-  GURL original_url(original_url_str);
+  GURL original_url =
+      dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(url);
   if (!original_url.is_valid())
     return NULL;
 

@@ -35,6 +35,16 @@ const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
   return net::AppendOrReplaceQueryParameter(url, kUrlKey, view_url.spec());
 }
 
+const GURL GetOriginalUrlFromDistillerUrl(const GURL& url) {
+  if (!dom_distiller::url_utils::IsDistilledPage(url))
+    return url;
+
+  std::string original_url_str;
+  net::GetValueForKeyInQuery(url, kUrlKey, &original_url_str);
+
+  return GURL(original_url_str);
+}
+
 std::string GetValueForKeyInUrl(const GURL& url, const std::string& key) {
   if (!url.is_valid())
     return "";

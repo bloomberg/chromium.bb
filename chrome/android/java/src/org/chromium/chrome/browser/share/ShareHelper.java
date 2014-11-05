@@ -23,7 +23,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -154,8 +156,10 @@ public class ShareHelper {
         }
     }
 
-    private static Intent getShareIntent(String title, String url, Bitmap screenshot,
+    @VisibleForTesting
+    public static Intent getShareIntent(String title, String url, Bitmap screenshot,
             int extraIntentFlags) {
+        url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(extraIntentFlags);
         intent.setType("text/plain");

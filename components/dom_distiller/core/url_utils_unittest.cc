@@ -4,7 +4,9 @@
 
 #include "components/dom_distiller/core/url_utils.h"
 
+#include "components/dom_distiller/core/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace dom_distiller {
 
@@ -39,6 +41,32 @@ TEST(DomDistillerUrlUtilsTest, TestGetValueForKeyInUrlPathQuery) {
   EXPECT_EQ("foo", GetValueForKeyInUrlPathQuery(valid_url_two_keys, "key"));
 }
 
+std::string ThroughDistiller(std::string url) {
+  return GetOriginalUrlFromDistillerUrl(
+      GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url))).spec();
+}
+
+std::string GetOriginalUrlFromDistillerUrl(std::string url) {
+  return GetOriginalUrlFromDistillerUrl(GURL(url)).spec();
+}
+
+TEST(DomDistillerUrlUtilsTest, TestDistillerEndToEnd) {
+  // Tests a normal url.
+  const std::string url = "http://example.com/";
+  EXPECT_EQ(url, ThroughDistiller(url));
+  EXPECT_EQ(url, GetOriginalUrlFromDistillerUrl(url));
+
+  // Tests a url with arguments and anchor points.
+  const std::string url_arguments =
+      "https://example.com/?key=value&key=value2&key2=value3#here";
+  EXPECT_EQ(url_arguments, ThroughDistiller(url_arguments));
+  EXPECT_EQ(url_arguments, GetOriginalUrlFromDistillerUrl(url_arguments));
+
+  // Tests a url with file:// scheme.
+  const std::string url_file = "file:///home/userid/path/index.html";
+  EXPECT_EQ(url_file, ThroughDistiller(url_file));
+  EXPECT_EQ(url_file, GetOriginalUrlFromDistillerUrl(url_file));
+}
 }  // namespace url_utils
 
 }  // namespace dom_distiller
