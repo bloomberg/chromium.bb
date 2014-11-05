@@ -223,11 +223,25 @@ class MacTool(object):
         r'^.*libtool: warning for library: ' +
         r'.* the table of contents is empty ' +
         r'\(no object file members in the library define global symbols\)$')
-    libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE)
+    env = os.environ.copy()
+    # Ref:
+    # http://www.opensource.apple.com/source/cctools/cctools-809/misc/libtool.c
+    # The problem with this flag is that it resets the file mtime on the file to
+    # epoch=0, e.g. 1970-1-1 or 1969-12-31 depending on daylight saving.
+    env['ZERO_AR_DATE'] = '1'
+    libtoolout = subprocess.Popen(cmd_list, stderr=subprocess.PIPE, env=env)
     _, err = libtoolout.communicate()
     for line in err.splitlines():
       if not libtool_re.match(line) and not libtool_re5.match(line):
         print >>sys.stderr, line
+    # Unconditionally touch any file .a file on the command line if present if
+    # succeeded. A bit hacky.
+    if not libtoolout.returncode:
+      archives = [
+        cmd for cmd in cmd_list if cmd.endswith('.a') and os.path.isfile(cmd)
+      ]
+      if len(archives) == 1:
+        os.utime(archives[0], None)
     return libtoolout.returncode
 
   def ExecPackageFramework(self, framework, version):
