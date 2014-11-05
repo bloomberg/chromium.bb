@@ -27,7 +27,6 @@ class ActivityManagerImpl : public ActivityManager,
   // ActivityManager:
   void AddActivity(Activity* activity) override;
   void RemoveActivity(Activity* activity) override;
-  void UpdateActivity(Activity* activity) override;
   const ActivityList& GetActivityList() override;
   Activity* GetActivityForWindow(aura::Window* window) override;
   void AddObserver(ActivityManagerObserver* observer) override;

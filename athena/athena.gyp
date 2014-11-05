@@ -48,6 +48,7 @@
         'activity/public/activity_factory.h',
         'activity/public/activity_manager.h',
         'activity/public/activity_manager_observer.h',
+        'activity/public/activity_view.h',
         'activity/public/activity_view_model.h',
         'athena_export.h',
         'env/athena_env_impl.cc',

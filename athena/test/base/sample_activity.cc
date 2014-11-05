@@ -72,6 +72,9 @@ gfx::ImageSkia SampleActivity::GetIcon() const {
   return gfx::ImageSkia();
 }
 
+void SampleActivity::SetActivityView(ActivityView* view) {
+}
+
 bool SampleActivity::UsesFrame() const {
   return true;
 }

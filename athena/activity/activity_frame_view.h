@@ -5,6 +5,7 @@
 #ifndef ATHENA_ACTIVITY_ACTIVITY_FRAME_VIEW_H_
 #define ATHENA_ACTIVITY_ACTIVITY_FRAME_VIEW_H_
 
+#include "athena/activity/public/activity_view.h"
 #include "athena/wm/public/window_manager_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/window/non_client_view.h"
@@ -21,7 +22,8 @@ class ActivityViewModel;
 
 // A NonClientFrameView used for activity.
 class ActivityFrameView : public views::NonClientFrameView,
-                          public WindowManagerObserver {
+                          public WindowManagerObserver,
+                          public ActivityView {
  public:
   // The frame class name.
   static const char kViewClassName[];
@@ -47,6 +49,11 @@ class ActivityFrameView : public views::NonClientFrameView,
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
  private:
+  // ActivityView:
+  void UpdateTitle() override;
+  void UpdateIcon() override;
+  void UpdateRepresentativeColor() override;
+
   // WindowManagerObserver:
   void OnOverviewModeEnter() override;
   void OnOverviewModeExit() override;

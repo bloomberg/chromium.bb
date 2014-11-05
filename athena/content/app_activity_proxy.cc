@@ -84,6 +84,9 @@ gfx::ImageSkia AppActivityProxy::GetIcon() const {
   return gfx::ImageSkia();
 }
 
+void AppActivityProxy::SetActivityView(ActivityView* view) {
+}
+
 bool AppActivityProxy::UsesFrame() const {
   return true;
 }

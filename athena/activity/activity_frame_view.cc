@@ -59,11 +59,17 @@ ActivityFrameView::ActivityFrameView(views::Widget* frame,
   UpdateWindowTitle();
   UpdateWindowIcon();
 
+  view_model_->SetActivityView(this);
+
   WindowManager::Get()->AddObserver(this);
 }
 
 ActivityFrameView::~ActivityFrameView() {
   WindowManager::Get()->RemoveObserver(this);
+
+  // |view_model_| is already destroyed at this time. So do not attempt to reset
+  // the activity-view by calling SetActivityView(nullptr);
+  // http://crbug.com/427113
 }
 
 gfx::Rect ActivityFrameView::GetBoundsForClientView() const {
@@ -167,6 +173,18 @@ void ActivityFrameView::OnPaintBackground(gfx::Canvas* canvas) {
   border_bounds.Inset(NonClientBorderInsets());
   border_bounds.Inset(-1, -1, 0, 0);
   canvas->DrawRect(border_bounds, SkColorSetA(SK_ColorGRAY, 0x7f));
+}
+
+void ActivityFrameView::UpdateTitle() {
+  UpdateWindowTitle();
+}
+
+void ActivityFrameView::UpdateIcon() {
+  UpdateWindowIcon();
+}
+
+void ActivityFrameView::UpdateRepresentativeColor() {
+  UpdateWindowTitle();
 }
 
 void ActivityFrameView::OnOverviewModeEnter() {

@@ -62,6 +62,7 @@ class WebActivity : public Activity,
   SkColor GetRepresentativeColor() const override;
   base::string16 GetTitle() const override;
   gfx::ImageSkia GetIcon() const override;
+  void SetActivityView(ActivityView* activity_view) override;
   bool UsesFrame() const override;
   views::View* GetContentsView() override;
   gfx::ImageSkia GetOverviewModeImage() override;
@@ -104,6 +105,11 @@ class WebActivity : public Activity,
 
   // The content proxy.
   scoped_ptr<ContentProxy> content_proxy_;
+
+  // WebActivity does not take ownership of |activity_view_|. If the view is
+  // destroyed before the activity, then it must be reset using
+  // SetActivityView(nullptr).
+  ActivityView* activity_view_;
 
   base::WeakPtrFactory<WebActivity> weak_ptr_factory_;
 

@@ -21,6 +21,8 @@ class Widget;
 
 namespace athena {
 
+class ActivityView;
+
 // The view model for the representation of the activity.
 class ATHENA_EXPORT ActivityViewModel {
  public:
@@ -40,6 +42,10 @@ class ATHENA_EXPORT ActivityViewModel {
 
   // Returns an icon for the activity.
   virtual gfx::ImageSkia GetIcon() const = 0;
+
+  // Sets the ActivityView for the model to update. The model does not take
+  // ownership of the view.
+  virtual void SetActivityView(ActivityView* view) = 0;
 
   // True if the activity wants to use Widget's frame, or false if the activity
   // draws its own frame.

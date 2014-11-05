@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/activity/public/activity_view.h"
 #include "athena/content/content_proxy.h"
 #include "athena/content/media_utils.h"
 #include "athena/content/public/dialogs.h"
@@ -441,6 +442,7 @@ WebActivity::WebActivity(content::BrowserContext* browser_context,
       title_(title),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
+      activity_view_(nullptr),
       weak_ptr_factory_(this) {
   // Order is important. The web activity helpers must be attached prior to the
   // RenderView being created.
@@ -453,6 +455,7 @@ WebActivity::WebActivity(content::WebContents* contents)
       web_view_(new AthenaWebView(contents, this)),
       title_color_(kDefaultTitleColor),
       current_state_(ACTIVITY_UNLOADED),
+      activity_view_(nullptr),
       weak_ptr_factory_(this) {
   // If the activity was created as a result of
   // WebContentsDelegate::AddNewContents(), web activity helpers may not be
@@ -557,6 +560,11 @@ gfx::ImageSkia WebActivity::GetIcon() const {
   return icon_;
 }
 
+void WebActivity::SetActivityView(ActivityView* view) {
+  DCHECK(!activity_view_);
+  activity_view_ = view;
+}
+
 bool WebActivity::UsesFrame() const {
   return true;
 }
@@ -589,7 +597,8 @@ void WebActivity::ResetContentsView() {
 
 void WebActivity::TitleWasSet(content::NavigationEntry* entry,
                               bool explicit_set) {
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateTitle();
 }
 
 void WebActivity::DidNavigateMainFrame(
@@ -599,7 +608,8 @@ void WebActivity::DidNavigateMainFrame(
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   icon_ = gfx::ImageSkia();
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateIcon();
 }
 
 void WebActivity::DidUpdateFaviconURL(
@@ -629,12 +639,14 @@ void WebActivity::OnDidDownloadFavicon(
     const std::vector<gfx::Size>& original_bitmap_sizes) {
   icon_ = CreateFaviconImageSkia(
       bitmaps, original_bitmap_sizes, kIconSize, nullptr);
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateIcon();
 }
 
 void WebActivity::DidChangeThemeColor(SkColor theme_color) {
   title_color_ = theme_color;
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateRepresentativeColor();
 }
 
 void WebActivity::HideContentProxy() {

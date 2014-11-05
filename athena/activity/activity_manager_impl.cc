@@ -91,12 +91,6 @@ void ActivityManagerImpl::RemoveActivity(Activity* activity) {
   }
 }
 
-void ActivityManagerImpl::UpdateActivity(Activity* activity) {
-  views::Widget* widget = GetWidget(activity);
-  widget->UpdateWindowIcon();
-  widget->UpdateWindowTitle();
-}
-
 const ActivityList& ActivityManagerImpl::GetActivityList() {
   return activities_;
 }

@@ -5,6 +5,7 @@
 #include "athena/content/app_activity.h"
 
 #include "athena/activity/public/activity_manager.h"
+#include "athena/activity/public/activity_view.h"
 #include "athena/content/app_activity_registry.h"
 #include "athena/content/content_proxy.h"
 #include "athena/content/media_utils.h"
@@ -24,7 +25,8 @@ AppActivity::AppActivity(const std::string& app_id, views::WebView* web_view)
     : app_id_(app_id),
       web_view_(web_view),
       current_state_(ACTIVITY_UNLOADED),
-      app_activity_registry_(nullptr) {
+      app_activity_registry_(nullptr),
+      activity_view_(nullptr) {
   Observe(web_view->GetWebContents());
 }
 
@@ -166,6 +168,11 @@ gfx::ImageSkia AppActivity::GetIcon() const {
   return gfx::ImageSkia();
 }
 
+void AppActivity::SetActivityView(ActivityView* view) {
+  DCHECK(!activity_view_);
+  activity_view_ = view;
+}
+
 bool AppActivity::UsesFrame() const {
   return false;
 }
@@ -200,7 +207,8 @@ AppActivity::AppActivity(const std::string& app_id)
     : app_id_(app_id),
       web_view_(nullptr),
       current_state_(ACTIVITY_UNLOADED),
-      app_activity_registry_(nullptr) {
+      app_activity_registry_(nullptr),
+      activity_view_(nullptr) {
 }
 
 AppActivity::~AppActivity() {
@@ -211,12 +219,14 @@ AppActivity::~AppActivity() {
 
 void AppActivity::TitleWasSet(content::NavigationEntry* entry,
                               bool explicit_set) {
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateTitle();
 }
 
 void AppActivity::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
-  ActivityManager::Get()->UpdateActivity(this);
+  if (activity_view_)
+    activity_view_->UpdateIcon();
 }
 
 // Register an |activity| with an application.

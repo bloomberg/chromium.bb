@@ -50,11 +50,6 @@ views::View* ActivityWidgetDelegate::GetContentsView() {
   return view_model_->GetContentsView();
 }
 
-views::ClientView* ActivityWidgetDelegate::CreateClientView(
-    views::Widget* widget) {
-  return new views::ClientView(widget, view_model_->GetContentsView());
-}
-
 views::NonClientFrameView* ActivityWidgetDelegate::CreateNonClientFrameView(
     views::Widget* widget) {
   return new ActivityFrameView(widget, view_model_);

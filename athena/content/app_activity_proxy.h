@@ -43,6 +43,7 @@ class AppActivityProxy : public Activity,
   SkColor GetRepresentativeColor() const override;
   base::string16 GetTitle() const override;
   gfx::ImageSkia GetIcon() const override;
+  void SetActivityView(ActivityView* activity_view) override;
   bool UsesFrame() const override;
   views::View* GetContentsView() override;
   gfx::ImageSkia GetOverviewModeImage() override;

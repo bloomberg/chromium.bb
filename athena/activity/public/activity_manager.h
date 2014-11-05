@@ -33,9 +33,6 @@ class ATHENA_EXPORT ActivityManager {
   virtual void AddActivity(Activity* activity) = 0;
   virtual void RemoveActivity(Activity* activity) = 0;
 
-  // Updates the UI when the task color/title changes.
-  virtual void UpdateActivity(Activity* activity) = 0;
-
   // Returns a list of activities, sorted in their activation order (the most
   // recently used activity is at the front of the returned list).
   virtual const ActivityList& GetActivityList() = 0;
