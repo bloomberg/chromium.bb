@@ -175,8 +175,6 @@ void PPAPITestBase::RunTest(const std::string& test_case) {
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
   base::FilePath document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-  base::FilePath http_document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
   net::SpawnedTestServer http_server(net::SpawnedTestServer::TYPE_HTTP,
                                      net::SpawnedTestServer::kLocalhost,
                                      document_root);
