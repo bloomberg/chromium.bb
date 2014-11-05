@@ -5,15 +5,12 @@
 #ifndef CC_QUADS_LARGEST_DRAW_QUAD_H_
 #define CC_QUADS_LARGEST_DRAW_QUAD_H_
 
-namespace cc {
-class StreamVideoDrawQuad;
-class RenderPassDrawQuad;
+#include "base/basictypes.h"
+#include "cc/base/cc_export.h"
 
-#if defined(ARCH_CPU_64_BITS)
-typedef RenderPassDrawQuad kLargestDrawQuad;
-#else
-typedef StreamVideoDrawQuad kLargestDrawQuad;
-#endif
+namespace cc {
+
+CC_EXPORT size_t LargestDrawQuadSize();
 
 }  // namespace cc
 

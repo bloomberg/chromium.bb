@@ -321,6 +321,7 @@
         'quads/io_surface_draw_quad.cc',
         'quads/io_surface_draw_quad.h',
         'quads/largest_draw_quad.h',
+        'quads/largest_draw_quad.cc',
         'quads/list_container.cc',
         'quads/list_container.h',
         'quads/picture_draw_quad.cc',

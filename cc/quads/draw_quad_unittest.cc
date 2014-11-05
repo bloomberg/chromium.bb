@@ -102,13 +102,13 @@ void CompareDrawQuad(DrawQuad* quad,
       render_pass->CreateAndAppendSharedQuadState();                       \
   copy_shared_state->CopyFrom(shared_state);
 
-#define QUAD_DATA \
-    gfx::Rect quad_rect(30, 40, 50, 60); \
-    gfx::Rect quad_visible_rect(40, 50, 30, 20); \
-    gfx::Rect quad_opaque_rect( 60, 55, 10, 10); \
-    ALLOW_UNUSED_LOCAL(quad_opaque_rect); \
-    bool needs_blending = true; \
-    ALLOW_UNUSED_LOCAL(needs_blending);
+#define QUAD_DATA                              \
+  gfx::Rect quad_rect(30, 40, 50, 60);         \
+  gfx::Rect quad_visible_rect(40, 50, 30, 20); \
+  gfx::Rect quad_opaque_rect(60, 55, 10, 10);  \
+  ALLOW_UNUSED_LOCAL(quad_opaque_rect);        \
+  bool needs_blending = true;                  \
+  ALLOW_UNUSED_LOCAL(needs_blending);
 
 #define SETUP_AND_COPY_QUAD_NEW(Type, quad)                                \
   DrawQuad* copy_new =                                                     \
@@ -979,14 +979,14 @@ TEST(DrawQuadTest, LargestQuadType) {
         break;
     }
   }
-  EXPECT_EQ(sizeof(kLargestDrawQuad), largest);
+  EXPECT_EQ(LargestDrawQuadSize(), largest);
 
   if (!HasFailure())
     return;
 
   // On failure, output the size of all quads for debugging.
   LOG(ERROR) << "largest " << largest;
-  LOG(ERROR) << "kLargestDrawQuad " << sizeof(kLargestDrawQuad);
+  LOG(ERROR) << "kLargestDrawQuad " << LargestDrawQuadSize();
   for (int i = 0; i <= DrawQuad::MATERIAL_LAST; ++i) {
     switch (static_cast<DrawQuad::Material>(i)) {
       case DrawQuad::CHECKERBOARD:

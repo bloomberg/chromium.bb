@@ -379,7 +379,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
   to_reserve += p.shared_quad_state_list.size() * sizeof(cc::SharedQuadState);
 
   // The largest quad type, verified by a unit test.
-  to_reserve += p.quad_list.size() * sizeof(cc::kLargestDrawQuad);
+  to_reserve += p.quad_list.size() * cc::LargestDrawQuadSize();
   return to_reserve;
 }
 

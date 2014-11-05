@@ -34,8 +34,7 @@ const size_t kDefaultNumQuadsToReserve = 128;
 namespace cc {
 
 QuadList::QuadList(size_t default_size_to_reserve)
-    : ListContainer<DrawQuad>(sizeof(kLargestDrawQuad),
-                              default_size_to_reserve) {
+    : ListContainer<DrawQuad>(LargestDrawQuadSize(), default_size_to_reserve) {
 }
 
 scoped_ptr<RenderPass> RenderPass::Create() {

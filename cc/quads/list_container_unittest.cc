@@ -64,7 +64,7 @@ class MockDrawQuad : public DrawQuad {
 };
 
 TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
 
   size_t size = 2;
   SimpleDrawQuadConstructMagicNumberOne* dq_1 =
@@ -81,7 +81,7 @@ TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct) {
 }
 
 TEST(ListContainerTest, DestructorCalled) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
 
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
@@ -92,7 +92,7 @@ TEST(ListContainerTest, DestructorCalled) {
 }
 
 TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
 
@@ -114,7 +114,7 @@ TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
 }
 
 TEST(ListContainerTest, DestructorCalledOnceWhenErase) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
   size_t size = 1;
   MockDrawQuad* dq_1 = list.AllocateAndConstruct<MockDrawQuad>();
 
@@ -435,7 +435,7 @@ TEST(ListContainerTest, SimpleReverseInsertionSharedQuadState) {
 }
 
 TEST(ListContainerTest, SimpleDeletion) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
   std::vector<SimpleDrawQuad*> sdq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {
@@ -457,7 +457,7 @@ TEST(ListContainerTest, SimpleDeletion) {
 }
 
 TEST(ListContainerTest, SimpleIterationAndManipulation) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
   std::vector<SimpleDrawQuad*> sdq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {
@@ -482,7 +482,7 @@ TEST(ListContainerTest, SimpleIterationAndManipulation) {
 }
 
 TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDrawQuad) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad));
+  ListContainer<DrawQuad> list(LargestDrawQuadSize());
   std::vector<SimpleDrawQuad*> dq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {
@@ -504,7 +504,7 @@ TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDrawQuad) {
 
 TEST(ListContainerTest,
      SimpleManipulationWithIndexMoreThanOneAllocationSimpleDrawQuad) {
-  ListContainer<DrawQuad> list(sizeof(kLargestDrawQuad), 2);
+  ListContainer<DrawQuad> list(LargestDrawQuadSize(), 2);
   std::vector<SimpleDrawQuad*> dq_list;
   size_t size = 10;
   for (size_t i = 0; i < size; ++i) {

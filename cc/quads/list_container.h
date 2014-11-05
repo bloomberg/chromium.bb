@@ -20,7 +20,7 @@ class DrawQuad;
 // pointer will continue to be valid.  This class is used to contain
 // SharedQuadState or DrawQuad. Since the size of each DrawQuad varies, to hold
 // DrawQuads, the allocations size of each element in this class is
-// kLargestDrawQuad while BaseElementType is DrawQuad.
+// LargestDrawQuadSize while BaseElementType is DrawQuad.
 template <class BaseElementType>
 class CC_EXPORT ListContainer {
  public:
