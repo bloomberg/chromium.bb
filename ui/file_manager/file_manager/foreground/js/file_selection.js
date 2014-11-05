@@ -159,7 +159,7 @@ function FileSelectionHandler(fileManager) {
   // TODO(dgozman): create a shared object with most of UI elements.
   this.okButton_ = fileManager.ui.dialogFooter.okButton;
   this.filenameInput_ = fileManager.ui.dialogFooter.filenameInput;
-  this.previewPanel_ = fileManager.previewPanel_;
+  this.previewPanel_ = fileManager.ui.previewPanel;
   this.taskItems_ = fileManager.taskItems_;
 }
 

@@ -840,7 +840,8 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
 
       // Update the user interface according to the cache state.
       updateUI: function(drive /* not used */) {
-        fileManager.updateMetadataInUI_('external', [currentEntry]);
+        fileManager.ui.listContainer.currentView.updateListItemsMetadata(
+            'external', [currentEntry]);
         if (!error)
           steps.start();
       },

@@ -413,7 +413,7 @@ FileTable.prototype.fitColumn = function(index) {
     cm.setWidthAndKeepTotal(index, Math.ceil(width));
     cm.destroyColumnPos();
   });
-}
+};
 
 /**
  * Sets date and time format.

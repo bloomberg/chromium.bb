@@ -5,7 +5,7 @@
 /**
  * The root of the file manager's view managing the DOM of Files.app.
  *
- * @param {HTMLElement} element Top level element of Files.app.
+ * @param {!HTMLElement} element Top level element of Files.app.
  * @param {DialogType} dialogType Dialog type.
  * @constructor
  * @struct
@@ -13,7 +13,7 @@
 function FileManagerUI(element, dialogType) {
   /**
    * Top level element of Files.app.
-   * @type {HTMLElement}
+   * @type {!HTMLElement}
    * @private
    */
   this.element_ = element;
@@ -93,15 +93,18 @@ function FileManagerUI(element, dialogType) {
 
   /**
    * Search box.
-   * @type {SearchBox}
+   * @type {!SearchBox}
    */
-  this.searchBox = null;
+  this.searchBox = new SearchBox(
+      this.element_.querySelector('#search-box'),
+      this.element_.querySelector('#search-button'),
+      this.element_.querySelector('#no-search-results'));
 
   /**
    * Toggle-view button.
-   * @type {Element}
+   * @type {!Element}
    */
-  this.toggleViewButton = null;
+  this.toggleViewButton = queryRequiredElement(this.element_, '#view-button');
 
   /**
    * List container.
@@ -110,38 +113,33 @@ function FileManagerUI(element, dialogType) {
   this.listContainer = null;
 
   /**
-   * Dialog footer.
-   * @type {DialogFooter}
+   * @type {PreviewPanel}
    */
-  this.dialogFooter = null;
+  this.previewPanel = null;
+
+  /**
+   * Dialog footer.
+   * @type {!DialogFooter}
+   */
+  this.dialogFooter = DialogFooter.findDialogFooter(
+      this.dialogType_,
+      /** @type {!Document} */ (this.element_.ownerDocument));
 
   Object.seal(this);
 
-  // Initialize the header.
+  // Initialize attributes.
   this.element_.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;
+  this.element_.setAttribute('type', this.dialogType_);
 
-  // Initialize dialog type.
-  this.initDialogType_();
+  // Prevent opening an URL by dropping it onto the page.
+  this.element_.addEventListener('drop', function(e) {
+    e.preventDefault();
+  });
 
   // Pre-populate the static localized strings.
   i18nTemplate.process(this.element_.ownerDocument, loadTimeData);
 }
-
-/**
- * Tweak the UI to become a particular kind of dialog, as determined by the
- * dialog type parameter passed to the constructor.
- *
- * @private
- */
-FileManagerUI.prototype.initDialogType_ = function() {
-  // Obtain elements.
-  this.dialogFooter = DialogFooter.findDialogFooter(
-      this.dialogType_, /** @type {!Document} */(this.element_.ownerDocument));
-
-  // Set attributes.
-  this.element_.setAttribute('type', this.dialogType_);
-};
 
 /**
  * Initialize the dialogs.
@@ -170,14 +168,107 @@ FileManagerUI.prototype.initDialogs = function() {
 };
 
 /**
- * Initializes here elements, which are expensive
- * or hidden in the beginning.
+ * Initializes here elements, which are expensive or hidden in the beginning.
+ *
+ * @param {!FileTable} table
+ * @param {!FileGrid} grid
+ * @param {PreviewPanel} previewPanel
+ *
  */
-FileManagerUI.prototype.initAdditionalUI = function() {
-  this.searchBox = new SearchBox(
-      this.element_.querySelector('#search-box'),
-      this.element_.querySelector('#search-button'),
-      this.element_.querySelector('#no-search-results'));
+FileManagerUI.prototype.initAdditionalUI = function(table, grid, previewPanel) {
+  // Listen to drag events to hide preview panel while user is dragging files.
+  // Files.app prevents default actions in 'dragstart' in some situations,
+  // so we listen to 'drag' to know the list is actually being dragged.
+  var draggingBound = this.onDragging_.bind(this);
+  var dragEndBound = this.onDragEnd_.bind(this);
+  table.list.addEventListener('drag', draggingBound);
+  grid.addEventListener('drag', draggingBound);
+  table.list.addEventListener('dragend', dragEndBound);
+  grid.addEventListener('dragend', dragEndBound);
 
-  this.toggleViewButton = this.element_.querySelector('#view-button');
+  // Listen to dragselection events to hide preview panel while the user is
+  // selecting files by drag operation.
+  table.list.addEventListener('dragselectionstart', draggingBound);
+  grid.addEventListener('dragselectionstart', draggingBound);
+  table.list.addEventListener('dragselectionend', dragEndBound);
+  grid.addEventListener('dragselectionend', dragEndBound);
+
+  // List container.
+  this.listContainer = new ListContainer(
+      queryRequiredElement(this.element_, '#list-container'), table, grid);
+
+  // Preview panel.
+  this.previewPanel = previewPanel;
+  this.previewPanel.addEventListener(
+      PreviewPanel.Event.VISIBILITY_CHANGE,
+      this.onPreviewPanelVisibilityChange_.bind(this));
+  this.previewPanel.initialize();
+};
+
+/**
+ * Relayout the UI.
+ */
+FileManagerUI.prototype.relayout = function() {
+  this.locationLine.truncate();
+  this.listContainer.currentView.relayout();
+};
+
+/**
+ * Sets the current list type.
+ * @param {ListContainer.ListType} listType New list type.
+ */
+FileManagerUI.prototype.setCurrentListType = function(listType) {
+  this.listContainer.setCurrentListType(listType);
+
+  switch (listType) {
+    case ListContainer.ListType.DETAIL:
+      this.toggleViewButton.classList.add('table');
+      this.toggleViewButton.classList.remove('grid');
+      break;
+
+    case ListContainer.ListType.THUMBNAIL:
+      this.toggleViewButton.classList.add('grid');
+      this.toggleViewButton.classList.remove('table');
+      break;
+
+    default:
+      assertNotReached();
+      break;
+  }
+};
+
+/**
+ * Invoked while the drag is being performed on the list or the grid.
+ * Note: this method may be called multiple times before onDragEnd_().
+ * @private
+ */
+FileManagerUI.prototype.onDragging_ = function() {
+  // On open file dialog, the preview panel is always shown.
+  if (DialogType.isOpenDialog(this.dialogType_))
+    return;
+  this.previewPanel.visibilityType = PreviewPanel.VisibilityType.ALWAYS_HIDDEN;
+};
+
+/**
+ * Invoked when the drag is ended on the list or the grid.
+ * @private
+ */
+FileManagerUI.prototype.onDragEnd_ = function() {
+  // On open file dialog, the preview panel is always shown.
+  if (DialogType.isOpenDialog(this.dialogType_))
+    return;
+  this.previewPanel.visibilityType = PreviewPanel.VisibilityType.AUTO;
+};
+
+/**
+ * Resize details and thumb views to fit the new window size.
+ * @private
+ */
+FileManagerUI.prototype.onPreviewPanelVisibilityChange_ = function() {
+  // This method may be called on initialization. Some object may not be
+  // initialized.
+  var panelHeight = this.previewPanel.visible ?
+      this.previewPanel.height : 0;
+  this.listContainer.table.setBottomMarginForPanel(panelHeight);
+  this.listContainer.grid.setBottomMarginForPanel(panelHeight);
 };

@@ -21,16 +21,38 @@ function TextSearchState() {
 /**
  * List container for the file table and the grid view.
  * @param {!HTMLElement} element Element of the container.
+ * @param {!FileTable} table File table.
+ * @param {!FileGrid} grid File grid.
  * @constructor
  * @struct
  */
-function ListContainer(element) {
+function ListContainer(element, table, grid) {
   /**
    * The container element of the file list.
    * @type {!HTMLElement}
    * @const
    */
   this.element = element;
+
+  /**
+   * The file table.
+   * @type {!FileTable}
+   * @const
+   */
+  this.table = table;
+
+  /**
+   * The file grid.
+   * @type {!FileGrid}
+   * @const
+   */
+  this.grid = grid;
+
+  /**
+   * Current file list.
+   * @type {ListContainer.ListType}
+   */
+  this.currentListType = ListContainer.ListType.UNINITIALIZED;
 
   /**
    * Spinner on file list which is shown while loading.
@@ -40,11 +62,43 @@ function ListContainer(element) {
   this.spinner = queryRequiredElement(element, '.spinner-layer');
 
   /**
+   * @type {cr.ui.ArrayDataModel}
+   */
+  this.dataModel = null;
+
+  /**
+   * @type {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel}
+   */
+  this.selectionModel = null;
+
+  /**
+   * Data model which is used as a placefolder in inactive file list.
+   * @type {!cr.ui.ArrayDataModel}
+   * @const
+   * @private
+   */
+  this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
+
+ /**
+   * Selection model which is used as a placefolder in inactive file list.
+   * @type {!cr.ui.ListSelectionModel}
+   * @const
+   * @private
+   */
+  this.emptySelectionModel_ = new cr.ui.ListSelectionModel();
+
+  /**
    * @type {!TextSearchState}
    * @const
    */
   this.textSearchState = new TextSearchState();
 
+  // Overriding the default role 'list' to 'listbox' for better accessibility
+  // on ChromeOS.
+  this.table.list.setAttribute('role', 'listbox');
+  this.table.list.id = 'file-list';
+  this.grid.setAttribute('role', 'listbox');
+  this.grid.id = 'file-list';
   this.element.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.element.addEventListener('keypress', this.onKeyPress_.bind(this));
   this.element.addEventListener('mousemove', this.onMouseMove_.bind(this));
@@ -56,6 +110,102 @@ function ListContainer(element) {
  */
 ListContainer.EventType = {
   TEXT_SEARCH: 'textsearch'
+};
+
+/**
+ * @enum {string}
+ * @const
+ */
+ListContainer.ListType = {
+  UNINITIALIZED: 'uninitialized',
+  DETAIL: 'detail',
+  THUMBNAIL: 'thumb'
+};
+
+ListContainer.prototype = /** @struct */ {
+  /**
+   * @return {!FileTable|!FileGrid}
+   */
+  get currentView() {
+    switch (this.currentListType) {
+      case ListContainer.ListType.DETAIL:
+        return this.table;
+      case ListContainer.ListType.THUMBNAIL:
+        return this.grid;
+    }
+    assertNotReached();
+  },
+
+  /**
+   * @return {!cr.ui.List}
+   */
+  get currentList() {
+    switch (this.currentListType) {
+      case ListContainer.ListType.DETAIL:
+        return this.table.list;
+      case ListContainer.ListType.THUMBNAIL:
+        return this.grid;
+    }
+    assertNotReached();
+  }
+};
+
+/**
+ * Notifies begginig of batch update to the UI.
+ */
+ListContainer.prototype.startBatchUpdates = function() {
+  this.table.startBatchUpdates();
+  this.grid.startBatchUpdates();
+};
+
+/**
+ * Notifies end of batch update to the UI.
+ */
+ListContainer.prototype.endBatchUpdates = function() {
+  this.table.endBatchUpdates();
+  this.grid.endBatchUpdates();
+};
+
+/**
+ * Sets the current list type.
+ * @param {ListContainer.ListType} listType New list type.
+ */
+ListContainer.prototype.setCurrentListType = function(listType) {
+  assert(this.dataModel);
+  assert(this.selectionModel);
+
+  this.startBatchUpdates();
+  this.currentListType = listType;
+  // TODO(dzvorygin): style.display and dataModel setting order shouldn't
+  // cause any UI bugs. Currently, the only right way is first to set display
+  // style and only then set dataModel.
+  // Always sharing the data model between the detail/thumb views confuses
+  // them.  Instead we maintain this bogus data model, and hook it up to the
+  // view that is not in use.
+  switch (listType) {
+    case ListContainer.ListType.DETAIL:
+      this.table.dataModel = this.dataModel;
+      this.table.selectionModel = this.selectionModel;
+      this.table.hidden = false;
+      this.grid.hidden = true;
+      this.grid.selectionModel = this.emptySelectionModel_;
+      this.grid.dataModel = this.emptyDataModel_;
+      break;
+
+    case ListContainer.ListType.THUMBNAIL:
+      this.grid.dataModel = this.dataModel;
+      this.grid.selectionModel = this.selectionModel;
+      this.grid.hidden = false;
+      this.table.hidden = true;
+      this.table.selectionModel = this.emptySelectionModel_;
+      this.table.dataModel = this.emptyDataModel_;
+      break;
+
+    default:
+      assertNotReached();
+      break;
+  }
+  this.endBatchUpdates();
 };
 
 /**

@@ -102,13 +102,6 @@ function FileManager() {
   this.dialogType = DialogType.FULL_PAGE;
 
   /**
-   * Current list type.
-   * @type {FileManager.ListType}
-   * @private
-   */
-  this.listType_ = null;
-
-  /**
    * List of acceptable file types for open dialog.
    * @type {!Array.<Object>}
    * @private
@@ -145,13 +138,6 @@ function FileManager() {
    * @private
    */
   this.ui_ = null;
-
-  /**
-   * Preview panel.
-   * @type {PreviewPanel}
-   * @private
-   */
-  this.previewPanel_ = null;
 
   /**
    * Progress center panel.
@@ -316,27 +302,6 @@ function FileManager() {
   this.renameInput_ = null;
 
   /**
-   * The file table.
-   * @type {FileTable}
-   * @private
-   */
-  this.table_ = null;
-
-  /**
-   * The file grid.
-   * @type {FileGrid}
-   * @private
-   */
-  this.grid_ = null;
-
-  /**
-   * Current file list.
-   * @type {cr.ui.List}
-   * @private
-   */
-  this.currentList_ = null;
-
-  /**
    * The container element of the dialog.
    * @type {HTMLDivElement}
    * @private
@@ -404,37 +369,6 @@ function FileManager() {
    * @private
    */
   this.scanUpdatedTimer_ = 0;
-
-  // --------------------------------------------------------------------------
-  // Search states.
-
-  /**
-   * The last search query.
-   * @type {string}
-   * @private
-   */
-  this.lastSearchQuery_ = '';
-
-  /**
-   * The last auto-complete query.
-   * @type {string}
-   * @private
-   */
-  this.lastAutocompleteQuery_ = '';
-
-  /**
-   * Whether auto-complete suggestion is busy to respond previous request.
-   * @type {boolean}
-   * @private
-   */
-  this.autocompleteSuggestionsBusy_ = false;
-
-  /**
-   * State of text-search, which is triggerd by keyboard input on file list.
-   * @type {Object}
-   * @private
-   */
-  this.textSearchState_ = {text: '', date: new Date()};
 
   // --------------------------------------------------------------------------
   // Miscellaneous FileManager's states.
@@ -526,19 +460,6 @@ function FileManager() {
    */
   this.initTargetName_ = '';
 
-  /**
-   * Data model which is used as a placefolder in inactive file list.
-   * @type {cr.ui.ArrayDataModel}
-   * @private
-   */
-  this.emptyDataModel_ = null;
-
-  /**
-   * Selection model which is used as a placefolder in inactive file list.
-   * @type {cr.ui.ListSelectionModel}
-   * @private
-   */
-  this.emptySelectionModel_ = null;
 
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
@@ -711,15 +632,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-  /**
-   * @enum {string}
-   * @const
-   */
-  FileManager.ListType = {
-    DETAIL: 'detail',
-    THUMBNAIL: 'thumb'
-  };
-
   FileManager.prototype.initPreferences_ = function(callback) {
     var group = new AsyncUtil.Group();
 
@@ -760,8 +672,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initFileSystemUI_ = function(callback) {
-    this.table_.startBatchUpdates();
-    this.grid_.startBatchUpdates();
+    this.ui_.listContainer.startBatchUpdates();
 
     this.initFileList_();
     this.setupCurrentDirectory_();
@@ -793,10 +704,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var listBeingUpdated = null;
     dm.addEventListener('begin-update-files', function() {
-      self.currentList_.startBatchUpdates();
+      self.ui_.listContainer.currentList.startBatchUpdates();
       // Remember the list which was used when updating files started, so
       // endBatchUpdates() is called on the same list.
-      listBeingUpdated = self.currentList_;
+      listBeingUpdated = self.ui_.listContainer.currentList;
     });
     dm.addEventListener('end-update-files', function() {
       self.restoreItemBeingRenamed_();
@@ -847,9 +758,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateFileTypeFilter_();
 
     this.selectionHandler_.onFileSelectionChanged();
-
-    this.table_.endBatchUpdates();
-    this.grid_.endBatchUpdates();
+    this.ui_.listContainer.endBatchUpdates();
 
     callback();
   };
@@ -896,7 +805,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initDateTimeFormatters_ = function() {
     var use12hourClock = !this.preferences_['use24hourClock'];
-    this.table_.setDateTimeFormat(use12hourClock);
+    this.ui_.listContainer.table.setDateTimeFormat(use12hourClock);
   };
 
   /**
@@ -929,10 +838,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                 this.volumeManager_,
                 this.ui_.multiProfileShareDialog,
                 this.backgroundPage_.background.progressCenter);
-    controller.attachDragSource(this.table_.list);
-    controller.attachFileListDropTarget(this.table_.list);
-    controller.attachDragSource(this.grid_);
-    controller.attachFileListDropTarget(this.grid_);
+    controller.attachDragSource(this.ui_.listContainer.table.list);
+    controller.attachFileListDropTarget(this.ui_.listContainer.table.list);
+    controller.attachDragSource(this.ui_.listContainer.grid);
+    controller.attachFileListDropTarget(this.ui_.listContainer.grid);
     controller.attachTreeDropTarget(this.directoryTree_);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
@@ -964,8 +873,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initContextMenus_ = function() {
-    assert(this.grid_);
-    assert(this.table_);
+    assert(this.ui_.listContainer.grid);
+    assert(this.ui_.listContainer.table);
     assert(this.document_);
     assert(this.dialogDom_);
 
@@ -975,9 +884,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     cr.ui.Menu.decorate(fileContextMenu);
     fileContextMenu = /** @type {!cr.ui.Menu} */ (fileContextMenu);
 
-    cr.ui.contextMenuHandler.setContextMenu(this.grid_, fileContextMenu);
     cr.ui.contextMenuHandler.setContextMenu(
-        queryRequiredElement(this.table_, '.list'), fileContextMenu);
+        this.ui_.listContainer.grid, fileContextMenu);
+    cr.ui.contextMenuHandler.setContextMenu(
+        this.ui_.listContainer.table.list, fileContextMenu);
     cr.ui.contextMenuHandler.setContextMenu(
         queryRequiredElement(this.document_, '.drive-welcome.page'),
         fileContextMenu);
@@ -1234,6 +1144,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
 
     // Create the root view of FileManager.
+    assert(this.dialogDom_);
     this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
 
     // Show the window as soon as the UI pre-initialization is done.
@@ -1274,30 +1185,40 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
-    this.initDialogs_();
-    this.ui_.initAdditionalUI();
+    // Cache nodes we'll be manipulating.
+    var dom = this.dialogDom_;
+    assert(dom);
 
-    this.dialogDom_.addEventListener('drop', function(e) {
-      // Prevent opening an URL by dropping it onto the page.
-      e.preventDefault();
-    });
+    this.initDialogs_();
+
+    var table = queryRequiredElement(dom, '.detail-table');
+    FileTable.decorate(
+        table,
+        this.metadataCache_,
+        this.volumeManager_,
+        this.dialogType == DialogType.FULL_PAGE);
+    var grid = queryRequiredElement(dom, '.thumbnail-grid');
+    FileGrid.decorate(grid, this.metadataCache_, this.volumeManager_);
+
+    this.ui_.initAdditionalUI(
+        assertInstanceof(table, FileTable),
+        assertInstanceof(grid, FileGrid),
+        new PreviewPanel(
+            queryRequiredElement(dom, '.preview-panel'),
+            DialogType.isOpenDialog(this.dialogType) ?
+                PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
+                PreviewPanel.VisibilityType.AUTO,
+            this.metadataCache_,
+            this.volumeManager_));
 
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
-    // Cache nodes we'll be manipulating.
-    var dom = this.dialogDom_;
+
 
     var taskItems = queryRequiredElement(dom, '#tasks');
     this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
-    var table = queryRequiredElement(dom, '.detail-table');
-    var grid = queryRequiredElement(dom, '.thumbnail-grid');
-    FileTable.decorate(
-        table, this.metadataCache_, this.volumeManager_, fullPage);
-    FileGrid.decorate(grid, this.metadataCache_, this.volumeManager_);
-    this.table_ = /** @type {!FileTable} */ (table);
-    this.grid_ = /** @type {!FileGrid} */ (grid);
 
     this.ui_.locationLine = new LocationLine(
         queryRequiredElement(dom, '#location-breadcrumbs'),
@@ -1307,18 +1228,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ui_.locationLine.addEventListener(
         'pathclick', this.onBreadcrumbClick_.bind(this));
 
-    this.previewPanel_ = new PreviewPanel(
-        dom.querySelector('.preview-panel'),
-        DialogType.isOpenDialog(this.dialogType) ?
-            PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
-            PreviewPanel.VisibilityType.AUTO,
-        this.metadataCache_,
-        this.volumeManager_);
-    this.previewPanel_.addEventListener(
-        PreviewPanel.Event.VISIBILITY_CHANGE,
-        this.onPreviewPanelVisibilityChange_.bind(this));
-    this.previewPanel_.initialize();
-
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
         queryRequiredElement(dom, '#progress-center'));
@@ -1327,6 +1236,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
+
+    this.ui_.listContainer.element.addEventListener(
+        'keydown', this.onListKeyDown_.bind(this));
+    this.ui_.listContainer.element.addEventListener(
+        ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
 
     this.renameInput_ = /** @type {HTMLInputElement} */
         (this.document_.createElement('input'));
@@ -1344,13 +1258,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'keydown', this.onFilenameInputKeyDown_.bind(this));
     this.ui_.dialogFooter.filenameInput.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
-
-    this.ui_.listContainer =
-        new ListContainer(queryRequiredElement(dom, '#list-container'));
-    this.ui_.listContainer.element.addEventListener(
-        'keydown', this.onListKeyDown_.bind(this));
-    this.ui_.listContainer.element.addEventListener(
-        ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
 
     this.ui_.dialogFooter.okButton.addEventListener(
         'click', this.onOk_.bind(this));
@@ -1407,8 +1314,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     i18nTemplate.process(this.document_, loadTimeData);
 
     // Arrange the file list.
-    this.table_.normalizeColumns();
-    this.table_.redraw();
+    this.ui_.listContainer.table.normalizeColumns();
+    this.ui_.listContainer.table.redraw();
 
     callback();
   };
@@ -1426,12 +1333,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    **/
   FileManager.prototype.initFileList_ = function() {
-    // Always sharing the data model between the detail/thumb views confuses
-    // them.  Instead we maintain this bogus data model, and hook it up to the
-    // view that is not in use.
-    this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
-    this.emptySelectionModel_ = new cr.ui.ListSelectionModel();
-
     var singleSelection =
         this.dialogType == DialogType.SELECT_OPEN_FILE ||
         this.dialogType == DialogType.SELECT_FOLDER ||
@@ -1467,36 +1368,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
 
-    this.initList_(this.grid_);
-    this.initList_(this.table_.list);
+    var onDetailClickBound = this.onDetailClick_.bind(this);
+    this.ui_.listContainer.table.list.addEventListener(
+        'click', onDetailClickBound);
+    this.ui_.listContainer.grid.addEventListener(
+        'click', onDetailClickBound);
 
     var fileListFocusBound = this.onFileListFocus_.bind(this);
-    this.table_.list.addEventListener('focus', fileListFocusBound);
-    this.grid_.addEventListener('focus', fileListFocusBound);
-
-    var draggingBound = this.onDragging_.bind(this);
-    var dragEndBound = this.onDragEnd_.bind(this);
-
-    // Listen to drag events to hide preview panel while user is dragging files.
-    // Files.app prevents default actions in 'dragstart' in some situations,
-    // so we listen to 'drag' to know the list is actually being dragged.
-    this.table_.list.addEventListener('drag', draggingBound);
-    this.grid_.addEventListener('drag', draggingBound);
-    this.table_.list.addEventListener('dragend', dragEndBound);
-    this.grid_.addEventListener('dragend', dragEndBound);
-
-    // Listen to dragselection events to hide preview panel while the user is
-    // selecting files by drag operation.
-    this.table_.list.addEventListener('dragselectionstart', draggingBound);
-    this.grid_.addEventListener('dragselectionstart', draggingBound);
-    this.table_.list.addEventListener('dragselectionend', dragEndBound);
-    this.grid_.addEventListener('dragselectionend', dragEndBound);
+    this.ui_.listContainer.table.list.addEventListener(
+        'focus', fileListFocusBound);
+    this.ui_.listContainer.grid.addEventListener('focus', fileListFocusBound);
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
     this.initDirectoryTree_();
 
-    this.table_.addEventListener('column-resize-end',
+    this.ui_.listContainer.table.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
 
     // Restore preferences.
@@ -1504,13 +1391,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.viewOptions_.sortField || 'modificationTime',
         this.viewOptions_.sortDirection || 'desc');
     if (this.viewOptions_.columns) {
-      var cm = this.table_.columnModel;
+      var cm = this.ui_.listContainer.table.columnModel;
       for (var i = 0; i < cm.totalSize; i++) {
         if (this.viewOptions_.columns[i] > 0)
           cm.setWidth(i, this.viewOptions_.columns[i]);
       }
     }
-    this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
+
+    this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();
+    this.ui_.listContainer.selectionModel =
+        this.directoryModel_.getFileListSelection();
+    this.setListType(
+        this.viewOptions_.listType || ListContainer.ListType.DETAIL);
 
     this.closeOnUnmount_ = (this.params_.action == 'auto-open');
 
@@ -1600,9 +1492,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       sortField: sortStatus.field,
       sortDirection: sortStatus.direction,
       columns: [],
-      listType: this.listType_
+      listType: this.ui_.listContainer.currentListType
     };
-    var cm = this.table_.columnModel;
+    var cm = this.ui_.listContainer.table.columnModel;
     for (var i = 0; i < cm.totalSize; i++) {
       prefs.columns.push(cm.getWidth(i));
     }
@@ -1623,7 +1515,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE)
       targetElement = this.ui_.dialogFooter.filenameInput;
     else
-      targetElement = this.currentList_;
+      targetElement = this.ui.listContainer.currentList;
 
     // Hack: if the tabIndex is disabled, we can assume a modal dialog is
     // shown. Focus to a button on the dialog instead.
@@ -1649,65 +1541,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
+  /**
+   * Sets the current list type.
+   * @param {ListContainer.ListType} type New list type.
+   */
   FileManager.prototype.setListType = function(type) {
-    if (type && type == this.listType_)
+    if ((type && type == this.ui_.listContainer.currentListType) ||
+        !this.directoryModel_) {
       return;
-
-    this.table_.list.startBatchUpdates();
-    this.grid_.startBatchUpdates();
-
-    // TODO(dzvorygin): style.display and dataModel setting order shouldn't
-    // cause any UI bugs. Currently, the only right way is first to set display
-    // style and only then set dataModel.
-
-    if (type == FileManager.ListType.DETAIL) {
-      this.table_.dataModel = this.directoryModel_.getFileList();
-      this.table_.selectionModel = this.directoryModel_.getFileListSelection();
-      this.table_.hidden = false;
-      this.grid_.hidden = true;
-      this.grid_.selectionModel = this.emptySelectionModel_;
-      this.grid_.dataModel = this.emptyDataModel_;
-      this.table_.hidden = false;
-      /** @type {cr.ui.List} */
-      this.currentList_ = this.table_.list;
-      this.ui_.toggleViewButton.classList.remove('table');
-      this.ui_.toggleViewButton.classList.add('grid');
-    } else if (type == FileManager.ListType.THUMBNAIL) {
-      this.grid_.dataModel = this.directoryModel_.getFileList();
-      this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
-      this.grid_.hidden = false;
-      this.table_.hidden = true;
-      this.table_.selectionModel = this.emptySelectionModel_;
-      this.table_.dataModel = this.emptyDataModel_;
-      this.grid_.hidden = false;
-      /** @type {cr.ui.List} */
-      this.currentList_ = this.grid_;
-      this.ui_.toggleViewButton.classList.remove('grid');
-      this.ui_.toggleViewButton.classList.add('table');
-    } else {
-      throw new Error('Unknown list type: ' + type);
     }
 
-    this.listType_ = type;
+    this.ui_.setCurrentListType(type);
     this.updateStartupPrefs_();
     this.onResize_();
-
-    this.table_.list.endBatchUpdates();
-    this.grid_.endBatchUpdates();
-  };
-
-  /**
-   * Initialize the file list table or grid.
-   *
-   * @param {cr.ui.List} list The list.
-   * @private
-   */
-  FileManager.prototype.initList_ = function(list) {
-    // Overriding the default role 'list' to 'listbox' for better accessibility
-    // on ChromeOS.
-    list.setAttribute('role', 'listbox');
-    list.addEventListener('click', this.onDetailClick_.bind(this));
-    list.id = 'file-list';
   };
 
   /**
@@ -1809,66 +1655,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onResize_ = function() {
-    if (this.listType_ == FileManager.ListType.THUMBNAIL)
-      this.grid_.relayout();
-    else
-      this.table_.relayout();
-
     // May not be available during initialization.
     if (this.directoryTree_)
       this.directoryTree_.relayout();
 
-    this.ui_.locationLine.truncate();
+    this.ui_.relayout();
   };
 
   /**
    * Handles local metadata changes in the currect directory.
    * @param {Event} event Change event.
+   * @this {FileManager}
    * @private
    */
   FileManager.prototype.onWatcherMetadataChanged_ = function(event) {
-    this.updateMetadataInUI_(
-        event.metadataType, event.entries, event.properties);
-  };
-
-  /**
-   * Resize details and thumb views to fit the new window size.
-   * @private
-   */
-  FileManager.prototype.onPreviewPanelVisibilityChange_ = function() {
-    // This method may be called on initialization. Some object may not be
-    // initialized.
-
-    var panelHeight = this.previewPanel_.visible ?
-        this.previewPanel_.height : 0;
-    if (this.grid_)
-      this.grid_.setBottomMarginForPanel(panelHeight);
-    if (this.table_)
-      this.table_.setBottomMarginForPanel(panelHeight);
-  };
-
-  /**
-   * Invoked while the drag is being performed on the list or the grid.
-   * Note: this method may be called multiple times before onDragEnd_().
-   * @private
-   */
-  FileManager.prototype.onDragging_ = function() {
-    // On open file dialog, the preview panel is always shown.
-    if (DialogType.isOpenDialog(this.dialogType))
-      return;
-    this.previewPanel_.visibilityType =
-        PreviewPanel.VisibilityType.ALWAYS_HIDDEN;
-  };
-
-  /**
-   * Invoked when the drag is ended on the list or the grid.
-   * @private
-   */
-  FileManager.prototype.onDragEnd_ = function() {
-    // On open file dialog, the preview panel is always shown.
-    if (DialogType.isOpenDialog(this.dialogType))
-      return;
-    this.previewPanel_.visibilityType = PreviewPanel.VisibilityType.AUTO;
+    this.ui_.listContainer.currentView.updateListItemsMetadata(
+        event.metadataType, event.entries);
   };
 
   /**
@@ -2130,10 +1932,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.metadataCache_.clearRecursively(directoryEntry, '*');
     this.metadataCache_.get(getEntries, 'filesystem|external', null);
 
-    var visibleItems = this.currentList_.items;
+    var visibleItems = this.ui.listContainer.currentList.items;
     var visibleEntries = [];
     for (var i = 0; i < visibleItems.length; i++) {
-      var index = this.currentList_.getIndexOfListItem(visibleItems[i]);
+      var index = this.ui.listContainer.currentList.getIndexOfListItem(
+          visibleItems[i]);
       var entry = this.directoryModel_.getFileList().item(index);
       // The following check is a workaround for the bug in list: sometimes item
       // does not have listIndex, and therefore is not found in the list.
@@ -2152,24 +1955,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         entries,
         'filesystem',
         function() {
-          this.updateMetadataInUI_('filesystem', entries);
+          this.ui_.listContainer.currentView.updateListItemsMetadata(
+              'filesystem', entries);
         }.bind(this));
 
     setTimeout(this.dailyUpdateModificationTime_.bind(this),
                MILLISECONDS_IN_DAY);
-  };
-
-  /**
-   * @param {string} type Type of metadata changed.
-   * @param {Array.<Entry>} entries Array of entries.
-   * @private
-   */
-  FileManager.prototype.updateMetadataInUI_ = function(type, entries) {
-    if (this.listType_ == FileManager.ListType.DETAIL)
-      this.table_.updateListItemsMetadata(type, entries);
-    else
-      this.grid_.updateListItemsMetadata(type, entries);
-    // TODO: update bottom panel thumbnails.
   };
 
   /**
@@ -2192,14 +1983,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
 
     var leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
+    if (!leadEntry)
+      return;
     if (!util.isSameEntry(this.renameInput_.currentEntry, leadEntry))
       return;
 
     var leadListItem = this.findListItemForNode_(this.renameInput_);
-    if (this.currentList_ == this.table_.list) {
-      this.table_.updateFileMetadata(leadListItem, leadEntry);
-    }
-    this.currentList_.restoreLeadItem(leadListItem);
+    if (this.ui.listContainer.currentListType === ListContainer.ListType.DETAIL)
+      this.ui.listContainer.table.updateFileMetadata(leadListItem, leadEntry);
+    this.ui.listContainer.currentList.restoreLeadItem(leadListItem);
   };
 
   /**
@@ -2376,16 +2168,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @private
-   */
-  FileManager.prototype.focusCurrentList_ = function() {
-    if (this.listType_ == FileManager.ListType.DETAIL)
-      this.table_.focus();
-    else  // this.listType_ == FileManager.ListType.THUMBNAIL)
-      this.grid_.focus();
-  };
-
-  /**
    * Return DirectoryEntry of the current directory or null.
    * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
    *     null if the directory model is not ready or the current directory is
@@ -2451,7 +2233,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     for (var i = 0; i < selection.entries.length; i++) {
       var selectedIndex = selection.indexes[i];
-      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
+      var listItem =
+          this.ui.listContainer.currentList.getListItemByIndex(selectedIndex);
       if (listItem)
         this.blinkListItem_(listItem);
     }
@@ -2745,7 +2528,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var currentEntry = this.getCurrentDirectoryEntry();
     this.ui_.locationLine.show(currentEntry);
-    this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
+    this.ui_.previewPanel.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
   };
 
@@ -2778,9 +2561,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.findListItemForNode_ = function(node) {
-    var item = this.currentList_.getListItemAncestor(node);
+    var item = this.ui.listContainer.currentList.getListItemAncestor(node);
     // TODO(serya): list should check that.
-    return item && this.currentList_.isItem(item) ? item : null;
+    return item && this.ui.listContainer.currentList.isItem(item) ? item : null;
   };
 
   /**
@@ -2824,12 +2607,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.initiateRename = function() {
-    var item = this.currentList_.ensureLeadItemExists();
+    var item = this.ui.listContainer.currentList.ensureLeadItemExists();
     if (!item)
       return;
     var label = item.querySelector('.filename-label');
     var input = this.renameInput_;
-    var currentEntry = this.currentList_.dataModel.item(item.listIndex);
+    var currentEntry = this.ui.listContainer.currentList.dataModel.item(
+        item.listIndex);
 
     input.value = label.textContent;
     item.setAttribute('renaming', '');
@@ -2847,8 +2631,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // This has to be set late in the process so we don't handle spurious
     // blur events.
     input.currentEntry = currentEntry;
-    this.table_.startBatchUpdates();
-    this.grid_.startBatchUpdates();
+    this.ui_.listContainer.startBatchUpdates();
   };
 
   /**
@@ -2929,17 +2712,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           function(newEntry) {
             this.directoryModel_.onRenameEntry(entry, newEntry);
             renamedItemElement.removeAttribute('renaming');
-            this.table_.endBatchUpdates();
-            this.grid_.endBatchUpdates();
+            this.ui_.listContainer.endBatchUpdates();
             // Focus may go out of the list. Back it to the list.
-            this.currentList_.focus();
+            this.ui.listContainer.currentList.focus();
           }.bind(this),
           function(error) {
             // Write back to the old name.
             nameNode.textContent = entry.name;
             renamedItemElement.removeAttribute('renaming');
-            this.table_.endBatchUpdates();
-            this.grid_.endBatchUpdates();
+            this.ui_.listContainer.endBatchUpdates();
 
             // Show error dialog.
             var message;
@@ -2992,11 +2773,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (parent)
       parent.removeChild(this.renameInput_);
 
-    this.table_.endBatchUpdates();
-    this.grid_.endBatchUpdates();
+    this.ui_.listContainer.endBatchUpdates();
 
     // Focus may go out of the list. Back it to the list.
-    this.currentList_.focus();
+    this.ui.listContainer.currentList.focus();
   };
 
   /**
@@ -3040,15 +2820,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onScanStarted_ = function() {
-    if (this.scanInProgress_) {
-      this.table_.list.endBatchUpdates();
-      this.grid_.endBatchUpdates();
-    }
+    if (this.scanInProgress_)
+      this.ui_.listContainer.endBatchUpdates();
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
-    this.table_.list.startBatchUpdates();
-    this.grid_.startBatchUpdates();
+
+    this.ui_.listContainer.startBatchUpdates();
     this.scanInProgress_ = true;
 
     this.scanUpdatedAtLeastOnceOrCompleted_ = false;
@@ -3092,8 +2870,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       this.scanInProgress_ = false;
-      this.table_.list.endBatchUpdates();
-      this.grid_.endBatchUpdates();
+      this.ui_.listContainer.endBatchUpdates();
       this.scanCompletedTimer_ = 0;
     }.bind(this), 50);
   };
@@ -3121,10 +2898,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       // Update the UI.
       if (this.scanInProgress_) {
-        this.table_.list.endBatchUpdates();
-        this.grid_.endBatchUpdates();
-        this.table_.list.startBatchUpdates();
-        this.grid_.startBatchUpdates();
+        this.ui_.listContainer.endBatchUpdates();
+        this.ui_.listContainer.startBatchUpdates();
       }
       this.scanUpdatedTimer_ = 0;
     }.bind(this), 200);
@@ -3156,8 +2931,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.scanInProgress_ = false;
-    this.table_.list.endBatchUpdates();
-    this.grid_.endBatchUpdates();
+    this.ui_.listContainer.endBatchUpdates();
   };
 
   /**
@@ -3203,35 +2977,29 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     var self = this;
-    var list = self.currentList_;
-    var tryCreate = function() {
-    };
+    var list = self.ui_.listContainer.currentList;
 
     var onSuccess = function(entry) {
       metrics.recordUserAction('CreateNewFolder');
       list.selectedItem = entry;
 
-      self.table_.list.endBatchUpdates();
-      self.grid_.endBatchUpdates();
+      self.ui_.listContainer.endBatchUpdates();
 
       self.initiateRename();
     };
 
     var onError = function(error) {
-      self.table_.list.endBatchUpdates();
-      self.grid_.endBatchUpdates();
+      self.ui_.listContainer.endBatchUpdates();
 
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
                            util.getFileErrorString(error.name)));
     };
 
     var onAbort = function() {
-      self.table_.list.endBatchUpdates();
-      self.grid_.endBatchUpdates();
+      self.ui_.listContainer.endBatchUpdates();
     };
 
-    this.table_.list.startBatchUpdates();
-    this.grid_.startBatchUpdates();
+    this.ui_.listContainer.startBatchUpdates();
     this.directoryModel_.createDirectory(current(),
                                          onSuccess,
                                          onError,
@@ -3244,10 +3012,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onToggleViewButtonClick_ = function(event) {
-    if (this.listType_ === FileManager.ListType.DETAIL)
-      this.setListType(FileManager.ListType.THUMBNAIL);
-    else
-      this.setListType(FileManager.ListType.DETAIL);
+    if (this.ui_.listContainer.currentListType ===
+        ListContainer.ListType.DETAIL) {
+      this.setListType(ListContainer.ListType.THUMBNAIL);
+    } else {
+      this.setListType(ListContainer.ListType.DETAIL);
+    }
 
     event.target.blur();
   };
@@ -3346,7 +3116,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     for (var index = 0; index < dm.length; ++index) {
       var name = dm.item(index).name;
       if (name.substring(0, text.length).toLowerCase() == text) {
-        this.currentList_.selectionModel.selectedIndexes = [index];
+        this.ui.listContainer.currentList.selectionModel.selectedIndexes =
+            [index];
         return;
       }
     }
@@ -3559,7 +3330,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     var files = [];
-    var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
+    var selectedIndexes =
+        this.ui.listContainer.currentList.selectionModel.selectedIndexes;
 
     if (DialogType.isFolderDialog(this.dialogType) &&
         selectedIndexes.length == 0) {
@@ -3732,10 +3504,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @return {cr.ui.List} Current list object.
+   * @return {!cr.ui.List} Current list object.
    */
   FileManager.prototype.getCurrentList = function() {
-    return this.currentList_;
+    return this.ui.listContainer.currentList;
   };
 
   /**
