@@ -94,12 +94,11 @@ Browser* CreateBrowser(ChromeUIThreadExtensionFunction* function,
                        int window_id,
                        std::string* error) {
   content::WebContents* web_contents = function->GetAssociatedWebContents();
-  DCHECK(web_contents);
-  DCHECK(web_contents->GetNativeView());
-  DCHECK(!chrome::FindBrowserWithWebContents(web_contents));
-
   chrome::HostDesktopType desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
+      web_contents && web_contents->GetNativeView()
+          ? chrome::GetHostDesktopTypeForNativeView(
+                web_contents->GetNativeView())
+          : chrome::GetHostDesktopTypeForNativeView(NULL);
   Browser::CreateParams params(
       Browser::TYPE_TABBED, function->GetProfile(), desktop_type);
   Browser* browser = new Browser(params);
