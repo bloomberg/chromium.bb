@@ -580,32 +580,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
           container_->element().document().url(),
           GetPluginURL());
     }
-
-    PluginPowerSaverHelper* power_saver_helper =
-        render_frame_->plugin_power_saver_helper();
-    GURL content_origin = plugin_url_.GetOrigin();
-    blink::WebRect bounds = container_->element().boundsInViewportSpace();
-
-    bool cross_origin = false;
-    power_saver_enabled_ =
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnablePluginPowerSaver) &&
-        IsFlashPlugin(module_.get()) &&
-        power_saver_helper->ShouldThrottleContent(
-            content_origin, bounds.width, bounds.height, &cross_origin);
-
-    if (power_saver_enabled_) {
-      power_saver_helper->RegisterPeripheralPlugin(
-          content_origin,
-          base::Bind(&PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle,
-                     weak_factory_.GetWeakPtr()));
-
-      throttler_.reset(new PepperPluginInstanceThrottler(
-          base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
-                     weak_factory_.GetWeakPtr(), true /* throttled */)));
-    } else if (cross_origin) {
-      power_saver_helper->WhitelistContentOrigin(content_origin);
-    }
   }
 
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
@@ -875,6 +849,33 @@ bool PepperPluginInstanceImpl::Initialize(
     bool full_frame) {
   if (!render_frame_)
     return false;
+
+  PluginPowerSaverHelper* power_saver_helper =
+      render_frame_->plugin_power_saver_helper();
+  GURL content_origin = plugin_url_.GetOrigin();
+  blink::WebRect bounds = container_->element().boundsInViewportSpace();
+
+  bool cross_origin = false;
+  power_saver_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePluginPowerSaver) &&
+      IsFlashPlugin(module_.get()) &&
+      power_saver_helper->ShouldThrottleContent(
+          content_origin, bounds.width, bounds.height, &cross_origin);
+
+  if (power_saver_enabled_) {
+    power_saver_helper->RegisterPeripheralPlugin(
+        content_origin,
+        base::Bind(&PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle,
+                   weak_factory_.GetWeakPtr()));
+
+    throttler_.reset(new PepperPluginInstanceThrottler(
+        base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
+                   weak_factory_.GetWeakPtr(), true /* throttled */)));
+  } else if (cross_origin) {
+    power_saver_helper->WhitelistContentOrigin(content_origin);
+  }
+
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
 
   full_frame_ = full_frame;
