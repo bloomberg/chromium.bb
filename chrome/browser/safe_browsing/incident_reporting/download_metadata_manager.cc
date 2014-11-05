@@ -293,8 +293,12 @@ DownloadMetadataManager::DownloadMetadataManager(
 }
 
 DownloadMetadataManager::~DownloadMetadataManager() {
-  // All download managers must have gone down prior to this.
-  DCHECK(contexts_.empty());
+  // Destruction may have taken place before managers have gone down.
+  for (const auto& value : contexts_) {
+    value.first->RemoveObserver(this);
+    value.second->Detach();
+  }
+  contexts_.clear();
 }
 
 void DownloadMetadataManager::AddDownloadManager(
@@ -505,11 +509,17 @@ void DownloadMetadataManager::ManagerContext::OnDownloadDestroyed(
 }
 
 DownloadMetadataManager::ManagerContext::~ManagerContext() {
-  // All downloads must have been destroyed prior to deleting the context and
-  // all recorded operations and callbacks must have been handled.
+  // A context should not be deleted while waiting for a load to complete.
   DCHECK(pending_items_.empty());
-  DCHECK_EQ(item_, static_cast<content::DownloadItem*>(nullptr));
   DCHECK(get_details_callbacks_.empty());
+
+  // The context may have detached while still observing the item of interest
+  // since a DownloadManager announces that it's going down before it destroyes
+  // its items.
+  if (item_) {
+    item_->RemoveObserver(this);
+    item_ = nullptr;
+  }
 }
 
 void DownloadMetadataManager::ManagerContext::ClearPendingItems() {

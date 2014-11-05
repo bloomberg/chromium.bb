@@ -180,6 +180,14 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   void ShutdownDownloadManager() {
     if (dm_observer_) {
       dm_observer_->ManagerGoingDown(&download_manager_);
+      // Note: these calls may result in "Uninteresting mock function call"
+      // warnings as a result of MockDownloadItem invoking observers in its
+      // dtor. This happens after the NiceMock wrapper has removed its niceness
+      // hook. These can safely be ignored, as they are entirely expected. The
+      // values specified by ON_CALL invocations in AddDownloadItems are
+      // returned as desired.
+      other_item_.reset();
+      test_item_.reset();
       dm_observer_ = nullptr;
     }
   }
@@ -206,13 +214,6 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
     ON_CALL(*test_item_, GetEndTime())
         .WillByDefault(Return(base::Time::FromJsTime(kTestDownloadEndTimeMs)));
     dm_observer_->OnDownloadCreated(&download_manager_, other_item_.get());
-  }
-
-  // Destroyes the DownloadItems added to the manager. Safe to call any number
-  // of times.
-  void DestroyDownloadItems() {
-    other_item_.reset();
-    test_item_.reset();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -329,17 +330,14 @@ TEST_P(GetDetailsTest, GetDownloadDetails) {
   // Fire in the hole!
   manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
 
-  // Destroy download items and shutdown the download manager, if relevant.
-  if (early_shutdown_) {
-    DestroyDownloadItems();
+  // Shutdown the download manager, if relevant.
+  if (early_shutdown_)
     ShutdownDownloadManager();
-  }
 
   // Allow the read task and the response callback to run.
   RunAllTasks();
 
-  // Destroy download items and shutdown the download manager, if relevant.
-  DestroyDownloadItems();
+  // Shutdown the download manager, if relevant.
   ShutdownDownloadManager();
 }
 
@@ -464,7 +462,6 @@ TEST_P(SetRequestTest, SetRequest) {
   }
   manager_.GetDownloadDetails(&profile_, details_getter.GetCallback());
 
-  DestroyDownloadItems();
   ShutdownDownloadManager();
 
   scoped_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
