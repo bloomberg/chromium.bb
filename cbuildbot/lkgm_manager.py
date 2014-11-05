@@ -412,7 +412,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       raise manifest_version.GenerateBuildSpecException(last_error)
 
   def CreateFromManifest(self, manifest, retries=manifest_version.NUM_RETRIES,
-                         dashboard_url=None, build_id=None):
+                         build_id=None):
     """Sets up an lkgm_manager from the given manifest.
 
     This method sets up an LKGM manager and publishes a new manifest to the
@@ -424,7 +424,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         is named with the given version we want to create a new manifest from
         i.e R20-1920.0.1-rc7.xml where R20-1920.0.1-rc7 is the version.
       retries: Number of retries for updating the status.
-      dashboard_url: Optional url linking to builder dashboard for this build.
       build_id: Optional integer cidb build id of the build publishing the
                 manifest.
 
@@ -445,7 +444,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         version = os.path.splitext(os.path.basename(manifest))[0]
         logging.info('Publishing filtered build spec')
         self.PublishManifest(new_manifest, version, build_id=build_id)
-        self.SetInFlight(version, dashboard_url=dashboard_url)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
@@ -455,12 +453,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
-  def GetLatestCandidate(self, dashboard_url=None, timeout=10 * 60):
+  def GetLatestCandidate(self, timeout=10 * 60):
     """Gets and syncs to the next candiate manifest.
 
     Args:
-      retries: Number of retries for updating the status
-      dashboard_url: Optional url linking to builder dashboard for this build.
       timeout: The timeout in seconds.
 
     Returns:
@@ -501,7 +497,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     if version_to_build:
       logging.info('Starting build spec: %s', version_to_build)
-      self.SetInFlight(version_to_build, dashboard_url=dashboard_url)
       self.current_version = version_to_build
 
       # Actually perform the sync.

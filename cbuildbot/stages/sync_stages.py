@@ -514,9 +514,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
-    to_return = self.manifest_manager.GetNextBuildSpec(
-        dashboard_url=self.ConstructDashboardURL(),
-        build_id=build_id)
+    to_return = self.manifest_manager.GetNextBuildSpec(build_id=build_id)
     previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
@@ -591,6 +589,13 @@ class ManifestVersionedSyncStage(SyncStage):
         next_manifest, filter_cros=self._run.options.local) as new_manifest:
       self.ManifestCheckout(new_manifest)
 
+    # Set the status inflight at the end of the ManifestVersionedSync
+    # stage. This guarantees that all syncing has completed.
+    if self.manifest_manager:
+      self.manifest_manager.SetInFlight(
+          self.manifest_manager.current_version,
+          dashboard_url=self.ConstructDashboardURL())
+
 
 class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it.
@@ -664,12 +669,10 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
           chrome_version=self._chrome_version,
           build_id=build_id)
       if MasterSlaveLKGMSyncStage.sub_manager:
-        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
-            manifest, dashboard_url=self.ConstructDashboardURL())
+        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(manifest)
       return manifest
     else:
       return self.manifest_manager.GetLatestCandidate(
-          dashboard_url=self.ConstructDashboardURL(),
           timeout=self.LATEST_CANDIDATE_TIMEOUT_SECONDS)
 
   def GetLatestChromeVersion(self):
@@ -809,12 +812,10 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
                                                           build_id=build_id)
       if MasterSlaveLKGMSyncStage.sub_manager:
         MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
-            manifest, dashboard_url=self.ConstructDashboardURL(),
-            build_id=build_id)
+            manifest, build_id=build_id)
 
     else:
-      manifest = self.manifest_manager.GetLatestCandidate(
-          dashboard_url=self.ConstructDashboardURL())
+      manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
         if self._run.config.build_before_patching:
           pre_build_passed = self.RunPrePatchBuild()

@@ -57,6 +57,7 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None
+    self.PatchObject(manifest_version.BuildSpecsManager, 'SetInFlight')
 
     repo = repository.RepoRepository(
       self.source_repo, self.tempdir, self.branch)
@@ -91,7 +92,6 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     sync_stages.ManifestVersionedSyncStage.Initialize()
     self.manager.GetNextBuildSpec(
         build_id=MOCK_BUILD_ID,
-        dashboard_url=self.sync_stage.ConstructDashboardURL()
         ).AndReturn(self.next_version)
     self.manager.GetLatestPassingSpec().AndReturn(None)
 
@@ -138,6 +138,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     """Setup patchers for specified bot id."""
     # Mock out methods as needed.
     self.PatchObject(lkgm_manager, 'GenerateBlameList')
+    self.PatchObject(lkgm_manager.LKGMManager, 'SetInFlight')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
     self.StartPatcher(git_unittest.ManifestMock())

@@ -307,7 +307,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                              'InitializeManifestVariables')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -318,8 +317,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString(),
-                                         dashboard_url=None)
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
@@ -339,7 +336,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                              'InitializeManifestVariables')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
@@ -350,8 +346,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString(),
-                                         dashboard_url=None)
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 

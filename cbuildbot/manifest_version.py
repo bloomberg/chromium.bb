@@ -755,13 +755,11 @@ class BuildSpecsManager(object):
     """Syncs the cros source to the latest git hashes for the branch."""
     self.cros_source.Sync(self.manifest)
 
-  def GetNextBuildSpec(self, retries=NUM_RETRIES, dashboard_url=None,
-                       build_id=None):
+  def GetNextBuildSpec(self, retries=NUM_RETRIES, build_id=None):
     """Returns a path to the next manifest to build.
 
     Args:
       retries: Number of retries for updating the status.
-      dashboard_url: Optional url linking to builder dashboard for this build.
       build_id: Optional integer cidb id of this build, which will be used to
                 annotate the manifest-version commit if one is created.
 
@@ -791,7 +789,6 @@ class BuildSpecsManager(object):
         else:
           version = self.latest_unprocessed
 
-        self.SetInFlight(version, dashboard_url=dashboard_url)
         self.current_version = version
         return self.GetLocalManifest(version)
       except cros_build_lib.RunCommandError as e:
