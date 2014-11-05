@@ -9,4 +9,4 @@ ServiceWorkerCacheStorageManagerTests/ServiceWorkerCacheStorageManagerTestP.Recr
 DevToolsManagerTest.TestObserver
 
 # http://crbug.com/430391
-WebDataConsumerHandleImplTest.ReadData
+WebDataConsumerHandleImplTest.*
