@@ -287,9 +287,8 @@ TEST_F(QuotaServiceTest, MultipleFunctionsDontInterfere) {
                              kStartTime + TimeDelta::FromSeconds(15)));
 }
 
-TEST_F(QuotaServiceTest, ViolatorsWillBeViolators) {
+TEST_F(QuotaServiceTest, ViolatorsWillBeForgiven) {
   scoped_refptr<MockFunction> f(new TimedLimitMockFunction("foo"));
-  scoped_refptr<MockFunction> g(new TimedLimitMockFunction("bar"));
   base::ListValue arg;
   arg.Append(new base::FundamentalValue(1));
   EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &arg, kStartTime));
@@ -304,16 +303,30 @@ TEST_F(QuotaServiceTest, ViolatorsWillBeViolators) {
                              &arg,
                              kStartTime + TimeDelta::FromSeconds(15)));
 
-  // We don't allow this extension to use quota limited functions even if they
-  // wait a while.
-  EXPECT_NE(
-      "",
-      service_->Assess(
-          extension_a_, f.get(), &arg, kStartTime + TimeDelta::FromDays(1)));
-  EXPECT_NE(
-      "",
-      service_->Assess(
-          extension_a_, g.get(), &arg, kStartTime + TimeDelta::FromDays(1)));
+  // Waiting a while will give the extension access to the function again.
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(1)));
+
+  // And lose it again soon after.
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(1) +
+                                     TimeDelta::FromSeconds(10)));
+  EXPECT_NE("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(1) +
+                                     TimeDelta::FromSeconds(15)));
+
+  // Going further over quota should continue to fail within this time period,
+  // but still all restored later.
+  EXPECT_NE("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(1) +
+                                     TimeDelta::FromSeconds(20)));
+  EXPECT_NE("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(1) +
+                                     TimeDelta::FromSeconds(25)));
+
+  // Like now.
+  EXPECT_EQ("", service_->Assess(extension_a_, f.get(), &arg,
+                                 kStartTime + TimeDelta::FromDays(2)));
 }
 
 }  // namespace extensions

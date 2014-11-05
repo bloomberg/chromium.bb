@@ -57,11 +57,6 @@ std::string QuotaService::Assess(const std::string& extension_id,
   if (heuristics.empty())
     return std::string();  // No heuristic implies no limit.
 
-  ViolationErrorMap::iterator violation_error =
-      violation_errors_.find(extension_id);
-  if (violation_error != violation_errors_.end())
-    return violation_error->second;  // Repeat offender.
-
   QuotaLimitHeuristic* failed_heuristic = NULL;
   for (QuotaLimitHeuristics::iterator heuristic = heuristics.begin();
        heuristic != heuristics.end();
@@ -78,10 +73,6 @@ std::string QuotaService::Assess(const std::string& extension_id,
 
   std::string error = failed_heuristic->GetError();
   DCHECK_GT(error.length(), 0u);
-
-  PurgeFunctionHeuristicsMap(&functions);
-  function_heuristics_.erase(extension_id);
-  violation_errors_[extension_id] = error;
   return error;
 }
 

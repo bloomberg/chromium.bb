@@ -64,12 +64,9 @@ class QuotaService : public base::NonThreadSafe {
   // All QuotaLimitHeuristic instances in this map are owned by us.
   typedef std::map<FunctionName, QuotaLimitHeuristics> FunctionHeuristicsMap;
 
-  // Purge resets all accumulated data (except |violation_errors_|) as if the
-  // service was just created. Called periodically so we don't consume an
-  // unbounded amount of memory while tracking quota.  Yes, this could mean an
-  // extension gets away with murder if it is timed right, but the extensions
-  // we are trying to limit are ones that consistently violate, so we'll
-  // converge to the correct set.
+  // Purge resets all accumulated data as if the service was just created.
+  // Called periodically so we don't consume an unbounded amount of memory
+  // while tracking quota.
   void Purge();
   void PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map);
   base::RepeatingTimer<QuotaService> purge_timer_;
@@ -80,12 +77,6 @@ class QuotaService : public base::NonThreadSafe {
   // track of which functions it has invoked and the heuristics for each one.
   // Each heuristic will be evaluated and ANDed together to get a final answer.
   std::map<ExtensionId, FunctionHeuristicsMap> function_heuristics_;
-
-  // For now, as soon as an extension violates quota, we don't allow it to
-  // make any more requests to quota limited functions.  This provides a quick
-  // lookup for these extensions that is only stored in memory.
-  typedef std::map<std::string, std::string> ViolationErrorMap;
-  ViolationErrorMap violation_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaService);
 };
