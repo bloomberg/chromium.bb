@@ -76,8 +76,6 @@
         'cocoa/scroll_view_with_no_scrollbars.mm',
         'folder_image.cc',
         'folder_image.h',
-        'folder_image_source.cc',
-        'folder_image_source.h',
         'pagination_controller.cc',
         'pagination_controller.h',
         'pagination_model.cc',

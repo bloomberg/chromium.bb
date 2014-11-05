@@ -49,6 +49,12 @@ class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
   // Returns the icon of one of the top items with |item_index|.
   const gfx::ImageSkia& GetTopIcon(size_t item_index);
 
+  // Calculates the top item icons' bounds inside |folder_icon_bounds|.
+  // Returns the bounds of top item icons in sequence of top left, top right,
+  // bottom left, bottom right.
+  static std::vector<gfx::Rect> GetTopIconsBounds(
+      const gfx::Rect& folder_icon_bounds);
+
   // Returns the target icon bounds for |item| to fly back to its parent folder
   // icon in animation UI. If |item| is one of the top item icon, this will
   // match its corresponding top item icon in the folder icon. Otherwise,
