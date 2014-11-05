@@ -38,9 +38,6 @@ void VEAToWebRTCCodecs(
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
           webrtc::kVideoCodecH264, "H264", width, height, fps));
     }
-    // TODO(hshi): remove the generic codec type after CASTv1 deprecation.
-    codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-        webrtc::kVideoCodecGeneric, "CAST1", width, height, fps));
   }
 }
 

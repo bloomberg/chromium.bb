@@ -46,8 +46,6 @@ media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
           return media::H264PROFILE_MAIN;
       }
     }
-    case webrtc::kVideoCodecGeneric:
-      return media::H264PROFILE_MAIN;
     default:
       NOTREACHED() << "Unrecognized video codec type";
       return media::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -714,9 +712,7 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
   memset(&header, 0, sizeof(header));
   switch (video_codec_type_) {
     case webrtc::kVideoCodecVP8:
-    case webrtc::kVideoCodecGeneric:
       // Generate a header describing a single fragment.
-      // Note that webrtc treats the generic-type payload as an opaque buffer.
       header.VerifyAndAllocateFragmentationHeader(1);
       header.fragmentationOffset[0] = 0;
       header.fragmentationLength[0] = image->_length;
