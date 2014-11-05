@@ -5717,13 +5717,17 @@
     # the default on the current development version of AOSP but we force it
     # here in case we need to compile against an older release version. We also
     # explicitly set it to false for target binaries to avoid causing problems
-    # for the work to enable clang by default in AOSP.
+    # for the work to enable clang by default in AOSP. We also force the use of
+    # libstdc++ on host as peculiarities of the android gyp backend mean that
+    # using libc++ doesn't work, and Chromium doesn't yet require a more modern
+    # C++ library.
     ['android_webview_build==1', {
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="host"', {
             'aosp_build_settings': {
               'LOCAL_CLANG': 'true',
+              'LOCAL_CXX_STL': 'libstdc++',
             },
           }, {  # else: _toolset != "host"
             'aosp_build_settings': {
