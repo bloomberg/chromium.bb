@@ -27,33 +27,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "content/renderer/input/input_scroll_elasticity.h"
+#include "content/renderer/input/input_scroll_elasticity_controller.h"
+
+#include <math.h>
 
 namespace content {
 
 namespace {
 
-NSTimeInterval SystemUptime()
+// TODO(ccameron): This is advertised as system uptime, but it used to compute
+// deltas against the event timestamps, which are in seconds since epoch. Find
+// out which is right.
+double SystemUptime()
 {
-    if ([[NSProcessInfo processInfo] respondsToSelector:@selector(systemUptime)])
-        return [[NSProcessInfo processInfo] systemUptime];
-
-    // Get how long system has been up. Found by looking getting "boottime" from the kernel.
-    static struct timeval boottime = {0, 0};
-    if (!boottime.tv_sec) {
-        int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-        size_t size = sizeof(boottime);
-        if (-1 == sysctl(mib, 2, &boottime, &size, 0, 0))
-            boottime.tv_sec = 0;
-    }
-    struct timeval now;
-    if (boottime.tv_sec && -1 != gettimeofday(&now, 0)) {
-        struct timeval uptime;
-        timersub(&now, &boottime, &uptime);
-        NSTimeInterval result = uptime.tv_sec + (uptime.tv_usec / 1E+6);
-        return result;
-    }
-    return 0;
+    return base::Time::Now().ToDoubleT();
 }
 
 const float kScrollVelocityZeroingTimeout = 0.10f;
@@ -88,7 +75,8 @@ float ScrollWheelMultiplier()
 {
     static float multiplier = -1;
     if (multiplier < 0) {
-        multiplier = [[NSUserDefaults standardUserDefaults] floatForKey:@"NSScrollWheelMultiplier"];
+        // TODO(ccameron): Find a place fo this in an Objective C file, or find an equivalent C call.
+        // multiplier = [[NSUserDefaults standardUserDefaults] floatForKey:@"NSScrollWheelMultiplier"];
         if (multiplier <= 0)
             multiplier = 1;
     }
@@ -104,28 +92,27 @@ ScrollElasticityController::ScrollElasticityController(ScrollElasticityControlle
     , momentum_scroll_in_progress_(false)
     , ignore_momentum_scrolls_(false)
     , last_momentum_scroll_timestamp_(0)
-    , start_time_(0)
     , snap_rubberband_timer_is_active_(false)
 {
 }
 
-bool ScrollElasticityController::HandleWheelEvent(const PlatformWheelEvent& wheel_event)
+bool ScrollElasticityController::HandleWheelEvent(const blink::WebMouseWheelEvent& wheel_event)
 {
-    if (wheel_event.phase() == PlatformWheelEventPhaseMayBegin)
+    if (wheel_event.phase == blink::WebMouseWheelEvent::PhaseMayBegin)
         return false;
 
-    if (wheel_event.phase() == PlatformWheelEventPhaseBegan) {
+    if (wheel_event.phase == blink::WebMouseWheelEvent::PhaseBegan) {
         in_scroll_gesture_ = true;
         has_scrolled_ = false;
         momentum_scroll_in_progress_ = false;
         ignore_momentum_scrolls_ = false;
         last_momentum_scroll_timestamp_ = 0;
-        momentum_velocity_ = FloatSize();
+        momentum_velocity_ = gfx::Vector2dF();
 
-        IntSize stretch_amount = client_->StretchAmount();
-        stretch_scroll_force_.setWidth(ReboundDeltaForElasticDelta(stretch_amount.width()));
-        stretch_scroll_force_.setHeight(ReboundDeltaForElasticDelta(stretch_amount.height()));
-        overflow_scroll_delta_ = FloatSize();
+        gfx::Vector2dF stretch_amount = client_->StretchAmount();
+        stretch_scroll_force_.set_x(ReboundDeltaForElasticDelta(stretch_amount.x()));
+        stretch_scroll_force_.set_y(ReboundDeltaForElasticDelta(stretch_amount.y()));
+        overflow_scroll_delta_ = gfx::Vector2dF();
 
         StopSnapRubberbandTimer();
 
@@ -134,24 +121,24 @@ bool ScrollElasticityController::HandleWheelEvent(const PlatformWheelEvent& whee
         // return ShouldHandleEvent(wheel_event);
 
         // This logic is incorrect, since diagonal wheel events are not consumed.
-        if (client_->PinnedInDirection(FloatSize(-wheel_event.deltaX(), 0))) {
-            if (wheel_event.deltaX() > 0 && !wheel_event.canRubberbandLeft())
+        if (client_->PinnedInDirection(gfx::Vector2dF(-wheel_event.deltaX, 0))) {
+            if (wheel_event.deltaX > 0 && !wheel_event.canRubberbandLeft)
                 return false;
-            if (wheel_event.deltaX() < 0 && !wheel_event.canRubberbandRight())
+            if (wheel_event.deltaX < 0 && !wheel_event.canRubberbandRight)
                 return false;
         }
 
         return true;
     }
 
-    if (wheel_event.phase() == PlatformWheelEventPhaseEnded || wheel_event.phase() == PlatformWheelEventPhaseCancelled) {
+    if (wheel_event.phase == blink::WebMouseWheelEvent::PhaseEnded || wheel_event.phase == blink::WebMouseWheelEvent::PhaseCancelled) {
         SnapRubberband();
         return has_scrolled_;
     }
 
-    bool isMomentumScrollEvent = (wheel_event.momentumPhase() != PlatformWheelEventPhaseNone);
+    bool isMomentumScrollEvent = (wheel_event.momentumPhase != blink::WebMouseWheelEvent::PhaseNone);
     if (ignore_momentum_scrolls_ && (isMomentumScrollEvent || snap_rubberband_timer_is_active_)) {
-        if (wheel_event.momentumPhase() == PlatformWheelEventPhaseEnded) {
+        if (wheel_event.momentumPhase == blink::WebMouseWheelEvent::PhaseEnded) {
             ignore_momentum_scrolls_ = false;
             return true;
         }
@@ -161,17 +148,17 @@ bool ScrollElasticityController::HandleWheelEvent(const PlatformWheelEvent& whee
     if (!ShouldHandleEvent(wheel_event))
         return false;
 
-    float delta_x = overflow_scroll_delta_.width() - wheel_event.deltaX();
-    float delta_y = overflow_scroll_delta_.height() - wheel_event.deltaY();
-    float event_coalesced_delta_x = -wheel_event.deltaX();
-    float event_coalesced_delta_y = -wheel_event.deltaY();
+    float delta_x = overflow_scroll_delta_.x() - wheel_event.deltaX;
+    float delta_y = overflow_scroll_delta_.y() - wheel_event.deltaY;
+    float event_coalesced_delta_x = -wheel_event.deltaX;
+    float event_coalesced_delta_y = -wheel_event.deltaY;
 
     // Reset overflow values because we may decide to remove delta at various points and put it into overflow.
-    overflow_scroll_delta_ = FloatSize();
+    overflow_scroll_delta_ = gfx::Vector2dF();
 
-    IntSize stretch_amount = client_->StretchAmount();
-    bool is_vertically_stretched = stretch_amount.height();
-    bool is_horizontally_stretched = stretch_amount.width();
+    gfx::Vector2dF stretch_amount = client_->StretchAmount();
+    bool is_vertically_stretched = stretch_amount.y() != 0.f;
+    bool is_horizontally_stretched = stretch_amount.x() != 0.f;
 
     // Slightly prefer scrolling vertically by applying the = case to delta_y
     if (fabsf(delta_y) >= fabsf(delta_x))
@@ -181,59 +168,59 @@ bool ScrollElasticityController::HandleWheelEvent(const PlatformWheelEvent& whee
 
     bool should_stretch = false;
 
-    PlatformWheelEventPhase momentum_phase = wheel_event.momentumPhase();
+    blink::WebMouseWheelEvent::Phase momentum_phase = wheel_event.momentumPhase;
 
     // If we are starting momentum scrolling then do some setup.
-    if (!momentum_scroll_in_progress_ && (momentum_phase == PlatformWheelEventPhaseBegan || momentum_phase == PlatformWheelEventPhaseChanged)) {
+    if (!momentum_scroll_in_progress_ && (momentum_phase == blink::WebMouseWheelEvent::PhaseBegan || momentum_phase == blink::WebMouseWheelEvent::PhaseChanged)) {
         momentum_scroll_in_progress_ = true;
         // Start the snap rubber band timer if it's not running. This is needed to
         // snap back from the over scroll caused by momentum events.
-        if (!snap_rubberband_timer_is_active_ && start_time_ == 0)
+        if (!snap_rubberband_timer_is_active_ && start_time_ == base::Time())
             SnapRubberband();
     }
 
-    CFTimeInterval time_delta = wheel_event.timestamp() - last_momentum_scroll_timestamp_;
+    double time_delta = wheel_event.timeStampSeconds - last_momentum_scroll_timestamp_;
     if (in_scroll_gesture_ || momentum_scroll_in_progress_) {
-        if (last_momentum_scroll_timestamp_ && time_delta > 0 && timeDelta < kScrollVelocityZeroingTimeout) {
-            momentum_velocity_.setWidth(event_coalesced_delta_x / (float)time_delta);
-            momentum_velocity_.setHeight(event_coalesced_delta_y / (float)time_delta);
-            last_momentum_scroll_timestamp_ = wheel_event.timestamp();
+        if (last_momentum_scroll_timestamp_ && time_delta > 0 && time_delta < kScrollVelocityZeroingTimeout) {
+            momentum_velocity_.set_x(event_coalesced_delta_x / (float)time_delta);
+            momentum_velocity_.set_y(event_coalesced_delta_y / (float)time_delta);
+            last_momentum_scroll_timestamp_ = wheel_event.timeStampSeconds;
         } else {
-            last_momentum_scroll_timestamp_ = wheel_event.timestamp();
-            momentum_velocity_ = FloatSize();
+            last_momentum_scroll_timestamp_ = wheel_event.timeStampSeconds;
+            momentum_velocity_ = gfx::Vector2dF();
         }
 
         if (is_vertically_stretched) {
-            if (!is_horizontally_stretched && client_->PinnedInDirection(FloatSize(delta_x, 0))) {
+            if (!is_horizontally_stretched && client_->PinnedInDirection(gfx::Vector2dF(delta_x, 0))) {
                 // Stretching only in the vertical.
                 if (delta_y != 0 && (fabsf(delta_x / delta_y) < kRubberbandDirectionLockStretchRatio))
                     delta_x = 0;
                 else if (fabsf(delta_x) < kRubberbandMinimumRequiredDeltaBeforeStretch) {
-                    overflow_scroll_delta_.setWidth(overflow_scroll_delta_.width() + delta_x);
+                    overflow_scroll_delta_.set_x(overflow_scroll_delta_.x() + delta_x);
                     delta_x = 0;
                 } else
-                    overflow_scroll_delta_.setWidth(overflow_scroll_delta_.width() + delta_x);
+                    overflow_scroll_delta_.set_x(overflow_scroll_delta_.x() + delta_x);
             }
         } else if (is_horizontally_stretched) {
             // Stretching only in the horizontal.
-            if (client_->PinnedInDirection(FloatSize(0, delta_y))) {
+            if (client_->PinnedInDirection(gfx::Vector2dF(0, delta_y))) {
                 if (delta_x != 0 && (fabsf(delta_y / delta_x) < kRubberbandDirectionLockStretchRatio))
                     delta_y = 0;
                 else if (fabsf(delta_y) < kRubberbandMinimumRequiredDeltaBeforeStretch) {
-                    overflow_scroll_delta_.setHeight(overflow_scroll_delta_.height() + delta_y);
+                    overflow_scroll_delta_.set_y(overflow_scroll_delta_.y() + delta_y);
                     delta_y = 0;
                 } else
-                    overflow_scroll_delta_.setHeight(overflow_scroll_delta_.height() + delta_y);
+                    overflow_scroll_delta_.set_y(overflow_scroll_delta_.y() + delta_y);
             }
         } else {
             // Not stretching at all yet.
-            if (client_->PinnedInDirection(FloatSize(delta_x, delta_y))) {
+            if (client_->PinnedInDirection(gfx::Vector2dF(delta_x, delta_y))) {
                 if (fabsf(delta_y) >= fabsf(delta_x)) {
                     if (fabsf(delta_x) < kRubberbandMinimumRequiredDeltaBeforeStretch) {
-                        overflow_scroll_delta_.setWidth(overflow_scroll_delta_.width() + delta_x);
+                        overflow_scroll_delta_.set_x(overflow_scroll_delta_.x() + delta_x);
                         delta_x = 0;
                     } else
-                        overflow_scroll_delta_.setWidth(overflow_scroll_delta_.width() + delta_x);
+                        overflow_scroll_delta_.set_x(overflow_scroll_delta_.x() + delta_x);
                 }
                 should_stretch = true;
             }
@@ -245,53 +232,53 @@ bool ScrollElasticityController::HandleWheelEvent(const PlatformWheelEvent& whee
         if (!(should_stretch || is_vertically_stretched || is_horizontally_stretched)) {
             if (delta_y != 0) {
                 delta_y *= ScrollWheelMultiplier();
-                client_->immediateScrollBy(FloatSize(0, delta_y));
+                client_->ImmediateScrollBy(gfx::Vector2dF(0, delta_y));
             }
             if (delta_x != 0) {
                 delta_x *= ScrollWheelMultiplier();
-                client_->immediateScrollBy(FloatSize(delta_x, 0));
+                client_->ImmediateScrollBy(gfx::Vector2dF(delta_x, 0));
             }
         } else {
             if (!client_->AllowsHorizontalStretching()) {
                 delta_x = 0;
                 event_coalesced_delta_x = 0;
-            } else if ((delta_x != 0) && !is_horizontally_stretched && !client_->PinnedInDirection(FloatSize(delta_x, 0))) {
+            } else if ((delta_x != 0) && !is_horizontally_stretched && !client_->PinnedInDirection(gfx::Vector2dF(delta_x, 0))) {
                 delta_x *= ScrollWheelMultiplier();
 
-                client_->immediateScrollByWithoutContentEdgeConstraints(FloatSize(delta_x, 0));
+                client_->ImmediateScrollByWithoutContentEdgeConstraints(gfx::Vector2dF(delta_x, 0));
                 delta_x = 0;
             }
 
             if (!client_->AllowsVerticalStretching()) {
                 delta_y = 0;
                 event_coalesced_delta_y = 0;
-            } else if ((delta_y != 0) && !is_vertically_stretched && !client_->PinnedInDirection(FloatSize(0, delta_y))) {
+            } else if ((delta_y != 0) && !is_vertically_stretched && !client_->PinnedInDirection(gfx::Vector2dF(0, delta_y))) {
                 delta_y *= ScrollWheelMultiplier();
 
-                client_->immediateScrollByWithoutContentEdgeConstraints(FloatSize(0, delta_y));
+                client_->ImmediateScrollByWithoutContentEdgeConstraints(gfx::Vector2dF(0, delta_y));
                 delta_y = 0;
             }
 
-            IntSize stretch_amount = client_->StretchAmount();
+            gfx::Vector2dF stretch_amount = client_->StretchAmount();
 
             if (momentum_scroll_in_progress_) {
-                if ((client_->PinnedInDirection(FloatSize(event_coalesced_delta_x, event_coalesced_delta_y)) || (fabsf(event_coalesced_delta_x) + fabsf(event_coalesced_delta_y) <= 0)) && last_momentum_scroll_timestamp_) {
+                if ((client_->PinnedInDirection(gfx::Vector2dF(event_coalesced_delta_x, event_coalesced_delta_y)) || (fabsf(event_coalesced_delta_x) + fabsf(event_coalesced_delta_y) <= 0)) && last_momentum_scroll_timestamp_) {
                     ignore_momentum_scrolls_ = true;
                     momentum_scroll_in_progress_ = false;
                     SnapRubberband();
                 }
             }
 
-            stretch_scroll_force_.setWidth(stretch_scroll_force_.width() + delta_x);
-            stretch_scroll_force_.setHeight(stretch_scroll_force_.height() + delta_y);
+            stretch_scroll_force_.set_x(stretch_scroll_force_.x() + delta_x);
+            stretch_scroll_force_.set_y(stretch_scroll_force_.y() + delta_y);
 
-            FloatSize damped_delta(ceilf(ElasticDeltaForReboundDelta(stretch_scroll_force_.width())), ceilf(ElasticDeltaForReboundDelta(stretch_scroll_force_.height())));
+            gfx::Vector2dF damped_delta(ceilf(ElasticDeltaForReboundDelta(stretch_scroll_force_.x())), ceilf(ElasticDeltaForReboundDelta(stretch_scroll_force_.y())));
 
-            client_->immediateScrollByWithoutContentEdgeConstraints(damped_delta - stretch_amount);
+            client_->ImmediateScrollByWithoutContentEdgeConstraints(damped_delta - stretch_amount);
         }
     }
 
-    if (momentum_scroll_in_progress_ && momentum_phase == PlatformWheelEventPhaseEnded) {
+    if (momentum_scroll_in_progress_ && momentum_phase == blink::WebMouseWheelEvent::PhaseEnded) {
         momentum_scroll_in_progress_ = false;
         ignore_momentum_scrolls_ = false;
         last_momentum_scroll_timestamp_ = 0;
@@ -321,17 +308,17 @@ float RoundToDevicePixelTowardZero(float num)
 void ScrollElasticityController::SnapRubberbandTimerFired()
 {
     if (!momentum_scroll_in_progress_ || ignore_momentum_scrolls_) {
-        CFTimeInterval time_delta = [NSDate timeIntervalSinceReferenceDate] - start_time_;
+        float time_delta = (base::Time::Now() - start_time_).InSecondsF();
 
-        if (start_stretch_ == FloatSize()) {
+        if (start_stretch_ == gfx::Vector2dF()) {
             start_stretch_ = client_->StretchAmount();
-            if (start_stretch_ == FloatSize()) {
+            if (start_stretch_ == gfx::Vector2dF()) {
                 StopSnapRubberbandTimer();
 
-                stretch_scroll_force_ = FloatSize();
-                start_time_ = 0;
-                orig_origin_ = FloatPoint();
-                orig_velocity_ = FloatSize();
+                stretch_scroll_force_ = gfx::Vector2dF();
+                start_time_ = base::Time();
+                orig_origin_ = gfx::Vector2dF();
+                orig_velocity_ = gfx::Vector2dF();
                 return;
             }
 
@@ -339,41 +326,41 @@ void ScrollElasticityController::SnapRubberbandTimerFired()
             orig_velocity_ = momentum_velocity_;
 
             // Just like normal scrolling, prefer vertical rubberbanding
-            if (fabsf(orig_velocity_.height()) >= fabsf(orig_velocity_.width()))
-                orig_velocity_.setWidth(0);
+            if (fabsf(orig_velocity_.y()) >= fabsf(orig_velocity_.x()))
+                orig_velocity_.set_x(0);
 
             // Don't rubber-band horizontally if it's not possible to scroll horizontally
             if (!client_->CanScrollHorizontally())
-                orig_velocity_.setWidth(0);
+                orig_velocity_.set_x(0);
 
             // Don't rubber-band vertically if it's not possible to scroll vertically
             if (!client_->CanScrollVertically())
-                orig_velocity_.setHeight(0);
+                orig_velocity_.set_y(0);
         }
 
-        FloatPoint delta(RoundToDevicePixelTowardZero(ElasticDeltaForTimeDelta(start_stretch_.width(), -orig_velocity_.width(), (float)time_delta)),
-                         RoundToDevicePixelTowardZero(ElasticDeltaForTimeDelta(start_stretch_.height(), -orig_velocity_.height(), (float)time_delta)));
+        gfx::Vector2dF delta(RoundToDevicePixelTowardZero(ElasticDeltaForTimeDelta(start_stretch_.x(), -orig_velocity_.x(), time_delta)),
+                         RoundToDevicePixelTowardZero(ElasticDeltaForTimeDelta(start_stretch_.y(), -orig_velocity_.y(), time_delta)));
 
         if (fabs(delta.x()) >= 1 || fabs(delta.y()) >= 1) {
-            client_->immediateScrollByWithoutContentEdgeConstraints(FloatSize(delta.x(), delta.y()) - client_->StretchAmount());
+            client_->ImmediateScrollByWithoutContentEdgeConstraints(gfx::Vector2dF(delta.x(), delta.y()) - client_->StretchAmount());
 
-            FloatSize new_stretch = client_->StretchAmount();
+            gfx::Vector2dF new_stretch = client_->StretchAmount();
 
-            stretch_scroll_force_.setWidth(ReboundDeltaForElasticDelta(new_stretch.width()));
-            stretch_scroll_force_.setHeight(ReboundDeltaForElasticDelta(new_stretch.height()));
+            stretch_scroll_force_.set_x(ReboundDeltaForElasticDelta(new_stretch.x()));
+            stretch_scroll_force_.set_y(ReboundDeltaForElasticDelta(new_stretch.y()));
         } else {
-            client_->adjustScrollPositionToBoundsIfNecessary();
+            client_->AdjustScrollPositionToBoundsIfNecessary();
 
             StopSnapRubberbandTimer();
-            stretch_scroll_force_ = FloatSize();
-            start_time_ = 0;
-            start_stretch_ = FloatSize();
-            orig_origin_ = FloatPoint();
-            orig_velocity_ = FloatSize();
+            stretch_scroll_force_ = gfx::Vector2dF();
+            start_time_ = base::Time();
+            start_stretch_ = gfx::Vector2dF();
+            orig_origin_ = gfx::Vector2dF();
+            orig_velocity_ = gfx::Vector2dF();
         }
     } else {
-        start_time_ = [NSDate timeIntervalSinceReferenceDate];
-        start_stretch_ = FloatSize();
+        start_time_ = base::Time::Now();
+        start_stretch_ = gfx::Vector2dF();
     }
 }
 
@@ -382,7 +369,7 @@ bool ScrollElasticityController::IsRubberbandInProgress() const
     if (!in_scroll_gesture_ && !momentum_scroll_in_progress_ && !snap_rubberband_timer_is_active_)
         return false;
 
-    return !client_->StretchAmount().isZero();
+    return !client_->StretchAmount().IsZero();
 }
 
 void ScrollElasticityController::StopSnapRubberbandTimer()
@@ -393,51 +380,51 @@ void ScrollElasticityController::StopSnapRubberbandTimer()
 
 void ScrollElasticityController::SnapRubberband()
 {
-    CFTimeInterval time_delta = SystemUptime() - last_momentum_scroll_timestamp_;
+    double time_delta = SystemUptime() - last_momentum_scroll_timestamp_;
     if (last_momentum_scroll_timestamp_ && time_delta >= kScrollVelocityZeroingTimeout)
-        momentum_velocity_ = FloatSize();
+        momentum_velocity_ = gfx::Vector2dF();
 
     in_scroll_gesture_ = false;
 
     if (snap_rubberband_timer_is_active_)
         return;
 
-    start_stretch_ = FloatSize();
-    orig_origin_ = FloatPoint();
-    orig_velocity_ = FloatSize();
+    start_stretch_ = gfx::Vector2dF();
+    orig_origin_ = gfx::Vector2dF();
+    orig_velocity_ = gfx::Vector2dF();
 
     // If there's no momentum scroll or stretch amount, no need to start the timer.
-    if (!momentum_scroll_in_progress_ && client_->StretchAmount() == FloatSize()) {
-        start_time_ = 0;
-        stretch_scroll_force_ = FloatSize();
+    if (!momentum_scroll_in_progress_ && client_->StretchAmount() == gfx::Vector2dF()) {
+        start_time_ = base::Time();
+        stretch_scroll_force_ = gfx::Vector2dF();
         return;
     }
 
-    start_time_ = [NSDate timeIntervalSinceReferenceDate];
+    start_time_ = base::Time::Now();
     client_->StartSnapRubberbandTimer();
     snap_rubberband_timer_is_active_ = true;
 }
 
-bool ScrollElasticityController::ShouldHandleEvent(const PlatformWheelEvent& wheel_event)
+bool ScrollElasticityController::ShouldHandleEvent(const blink::WebMouseWheelEvent& wheel_event)
 {
     // Once any scrolling has happened, all future events should be handled.
     if (has_scrolled_)
         return true;
 
     // The event can't cause scrolling to start if its delta is 0.
-    if (wheel_event.deltaX() == 0 && wheel_event.deltaY() == 0)
+    if (wheel_event.deltaX == 0 && wheel_event.deltaY == 0)
         return false;
 
     // If the client isn't pinned, then the event is guaranteed to cause scrolling.
-    if (!client_->PinnedInDirection(FloatSize(-wheel_event.deltaX(), 0)))
+    if (!client_->PinnedInDirection(gfx::Vector2dF(-wheel_event.deltaX, 0)))
         return true;
 
     // If the event is pinned, then the client can't scroll, but it might rubber band.
     // Check if the event allows rubber banding.
-    if (wheel_event.deltaY() == 0) {
-        if (wheel_event.deltaX() > 0 && !wheel_event.canRubberbandLeft())
+    if (wheel_event.deltaY == 0) {
+        if (wheel_event.deltaX > 0 && !wheel_event.canRubberbandLeft)
             return false;
-        if (wheel_event.deltaX() < 0 && !wheel_event.canRubberbandRight())
+        if (wheel_event.deltaX < 0 && !wheel_event.canRubberbandRight)
             return false;
     }
 

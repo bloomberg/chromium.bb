@@ -5,6 +5,11 @@
 #ifndef CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
 #define CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
 
+#include "base/macros.h"
+#include "base/time/time.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/geometry/vector2d_f.h"
+
 /*
  * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
@@ -41,16 +46,16 @@ public:
     virtual bool AllowsVerticalStretching() = 0;
     // The amount that the view is stretched past the normal allowable bounds.
     // The "overhang" amount.
-    virtual IntSize StretchAmount() = 0;
-    virtual bool PinnedInDirection(const FloatSize&) = 0;
+    virtual gfx::Vector2dF StretchAmount() = 0;
+    virtual bool PinnedInDirection(const gfx::Vector2dF& direction) = 0;
     virtual bool CanScrollHorizontally() = 0;
     virtual bool CanScrollVertically() = 0;
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual blink::IntPoint AbsoluteScrollPosition() = 0;
+    virtual gfx::Vector2dF AbsoluteScrollPosition() = 0;
 
-    virtual void ImmediateScrollBy(const FloatSize&) = 0;
-    virtual void ImmediateScrollByWithoutContentEdgeConstraints(const FloatSize&) = 0;
+    virtual void ImmediateScrollBy(const gfx::Vector2dF& scroll) = 0;
+    virtual void ImmediateScrollByWithoutContentEdgeConstraints(const gfx::Vector2dF& scroll) = 0;
     virtual void StartSnapRubberbandTimer() = 0;
     virtual void StopSnapRubberbandTimer() = 0;
 
@@ -76,7 +81,7 @@ public:
     // Cocoa does not correctly pass all the gestureBegin/End events. The state
     // of this class is guaranteed to become eventually consistent, once the
     // user stops using multiple input devices.
-    bool HandleWheelEvent(const PlatformWheelEvent&);
+    bool HandleWheelEvent(const blink::WebMouseWheelEvent& wheel_event);
     void SnapRubberbandTimerFired();
 
     bool IsRubberbandInProgress() const;
@@ -97,7 +102,7 @@ private:
     // + The client's view is pinned in the horizontal direction of the event.
     // + The wheel event disallows rubber banding in the horizontal direction
     // of the event.
-    bool shouldHandleEvent(const PlatformWheelEvent&);
+    bool ShouldHandleEvent(const blink::WebMouseWheelEvent& wheel_event);
 
     ScrollElasticityControllerClient* client_;
 
@@ -113,18 +118,21 @@ private:
     bool momentum_scroll_in_progress_;
     bool ignore_momentum_scrolls_;
 
-    CFTimeInterval last_momentum_scroll_timestamp_;
-    FloatSize overflow_scroll_delta_;
-    FloatSize stretch_scroll_force_;
-    FloatSize momentum_velocity_;
+    // Used with blink::WebInputEvent::timeStampSeconds, in seconds since epoch.
+    double last_momentum_scroll_timestamp_;
+    gfx::Vector2dF overflow_scroll_delta_;
+    gfx::Vector2dF stretch_scroll_force_;
+    gfx::Vector2dF momentum_velocity_;
 
     // Rubber band state.
-    CFTimeInterval start_time_;
-    FloatSize start_stretch_;
-    FloatPoint orig_origin_;
-    FloatSize orig_velocity_;
+    base::Time start_time_;
+    gfx::Vector2dF start_stretch_;
+    gfx::Vector2dF orig_origin_;
+    gfx::Vector2dF orig_velocity_;
 
     bool snap_rubberband_timer_is_active_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScrollElasticityController);
 };
 
 }  // namespace content

@@ -199,6 +199,8 @@
       'renderer/input/input_handler_proxy.h',
       'renderer/input/input_handler_wrapper.cc',
       'renderer/input/input_handler_wrapper.h',
+      'renderer/input/input_scroll_elasticity_controller.cc',
+      'renderer/input/input_scroll_elasticity_controller.h',
       'renderer/internal_document_state_data.cc',
       'renderer/internal_document_state_data.h',
       'renderer/java/gin_java_bridge_dispatcher.cc',
