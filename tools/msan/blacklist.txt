@@ -10,6 +10,9 @@ fun:ff_get_cpu_flags_x86
 # Uninit in zlib. http://crbug.com/116277
 fun:*MOZ_Z_deflate*
 
+# Uninit in zlib with SIMD intrinsic http://crbug.com/426868
+fun:crc_fold512_to_32
+
 # Uninit in OSMesa. http://crbug.com/347967
 fun:unpack_RGBA8888
 fun:unpack_RGB888
