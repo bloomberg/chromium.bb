@@ -53,10 +53,6 @@ void TestHooks::CreateResourceAndRasterWorkerPool(
       raster_worker_pool, resource_pool, staging_resource_pool);
 }
 
-base::TimeDelta TestHooks::LowFrequencyAnimationInterval() const {
-  return base::TimeDelta::FromMilliseconds(16);
-}
-
 // Adapts ThreadProxy for test. Injects test hooks for testing.
 class ThreadProxyForTest : public ThreadProxy {
  public:
@@ -267,10 +263,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       }
     }
     test_hooks_->UpdateAnimationState(this, has_unfinished_animation);
-  }
-
-  base::TimeDelta LowFrequencyAnimationInterval() const override {
-    return test_hooks_->LowFrequencyAnimationInterval();
   }
 
  private:
@@ -675,6 +667,7 @@ void LayerTreeTest::RunTest(bool threaded,
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
   settings_.refresh_rate = 200.0;
+  settings_.background_animation_rate = 200.0;
   settings_.impl_side_painting = impl_side_painting;
   InitializeSettings(&settings_);
 

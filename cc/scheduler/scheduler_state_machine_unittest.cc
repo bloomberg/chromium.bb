@@ -703,6 +703,7 @@ TEST(SchedulerStateMachineTest,
   state.SetVisible(true);
   state.SetCanDraw(false);
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -711,6 +712,7 @@ TEST(SchedulerStateMachineTest,
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
   state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
