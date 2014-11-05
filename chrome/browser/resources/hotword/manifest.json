@@ -28,6 +28,10 @@
 
   "permissions": [
     "*://*.google.com/*",
+    "*://*.google.ru/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.fr/*",
+    "*://*.google.de/*",
     "chrome://newtab/",
     "chrome://resources/",
     "audioCapture",
@@ -36,13 +40,6 @@
     "metricsPrivate",
     "tabs"
   ],
-
-  "externally_connectable": {
-    "matches": [
-      "*://*.google.com/*",
-      "chrome://newtab/"
-    ]
-  },
 
   "import": [
     {
