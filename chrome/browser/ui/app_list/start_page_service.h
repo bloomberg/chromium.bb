@@ -5,14 +5,17 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_START_PAGE_SERVICE_H_
 #define CHROME_BROWSER_UI_APP_LIST_START_PAGE_SERVICE_H_
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/app_list/speech_recognizer_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -26,11 +29,13 @@ class Profile;
 namespace app_list {
 
 class RecommendedApps;
+class SpeechRecognizer;
 class StartPageObserver;
 
 // StartPageService collects data to be displayed in app list's start page
 // and hosts the start page contents.
-class StartPageService : public KeyedService {
+class StartPageService : public KeyedService,
+                         public SpeechRecognizerDelegate {
  public:
   typedef std::vector<scoped_refptr<const extensions::Extension> >
       ExtensionList;
@@ -58,9 +63,18 @@ class StartPageService : public KeyedService {
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
   Profile* profile() { return profile_; }
   SpeechRecognitionState state() { return state_; }
-  void OnSpeechResult(const base::string16& query, bool is_final);
-  void OnSpeechSoundLevelChanged(int16 level);
-  void OnSpeechRecognitionStateChanged(SpeechRecognitionState new_state);
+
+  // Overridden from app_list::SpeechRecognizerDelegate:
+  void OnSpeechResult(const base::string16& query, bool is_final) override;
+  void OnSpeechSoundLevelChanged(int16_t level) override;
+  void OnSpeechRecognitionStateChanged(
+      SpeechRecognitionState new_state) override;
+  content::WebContents* GetSpeechContents() override;
+
+ protected:
+  // Protected for testing.
+  explicit StartPageService(Profile* profile);
+  ~StartPageService() override;
 
  private:
   friend class StartPageServiceFactory;
@@ -73,9 +87,6 @@ class StartPageService : public KeyedService {
   // The WebContentsDelegate implementation for the start page. This allows
   // getUserMedia() request from the web contents.
   class StartPageWebContentsDelegate;
-
-  explicit StartPageService(Profile* profile);
-  ~StartPageService() override;
 
   void LoadContents();
   void UnloadContents();
@@ -95,6 +106,10 @@ class StartPageService : public KeyedService {
 
   bool webui_finished_loading_;
   std::vector<base::Closure> pending_webui_callbacks_;
+
+  scoped_ptr<SpeechRecognizer> speech_recognizer_;
+
+  base::WeakPtrFactory<StartPageService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageService);
 };

@@ -11,12 +11,14 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
+#include "chrome/browser/ui/app_list/speech_recognizer.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -112,7 +114,8 @@ StartPageService::StartPageService(Profile* profile)
       state_(app_list::SPEECH_RECOGNITION_OFF),
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false),
-      webui_finished_loading_(false) {
+      webui_finished_loading_(false),
+      weak_factory_(this) {
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
   // hotword extension.
@@ -136,14 +139,14 @@ void StartPageService::RemoveObserver(StartPageObserver* observer) {
 void StartPageService::AppListShown() {
   if (!contents_) {
     LoadContents();
-  } else if (contents_->GetWebUI()) {
-    // If experimental hotwording is enabled, don't enable hotwording in the
-    // start page, since the hotword extension is taking care of this.
-    bool hotword_enabled = HotwordEnabled() &&
-        !HotwordService::IsExperimentalHotwordingEnabled();
+  } else if (contents_->GetWebUI() &&
+             !HotwordService::IsExperimentalHotwordingEnabled()) {
+    // If experimental hotwording is enabled, don't call onAppListShown.
+    // onAppListShown() initializes the web speech API, which is not used with
+    // experimental hotwording.
     contents_->GetWebUI()->CallJavascriptFunction(
         "appList.startPage.onAppListShown",
-        base::FundamentalValue(hotword_enabled));
+        base::FundamentalValue(HotwordEnabled()));
   }
 }
 
@@ -154,6 +157,11 @@ void StartPageService::AppListHidden() {
   }
   if (!app_list::switches::IsExperimentalAppListEnabled())
     UnloadContents();
+
+  if (HotwordService::IsExperimentalHotwordingEnabled() &&
+      speech_recognizer_) {
+    speech_recognizer_->Stop();
+  }
 }
 
 void StartPageService::ToggleSpeechRecognition() {
@@ -162,14 +170,35 @@ void StartPageService::ToggleSpeechRecognition() {
   if (!contents_->GetWebUI())
     return;
 
-  if (webui_finished_loading_) {
-    contents_->GetWebUI()->CallJavascriptFunction(
-        "appList.startPage.toggleSpeechRecognition");
-  } else {
+  if (!webui_finished_loading_) {
     pending_webui_callbacks_.push_back(
         base::Bind(&StartPageService::ToggleSpeechRecognition,
                    base::Unretained(this)));
+    return;
   }
+
+  if (HotwordService::IsExperimentalHotwordingEnabled()) {
+    if (!speech_recognizer_) {
+      std::string profile_locale;
+#if defined(OS_CHROMEOS)
+      profile_locale = profile_->GetPrefs()->GetString(
+          prefs::kApplicationLocale);
+#endif
+      if (profile_locale.empty())
+        profile_locale = g_browser_process->GetApplicationLocale();
+
+      speech_recognizer_.reset(
+          new SpeechRecognizer(weak_factory_.GetWeakPtr(),
+                               profile_->GetRequestContext(),
+                               profile_locale));
+    }
+
+    speech_recognizer_->Start();
+    return;
+  }
+
+  contents_->GetWebUI()->CallJavascriptFunction(
+      "appList.startPage.toggleSpeechRecognition");
 }
 
 bool StartPageService::HotwordEnabled() {
@@ -212,7 +241,7 @@ void StartPageService::OnSpeechResult(
                     OnSpeechResult(query, is_final));
 }
 
-void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
+void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechSoundLevelChanged(level));
@@ -220,6 +249,13 @@ void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
+
+  if (HotwordService::IsExperimentalHotwordingEnabled() &&
+      new_state == SPEECH_RECOGNITION_READY &&
+      speech_recognizer_) {
+    speech_recognizer_->Stop();
+  }
+
   if (!InSpeechRecognition(state_) && InSpeechRecognition(new_state)) {
     if (!speech_button_toggled_manually_ &&
         state_ == SPEECH_RECOGNITION_HOTWORD_LISTENING) {
@@ -237,6 +273,10 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechRecognitionStateChanged(new_state));
+}
+
+content::WebContents* StartPageService::GetSpeechContents() {
+  return GetSpeechRecognitionContents();
 }
 
 void StartPageService::Shutdown() {
