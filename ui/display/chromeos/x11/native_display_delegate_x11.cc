@@ -150,6 +150,16 @@ void NativeDisplayDelegateX11::UngrabServer() {
   XFlush(display_);
 }
 
+bool NativeDisplayDelegateX11::TakeDisplayControl() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool NativeDisplayDelegateX11::RelinquishDisplayControl() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void NativeDisplayDelegateX11::SyncWithServer() { XSync(display_, 0); }
 
 void NativeDisplayDelegateX11::SetBackgroundColor(uint32_t color_argb) {

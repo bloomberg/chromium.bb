@@ -167,7 +167,9 @@ DisplayConfigurator::DisplayConfigurator()
       display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       requested_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
-      next_display_protection_client_id_(1) {}
+      next_display_protection_client_id_(1),
+      display_externally_controlled_(false) {
+}
 
 DisplayConfigurator::~DisplayConfigurator() {
   if (native_display_delegate_)
@@ -190,7 +192,7 @@ void DisplayConfigurator::SetInitialDisplayPower(
 
 void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   is_panel_fitting_enabled_ = is_panel_fitting_enabled;
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return;
 
   // If the delegate is already initialized don't update it (For example, tests
@@ -202,16 +204,35 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
 }
 
 void DisplayConfigurator::TakeControl() {
-  NOTIMPLEMENTED();
+  if (cached_displays_.empty())
+    return;
+
+  if (!display_externally_controlled_)
+    return;
+
+  if (!native_display_delegate_->TakeDisplayControl())
+    return;
+
+  display_externally_controlled_ = false;
+
+  for (DisplayStateList::const_iterator it = cached_displays_.begin();
+       it != cached_displays_.end(); ++it) {
+    native_display_delegate_->Configure(*(it->display), it->selected_mode,
+                                        it->display->origin());
+  }
 }
 
 void DisplayConfigurator::RelinquishControl() {
-  NOTIMPLEMENTED();
+  if (display_externally_controlled_)
+    return;
+
+  display_externally_controlled_ = true;
+  native_display_delegate_->RelinquishDisplayControl();
 }
 
 void DisplayConfigurator::ForceInitialConfigure(
     uint32_t background_color_argb) {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return;
 
   native_display_delegate_->GrabServer();
@@ -300,7 +321,7 @@ bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
 
 DisplayConfigurator::ContentProtectionClientId
 DisplayConfigurator::RegisterContentProtectionClient() {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return kInvalidClientId;
 
   return next_display_protection_client_id_++;
@@ -330,7 +351,7 @@ bool DisplayConfigurator::QueryContentProtectionStatus(
     int64_t display_id,
     uint32_t* link_mask,
     uint32_t* protection_mask) {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return false;
 
   uint32_t enabled = 0;
@@ -388,7 +409,7 @@ bool DisplayConfigurator::EnableContentProtection(
     ContentProtectionClientId client_id,
     int64_t display_id,
     uint32_t desired_method_mask) {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return false;
 
   ContentProtections protections;
@@ -460,7 +481,7 @@ void DisplayConfigurator::PrepareForExit() {
 bool DisplayConfigurator::SetDisplayPower(
     chromeos::DisplayPowerState power_state,
     int flags) {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return false;
 
   VLOG(1) << "SetDisplayPower: power_state="
@@ -500,7 +521,7 @@ bool DisplayConfigurator::SetDisplayPower(
 }
 
 bool DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return false;
 
   VLOG(1) << "SetDisplayMode: state=" << DisplayStateToString(new_state);
@@ -720,7 +741,7 @@ bool DisplayConfigurator::FindMirrorMode(DisplayState* internal_display,
 }
 
 void DisplayConfigurator::ConfigureDisplays() {
-  if (!configure_display_)
+  if (!configure_display_ || display_externally_controlled_)
     return;
 
   native_display_delegate_->GrabServer();

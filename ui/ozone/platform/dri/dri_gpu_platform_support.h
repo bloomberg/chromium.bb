@@ -64,6 +64,8 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
                                 const DisplayMode_Params& mode,
                                 const gfx::Point& origin);
   void OnDisableNativeDisplay(int64_t id);
+  void OnTakeDisplayControl();
+  void OnRelinquishDisplayControl();
 
   IPC::Sender* sender_;                       // Not owned.
   DriSurfaceFactory* dri_;                    // Not owned.

@@ -358,6 +358,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Display protection requests of each client.
   ProtectionRequests client_protection_requests_;
 
+  // Display controlled by an external entity.
+  bool display_externally_controlled_;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);
 };
 

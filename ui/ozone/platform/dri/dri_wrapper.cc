@@ -301,5 +301,14 @@ void DriWrapper::DestroyDumbBuffer(const SkImageInfo& info,
   DrmDestroyDumbBuffer(fd_, handle);
 }
 
+bool DriWrapper::SetMaster() {
+  DCHECK(fd_ >= 0);
+  return (drmSetMaster(fd_) == 0);
+}
+
+bool DriWrapper::DropMaster() {
+  DCHECK(fd_ >= 0);
+  return (drmDropMaster(fd_) == 0);
+}
 
 }  // namespace ui

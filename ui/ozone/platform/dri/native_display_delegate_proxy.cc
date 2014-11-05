@@ -41,6 +41,16 @@ void NativeDisplayDelegateProxy::GrabServer() {
 void NativeDisplayDelegateProxy::UngrabServer() {
 }
 
+bool NativeDisplayDelegateProxy::TakeDisplayControl() {
+  proxy_->Send(new OzoneGpuMsg_TakeDisplayControl());
+  return true;
+}
+
+bool NativeDisplayDelegateProxy::RelinquishDisplayControl() {
+  proxy_->Send(new OzoneGpuMsg_RelinquishDisplayControl());
+  return true;
+}
+
 void NativeDisplayDelegateProxy::SyncWithServer() {
 }
 

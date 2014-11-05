@@ -93,6 +93,12 @@ IPC_MESSAGE_CONTROL3(OzoneGpuMsg_ConfigureNativeDisplay,
 IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DisableNativeDisplay,
                      int64_t)  // display ID
 
+// Take control of the display
+IPC_MESSAGE_CONTROL0(OzoneGpuMsg_TakeDisplayControl)
+
+// Let other entity control the display
+IPC_MESSAGE_CONTROL0(OzoneGpuMsg_RelinquishDisplayControl)
+
 //------------------------------------------------------------------------------
 // Browser Messages
 // These messages are from the GPU to the browser process.

@@ -74,6 +74,9 @@ bool CrtcController::SchedulePageFlip(const OverlayPlaneList& overlays) {
   }
 
   if (!drm_->PageFlip(crtc_, primary.buffer->GetFramebufferId(), this)) {
+    // Permission Denied is a legitimate error
+    if (errno == EACCES)
+      return true;
     LOG(ERROR) << "Cannot page flip: error='" << strerror(errno) << "'"
                << " crtc=" << crtc_
                << " framebuffer=" << primary.buffer->GetFramebufferId()

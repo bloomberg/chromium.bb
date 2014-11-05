@@ -134,6 +134,10 @@ class DriWrapper {
                                  uint32_t stride,
                                  void* pixels);
 
+  // Drm master related
+  virtual bool SetMaster();
+  virtual bool DropMaster();
+
   int get_fd() const { return fd_; }
 
  protected:

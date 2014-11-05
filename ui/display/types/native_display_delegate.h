@@ -38,6 +38,12 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // Released the display server and any resources allocated by GrabServer().
   virtual void UngrabServer() = 0;
 
+  // Take control of the display from any other controlling process.
+  virtual bool TakeDisplayControl() = 0;
+
+  // Let others control the display.
+  virtual bool RelinquishDisplayControl() = 0;
+
   // Flushes all pending requests and waits for replies.
   virtual void SyncWithServer() = 0;
 

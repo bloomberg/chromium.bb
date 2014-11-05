@@ -77,6 +77,9 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_ConfigureNativeDisplay,
                       OnConfigureNativeDisplay)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_DisableNativeDisplay, OnDisableNativeDisplay)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_TakeDisplayControl, OnTakeDisplayControl)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_RelinquishDisplayControl,
+                      OnRelinquishDisplayControl)
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
@@ -201,6 +204,14 @@ void DriGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
     ndd_->Configure(*display, NULL, gfx::Point());
   else
     LOG(ERROR) << "There is no display with ID " << id;
+}
+
+void DriGpuPlatformSupport::OnTakeDisplayControl() {
+  ndd_->TakeDisplayControl();
+}
+
+void DriGpuPlatformSupport::OnRelinquishDisplayControl() {
+  ndd_->RelinquishDisplayControl();
 }
 
 }  // namespace ui

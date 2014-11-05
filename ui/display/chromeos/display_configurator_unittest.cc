@@ -33,6 +33,8 @@ const char kGrab[] = "grab";
 const char kUngrab[] = "ungrab";
 const char kSync[] = "sync";
 const char kForceDPMS[] = "dpms";
+const char kTakeDisplayControl[] = "take";
+const char kRelinquishDisplayControl[] = "relinquish";
 
 // String returned by TestNativeDisplayDelegate::GetActionsAndClear() if no
 // actions were requested.
@@ -157,6 +159,14 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   virtual void Initialize() override { log_->AppendAction(kInitXRandR); }
   virtual void GrabServer() override { log_->AppendAction(kGrab); }
   virtual void UngrabServer() override { log_->AppendAction(kUngrab); }
+  virtual bool TakeDisplayControl() override {
+    log_->AppendAction(kTakeDisplayControl);
+    return true;
+  }
+  virtual bool RelinquishDisplayControl() override {
+    log_->AppendAction(kRelinquishDisplayControl);
+    return true;
+  }
   virtual void SyncWithServer() override { log_->AppendAction(kSync); }
   virtual void SetBackgroundColor(uint32_t color_argb) override {
     log_->AppendAction(GetBackgroundAction(color_argb));
@@ -1389,6 +1399,24 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
           GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+}
+
+TEST_F(DisplayConfiguratorTest, ExternalControl) {
+  InitWithSingleOutput();
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
+  configurator_.RelinquishControl();
+  EXPECT_EQ(
+      JoinActions(
+          kRelinquishDisplayControl,
+          NULL),
+      log_->GetActionsAndClear());
+  configurator_.TakeControl();
+  EXPECT_EQ(
+      JoinActions(
+          kTakeDisplayControl,
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           NULL),
       log_->GetActionsAndClear());
 }

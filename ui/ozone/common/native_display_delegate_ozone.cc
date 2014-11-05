@@ -26,6 +26,16 @@ void NativeDisplayDelegateOzone::UngrabServer() {
   NOTIMPLEMENTED();
 }
 
+bool NativeDisplayDelegateOzone::TakeDisplayControl() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool NativeDisplayDelegateOzone::RelinquishDisplayControl() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void NativeDisplayDelegateOzone::SyncWithServer() {
   NOTIMPLEMENTED();
 }

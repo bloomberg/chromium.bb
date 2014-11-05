@@ -137,6 +137,22 @@ void NativeDisplayDelegateDri::GrabServer() {
 void NativeDisplayDelegateDri::UngrabServer() {
 }
 
+bool NativeDisplayDelegateDri::TakeDisplayControl() {
+  if (!dri_->SetMaster()) {
+    LOG(ERROR) << "Failed to take control of the display";
+    return false;
+  }
+  return true;
+}
+
+bool NativeDisplayDelegateDri::RelinquishDisplayControl() {
+  if (!dri_->DropMaster()) {
+    LOG(ERROR) << "Failed to relinquish control of the display";
+    return false;
+  }
+  return true;
+}
+
 void NativeDisplayDelegateDri::SyncWithServer() {
 }
 

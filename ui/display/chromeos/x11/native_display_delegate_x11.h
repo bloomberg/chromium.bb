@@ -71,6 +71,8 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual void Initialize() override;
   virtual void GrabServer() override;
   virtual void UngrabServer() override;
+  virtual bool TakeDisplayControl() override;
+  virtual bool RelinquishDisplayControl() override;
   virtual void SyncWithServer() override;
   virtual void SetBackgroundColor(uint32_t color_argb) override;
   virtual void ForceDPMSOn() override;
