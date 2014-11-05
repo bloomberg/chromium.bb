@@ -1430,6 +1430,8 @@ crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content-to
 
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
 
+crbug.com/430557 [ Win Linux ] inspector/layers/layer-canvas-log.html [ Failure ]
+
 crbug.com/429128 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass Timeout ]
 
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/apply-start-width-after-skipped-text.html [ Failure ]
