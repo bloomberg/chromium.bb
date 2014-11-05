@@ -16,7 +16,7 @@
 #include <sys/uio.h>
 #endif
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 #include <sys/un.h>
 #endif
 
@@ -258,7 +258,7 @@ bool ChannelPosix::CreatePipe(
     }
 #endif   // IPC_USES_READWRITE
   } else if (mode_ & MODE_NAMED_FLAG) {
-#if defined(__native_client_nonsfi__)
+#if defined(OS_NACL_NONSFI)
     LOG(FATAL)
         << "IPC channels in nacl_helper_nonsfi should not be in NAMED mode.";
 #else
@@ -283,7 +283,7 @@ bool ChannelPosix::CreatePipe(
     }
 
     local_pipe.reset(local_pipe_fd);
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)
   } else {
     local_pipe.reset(PipeMap::GetInstance()->Lookup(pipe_name_));
     if (mode_ & MODE_CLIENT_FLAG) {
@@ -345,7 +345,7 @@ bool ChannelPosix::CreatePipe(
 #endif  // IPC_USES_READWRITE
 
   if ((mode_ & MODE_SERVER_FLAG) && (mode_ & MODE_NAMED_FLAG)) {
-#if defined(__native_client_nonsfi__)
+#if defined(OS_NACL_NONSFI)
     LOG(FATAL) << "IPC channels in nacl_helper_nonsfi "
                << "should not be in NAMED or SERVER mode.";
 #else
@@ -365,7 +365,7 @@ bool ChannelPosix::Connect() {
 
   bool did_connect = true;
   if (server_listen_pipe_.is_valid()) {
-#if defined(__native_client_nonsfi__)
+#if defined(OS_NACL_NONSFI)
     LOG(FATAL) << "IPC channels in nacl_helper_nonsfi "
                << "should always be in client mode.";
 #else
@@ -600,7 +600,7 @@ bool ChannelPosix::HasAcceptedConnection() const {
   return AcceptsConnections() && pipe_.is_valid();
 }
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 // GetPeerEuid is not supported in nacl_helper_nonsfi.
 bool ChannelPosix::GetPeerEuid(uid_t* peer_euid) const {
   DCHECK(!(mode_ & MODE_SERVER) || HasAcceptedConnection());
@@ -655,7 +655,7 @@ void ChannelPosix::SetGlobalPid(int pid) {
 // Called by libevent when we can read from the pipe without blocking.
 void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
   if (fd == server_listen_pipe_.get()) {
-#if defined(__native_client_nonsfi__)
+#if defined(OS_NACL_NONSFI)
     LOG(FATAL)
         << "IPC channels in nacl_helper_nonsfi should not be SERVER mode.";
 #else
@@ -950,7 +950,7 @@ bool ChannelPosix::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
                         file_descriptors,
                         file_descriptors + num_file_descriptors);
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
       // The PNaCl toolchain for Non-SFI binary build does not support
       // MSG_CTRUNC.
       // Check this after adding the FDs so we don't leak them.
@@ -1063,7 +1063,7 @@ void ChannelPosix::Close() {
   }
 
   if (server_listen_pipe_.is_valid()) {
-#if defined(__native_client_nonsfi__)
+#if defined(OS_NACL_NONSFI)
     LOG(FATAL)
         << "IPC channels in nacl_helper_nonsfi should not be SERVER mode.";
 #else

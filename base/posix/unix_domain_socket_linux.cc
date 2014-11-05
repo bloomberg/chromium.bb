@@ -17,13 +17,13 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 #include <sys/uio.h>
 #endif
 
 const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 // Creates a connected pair of UNIX-domain SOCK_SEQPACKET sockets, and passes
 // ownership of the newly allocated file descriptors to |one| and |two|.
 // Returns true on success.
@@ -41,7 +41,7 @@ bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
   const int enable = 1;
   return setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &enable, sizeof(enable)) == 0;
 }
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)
 
 // static
 bool UnixDomainSocket::SendMsg(int fd,
@@ -113,7 +113,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
 
   const size_t kControlBufferSize =
       CMSG_SPACE(sizeof(int) * kMaxFileDescriptors)
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
       // The PNaCl toolchain for Non-SFI binary build does not support ucred.
       + CMSG_SPACE(sizeof(struct ucred))
 #endif
@@ -141,7 +141,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
         wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
         wire_fds_len = payload_len / sizeof(int);
       }
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
       // The PNaCl toolchain for Non-SFI binary build does not support
       // SCM_CREDENTIALS.
       if (cmsg->cmsg_level == SOL_SOCKET &&
@@ -154,7 +154,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
     }
   }
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
   // The PNaCl toolchain for Non-SFI binary build does not support
   // MSG_TRUNC or MSG_CTRUNC.
   if (msg.msg_flags & MSG_TRUNC || msg.msg_flags & MSG_CTRUNC) {
@@ -184,7 +184,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   return r;
 }
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 // static
 ssize_t UnixDomainSocket::SendRecvMsg(int fd,
                                       uint8_t* reply,
@@ -242,4 +242,4 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
 
   return reply_len;
 }
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)

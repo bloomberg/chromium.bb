@@ -59,7 +59,7 @@
 
 namespace base {
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 namespace {
 
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
@@ -348,7 +348,7 @@ bool CopyDirectory(const FilePath& from_path,
 
   return success;
 }
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool PathExists(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
@@ -360,7 +360,7 @@ bool PathExists(const FilePath& path) {
   return access(path.value().c_str(), F_OK) == 0;
 }
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 bool PathIsWritable(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
   return access(path.value().c_str(), W_OK) == 0;
@@ -373,7 +373,7 @@ bool DirectoryExists(const FilePath& path) {
     return S_ISDIR(file_info.st_mode);
   return false;
 }
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   size_t total_read = 0;
@@ -387,7 +387,7 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   return total_read == bytes;
 }
 
-#if !defined(__native_client_nonsfi__)
+#if !defined(OS_NACL_NONSFI)
 bool CreateSymbolicLink(const FilePath& target_path,
                         const FilePath& symlink_path) {
   DCHECK(!symlink_path.empty());
@@ -928,5 +928,5 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
 
 }  // namespace internal
 
-#endif  // !defined(__native_client_nonsfi__)
+#endif  // !defined(OS_NACL_NONSFI)
 }  // namespace base
