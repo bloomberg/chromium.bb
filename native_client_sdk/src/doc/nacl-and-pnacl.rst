@@ -81,11 +81,11 @@ Native Client modules without the Google Web Store. Unless your project is
 subject to one of the narrow limitations described under ":ref:`When to use
 NaCl<when-to-use-nacl>`", you should use PNaCl.
 
-Since version 31, Chrome supports translation of pexe 
-modules and their use in web applications without requiring installation either
-of a browser plug-in or of the applications themselves. Native Client and PNaCl
-are open-source technologies, and our hope is that they will be added to other
-hosting platforms in the future.
+Chrome supports translation of pexe modules and their use in web applications
+without requiring installation either of a browser plug-in or of the
+applications themselves. Native Client and PNaCl are open-source technologies,
+and our hope is that they will be added to other hosting platforms in the
+future.
 
 If controlled distribution through the Chrome Web Store is an important part of
 your product plan, the benefits of PNaCl are less critical for you. But you can

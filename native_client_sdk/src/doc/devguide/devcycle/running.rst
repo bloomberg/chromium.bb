@@ -146,8 +146,8 @@ correct version of Chrome. Each version of Chrome supports a corresponding
 version of the Pepper API. You (and your users) must use a version of Chrome
 that is equal to or higher than the version of the Pepper API that your
 application uses. For example, if you compiled your application using the
-``pepper_31`` bundle, your application uses the Pepper 31 API, and you must run
-the application in Chrome 31 or higher. To check which version of Chrome you're
+``pepper_37`` bundle, your application uses the Pepper 37 API, and you must run
+the application in Chrome 37 or higher. To check which version of Chrome you're
 using, type ``about:version`` in the Chrome address bar.
 
 .. _cache:
@@ -364,7 +364,7 @@ extension:
    * If you're using the local server included with the Native Client SDK,
      simply put your application under the ``examples`` directory in the SDK
      bundle you are using (e.g., in the directory
-     ``pepper_31/examples/my_app``).
+     ``pepper_37/examples/my_app``).
 #. Create a Chrome Web Store manifest file and one or more icons for your
    application.
 

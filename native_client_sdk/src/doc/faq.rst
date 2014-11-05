@@ -513,11 +513,13 @@ My ``.pexe`` isn't loading, help!
 ---------------------------------
 
 * You must use Google Chrome version 31 or greater for Portable Native
-  Client. Make sure you have Portable Native Client installed in
-  ``about:nacl``; if not open ``about:components`` and "Check for
-  update" for PNaCl.
-* PNaCl ``.pexe`` must be compiled with pepper_31 SDK or higher (earlier
-  SDK versions had experimental support for PNaCl, now deprecated).
+  Client. Please `upgrade now <http://www.google.com/chrome/>`_ if you are
+  not. If you're already using a recent version,  open ``about:components`` and
+  "Check for update" for PNaCl. Find your version of chrome by openning 
+  ``about:chrome``.
+* A PNaCl ``.pexe`` must be compiled with pepper_31 SDK or higher. :ref:`Update
+  your bundles <updating-bundles>` and make sure you're using a version of
+  Chrome that matches the SDK version. 
 * Your application can verify that Portable Native Client is supported
   in JavaScript with ``navigator.mimeTypes['application/x-pnacl'] !==
   undefined``. This is preferred over checking the Chrome version.

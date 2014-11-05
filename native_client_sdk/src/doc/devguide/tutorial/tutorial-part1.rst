@@ -75,7 +75,7 @@ rule called ``serve`` is the easiest way to invoke it:
   The SDK may consist of several "bundles", one per Chrome/Pepper version (see
   :doc:`versioning information </version>`). In the sample invocation above
   ``pepper_$(VERSION)`` refers to the specific version you want to use. For
-  example, ``pepper_31``. If you don't know which version you need, use the
+  example, ``pepper_37``. If you don't know which version you need, use the
   one labeled ``(stable)`` by the ``naclsdk list`` command. See 
   :doc:`Download the Native Client SDK </sdk/download>` for more details.
 
@@ -90,10 +90,10 @@ SDK is just a convenience, not a requirement.
 Step 3: Set up the Chrome browser
 =================================
 
-PNaCl is enabled by default in Chrome version 31 and later. Please make sure
-that you have a suitable version to work through this tutorial. It's also
-important to use a Chrome version that's the same or newer than the SDK bundle
-used to build the Native Client modules.
+PNaCl is enabled by default in Chrome. We recommend that you use a version of
+Chrome that's the same or newer than the SDK bundle used to build Native Client
+modules. Older PNaCl modules will always work with newer versions of Chrome, but
+the converse is not true.
 
 .. Note::
   :class: note

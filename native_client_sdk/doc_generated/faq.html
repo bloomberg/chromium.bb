@@ -434,11 +434,13 @@ functions (e.g. open/fopen/read/write/...). See <a class="reference internal" hr
 <h3 id="my-pexe-isn-t-loading-help">My <code>.pexe</code> isn&#8217;t loading, help!</h3>
 <ul class="small-gap">
 <li>You must use Google Chrome version 31 or greater for Portable Native
-Client. Make sure you have Portable Native Client installed in
-<code>about:nacl</code>; if not open <code>about:components</code> and &#8220;Check for
-update&#8221; for PNaCl.</li>
-<li>PNaCl <code>.pexe</code> must be compiled with pepper_31 SDK or higher (earlier
-SDK versions had experimental support for PNaCl, now deprecated).</li>
+Client. Please <a class="reference external" href="http://www.google.com/chrome/">upgrade now</a> if you are
+not. If you&#8217;re already using a recent version,  open <code>about:components</code> and
+&#8220;Check for update&#8221; for PNaCl. Find your version of chrome by openning
+<code>about:chrome</code>.</li>
+<li>A PNaCl <code>.pexe</code> must be compiled with pepper_31 SDK or higher. <a class="reference internal" href="/native-client/sdk/download.html#updating-bundles"><em>Update
+your bundles</em></a> and make sure you&#8217;re using a version of
+Chrome that matches the SDK version.</li>
 <li>Your application can verify that Portable Native Client is supported
 in JavaScript with <code>navigator.mimeTypes['application/x-pnacl'] !==
 undefined</code>. This is preferred over checking the Chrome version.</li>

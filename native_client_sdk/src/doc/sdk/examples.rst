@@ -16,26 +16,6 @@ must use Google Chrome version 35 or greater. To find out what version of Chrome
 you're using, type ``about:chrome`` or ``about:version`` in the Chrome address
 bar.
 
-.. _enable-native-client:
-   
-Enable Native Client
---------------------
-
-If you are using Chrome 31 or later, you can skip this section. To run Portable
-Native Client applications you must specifically enable Native Client in Chrome:
-
-#. Type ``about:flags`` in the Chrome address bar and scroll down to "Native
-   Client".
-   
-   - If the link below "Native Client" says "Disable", then Native Client is
-     already enabled and you don't need to do anything else.
-   
-   * If the link below "Native Client" says "Enable", click the "Enable"
-     link.
-     
-#. Scroll down to the bottom of the page, and click "Relaunch Now". All browser
-   windows will restart when you relaunch Chrome.
-
 .. _build-the-sdk-examples:
 
 Build the SDK examples

@@ -11,28 +11,7 @@ bundle. For example, if you&#8217;re developing with the <code>pepper_35</code> 
 must use Google Chrome version 35 or greater. To find out what version of Chrome
 you&#8217;re using, type <code>about:chrome</code> or <code>about:version</code> in the Chrome address
 bar.</p>
-<h2 id="enable-native-client"><span id="id1"></span>Enable Native Client</h2>
-<p>If you are using Chrome 31 or later, you can skip this section. To run Portable
-Native Client applications you must specifically enable Native Client in Chrome:</p>
-<ol class="arabic">
-<li><p class="first">Type <code>about:flags</code> in the Chrome address bar and scroll down to &#8220;Native
-Client&#8221;.</p>
-<ul class="small-gap">
-<li><p class="first">If the link below &#8220;Native Client&#8221; says &#8220;Disable&#8221;, then Native Client is
-already enabled and you don&#8217;t need to do anything else.</p>
-</li>
-</ul>
-<ul class="small-gap">
-<li><p class="first">If the link below &#8220;Native Client&#8221; says &#8220;Enable&#8221;, click the &#8220;Enable&#8221;
-link.</p>
-</li>
-</ul>
-</li>
-<li><p class="first">Scroll down to the bottom of the page, and click &#8220;Relaunch Now&#8221;. All browser
-windows will restart when you relaunch Chrome.</p>
-</li>
-</ol>
-<h2 id="build-the-sdk-examples"><span id="id2"></span>Build the SDK examples</h2>
+<h2 id="build-the-sdk-examples"><span id="id1"></span>Build the SDK examples</h2>
 <p>The Makefile scripts for the SDK examples can build multiple versions of the
 examples using any of the three SDK toolchains (newlib, glibc, and PNaCl) and in
 both release and debug configurations. Note that some examples, <code>dlopen</code> for
@@ -108,7 +87,7 @@ make[1]: Entering directory 'pepper_35/examples/api/core'
   (content excerpted)
   ...
 </pre>
-<h3 id="build-results"><span id="id3"></span>Build results</h3>
+<h3 id="build-results"><span id="id2"></span>Build results</h3>
 <p>After running <code>make</code>, example directories will contain one or more of the
 following subdirectories, depending on which Makefile you run:</p>
 <ul class="small-gap">
@@ -138,7 +117,7 @@ choosing Tools &gt; Developer tools.</li>
 window.</li>
 <li>Under the &#8220;General&#8221; settings, check the box next to &#8220;Disable cache&#8221;.</li>
 </ol>
-<h3 id="run-the-examples"><span id="id4"></span>Run the examples</h3>
+<h3 id="run-the-examples"><span id="id3"></span>Run the examples</h3>
 <p>To run the SDK examples, use the <code>make run</code> command:</p>
 <pre class="prettyprint">
 $ cd pepper_35/examples/api/core
@@ -200,7 +179,7 @@ $ make run_package
 </pre>
 <p>You can use <code>TOOLCHAIN</code> and <code>CONFIG</code> parameters as described above to run
 with a different toolchain or configuration.</p>
-<h2 id="debugging-the-sdk-examples"><span id="id5"></span>Debugging the SDK examples</h2>
+<h2 id="debugging-the-sdk-examples"><span id="id4"></span>Debugging the SDK examples</h2>
 <p>The NaCl SDK uses <a class="reference external" href="https://www.gnu.org/software/gdb/">GDB</a> to debug Native
 Client code. The SDK includes a prebuilt version of GDB that is compatible with
 NaCl code. To use it, run the <code>make debug</code> command from an example directory:</p>

@@ -64,7 +64,7 @@ $ make serve
 The SDK may consist of several &#8220;bundles&#8221;, one per Chrome/Pepper version (see
 <a class="reference internal" href="/native-client/version.html"><em>versioning information</em></a>). In the sample invocation above
 <code>pepper_$(VERSION)</code> refers to the specific version you want to use. For
-example, <code>pepper_31</code>. If you don&#8217;t know which version you need, use the
+example, <code>pepper_37</code>. If you don&#8217;t know which version you need, use the
 one labeled <code>(stable)</code> by the <code>naclsdk list</code> command. See
 <a class="reference internal" href="/native-client/sdk/download.html"><em>Download the Native Client SDK</em></a> for more details.
 </aside>
@@ -73,10 +73,10 @@ accessed at <code>http://localhost:5103</code>.</p>
 <p>Any server can be used for the purpose of development. The one provided with the
 SDK is just a convenience, not a requirement.</p>
 <h2 id="step-3-set-up-the-chrome-browser"><span id="tutorial-step-3"></span>Step 3: Set up the Chrome browser</h2>
-<p>PNaCl is enabled by default in Chrome version 31 and later. Please make sure
-that you have a suitable version to work through this tutorial. It&#8217;s also
-important to use a Chrome version that&#8217;s the same or newer than the SDK bundle
-used to build the Native Client modules.</p>
+<p>PNaCl is enabled by default in Chrome. We recommend that you use a version of
+Chrome that&#8217;s the same or newer than the SDK bundle used to build Native Client
+modules. Older PNaCl modules will always work with newer versions of Chrome, but
+the converse is not true.</p>
 <aside class="note">
 To find out the version of Chrome, type <code>about:chrome</code> in the address bar.
 </aside>

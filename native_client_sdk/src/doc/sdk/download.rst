@@ -174,8 +174,8 @@ Installing the stable bundle
    usually correspond to the current versions of Chrome. We recommend that you
    develop against a "stable" bundle, because such bundles can be used by all
    current Chrome users. Native Client is designed to be backward-compatible.For
-   example, applications developed with the ``pepper_31`` bundle can run in
-   Chrome 31, Chrome 32, etc..
+   example, applications developed with the ``pepper_37`` bundle can run in
+   Chrome 37, Chrome 38, etc..
 
 #. Run ``naclsdk`` with the ``update`` command to download recommended bundles,
    including the current "stable" bundle.
