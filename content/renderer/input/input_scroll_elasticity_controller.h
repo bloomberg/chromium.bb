@@ -1,3 +1,10 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
+#define CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
+
 /*
  * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
@@ -23,50 +30,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollElasticityController_h
-#define ScrollElasticityController_h
-
-#if USE(RUBBER_BANDING)
-
-// #include "platform/PlatformExport.h"
-// #include "platform/geometry/FloatPoint.h"
-// #include "platform/geometry/FloatSize.h"
-// #include "platform/scroll/ScrollTypes.h"
-// #include "wtf/Noncopyable.h"
-
-namespace blink {
-
-class PlatformWheelEvent;
+namespace content {
 
 class ScrollElasticityControllerClient {
 protected:
     virtual ~ScrollElasticityControllerClient() { }
 
 public:
-    virtual bool allowsHorizontalStretching() = 0;
-    virtual bool allowsVerticalStretching() = 0;
+    virtual bool AllowsHorizontalStretching() = 0;
+    virtual bool AllowsVerticalStretching() = 0;
     // The amount that the view is stretched past the normal allowable bounds.
     // The "overhang" amount.
-    virtual IntSize stretchAmount() = 0;
-    virtual bool pinnedInDirection(const FloatSize&) = 0;
-    virtual bool canScrollHorizontally() = 0;
-    virtual bool canScrollVertically() = 0;
+    virtual IntSize StretchAmount() = 0;
+    virtual bool PinnedInDirection(const FloatSize&) = 0;
+    virtual bool CanScrollHorizontally() = 0;
+    virtual bool CanScrollVertically() = 0;
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual blink::IntPoint absoluteScrollPosition() = 0;
+    virtual blink::IntPoint AbsoluteScrollPosition() = 0;
 
-    virtual void immediateScrollBy(const FloatSize&) = 0;
-    virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) = 0;
-    virtual void startSnapRubberbandTimer() = 0;
-    virtual void stopSnapRubberbandTimer() = 0;
+    virtual void ImmediateScrollBy(const FloatSize&) = 0;
+    virtual void ImmediateScrollByWithoutContentEdgeConstraints(const FloatSize&) = 0;
+    virtual void StartSnapRubberbandTimer() = 0;
+    virtual void StopSnapRubberbandTimer() = 0;
 
     // If the current scroll position is within the overhang area, this function will cause
     // the page to scroll to the nearest boundary point.
-    virtual void adjustScrollPositionToBoundsIfNecessary() = 0;
+    virtual void AdjustScrollPositionToBoundsIfNecessary() = 0;
 };
 
-class PLATFORM_EXPORT ScrollElasticityController {
-    WTF_MAKE_NONCOPYABLE(ScrollElasticityController);
+class ScrollElasticityController {
 
 public:
     explicit ScrollElasticityController(ScrollElasticityControllerClient*);
@@ -83,14 +76,14 @@ public:
     // Cocoa does not correctly pass all the gestureBegin/End events. The state
     // of this class is guaranteed to become eventually consistent, once the
     // user stops using multiple input devices.
-    bool handleWheelEvent(const PlatformWheelEvent&);
-    void snapRubberBandTimerFired();
+    bool HandleWheelEvent(const PlatformWheelEvent&);
+    void SnapRubberbandTimerFired();
 
-    bool isRubberBandInProgress() const;
+    bool IsRubberbandInProgress() const;
 
 private:
-    void stopSnapRubberbandTimer();
-    void snapRubberBand();
+    void StopSnapRubberbandTimer();
+    void SnapRubberband();
 
     // This method determines whether a given event should be handled. The
     // logic for control events of gestures (PhaseBegan, PhaseEnded) is handled
@@ -106,36 +99,34 @@ private:
     // of the event.
     bool shouldHandleEvent(const PlatformWheelEvent&);
 
-    ScrollElasticityControllerClient* m_client;
+    ScrollElasticityControllerClient* client_;
 
     // There is an active scroll gesture event. This parameter only gets set to
     // false after the rubber band has been snapped, and before a new gesture
     // has begun. A careful audit of the code may deprecate the need for this
     // parameter.
-    bool m_inScrollGesture;
+    bool in_scroll_gesture_;
     // At least one event in the current gesture has been consumed and has
     // caused the view to scroll or rubber band. All future events in this
     // gesture will be consumed and overscrolls will cause rubberbanding.
-    bool m_hasScrolled;
-    bool m_momentumScrollInProgress;
-    bool m_ignoreMomentumScrolls;
+    bool has_scrolled_;
+    bool momentum_scroll_in_progress_;
+    bool ignore_momentum_scrolls_;
 
-    CFTimeInterval m_lastMomentumScrollTimestamp;
-    FloatSize m_overflowScrollDelta;
-    FloatSize m_stretchScrollForce;
-    FloatSize m_momentumVelocity;
+    CFTimeInterval last_momentum_scroll_timestamp_;
+    FloatSize overflow_scroll_delta_;
+    FloatSize stretch_scroll_force_;
+    FloatSize momentum_velocity_;
 
     // Rubber band state.
-    CFTimeInterval m_startTime;
-    FloatSize m_startStretch;
-    FloatPoint m_origOrigin;
-    FloatSize m_origVelocity;
+    CFTimeInterval start_time_;
+    FloatSize start_stretch_;
+    FloatPoint orig_origin_;
+    FloatSize orig_velocity_;
 
-    bool m_snapRubberbandTimerIsActive;
+    bool snap_rubberband_timer_is_active_;
 };
 
-} // namespace blink
+}  // namespace content
 
-#endif // USE(RUBBER_BANDING)
-
-#endif // ScrollElasticityController_h
+#endif  // CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
