@@ -118,8 +118,7 @@ if (!is_chromeos) {
   # These packages should _only_ be expected when building for a target.
   # If these extra checks are not run, gconf is required when building host
   # tools for a CrOS build.
-  if (current_toolchain == host_toolchain &&
-      host_toolchain == default_toolchain) {
+  if (current_toolchain == default_toolchain) {
     pkg_config("gconf") {
       packages = [ "gconf-2.0" ]
       defines = [ "USE_GCONF" ]

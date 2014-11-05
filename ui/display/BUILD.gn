@@ -55,19 +55,21 @@ component("display") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-    sources -= [
-      "chromeos/x11/display_configurator_x11.cc",
-      "chromeos/x11/display_mode_x11.cc",
-      "chromeos/x11/display_mode_x11.h",
-      "chromeos/x11/display_snapshot_x11.cc",
-      "chromeos/x11/display_snapshot_x11.h",
-      "chromeos/x11/display_util_x11.cc",
-      "chromeos/x11/display_util_x11.h",
-      "chromeos/x11/native_display_delegate_x11.cc",
-      "chromeos/x11/native_display_delegate_x11.h",
-      "chromeos/x11/native_display_event_dispatcher_x11.cc",
-      "chromeos/x11/native_display_event_dispatcher_x11.h",
-    ]
+    if (is_chromeos) {
+      sources -= [
+        "chromeos/x11/display_configurator_x11.cc",
+        "chromeos/x11/display_mode_x11.cc",
+        "chromeos/x11/display_mode_x11.h",
+        "chromeos/x11/display_snapshot_x11.cc",
+        "chromeos/x11/display_snapshot_x11.h",
+        "chromeos/x11/display_util_x11.cc",
+        "chromeos/x11/display_util_x11.h",
+        "chromeos/x11/native_display_delegate_x11.cc",
+        "chromeos/x11/native_display_delegate_x11.h",
+        "chromeos/x11/native_display_event_dispatcher_x11.cc",
+        "chromeos/x11/native_display_event_dispatcher_x11.h",
+      ]
+    }
   }
 }
 
