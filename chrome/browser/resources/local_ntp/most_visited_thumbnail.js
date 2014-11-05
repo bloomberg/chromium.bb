@@ -66,7 +66,10 @@ window.addEventListener('DOMContentLoaded', function() {
       image.src = src;
     }
 
-    if (data.thumbnailUrl) {
+    if (data.dummy) {
+      showEmptyTile();
+      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
+    } else if (data.thumbnailUrl) {
       createThumbnail(data.thumbnailUrl);
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_TILE);
     } else if (data.domain) {

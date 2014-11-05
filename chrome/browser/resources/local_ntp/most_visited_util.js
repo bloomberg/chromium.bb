@@ -257,16 +257,17 @@ function fillMostVisited(location, fill) {
   chrome.embeddedSearch.newTabPage.logEvent(params.url ?
       NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION :
       NTP_LOGGING_EVENT_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
-  var data = {};
+  var data;
   if (params.url) {
     // Means that the suggestion data comes from the server. Create data object.
-    data.url = params.url;
-    data.thumbnailUrl = params.tu || '';
-    data.title = params.ti || '';
-    data.direction = params.di || '';
-    data.domain = params.dom || '';
-    data.provider = params.pr || SERVER_PROVIDER_NAME;
-
+    data = {
+      url: params.url,
+      thumbnailUrl: params.tu || '',
+      title: params.ti || '',
+      direction: params.di || '',
+      domain: params.dom || '',
+      provider: params.pr || SERVER_PROVIDER_NAME
+    };
     // Log the fact that suggestion was obtained from the server.
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
@@ -277,6 +278,9 @@ function fillMostVisited(location, fill) {
       return;
     // Allow server-side provider override.
     data.provider = params.pr || CLIENT_PROVIDER_NAME;
+  }
+  if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
+    data.dummy = true;
   }
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||
