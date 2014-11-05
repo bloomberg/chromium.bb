@@ -21,7 +21,6 @@
         # to be built.
         'mojo_common_lib',
         'mojo_common_unittests',
-        'mojo_message_generator',
       ],
       'conditions': [
         ['OS == "android"', {
@@ -184,22 +183,6 @@
         'bindings/js/support.h',
         'bindings/js/waiting_callback.cc',
         'bindings/js/waiting_callback.h',
-      ],
-    },
-    {
-      # GN version: //mojo/tools:message_generator
-      'target_name': 'mojo_message_generator',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../testing/gtest.gyp:gtest',
-        'edk/mojo_edk.gyp:mojo_system_impl',
-        'mojo_common_lib',
-        'mojo_environment_chromium',
-        'public/mojo_public.gyp:mojo_cpp_bindings',
-      ],
-      'sources': [
-        'tools/message_generator.cc',
       ],
     },
   ],
