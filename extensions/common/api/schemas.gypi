@@ -48,8 +48,19 @@
       'web_request.json',
       'web_view_internal.json',
     ],
+    # ChromeOS-specific schemas.
+    'chromeos_schema_files': [
+      'webcam_private.idl',
+    ],
     'non_compiled_schema_files': [
       'web_request_internal.json',
+    ],
+    'conditions': [
+      ['chromeos==1', {
+        'schema_files': [
+          '<@(chromeos_schema_files)',
+        ],
+      }]
     ],
     'cc_dir': 'extensions/common/api',
     'root_namespace': 'extensions::core_api::%(namespace)s',

@@ -263,6 +263,8 @@ source_set("browser") {
       "api/web_request/web_request_time_tracker.h",
       "api/web_view/web_view_internal_api.cc",
       "api/web_view/web_view_internal_api.h",
+      "api/webcam_private/webcam_private_api.h",
+      "api/webcam_private/webcam_private_api_chromeos.cc",
       "api_activity_monitor.h",
       "app_sorting.h",
       "app_window/app_delegate.h",

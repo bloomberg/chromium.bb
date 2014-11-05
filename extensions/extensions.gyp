@@ -540,6 +540,8 @@
         'browser/api/web_request/web_request_time_tracker.h',
         'browser/api/web_view/web_view_internal_api.cc',
         'browser/api/web_view/web_view_internal_api.h',
+        'browser/api/webcam_private/webcam_private_api.h',
+        'browser/api/webcam_private/webcam_private_api_chromeos.cc',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
         'browser/app_window/app_delegate.h',

@@ -30,8 +30,6 @@
       'browser/extensions/api/terminal/terminal_private_api.h',
       'browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.cc',
       'browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h',
-      'browser/extensions/api/webcam_private/webcam_private_api.h',
-      'browser/extensions/api/webcam_private/webcam_private_api_chromeos.cc',
       'browser/extensions/updater/extension_cache_impl.cc',
       'browser/extensions/updater/extension_cache_impl.h',
       'browser/extensions/updater/local_extension_cache.cc',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webcam_private/webcam_private_api.h"
+#include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
 #include <fcntl.h>
 #include <linux/videodev2.h>
@@ -12,14 +12,16 @@
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "chrome/common/extensions/api/webcam_private.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/common/api/webcam_private.h"
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
 #define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
+
+namespace webcam_private = extensions::core_api::webcam_private;
 
 namespace content {
 class BrowserContext;
@@ -75,8 +77,8 @@ WebcamPrivateSetFunction::~WebcamPrivateSetFunction() {
 
 bool WebcamPrivateSetFunction::RunSync() {
   // Get parameters
-  scoped_ptr<api::webcam_private::Set::Params> params(
-      api::webcam_private::Set::Params::Create(*args_));
+  scoped_ptr<webcam_private::Set::Params> params(
+      webcam_private::Set::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   base::ScopedFD fd =
@@ -94,16 +96,16 @@ bool WebcamPrivateSetFunction::RunSync() {
   if (params->config.pan_direction) {
     int direction = 0;
     switch (params->config.pan_direction) {
-      case api::webcam_private::PAN_DIRECTION_NONE:
-      case api::webcam_private::PAN_DIRECTION_STOP:
+      case webcam_private::PAN_DIRECTION_NONE:
+      case webcam_private::PAN_DIRECTION_STOP:
         direction = 0;
         break;
 
-      case api::webcam_private::PAN_DIRECTION_RIGHT:
+      case webcam_private::PAN_DIRECTION_RIGHT:
         direction = 1;
         break;
 
-      case api::webcam_private::PAN_DIRECTION_LEFT:
+      case webcam_private::PAN_DIRECTION_LEFT:
         direction = -1;
         break;
     }
@@ -118,16 +120,16 @@ bool WebcamPrivateSetFunction::RunSync() {
   if (params->config.tilt_direction) {
     int direction = 0;
     switch (params->config.tilt_direction) {
-      case api::webcam_private::TILT_DIRECTION_NONE:
-      case api::webcam_private::TILT_DIRECTION_STOP:
+      case webcam_private::TILT_DIRECTION_NONE:
+      case webcam_private::TILT_DIRECTION_STOP:
         direction = 0;
         break;
 
-      case api::webcam_private::TILT_DIRECTION_UP:
+      case webcam_private::TILT_DIRECTION_UP:
         direction = 1;
         break;
 
-      case api::webcam_private::TILT_DIRECTION_DOWN:
+      case webcam_private::TILT_DIRECTION_DOWN:
         direction = -1;
         break;
     }
@@ -151,8 +153,8 @@ WebcamPrivateGetFunction::~WebcamPrivateGetFunction() {
 
 bool WebcamPrivateGetFunction::RunSync() {
   // Get parameters
-  scoped_ptr<api::webcam_private::Get::Params> params(
-      api::webcam_private::Get::Params::Create(*args_));
+  scoped_ptr<webcam_private::Get::Params> params(
+      webcam_private::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   base::ScopedFD fd =
@@ -162,7 +164,7 @@ bool WebcamPrivateGetFunction::RunSync() {
     return false;
   }
 
-  api::webcam_private::WebcamConfiguration result;
+  webcam_private::WebcamConfiguration result;
 
   int pan;
   if (GetWebcamParameter(fd.get(), V4L2_CID_PAN_ABSOLUTE, &pan))
@@ -189,8 +191,8 @@ WebcamPrivateResetFunction::~WebcamPrivateResetFunction() {
 
 bool WebcamPrivateResetFunction::RunSync() {
   // Get parameters
-  scoped_ptr<api::webcam_private::Reset::Params> params(
-      api::webcam_private::Reset::Params::Create(*args_));
+  scoped_ptr<webcam_private::Reset::Params> params(
+      webcam_private::Reset::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   base::ScopedFD fd =

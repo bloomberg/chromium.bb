@@ -118,7 +118,6 @@
       'file_browser_handler_internal.json',
       'first_run_private.json',
       'log_private.idl',
-      'webcam_private.idl',
     ],
 
     # ChromeOS-specific schemas which have not been ported to Athena.
