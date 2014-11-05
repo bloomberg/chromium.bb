@@ -12,4 +12,4 @@ LayerTreeHostCopyRequestTestMultipleRequests.GLRenderer_RunSingleThread
 LayerTreeHostCopyRequestTestMultipleRequests.SoftwareRenderer_RunSingleThread
 
 # http://crbug.com/430400
-PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfLayer
+PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfLayer/5
