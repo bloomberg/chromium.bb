@@ -1191,6 +1191,10 @@ void HandleCrashDump(const BreakpadInfo& info) {
   google_breakpad::PageAllocator allocator;
   const char* exe_buf = NULL;
 
+  if (GetCrashReporterClient()->HandleCrashDump(info.filename)) {
+    return;
+  }
+
 #if defined(OS_CHROMEOS)
   // Grab the crashing process' name now, when it should still be available.
   // If we try to do this later in our grandchild the crashing process has

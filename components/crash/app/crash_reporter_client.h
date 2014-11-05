@@ -103,6 +103,13 @@ class CrashReporterClient {
                                         const char** version);
 
   virtual base::FilePath GetReporterLogFilename();
+
+  // Custom crash minidump handler after the minidump is generated.
+  // Returns true if the minidump is handled (client); otherwise, return false
+  // to fallback to default handler.
+  // WARNING: this handler runs in a compromised context. It may not call into
+  // libc nor allocate memory normally.
+  virtual bool HandleCrashDump(const char* crashdump_filename);
 #endif
 
   // The location where minidump files should be written. Returns true if

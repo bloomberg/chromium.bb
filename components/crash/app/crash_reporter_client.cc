@@ -86,6 +86,10 @@ void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
 base::FilePath CrashReporterClient::GetReporterLogFilename() {
   return base::FilePath();
 }
+
+bool CrashReporterClient::HandleCrashDump(const char* crashdump_filename) {
+  return false;
+}
 #endif
 
 bool CrashReporterClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
