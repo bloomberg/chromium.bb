@@ -24,7 +24,7 @@
   align-items: center;
   bottom: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
 #supervised-user-creation .controls-links {
