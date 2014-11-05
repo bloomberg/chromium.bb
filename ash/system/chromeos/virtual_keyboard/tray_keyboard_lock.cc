@@ -64,13 +64,12 @@ void KeyboardLockDefaultView::Update() {
   base::string16 label;
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   if (keyboard::IsKeyboardEnabled()) {
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD)
-                 .ToImageSkia());
+    SetImage(
+        bundle.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_ENABLED));
     label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED);
   } else {
-    // TODO (rsadam@): Use crossed keyboard image.
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD)
-                 .ToImageSkia());
+    SetImage(
+        bundle.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_DISABLED));
     label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_KEYBOARD_DISABLED);
   }
   SetLabel(label);
@@ -85,7 +84,8 @@ void KeyboardLockDefaultView::OnKeyboardSuppressionChanged(bool suppressed) {
 }  // namespace tray
 
 TrayKeyboardLock::TrayKeyboardLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD),
+    : TrayImageItem(system_tray,
+                    IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_SUPPRESSED),
       virtual_keyboard_suppressed_(false) {
   Shell::GetInstance()->system_tray_notifier()->AddVirtualKeyboardObserver(
       this);

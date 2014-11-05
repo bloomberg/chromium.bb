@@ -160,6 +160,9 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS_DISMISS" file="cros/status/status_sms_dismiss.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_TRACING" file="cros/status/status_tracing.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_DISABLED" file="cros/status/status_on_screen_keyboard_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_ENABLED" file="cros/status/status_on_screen_keyboard_enabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD_SUPPRESSED" file="cros/status/status_accessibility_keyboard.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="cros/network/status_wifi_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="cros/network/status_wifi_disabled_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
