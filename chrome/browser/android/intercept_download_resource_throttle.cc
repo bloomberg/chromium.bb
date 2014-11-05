@@ -36,6 +36,8 @@ const char* InterceptDownloadResourceThrottle::GetNameForLogging() const {
 }
 
 void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
+  // TODO(qinmin): add UMA stats for all reasons that downloads are not
+  // intercepted by the Android Download Manager. http://crbug.com/385272.
   if (request_->url_chain().empty())
     return;
 
@@ -62,6 +64,12 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
       return;
     }
   }
+
+  // If the cookie is possibly channel-bound, don't pass it to android download
+  // manager.
+  // TODO(qinmin): add a test for this. http://crbug.com/430541.
+  if (request_->ssl_info().channel_id_sent)
+    return;
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
       render_process_id_, render_view_id_, request_id_);
