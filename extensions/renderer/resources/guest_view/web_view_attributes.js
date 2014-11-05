@@ -27,10 +27,23 @@ WebViewAttribute.prototype.setValue = function(value) {
   this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
 };
 
-// Called when the attribute's value changes.
-WebViewAttribute.prototype.handleMutation = function() {}
+// Defines this attribute as a property on the webview node.
+WebViewAttribute.prototype.define = function() {
+  Object.defineProperty(this.webViewImpl.webviewNode, this.name, {
+    get: function() {
+      return this.getValue();
+    }.bind(this),
+    set: function(value) {
+      this.setValue(value);
+    }.bind(this),
+    enumerable: true
+  });
+};
 
-// Attribute specifying whether transparency is allowed in the webview.
+// Called when the attribute's value changes.
+WebViewAttribute.prototype.handleMutation = function(oldValue, newValue) {};
+
+// An attribute that is treated as a Boolean.
 function BooleanAttribute(name, webViewImpl) {
   WebViewAttribute.call(this, name, webViewImpl);
 }
@@ -38,9 +51,8 @@ function BooleanAttribute(name, webViewImpl) {
 BooleanAttribute.prototype = new WebViewAttribute();
 
 BooleanAttribute.prototype.getValue = function() {
-  // This attribute is treated as a boolean, and is retrieved as such.
   return this.webViewImpl.webviewNode.hasAttribute(this.name);
-}
+};
 
 BooleanAttribute.prototype.setValue = function(value) {
   if (!value) {
@@ -48,7 +60,7 @@ BooleanAttribute.prototype.setValue = function(value) {
   } else {
     this.webViewImpl.webviewNode.setAttribute(this.name, '');
   }
-}
+};
 
 // Attribute representing the state of the storage partition.
 function Partition(webViewImpl) {
@@ -75,7 +87,7 @@ Partition.prototype.handleMutation = function(oldValue, newValue) {
     window.console.error(
         WebViewConstants.ERROR_MSG_INVALID_PARTITION_ATTRIBUTE);
   }
-}
+};
 
 // -----------------------------------------------------------------------------
 

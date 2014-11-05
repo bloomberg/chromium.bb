@@ -125,35 +125,10 @@ WebView.prototype.validateExecuteCodeCall  = function() {
   }
 };
 
-WebView.prototype.setupAutoSizeProperties = function() {
-  $Array.forEach(AUTO_SIZE_ATTRIBUTES, function(attributeName) {
-    Object.defineProperty(this.webviewNode, attributeName, {
-      get: function() {
-        return this.attributes[attributeName].getValue();
-      }.bind(this),
-      set: function(value) {
-        this.attributes[attributeName].setValue(value);
-      }.bind(this),
-      enumerable: true
-    });
-  }.bind(this), this);
-};
-
 WebView.prototype.setupWebviewNodeProperties = function() {
-  this.setupAutoSizeProperties();
-
-  Object.defineProperty(this.webviewNode,
-                        WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY, {
-    get: function() {
-      return this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
-          getValue();
-    }.bind(this),
-    set: function(value) {
-      this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
-          setValue(value);
-    }.bind(this),
-    enumerable: true
-  });
+  for (var attributeName in this.attributes) {
+    this.attributes[attributeName].define();
+  }
 
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
@@ -166,37 +141,6 @@ WebView.prototype.setupWebviewNodeProperties = function() {
           WebViewConstants.ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
     }.bind(this),
     // No setter.
-    enumerable: true
-  });
-
-  Object.defineProperty(this.webviewNode, WebViewConstants.ATTRIBUTE_NAME, {
-    get: function() {
-      return this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue();
-    }.bind(this),
-    set: function(value) {
-      this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(value);
-    }.bind(this),
-    enumerable: true
-  });
-
-  Object.defineProperty(this.webviewNode,
-                        WebViewConstants.ATTRIBUTE_PARTITION, {
-    get: function() {
-      return this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].getValue();
-    }.bind(this),
-    set: function(value) {
-      this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(value);
-    }.bind(this),
-    enumerable: true
-  });
-
-  Object.defineProperty(this.webviewNode, WebViewConstants.ATTRIBUTE_SRC, {
-    get: function() {
-      return this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
-    }.bind(this),
-    set: function(value) {
-      this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValue(value);
-    }.bind(this),
     enumerable: true
   });
 };
