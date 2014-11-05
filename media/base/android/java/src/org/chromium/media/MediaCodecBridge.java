@@ -62,6 +62,12 @@ class MediaCodecBridge {
     // non-decreasing for the remaining frames.
     private static final long MAX_PRESENTATION_TIMESTAMP_SHIFT_US = 100000;
 
+    // TODO(qinmin): Use MediaFormat constants when part of the public API.
+    private static final String KEY_CROP_LEFT = "crop-left";
+    private static final String KEY_CROP_RIGHT = "crop-right";
+    private static final String KEY_CROP_BOTTOM = "crop-bottom";
+    private static final String KEY_CROP_TOP = "crop-top";
+
     private ByteBuffer[] mInputBuffers;
     private ByteBuffer[] mOutputBuffers;
 
@@ -244,8 +250,7 @@ class MediaCodecBridge {
                 if (!supportedTypes[j].equalsIgnoreCase(mime))
                     continue;
 
-                MediaCodecInfo.CodecCapabilities capabilities =
-                    info.getCapabilitiesForType(mime);
+                MediaCodecInfo.CodecCapabilities capabilities = info.getCapabilitiesForType(mime);
                 return capabilities.colorFormats;
             }
         }
@@ -401,14 +406,25 @@ class MediaCodecBridge {
         }
     }
 
+    private boolean outputFormatHasCropValues(MediaFormat format) {
+        return format.containsKey(KEY_CROP_RIGHT) && format.containsKey(KEY_CROP_LEFT)
+                && format.containsKey(KEY_CROP_BOTTOM) && format.containsKey(KEY_CROP_TOP);
+    }
+
     @CalledByNative
     private int getOutputHeight() {
-        return mMediaCodec.getOutputFormat().getInteger(MediaFormat.KEY_HEIGHT);
+        MediaFormat format = mMediaCodec.getOutputFormat();
+        return outputFormatHasCropValues(format)
+                ? format.getInteger(KEY_CROP_BOTTOM) - format.getInteger(KEY_CROP_TOP) + 1
+                : format.getInteger(MediaFormat.KEY_HEIGHT);
     }
 
     @CalledByNative
     private int getOutputWidth() {
-        return mMediaCodec.getOutputFormat().getInteger(MediaFormat.KEY_WIDTH);
+        MediaFormat format = mMediaCodec.getOutputFormat();
+        return outputFormatHasCropValues(format)
+                ? format.getInteger(KEY_CROP_RIGHT) - format.getInteger(KEY_CROP_LEFT) + 1
+                : format.getInteger(MediaFormat.KEY_WIDTH);
     }
 
     @CalledByNative
