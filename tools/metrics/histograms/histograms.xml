@@ -39689,6 +39689,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.AecDelayBasedQuality" enum="DelayBasedEchoQuality">
+  <owner>bjornv@chromium.org</owner>
+  <summary>
+    Captures if the estimated delay between rendered and captured audio is out
+    of bounds which can cause the Echo Cancellation to fail. This is logged
+    roughly ones every 5 seconds, but only if there is an application that calls
+    GetStats(). The values are logged in three buckets reflecting how well the
+    Echo Cancellation likely performs based on the estimated delay.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.ApplicationMaxConsecutiveBytesDiscard">
   <owner>guoweis@chromium.org</owner>
   <summary>
@@ -41932,6 +41943,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="DSP changed by Profile Reset feature"/>
   <int value="7" label="DSP changed by the extension Override Settings API"/>
   <int value="8" label="DSP set to new engine with no previous value in prefs"/>
+</enum>
+
+<enum name="DelayBasedEchoQuality" type="int">
+  <int value="0"
+      label="Delay in bounds: Echo Cancellation quality most likely good"/>
+  <int value="1"
+      label="Delay spuriously out of bounds: Echo Cancellation may suffer"/>
+  <int value="2"
+      label="Delay out of bounds: Echo Cancellation most likely fails"/>
 </enum>
 
 <enum name="DesktopCaptureCounters" type="int">

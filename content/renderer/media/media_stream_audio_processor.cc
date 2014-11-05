@@ -386,6 +386,8 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
   stats->typing_noise_detected =
       (base::subtle::Acquire_Load(&typing_detected_) != false);
   GetAecStats(audio_processing_.get(), stats);
+  if (echo_information_)
+    echo_information_.get()->UpdateAecDelayStats(stats->echo_delay_median_ms);
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
@@ -461,6 +463,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
     if (playout_data_source_)
       playout_data_source_->AddPlayoutSink(this);
+
+    // Prepare for logging echo information. If there are data remaining in
+    // |echo_information_| we simply discard it.
+    echo_information_.reset(new EchoInformation());
   }
 
   if (goog_ns)

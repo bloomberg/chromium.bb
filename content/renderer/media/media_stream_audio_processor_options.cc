@@ -8,9 +8,11 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_source.h"
@@ -73,7 +75,32 @@ bool IsAudioProcessingConstraint(const std::string& key) {
   return key != kMediaStreamAudioDucking;
 }
 
-} // namespace
+// Used to log echo quality based on delay estimates.
+enum DelayBasedEchoQuality {
+  DELAY_BASED_ECHO_QUALITY_GOOD = 0,
+  DELAY_BASED_ECHO_QUALITY_SPURIOUS,
+  DELAY_BASED_ECHO_QUALITY_BAD,
+  DELAY_BASED_ECHO_QUALITY_MAX
+};
+
+DelayBasedEchoQuality EchoDelayFrequencyToQuality(float delay_frequency) {
+  const float kEchoDelayFrequencyLowerLimit = 0.1f;
+  const float kEchoDelayFrequencyUpperLimit = 0.8f;
+  // DELAY_BASED_ECHO_QUALITY_GOOD
+  //   delay is out of bounds during at most 10 % of the time.
+  // DELAY_BASED_ECHO_QUALITY_SPURIOUS
+  //   delay is out of bounds 10-80 % of the time.
+  // DELAY_BASED_ECHO_QUALITY_BAD
+  //   delay is mostly out of bounds >= 80 % of the time.
+  if (delay_frequency <= kEchoDelayFrequencyLowerLimit)
+    return DELAY_BASED_ECHO_QUALITY_GOOD;
+  else if (delay_frequency < kEchoDelayFrequencyUpperLimit)
+    return DELAY_BASED_ECHO_QUALITY_SPURIOUS;
+  else
+    return DELAY_BASED_ECHO_QUALITY_BAD;
+}
+
+}  // namespace
 
 // TODO(xians): Remove this method after the APM in WebRtc is deprecated.
 void MediaAudioConstraints::ApplyFixedAudioConstraints(
@@ -201,6 +228,55 @@ bool MediaAudioConstraints::GetDefaultValueForConstraint(
   }
 
   return false;
+}
+
+EchoInformation::EchoInformation()
+    : echo_poor_delay_counts_(0),
+      echo_total_delay_counts_(0),
+      last_log_time_(base::TimeTicks::Now()) {}
+
+EchoInformation::~EchoInformation() {}
+
+void EchoInformation::UpdateAecDelayStats(int delay) {
+  // One way to get an indication of how well the echo cancellation performs is
+  // to compare the, by AEC, estimated delay with the AEC filter length.
+  // |kMaxAecFilterLengthMs| is the maximum delay we can allow before we
+  // consider the AEC to fail. This value should not be larger than the filter
+  // length used inside AEC. This is for now set to match the extended filter
+  // mode which is turned on for all platforms.
+  const int kMaxAecFilterLengthMs = 128;
+  if ((delay < -2) || (delay > kMaxAecFilterLengthMs)) {
+    // The |delay| is out of bounds which indicates that the echo cancellation
+    // filter can not handle the echo. Hence, we have a potential full echo
+    // case. |delay| values {-1, -2} are reserved for errors.
+    ++echo_poor_delay_counts_;
+  }
+  ++echo_total_delay_counts_;
+  LogAecDelayStats();
+}
+
+void EchoInformation::LogAecDelayStats() {
+  // We update the UMA statistics every 5 seconds.
+  const int kTimeBetweenLogsInSeconds = 5;
+  const base::TimeDelta time_since_last_log =
+      base::TimeTicks::Now() - last_log_time_;
+  if (time_since_last_log.InSeconds() < kTimeBetweenLogsInSeconds)
+    return;
+
+  // Calculate how frequent the AEC delay was out of bounds since last time we
+  // updated UMA histograms. Then store the result into one of three histogram
+  // buckets; see DelayBasedEchoQuality.
+  float poor_delay_frequency = 0.f;
+  if (echo_total_delay_counts_ > 0) {
+    poor_delay_frequency = static_cast<float>(echo_poor_delay_counts_) /
+        static_cast<float>(echo_total_delay_counts_);
+    UMA_HISTOGRAM_ENUMERATION("Media.AecDelayBasedQuality",
+                              EchoDelayFrequencyToQuality(poor_delay_frequency),
+                              DELAY_BASED_ECHO_QUALITY_MAX);
+  }
+  echo_poor_delay_counts_ = 0;
+  echo_total_delay_counts_ = 0;
+  last_log_time_ = base::TimeTicks::Now();
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
