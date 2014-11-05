@@ -1935,7 +1935,7 @@ bool FrameView::updateWidgets()
     // This is always called from updateWidgetsTimerFired.
     // m_updateWidgetsTimer should only be scheduled if we have widgets to update.
     // Thus I believe we can stop checking isEmpty here, and just ASSERT isEmpty:
-    ASSERT(!m_partUpdateSet.isEmpty());
+    // FIXME: This assert has been temporarily removed due to https://crbug.com/430344
     if (m_nestedLayoutCount > 1 || m_partUpdateSet.isEmpty())
         return true;
 
