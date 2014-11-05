@@ -21,6 +21,10 @@ function prepareDOMTree(parent)
                   createDOM('div', {'id': 'host-A', 'tabindex': -1},
                             createShadowRoot(
                                 createDOM('input', {'id': 'input-1', 'tabindex': 1}),
+                                createDOM('div', {'tabindex': 2, 'style': 'visibility:hidden;'},
+                                          createShadowRoot()),
+                                createDOM('input', {'tabindex': 3, 'type': 'date', 'disabled': ''}),
+                                createDOM('select', {'tabindex': 4, 'multiple': '', 'disabled': ''}),
                                 createDOM('div', {'id': 'nested-host', 'tabindex': 30},
                                           createShadowRoot(
                                               createDOM('input', {'tabindex': -1}),
