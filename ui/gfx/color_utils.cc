@@ -152,21 +152,6 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
       calcHue(temp1, temp2, hue - 1.0 / 3.0));
 }
 
-void ClampHSL(HSL* hsl) {
-  if (hsl->h < 0)
-    hsl->h = 0;
-  if (hsl->h > 1)
-    hsl->h = 1;
-  if (hsl->s < 0)
-    hsl->s = 0;
-  if (hsl->s > 1)
-    hsl->s = 1;
-  if (hsl->l < 0)
-    hsl->l = 0;
-  if (hsl->l > 1)
-    hsl->l = 1;
-}
-
 bool IsWithinHSLRange(const HSL& hsl,
                       const HSL& lower_bound,
                       const HSL& upper_bound) {
@@ -195,6 +180,15 @@ bool IsWithinHSLRange(const HSL& hsl,
           (hsl.s >= lower_bound.s && hsl.s <= upper_bound.s)) &&
          (upper_bound.l < 0 || lower_bound.l < 0 ||
           (hsl.l >= lower_bound.l && hsl.l <= upper_bound.l));
+}
+
+void MakeHSLShiftValid(HSL* hsl) {
+  if (hsl->h < 0 || hsl->h > 1)
+    hsl->h = -1;
+  if (hsl->s < 0 || hsl->s > 1)
+    hsl->s = -1;
+  if (hsl->l < 0 || hsl->l > 1)
+    hsl->l = -1;
 }
 
 SkColor HSLShift(SkColor color, const HSL& shift) {

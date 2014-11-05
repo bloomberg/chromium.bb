@@ -508,14 +508,29 @@ TEST_F(BrowserThemePackTest, InvalidColors) {
 }
 
 TEST_F(BrowserThemePackTest, InvalidTints) {
-  std::string invalid_tints = "{ \"buttons\": [ \"dog\", \"cat\", [\"x\"]], "
-                              "  \"invalid\": \"entry\" }";
-  LoadTintJSON(invalid_tints);
+  std::string tints = "{ \"buttons\": [ \"dog\", \"cat\", [\"x\"]], "
+                       " \"frame\": [-2, 2, 3],"
+                       " \"frame_incognito_inactive\": [-1, 2, 0.6],"
+                       " \"invalid\": \"entry\" }";
+  LoadTintJSON(tints);
 
-  // We shouldn't have a buttons tint, as it was invalid.
+  // We should ignore completely invalid (non-numeric) tints.
   color_utils::HSL actual = { -1, -1, -1 };
-  EXPECT_FALSE(theme_pack_->GetTint(ThemeProperties::TINT_BUTTONS,
-                                    &actual));
+  EXPECT_FALSE(theme_pack_->GetTint(ThemeProperties::TINT_BUTTONS, &actual));
+
+  // We should change invalid numeric HSL tint components to the special -1 "no
+  // change" value.
+  EXPECT_TRUE(theme_pack_->GetTint(ThemeProperties::TINT_FRAME, &actual));
+  EXPECT_EQ(-1, actual.h);
+  EXPECT_EQ(-1, actual.s);
+  EXPECT_EQ(-1, actual.l);
+
+  // We should correct partially incorrect inputs as well.
+  EXPECT_TRUE(theme_pack_->GetTint(
+      ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE, &actual));
+  EXPECT_EQ(-1, actual.h);
+  EXPECT_EQ(-1, actual.s);
+  EXPECT_EQ(0.6, actual.l);
 }
 
 TEST_F(BrowserThemePackTest, InvalidDisplayProperties) {

@@ -996,7 +996,7 @@ void BrowserThemePack::BuildTintsFromJSON(
       if (tint_list->GetDouble(0, &hsl.h) &&
           tint_list->GetDouble(1, &hsl.s) &&
           tint_list->GetDouble(2, &hsl.l)) {
-        ClampHSL(&hsl);
+        MakeHSLShiftValid(&hsl);
         int id = GetIntForString(iter.key(), kTintTable, kTintTableLength);
         if (id != -1) {
           temp_tints[id] = hsl;
