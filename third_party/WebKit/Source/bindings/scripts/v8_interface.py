@@ -1044,7 +1044,7 @@ def interface_length(interface, constructors):
 
 def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
-        if v8_methods.use_output_parameter_for_result(idl_type):
+        if idl_type.use_output_parameter_for_result:
             return 'result.isNull()'
         if idl_type.name == 'String':
             return 'result.isNull()'
@@ -1055,7 +1055,7 @@ def property_getter(getter, cpp_arguments):
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
-    use_output_parameter_for_result = v8_methods.use_output_parameter_for_result(idl_type)
+    use_output_parameter_for_result = idl_type.use_output_parameter_for_result
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'impl->%s' % cpp_name(getter)

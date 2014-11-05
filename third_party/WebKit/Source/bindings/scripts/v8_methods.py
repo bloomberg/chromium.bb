@@ -62,10 +62,6 @@ def use_local_result(method):
             idl_type.is_explicit_nullable)
 
 
-def use_output_parameter_for_result(idl_type):
-    return idl_type.is_dictionary or idl_type.is_union_type
-
-
 def method_context(interface, method, is_visible=True):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
@@ -182,7 +178,7 @@ def method_context(interface, method, is_visible=True):
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
-        'use_output_parameter_for_result': use_output_parameter_for_result(idl_type),
+        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
@@ -310,7 +306,7 @@ def cpp_value(interface, method, number_of_arguments):
     # If a method returns an IDL dictionary or union type, the return value is
     # passed as an argument to impl classes.
     idl_type = method.idl_type
-    if idl_type and use_output_parameter_for_result(idl_type):
+    if idl_type and idl_type.use_output_parameter_for_result:
         cpp_arguments.append('result')
 
     if method.name == 'Constructor':

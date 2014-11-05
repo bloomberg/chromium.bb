@@ -30,15 +30,15 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isBoolean() const { return m_type == SpecificTypeBoolean; }
-    bool getAsBoolean();
+    bool getAsBoolean() const;
     void setBoolean(bool);
 
     bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString();
+    String getAsString() const;
     void setString(String);
 
     bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
-    double getAsUnrestrictedDouble();
+    double getAsUnrestrictedDouble() const;
     void setUnrestrictedDouble(double);
 
 private:
@@ -68,6 +68,45 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOr
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+class DoubleOrString final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    DoubleOrString();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isDouble() const { return m_type == SpecificTypeDouble; }
+    double getAsDouble() const;
+    void setDouble(double);
+
+    bool isString() const { return m_type == SpecificTypeString; }
+    String getAsString() const;
+    void setString(String);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeDouble,
+        SpecificTypeString,
+    };
+    SpecificTypes m_type;
+
+    double m_double;
+    String m_string;
+};
+
+class V8DoubleOrString final {
+public:
+    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, DoubleOrString&, ExceptionState&);
+};
+
+v8::Handle<v8::Value> toV8(DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
 class NodeOrNodeList final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -75,11 +114,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isNode() const { return m_type == SpecificTypeNode; }
-    PassRefPtrWillBeRawPtr<Node> getAsNode();
+    PassRefPtrWillBeRawPtr<Node> getAsNode() const;
     void setNode(PassRefPtrWillBeRawPtr<Node>);
 
     bool isNodeList() const { return m_type == SpecificTypeNodeList; }
-    PassRefPtrWillBeRawPtr<NodeList> getAsNodeList();
+    PassRefPtrWillBeRawPtr<NodeList> getAsNodeList() const;
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
     void trace(Visitor*);
@@ -116,15 +155,15 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString();
+    String getAsString() const;
     void setString(String);
 
     bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
-    PassRefPtr<TestArrayBuffer> getAsArrayBuffer();
+    PassRefPtr<TestArrayBuffer> getAsArrayBuffer() const;
     void setArrayBuffer(PassRefPtr<TestArrayBuffer>);
 
     bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
-    PassRefPtr<TestArrayBufferView> getAsArrayBufferView();
+    PassRefPtr<TestArrayBufferView> getAsArrayBufferView() const;
     void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
 
 private:
@@ -161,11 +200,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString();
+    String getAsString() const;
     void setString(String);
 
     bool isDouble() const { return m_type == SpecificTypeDouble; }
-    double getAsDouble();
+    double getAsDouble() const;
     void setDouble(double);
 
 private:
@@ -200,11 +239,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
-    RawPtr<TestInterfaceGarbageCollected> getAsTestInterfaceGarbageCollected();
+    RawPtr<TestInterfaceGarbageCollected> getAsTestInterfaceGarbageCollected() const;
     void setTestInterfaceGarbageCollected(RawPtr<TestInterfaceGarbageCollected>);
 
     bool isString() const { return m_type == SpecificTypeString; }
-    String getAsString();
+    String getAsString() const;
     void setString(String);
 
     void trace(Visitor*);
@@ -241,11 +280,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
-    PassRefPtr<TestInterfaceImplementation> getAsTestInterface();
+    PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
     void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
 
     bool isLong() const { return m_type == SpecificTypeLong; }
-    int getAsLong();
+    int getAsLong() const;
     void setLong(int);
 
 private:
@@ -280,11 +319,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
-    PassRefPtr<TestInterfaceImplementation> getAsTestInterface();
+    PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
     void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
 
     bool isTestInterfaceEmpty() const { return m_type == SpecificTypeTestInterfaceEmpty; }
-    PassRefPtr<TestInterfaceEmpty> getAsTestInterfaceEmpty();
+    PassRefPtr<TestInterfaceEmpty> getAsTestInterfaceEmpty() const;
     void setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
 
 private:
@@ -319,11 +358,11 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterfaceWillBeGarbageCollected() const { return m_type == SpecificTypeTestInterfaceWillBeGarbageCollected; }
-    PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> getAsTestInterfaceWillBeGarbageCollected();
+    PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> getAsTestInterfaceWillBeGarbageCollected() const;
     void setTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>);
 
     bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
-    TestDictionary getAsTestDictionary();
+    TestDictionary getAsTestDictionary() const;
     void setTestDictionary(TestDictionary);
 
     void trace(Visitor*);

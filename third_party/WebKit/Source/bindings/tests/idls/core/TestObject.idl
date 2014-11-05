@@ -155,6 +155,8 @@ interface TestObject {
     static attribute long staticLongAttribute;
     // Exceptional type
     attribute EventHandler eventHandlerAttribute;
+    // Union types
+    attribute (double or DOMString) doubleOrStringAttribute;
 
     // Extended attributes
     [LogActivity, LogAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;

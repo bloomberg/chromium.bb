@@ -32,7 +32,7 @@ BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble()
 {
 }
 
-bool BooleanOrStringOrUnrestrictedDouble::getAsBoolean()
+bool BooleanOrStringOrUnrestrictedDouble::getAsBoolean() const
 {
     ASSERT(isBoolean());
     return m_boolean;
@@ -45,7 +45,7 @@ void BooleanOrStringOrUnrestrictedDouble::setBoolean(bool value)
     m_type = SpecificTypeBoolean;
 }
 
-String BooleanOrStringOrUnrestrictedDouble::getAsString()
+String BooleanOrStringOrUnrestrictedDouble::getAsString() const
 {
     ASSERT(isString());
     return m_string;
@@ -58,7 +58,7 @@ void BooleanOrStringOrUnrestrictedDouble::setString(String value)
     m_type = SpecificTypeString;
 }
 
-double BooleanOrStringOrUnrestrictedDouble::getAsUnrestrictedDouble()
+double BooleanOrStringOrUnrestrictedDouble::getAsUnrestrictedDouble() const
 {
     ASSERT(isUnrestrictedDouble());
     return m_unrestrictedDouble;
@@ -114,12 +114,78 @@ v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle
     return v8::Handle<v8::Value>();
 }
 
+DoubleOrString::DoubleOrString()
+    : m_type(SpecificTypeNone)
+{
+}
+
+double DoubleOrString::getAsDouble() const
+{
+    ASSERT(isDouble());
+    return m_double;
+}
+
+void DoubleOrString::setDouble(double value)
+{
+    ASSERT(isNull());
+    m_double = value;
+    m_type = SpecificTypeDouble;
+}
+
+String DoubleOrString::getAsString() const
+{
+    ASSERT(isString());
+    return m_string;
+}
+
+void DoubleOrString::setString(String value)
+{
+    ASSERT(isNull());
+    m_string = value;
+    m_type = SpecificTypeString;
+}
+
+void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (v8Value->IsNumber()) {
+        TONATIVE_VOID_EXCEPTIONSTATE(double, cppValue, toDouble(v8Value, exceptionState), exceptionState);
+        impl.setDouble(cppValue);
+        return;
+    }
+
+    {
+        TOSTRING_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, v8Value, exceptionState);
+        impl.setString(cppValue);
+        return;
+    }
+
+    exceptionState.throwTypeError("Not a valid union member.");
+}
+
+v8::Handle<v8::Value> toV8(DoubleOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (impl.isNull())
+        return v8::Null(isolate);
+
+    if (impl.isDouble())
+        return v8::Number::New(isolate, impl.getAsDouble());
+
+    if (impl.isString())
+        return v8String(isolate, impl.getAsString());
+
+    ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Value>();
+}
+
 NodeOrNodeList::NodeOrNodeList()
     : m_type(SpecificTypeNone)
 {
 }
 
-PassRefPtrWillBeRawPtr<Node> NodeOrNodeList::getAsNode()
+PassRefPtrWillBeRawPtr<Node> NodeOrNodeList::getAsNode() const
 {
     ASSERT(isNode());
     return m_node;
@@ -132,7 +198,7 @@ void NodeOrNodeList::setNode(PassRefPtrWillBeRawPtr<Node> value)
     m_type = SpecificTypeNode;
 }
 
-PassRefPtrWillBeRawPtr<NodeList> NodeOrNodeList::getAsNodeList()
+PassRefPtrWillBeRawPtr<NodeList> NodeOrNodeList::getAsNodeList() const
 {
     ASSERT(isNodeList());
     return m_nodeList;
@@ -191,7 +257,7 @@ StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView()
 {
 }
 
-String StringOrArrayBufferOrArrayBufferView::getAsString()
+String StringOrArrayBufferOrArrayBufferView::getAsString() const
 {
     ASSERT(isString());
     return m_string;
@@ -204,7 +270,7 @@ void StringOrArrayBufferOrArrayBufferView::setString(String value)
     m_type = SpecificTypeString;
 }
 
-PassRefPtr<TestArrayBuffer> StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer()
+PassRefPtr<TestArrayBuffer> StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer() const
 {
     ASSERT(isArrayBuffer());
     return m_arrayBuffer;
@@ -217,7 +283,7 @@ void StringOrArrayBufferOrArrayBufferView::setArrayBuffer(PassRefPtr<TestArrayBu
     m_type = SpecificTypeArrayBuffer;
 }
 
-PassRefPtr<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView()
+PassRefPtr<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView() const
 {
     ASSERT(isArrayBufferView());
     return m_arrayBufferView;
@@ -279,7 +345,7 @@ StringOrDouble::StringOrDouble()
 {
 }
 
-String StringOrDouble::getAsString()
+String StringOrDouble::getAsString() const
 {
     ASSERT(isString());
     return m_string;
@@ -292,7 +358,7 @@ void StringOrDouble::setString(String value)
     m_type = SpecificTypeString;
 }
 
-double StringOrDouble::getAsDouble()
+double StringOrDouble::getAsDouble() const
 {
     ASSERT(isDouble());
     return m_double;
@@ -345,7 +411,7 @@ TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString()
 {
 }
 
-RawPtr<TestInterfaceGarbageCollected> TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected()
+RawPtr<TestInterfaceGarbageCollected> TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const
 {
     ASSERT(isTestInterfaceGarbageCollected());
     return m_testInterfaceGarbageCollected;
@@ -358,7 +424,7 @@ void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(Raw
     m_type = SpecificTypeTestInterfaceGarbageCollected;
 }
 
-String TestInterfaceGarbageCollectedOrString::getAsString()
+String TestInterfaceGarbageCollectedOrString::getAsString() const
 {
     ASSERT(isString());
     return m_string;
@@ -416,7 +482,7 @@ TestInterfaceOrLong::TestInterfaceOrLong()
 {
 }
 
-PassRefPtr<TestInterfaceImplementation> TestInterfaceOrLong::getAsTestInterface()
+PassRefPtr<TestInterfaceImplementation> TestInterfaceOrLong::getAsTestInterface() const
 {
     ASSERT(isTestInterface());
     return m_testInterface;
@@ -429,7 +495,7 @@ void TestInterfaceOrLong::setTestInterface(PassRefPtr<TestInterfaceImplementatio
     m_type = SpecificTypeTestInterface;
 }
 
-int TestInterfaceOrLong::getAsLong()
+int TestInterfaceOrLong::getAsLong() const
 {
     ASSERT(isLong());
     return m_long;
@@ -488,7 +554,7 @@ TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty()
 {
 }
 
-PassRefPtr<TestInterfaceImplementation> TestInterfaceOrTestInterfaceEmpty::getAsTestInterface()
+PassRefPtr<TestInterfaceImplementation> TestInterfaceOrTestInterfaceEmpty::getAsTestInterface() const
 {
     ASSERT(isTestInterface());
     return m_testInterface;
@@ -501,7 +567,7 @@ void TestInterfaceOrTestInterfaceEmpty::setTestInterface(PassRefPtr<TestInterfac
     m_type = SpecificTypeTestInterface;
 }
 
-PassRefPtr<TestInterfaceEmpty> TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty()
+PassRefPtr<TestInterfaceEmpty> TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const
 {
     ASSERT(isTestInterfaceEmpty());
     return m_testInterfaceEmpty;
@@ -554,7 +620,7 @@ TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageC
 {
 }
 
-PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestInterfaceWillBeGarbageCollected()
+PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestInterfaceWillBeGarbageCollected() const
 {
     ASSERT(isTestInterfaceWillBeGarbageCollected());
     return m_testInterfaceWillBeGarbageCollected;
@@ -567,7 +633,7 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestInterfaceWillBe
     m_type = SpecificTypeTestInterfaceWillBeGarbageCollected;
 }
 
-TestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestDictionary()
+TestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestDictionary() const
 {
     ASSERT(isTestDictionary());
     return m_testDictionary;

@@ -7,6 +7,37 @@
 
 namespace blink {
 
+void UnionTypesTest::doubleOrStringAttribute(DoubleOrString& doubleOrString)
+{
+    switch (m_attributeType) {
+    case SpecificTypeNone:
+        // Default value is zero (of double).
+        doubleOrString.setDouble(0);
+        break;
+    case SpecificTypeDouble:
+        doubleOrString.setDouble(m_attributeDouble);
+        break;
+    case SpecificTypeString:
+        doubleOrString.setString(m_attributeString);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+}
+
+void UnionTypesTest::setDoubleOrStringAttribute(const DoubleOrString& doubleOrString)
+{
+    if (doubleOrString.isDouble()) {
+        m_attributeDouble = doubleOrString.getAsDouble();
+        m_attributeType = SpecificTypeDouble;
+    } else if (doubleOrString.isString()) {
+        m_attributeString = doubleOrString.getAsString();
+        m_attributeType = SpecificTypeString;
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+}
+
 String UnionTypesTest::doubleOrStringArg(DoubleOrString& doubleOrString)
 {
     ASSERT(!doubleOrString.isNull());

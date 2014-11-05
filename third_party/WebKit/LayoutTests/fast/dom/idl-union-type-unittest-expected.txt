@@ -3,6 +3,15 @@ IDL union types unittests
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+Tests for attributes
+PASS unionTypesTest.doubleOrStringAttribute is 0
+PASS unionTypesTest.doubleOrStringAttribute is 3.14
+PASS unionTypesTest.doubleOrStringAttribute is "foo"
+PASS unionTypesTest.doubleOrStringAttribute is "undefined"
+PASS unionTypesTest.doubleOrStringAttribute is "null"
+PASS unionTypesTest.doubleOrStringAttribute is "[object Object]"
+PASS unionTypesTest.doubleOrStringAttribute is ""
+
 Tests for method arguments
 PASS unionTypesTest.doubleOrStringArg(3.14) is "double is passed: 3.14"
 PASS unionTypesTest.doubleOrStringArg("foo") is "string is passed: foo"

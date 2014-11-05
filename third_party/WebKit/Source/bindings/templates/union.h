@@ -26,7 +26,7 @@ public:
 
     {% for member in container.members %}
     bool is{{member.type_name}}() const { return m_type == {{member.specific_type_enum}}; }
-    {{member.rvalue_cpp_type}} getAs{{member.type_name}}();
+    {{member.rvalue_cpp_type}} getAs{{member.type_name}}() const;
     void set{{member.type_name}}({{member.rvalue_cpp_type}});
 
     {% endfor %}

@@ -5,5 +5,7 @@
 [
     GarbageCollected
 ] interface UnionTypesTest {
+    attribute (double or DOMString) doubleOrStringAttribute;
+
     DOMString doubleOrStringArg((double or DOMString) arg);
 };

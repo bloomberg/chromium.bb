@@ -631,6 +631,15 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 IdlTypeBase.v8_value_to_local_cpp_value = v8_value_to_local_cpp_value
 
 
+def use_output_parameter_for_result(idl_type):
+    """True when methods/getters which return the given idl_type should
+    take the output argument.
+    """
+    return idl_type.is_dictionary or idl_type.is_union_type
+
+IdlTypeBase.use_output_parameter_for_result = property(use_output_parameter_for_result)
+
+
 ################################################################################
 # C++ -> V8
 ################################################################################

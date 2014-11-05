@@ -125,6 +125,7 @@ def attribute_context(interface, attribute):
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
+        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
         'name': attribute.name,
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
@@ -234,6 +235,8 @@ def getter_expression(interface, attribute, context):
         arguments.append('isNull')
     if context['is_getter_raises_exception']:
         arguments.append('exceptionState')
+    if attribute.idl_type.use_output_parameter_for_result:
+        arguments.append('result')
     return '%s(%s)' % (getter_name, ', '.join(arguments))
 
 

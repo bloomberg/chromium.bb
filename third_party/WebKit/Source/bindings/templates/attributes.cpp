@@ -95,6 +95,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% elif world_suffix %}
     {{attribute.v8_set_return_value_for_main_world}};
     {% else %}
+    {% if attribute.use_output_parameter_for_result %}
+    {{attribute.cpp_type}} result;
+    {{attribute.cpp_value}};
+    {% endif %}
     {{attribute.v8_set_return_value}};
     {% endif %}
 }
@@ -222,6 +226,9 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
         exceptionState.throwIfNeeded();
         return;
     }
+    {% endif %}
+    {% if attribute.use_output_parameter_for_result %}
+    {{attribute.cpp_type}} cppValue;
     {% endif %}
     {# impl #}
     {% if attribute.put_forwards %}

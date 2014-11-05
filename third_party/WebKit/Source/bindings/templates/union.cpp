@@ -27,7 +27,7 @@ namespace blink {
 }
 
 {% for member in container.members %}
-{{member.rvalue_cpp_type}} {{container.cpp_class}}::getAs{{member.type_name}}()
+{{member.rvalue_cpp_type}} {{container.cpp_class}}::getAs{{member.type_name}}() const
 {
     ASSERT(is{{member.type_name}}());
     return m_{{member.cpp_name}};
