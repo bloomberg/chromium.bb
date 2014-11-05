@@ -551,11 +551,14 @@ cr.define('options', function() {
 
     /**
      * Display the "Manage Profile" dialog.
+     * @param {boolean=} opt_updateHistory If we should update the history after
+     *     showing the dialog (defaults to true).
      * @private
      */
-    showManageDialog_: function() {
+    showManageDialog_: function(opt_updateHistory) {
+      var updateHistory = opt_updateHistory !== false;
       this.prepareForManageDialog_();
-      PageManager.showPageByName('manageProfile');
+      PageManager.showPageByName('manageProfile', updateHistory);
     },
 
     /**

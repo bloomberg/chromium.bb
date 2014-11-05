@@ -1411,7 +1411,7 @@ cr.define('options', function() {
       // date. If showing the "delete" overlay, close it.
       if (ManageProfileOverlay.getInstance().visible &&
           !$('manage-profile-overlay-manage').hidden) {
-        ManageProfileOverlay.showManageDialog();
+        ManageProfileOverlay.showManageDialog(false);
       } else {
         ManageProfileOverlay.getInstance().visible = false;
       }
