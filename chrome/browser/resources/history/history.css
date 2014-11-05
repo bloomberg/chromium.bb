@@ -408,17 +408,6 @@ html[dir='rtl'] .site-domain {
   background-color: rgb(225, 255, 205);
   color: rgb(148, 148, 148);
 }
-
-/* TODO(sergiu): If this is the final icon replace it with a separate resource.
- */
-.blocked-indicator {
-  background: url('../ssl/images/roadblock.png');
-  background-size: 30%;
-}
-
-.blocked-indicator .title {
-  color: rgb(151, 156, 160);
-}
 </if>
 
 .entry-box,
@@ -452,7 +441,11 @@ html[dir='rtl'] .site-domain {
 .site-domain {
   /* Make room for the favicon. */
   -webkit-padding-start: 16px;
+}
 
+.entry .visit-entry,
+.site-domain,
+.blocked-indicator {
   /* Control the favicon appearance. */
   background-position-y: center;
   background-repeat: no-repeat;
@@ -460,9 +453,23 @@ html[dir='rtl'] .site-domain {
 }
 
 html[dir='rtl'] .entry .visit-entry,
-html[dir='rtl'] .site-domain {
+html[dir='rtl'] .site-domain,
+html[dir='rtl'] .blocked-indicator {
   background-position-x: right;
 }
+
+<if expr="not is_android">
+/* TODO(sergiu): If this is the final icon replace it with a separate resource.
+ */
+.entry .blocked-indicator {
+  -webkit-padding-start: 20px;  /* 16px for favicon, 4px for <a> padding. */
+  background-image: url(../ssl/images/roadblock.png);
+}
+
+.blocked-indicator .title {
+  color: rgb(151, 156, 160);
+}
+</if>
 
 .site-domain button:hover {
   text-decoration: none;
