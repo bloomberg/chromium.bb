@@ -186,6 +186,12 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
     }
 
     @Override
+    public void disableRedirects() {
+        validateNotStarted();
+        mConnection.setFollowRedirects(false);
+    }
+
+    @Override
     public void start() {
         getExecutor().execute(new Runnable() {
             @Override

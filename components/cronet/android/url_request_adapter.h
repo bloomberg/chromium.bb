@@ -20,6 +20,7 @@ namespace net {
 class GrowableIOBuffer;
 class HttpResponseHeaders;
 class UploadDataStream;
+class RedirectInfo;
 }  // namespace net
 
 namespace cronet {
@@ -61,6 +62,9 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
 
   // Sets the request to streaming upload.
   void SetUploadChannel(JNIEnv* env, int64 content_length);
+
+  // Disables redirect. Note that redirect is enabled by default.
+  void DisableRedirects();
 
   // Indicates that the request body will be streamed by calling AppendChunk()
   // repeatedly. This must be called before Start().
@@ -112,10 +116,12 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   // Get NPN or ALPN Negotiated Protocol (if any) from HttpResponseInfo.
   std::string GetNegotiatedProtocol() const;
 
-  virtual void OnResponseStarted(net::URLRequest* request) override;
-
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) override;
+  // net::URLRequest::Delegate implementation:
+  void OnResponseStarted(net::URLRequest* request) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
 
   bool OnNetworkThread() const;
 
@@ -151,6 +157,8 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   bool canceled_;
   int64 expected_size_;
   bool chunked_upload_;
+  // Indicates whether redirect has been disabled.
+  bool disable_redirect_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAdapter);
 };

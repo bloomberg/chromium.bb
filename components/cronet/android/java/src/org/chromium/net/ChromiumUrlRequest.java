@@ -60,6 +60,8 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private boolean mContentLengthOverLimit;
     private boolean mSkippingToOffset;
     private long mSize;
+    // Indicates whether redirects have been disabled.
+    private boolean mDisableRedirects;
     private final Object mLock = new Object();
 
     public ChromiumUrlRequest(ChromiumUrlRequestContext requestContext,
@@ -175,6 +177,9 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
                     host = mUrl;
                 }
                 return new UnknownHostException("Unknown host: " + host);
+            case ChromiumUrlRequestError.TOO_MANY_REDIRECTS:
+                return new IOException("Request failed because there were too "
+                        + "many redirects or redirects have been disabled");
             default:
                 throw new IllegalStateException(
                         "Unrecognized error code: " + errorCode);
@@ -301,6 +306,13 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     public void setHttpMethod(String method) {
         validateNotStarted();
         mMethod = method;
+    }
+
+    @Override
+    public void disableRedirects() {
+        mDisableRedirects = true;
+        validateNotStarted();
+        nativeDisableRedirects(mUrlRequestAdapter);
     }
 
     public WritableByteChannel getSink() {
@@ -583,6 +595,9 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private void finish() {
         try {
             synchronized (mLock) {
+                if (mDisableRedirects) {
+                    mHeadersAvailable = true;
+                }
                 mFinished = true;
 
                 if (mRecycled) {
@@ -669,6 +684,8 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
 
     private native void nativeEnableChunkedUpload(long urlRequestAdapter,
             String contentType);
+
+    private native void nativeDisableRedirects(long urlRequestAdapter);
 
     private native void nativeAppendChunk(long urlRequestAdapter,
             ByteBuffer chunk, int chunkSize, boolean isLastChunk);

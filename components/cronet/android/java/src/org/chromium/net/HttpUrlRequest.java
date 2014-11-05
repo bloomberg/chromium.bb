@@ -83,6 +83,11 @@ public interface HttpUrlRequest {
     void setHttpMethod(String method);
 
     /**
+     * Disables redirect for this request.
+     */
+    void disableRedirects();
+
+    /**
      * Start executing the request.
      * <p>
      * If this is a streaming upload request using a ReadableByteChannel, the
