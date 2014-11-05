@@ -399,8 +399,14 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
 #if defined(OS_ANDROID)
+  // On Android, user gestures are normally required, unless that requirement
+  // is disabled with a command-line switch or the equivalent field trial is
+  // is set to "Enabled".
+  const std::string autoplay_group_name = base::FieldTrialList::FindFullName(
+      "MediaElementAutoplay");
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
-      switches::kDisableGestureRequirementForMediaPlayback);
+      switches::kDisableGestureRequirementForMediaPlayback) &&
+          (autoplay_group_name.empty() || autoplay_group_name != "Enabled");
 #endif
 
   prefs.touch_enabled = ui::AreTouchEventsEnabled();
