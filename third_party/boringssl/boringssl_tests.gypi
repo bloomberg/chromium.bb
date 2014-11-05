@@ -15,6 +15,9 @@
       'sources': [
         'src/crypto/base64/base64_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_bio_test',
@@ -25,6 +28,9 @@
       'sources': [
         'src/crypto/bio/bio_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_bn_test',
@@ -35,6 +41,9 @@
       'sources': [
         'src/crypto/bn/bn_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_bytestring_test',
@@ -45,6 +54,9 @@
       'sources': [
         'src/crypto/bytestring/bytestring_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_aead_test',
@@ -55,6 +67,9 @@
       'sources': [
         'src/crypto/cipher/aead_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_cipher_test',
@@ -65,6 +80,9 @@
       'sources': [
         'src/crypto/cipher/cipher_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_dh_test',
@@ -75,6 +93,9 @@
       'sources': [
         'src/crypto/dh/dh_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_dsa_test',
@@ -85,6 +106,9 @@
       'sources': [
         'src/crypto/dsa/dsa_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_example_mul',
@@ -95,6 +119,9 @@
       'sources': [
         'src/crypto/ec/example_mul.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_ecdsa_test',
@@ -105,6 +132,9 @@
       'sources': [
         'src/crypto/ecdsa/ecdsa_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_err_test',
@@ -115,6 +145,9 @@
       'sources': [
         'src/crypto/err/err_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_example_sign',
@@ -125,6 +158,9 @@
       'sources': [
         'src/crypto/evp/example_sign.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_hmac_test',
@@ -135,6 +171,9 @@
       'sources': [
         'src/crypto/hmac/hmac_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_lhash_test',
@@ -145,6 +184,9 @@
       'sources': [
         'src/crypto/lhash/lhash_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_md5_test',
@@ -155,6 +197,9 @@
       'sources': [
         'src/crypto/md5/md5_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_gcm_test',
@@ -165,6 +210,9 @@
       'sources': [
         'src/crypto/modes/gcm_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_pkcs12_test',
@@ -175,6 +223,9 @@
       'sources': [
         'src/crypto/pkcs8/pkcs12_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_rsa_test',
@@ -185,6 +236,9 @@
       'sources': [
         'src/crypto/rsa/rsa_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_sha1_test',
@@ -195,6 +249,9 @@
       'sources': [
         'src/crypto/sha/sha1_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_pkcs7_test',
@@ -205,6 +262,9 @@
       'sources': [
         'src/crypto/x509/pkcs7_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_pqueue_test',
@@ -215,6 +275,9 @@
       'sources': [
         'src/ssl/pqueue/pqueue_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'boringssl_ssl_test',
@@ -225,6 +288,9 @@
       'sources': [
         'src/ssl/ssl_test.c',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'variables': {

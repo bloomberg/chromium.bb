@@ -61,6 +61,12 @@ component("boringssl") {
     "src/crypto",
   ]
 
+  if (is_win) {
+    # TODO(davidben): Fix size_t truncations in BoringSSL.
+    # https://crbug.com/429039
+    cflags += [ "/wd4267"]
+  }
+
   if (cpu_arch == "x64") {
     if (is_mac) {
       sources += gypi_values.boringssl_mac_x86_64_sources

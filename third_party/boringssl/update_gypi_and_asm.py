@@ -220,6 +220,9 @@ def main():
       'sources': [
         '%s',
       ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
     },\n""" % (test_name, test))
       test_names.append(test_name)
 
