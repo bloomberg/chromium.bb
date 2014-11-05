@@ -37,7 +37,9 @@ const int kEasyUnlockKeyPrivileges =
 
 // TODO(xiyuan): Use real keys. http://crbug.com/409027
 const char kTpmPubKey[] = {
-    0x08, 0x02, 0x1a, 0x88, 0x02, 0x0a, 0x81, 0x02, 0x00, 0xdc, 0xfa, 0x10,
+    0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+    0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0f, 0x00,
+    0x30, 0x82, 0x01, 0x0a, 0x02, 0x82, 0x01, 0x01, 0x00, 0xdc, 0xfa, 0x10,
     0xff, 0xa7, 0x46, 0x65, 0xae, 0xef, 0x87, 0x09, 0x74, 0xea, 0x99, 0xb2,
     0xce, 0x54, 0x54, 0x7c, 0x67, 0xf4, 0x2a, 0xaa, 0x6d, 0xd0, 0x1a, 0x2e,
     0xd3, 0x1f, 0xd2, 0xc2, 0x42, 0xaf, 0x5d, 0x96, 0x0b, 0x1f, 0x89, 0x6e,
@@ -59,7 +61,7 @@ const char kTpmPubKey[] = {
     0x1e, 0xd1, 0xaa, 0x47, 0x3e, 0xd1, 0x18, 0x7e, 0xc1, 0xd8, 0xa7, 0x44,
     0xea, 0x34, 0x5b, 0xed, 0x7e, 0xa0, 0x0e, 0xe4, 0xe8, 0x1b, 0xba, 0x46,
     0x48, 0x60, 0x1d, 0xd5, 0x37, 0xdc, 0x91, 0x01, 0x5d, 0x31, 0xf0, 0xc2,
-    0xc1, 0x10, 0x81, 0x80, 0x04
+    0xc1, 0x02, 0x03, 0x01, 0x00, 0x01
 };
 
 }  // namespace
@@ -85,7 +87,9 @@ class EasyUnlockCreateKeysOperation::ChallengeCreator {
   void OnEcKeyPairGenerated(const std::string& ec_public_key,
                             const std::string& ec_private_key);
   void OnEskGenerated(const std::string& esk);
+  void OnTPMPublicKeyWrapped(const std::string& wrapped_key);
 
+  void WrapTPMPublicKey();
   void GeneratePayload();
   void OnPayloadMessageGenerated(const std::string& payload_message);
   void OnPayloadGenerated(const std::string& payload);
@@ -95,6 +99,7 @@ class EasyUnlockCreateKeysOperation::ChallengeCreator {
   const std::string user_key_;
   const std::string session_key_;
   const std::string tpm_pub_key_;
+  std::string wrapped_tpm_pub_key_;
   EasyUnlockDeviceKeyData* device_;
   ChallengeCreatedCallback callback_;
 
@@ -167,6 +172,25 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::OnEskGenerated(
   }
 
   esk_ = esk;
+  WrapTPMPublicKey();
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::WrapTPMPublicKey() {
+  easy_unlock_client_->WrapPublicKey(
+      easy_unlock::kKeyAlgorithmRSA,
+      tpm_pub_key_,
+      base::Bind(&ChallengeCreator::OnTPMPublicKeyWrapped,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EasyUnlockCreateKeysOperation::ChallengeCreator::OnTPMPublicKeyWrapped(
+    const std::string& wrapped_key) {
+  if (wrapped_key.empty()) {
+    LOG(ERROR) << "Unable to wrap RSA key";
+    callback_.Run(false);
+    return;
+  }
+  wrapped_tpm_pub_key_ = wrapped_key;
   GeneratePayload();
 }
 
@@ -174,8 +198,7 @@ void EasyUnlockCreateKeysOperation::ChallengeCreator::GeneratePayload() {
   // Work around to get HeaderAndBody bytes to use as challenge payload.
   EasyUnlockClient::CreateSecureMessageOptions options;
   options.key = esk_;
-  // TODO(xiyuan, tbarzic): Wrap in a GenericPublicKey proto.
-  options.verification_key_id = tpm_pub_key_;
+  options.verification_key_id = wrapped_tpm_pub_key_;
   options.encryption_type = easy_unlock::kEncryptionTypeAES256CBC;
   options.signature_type = easy_unlock::kSignatureTypeHMACSHA256;
 

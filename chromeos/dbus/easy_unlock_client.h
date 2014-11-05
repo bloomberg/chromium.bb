@@ -35,10 +35,6 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
                               const std::string& public_key)>
       KeyPairCallback;
 
-  // Generates ECDSA key pair using P256 curve.
-  // The created keys should only be used with this client.
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;
-
   // Parameters used to create a secure message.
   struct CreateSecureMessageOptions {
     CreateSecureMessageOptions();
@@ -97,6 +93,19 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
    private:
     DISALLOW_COPY_AND_ASSIGN(UnwrapSecureMessageOptions);
   };
+
+  // Generates ECDSA key pair using P256 curve.
+  // The created keys should only be used with this client.
+  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;
+
+  // Converts public key bytes to format used by Easy Unlock.
+  // |key_algorithm|: The asymmetric encryption algorithm with which the key is
+  //     used.
+  // |public_key|: The key that should be wrapped.
+  // |callback|: The callback carrying the wrapped key.
+  virtual void WrapPublicKey(const std::string& key_algorithm,
+                             const std::string& public_key,
+                             const DataCallback& callback) = 0;
 
   // Given a private and a public key, creates a symetric secret key using
   // EC Diffe-Hellman key exchange. The provided keys come from different

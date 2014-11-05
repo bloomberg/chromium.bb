@@ -69,6 +69,15 @@ void FakeEasyUnlockClient::GenerateEcP256KeyPair(
                          generated_keys_count_));
 }
 
+void FakeEasyUnlockClient::WrapPublicKey(const std::string& key_algorithm,
+                                         const std::string& public_key,
+                                         const DataCallback& callback) {
+  callback.Run(base::StringPrintf(
+      "{\"wrapped_key\": {\"algorithm\":\"%s\", \"key\":\"%s\"}}",
+      key_algorithm.c_str(),
+      public_key.c_str()));
+}
+
 void FakeEasyUnlockClient::PerformECDHKeyAgreement(
     const std::string& private_key,
     const std::string& public_key,

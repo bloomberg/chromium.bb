@@ -41,12 +41,39 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
  public:
   EasyUnlockClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
 
-  virtual ~EasyUnlockClientImpl() {}
+  ~EasyUnlockClientImpl() override {}
 
   // EasyUnlockClient override.
-  virtual void PerformECDHKeyAgreement(const std::string& private_key,
-                                       const std::string& public_key,
-                                       const DataCallback& callback) override {
+  void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
+    dbus::MethodCall method_call(
+        easy_unlock::kEasyUnlockServiceInterface,
+        easy_unlock::kGenerateEcP256KeyPairMethod);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&EasyUnlockClientImpl::OnKeyPair,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // EasyUnlockClient override.
+  void WrapPublicKey(const std::string& key_algorithm,
+                     const std::string& public_key,
+                     const DataCallback& callback) override {
+    dbus::MethodCall method_call(
+        easy_unlock::kEasyUnlockServiceInterface,
+        easy_unlock::kWrapPublicKeyMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(key_algorithm);
+    AppendStringAsByteArray(public_key, &writer);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&EasyUnlockClientImpl::OnData,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // EasyUnlockClient override.
+  void PerformECDHKeyAgreement(const std::string& private_key,
+                               const std::string& public_key,
+                               const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kPerformECDHKeyAgreementMethod);
@@ -62,20 +89,9 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
   // EasyUnlockClient override.
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
-    dbus::MethodCall method_call(
-        easy_unlock::kEasyUnlockServiceInterface,
-        easy_unlock::kGenerateEcP256KeyPairMethod);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnKeyPair,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
-  }
-
-  // EasyUnlockClient override.
-  virtual void CreateSecureMessage(const std::string& payload,
-                                   const CreateSecureMessageOptions& options,
-                                   const DataCallback& callback) override {
+  void CreateSecureMessage(const std::string& payload,
+                           const CreateSecureMessageOptions& options,
+                           const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kCreateSecureMessageMethod);
@@ -97,9 +113,9 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
   // EasyUnlockClient override.
-  virtual void UnwrapSecureMessage(const std::string& message,
-                                   const UnwrapSecureMessageOptions& options,
-                                   const DataCallback& callback) override {
+  void UnwrapSecureMessage(const std::string& message,
+                           const UnwrapSecureMessageOptions& options,
+                           const DataCallback& callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kUnwrapSecureMessageMethod);
@@ -118,7 +134,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     proxy_ =
         bus->GetObjectProxy(
             easy_unlock::kEasyUnlockServiceName,
