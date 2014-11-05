@@ -113,7 +113,7 @@ void PrivetV3SetupFlow::OnPairingDone(PrivetV3Session::Result result) {
 
 void PrivetV3SetupFlow::OnSetupMessageSent(
     PrivetV3Session::Result result,
-    const base::DictionaryValue& responce) {
+    const base::DictionaryValue& response) {
   if (result != PrivetV3Session::Result::STATUS_SUCCESS)
     return OnSetupError();
   delegate_->OnSetupDone();

@@ -83,7 +83,7 @@ void PrivetV3Session::FetcherDelegate::OnParsedJson(
   if (session_) {
     DeleteThis();
     callback_.Run(
-        has_error ? Result::STATUS_SETUPERROR : Result::STATUS_SUCCESS, value);
+        has_error ? Result::STATUS_DEVICEERROR : Result::STATUS_SUCCESS, value);
   }
 }
 

@@ -86,7 +86,7 @@ class PrivetV3SetupFlow {
   void OnPairingStarted(PrivetV3Session::Result result);
   void OnPairingDone(PrivetV3Session::Result result);
   void OnSetupMessageSent(PrivetV3Session::Result result,
-                          const base::DictionaryValue& responce);
+                          const base::DictionaryValue& response);
 
   Delegate* delegate_;
   std::string service_name_;

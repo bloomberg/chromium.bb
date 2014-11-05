@@ -283,13 +283,16 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
 
 void PrivetURLFetcher::OnURLFetchCompleteParseData(
     const net::URLFetcher* source) {
-  if (source->GetResponseCode() != net::HTTP_OK) {
+  // Response contains error description.
+  bool is_error_response = false;
+  if (v3_mode_ && source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
+    is_error_response = true;
+  } else if (source->GetResponseCode() != net::HTTP_OK) {
     delegate_->OnError(this, RESPONSE_CODE_ERROR);
     return;
   }
 
   std::string response_str;
-
   if (!source->GetResponseAsString(&response_str)) {
     delegate_->OnError(this, URL_FETCH_ERROR);
     return;
@@ -313,7 +316,7 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
   }
 
   std::string error;
-  if (dictionary_value->GetString(kPrivetKeyError, &error)) {
+  if (!v3_mode_ && dictionary_value->GetString(kPrivetKeyError, &error)) {
     if (error == kPrivetErrorInvalidXPrivetToken) {
       RequestTokenRefresh();
       return;
@@ -329,10 +332,10 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
         return;
       }
     }
+    is_error_response = true;
   }
 
-  delegate_->OnParsedJson(
-      this, *dictionary_value, dictionary_value->HasKey(kPrivetKeyError));
+  delegate_->OnParsedJson(this, *dictionary_value, is_error_response);
 }
 
 void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {

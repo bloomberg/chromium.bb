@@ -166,7 +166,7 @@ TEST_F(PrivetV3SetupFlowTest, InvalidTicket) {
   setup_.Register(kServiceName);
 }
 
-TEST_F(PrivetV3SetupFlowTest, InvalidDeviceResponce) {
+TEST_F(PrivetV3SetupFlowTest, InvalidDeviceResponse) {
   EXPECT_CALL(delegate_, OnSetupError()).Times(1);
   EXPECT_CALL(delegate_, ConfirmSecurityCode(_))
       .Times(1)
