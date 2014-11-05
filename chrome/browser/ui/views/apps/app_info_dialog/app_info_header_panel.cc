@@ -68,36 +68,32 @@ void AppInfoHeaderPanel::CreateControls() {
   AddChildView(app_icon_);
   LoadAppImageAsync();
 
+  // Create a vertical container to store the app's name and link.
+  views::View* vertical_info_container = new views::View();
+  views::BoxLayout* vertical_container_layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  vertical_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  vertical_info_container->SetLayoutManager(vertical_container_layout);
+  AddChildView(vertical_info_container);
+
   views::Label* app_name_label =
       new views::Label(base::UTF8ToUTF16(app_->name()),
                        ui::ResourceBundle::GetSharedInstance().GetFontList(
                            ui::ResourceBundle::MediumFont));
   app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  vertical_info_container->AddChildView(app_name_label);
 
-  if (!CanShowAppInWebStore()) {
+  if (CanShowAppInWebStore()) {
+    view_in_store_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
+    view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    view_in_store_link_->set_listener(this);
+    vertical_info_container->AddChildView(view_in_store_link_);
+  } else {
     // If there's no link, allow the app's name to take up multiple lines.
     // TODO(sashab): Limit the number of lines to 2.
     app_name_label->SetMultiLine(true);
-    AddChildView(app_name_label);
-  } else {
-    // Create a vertical container to store the app's name and link.
-    views::View* vertical_info_container = new views::View();
-    views::BoxLayout* vertical_container_layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
-    vertical_container_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-    vertical_info_container->SetLayoutManager(vertical_container_layout);
-
-    vertical_info_container->AddChildView(app_name_label);
-    if (CanShowAppInWebStore()) {
-      view_in_store_link_ = new views::Link(
-          l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
-      view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      view_in_store_link_->set_listener(this);
-      vertical_info_container->AddChildView(view_in_store_link_);
-    }
-
-    AddChildView(vertical_info_container);
   }
 }
 
