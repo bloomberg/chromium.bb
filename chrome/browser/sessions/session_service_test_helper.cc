@@ -60,7 +60,8 @@ void SessionServiceTestHelper::ReadWindows(
     SessionID::id_type* active_window_id) {
   Time last_time;
   ScopedVector<SessionCommand> read_commands;
-  backend()->ReadLastSessionCommandsImpl(&read_commands);
+  service()->GetBaseSessionServiceForTest()->ReadLastSessionCommandsForTest(
+      &read_commands);
   RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
 }
@@ -103,10 +104,6 @@ void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(
   EXPECT_EQ(nav_count, windows[0]->tabs[0]->navigations.size());
 }
 
-SessionBackend* SessionServiceTestHelper::backend() {
-  return service_->backend();
-}
-
 void SessionServiceTestHelper::SetService(SessionService* service) {
   service_.reset(service);
   // Execute IO tasks posted by the SessionService.
@@ -116,5 +113,6 @@ void SessionServiceTestHelper::SetService(SessionService* service) {
 void SessionServiceTestHelper::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  service_->RunTaskOnBackendThread(from_here, task);
+  service_->GetBaseSessionServiceForTest()->RunTaskOnBackendThread(from_here,
+                                                                   task);
 }

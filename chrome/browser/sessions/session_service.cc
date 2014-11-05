@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
-#include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -65,12 +64,12 @@ static const int kWritesPerReset = 250;
 // SessionService -------------------------------------------------------------
 
 SessionService::SessionService(Profile* profile)
-    : BaseSessionService(
-        SESSION_RESTORE,
-        profile->GetPath(),
-        scoped_ptr<BaseSessionServiceDelegate>(
-            new BaseSessionServiceDelegateImpl(true))),
+    : BaseSessionServiceDelegateImpl(true),
       profile_(profile),
+      base_session_service_(
+        new BaseSessionService(BaseSessionService::SESSION_RESTORE,
+                               profile->GetPath(),
+                               this)),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
@@ -84,12 +83,12 @@ SessionService::SessionService(Profile* profile)
 }
 
 SessionService::SessionService(const base::FilePath& save_path)
-    : BaseSessionService(
-        SESSION_RESTORE,
-        save_path,
-        scoped_ptr<BaseSessionServiceDelegate>(
-            new BaseSessionServiceDelegateImpl(false))),
+    : BaseSessionServiceDelegateImpl(false),
       profile_(NULL),
+      base_session_service_(
+        new BaseSessionService(BaseSessionService::SESSION_RESTORE,
+                               save_path,
+                               this)),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
@@ -104,7 +103,7 @@ SessionService::~SessionService() {
   // The BrowserList should outlive the SessionService since it's static and
   // the SessionService is a KeyedService.
   BrowserList::RemoveObserver(this);
-  Save();
+  base_session_service_->Save();
 }
 
 bool SessionService::ShouldNewWindowStartSession() {
@@ -142,11 +141,11 @@ void SessionService::MoveCurrentSessionToLastSession() {
   window_closing_ids_.clear();
   pending_window_close_ids_.clear();
 
-  Save();
+  base_session_service_->MoveCurrentSessionToLastSession();
+}
 
-  RunTaskOnBackendThread(
-      FROM_HERE, base::Bind(&SessionBackend::MoveCurrentSessionToLastSession,
-                            backend()));
+void SessionService::DeleteLastSession() {
+  base_session_service_->DeleteLastSession();
 }
 
 void SessionService::SetTabWindow(const SessionID& window_id,
@@ -426,13 +425,8 @@ void SessionService::TabRestored(WebContents* tab, bool pinned) {
   if (!ShouldTrackChangesToWindow(session_tab_helper->window_id()))
     return;
 
-  BuildCommandsForTab(session_tab_helper->window_id(),
-                      tab,
-                      -1,
-                      pinned,
-                      &pending_commands(),
-                      NULL);
-  StartSaveTimer();
+  BuildCommandsForTab(session_tab_helper->window_id(), tab, -1, pinned, NULL);
+  base_session_service_->StartSaveTimer();
 }
 
 void SessionService::SetSelectedNavigationIndex(const SessionID& window_id,
@@ -490,24 +484,20 @@ base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
     base::CancelableTaskTracker* tracker) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
-  return ScheduleGetLastSessionCommands(
+  return base_session_service_->ScheduleGetLastSessionCommands(
       base::Bind(&SessionService::OnGotSessionCommands,
                  weak_factory_.GetWeakPtr(),
                  callback),
       tracker);
 }
 
-void SessionService::Save() {
-  bool had_commands = !pending_commands().empty();
-  BaseSessionService::Save();
-  if (had_commands) {
-    RecordSessionUpdateHistogramData(chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-                                     &last_updated_save_time_);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-        content::Source<Profile>(profile()),
-        content::NotificationService::NoDetails());
-  }
+void SessionService::OnSavedCommands() {
+  RecordSessionUpdateHistogramData(chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
+                                   &last_updated_save_time_);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
+      content::Source<Profile>(profile()),
+      content::NotificationService::NoDetails());
 }
 
 void SessionService::Init() {
@@ -551,10 +541,6 @@ void SessionService::RemoveUnusedRestoreWindows(
       ++i;
     }
   }
-}
-
-bool SessionService::processed_any_commands() {
-  return backend()->inited() || !pending_commands().empty();
 }
 
 bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
@@ -708,41 +694,41 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
                                          WebContents* tab,
                                          int index_in_window,
                                          bool is_pinned,
-                                         ScopedVector<SessionCommand>* commands,
                                          IdToRange* tab_to_available_range) {
-  DCHECK(tab && commands && window_id.id());
+  DCHECK(tab && window_id.id());
   SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(tab);
   const SessionID& session_id(session_tab_helper->session_id());
-  commands->push_back(
-    CreateSetTabWindowCommand(window_id, session_id).release());
+  base_session_service_->AppendRebuildCommand(
+    CreateSetTabWindowCommand(window_id, session_id));
 
   const int current_index = tab->GetController().GetCurrentEntryIndex();
-  const int min_index = std::max(0,
-                                 current_index - max_persist_navigation_count);
-  const int max_index =
-      std::min(current_index + max_persist_navigation_count,
-               tab->GetController().GetEntryCount());
+  const int min_index = std::max(current_index - gMaxPersistNavigationCount, 0);
+  const int max_index = std::min(current_index + gMaxPersistNavigationCount,
+                                 tab->GetController().GetEntryCount());
   const int pending_index = tab->GetController().GetPendingEntryIndex();
   if (tab_to_available_range) {
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);
   }
 
-  if (is_pinned)
-    commands->push_back(CreatePinnedStateCommand(session_id, true).release());
+  if (is_pinned) {
+    base_session_service_->AppendRebuildCommand(
+        CreatePinnedStateCommand(session_id, true));
+  }
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(tab);
   if (extensions_tab_helper->extension_app()) {
-    commands->push_back(CreateSetTabExtensionAppIDCommand(
-        session_id,
-        extensions_tab_helper->extension_app()->id()).release());
+    base_session_service_->AppendRebuildCommand(
+        CreateSetTabExtensionAppIDCommand(
+            session_id,
+            extensions_tab_helper->extension_app()->id()));
   }
 
   const std::string& ua_override = tab->GetUserAgentOverride();
   if (!ua_override.empty()) {
-    commands->push_back(
-      CreateSetTabUserAgentOverrideCommand(session_id, ua_override).release());
+    base_session_service_->AppendRebuildCommand(
+      CreateSetTabUserAgentOverrideCommand(session_id, ua_override));
   }
 
   for (int i = min_index; i < max_index; ++i) {
@@ -753,18 +739,18 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
     if (ShouldTrackEntry(entry->GetVirtualURL())) {
       const SerializedNavigationEntry navigation =
           ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry);
-      commands->push_back(
-          CreateUpdateTabNavigationCommand(session_id, navigation).release());
+      base_session_service_->AppendRebuildCommand(
+          CreateUpdateTabNavigationCommand(session_id, navigation));
     }
   }
-  commands->push_back(
+  base_session_service_->AppendRebuildCommand(
       CreateSetSelectedNavigationIndexCommand(session_id,
-                                              current_index).release());
+                                              current_index));
 
   if (index_in_window != -1) {
-    commands->push_back(CreateSetTabIndexInWindowCommand(
-                            session_id,
-                            index_in_window).release());
+    base_session_service_->AppendRebuildCommand(
+        CreateSetTabIndexInWindowCommand(session_id,
+                                         index_in_window));
   }
 
   // Record the association between the sessionStorage namespace and the tab.
@@ -777,25 +763,24 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
 
 void SessionService::BuildCommandsForBrowser(
     Browser* browser,
-    ScopedVector<SessionCommand>* commands,
     IdToRange* tab_to_available_range,
     std::set<SessionID::id_type>* windows_to_track) {
-  DCHECK(browser && commands);
+  DCHECK(browser);
   DCHECK(browser->session_id().id());
 
-  commands->push_back(CreateSetWindowBoundsCommand(
-                          browser->session_id(),
-                          browser->window()->GetRestoredBounds(),
-                          browser->window()->GetRestoredState()).release());
+  base_session_service_->AppendRebuildCommand(CreateSetWindowBoundsCommand(
+      browser->session_id(),
+      browser->window()->GetRestoredBounds(),
+      browser->window()->GetRestoredState()));
 
-  commands->push_back(CreateSetWindowTypeCommand(
-                          browser->session_id(),
-                          WindowTypeForBrowserType(browser->type())).release());
+  base_session_service_->AppendRebuildCommand(CreateSetWindowTypeCommand(
+      browser->session_id(),
+      WindowTypeForBrowserType(browser->type())));
 
   if (!browser->app_name().empty()) {
-    commands->push_back(CreateSetWindowAppNameCommand(
-                            browser->session_id(),
-                            browser->app_name()).release());
+    base_session_service_->AppendRebuildCommand(CreateSetWindowAppNameCommand(
+        browser->session_id(),
+        browser->app_name()));
   }
 
   windows_to_track->insert(browser->session_id().id());
@@ -803,21 +788,22 @@ void SessionService::BuildCommandsForBrowser(
   for (int i = 0; i < tab_strip->count(); ++i) {
     WebContents* tab = tab_strip->GetWebContentsAt(i);
     DCHECK(tab);
-    BuildCommandsForTab(browser->session_id(), tab, i,
+    BuildCommandsForTab(browser->session_id(),
+                        tab,
+                        i,
                         tab_strip->IsTabPinned(i),
-                        commands, tab_to_available_range);
+                        tab_to_available_range);
   }
 
-  commands->push_back(CreateSetSelectedTabInWindowCommand(
+  base_session_service_->AppendRebuildCommand(
+      CreateSetSelectedTabInWindowCommand(
           browser->session_id(),
-          browser->tab_strip_model()->active_index()).release());
+          browser->tab_strip_model()->active_index()));
 }
 
 void SessionService::BuildCommandsFromBrowsers(
-    ScopedVector<SessionCommand>* commands,
     IdToRange* tab_to_available_range,
     std::set<SessionID::id_type>* windows_to_track) {
-  DCHECK(commands);
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     // Make sure the browser has tabs and a window. Browser's destructor
@@ -828,19 +814,19 @@ void SessionService::BuildCommandsFromBrowsers(
     // deleted, so we ignore it.
     if (ShouldTrackBrowser(browser) && browser->tab_strip_model()->count() &&
         browser->window()) {
-      BuildCommandsForBrowser(browser, commands, tab_to_available_range,
+      BuildCommandsForBrowser(browser,
+                              tab_to_available_range,
                               windows_to_track);
     }
   }
 }
 
 void SessionService::ScheduleResetCommands() {
-  set_pending_reset(true);
-  pending_commands().clear();
+  base_session_service_->set_pending_reset(true);
+  base_session_service_->ClearPendingCommands();
   tab_to_available_range_.clear();
   windows_tracking_.clear();
-  BuildCommandsFromBrowsers(&pending_commands(),
-                            &tab_to_available_range_,
+  BuildCommandsFromBrowsers(&tab_to_available_range_,
                             &windows_tracking_);
   if (!windows_tracking_.empty()) {
     // We're lazily created on startup and won't get an initial batch of
@@ -848,19 +834,21 @@ void SessionService::ScheduleResetCommands() {
     has_open_trackable_browsers_ = true;
     move_on_new_browser_ = true;
   }
-  StartSaveTimer();
+  base_session_service_->StartSaveTimer();
 }
 
 void SessionService::ScheduleCommand(scoped_ptr<SessionCommand> command) {
   DCHECK(command);
-  if (ReplacePendingCommand(pending_commands(), &command))
+  if (ReplacePendingCommand(base_session_service_.get(), &command))
     return;
   bool is_closing_command = IsClosingCommand(command.get());
-  BaseSessionService::ScheduleCommand(command.Pass());
+  base_session_service_->ScheduleCommand(command.Pass());
   // Don't schedule a reset on tab closed/window closed. Otherwise we may
   // lose tabs/windows we want to restore from if we exit right after this.
-  if (!pending_reset() && pending_window_close_ids_.empty() &&
-      commands_since_reset() >= kWritesPerReset && is_closing_command) {
+  if (!base_session_service_->pending_reset() &&
+      pending_window_close_ids_.empty() &&
+      base_session_service_->commands_since_reset() >= kWritesPerReset &&
+      !is_closing_command) {
     ScheduleResetCommands();
   }
 }
@@ -1091,4 +1079,8 @@ void SessionService::MaybeDeleteSessionOnlyData() {
       return;
   }
   DeleteSessionOnlyData(profile());
+}
+
+BaseSessionService* SessionService::GetBaseSessionServiceForTest() {
+  return base_session_service_.get();
 }

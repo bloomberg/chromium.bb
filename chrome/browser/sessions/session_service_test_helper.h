@@ -79,8 +79,6 @@ class SessionServiceTestHelper {
   SessionService* ReleaseService() { return service_.release(); }
   SessionService* service() { return service_.get(); }
 
-  SessionBackend* backend();
-
   void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 

@@ -240,7 +240,7 @@ void SessionBackend::AppendCommands(
 
 void SessionBackend::ReadLastSessionCommands(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const BaseSessionService::InternalGetCommandsCallback& callback) {
+    const BaseSessionService::GetCommandsCallback& callback) {
   if (is_canceled.Run())
     return;
 

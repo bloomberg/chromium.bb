@@ -722,7 +722,7 @@ TEST_F(SessionServiceTest, SavedSessionNotification) {
   content::NotificationRegistrar registrar_;
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
                  content::NotificationService::AllSources());
-  service()->Save();
+  service()->GetBaseSessionServiceForTest()->Save();
   EXPECT_EQ(sync_save_count_, 1);
 }
 

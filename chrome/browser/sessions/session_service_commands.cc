@@ -755,7 +755,7 @@ scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
                                          app_name);
 }
 
-bool ReplacePendingCommand(ScopedVector<SessionCommand>& pending_commands,
+bool ReplacePendingCommand(BaseSessionService* base_session_service,
                            scoped_ptr<SessionCommand>* command) {
   // We optimize page navigations, which can happen quite frequently and
   // is expensive. And activation is like Highlander, there can only be one!
@@ -763,8 +763,9 @@ bool ReplacePendingCommand(ScopedVector<SessionCommand>& pending_commands,
       (*command)->id() != kCommandSetActiveWindow) {
     return false;
   }
-  for (ScopedVector<SessionCommand>::reverse_iterator i =
-       pending_commands.rbegin(); i != pending_commands.rend(); ++i) {
+  for (ScopedVector<SessionCommand>::const_reverse_iterator i =
+           base_session_service->pending_commands().rbegin();
+       i != base_session_service->pending_commands().rend(); ++i) {
     SessionCommand* existing_command = *i;
     if ((*command)->id() == kCommandUpdateTabNavigation &&
         existing_command->id() == kCommandUpdateTabNavigation) {
@@ -794,17 +795,15 @@ bool ReplacePendingCommand(ScopedVector<SessionCommand>& pending_commands,
         // existing_command is an update for the same tab/index pair. Replace
         // it with the new one. We need to add to the end of the list just in
         // case there is a prune command after the update command.
-        // Note: ScopedVector::erase will also delete the element.
-        pending_commands.erase(i.base() - 1);
-        pending_commands.push_back((*command).release());
+        base_session_service->EraseCommand(*(i.base() - 1));
+        base_session_service->AppendRebuildCommand((*command).Pass());
         return true;
       }
       return false;
     }
     if ((*command)->id() == kCommandSetActiveWindow &&
         existing_command->id() == kCommandSetActiveWindow) {
-      *i = (*command).release();
-      delete existing_command;
+      base_session_service->SwapCommand(existing_command, (*command).Pass());
       return true;
     }
   }

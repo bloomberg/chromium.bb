@@ -2206,6 +2206,11 @@ class NoStartupWindowTest : public BrowserTest {
     command_line->AppendSwitch(switches::kNoStartupWindow);
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
+
+  // Returns true if any commands were processed.
+  bool ProcessedAnyCommands(BaseSessionService* base_session_service) {
+    return base_session_service->ProcessedAnyCommandsForTest();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
@@ -2240,13 +2245,15 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
-  ASSERT_FALSE(session_service->processed_any_commands());
+  BaseSessionService* base_session_service =
+      session_service->GetBaseSessionServiceForTest();
+  ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 
   ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowserForApp("blah", profile);
   browser_added_observer.WaitForSingleNewBrowser();
 
-  ASSERT_FALSE(session_service->processed_any_commands());
+  ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 }
 #endif  // !defined(OS_CHROMEOS)
 

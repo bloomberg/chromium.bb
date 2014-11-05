@@ -39,27 +39,23 @@ class BaseSessionService {
       GetCommandsCallback;
 
   // Creates a new BaseSessionService. After creation you need to invoke
-  // Init.
+  // Init. |delegate| will remain owned by the creator and it is guaranteed
+  // that its lifetime surpasses this class.
   // |type| gives the type of session service, |path| the path to save files to.
   BaseSessionService(SessionType type,
                      const base::FilePath& path,
-                     scoped_ptr<BaseSessionServiceDelegate> delegate);
+                     BaseSessionServiceDelegate* delegate);
+  ~BaseSessionService();
+
+  // Moves the current session to the last session.
+  void MoveCurrentSessionToLastSession();
 
   // Deletes the last session.
   void DeleteLastSession();
 
-  typedef base::Callback<void(ScopedVector<SessionCommand>)>
-      InternalGetCommandsCallback;
-
- protected:
-  virtual ~BaseSessionService();
-
-  // Returns the backend.
-  SessionBackend* backend() const { return backend_.get(); }
-
   // Returns the set of commands which were scheduled to be written. Once
   // committed to the backend, the commands are removed from here.
-  ScopedVector<SessionCommand>& pending_commands() {
+  const ScopedVector<SessionCommand>& pending_commands() {
     return pending_commands_;
   }
 
@@ -73,37 +69,55 @@ class BaseSessionService {
   // Schedules a command. This adds |command| to pending_commands_ and
   // invokes StartSaveTimer to start a timer that invokes Save at a later
   // time.
-  virtual void ScheduleCommand(scoped_ptr<SessionCommand> command);
+  void ScheduleCommand(scoped_ptr<SessionCommand> command);
+
+  // Appends a command as part of a general rebuild. This will neither count
+  // against a rebuild, nor will it trigger a save of commands.
+  void AppendRebuildCommand(scoped_ptr<SessionCommand> command);
+
+  // Erase the |old_command| from the list of commands.
+  // The passed command will automatically be deleted.
+  void EraseCommand(SessionCommand* old_command);
+
+  // Swap a |new_command| into the list of queued commands at the location of
+  // the |old_command|. The |old_command| will be automatically deleted in the
+  // process.
+  void SwapCommand(SessionCommand* old_command,
+                   scoped_ptr<SessionCommand> new_command);
+
+  // Clears all commands from the list.
+  void ClearPendingCommands();
 
   // Starts the timer that invokes Save (if timer isn't already running).
   void StartSaveTimer();
 
-  // Saves pending commands to the backend. This is invoked from the timer
-  // scheduled by StartSaveTimer.
-  virtual void Save();
+  // Passes all pending commands to the backend for saving.
+  void Save();
 
-  // Returns true if the entry at specified |url| should be written to disk.
-  bool ShouldTrackEntry(const GURL& url);
-
-  // Invokes SessionBackend::ReadLastSessionCommands with callback on the
-  // backend thread.
-  // If testing, SessionBackend::ReadLastSessionCommands is invoked directly.
+  // Uses the backend to load the last session commands from disc. |callback|
+  // gets called once the data has arrived.
   base::CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
-      const InternalGetCommandsCallback& callback,
+      const GetCommandsCallback& callback,
       base::CancelableTaskTracker* tracker);
+
+ private:
+  friend class BetterSessionRestoreCrashTest;
+  friend class SessionServiceTestHelper;
+  friend class NoStartupWindowTest;
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
   void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 
-  // Max number of navigation entries in each direction we'll persist.
-  static const int max_persist_navigation_count;
+  // Returns true if any commands got processed yet - saved or queued (used by
+  // unit tests).
+  bool ProcessedAnyCommandsForTest();
 
- private:
-  friend class BetterSessionRestoreCrashTest;
+  // Read the last session commands directly from file.
+  bool ReadLastSessionCommandsForTest(ScopedVector<SessionCommand>* commands);
 
-  // The backend.
+  // The backend object which reads and saves commands.
   scoped_refptr<SessionBackend> backend_;
 
   // Commands we need to send over to the backend.
@@ -116,7 +130,7 @@ class BaseSessionService {
   // The number of commands sent to the backend before doing a reset.
   int commands_since_reset_;
 
-  scoped_ptr<BaseSessionServiceDelegate> delegate_;
+  BaseSessionServiceDelegate* delegate_;
 
   // A token to make sure that all tasks will be serialized.
   base::SequencedWorkerPool::SequenceToken sequence_token_;

@@ -20,7 +20,8 @@ base::SequencedWorkerPool* BaseSessionServiceDelegateImpl::GetBlockingPool() {
 bool BaseSessionServiceDelegateImpl::ShouldTrackEntry(const GURL& url) {
   // Blacklist chrome://quit and chrome://restart to avoid quit or restart
   // loops.
-  return !(url.SchemeIs(content::kChromeUIScheme) &&
+  return url.is_valid() &&
+         !(url.SchemeIs(content::kChromeUIScheme) &&
           (url.host() == chrome::kChromeUIQuitHost ||
            url.host() == chrome::kChromeUIRestartHost));
 }

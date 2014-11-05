@@ -19,6 +19,8 @@ class BaseSessionServiceDelegateImpl : public BaseSessionServiceDelegate {
   base::SequencedWorkerPool* GetBlockingPool() override;
   bool ShouldTrackEntry(const GURL& url) override;
   bool ShouldUseDelayedSave() override;
+  void OnWillSaveCommands() override {}
+  void OnSavedCommands() override {}
 
  private:
   // True if save operations can be performed as a delayed task. This can be

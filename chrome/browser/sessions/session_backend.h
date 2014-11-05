@@ -64,7 +64,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // session, invokes ReadLastSessionCommandsImpl to do the work.
   void ReadLastSessionCommands(
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-      const BaseSessionService::InternalGetCommandsCallback& callback);
+      const BaseSessionService::GetCommandsCallback& callback);
 
   // Reads the commands from the last file.
   //

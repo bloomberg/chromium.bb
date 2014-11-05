@@ -68,12 +68,12 @@ scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     const SessionID& window_id,
     const std::string& app_name);
 
-// Searches for a pending command in |pending_commands| that can be replaced
-// with |command|. If one is found, pending command is removed, the command
-// is added to the pending commands (taken ownership) and true is returned.
-bool ReplacePendingCommand(
-  ScopedVector<SessionCommand>& pending_commands,
-  scoped_ptr<SessionCommand>* command);
+// Searches for a pending command using |base_session_service| that can be
+// replaced with |command|. If one is found, pending command is removed, the
+// command is added to the pending commands (taken ownership) and true is
+// returned.
+bool ReplacePendingCommand(BaseSessionService* base_session_service,
+                           scoped_ptr<SessionCommand>* command);
 
 // Returns true if provided |command| either closes a window or a tab.
 bool IsClosingCommand(SessionCommand* command);
