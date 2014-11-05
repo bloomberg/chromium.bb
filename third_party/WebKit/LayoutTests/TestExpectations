@@ -697,15 +697,6 @@ crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects-iframes.h
 crbug.com/393095 [ Win7 ] fast/events/touch/compositor-touch-hit-rects.html [ Pass Failure ]
 crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure Pass ]
 
-# Tests of functionality not implemented in the new WebSocket
-# implementation. These tests will be removed when the old implementation is
-# removed.
-crbug.com/339373 http/tests/websocket/deflate-frame-comp-bit-onoff.html [ Skip ]
-crbug.com/339373 http/tests/websocket/deflate-frame-invalid-parameter.html [ Skip ]
-crbug.com/339373 http/tests/websocket/deflate-frame-parameter.html [ Skip ]
-crbug.com/339373 http/tests/websocket/deflate-frame-set-bfinal.html [ Skip ]
-crbug.com/339373 http/tests/websocket/handshake-fail-by-no-cr.html [ Skip ]
-
 crbug.com/393217 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Pass Crash Timeout ]
 
 crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
