@@ -82,6 +82,11 @@ void UDPSocketImpl::Bind(
 
   bound_ = true;
   callback.Run(MakeNetworkError(net::OK), bound_addr.Pass());
+
+  if (remaining_recv_slots_ > 0) {
+    DCHECK(!recvfrom_buffer_.get());
+    DoRecvFrom();
+  }
 }
 
 void UDPSocketImpl::SetSendBufferSize(
@@ -138,7 +143,7 @@ void UDPSocketImpl::NegotiateMaxPendingSendRequests(
 }
 
 void UDPSocketImpl::ReceiveMore(uint32_t datagram_number) {
-  if (!bound_ || datagram_number == 0)
+  if (datagram_number == 0)
     return;
   if (std::numeric_limits<size_t>::max() - remaining_recv_slots_ <
           datagram_number) {
@@ -147,7 +152,7 @@ void UDPSocketImpl::ReceiveMore(uint32_t datagram_number) {
 
   remaining_recv_slots_ += datagram_number;
 
-  if (!recvfrom_buffer_.get()) {
+  if (bound_ && !recvfrom_buffer_.get()) {
     DCHECK_EQ(datagram_number, remaining_recv_slots_);
     DoRecvFrom();
   }

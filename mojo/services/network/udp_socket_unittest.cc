@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/services/public/cpp/network/udp_socket_wrapper.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/udp_socket.mojom.h"
 #include "mojo/shell/shell_test_helper.h"
@@ -36,24 +37,6 @@ Array<uint8_t> CreateTestMessage(uint8_t initial, size_t size) {
   for (size_t i = 0; i < size; ++i)
     array[i] = static_cast<uint8_t>((i + initial) % 256);
   return array.Pass();
-}
-
-bool AreEqualArrays(const Array<uint8_t>& array_1,
-                    const Array<uint8_t>& array_2) {
-  if (array_1.is_null() != array_2.is_null())
-    return false;
-  else if (array_1.is_null())
-    return true;
-
-  if (array_1.size() != array_2.size())
-    return false;
-
-  for (size_t i = 0; i < array_1.size(); ++i) {
-    if (array_1[i] != array_2[i])
-      return false;
-  }
-
-  return true;
 }
 
 template <typename CallbackType>
@@ -200,6 +183,42 @@ class TestCallbackWithUint32
   };
 
   uint32_t result_;
+};
+
+class TestReceiveCallback
+    : public TestCallbackBase<
+        Callback<void(NetworkErrorPtr, NetAddressPtr, Array<uint8_t>)>> {
+ public:
+  TestReceiveCallback() {
+    Initialize(new State());
+  }
+  ~TestReceiveCallback() {}
+
+  const NetworkErrorPtr& result() const { return result_; }
+  const NetAddressPtr& src_addr() const { return src_addr_; }
+  const Array<uint8_t>& data() const { return data_; }
+
+ private:
+  struct State : public StateBase {
+    ~State() override {}
+
+    void Run(NetworkErrorPtr result,
+             NetAddressPtr src_addr,
+             Array<uint8_t> data) const override {
+      if (test_callback_) {
+        TestReceiveCallback* callback =
+            static_cast<TestReceiveCallback*>(test_callback_);
+        callback->result_ = result.Pass();
+        callback->src_addr_ = src_addr.Pass();
+        callback->data_ = data.Pass();
+      }
+      NotifyRun();
+    }
+  };
+
+  NetworkErrorPtr result_;
+  NetAddressPtr src_addr_;
+  Array<uint8_t> data_;
 };
 
 class UDPSocketTest : public testing::Test {
@@ -355,6 +374,8 @@ TEST_F(UDPSocketTest, TestReadWrite) {
   ASSERT_EQ(net::OK, callback2.result()->code);
   ASSERT_NE(0u, callback2.net_address()->ipv4->port);
 
+  NetAddressPtr client_addr = callback2.net_address().Clone();
+
   const size_t kDatagramCount = 6;
   const size_t kDatagramSize = 255;
   udp_socket_->ReceiveMore(kDatagramCount);
@@ -375,9 +396,61 @@ TEST_F(UDPSocketTest, TestReadWrite) {
     GetReceiveResults()->pop();
 
     EXPECT_EQ(static_cast<int>(kDatagramSize), result->result->code);
-    EXPECT_TRUE(AreEqualArrays(
-        CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize),
-        result->data));
+    EXPECT_TRUE(result->addr.Equals(client_addr));
+    EXPECT_TRUE(result->data.Equals(
+        CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize)));
+  }
+}
+
+TEST_F(UDPSocketTest, TestUDPSocketWrapper) {
+  UDPSocketWrapper udp_socket(udp_socket_.Pass(), 4, 4);
+
+  TestCallbackWithAddress callback1;
+  udp_socket.Bind(GetLocalHostWithAnyPort(), callback1.callback());
+  callback1.WaitForResult();
+  ASSERT_EQ(net::OK, callback1.result()->code);
+  ASSERT_NE(0u, callback1.net_address()->ipv4->port);
+
+  NetAddressPtr server_addr = callback1.net_address().Clone();
+
+  UDPSocketPtr raw_client_socket;
+  network_service_->CreateUDPSocket(GetProxy(&raw_client_socket));
+  UDPSocketWrapper client_socket(raw_client_socket.Pass(), 4, 4);
+
+  TestCallbackWithAddress callback2;
+  client_socket.Bind(GetLocalHostWithAnyPort(), callback2.callback());
+  callback2.WaitForResult();
+  ASSERT_EQ(net::OK, callback2.result()->code);
+  ASSERT_NE(0u, callback2.net_address()->ipv4->port);
+
+  NetAddressPtr client_addr = callback2.net_address().Clone();
+
+  const size_t kDatagramCount = 16;
+  const size_t kDatagramSize = 255;
+
+  for (size_t i = 1; i < kDatagramCount; ++i) {
+    scoped_ptr<TestCallback[]> send_callbacks(new TestCallback[i]);
+    scoped_ptr<TestReceiveCallback[]> receive_callbacks(
+        new TestReceiveCallback[i]);
+
+    for (size_t j = 0; j < i; ++j) {
+      client_socket.SendTo(
+          server_addr.Clone(),
+          CreateTestMessage(static_cast<uint8_t>(j), kDatagramSize),
+          send_callbacks[j].callback());
+
+      udp_socket.ReceiveFrom(receive_callbacks[j].callback());
+    }
+
+    receive_callbacks[i - 1].WaitForResult();
+
+    for (size_t j = 0; j < i; ++j) {
+      EXPECT_EQ(static_cast<int>(kDatagramSize),
+                receive_callbacks[j].result()->code);
+      EXPECT_TRUE(receive_callbacks[j].src_addr().Equals(client_addr));
+      EXPECT_TRUE(receive_callbacks[j].data().Equals(
+          CreateTestMessage(static_cast<uint8_t>(j), kDatagramSize)));
+    }
   }
 }
 
