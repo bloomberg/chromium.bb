@@ -185,6 +185,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._SetupIndividualTestTimeoutScale(test)
     self.tool.SetupEnvironment()
 
+    if self.flags and self._IsFreTest(test):
+      self.flags.RemoveFlags(['--disable-fre'])
+
     # Make sure the forwarder is still running.
     self._RestartHttpServerForwarderIfNecessary()
 
@@ -195,6 +198,18 @@ class TestRunner(base_test_runner.BaseTestRunner):
           TestRunner._DEVICE_COVERAGE_DIR, coverage_basename)
       self.coverage_host_file = os.path.join(
           self.coverage_dir, coverage_basename)
+
+  def _IsFreTest(self, test):
+    """Determines whether a test is a first run experience test.
+
+    Args:
+      test: The name of the test to be checked.
+
+    Returns:
+      Whether the feature being tested is FirstRunExperience.
+    """
+    freFeature = 'Feature:FirstRunExperience'
+    return freFeature in self.test_pkg.GetTestAnnotations(test)
 
   def _IsPerfTest(self, test):
     """Determines whether a test is a performance test.
@@ -237,6 +252,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return
 
     self.TearDownPerfMonitoring(test)
+
+    if self.flags and self._IsFreTest(test):
+      self.flags.AddFlags(['--disable-fre'])
 
     if self.coverage_dir:
       self.device.PullFile(
