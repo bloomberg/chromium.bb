@@ -23,7 +23,12 @@
   <message name="IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE" desc="Message that page is in specified language and ask if should translate">
     This page is in<ph name="original_language">$1<ex>French</ex></ph>Would you like to translate it?
   </message>
-  <if expr="is_android or is_ios">
+  <if expr="is_ios">
+    <message name="IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_IOS" desc="Text to display on the translate infobar to offer a translate. [Length: 200em] [iOS only]">
+      This page is in <ph name="SOURCE_LANGUAGE">$1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">$2<ex>French</ex></ph>?
+    </message>
+  </if>
+  <if expr="is_android">
     <message name="IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_MOBILE" desc="Mobile: Message that page is in specified language and ask if should translate.">
       Translate from <ph name="original_language">$1<ex>French</ex></ph> to <ph name="target_language">$2<ex>English</ex></ph>?
     </message>
@@ -37,6 +42,11 @@
   <message name="IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE" desc="Button label shown to never translate a specific language in the translate infobar">
     Never translate <ph name="language">$1<ex>French</ex></ph>
   </message>
+  <if expr="is_ios">
+    <message name="IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em] [iOS only]">
+      Would you like <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to offer to translate <ph name="LANGUAGE_NAME">$2<ex>French</ex></ph> pages from this site next time?
+    </message>
+  </if>
   <message name="IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE" desc="Button label shown to always translate a specific language in the translate infobar">
     Always translate <ph name="language">$1<ex>English</ex></ph>
   </message>
@@ -49,7 +59,7 @@
   <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_AUTODETERMINED_SOURCE_LANGUAGE" desc="Message that page has been translated to another with server side auto language detection">
     This page has been translated to <ph name="target_language">$1<ex>German</ex></ph>
   </message>
-  <if expr="is_android or is_ios">
+  <if expr="is_android">
   <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_MOBILE" desc="Mobile: Message that page has been translated from one language to another">
     This page has been translated to <ph name="target_language">$1<ex>German</ex></ph>
   </message>
@@ -75,7 +85,7 @@
   <message name="IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE" desc="Error message shown when the translate server translated the page and returned the page was in a language the browser does not know.">
     This page has been translated from an unknown language to <ph name="language_language">$1<ex>English</ex></ph>
   </message>
-  <if expr="is_android or is_ios">
+  <if expr="is_android">
   <message name="IDS_TRANSLATE_INFOBAR_ERROR_MOBILE" desc="Mobile: Translate Error message">
     The translation to <ph name="target_language">$1<ex>German</ex></ph> failed.
   </message>
