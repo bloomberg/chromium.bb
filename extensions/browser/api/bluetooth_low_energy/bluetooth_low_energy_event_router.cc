@@ -167,11 +167,11 @@ extensions::BluetoothLowEnergyEventRouter::Status GattErrorToRouterError(
     error_status =
         extensions::BluetoothLowEnergyEventRouter::kStatusErrorPermissionDenied;
   } else if (error_code == BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED) {
-    error_status =
-        extensions::BluetoothLowEnergyEventRouter::kStatusErrorPermissionDenied;
+    error_status = extensions::BluetoothLowEnergyEventRouter::
+        kStatusErrorInsufficientAuthorization;
   } else if (error_code == BluetoothGattService::GATT_ERROR_NOT_PAIRED) {
     error_status =
-        extensions::BluetoothLowEnergyEventRouter::kStatusErrorNotConnected;
+        extensions::BluetoothLowEnergyEventRouter::kStatusErrorHigherSecurity;
   } else if (error_code == BluetoothGattService::GATT_ERROR_NOT_SUPPORTED) {
     error_status =
         extensions::BluetoothLowEnergyEventRouter::kStatusErrorGattNotSupported;

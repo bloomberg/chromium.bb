@@ -54,20 +54,22 @@ class BluetoothLowEnergyEventRouter
   // Possible ways that an API method can fail or succeed.
   enum Status {
     kStatusSuccess = 0,
-    kStatusErrorPermissionDenied,
-    kStatusErrorNotFound,
     kStatusErrorAlreadyConnected,
     kStatusErrorAlreadyNotifying,
-    kStatusErrorNotConnected,
-    kStatusErrorNotNotifying,
-    kStatusErrorInProgress,
     kStatusErrorAuthenticationFailed,
     kStatusErrorCanceled,
-    kStatusErrorTimeout,
-    kStatusErrorInvalidLength,
-    kStatusErrorUnsupportedDevice,
+    kStatusErrorFailed,
     kStatusErrorGattNotSupported,
-    kStatusErrorFailed
+    kStatusErrorHigherSecurity,
+    kStatusErrorInProgress,
+    kStatusErrorInsufficientAuthorization,
+    kStatusErrorInvalidLength,
+    kStatusErrorNotConnected,
+    kStatusErrorNotFound,
+    kStatusErrorNotNotifying,
+    kStatusErrorPermissionDenied,
+    kStatusErrorTimeout,
+    kStatusErrorUnsupportedDevice,
   };
 
   // Error callback is used by asynchronous methods to report failures.

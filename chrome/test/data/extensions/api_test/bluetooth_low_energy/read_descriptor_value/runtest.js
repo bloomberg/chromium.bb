@@ -35,17 +35,19 @@ function runNext(result) {
   (queue.shift())(result);
 }
 
-var errorFailed = 'Operation failed';
-var errorInProgress = 'In progress';
-var errorInvalidLength = 'Invalid data length';
-var errorPermissionDenied = 'Permission denied';
-var errorNotConnected = 'Not connected';
-var errorGattNotSupported = 'Operation not supported by this service';
-var errorNotNotifying = 'Not notifying';
-var errorNotFound = 'Instance not found';
-var errorOperationFailed = 'Operation failed';
 var errorAuthenticationFailed = 'Authentication failed';
 var errorCanceled = 'Request canceled';
+var errorFailed = 'Operation failed';
+var errorGattNotSupported = 'Operation not supported by this service';
+var errorHigherSecurity = 'Higher security needed';
+var errorInProgress = 'In progress';
+var errorInsufficientAuthorization = 'Insufficient authorization';
+var errorInvalidLength = 'Invalid attribute value length';
+var errorNotConnected = 'Not connected';
+var errorNotFound = 'Instance not found';
+var errorNotNotifying = 'Not notifying';
+var errorOperationFailed = 'Operation failed';
+var errorPermissionDenied = 'Permission denied';
 var errorTimeout = 'Operation timed out';
 var errorUnsupportedDevice =
     'This device is not supported on the current platform';
@@ -85,8 +87,8 @@ queue = [function () {
   makeExpectedErrorCallback(errorFailed),
   makeExpectedErrorCallback(errorInvalidLength),
   makeExpectedErrorCallback(errorPermissionDenied),
-  makeExpectedErrorCallback(errorPermissionDenied),
-  makeExpectedErrorCallback(errorNotConnected),
+  makeExpectedErrorCallback(errorInsufficientAuthorization),
+  makeExpectedErrorCallback(errorHigherSecurity),
   makeExpectedErrorCallback(errorGattNotSupported),
   makeExpectedErrorCallback(errorInProgress),
   function (result) {
