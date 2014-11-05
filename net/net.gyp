@@ -299,8 +299,6 @@
                 ],
               }]
             ],
-            # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-            'msvs_disabled_warnings': [4267, ],
           },
         ],
         [ 'use_openssl_certs == 0', {
@@ -410,6 +408,8 @@
               'udp/udp_socket_libevent.cc',
               'udp/udp_socket_libevent.h',
             ],
+             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+            'msvs_disabled_warnings': [4267, ],
           }, { # else: OS != "win"
             'sources!': [
               'base/winsock_init.cc',
@@ -597,8 +597,6 @@
               ],
             }],
           ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [4267, ],
         }],
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
           'conditions': [
@@ -712,6 +710,8 @@
               'dns/dns_config_service_posix_unittest.cc',
               'http/http_auth_gssapi_posix_unittest.cc',
             ],
+            # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+            'msvs_disabled_warnings': [4267, ],
             'conditions': [
               [ 'icu_use_data_file_flag == 0', {
                 # This is needed to trigger the dll copy step on windows.
@@ -976,8 +976,6 @@
               ],
             }],
           ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [4267, ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
           'conditions': [
