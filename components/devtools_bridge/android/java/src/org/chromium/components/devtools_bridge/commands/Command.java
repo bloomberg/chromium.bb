@@ -58,10 +58,15 @@ public abstract class Command {
     protected abstract void setOutParams(Map<String, String> actualOutParams)
             throws CommandFormatException;
 
-    public final void setDone() {
+    protected final void setDone() {
         assert mState == State.INITIAL;
 
         mState = State.DONE;
+    }
+
+    public void setSuccess(Map<String, String> actualOutParams) throws CommandFormatException {
+        setOutParams(actualOutParams);
+        setDone();
     }
 
     public void setFailure(String errorMessage) {

@@ -106,47 +106,48 @@ public class GCDClient {
     }
 
     protected final HttpGet newHttpGet(String path) {
-        HttpGet request = new HttpGet(buildUrl(path));
-        initializeRequest(request);
-        return request;
+        return prepare(new HttpGet(buildUrl(path)));
     }
 
     protected final HttpPost newHttpPost(String path, String content)
             throws UnsupportedEncodingException {
-        HttpPost request = new HttpPost(buildUrl(path));
-        setContent(request, content);
-        initializeRequest(request);
-        return request;
+        return prepare(new HttpPost(buildUrl(path)), content);
+    }
+
+    protected final HttpPost newHttpPost(String path, String query, String content)
+            throws UnsupportedEncodingException {
+        return prepare(new HttpPost(buildUrl(path, query)), content);
     }
 
     protected final HttpPatch newHttpPatch(String path, String content)
             throws UnsupportedEncodingException {
-        HttpPatch request = new HttpPatch(buildUrl(path));
-        setContent(request, content);
-        initializeRequest(request);
-        return request;
+        return prepare(new HttpPatch(buildUrl(path)), content);
     }
 
     protected final HttpDelete newHttpDelete(String path) {
-        HttpDelete request = new HttpDelete(buildUrl(path));
-        initializeRequest(request);
-        return request;
+        return prepare(new HttpDelete(buildUrl(path)));
     }
 
     private String buildUrl(String path) {
         return API_BASE + path + "?key=" + mAPIKey;
     }
 
-    private void setContent(HttpEntityEnclosingRequestBase request, String content)
+    private String buildUrl(String path, String query) {
+        return API_BASE + path + "?" + query + "&key=" + mAPIKey;
+    }
+
+    private <T extends HttpEntityEnclosingRequestBase> T prepare(T request, String content)
             throws UnsupportedEncodingException {
         request.setEntity(new StringEntity(content, ENCODING));
         request.addHeader("Content-Type", CONTENT_TYPE);
+        return prepare(request);
     }
 
-    private void initializeRequest(HttpRequestBase request) {
+    private <T extends HttpRequestBase> T prepare(T request) {
         if (mOAuthToken != null) {
             request.addHeader("Authorization", "Bearer " + mOAuthToken);
         }
+        return request;
     }
 
     private static final class HttpPatch extends HttpEntityEnclosingRequestBase {

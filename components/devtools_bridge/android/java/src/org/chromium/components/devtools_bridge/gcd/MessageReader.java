@@ -7,6 +7,8 @@ package org.chromium.components.devtools_bridge.gcd;
 import android.util.JsonReader;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Helper class for parsing JSON-encoded GCD messages (HTTP responses and GCM notifications) used
@@ -80,5 +82,17 @@ public final class MessageReader {
                 super.readItem(name);
             }
         }
+    }
+
+    static Map<String, String> readStringMap(JsonReader reader) throws IOException {
+        Map<String, String> result = new HashMap<String, String>();
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            String value = reader.nextString();
+            result.put(name, value);
+        }
+        reader.endObject();
+        return result;
     }
 }

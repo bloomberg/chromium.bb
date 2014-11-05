@@ -34,7 +34,7 @@ import java.util.List;
  * Fragment of application for manual testing the DevTools bridge. Shows instances
  * registered in GCD and lets unregister them.
  */
-public class RemoteInstanceListFragment extends ListFragment {
+public abstract class RemoteInstanceListFragment extends ListFragment {
     private static final String TAG = "RemoteInstanceListFragment";
     private static final String NO_ID = "";
     private static final int CODE_ACCOUNT_SELECTED = 1;
@@ -51,6 +51,18 @@ public class RemoteInstanceListFragment extends ListFragment {
                 getActivity(), android.R.layout.simple_list_item_1);
         new UpdateListAction().execute();
         setListAdapter(mListAdapter);
+    }
+
+    @Override
+    public void onDestroy() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... args) {
+                mClientFactory.close();
+                return null;
+            }
+        }.execute();
+        super.onDestroy();
     }
 
     @Override
@@ -78,6 +90,9 @@ public class RemoteInstanceListFragment extends ListFragment {
 
         if (mOAuthToken == null) return;
 
+        menu.add("Connect")
+                .setOnMenuItemClickListener(new ConnectAction())
+                .setEnabled(mSelected != null);
         menu.add("Delete")
                 .setOnMenuItemClickListener(new DeleteInstanceAction(mSelected))
                 .setEnabled(mSelected != null);
@@ -111,6 +126,8 @@ public class RemoteInstanceListFragment extends ListFragment {
         }
     }
 
+    protected abstract void connect(String oAuthToken, String remoteInstanceId);
+
     public void queryOAuthToken(Account accout) {
         AccountManager manager = AccountManager.get(getActivity());
 
@@ -133,6 +150,17 @@ public class RemoteInstanceListFragment extends ListFragment {
 
     public void updateList() {
         new UpdateListAction().execute();
+    }
+
+    private final class ConnectAction implements MenuItem.OnMenuItemClickListener {
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            if (mOAuthToken != null && mSelected != null) {
+                connect(mOAuthToken, mSelected.id);
+                return true;
+            }
+            return false;
+        }
     }
 
     private abstract class AsyncAction extends AsyncTask<Void, Void, Boolean>

@@ -51,10 +51,14 @@ public class ClientSessionTestingHost {
     }
 
     public void start() {
+        start(new RTCConfiguration());
+    }
+
+    public void start(final RTCConfiguration config) {
         mClientExecutor.runSynchronously(new Runnable() {
             @Override
             public void run() {
-                mClientSession.start(new RTCConfiguration());
+                mClientSession.start(config);
             }
         });
     }

@@ -256,8 +256,11 @@ public class LocalSessionBridge {
             public void run() {
                 Thread thread = mSessionThread.getAndSet(Thread.currentThread());
                 assert thread == null;
-                mRunnable.run();
-                thread = mSessionThread.getAndSet(null);
+                try {
+                    mRunnable.run();
+                } finally {
+                    thread = mSessionThread.getAndSet(null);
+                }
                 assert thread == Thread.currentThread();
             }
         }

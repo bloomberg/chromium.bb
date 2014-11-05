@@ -8,8 +8,10 @@ import android.util.JsonReader;
 
 import org.apache.http.client.HttpClient;
 
+import org.chromium.components.devtools_bridge.commands.Command;
 import org.chromium.components.devtools_bridge.gcd.RemoteInstance;
 import org.chromium.components.devtools_bridge.gcd.TestMessageReader;
+import org.chromium.components.devtools_bridge.gcd.TestMessageWriter;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.List;
  * Extension of GCDClient with methods needed for the testing app.
  */
 public class TestGCDClient extends GCDClient {
+    private static final String SEND_TIMEOUT_MS = "20000";
+
     TestGCDClient(HttpClient httpClient, String apiKey, String oAuthToken) {
         super(httpClient, apiKey, oAuthToken);
         assert oAuthToken != null;
@@ -35,5 +39,21 @@ public class TestGCDClient extends GCDClient {
                 });
     }
 
+    public void send(String remoteInstanceId, final Command command) throws IOException {
+        String query = "expireInMs=" + SEND_TIMEOUT_MS
+                + "&responseAwaitMs=" + SEND_TIMEOUT_MS;
 
+        String content = new TestMessageWriter().writeCommand(remoteInstanceId, command)
+                .close().toString();
+
+        mHttpClient.execute(
+                newHttpPost("/commands", query, content),
+                new JsonResponseHandler<Boolean>() {
+                    @Override
+                    public Boolean readResponse(JsonReader reader) throws IOException {
+                        new TestMessageReader(reader).readCommandResult(command);
+                        return Boolean.TRUE;
+                    }
+                });
+    }
 }

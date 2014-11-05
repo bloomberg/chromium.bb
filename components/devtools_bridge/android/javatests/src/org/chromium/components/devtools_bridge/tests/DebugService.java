@@ -14,6 +14,7 @@ import android.os.Process;
 import android.widget.Toast;
 
 import org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox;
+import org.chromium.components.devtools_bridge.GCDClientSessionTestingHost;
 import org.chromium.components.devtools_bridge.LocalSessionBridge;
 import org.chromium.components.devtools_bridge.LocalTunnelBridge;
 
@@ -23,14 +24,15 @@ import java.io.IOException;
  * Service for testing devtools bridge.
  */
 public class DebugService extends Service {
-    private static final String PACKAGE = "org.chromium.components.devtools_bridge.tests";
-    public static final String START_TUNNEL_BRIDGE_ACTION =
-            PACKAGE + ".START_TUNNEL_BRIDGE_ACTION";
-    public static final String START_SESSION_BRIDGE_ACTION =
-            PACKAGE + ".START_SESSION_BRIDGE_ACTION";
-    public static final String START_SERVER_ACTION =
-            PACKAGE + ".START_SERVER_ACTION";
-    public static final String STOP_ACTION = PACKAGE + ".STOP_ACTION";
+    public static final String START_TUNNEL_BRIDGE_ACTION = "action.START_TUNNEL_BRIDGE";
+    public static final String START_SESSION_BRIDGE_ACTION = "action.START_SESSION_BRIDGE";
+    public static final String START_SERVER_ACTION = "action.START_SERVER";
+    public static final String START_GCD_CLIENT_ACTION = "action.START_GCD_CLIENT";
+    public static final String STOP_ACTION = "action.STOP";
+
+    public static final String EXTRA_OAUTH_TOKEN = "extra.OAUTH_TOKEN";
+    public static final String EXTRA_REMOTE_INSTANCE_ID = "extra.REMOTE_INSTANCE_ID";
+
     private static final int NOTIFICATION_ID = 1;
 
     private Controller mRunningController;
@@ -135,6 +137,55 @@ public class DebugService extends Service {
         }
     }
 
+    private class GCDClientController implements Controller {
+        private final String mOAuthToken;
+        private final String mRemoteInstanceId;
+
+        private GCDClientSessionTestingHost mHost;
+
+        public GCDClientController(String oAuthToken, String remoteInstanceId) {
+            mOAuthToken = oAuthToken;
+            mRemoteInstanceId = remoteInstanceId;
+        }
+
+        @Override
+        public void create() {
+        }
+
+        @Override
+        public void start() throws Exception {
+            final GCDClientSessionTestingHost host = new GCDClientSessionTestingHost(
+                    mOAuthToken, exposingSocketName(), mRemoteInstanceId);
+            host.start(new Runnable() {
+                        @Override
+                        public void run() {
+                            String text;
+                            if (!host.isStarted()) {
+                                text = "Session not started. See log for details";
+                            } else {
+                                text = "Session started";
+                            }
+                            Toast.makeText(DebugService.this, text, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            mHost = host;
+        }
+
+        @Override
+        public void stop() {
+        }
+
+        @Override
+        public void dispose() {
+            mHost.dispose();
+        }
+
+        @Override
+        public String toString() {
+            return "GCDClientSessionTestingHost";
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) return START_NOT_STICKY;
@@ -146,6 +197,10 @@ public class DebugService extends Service {
             return start(new LocalSessionBridgeController());
         } else if (START_SERVER_ACTION.equals(action)) {
             return start(new DevToolsBridgeServerSandboxController());
+        } else if (START_GCD_CLIENT_ACTION.equals(action)) {
+            String oAuthToken = intent.getStringExtra(EXTRA_OAUTH_TOKEN);
+            String remoteInstanceId = intent.getStringExtra(EXTRA_REMOTE_INSTANCE_ID);
+            return start(new GCDClientController(oAuthToken, remoteInstanceId));
         } else if (STOP_ACTION.equals(action)) {
             return stop();
         }

@@ -12,6 +12,10 @@ public class TestApiaryClientFactory extends ApiaryClientFactory {
         return new TestGCDClient(mHttpClient, getAPIKey(), oAuthToken);
     }
 
+    public TurnConfigClient newConfigClient() {
+        return new TurnConfigClient(mHttpClient);
+    }
+
     @Override
     public String getAPIKey() {
         return "AIzaSyAI1TKbOdqMQ5TltbBT15V5XaIILnDadhI";

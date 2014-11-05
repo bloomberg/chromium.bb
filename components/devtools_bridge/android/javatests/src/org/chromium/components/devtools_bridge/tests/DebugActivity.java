@@ -61,7 +61,7 @@ public class DebugActivity extends Activity {
         getFragmentManager()
                 .beginTransaction()
                 .add(LAYOUT_ID, new TestGCDRegistrationFragment())
-                .add(LAYOUT_ID, new RemoteInstanceListFragment())
+                .add(LAYOUT_ID, new RemoteInstanceListFragmentImpl())
                 .commit();
 
         setContentView(mLayout, layoutParam);
@@ -130,6 +130,16 @@ public class DebugActivity extends Activity {
             } else {
                 unregister();
             }
+        }
+    }
+
+    private final class RemoteInstanceListFragmentImpl extends RemoteInstanceListFragment {
+        @Override
+        protected void connect(String oAuthToken, String remoteInstanceId) {
+            startService(new Intent(DebugActivity.this, DebugService.class)
+                    .setAction(DebugService.START_GCD_CLIENT_ACTION)
+                    .putExtra(DebugService.EXTRA_OAUTH_TOKEN, oAuthToken)
+                    .putExtra(DebugService.EXTRA_REMOTE_INSTANCE_ID, remoteInstanceId));
         }
     }
 }
