@@ -310,6 +310,14 @@ static jint GetHttpStatusCode(JNIEnv* env,
   return request->http_status_code();
 }
 
+static jstring GetHttpStatusText(JNIEnv* env,
+                                 jobject object,
+                                 jlong urlRequestAdapter) {
+  URLRequestAdapter* request =
+      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
+  return ConvertUTF8ToJavaString(env, request->http_status_text()).Release();
+}
+
 static jstring GetContentType(JNIEnv* env,
                               jobject object,
                               jlong urlRequestAdapter) {

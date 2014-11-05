@@ -17,6 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
 namespace cronet {
@@ -208,6 +209,10 @@ void URLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
 
   http_status_code_ = request->GetResponseCode();
   VLOG(1) << "Response started with status: " << http_status_code_;
+
+  net::HttpResponseHeaders* headers = request->response_headers();
+  if (headers)
+    http_status_text_ = headers->GetStatusText();
 
   request->GetResponseHeaderByName("Content-Type", &content_type_);
   expected_size_ = request->GetExpectedContentSize();

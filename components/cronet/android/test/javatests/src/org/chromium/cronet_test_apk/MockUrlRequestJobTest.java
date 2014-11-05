@@ -57,6 +57,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
                 MOCK_CRONET_TEST_SUCCESS_URL, false);
         assertEquals(MOCK_CRONET_TEST_SUCCESS_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
+        assertEquals("OK", listener.mHttpStatusText);
         assertEquals("this is a text file\n",
                 new String(listener.mResponseAsBytes));
     }
@@ -70,6 +71,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         // Currently Cronet does not expose the url after redirect.
         assertEquals(MOCK_CRONET_TEST_REDIRECT_URL, listener.mUrl);
         assertEquals(200, listener.mHttpStatusCode);
+        assertEquals("OK", listener.mHttpStatusText);
         // Expect that the request is redirected to success.txt.
         assertEquals("this is a text file\n",
                 new String(listener.mResponseAsBytes));
@@ -82,9 +84,10 @@ public class MockUrlRequestJobTest extends CronetTestBase {
                 MOCK_CRONET_TEST_NOTFOUND_URL, false);
         assertEquals(MOCK_CRONET_TEST_NOTFOUND_URL, listener.mUrl);
         assertEquals(404, listener.mHttpStatusCode);
+        assertEquals("Not Found", listener.mHttpStatusText);
         assertEquals(
-                "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n" +
-                "<p>Test page loaded.</p>\n</head>\n</html>\n",
+                "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n"
+                + "<p>Test page loaded.</p>\n</head>\n</html>\n",
                 new String(listener.mResponseAsBytes));
     }
 
@@ -95,6 +98,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
                 MOCK_CRONET_TEST_FAILED_URL, false);
 
         assertEquals(MOCK_CRONET_TEST_FAILED_URL, listener.mUrl);
+        assertEquals(null, listener.mHttpStatusText);
         assertEquals(0, listener.mHttpStatusCode);
     }
 

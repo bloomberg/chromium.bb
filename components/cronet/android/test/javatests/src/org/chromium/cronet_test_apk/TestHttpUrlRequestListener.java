@@ -22,8 +22,8 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public static final String TAG = "TestHttpUrlRequestListener";
 
     public int mHttpStatusCode = 0;
+    public String mHttpStatusText;
     public String mNegotiatedProtocol;
-
     public String mUrl;
     public byte[] mResponseAsBytes;
     public String mResponseAsString;
@@ -37,11 +37,12 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
 
     @Override
     public void onResponseStarted(HttpUrlRequest request) {
-        Log.i(TAG, "****** Response Started, content length is " +
-                request.getContentLength());
+        Log.i(TAG, "****** Response Started, content length is "
+                + request.getContentLength());
         Log.i(TAG, "*** Headers Are *** " + request.getAllHeaders());
         mHttpStatusCode = request.getHttpStatusCode();
         mNegotiatedProtocol = request.getNegotiatedProtocol();
+        mHttpStatusText = request.getHttpStatusText();
     }
 
     @Override
@@ -61,8 +62,8 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         mResponseAsString = new String(mResponseAsBytes);
         mException = request.getException();
         mComplete.open();
-        Log.i(TAG, "****** Request Complete, status code is " +
-                request.getHttpStatusCode());
+        Log.i(TAG, "****** Request Complete, status code is "
+                + request.getHttpStatusCode());
     }
 
     /**

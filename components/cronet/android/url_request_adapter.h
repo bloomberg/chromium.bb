@@ -95,6 +95,11 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
     return http_status_code_;
   };
 
+  // Returns the HTTP status text of the normalized status line.
+  const std::string& http_status_text() const {
+    return http_status_text_;
+  }
+
   // Returns the value of the content-length response header.
   int64 content_length() const { return expected_size_; }
 
@@ -153,6 +158,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   int total_bytes_read_;
   int error_code_;
   int http_status_code_;
+  std::string http_status_text_;
   std::string content_type_;
   bool canceled_;
   int64 expected_size_;

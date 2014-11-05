@@ -143,6 +143,11 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
         return httpStatusCode;
     }
 
+    @Override
+    public String getHttpStatusText() {
+        return nativeGetHttpStatusText(mUrlRequestAdapter);
+    }
+
     /**
      * Returns an exception if any, or null if the request was completed
      * successfully.
@@ -512,15 +517,15 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             mContentLength = nativeGetContentLength(mUrlRequestAdapter);
             mHeadersAvailable = true;
 
-            if (mContentLengthLimit > 0 &&
-                    mContentLength > mContentLengthLimit &&
-                    mCancelIfContentLengthOverLimit) {
+            if (mContentLengthLimit > 0
+                    && mContentLength > mContentLengthLimit
+                    && mCancelIfContentLengthOverLimit) {
                 onContentLengthOverLimit();
                 return;
             }
 
-            if (mBufferFullResponse && mContentLength != -1 &&
-                    !mContentLengthOverLimit) {
+            if (mBufferFullResponse && mContentLength != -1
+                    && !mContentLengthOverLimit) {
                 ((ChunkedWritableByteChannel) getSink()).setCapacity(
                         (int) mContentLength);
             }
@@ -699,6 +704,8 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private native int nativeGetErrorCode(long urlRequestAdapter);
 
     private native int nativeGetHttpStatusCode(long urlRequestAdapter);
+
+    private native String nativeGetHttpStatusText(long urlRequestAdapter);
 
     private native String nativeGetErrorString(long urlRequestAdapter);
 

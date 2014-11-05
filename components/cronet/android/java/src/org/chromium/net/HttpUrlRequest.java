@@ -143,6 +143,12 @@ public interface HttpUrlRequest {
     int getHttpStatusCode();
 
     /**
+     * Returns the HTTP status text of the status line. For example, if the
+     * request has a "HTTP/1.1 200 OK" response, this method returns "OK".
+     */
+    String getHttpStatusText();
+
+    /**
      * Returns the response header value for the given name or {@code null} if
      * not found.
      */
