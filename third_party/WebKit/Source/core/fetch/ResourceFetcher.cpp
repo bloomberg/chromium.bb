@@ -887,6 +887,7 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
     ASSERT(resource->isLoaded());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
+    ASSERT(!isControlledByServiceWorker());
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
     revalidatingRequest.clearHTTPReferrer();
@@ -1076,7 +1077,8 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (cachePolicy == CachePolicyRevalidate || existingResource->mustRevalidateDueToCacheHeaders()
         || request.cacheControlContainsNoCache()) {
         // See if the resource has usable ETag or Last-modified headers.
-        if (existingResource->canUseCacheValidator())
+        // If the page is controlled by the ServiceWorker, we choose the Reload policy because the revalidation headers should not be exposed to the ServiceWorker.(crbug.com/429570)
+        if (existingResource->canUseCacheValidator() && !isControlledByServiceWorker())
             return Revalidate;
 
         // No, must reload.
