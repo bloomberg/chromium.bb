@@ -1833,6 +1833,7 @@ llvm-sb-configure() {
   # getrusage (stub is in libnacl), but we can't actually compile code
   # that uses ::getrusage because it's not in headers:
   # https://code.google.com/p/nativeclient/issues/detail?id=3657
+  # Similar with getrlimit/setrlimit where struct rlimit isn't defined.
   RunWithLog \
       ${LLVM_SB_LOG_PREFIX}.configure \
       env -i \
@@ -1850,7 +1851,9 @@ llvm-sb-configure() {
         --enable-optimized \
         --target=${CROSS_TARGET_ARM} \
         llvm_cv_link_use_export_dynamic=no \
-        ac_cv_func_getrusage=no
+        ac_cv_func_getrusage=no \
+        ac_cv_func_getrlimit=no \
+        ac_cv_func_setrlimit=no
   spopd
 }
 
@@ -2106,6 +2109,8 @@ binutils-gold-sb-configure() {
   # Removed -Werror until upstream gold no longer has problems with new clang
   # warnings. http://code.google.com/p/nativeclient/issues/detail?id=2861
   # TODO(sehr,robertm): remove this when gold no longer has these.
+  # Disable readv. We have a stub for it, but not the accompanying headers
+  # in newlib, like sys/uio.h to actually compile with it.
   RunWithLog "${log_prefix}".configure \
     env -i \
     PATH="/usr/bin:/bin" \
@@ -2116,6 +2121,7 @@ binutils-gold-sb-configure() {
     ac_cv_header_sys_mman_h=no \
     ac_cv_func_mmap=no \
     ac_cv_func_mallinfo=no \
+    ac_cv_func_readv=no \
     ac_cv_prog_cc_g=no \
     ac_cv_prog_cxx_g=no \
     ${srcdir}/gold/configure --prefix="${installbin}" \
