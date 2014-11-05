@@ -23,19 +23,17 @@ remoting.ServerLogEntry = function() {
 /** @private */
 remoting.ServerLogEntry.KEY_EVENT_NAME_ = 'event-name';
 /** @private */
-remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_ =
-    'session-state';
-
+remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_ = 'session-state';
 /** @private */
 remoting.ServerLogEntry.KEY_SESSION_ID_ = 'session-id';
-
 /** @private */
 remoting.ServerLogEntry.KEY_ROLE_ = 'role';
 /** @private */
 remoting.ServerLogEntry.VALUE_ROLE_CLIENT_ = 'client';
-
 /** @private */
 remoting.ServerLogEntry.KEY_SESSION_STATE_ = 'session-state';
+/** @private */
+remoting.ServerLogEntry.KEY_CONNECTION_TYPE_ = 'connection-type';
 
 /**
  * @private
@@ -241,15 +239,22 @@ remoting.ServerLogEntry.prototype.addSessionDurationField = function(
  * Returns null if all the statistics were zero.
  *
  * @param {remoting.StatsAccumulator} statsAccumulator
+ * @param {string} connectionType
  * @param {remoting.ClientSession.Mode} mode
  * @return {?remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeStats = function(statsAccumulator, mode) {
+remoting.ServerLogEntry.makeStats = function(statsAccumulator,
+                                             connectionType,
+                                             mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set(remoting.ServerLogEntry.KEY_ROLE_,
             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set(remoting.ServerLogEntry.KEY_EVENT_NAME_,
             remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_);
+  if (connectionType) {
+    entry.set(remoting.ServerLogEntry.KEY_CONNECTION_TYPE_,
+              connectionType);
+  }
   entry.addModeField(mode);
   var nonZero = false;
   nonZero |= entry.addStatsField(

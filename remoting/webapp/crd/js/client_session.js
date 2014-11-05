@@ -106,7 +106,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.remapKeys_ = '';
   /** @private */
   this.hasReceivedFrame_ = false;
-  this.logToServer = new remoting.LogToServer(signalStrategy);
+  this.logToServer = new remoting.LogToServer(signalStrategy, mode);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
@@ -528,11 +528,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   }
 
   this.plugin_.setOnOutgoingIqHandler(this.sendIq_.bind(this));
-  this.plugin_.setOnDebugMessageHandler(
-      /** @param {string} msg */
-      function(msg) {
-        console.log('plugin: ' + msg.trimRight());
-      });
+  this.plugin_.setOnDebugMessageHandler(this.onDebugMessage_.bind(this));
 
   this.plugin_.setConnectionStatusUpdateHandler(
       this.onConnectionStatusUpdate_.bind(this));
@@ -605,7 +601,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
 
   // The plugin won't send a state change notification, so we explicitly log
   // the fact that the connection has closed.
-  this.logToServer.logClientSessionStateChange(state, error, this.mode_);
+  this.logToServer.logClientSessionStateChange(state, error);
   this.error_ = error;
   this.setState_(state);
 };
@@ -838,6 +834,19 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
 
 /**
  * @private
+ * @param {string} msg
+ */
+remoting.ClientSession.prototype.onDebugMessage_ = function(msg) {
+  var isConnectionTypeMessage = msg.match(
+      /^Channel (.*) using (.*) connection.$/);
+  if (isConnectionTypeMessage) {
+    this.logToServer.setConnectionType(isConnectionTypeMessage[2]);
+  }
+  console.log('plugin: ' + msg.trimRight());
+};
+
+/**
+ * @private
  * @param {Element} message
  */
 remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
@@ -1035,7 +1044,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
              this.state_ == remoting.ClientSession.State.FAILED) {
     state = remoting.ClientSession.State.CONNECTION_DROPPED;
   }
-  this.logToServer.logClientSessionStateChange(state, this.error_, this.mode_);
+  this.logToServer.logClientSessionStateChange(state, this.error_);
   if (this.state_ == remoting.ClientSession.State.CONNECTED) {
     this.createGnubbyAuthHandler_();
     this.createCastExtensionHandler_();
@@ -1226,7 +1235,7 @@ remoting.ClientSession.prototype.getPerfStats = function() {
  * @param {remoting.ClientSession.PerfStats} stats
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
-  this.logToServer.logStatistics(stats, this.mode_);
+  this.logToServer.logStatistics(stats);
 };
 
 /**
