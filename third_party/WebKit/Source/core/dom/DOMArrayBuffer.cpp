@@ -37,7 +37,7 @@ v8::Handle<v8::Object> DOMArrayBuffer::associateWithWrapper(const WrapperTypeInf
     // This function does not set a deallocation observer to the underlying
     // array buffer.  It's a caller's duty.
 
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperTypeInfo, wrapper, isolate);
+    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 } // namespace blink

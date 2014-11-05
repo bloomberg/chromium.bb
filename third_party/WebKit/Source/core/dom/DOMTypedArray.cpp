@@ -34,7 +34,7 @@ v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Hand
 template<typename WTFTypedArray, typename V8TypedArray>
 v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperTypeInfo, wrapper, isolate);
+    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 // Instantiation of the non-inline functions of the template classes.

@@ -3273,7 +3273,7 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
 
     wrapper->SetPrototype(binding->prototype());
 
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperType, wrapper);
 }
 
 } // namespace blink

@@ -2437,7 +2437,7 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
 
 v8::Handle<v8::Object> Node::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperType, wrapper);
 }
 
 } // namespace blink

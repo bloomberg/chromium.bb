@@ -968,7 +968,7 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
         return wrapper;
 
     installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl, &wrapperTypeInfo, wrapper, isolate);
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(isolate, impl, &wrapperTypeInfo, wrapper);
     return wrapper;
 }
 

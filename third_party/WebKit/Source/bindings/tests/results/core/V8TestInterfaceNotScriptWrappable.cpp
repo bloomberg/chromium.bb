@@ -141,7 +141,7 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
         return wrapper;
 
     installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNotScriptWrappable>(impl, &wrapperTypeInfo, wrapper, isolate);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNotScriptWrappable>(isolate, impl, &wrapperTypeInfo, wrapper);
     return wrapper;
 }
 
