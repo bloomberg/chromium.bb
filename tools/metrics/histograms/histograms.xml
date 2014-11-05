@@ -18008,6 +18008,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ConnectionEstablish" units="milliseconds">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18015,6 +18018,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ConnectionLatency" units="milliseconds">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18023,6 +18029,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SocketStream.ConnectionType"
     enum="SocketStreamConnectionType">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18032,6 +18041,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.Duration" units="milliseconds">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. Replaced by
+    Net.WebSocket.Duration.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18039,6 +18052,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ProtocolType" enum="SocketStreamProtocolType">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18048,6 +18064,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ReceivedBytes" units="bytes">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18055,6 +18074,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.ReceivedCounts">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18062,6 +18084,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.SentBytes" units="bytes">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
@@ -18069,6 +18094,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.SocketStream.SentCounts">
+  <obsolete>
+    Deprecated 2014-10-28. No longer generated. No direct replacement.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <owner>ricea@chromium.org</owner>
   <owner>tyoshino@chromium.org</owner>
