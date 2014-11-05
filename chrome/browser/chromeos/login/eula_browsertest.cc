@@ -25,7 +25,8 @@ const char kEULAURL[] =
     "https://www.google.com/intl/en-US/chrome/eula_text.html";
 const char kFakeOnlineEULA[] = "No obligations at all";
 #if defined(GOOGLE_CHROME_BUILD)
-const char kOfflineEULAWarning[] = "A copy of the Google Terms of Service";
+// See IDS_ABOUT_TERMS_OF_SERVICE for the complete text.
+const char kOfflineEULAWarning[] = "Chrome OS Terms";
 #endif
 
 class TermsOfServiceProcessBrowserTest : public InProcessBrowserTest {
