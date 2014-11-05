@@ -30,9 +30,16 @@ namespace em = enterprise_management;
 
 namespace chromeos {
 
+using ::testing::AtLeast;
 using ::testing::AnyNumber;
 using ::testing::Mock;
 using ::testing::_;
+
+namespace {
+
+const char kDisabledMessage[] = "This device has been disabled.";
+
+}  // namespace
 
 class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
  public:
@@ -304,6 +311,37 @@ TEST_F(DeviceSettingsProviderTest, OwnerIsStillSetWhenDeviceIsConsumerManaged) {
   std::string string_value;
   EXPECT_TRUE(value->GetAsString(&string_value));
   EXPECT_FALSE(string_value.empty());
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
+  EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+  device_policy_.policy_data().mutable_device_state()->set_device_mode(
+      em::DeviceState::DEVICE_MODE_DISABLED);
+  device_policy_.policy_data().mutable_device_state()->
+      mutable_disabled_state()->set_message(kDisabledMessage);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
+  Mock::VerifyAndClearExpectations(this);
+
+  // Verify that the device state has been decoded correctly.
+  const base::FundamentalValue expected_disabled_value(true);
+  EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabled),
+                                  &expected_disabled_value));
+  const base::StringValue expected_disabled_message_value(kDisabledMessage);
+  EXPECT_TRUE(base::Value::Equals(provider_->Get(kDeviceDisabledMessage),
+                                  &expected_disabled_message_value));
+
+  // Verify that a change to the device state triggers a notification.
+  EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+  device_policy_.policy_data().mutable_device_state()->clear_device_mode();
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
+  Mock::VerifyAndClearExpectations(this);
+
+  // Verify that the updated state has been decoded correctly.
+  EXPECT_FALSE(provider_->Get(kDeviceDisabled));
 }
 
 } // namespace chromeos

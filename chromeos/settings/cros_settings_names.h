@@ -88,6 +88,9 @@ CHROMEOS_EXPORT extern const char kAttestationForContentProtectionEnabled[];
 
 CHROMEOS_EXPORT extern const char kServiceAccountIdentity[];
 
+CHROMEOS_EXPORT extern const char kDeviceDisabled[];
+CHROMEOS_EXPORT extern const char kDeviceDisabledMessage[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

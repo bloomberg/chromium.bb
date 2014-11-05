@@ -186,6 +186,33 @@ message PolicyFetchRequest {
   optional string verification_key_hash = 9;
 }
 
+// This message customizes how the device behaves when it is disabled by its
+// owner. The message will be sent as part of the DeviceState fetched during
+// normal operation and as part of the DeviceStateRetrievalResponse fetched when
+// the device is wiped/reinstalled.
+message DisabledState {
+  // A message to the finder/thief that should be shown on the screen.
+  optional string message = 1;
+}
+
+message DeviceState {
+  // Modes of operation that the device can be in.
+  enum DeviceMode {
+    // The device is operating normally. Sessions can be started and the device
+    // can be used.
+    DEVICE_MODE_NORMAL = 0;
+    // The device has been disabled by its owner. The device will show a warning
+    // screen and will not allow any sessions to be started.
+    DEVICE_MODE_DISABLED = 1;
+  }
+  // The mode of operation that the device should be in.
+  optional DeviceMode device_mode = 1 [default = DEVICE_MODE_NORMAL];
+
+  // State that is relevant only when the |device_mode| is
+  // |DEVICE_MODE_DISABLED|.
+  optional DisabledState disabled_state = 2;
+}
+
 // This message is included in serialized form in PolicyFetchResponse
 // below.  It may also be signed, with the signature being created for
 // the serialized form.
@@ -289,6 +316,9 @@ message PolicyData {
     CONSUMER_MANAGED = 2;
   }
   optional ManagementMode management_mode = 16;
+
+  // Indicates the state that the device should be in.
+  optional DeviceState device_state = 17;
 }
 
 message PolicyFetchResponse {
@@ -597,11 +627,6 @@ message DeviceStateKeyUpdateRequest {
   // key as the output, possibly by running the identifiers through a
   // cryptographic hash function such as SHA-256.
   repeated bytes server_backed_state_key = 1;
-}
-
-message DisabledState {
-  // A message to the finder/thief that should be shown on the screen.
-  optional string message = 1;
 }
 
 // Server to client message carrying the device state response. Because the

@@ -552,6 +552,8 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kStartUpUrls
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter
+    //   kDeviceDisabled
+    //   kDeviceDisabledMessage
 
     LOG(FATAL) << "Device setting " << path << " is read-only.";
   }

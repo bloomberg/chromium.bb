@@ -78,6 +78,8 @@ const char* const kKnownSettings[] = {
   kSystemUse24HourClock,
   kUpdateDisabled,
   kVariationsRestrictParameter,
+  kDeviceDisabled,
+  kDeviceDisabledMessage,
 };
 
 bool HasOldMetricsFile() {
@@ -437,6 +439,22 @@ void DecodeGenericPolicies(
   }
 }
 
+void DecodeDeviceState(const em::PolicyData& policy_data,
+                       PrefValueMap* new_values_cache) {
+  if (!policy_data.has_device_state())
+    return;
+
+  const em::DeviceState& device_state = policy_data.device_state();
+
+  if (device_state.device_mode() == em::DeviceState::DEVICE_MODE_DISABLED)
+    new_values_cache->SetBoolean(kDeviceDisabled, true);
+  if (device_state.has_disabled_state() &&
+      device_state.disabled_state().has_message()) {
+    new_values_cache->SetString(kDeviceDisabledMessage,
+                                device_state.disabled_state().message());
+  }
+}
+
 }  // namespace
 
 DeviceSettingsProvider::DeviceSettingsProvider(
@@ -612,6 +630,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
   DecodeAutoUpdatePolicies(settings, &new_values_cache);
   DecodeReportingPolicies(settings, &new_values_cache);
   DecodeGenericPolicies(settings, &new_values_cache);
+  DecodeDeviceState(policy_data, &new_values_cache);
 
   // Collect all notifications but send them only after we have swapped the
   // cache so that if somebody actually reads the cache will be already valid.

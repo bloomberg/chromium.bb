@@ -151,4 +151,13 @@ const char kAttestationForContentProtectionEnabled[] =
 // enterprise-enrolled devices.
 const char kServiceAccountIdentity[] = "cros.service_account_identity";
 
+// A boolean pref that indicates whether the device has been disabled by its
+// owner. If so, the device will show a warning screen and will not allow any
+// sessions to be started.
+const char kDeviceDisabled[] = "cros.device_disabled";
+
+// A string pref containing the message that should be shown to the user when
+// the device is disabled.
+const char kDeviceDisabledMessage[] = "cros.disabled_state.message";
+
 }  // namespace chromeos
