@@ -80,4 +80,7 @@ for host_os in linux mac; do
   if [ "$PLATFORM" == "${host_platform}-mips" -o "$PLATFORM" == "all" ]; then
     ${GYP} --suffix .${host_platform}-mips ${EFLAGS} -Dtarget_arch=mipsel
   fi
+  if [ "$PLATFORM" == "${host_platform}-mips64" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-mips64 ${EFLAGS} -Dtarget_arch=mips64el
+  fi
 done
