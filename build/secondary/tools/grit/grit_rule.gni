@@ -159,9 +159,9 @@ if (enable_extensions) {
 if (enable_plugins) {
   grit_defines += [ "-D", "enable_plugins" ]
 }
-if (printing_mode != 0) {
+if (enable_basic_printing || enable_print_preview) {
   grit_defines += [ "-D", "enable_printing" ]
-  if (printing_mode == 1) {
+  if (enable_print_preview) {
     grit_defines += [ "-D", "enable_print_preview" ]
   }
 }

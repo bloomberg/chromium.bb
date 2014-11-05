@@ -1771,12 +1771,12 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
-        ['enable_printing==1', {
+        ['enable_print_preview==1', {
           'dependencies': [
             'service',
           ],
         }],
-        ['enable_printing!=0', {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'sources': [
             'renderer/printing/mock_printer.cc',
             'renderer/printing/mock_printer.h',
@@ -2260,7 +2260,7 @@
             'common/pepper_permission_util_unittest.cc',
           ],
         }],
-        ['enable_printing!=1', {
+        ['enable_print_preview==0', {
           'sources/': [
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/ui/webui/print_preview/'],

@@ -80,7 +80,8 @@ source_set("chromeos") {
     "//media",
     "//net",
     "//ppapi:ppapi_ipc",  # For PpapiMsg_LoadPlugin
-    "//printing", # TODO: care about enable_printing
+    # TODO: care about enable_basic_printing and enable_print_preview.
+    "//printing",
     "//skia",
     "//storage/browser",
     "//storage/common",

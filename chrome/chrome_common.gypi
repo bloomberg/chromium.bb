@@ -414,7 +414,7 @@
             'common/pepper_permission_util.h',
           ],
         }],
-        ['enable_printing==0', {
+        ['enable_basic_printing==0 and enable_print_preview==0', {
           'sources!': [
             'common/print_messages.cc',
             'common/print_messages.h',
@@ -424,7 +424,7 @@
             '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
-        ['enable_printing==1', {
+        ['enable_print_preview==1', {
           'sources': [ '<@(chrome_common_service_process_sources)' ],
         }],
         ['enable_service_discovery==1', {

@@ -129,7 +129,7 @@ static_library("ui") {
     deps += [ "//device/bluetooth" ]
   }
 
-  if (printing_mode != 0) {
+  if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
   }
 
@@ -275,7 +275,7 @@ static_library("ui") {
   if (!enable_themes) {
     sources -= [ "webui/theme_source.cc" ]
   }
-  if (printing_mode == 1) {
+  if (enable_print_preview) {
     sources += rebase_path(gypi_values.chrome_browser_ui_print_preview_sources,
                            ".", "//chrome")
   }

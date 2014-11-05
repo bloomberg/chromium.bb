@@ -487,12 +487,12 @@
       # Enable Google Now.
       'enable_google_now%': 1,
 
-      # Enable printing support and UI. This variable is used to configure
-      # which parts of printing will be built. 0 disables printing completely,
-      # 1 enables it fully, and 2 enables only the codepath to generate a
-      # Metafile (e.g. usually a PDF or EMF) and disables print preview, cloud
-      # print, UI, etc.
-      'enable_printing%': 1,
+      # Enable basic printing support and UI.
+      'enable_basic_printing%': 1,
+
+      # Enable printing with print preview. It does not imply
+      # enable_basic_printing. It's possible to build Chrome with preview only.
+      'enable_print_preview%': 1,
 
       # Set the version of CLD.
       #   0: Don't specify the version. This option is for the Finch testing.
@@ -770,7 +770,8 @@
           'arm_neon_optional%': 1,
           'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
-          'enable_printing%': 2,
+          'enable_basic_printing%': 1,
+          'enable_print_preview%': 0,
           'enable_task_manager%':0,
           'video_hole%': 1,
         }],
@@ -809,7 +810,8 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
-          'enable_printing%': 0,
+          'enable_basic_printing%': 0,
+          'enable_print_preview%': 0,
           'enable_session_service%': 0,
           'enable_themes%': 0,
           'enable_webrtc%': 0,
@@ -979,7 +981,8 @@
         # Disable various features by default on embedded.
         ['embedded==1', {
           'remoting%': 0,
-          'enable_printing%': 0,
+          'enable_basic_printing%': 0,
+          'enable_print_preview%': 0,
         }],
 
         # By default, use ICU data file (icudtl.dat) on all platforms
@@ -1175,7 +1178,8 @@
     'test_isolation_mode%': '<(test_isolation_mode)',
     'test_isolation_outdir%': '<(test_isolation_outdir)',
     'test_isolation_fail_on_missing': '<(test_isolation_fail_on_missing)',
-    'enable_printing%': '<(enable_printing)',
+    'enable_basic_printing%': '<(enable_basic_printing)',
+    'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
@@ -2096,10 +2100,10 @@
       ['enable_plugins!=0', {
         'grit_defines': ['-D', 'enable_plugins'],
       }],
-      ['enable_printing!=0', {
+      ['enable_basic_printing==1 or enable_print_preview==1', {
         'grit_defines': ['-D', 'enable_printing'],
       }],
-      ['enable_printing==1', {
+      ['enable_print_preview==1', {
         'grit_defines': ['-D', 'enable_print_preview'],
       }],
       ['enable_themes==1', {
@@ -2923,10 +2927,17 @@
         # chrome://translate-internals
         'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
-      ['enable_printing!=0', {
-        'defines': ['ENABLE_PRINTING=1', 'ENABLE_BASIC_PRINTING=1'],
+      ['enable_basic_printing==1 or enable_print_preview==1', {
+        # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.
+        'defines': ['ENABLE_PRINTING=1'],
       }],
-      ['enable_printing==1', {
+      ['enable_basic_printing==1', {
+        # Enable basic printing support and UI.
+        'defines': ['ENABLE_BASIC_PRINTING=1'],
+      }],
+      ['enable_print_preview==1', {
+        # Enable printing with print preview.
+        # Can be defined without ENABLE_BASIC_PRINTING.
         'defines': ['ENABLE_PRINT_PREVIEW=1'],
       }],
       ['enable_spellcheck==1', {

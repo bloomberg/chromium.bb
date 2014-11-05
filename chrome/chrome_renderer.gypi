@@ -371,7 +371,7 @@
             '../third_party/mach_override/mach_override.gyp:mach_override',
           ],
         }],
-        ['enable_printing!=0', {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
             '../printing/printing.gyp:printing',
           ],
@@ -379,7 +379,7 @@
             '<@(chrome_renderer_printing_sources)',
           ],
         }],
-        ['enable_printing==1', {
+        ['enable_print_preview==1', {
           'sources': [
             '<@(chrome_renderer_full_printing_sources)',
           ],

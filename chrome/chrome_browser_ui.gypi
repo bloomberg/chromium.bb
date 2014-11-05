@@ -2690,7 +2690,7 @@
             '../net/net.gyp:net',
           ],
         }],
-        ['enable_printing!=0', {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
             '../printing/printing.gyp:printing',
           ],
@@ -2848,7 +2848,7 @@
             'browser/ui/webui/theme_source.cc',
           ],
         }],
-        ['enable_printing==1', {
+        ['enable_print_preview==1', {
           'sources': [ '<@(chrome_browser_ui_print_preview_sources)' ],
         }],
         ['OS=="linux" or OS=="android"', {

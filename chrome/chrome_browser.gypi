@@ -1826,7 +1826,7 @@
       'browser/themes/theme_syncable_service.cc',
       'browser/themes/theme_syncable_service.h',
     ],
-    # Used both when enable_printing == 1 (full) and == 2 (basic)
+    # Used both when (enable_basic_printing==1 or enable_print_preview==1).
     'chrome_browser_basic_printing_sources': [
       'browser/printing/print_job.cc',
       'browser/printing/print_job.h',
@@ -1843,7 +1843,7 @@
       'browser/printing/printing_message_filter.cc',
       'browser/printing/printing_message_filter.h',
     ],
-    # Used on top of the "basic" sources when enable_printing == 1 (full).
+    # Used on top of the "basic" sources when enable_print_preview==1.
     'chrome_browser_full_printing_sources': [
       'browser/local_discovery/pwg_raster_converter.cc',
       'browser/local_discovery/pwg_raster_converter.h',
@@ -1878,7 +1878,7 @@
       'browser/task_manager/printing_information.cc',
       'browser/task_manager/printing_information.h',
     ],
-    # Used only in basic printing (enable_printing == 2) mode.
+    # Used only in (enable_basic_printing==1 and enable_print_preview==0) mode.
     'chrome_browser_basic_only_printing_sources': [
       'browser/printing/print_view_manager_basic.cc',
       'browser/printing/print_view_manager_basic.h',
@@ -3256,7 +3256,7 @@
           'sources': [ '<@(chrome_browser_themes_sources)' ],
         }],
         # Some form of printing support.
-        ['enable_printing!=0', {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
             '../printing/printing.gyp:printing',
           ],
@@ -3265,15 +3265,15 @@
             ['OS=="win"', {
               'sources': [ '<@(chrome_browser_printing_emf_sources)' ],
             }],
-            # Full printing on top of the above.
-            ['enable_printing==1', {
-              'sources': [ '<@(chrome_browser_full_printing_sources)' ],
-            }],
-            # Partial-only printing support.
-            ['enable_printing==2', {
-              'sources': [ '<@(chrome_browser_basic_only_printing_sources)' ],
-            }],
           ],
+        }],
+        # Full printing on top of the above.
+        ['enable_print_preview==1', {
+          'sources': [ '<@(chrome_browser_full_printing_sources)' ],
+        }],
+        # Partial-only printing support.
+        ['enable_basic_printing==1 and enable_print_preview==0', {
+          'sources': [ '<@(chrome_browser_basic_only_printing_sources)' ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ '<@(chrome_browser_captive_portal_sources)' ]

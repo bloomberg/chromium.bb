@@ -222,7 +222,7 @@
                     '<(allocator_target)',
                   ],
                 }],
-                ['enable_printing!=0', {
+                ['enable_basic_printing==1 or enable_print_preview==1', {
                   'dependencies': [
                     '../printing/printing.gyp:printing',
                   ],

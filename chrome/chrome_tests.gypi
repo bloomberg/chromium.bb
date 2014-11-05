@@ -2360,7 +2360,7 @@
             '../media/media.gyp:clearkeycdmadapter',
           ],
         }],
-        ['enable_printing!=1', {
+        ['enable_print_preview==0', {
           'sources/': [
             ['exclude', '^browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc'],
             ['exclude', '^browser/printing/cloud_print/test/.*'],
@@ -2373,7 +2373,7 @@
             ['exclude', '^test/data/webui/print_preview.js'],
           ],
         }],
-        ['enable_printing==0', {
+        ['enable_basic_printing==0 and enable_print_preview==0', {
           'sources/': [
             ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
           ],
@@ -2729,7 +2729,7 @@
             '../ui/views/views.gyp:views',
           ],
         }],
-        ['enable_printing!=0', {
+        ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
             '../printing/printing.gyp:printing',
           ],

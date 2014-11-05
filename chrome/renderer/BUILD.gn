@@ -130,11 +130,11 @@ static_library("renderer") {
     deps += [ "//third_party/hunspell" ]
   }
 
-  if (printing_mode > 0) {
+  if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
     sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
                            ".", "..")
-    if (printing_mode == 1) {
+    if (enable_print_preview) {
       sources += rebase_path(gypi_values.chrome_renderer_full_printing_sources,
                              ".", "..")
     }
@@ -181,10 +181,10 @@ source_set("test_support") {
     "//testing/gtest",
   ]
 
-  if (printing_mode == 1) {
+  if (enable_print_preview) {
     deps += [ "//chrome/service" ]
   }
-  if (printing_mode != 0) {
+  if (enable_basic_printing || enable_print_preview) {
     sources += [
       "printing/mock_printer.cc",
       "printing/mock_printer.h",

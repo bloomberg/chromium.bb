@@ -87,12 +87,13 @@
     'ext/vector_platform_device_skia.h',
   ],
   'conditions': [
-    [ 'OS == "android" and enable_printing == 0', {
+    [ 'OS == "android" and '
+      'enable_basic_printing==0 and enable_print_preview==0', {
       'sources!': [
         'ext/skia_utils_base.cc',
       ],
     }],
-    [ 'enable_printing == 0', {
+    [ 'enable_basic_printing==0 and enable_print_preview==0', {
       'sources!': [
         'ext/vector_platform_device_skia.cc',
       ],

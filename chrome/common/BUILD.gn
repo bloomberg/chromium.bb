@@ -145,14 +145,14 @@ static_library("common") {
   }
 
   # Printing.
-  if (printing_mode == 0) {
+  if (!enable_basic_printing && !enable_print_preview) {
     sources -= [
       "print_messages.cc",
       "print_messages.h",
     ]
   } else {
     deps += [ "//printing" ]
-    if (printing_mode == 1) {
+    if (enable_print_preview) {
       # Full printing support.
       sources += rebase_path(
           gypi_values.chrome_common_service_process_sources,

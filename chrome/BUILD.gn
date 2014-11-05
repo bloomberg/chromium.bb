@@ -218,9 +218,9 @@ group("browser_dependencies") {
     ]
   }
 
-  if (printing_mode != 0) {
+  if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
-    if (printing_mode == 1) {
+    if (enable_print_preview) {
       deps += [ "//chrome/service" ]
     }
   }

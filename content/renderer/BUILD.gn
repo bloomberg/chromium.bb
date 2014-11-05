@@ -185,7 +185,7 @@ source_set("renderer") {
     ]
   }
 
-  if (printing_mode == 1) {
+  if (enable_print_preview) {
     deps += [ "//printing" ]
   }
 
