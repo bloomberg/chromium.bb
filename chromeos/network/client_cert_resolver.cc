@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
@@ -230,7 +231,9 @@ bool ClientCertificatesLoaded() {
 }  // namespace
 
 ClientCertResolver::ClientCertResolver()
-    : network_state_handler_(NULL),
+    : resolve_task_running_(false),
+      network_properties_changed_(false),
+      network_state_handler_(NULL),
       managed_network_config_handler_(NULL),
       weak_ptr_factory_(this) {
 }
@@ -261,6 +264,18 @@ void ClientCertResolver::Init(
 void ClientCertResolver::SetSlowTaskRunnerForTest(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   slow_task_runner_for_test_ = task_runner;
+}
+
+void ClientCertResolver::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ClientCertResolver::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool ClientCertResolver::IsAnyResolveTaskRunning() const {
+  return resolve_task_running_;
 }
 
 // static
@@ -365,7 +380,7 @@ void ClientCertResolver::PolicyAppliedToNetwork(
 
 void ClientCertResolver::ResolveNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
-  scoped_ptr<std::vector<NetworkAndCertPattern> > networks_with_pattern(
+  scoped_ptr<std::vector<NetworkAndCertPattern>> networks_to_resolve(
       new std::vector<NetworkAndCertPattern>);
 
   // Filter networks with ClientCertPattern. As ClientCertPatterns can only be
@@ -401,11 +416,24 @@ void ClientCertResolver::ResolveNetworks(
     if (cert_config.client_cert_type != ::onc::client_cert::kPattern)
       continue;
 
-    networks_with_pattern->push_back(
+    networks_to_resolve->push_back(
         NetworkAndCertPattern(network->path(), cert_config));
   }
-  if (networks_with_pattern->empty())
+
+  if (networks_to_resolve->empty()) {
+    VLOG(1) << "No networks to resolve.";
+    NotifyResolveRequestCompleted();
     return;
+  }
+
+  if (resolve_task_running_) {
+    VLOG(1) << "A resolve task is already running. Queue this request.";
+    for (const NetworkAndCertPattern& network_and_pattern :
+         *networks_to_resolve) {
+      queued_networks_to_resolve_.insert(network_and_pattern.service_path);
+    }
+    return;
+  }
 
   VLOG(2) << "Start task for resolving client cert patterns.";
   base::TaskRunner* task_runner = slow_task_runner_for_test_.get();
@@ -413,16 +441,35 @@ void ClientCertResolver::ResolveNetworks(
     task_runner =
         base::WorkerPool::GetTaskRunner(true /* task is slow */).get();
 
+  resolve_task_running_ = true;
   NetworkCertMatches* matches = new NetworkCertMatches;
   task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&FindCertificateMatches,
                  CertLoader::Get()->cert_list(),
-                 base::Owned(networks_with_pattern.release()),
+                 base::Owned(networks_to_resolve.release()),
                  matches),
       base::Bind(&ClientCertResolver::ConfigureCertificates,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(matches)));
+}
+
+void ClientCertResolver::ResolvePendingNetworks() {
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
+                                               true /* configured_only */,
+                                               false /* visible_only */,
+                                               0 /* no limit */,
+                                               &networks);
+
+  NetworkStateHandler::NetworkStateList networks_to_resolve;
+  for (const NetworkState* network : networks) {
+    if (queued_networks_to_resolve_.count(network->path()) > 0)
+      networks_to_resolve.push_back(network);
+  }
+  VLOG(1) << "Resolve pending " << networks_to_resolve.size() << " networks.";
+  queued_networks_to_resolve_.clear();
+  ResolveNetworks(networks_to_resolve);
 }
 
 void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
@@ -439,6 +486,7 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
                                       it->pkcs11_id,
                                       &shill_properties);
     }
+    network_properties_changed_ = true;
     DBusThreadManager::Get()->GetShillServiceClient()->
         SetProperties(dbus::ObjectPath(it->service_path),
                         shill_properties,
@@ -446,6 +494,19 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
                         base::Bind(&LogError, it->service_path));
     network_state_handler_->RequestUpdateForNetwork(it->service_path);
   }
+  if (queued_networks_to_resolve_.empty())
+    NotifyResolveRequestCompleted();
+  else
+    ResolvePendingNetworks();
+}
+
+void ClientCertResolver::NotifyResolveRequestCompleted() {
+  VLOG(2) << "Notify observers: " << (network_properties_changed_ ? "" : "no ")
+          << "networks changed.";
+  resolve_task_running_ = false;
+  const bool changed = network_properties_changed_;
+  network_properties_changed_ = false;
+  FOR_EACH_OBSERVER(Observer, observers_, ResolveRequestCompleted(changed));
 }
 
 }  // namespace chromeos
