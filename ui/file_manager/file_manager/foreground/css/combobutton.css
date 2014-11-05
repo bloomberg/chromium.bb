@@ -8,10 +8,13 @@
 }
 
 .buttonbar .combobutton > .action {
-  -webkit-padding-start: 21px;
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
+}
+
+.buttonbar .combobutton > .with-icon {
+  -webkit-padding-start: 21px;
 }
 
 html[dir='rtl'] .buttonbar .combobutton > .action {

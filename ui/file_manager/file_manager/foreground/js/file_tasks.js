@@ -278,10 +278,15 @@ FileTasks.prototype.processTasks_ = function(tasks) {
     }
   }
   if (!this.defaultTask_ && this.tasks_.length > 0) {
-    // If we haven't picked a default task yet, then just pick the first one.
-    // This is not the preferred way we want to pick this, but better this than
-    // no default at all if the C++ code didn't set one.
-    this.defaultTask_ = this.tasks_[0];
+    // If we haven't picked a default task yet, then just pick the first one
+    // which is not generic file handler.
+    for (var i = 0; i < this.tasks_.length; i++) {
+      var task = this.tasks_[i];
+      if (!task.isGenericFileHandler) {
+        this.defaultTask_ = task;
+        break;
+      }
+    }
   }
 };
 
@@ -603,6 +608,7 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
  * @private
  */
 FileTasks.prototype.display_ = function(combobutton) {
+  // If there does not exist available task, hide combobutton.
   if (this.tasks_.length === 0) {
     combobutton.hidden = true;
     return;
@@ -610,24 +616,35 @@ FileTasks.prototype.display_ = function(combobutton) {
 
   combobutton.clear();
   combobutton.hidden = false;
-  combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
 
+  // If there exist defaultTask show it on the combobutton.
+  if (this.defaultTask_) {
+    combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
+  } else {
+    combobutton.defaultItem = {
+      label: loadTimeData.getString('MORE_ACTIONS')
+    };
+  }
+
+  // If there exist 2 or more available tasks, show them in context menu
+  // (including defaultTask). If only one generic task is available, we also
+  // show it in the context menu.
   var items = this.createItems_();
 
-  if (items.length > 1) {
-    var defaultIdx = 0;
-
+  if (items.length > 1 || (items.length === 1 && this.defaultTask_ === null)) {
     for (var j = 0; j < items.length; j++) {
       combobutton.addDropDownItem(items[j]);
-      if (items[j].task.taskId === this.defaultTask_.taskId)
-        defaultIdx = j;
     }
 
-    combobutton.addSeparator();
-    var changeDefaultMenuItem = combobutton.addDropDownItem({
-      label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
-    });
-    changeDefaultMenuItem.classList.add('change-default');
+    // If there exist non generic task (i.e. defaultTask is set), we show an
+    // item to change default action.
+    if (this.defaultTask_) {
+      combobutton.addSeparator();
+      var changeDefaultMenuItem = combobutton.addDropDownItem({
+        label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
+      });
+      changeDefaultMenuItem.classList.add('change-default');
+    }
   }
 };
 
@@ -639,17 +656,33 @@ FileTasks.prototype.display_ = function(combobutton) {
  */
 FileTasks.prototype.createItems_ = function() {
   var items = [];
-  var title = this.defaultTask_.title + ' ' +
-              loadTimeData.getString('DEFAULT_ACTION_LABEL');
-  items.push(this.createCombobuttonItem_(this.defaultTask_, title, true));
 
+  // Create items.
   for (var index = 0; index < this.tasks_.length; index++) {
     var task = this.tasks_[index];
-    if (task !== this.defaultTask_)
+    if (task === this.defaultTask_) {
+      var title = task.title + ' ' +
+                  loadTimeData.getString('DEFAULT_ACTION_LABEL');
+      items.push(this.createCombobuttonItem_(task, title, true, true));
+    } else {
       items.push(this.createCombobuttonItem_(task));
+    }
   }
 
+  // Sort items (Sort order: isDefault, isGenericFileHandler, label).
   items.sort(function(a, b) {
+    // Sort by isDefaultTask.
+    var isDefault = (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0);
+    if (isDefault !== 0)
+      return isDefault;
+
+    // Sort by isGenericFileHandler.
+    var isGenericFileHandler =
+        (a.isGenericFileHandler ? 1 : 0) - (b.isGenericFileHandler ? 1 : 0);
+    if (isGenericFileHandler !== 0)
+      return isGenericFileHandler;
+
+    // Sort by label.
     return a.label.localeCompare(b.label);
   });
 
@@ -662,8 +695,7 @@ FileTasks.prototype.createItems_ = function() {
  */
 
 FileTasks.prototype.updateMenuItem_ = function() {
-  this.fileManager_.updateContextMenuActionItems(this.defaultTask_,
-      this.tasks_.length > 1);
+  this.fileManager_.updateContextMenuActionItems(this.tasks_);
 };
 
 /**
@@ -672,17 +704,21 @@ FileTasks.prototype.updateMenuItem_ = function() {
  * @param {Object} task Task to convert.
  * @param {string=} opt_title Title.
  * @param {boolean=} opt_bold Make a menu item bold.
+ * @param {boolean=} opt_isDefault Mark the item as default item.
  * @return {Object} Item appendable to combobutton drop-down list.
  * @private
  */
 FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
-                                                      opt_bold) {
+                                                      opt_bold,
+                                                      opt_isDefault) {
   return {
     label: opt_title || task.title,
     iconUrl: task.iconUrl,
     iconType: task.iconType,
     task: task,
-    bold: opt_bold || false
+    bold: opt_bold || false,
+    isDefault: opt_isDefault || false,
+    isGenericFileHandler: task.isGenericFileHandler
   };
 };
 
@@ -694,10 +730,17 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
  * @param {string} title Title to use.
  * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.
+ * @param {boolean=} opt_hideGenericFileHandler Whether to hide generic file
+ *     handler or not.
  */
 FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
-                                              onSuccess) {
+                                              onSuccess,
+                                              opt_hideGenericFileHandler) {
+  var hideGenericFileHandler = opt_hideGenericFileHandler || false;
   var items = this.createItems_();
+
+  if (hideGenericFileHandler)
+    items = items.filter(function(item) { return !item.isGenericFileHandler; });
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {

@@ -1037,6 +1037,19 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)
+#define MAYBE_GenericTask DISABLED_GenericTask
+#else
+#define MAYBE_GenericTask GenericTask
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_GenericTask,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
+        TestParameter(NOT_IN_GUEST_MODE, "genericAndNonGenericTasksAreMixed")));
+
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG)
 #define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
 #else
 #define MAYBE_FolderShortcuts FolderShortcuts

@@ -288,11 +288,11 @@ function FileManager() {
   this.hostedButton = null;
 
   /**
-   * The menu item for doing default action.
+   * The menu item for doing an action.
    * @type {HTMLMenuItemElement}
    * @private
    */
-  this.defaultActionMenuItem_ = null;
+  this.actionMenuItem_ = null;
 
   /**
    * The button to open gear menu.
@@ -1387,14 +1387,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.defaultActionMenuItem_ = /** @type {!HTMLMenuItemElement} */
+    this.actionMenuItem_ = /** @type {!HTMLMenuItemElement} */
         (queryRequiredElement(this.dialogDom_, '#default-action'));
 
     this.openWithCommand_ = /** @type {cr.ui.Command} */
         (this.dialogDom_.querySelector('#open-with'));
 
-    this.defaultActionMenuItem_.addEventListener('activate',
-        this.dispatchSelectionAction_.bind(this));
+    this.actionMenuItem_.addEventListener('activate',
+        this.onActionMenuItemActivated_.bind(this));
 
     this.ui_.dialogFooter.initFileTypeFilter(
         this.fileTypes_, this.params_.includeAllFiles);
@@ -2276,7 +2276,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       selection.tasks.showTaskPicker(this.defaultTaskPicker,
           loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
           strf('CHANGE_DEFAULT_CAPTION', format),
-          this.onDefaultTaskDone_.bind(this));
+          this.onDefaultTaskDone_.bind(this),
+          true);
     }
   };
 
@@ -2534,6 +2535,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return true;
     }
     return false;
+  };
+
+  /**
+   * Handles activate event of action menu item.
+   *
+   * @private
+   */
+  FileManager.prototype.onActionMenuItemActivated_ = function() {
+    var tasks = this.getSelection().tasks;
+    if (tasks)
+      tasks.execute(this.actionMenuItem_.taskId);
   };
 
   /**
@@ -3665,41 +3677,44 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Updates default action menu item to match passed taskItem (icon,
-   * label and action).
+   * Updates action menu item to match passed task items.
    *
-   * @param {Object} defaultItem - taskItem to match.
-   * @param {boolean} isMultiple - if multiple tasks available.
+   * @param {Array.<Object>=} opt_items List of items.
    */
-  FileManager.prototype.updateContextMenuActionItems = function(defaultItem,
-                                                                isMultiple) {
-    if (defaultItem) {
-      if (defaultItem.iconType) {
-        this.defaultActionMenuItem_.style.backgroundImage = '';
-        this.defaultActionMenuItem_.setAttribute('file-type-icon',
-                                                 defaultItem.iconType);
-      } else if (defaultItem.iconUrl) {
-        this.defaultActionMenuItem_.style.backgroundImage =
-            'url(' + defaultItem.iconUrl + ')';
+  FileManager.prototype.updateContextMenuActionItems = function(opt_items) {
+    var items = opt_items || [];
+
+    // When only one task is available, show it as default item.
+    if (items.length === 1) {
+      var actionItem = items[0];
+
+      if (actionItem.iconType) {
+        this.actionMenuItem_.style.backgroundImage = '';
+        this.actionMenuItem_.setAttribute('file-type-icon',
+                                          actionItem.iconType);
+      } else if (actionItem.iconUrl) {
+        this.actionMenuItem_.style.backgroundImage =
+            'url(' + actionItem.iconUrl + ')';
       } else {
-        this.defaultActionMenuItem_.style.backgroundImage = '';
+        this.actionMenuItem_.style.backgroundImage = '';
       }
 
-      this.defaultActionMenuItem_.label = defaultItem.title;
-      this.defaultActionMenuItem_.disabled = !!defaultItem.disabled;
-      this.defaultActionMenuItem_.taskId = defaultItem.taskId;
+      this.actionMenuItem_.label = actionItem.title;
+      this.actionMenuItem_.disabled = !!actionItem.disabled;
+      this.actionMenuItem_.taskId = actionItem.taskId;
     }
 
+    this.actionMenuItem_.hidden = items.length !== 1;
+
+    // When multiple tasks are available, show them in open with.
+    this.openWithCommand_.canExecuteChange();
+    this.openWithCommand_.setHidden(items.length < 2);
+    this.openWithCommand_.disabled = items.length < 2;
+
+    // Hide default action separator when there does not exist available task.
     var defaultActionSeparator =
         this.dialogDom_.querySelector('#default-action-separator');
-
-    this.openWithCommand_.canExecuteChange();
-    this.openWithCommand_.setHidden(!(defaultItem && isMultiple));
-    this.openWithCommand_.disabled =
-        defaultItem ? !!defaultItem.disabled : false;
-
-    this.defaultActionMenuItem_.hidden = !defaultItem;
-    defaultActionSeparator.hidden = !defaultItem;
+    defaultActionSeparator.hidden = items.length === 0;
   };
 
   /**

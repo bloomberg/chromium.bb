@@ -735,7 +735,8 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
           '',
           function(task) {
             tasks.execute(task.taskId);
-          });
+          },
+          false);
     }
   },
   /**

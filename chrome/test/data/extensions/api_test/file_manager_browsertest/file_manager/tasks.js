@@ -10,14 +10,17 @@
  * @param {boolean} isDefault Whether the task is default or not.
  * @param {string} taskId Task ID.
  * @param {string} title Title of the task.
+ * @param {boolean=} opt_isGenericFileHandler Whether the task is a generic
+ *     file handler.
  * @constructor
  */
-function FakeTask(isDefault, taskId, title) {
+function FakeTask(isDefault, taskId, title, opt_isGenericFileHandler) {
   this.driveApp = false;
   this.iconUrl = 'chrome://theme/IDR_DEFAULT_FAVICON';  // Dummy icon
   this.isDefault = isDefault;
   this.taskId = taskId;
   this.title = title;
+  this.isGenericFileHandler = opt_isGenericFileHandler || false;
   Object.freeze(this);
 }
 
@@ -214,3 +217,38 @@ testcase.defaultActionDialogOnDownloads = function() {
   testPromise(setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS).then(
       defaultActionDialog.bind(null, 'dummytaskid-2|open-with')));
 };
+
+testcase.genericTaskIsNotExecuted = function() {
+  var tasks = [
+    new FakeTask(false, 'dummytaskid|open-with', 'DummyAction1',
+        true /* isGenericFileHandler */),
+    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyAction2',
+        true /* isGenericFileHandler */)
+  ];
+
+  // When default task is not set, executeDefaultInternal_ in file_tasks.js
+  // tries to show it in a browser tab. By checking the view-in-browser task is
+  // executed, we check that default task is not set in this situation.
+  //
+  // See: src/ui/file_manager/file_manager/foreground/js/file_tasks.js&l=404
+  testPromise(setupTaskTest(RootPath.DOWNLOADS, tasks)
+    .then(function(windowId) {
+      return executeDefaultTask(
+          FILE_MANAGER_EXTENSIONS_ID + '|file|view-in-browser',
+          windowId);
+    }));
+};
+
+testcase.genericAndNonGenericTasksAreMixed = function() {
+  var tasks = [
+    new FakeTask(false, 'dummytaskid|open-with', 'DummyAction1',
+        true /* isGenericFileHandler */),
+    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyAction2',
+        false /* isGenericFileHandler */),
+    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyAction3',
+        true /* isGenericFileHandler */)
+  ];
+
+  testPromise(setupTaskTest(RootPath.DOWNLOADS, tasks).then(
+    executeDefaultTask.bind(null, 'dummytaskid-2|open-with')));
+}
