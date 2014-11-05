@@ -7,3 +7,6 @@ ServiceWorkerCacheStorageManagerTests/ServiceWorkerCacheStorageManagerTestP.Recr
 
 # http://crbug.com/418258
 DevToolsManagerTest.TestObserver
+
+# http://crbug.com/430391
+WebDataConsumerHandleImplTest.ReadData
