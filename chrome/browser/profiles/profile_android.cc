@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "jni/Profile_jni.h"
 
@@ -63,6 +64,12 @@ jobject ProfileAndroid::GetLastUsedProfile(JNIEnv* env, jclass clazz) {
   return profile_android->obj_.obj();
 }
 
+void ProfileAndroid::DestroyWhenAppropriate(JNIEnv* env, jobject obj) {
+  // Don't delete the Profile directly because the corresponding
+  // RenderViewHost might not be deleted yet.
+  ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);
+}
+
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOriginalProfile(
     JNIEnv* env, jobject obj) {
   ProfileAndroid* original_profile = ProfileAndroid::FromProfile(
@@ -101,7 +108,7 @@ ProfileAndroid::ProfileAndroid(Profile* profile)
 }
 
 ProfileAndroid::~ProfileAndroid() {
-  Java_Profile_destroy(AttachCurrentThread(), obj_.obj());
+  Java_Profile_onNativeDestroyed(AttachCurrentThread(), obj_.obj());
 }
 
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetJavaObject() {
