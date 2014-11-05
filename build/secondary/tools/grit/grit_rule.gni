@@ -162,7 +162,7 @@ if (enable_plugins) {
 if (printing_mode != 0) {
   grit_defines += [ "-D", "enable_printing" ]
   if (printing_mode == 1) {
-    grit_defines += [ "-D", "enable_full_printing" ]
+    grit_defines += [ "-D", "enable_print_preview" ]
   }
 }
 if (enable_themes) {

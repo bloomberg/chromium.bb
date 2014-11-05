@@ -810,7 +810,7 @@ int ChromeMainDelegate::RunProcess(
   // doesn't support empty array. So we comment out the block for Android.
 #if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
-#if defined(ENABLE_FULL_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if defined(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD)
     { switches::kServiceProcess,     ServiceProcessMain },
 #endif
 

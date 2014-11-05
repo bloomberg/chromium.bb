@@ -48,9 +48,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_DEV_TOOLS_INSPECT },
   { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_P, ui::EF_CONTROL_DOWN, IDC_PRINT},
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_BASIC_PRINT},
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
   { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
   { ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_RELOAD_IGNORING_CACHE },

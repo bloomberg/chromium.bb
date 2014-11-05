@@ -17,7 +17,7 @@
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
 // Preview and Cloud Print messages.
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(printer_capabilities)
   IPC_STRUCT_TRAITS_MEMBER(caps_mime_type)
@@ -83,7 +83,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
 // sandbox. Returns result as printing::PrinterSemanticCapsAndDefaults.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                      std::string /* printer name */)
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 // Windows uses messages for printing even without preview. crbug.com/170859
 // Primary user of Windows without preview is CEF. crbug.com/417967
@@ -108,7 +108,7 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop)
 // Utility process host messages:
 // These are messages from the utility process to the browser.
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 // Reply when the utility process has succeeded in rendering the PDF to PWG.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded)
 
@@ -138,7 +138,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
 IPC_MESSAGE_CONTROL1(
   ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed,
   std::string /* printer name */)
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 #if defined(ENABLE_PRINTING) && defined(OS_WIN)
 // Reply when the utility process loaded PDF. |page_count| is 0, if loading

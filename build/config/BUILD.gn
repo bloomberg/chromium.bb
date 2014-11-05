@@ -55,9 +55,9 @@ config("feature_flags") {
     defines += [ "ENABLE_PLUGINS=1" ]
   }
   if (printing_mode > 0) {
-    defines += [ "ENABLE_PRINTING=1" ]
+    defines += [ "ENABLE_PRINTING=1",  "ENABLE_BASIC_PRINTING=1" ]
     if (printing_mode < 2) {
-      defines += [ "ENABLE_FULL_PRINTING=1" ]
+      defines += [ "ENABLE_PRINT_PREVIEW=1" ]
     }
   }
   if (enable_spellcheck) {

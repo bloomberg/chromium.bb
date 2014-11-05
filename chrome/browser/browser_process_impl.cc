@@ -680,7 +680,7 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
 
 printing::PrintPreviewDialogController*
     BrowserProcessImpl::print_preview_dialog_controller() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   DCHECK(CalledOnValidThread());
   if (!print_preview_dialog_controller_.get())
     CreatePrintPreviewDialogController();
@@ -693,7 +693,7 @@ printing::PrintPreviewDialogController*
 
 printing::BackgroundPrintingManager*
     BrowserProcessImpl::background_printing_manager() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   DCHECK(CalledOnValidThread());
   if (!background_printing_manager_.get())
     CreateBackgroundPrintingManager();
@@ -1094,7 +1094,7 @@ void BrowserProcessImpl::CreateStatusTray() {
 }
 
 void BrowserProcessImpl::CreatePrintPreviewDialogController() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   DCHECK(print_preview_dialog_controller_.get() == NULL);
   print_preview_dialog_controller_ =
       new printing::PrintPreviewDialogController();
@@ -1104,7 +1104,7 @@ void BrowserProcessImpl::CreatePrintPreviewDialogController() {
 }
 
 void BrowserProcessImpl::CreateBackgroundPrintingManager() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   DCHECK(background_printing_manager_.get() == NULL);
   background_printing_manager_.reset(new printing::BackgroundPrintingManager());
 #else

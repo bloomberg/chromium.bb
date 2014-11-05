@@ -439,7 +439,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   app_list::AppListPrefs::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   print_dialog_cloud::RegisterProfilePrefs(registry);
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif

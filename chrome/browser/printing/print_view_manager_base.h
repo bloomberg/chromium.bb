@@ -35,12 +35,12 @@ class PrintViewManagerBase : public content::NotificationObserver,
  public:
   ~PrintViewManagerBase() override;
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.
   virtual bool PrintNow();
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
   // Whether to block scripted printing for our tab or not.
   void UpdateScriptedPrintingBlocked();

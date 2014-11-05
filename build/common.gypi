@@ -2100,7 +2100,7 @@
         'grit_defines': ['-D', 'enable_printing'],
       }],
       ['enable_printing==1', {
-        'grit_defines': ['-D', 'enable_full_printing'],
+        'grit_defines': ['-D', 'enable_print_preview'],
       }],
       ['enable_themes==1', {
         'grit_defines': ['-D', 'enable_themes'],
@@ -2923,11 +2923,11 @@
         # chrome://translate-internals
         'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
-      ['enable_printing==1', {
-        'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
+      ['enable_printing!=0', {
+        'defines': ['ENABLE_PRINTING=1', 'ENABLE_BASIC_PRINTING=1'],
       }],
-      ['enable_printing==2', {
-        'defines': ['ENABLE_PRINTING=1'],
+      ['enable_printing==1', {
+        'defines': ['ENABLE_PRINT_PREVIEW=1'],
       }],
       ['enable_spellcheck==1', {
         'defines': ['ENABLE_SPELLCHECK=1'],

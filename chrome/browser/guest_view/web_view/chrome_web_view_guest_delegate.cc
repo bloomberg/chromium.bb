@@ -18,12 +18,12 @@
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 #if defined(ENABLE_PRINTING)
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
 
 namespace extensions {
@@ -79,12 +79,12 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
   FaviconTabHelper::CreateForWebContents(contents);
   ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PRINTING)
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(contents);
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       contents,

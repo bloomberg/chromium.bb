@@ -509,7 +509,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                 IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE);
   RegisterTitle(values, "spellingConfirmOverlay",
                 IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   RegisterCloudPrintValues(values);
 #endif
 
@@ -645,7 +645,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("usingNewProfilesUI", switches::IsNewAvatarMenu());
 }
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 void BrowserOptionsHandler::RegisterCloudPrintValues(
     base::DictionaryValue* values) {
   values->SetString("cloudPrintOptionLabel",
@@ -653,7 +653,7 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
                         IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
                         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 }
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

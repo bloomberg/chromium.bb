@@ -85,7 +85,7 @@
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
-#if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context_android.h"
 #endif
 
@@ -202,7 +202,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "WebsiteSettingsPopupLegacyAndroid",
     WebsiteSettingsPopupLegacyAndroid::
         RegisterWebsiteSettingsPopupLegacyAndroid },
-#if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINTING) && !defined(ENABLE_PRINT_PREVIEW)
   { "PrintingContext",
     printing::PrintingContextAndroid::RegisterPrintingContext},
 #endif

@@ -15,7 +15,7 @@ namespace content {
 
 namespace {
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 // Print units conversion functions.
 int32_t DeviceUnitsInPoints(int32_t device_units,
                             int32_t device_units_per_inch) {

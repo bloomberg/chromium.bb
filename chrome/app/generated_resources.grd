@@ -8280,7 +8280,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           The selected printer is not available or not installed correctly.  Check your printer or try selecting another printer.
         </message>
       </if>
-      <if expr="enable_full_printing">
+      <if expr="enable_print_preview">
         <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
           Print
         </message>

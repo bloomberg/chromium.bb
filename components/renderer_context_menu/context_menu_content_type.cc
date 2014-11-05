@@ -174,7 +174,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return false;
 
     case ITEM_GROUP_PRINT_PREVIEW:
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
       return true;
 #else
       return false;

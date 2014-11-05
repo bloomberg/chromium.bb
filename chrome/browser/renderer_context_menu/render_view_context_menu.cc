@@ -104,13 +104,13 @@
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/print_messages.h"
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_context_menu_observer.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
 
 using base::UserMetricsAction;
@@ -616,7 +616,7 @@ void RenderViewContextMenu::HandleAuthorizeAllPlugins() {
 #endif
 
 void RenderViewContextMenu::AppendPrintPreviewItems() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   if (!print_preview_menu_observer_.get()) {
     print_preview_menu_observer_.reset(
         new PrintPreviewContextMenuObserver(source_web_contents_));
@@ -1146,7 +1146,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       bool can_save =
           (params_.media_flags & WebContextMenuData::MediaCanSave) &&
           url.is_valid() && ProfileIOData::IsHandledProtocol(url.scheme());
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
           // Do not save the preview PDF on the print preview page.
       can_save = can_save &&
           !(printing::PrintPreviewDialogController::IsPrintPreviewURL(url));
@@ -1497,7 +1497,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         break;
       }
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
       printing::PrintViewManager* print_view_manager =
           printing::PrintViewManager::FromWebContents(source_web_contents_);
       if (!print_view_manager)
@@ -1507,17 +1507,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
         break;
       }
-#else   // ENABLE_FULL_PRINTING
+#else   // ENABLE_PRINT_PREVIEW
       printing::PrintViewManagerBasic* print_view_manager =
           printing::PrintViewManagerBasic::FromWebContents(
               source_web_contents_);
       if (!print_view_manager)
         break;
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
       print_view_manager->PrintNow();
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
 #endif  // ENABLE_PRINTING
       break;

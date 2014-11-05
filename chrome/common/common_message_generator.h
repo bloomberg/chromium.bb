@@ -22,7 +22,7 @@
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/service_messages.h"
 #endif
 

@@ -126,7 +126,7 @@
 #include "extensions/renderer/script_context.h"
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 #endif
 
@@ -434,7 +434,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (blacklist::IsBlacklistInitialized())
     UMA_HISTOGRAM_BOOLEAN("Blacklist.PatchedInRenderer", true);
 #endif
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());
   pdf::PPB_PDF_Impl::SetPrintClient(pdf_print_client_.get());
 #endif

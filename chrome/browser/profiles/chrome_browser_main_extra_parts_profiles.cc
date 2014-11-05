@@ -171,7 +171,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_ANDROID)
   ProtectedMediaIdentifierPermissionContextFactory::GetInstance();
 #endif
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettings::Factory::GetInstance();

@@ -37,7 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/background_printing_manager.h"
 #endif
 
@@ -106,7 +106,7 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
         prerender_manager->GetAllPrerenderingContents();
     web_contents->insert(contentses.begin(), contentses.end());
   }
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();

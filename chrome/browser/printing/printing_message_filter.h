@@ -107,7 +107,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnUpdatePrintSettingsReply(scoped_refptr<PrinterQuery> printer_query,
                                   IPC::Message* reply_msg);
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   // Check to see if print preview has been cancelled.
   void OnCheckForCancel(int32 preview_ui_id,
                         int preview_request_id,

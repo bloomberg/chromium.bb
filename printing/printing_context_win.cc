@@ -26,12 +26,12 @@ namespace printing {
 
 // static
 scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-#if defined(DISABLE_BASIC_PRINTING)
-  return make_scoped_ptr<PrintingContext>(new PrintingContextWin(delegate));
-#else   // DISABLE_BASIC_PRINTING
+#if defined(ENABLE_BASIC_PRINTING)
   return make_scoped_ptr<PrintingContext>(
       new PrintingContextSytemDialogWin(delegate));
-#endif  // DISABLE_BASIC_PRINTING
+#else   // ENABLE_BASIC_PRINTING
+  return make_scoped_ptr<PrintingContext>(new PrintingContextWin(delegate));
+#endif  // EENABLE_BASIC_PRINTING
 }
 
 PrintingContextWin::PrintingContextWin(Delegate* delegate)

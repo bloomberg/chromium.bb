@@ -96,12 +96,12 @@
 #endif
 
 #if defined(ENABLE_PRINTING)
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #else
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
 
 namespace {
@@ -269,7 +269,7 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
@@ -859,7 +859,7 @@ void Print(Browser* browser) {
 #if defined(ENABLE_PRINTING)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(contents);
   if (!browser->profile()->GetPrefs()->GetBoolean(
@@ -867,14 +867,14 @@ void Print(Browser* browser) {
     print_view_manager->PrintPreviewNow(false);
     return;
   }
-#else   // ENABLE_FULL_PRINTING
+#else   // ENABLE_PRINT_PREVIEW
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(contents);
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   print_view_manager->PrintNow();
-#endif  // DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
 #endif  // defined(ENABLE_PRINTING)
 }
@@ -891,9 +891,9 @@ bool CanPrint(Browser* browser) {
       GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
 }
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
 void BasicPrint(Browser* browser) {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
@@ -914,7 +914,7 @@ bool CanBasicPrint(Browser* browser) {
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
       (PrintPreviewShowing(browser) || CanPrint(browser));
 }
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
 void EmailPageLocation(Browser* browser) {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));

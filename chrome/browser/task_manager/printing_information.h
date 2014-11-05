@@ -10,7 +10,7 @@
 
 namespace task_manager {
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 class PrintingResource;
 
 // WebContentsInformation for WebContentses that are created for print preview
@@ -29,7 +29,7 @@ class PrintingInformation : public NotificationObservingWebContentsInformation {
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintingInformation);
 };
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 }  // namespace task_manager
 

@@ -38,7 +38,7 @@ CloudPrintPrivateSetupConnectorFunction::
 }
 
 bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   using api::cloud_print_private::SetupConnector::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::instance()) {
@@ -94,7 +94,7 @@ void CloudPrintPrivateGetPrintersFunction::SendResults(
 }
 
 bool CloudPrintPrivateGetPrintersFunction::RunAsync() {
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   std::vector<std::string> result;
   if (CloudPrintTestsDelegate::instance()) {
     SendResults(CloudPrintTestsDelegate::instance()->GetPrinters());

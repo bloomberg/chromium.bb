@@ -243,9 +243,9 @@ extern const char kChromeUIWorkersHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 extern const char kChromeUIPrintHost[];
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 #if defined(OS_ANDROID)
 extern const char kChromeUIWelcomeHost[];

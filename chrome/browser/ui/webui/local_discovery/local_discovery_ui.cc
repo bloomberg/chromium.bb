@@ -97,7 +97,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddLocalizedString("backButton", IDS_SETTINGS_TITLE);
 
   // Cloud print connector-related strings.
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
+#if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   source->AddLocalizedString("cloudPrintConnectorEnablingButton",
                              IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON);
   source->AddLocalizedString("cloudPrintConnectorDisabledButton",

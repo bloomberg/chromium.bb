@@ -55,11 +55,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-#if defined(DISABLE_BASIC_PRINTING)
-  bool is_basic_print_expected = false;
-#else
+#if defined(ENABLE_BASIC_PRINTING)
   bool is_basic_print_expected = true;
-#endif  // DISABLE_BASIC_PRINTING
+#else
+  bool is_basic_print_expected = false;
+#endif  // ENABLE_BASIC_PRINTING
 
   ASSERT_EQ(is_basic_print_expected,
             chrome::IsCommandEnabled(browser(), IDC_BASIC_PRINT));

@@ -22,7 +22,7 @@ class PrintViewManager : public PrintViewManagerBase,
  public:
   ~PrintViewManager() override;
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   // Same as PrintNow(), but for the case where a user prints with the system
   // dialog from print preview.
   bool PrintForSystemDialogNow();
@@ -31,7 +31,7 @@ class PrintViewManager : public PrintViewManagerBase,
   // show the native system dialog. This can happen from both initiator and
   // preview dialog.
   bool BasicPrint();
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
   // Initiate print preview of the current document by first notifying the
   // renderer. Since this happens asynchronous, the print preview dialog

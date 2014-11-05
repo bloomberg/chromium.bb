@@ -195,7 +195,7 @@ class PrivetDataReadOperationImpl : public PrivetDataReadOperation,
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
 };
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 class PrivetLocalPrintOperationImpl
     : public PrivetLocalPrintOperation,
       public PrivetURLFetcher::Delegate {
@@ -284,7 +284,7 @@ class PrivetLocalPrintOperationImpl
 
   base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
 };
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 class PrivetHTTPClientImpl : public PrivetHTTPClient {
  public:

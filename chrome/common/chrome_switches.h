@@ -388,7 +388,7 @@ extern const char kWaitForMutex[];
 extern const char kWindows8Search[];
 #endif
 
-#if defined(ENABLE_FULL_PRINTING) && !defined(OFFICIAL_BUILD)
+#if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 extern const char kDebugPrint[];
 #endif
 

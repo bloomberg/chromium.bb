@@ -88,7 +88,7 @@
 #include "chrome/browser/web_applications/web_app_mac.h"
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -493,7 +493,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   bool silent_launch = false;
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   // If we are just displaying a print dialog we shouldn't open browser
   // windows.
   if (command_line.HasSwitch(switches::kCloudPrintFile) &&
@@ -511,7 +511,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       // launching and quit.
       return false;
   }
-#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
   VLOG(2) << "ProcessCmdLineImpl: PLACE 1";
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {

@@ -107,7 +107,7 @@ class BrowserOptionsHandler
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
+#if defined(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();
 #endif
 
@@ -270,7 +270,7 @@ class BrowserOptionsHandler
   void ShowCloudPrintDevicesPage(const base::ListValue* args);
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
   // Register localized values used by Cloud Print
   void RegisterCloudPrintValues(base::DictionaryValue* values);
 #endif

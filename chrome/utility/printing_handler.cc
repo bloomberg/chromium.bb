@@ -22,7 +22,7 @@
 #include "ui/gfx/gdi_util.h"
 #endif
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #endif
@@ -267,14 +267,14 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop,
                         OnRenderPDFPagesToMetafileStop)
 #endif  // OS_WIN
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                         OnRenderPDFPagesToPWGRaster)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                         OnGetPrinterSemanticCapsAndDefaults)
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -308,7 +308,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
 
 #endif  // OS_WIN
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
     const printing::PdfRenderSettings& settings,
@@ -324,7 +324,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
   }
   ReleaseProcessIfNeeded();
 }
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 #if defined(OS_WIN)
 int PrintingHandler::LoadPDF(base::File pdf_file) {
@@ -395,7 +395,7 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
 
 #endif  // OS_WIN
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
     base::File pdf_file,
     const printing::PdfRenderSettings& settings,
@@ -526,4 +526,4 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   }
   ReleaseProcessIfNeeded();
 }
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW

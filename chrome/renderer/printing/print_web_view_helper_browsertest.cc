@@ -189,12 +189,12 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
 #endif  // defined(OS_CHROMEOS)
   }
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   void OnPrintPages() {
     PrintWebViewHelper::Get(view_)->OnPrintPages();
     ProcessPendingMessages();
   }
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
   void VerifyPreviewRequest(bool requested) {
     const IPC::Message* print_msg =
@@ -235,7 +235,7 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
 };
 
 // This tests only for platforms without print preview.
-#if !defined(ENABLE_FULL_PRINTING)
+#if !defined(ENABLE_PRINT_PREVIEW)
 // Tests that the renderer blocks window.print() calls if they occur too
 // frequently.
 TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
@@ -306,9 +306,9 @@ TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
-#endif  // !ENABLE_FULL_PRINTING
+#endif  // !ENABLE_PRINT_PREVIEW
 
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
 TEST_F(PrintWebViewHelperTest, OnPrintPages) {
@@ -318,9 +318,9 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
 
-#if defined(OS_MACOSX) && !defined(DISABLE_BASIC_PRINTING)
+#if defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
@@ -362,7 +362,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   EXPECT_NE(0, image1.size().width());
   EXPECT_NE(0, image1.size().height());
 }
-#endif  // OS_MACOSX && !DISABLE_BASIC_PRINTING
+#endif  // OS_MACOSX && ENABLE_BASIC_PRINTING
 
 // Tests if we can print a page and verify its results.
 // This test prints HTML pages into a pseudo printer and check their outputs,
@@ -408,7 +408,7 @@ const TestPageData kTestPages[] = {
 // hooking up Cairo to read a pdf stream, or accessing the cairo surface in the
 // metafile directly.
 // Same for printing via PDF on Windows.
-#if defined(OS_MACOSX) && !defined(DISABLE_BASIC_PRINTING)
+#if defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
 TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
@@ -461,7 +461,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     }
   }
 }
-#endif  // OS_MACOSX && !DISABLE_BASIC_PRINTING
+#endif  // OS_MACOSX && ENABLE_BASIC_PRINTING
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)
@@ -560,7 +560,7 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
 };
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 TEST_F(PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
@@ -592,7 +592,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
 
   VerifyPreviewRequest(true);
 }
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 // Tests that print preview work and sending and receiving messages through
 // that channel all works.

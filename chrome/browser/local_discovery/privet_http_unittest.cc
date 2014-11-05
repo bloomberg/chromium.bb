@@ -15,9 +15,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 using testing::StrictMock;
 using testing::NiceMock;
@@ -124,7 +124,7 @@ const char kSampleCapabilitiesResponse[] = "{"
     "}"
     "}";
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 const char kSampleInfoResponseWithCreatejob[] = "{"
     "       \"version\": \"1.0\","
     "       \"name\": \"Common printer\","
@@ -212,7 +212,7 @@ const char kSampleCJTDuplex[] =
     "\"version\" : \"1.0\","
     "\"print\": { \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
     "}";
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 // Return the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
@@ -752,7 +752,7 @@ TEST_F(PrivetCapabilitiesTest, BadToken) {
       kSampleCapabilitiesResponse));
 }
 
-#if defined(ENABLE_FULL_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
 // A note on PWG raster conversion: The PWG raster converter used simply
 // converts strings to file paths based on them by appending "test.pdf", since
 // it's easier to test that way. Instead of using a mock, we simply check if the
@@ -1074,7 +1074,7 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
       GURL("http://10.0.0.8:6006/privet/printer/createjob"),
       kSampleCreatejobResponse));
 }
-#endif  // ENABLE_FULL_PRINTING
+#endif  // ENABLE_PRINT_PREVIEW
 
 }  // namespace
 

@@ -124,10 +124,10 @@ class PrintWebViewHelper
   void DidStopLoading() override;
 
   // Message handlers ---------------------------------------------------------
-#if !defined(DISABLE_BASIC_PRINTING)
+#if defined(ENABLE_BASIC_PRINTING)
   void OnPrintPages();
   void OnPrintForSystemDialog();
-#endif  // !DISABLE_BASIC_PRINTING
+#endif  // ENABLE_BASIC_PRINTING
   void OnInitiatePrintPreview(bool selection_only);
   void OnPrintPreview(const base::DictionaryValue& settings);
   void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
