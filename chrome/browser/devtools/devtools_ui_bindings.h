@@ -57,7 +57,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
     virtual void InspectedContentsClosing() = 0;
     virtual void OnLoadCompleted() = 0;
     virtual InfoBarService* GetInfoBarService() = 0;
-    virtual void RenderProcessGone() = 0;
+    virtual void RenderProcessGone(bool crashed) = 0;
   };
 
   explicit DevToolsUIBindings(content::WebContents* web_contents);

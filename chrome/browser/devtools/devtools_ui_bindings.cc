@@ -201,7 +201,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override {}
   InfoBarService* GetInfoBarService() override;
-  void RenderProcessGone() override {}
+  void RenderProcessGone(bool crashed) override {}
 
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
@@ -264,6 +264,7 @@ DevToolsUIBindings::FrontendWebContentsObserver::
 
 void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
     base::TerminationStatus status) {
+  bool crashed = true;
   switch (status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
@@ -272,9 +273,10 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
         devtools_bindings_->Detach();
       break;
     default:
+      crashed = false;
       break;
   }
-  devtools_bindings_->delegate_->RenderProcessGone();
+  devtools_bindings_->delegate_->RenderProcessGone(crashed);
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(

@@ -1091,12 +1091,15 @@ InfoBarService* DevToolsWindow::GetInfoBarService() {
       InfoBarService::FromWebContents(main_web_contents_);
 }
 
-void DevToolsWindow::RenderProcessGone() {
+void DevToolsWindow::RenderProcessGone(bool crashed) {
   // Docked DevToolsWindow owns its main_web_contents_ and must delete it.
   // Undocked main_web_contents_ are owned and handled by browser.
   // see crbug.com/369932
-  if (is_docked_)
+  if (is_docked_) {
     CloseContents(main_web_contents_);
+  } else if (browser_ && crashed) {
+    browser_->window()->Close();
+  }
 }
 
 void DevToolsWindow::OnLoadCompleted() {
