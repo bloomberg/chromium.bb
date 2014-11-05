@@ -107,6 +107,10 @@ class Observer : public chrome::BrowserListObserver,
   if (!avatarMenu_ || !avatarMenu_->ShouldShowAvatarMenu())
     return NO;
 
+  // Don't show the list of profiles in the dock if only one profile exists.
+  if (dock && avatarMenu_->GetNumberOfItems() <= 1)
+    return NO;
+
   if (dock) {
     NSString* headerName =
         l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME);
