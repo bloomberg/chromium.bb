@@ -10,7 +10,7 @@
 // Simply add the custom_dep below to your gclient and sync:
 //
 //    "src/media/test/data/security":
-//        "svn://chrome-svn/chrome-internal/trunk/data/media/security"
+//        "svn://svn.chromium.org/chrome-internal/trunk/data/media/security"
 //
 // Many of the files here do not cause issues outside of tooling, so you'll need
 // to run this test under ASAN, TSAN, and Valgrind to ensure that all issues are
