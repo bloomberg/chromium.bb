@@ -19,6 +19,7 @@ LOGGER = logging.getLogger('dmprof')
 
 def main():
   COMMANDS = {
+    'addr': subcommands.AddrCommand,
     'buckets': subcommands.BucketsCommand,
     'cat': subcommands.CatCommand,
     'csv': subcommands.CSVCommand,
