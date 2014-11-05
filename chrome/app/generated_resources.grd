@@ -9728,6 +9728,10 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
         </message>
       </if>
 
+      <message name="IDS_SSL_V2_CLOCK_EXPLANATION" desc="Body text for the explanation shown if user clicks on the Advanced button for an SSL clock error.">
+        To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.
+      </message>
+
       <!-- Misc strings for SSL UI -->
       <message name="IDS_UNSAFE_FRAME_MESSAGE" desc="The text displayed in the content that is subsituted to an unsafe frame.">
         This frame was blocked because it contains some insecure content.

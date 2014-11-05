@@ -423,11 +423,19 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
   load_time_data.SetString("type", "SSL");
 
+  // Shared UI configuration for all SSL interstitials.
   base::Time now = base::Time::NowFromSystemTime();
   bool bad_clock = IsErrorDueToBadClock(now, cert_error_);
 
   load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
+  load_time_data.SetString(
+      "openDetails",
+      l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
+  load_time_data.SetString(
+      "closeDetails",
+      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
 
+  // Conditional UI configuration.
   if (bad_clock) {
     load_time_data.SetBoolean("bad_clock", true);
     load_time_data.SetBoolean("overridable", false);
@@ -463,13 +471,12 @@ std::string SSLBlockingPage::GetHTMLContents() {
     load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_UPDATE_DATE_AND_TIME));
+    load_time_data.SetString(
+        "explanationParagraph",
+        l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_EXPLANATION));
 
-    // We set the "Advanced" link to be empty so that it doesn't appear.
-    load_time_data.SetString("openDetails", std::string());
-
-    // The interstitial template expects these strings, but we're not using
-    // them. So we send blank strings for now.
-    load_time_data.SetString("explanationParagraph", std::string());
+    // The interstitial template expects this string, but we're not using it. So
+    // we send a blank string for now.
     load_time_data.SetString("finalParagraph", std::string());
   } else {
     load_time_data.SetBoolean("bad_clock", false);
@@ -481,12 +488,6 @@ std::string SSLBlockingPage::GetHTMLContents() {
     load_time_data.SetString(
         "primaryParagraph",
         l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
-    load_time_data.SetString(
-       "openDetails",
-       l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
-    load_time_data.SetString(
-       "closeDetails",
-       l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
 
     if (overridable_) {
       load_time_data.SetBoolean("overridable", true);
