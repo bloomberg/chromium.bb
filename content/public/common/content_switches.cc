@@ -374,6 +374,9 @@ const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
 // tiles may be displayed during fast scrolls especially on slower devices.
 const char kEnableLowResTiling[] = "enable-low-res-tiling";
 
+// Dynamically apply color profiles to web content images.
+const char kEnableImageColorProfiles[]      = "enable-image-color-profiles";
+
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
 

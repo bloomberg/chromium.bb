@@ -1044,6 +1044,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setDeferredImageDecodingEnabled(
       prefs.deferred_image_decoding_enabled);
+  WebRuntimeFeatures::enableImageColorProfiles(
+      prefs.image_color_profiles_enabled);
   settings->setShouldRespectImageOrientation(
       prefs.should_respect_image_orientation);
 

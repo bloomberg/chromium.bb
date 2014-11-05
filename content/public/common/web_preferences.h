@@ -137,6 +137,7 @@ struct CONTENT_EXPORT WebPreferences {
   int pointer_events_max_touch_points;
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;
+  bool image_color_profiles_enabled;
   bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;

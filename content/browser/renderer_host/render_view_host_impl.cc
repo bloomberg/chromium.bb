@@ -464,6 +464,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
       content::IsImplSidePaintingEnabled();
 
+  prefs.image_color_profiles_enabled =
+      command_line.HasSwitch(switches::kEnableImageColorProfiles);
+
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 

@@ -121,6 +121,7 @@ WebPreferences::WebPreferences()
       pointer_events_max_touch_points(0),
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
+      image_color_profiles_enabled(false),
       should_respect_image_orientation(false),
       number_of_cpu_cores(1),
 #if defined(OS_MACOSX)
