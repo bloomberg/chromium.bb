@@ -8,10 +8,12 @@
 
 namespace content {
 
-GpuMemoryBufferImpl::GpuMemoryBufferImpl(const gfx::Size& size,
+GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
+                                         const gfx::Size& size,
                                          Format format,
                                          const DestructionCallback& callback)
-    : size_(size),
+    : id_(id),
+      size_(size),
       format_(format),
       callback_(callback),
       mapped_(false),

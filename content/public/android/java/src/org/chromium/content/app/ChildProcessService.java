@@ -358,14 +358,14 @@ public class ChildProcessService extends Service {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private Surface getSurfaceTextureSurface(int surfaceTextureId, int clientId) {
+    private Surface getSurfaceTextureSurface(int surfaceTextureId) {
         if (mCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return null;
         }
 
         try {
-            return mCallback.getSurfaceTextureSurface(surfaceTextureId, clientId).getSurface();
+            return mCallback.getSurfaceTextureSurface(surfaceTextureId).getSurface();
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call getSurfaceTextureSurface: " + e);
             return null;

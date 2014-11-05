@@ -545,18 +545,14 @@ public class ChildProcessLauncher {
             }
 
             @Override
-            public SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId, int clientId) {
+            public SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId) {
                 if (callbackType != CALLBACK_FOR_RENDERER_PROCESS) {
                     Log.e(TAG, "Illegal callback for non-renderer process.");
                     return null;
                 }
 
-                if (clientId != childProcessId) {
-                    Log.e(TAG, "Illegal secondaryId for renderer process.");
-                    return null;
-                }
-
-                return ChildProcessLauncher.getSurfaceTextureSurface(surfaceTextureId, clientId);
+                return ChildProcessLauncher.getSurfaceTextureSurface(surfaceTextureId,
+                        childProcessId);
             }
         };
     }

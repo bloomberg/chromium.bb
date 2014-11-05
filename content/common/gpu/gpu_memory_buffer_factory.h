@@ -28,18 +28,20 @@ class GpuMemoryBufferFactory {
   // Creates a new platform specific factory instance.
   static scoped_ptr<GpuMemoryBufferFactory> Create();
 
-  // Creates a GPU memory buffer instance from |handle|. Whether the storage for
-  // the buffer is passed with the handle or allocated as part of buffer
-  // creation depends on the type. A valid handle is returned on success.
+  // Creates a GPU memory buffer instance of |type|. A valid handle is
+  // returned on success.
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferType type,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) = 0;
+      gfx::GpuMemoryBuffer::Usage usage,
+      int client_id) = 0;
 
-  // Destroys GPU memory buffer identified by |handle|.
-  virtual void DestroyGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle) = 0;
+  // Destroys GPU memory buffer identified by |id|.
+  virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                      gfx::GpuMemoryBufferId id,
+                                      int client_id) = 0;
 
   // Type-checking downcast routine.
   virtual gpu::ImageFactory* AsImageFactory() = 0;

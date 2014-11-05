@@ -79,6 +79,9 @@ base::FilePath TransformPathForFeature(const base::FilePath& path,
 // Global atomic to generate child process unique IDs.
 base::StaticAtomicSequenceNumber g_unique_id;
 
+// Global atomic to generate gpu memory buffer unique IDs.
+base::StaticAtomicSequenceNumber g_next_gpu_memory_buffer_id;
+
 }  // namespace
 
 namespace content {
@@ -334,6 +337,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
   // Note: It is safe to use base::Unretained here as the shared memory
   // implementation of AllocateForChildProcess() calls this synchronously.
   GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+      g_next_gpu_memory_buffer_id.GetNext(),
       gfx::Size(width, height),
       format,
       peer_handle_,
@@ -344,7 +348,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
 
 void ChildProcessHostImpl::OnDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferType type,
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
     uint32 sync_point) {
   // Note: Nothing to do here as ownership of shared memory backed
   // GpuMemoryBuffers is passed with IPC.

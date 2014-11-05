@@ -27,18 +27,20 @@ class GpuMemoryBufferFactoryIOSurface {
   // Creates a IOSurface backed GPU memory buffer with |size| and
   // |internalformat|. A valid handle is returned on success.
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferId& id,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format);
+      gfx::GpuMemoryBuffer::Format format,
+      int client_id);
 
   // Destroy a previously created GPU memory buffer.
-  void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferId& id);
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
 
   // Creates a GLImage instance for a GPU memory buffer.
   scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferId& id,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format);
+      gfx::GpuMemoryBuffer::Format format,
+      int client_id);
 
  private:
   typedef std::pair<int, int> IOSurfaceMapKey;

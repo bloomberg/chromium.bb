@@ -651,30 +651,40 @@ void GpuProcessHost::CreateViewCommandBuffer(
 }
 
 void GpuProcessHost::CreateGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
+    gfx::GpuMemoryBufferType type,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
+    int client_id,
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
 
-  if (Send(new GpuMsg_CreateGpuMemoryBuffer(handle, size, format, usage))) {
+  GpuMsg_CreateGpuMemoryBuffer_Params params;
+  params.type = type;
+  params.id = id;
+  params.size = size;
+  params.format = format;
+  params.usage = usage;
+  params.client_id = client_id;
+  if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
     create_gpu_memory_buffer_requests_.push(callback);
   } else {
     callback.Run(gfx::GpuMemoryBufferHandle());
   }
 }
 
-void GpuProcessHost::DestroyGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferHandle& handle,
-    int sync_point) {
+void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                            gfx::GpuMemoryBufferId id,
+                                            int client_id,
+                                            int sync_point) {
   TRACE_EVENT0("gpu", "GpuProcessHost::DestroyGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
 
-  Send(new GpuMsg_DestroyGpuMemoryBuffer(handle, sync_point));
+  Send(new GpuMsg_DestroyGpuMemoryBuffer(type, id, client_id, sync_point));
 }
 
 void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {

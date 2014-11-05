@@ -20,5 +20,5 @@ interface IChildProcessCallback {
 
   void unregisterSurfaceTextureSurface(int surfaceTextureId, int clientId);
 
-  SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId, int clientId);
+  SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId);
 }

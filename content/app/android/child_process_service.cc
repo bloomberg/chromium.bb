@@ -68,12 +68,12 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
     Java_ChildProcessService_destroySurfaceTextureSurface(
         env, service_.obj(), surface_texture_id, client_id);
   }
-  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_texture_id,
-                                                     int client_id) override {
+  virtual gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
+      int surface_texture_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     gfx::ScopedJavaSurface surface(
-        Java_ChildProcessService_getSurfaceTextureSurface(
-            env, service_.obj(), surface_texture_id, client_id));
+        Java_ChildProcessService_getSurfaceTextureSurface(env, service_.obj(),
+                                                          surface_texture_id));
 
     if (surface.j_surface().is_null())
       return NULL;

@@ -28,9 +28,9 @@ class SurfaceTextureManager {
   virtual void UnregisterSurfaceTexture(int surface_texture_id,
                                         int client_id) = 0;
 
-  // Acquire native widget for surface texture.
-  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_texture_id,
-                                                     int client_id) = 0;
+  // Acquire native widget for a registered surface texture.
+  virtual gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
+      int surface_texture_id) = 0;
 
  protected:
   virtual ~SurfaceTextureManager() {}

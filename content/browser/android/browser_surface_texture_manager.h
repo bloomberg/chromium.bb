@@ -24,8 +24,8 @@ class BrowserSurfaceTextureManager : public SurfaceTextureManager,
       gfx::SurfaceTexture* surface_texture) override;
   virtual void UnregisterSurfaceTexture(int surface_texture_id,
                                         int client_id) override;
-  virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_texture_id,
-                                                     int client_id) override;
+  virtual gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
+      int surface_texture_id) override;
 
   // Overridden from SurfaceTexturePeer:
   virtual void EstablishSurfaceTexturePeer(

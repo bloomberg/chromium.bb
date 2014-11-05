@@ -17,15 +17,18 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory,
  public:
   // Overridden from GpuMemoryBufferFactory:
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferType type,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override {
+      gfx::GpuMemoryBuffer::Usage usage,
+      int client_id) override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
   }
-  void DestroyGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle) override {
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                              gfx::GpuMemoryBufferId id,
+                              int client_id) override {
     NOTREACHED();
   }
   gpu::ImageFactory* AsImageFactory() override { return this; }

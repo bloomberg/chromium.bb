@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -94,11 +95,13 @@ void BrowserSurfaceTextureManager::UnregisterSurfaceTexture(
   content::DestroySurfaceTextureSurface(surface_texture_id, client_id);
 }
 
-gfx::AcceleratedWidget BrowserSurfaceTextureManager::AcquireNativeWidget(
-    int surface_texture_id,
-    int client_id) {
+gfx::AcceleratedWidget
+BrowserSurfaceTextureManager::AcquireNativeWidgetForSurfaceTexture(
+    int surface_texture_id) {
   gfx::ScopedJavaSurface surface(
-      content::GetSurfaceTextureSurface(surface_texture_id, client_id));
+      content::GetSurfaceTextureSurface(
+          surface_texture_id,
+          BrowserGpuChannelHostFactory::instance()->GetGpuChannelId()));
   if (surface.j_surface().is_null())
     return NULL;
 

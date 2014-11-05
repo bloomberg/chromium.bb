@@ -305,7 +305,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void GpuMemoryBufferAllocated(IPC::Message* reply,
                                 const gfx::GpuMemoryBufferHandle& handle);
   void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
-                                const gfx::GpuMemoryBufferId& id,
+                                gfx::GpuMemoryBufferId id,
                                 uint32 sync_point);
 
   // Cached resource request dispatcher host and plugin service, guaranteed to

@@ -23,12 +23,16 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHost {
   static GpuMemoryBufferFactoryHost* GetInstance();
 
   virtual void CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferType type,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
+      int client_id,
       const CreateGpuMemoryBufferCallback& callback) = 0;
-  virtual void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
+  virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                      gfx::GpuMemoryBufferId id,
+                                      int client_id,
                                       int32 sync_point) = 0;
 
  protected:

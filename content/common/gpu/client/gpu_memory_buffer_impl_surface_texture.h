@@ -14,12 +14,14 @@ namespace content {
 // Implementation of GPU memory buffer based on SurfaceTextures.
 class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
  public:
-  static void Create(const gfx::Size& size,
+  static void Create(gfx::GpuMemoryBufferId id,
+                     const gfx::Size& size,
                      Format format,
                      int client_id,
                      const CreationCallback& callback);
 
-  static void AllocateForChildProcess(const gfx::Size& size,
+  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
+                                      const gfx::Size& size,
                                       Format format,
                                       int child_client_id,
                                       const AllocationCallback& callback);
@@ -30,7 +32,8 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
       Format format,
       const DestructionCallback& callback);
 
-  static void DeletedByChildProcess(const gfx::GpuMemoryBufferId& id,
+  static void DeletedByChildProcess(gfx::GpuMemoryBufferId id,
+                                    int child_client_id,
                                     uint32_t sync_point);
 
   static bool IsFormatSupported(Format format);
@@ -45,14 +48,13 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   virtual uint32 GetStride() const override;
 
  private:
-  GpuMemoryBufferImplSurfaceTexture(const gfx::Size& size,
+  GpuMemoryBufferImplSurfaceTexture(gfx::GpuMemoryBufferId id,
+                                    const gfx::Size& size,
                                     Format format,
                                     const DestructionCallback& callback,
-                                    const gfx::GpuMemoryBufferId& id,
                                     ANativeWindow* native_window);
   virtual ~GpuMemoryBufferImplSurfaceTexture();
 
-  gfx::GpuMemoryBufferId id_;
   ANativeWindow* native_window_;
   size_t stride_;
 

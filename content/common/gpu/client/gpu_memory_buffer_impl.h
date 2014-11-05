@@ -25,7 +25,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   // Creates a GPU memory buffer instance with |size| and |format| for |usage|
   // by the current process and |client_id|.
-  static void Create(const gfx::Size& size,
+  static void Create(gfx::GpuMemoryBufferId id,
+                     const gfx::Size& size,
                      Format format,
                      Usage usage,
                      int client_id,
@@ -34,7 +35,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Allocates a GPU memory buffer with |size| and |internalformat| for |usage|
   // by |child_process| and |child_client_id|. The |handle| returned can be
   // used by the |child_process| to create an instance of this class.
-  static void AllocateForChildProcess(const gfx::Size& size,
+  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
+                                      const gfx::Size& size,
                                       Format format,
                                       Usage usage,
                                       base::ProcessHandle child_process,
@@ -43,7 +45,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   // Notify that GPU memory buffer has been deleted by |child_process|.
   static void DeletedByChildProcess(gfx::GpuMemoryBufferType type,
-                                    const gfx::GpuMemoryBufferId& id,
+                                    gfx::GpuMemoryBufferId id,
                                     base::ProcessHandle child_process,
                                     int child_client_id,
                                     uint32 sync_point);
@@ -75,10 +77,12 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
  protected:
-  GpuMemoryBufferImpl(const gfx::Size& size,
+  GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
+                      const gfx::Size& size,
                       Format format,
                       const DestructionCallback& callback);
 
+  const gfx::GpuMemoryBufferId id_;
   const gfx::Size size_;
   const Format format_;
   const DestructionCallback callback_;

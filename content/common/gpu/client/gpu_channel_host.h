@@ -153,7 +153,7 @@ class GpuChannelHost : public IPC::Sender,
   // IPC to the GPU process. The caller is responsible for ensuring it is
   // closed. Returns an invalid handle on failure.
   gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuProcess(
-      gfx::GpuMemoryBufferHandle source_handle,
+      const gfx::GpuMemoryBufferHandle& source_handle,
       bool* requires_sync_point);
 
   // Reserve one unused image ID.

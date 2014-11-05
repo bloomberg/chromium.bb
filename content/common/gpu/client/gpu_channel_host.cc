@@ -281,7 +281,7 @@ int32 GpuChannelHost::ReserveTransferBufferId() {
 }
 
 gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
-    gfx::GpuMemoryBufferHandle source_handle,
+    const gfx::GpuMemoryBufferHandle& source_handle,
     bool* requires_sync_point) {
   switch (source_handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
@@ -291,26 +291,11 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
       *requires_sync_point = false;
       return handle;
     }
-#if defined(USE_OZONE)
+    case gfx::IO_SURFACE_BUFFER:
+    case gfx::SURFACE_TEXTURE_BUFFER:
     case gfx::OZONE_NATIVE_BUFFER:
       *requires_sync_point = true;
       return source_handle;
-#endif
-#if defined(OS_MACOSX)
-    case gfx::IO_SURFACE_BUFFER:
-      *requires_sync_point = true;
-      return source_handle;
-#endif
-#if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-      *requires_sync_point = true;
-      return source_handle;
-#endif
-#if defined(USE_X11)
-    case gfx::X11_PIXMAP_BUFFER:
-      *requires_sync_point = true;
-      return source_handle;
-#endif
     default:
       NOTREACHED();
       return gfx::GpuMemoryBufferHandle();

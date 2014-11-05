@@ -42,7 +42,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const AllocationCallback& callback);
   void ChildProcessDeletedGpuMemoryBuffer(
       gfx::GpuMemoryBufferType type,
-      const gfx::GpuMemoryBufferId& id,
+      gfx::GpuMemoryBufferId id,
       base::ProcessHandle child_process_handle,
       int child_client_id,
       uint32 sync_point);

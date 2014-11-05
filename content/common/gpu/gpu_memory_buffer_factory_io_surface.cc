@@ -37,9 +37,10 @@ GpuMemoryBufferFactoryIOSurface::~GpuMemoryBufferFactoryIOSurface() {
 
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format) {
+    gfx::GpuMemoryBuffer::Format format,
+    int client_id) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
@@ -61,20 +62,21 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
 
-  IOSurfaceMapKey key(id.primary_id, id.secondary_id);
+  IOSurfaceMapKey key(id, client_id);
   DCHECK(io_surfaces_.find(key) == io_surfaces_.end());
   io_surfaces_[key] = io_surface;
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
-  handle.global_id = id;
+  handle.id = id;
   handle.io_surface_id = IOSurfaceGetID(io_surface);
   return handle;
 }
 
 void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id) {
-  IOSurfaceMapKey key(id.primary_id, id.secondary_id);
+    gfx::GpuMemoryBufferId id,
+    int client_id) {
+  IOSurfaceMapKey key(id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it != io_surfaces_.end())
     io_surfaces_.erase(it);
@@ -82,10 +84,11 @@ void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
 
 scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format) {
-  IOSurfaceMapKey key(id.primary_id, id.secondary_id);
+    gfx::GpuMemoryBuffer::Format format,
+    int client_id) {
+  IOSurfaceMapKey key(id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it == io_surfaces_.end())
     return scoped_refptr<gfx::GLImage>();

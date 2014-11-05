@@ -18,9 +18,10 @@ GpuMemoryBufferFactorySurfaceTexture::~GpuMemoryBufferFactorySurfaceTexture() {
 
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    unsigned internalformat) {
+    unsigned internalformat,
+    int client_id) {
   // Note: this needs to be 0 as the surface texture implemenation will take
   // ownership of the texture and call glDeleteTextures when the GPU service
   // attaches the surface texture to a real texture id. glDeleteTextures
@@ -32,35 +33,36 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
     return gfx::GpuMemoryBufferHandle();
 
   SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
-      id.primary_id, id.secondary_id, surface_texture.get());
+      id, client_id, surface_texture.get());
 
-  SurfaceTextureMapKey key(id.primary_id, id.secondary_id);
+  SurfaceTextureMapKey key(id, client_id);
   DCHECK(surface_textures_.find(key) == surface_textures_.end());
   surface_textures_[key] = surface_texture;
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SURFACE_TEXTURE_BUFFER;
-  handle.global_id = id;
+  handle.id = id;
   return handle;
 }
 
 void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id) {
-  SurfaceTextureMapKey key(id.primary_id, id.secondary_id);
+    gfx::GpuMemoryBufferId id,
+    int client_id) {
+  SurfaceTextureMapKey key(id, client_id);
   SurfaceTextureMap::iterator it = surface_textures_.find(key);
   if (it != surface_textures_.end())
     surface_textures_.erase(it);
 
-  SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(
-      id.primary_id, id.secondary_id);
+  SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id, client_id);
 }
 
 scoped_refptr<gfx::GLImage>
 GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    unsigned internalformat) {
-  SurfaceTextureMapKey key(id.primary_id, id.secondary_id);
+    unsigned internalformat,
+    int client_id) {
+  SurfaceTextureMapKey key(id, client_id);
   SurfaceTextureMap::iterator it = surface_textures_.find(key);
   if (it == surface_textures_.end())
     return scoped_refptr<gfx::GLImage>();

@@ -18,24 +18,27 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory,
  public:
   // Overridden from GpuMemoryBufferFactory:
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferType type,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override {
-    switch (handle.type) {
+      gfx::GpuMemoryBuffer::Usage usage,
+      int client_id) override {
+    switch (type) {
       case gfx::SURFACE_TEXTURE_BUFFER:
         return surface_texture_factory_.CreateGpuMemoryBuffer(
-            handle.global_id, size, format);
+            id, size, format, client_id);
       default:
         NOTREACHED();
         return gfx::GpuMemoryBufferHandle();
     }
   }
-  virtual void DestroyGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle) override {
-    switch (handle.type) {
+  virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                      gfx::GpuMemoryBufferId id,
+                                      int client_id) override {
+    switch (type) {
       case gfx::SURFACE_TEXTURE_BUFFER:
-        surface_texture_factory_.DestroyGpuMemoryBuffer(handle.global_id);
+        surface_texture_factory_.DestroyGpuMemoryBuffer(id, client_id);
         break;
       default:
         NOTREACHED();
@@ -61,12 +64,8 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory,
         return image;
       }
       case gfx::SURFACE_TEXTURE_BUFFER: {
-        // Verify that client is the owner of the buffer we're about to use.
-        if (handle.global_id.secondary_id != client_id)
-          return scoped_refptr<gfx::GLImage>();
-
         return surface_texture_factory_.CreateImageForGpuMemoryBuffer(
-            handle.global_id, size, internalformat);
+            handle.id, size, internalformat, client_id);
       }
       default:
         NOTREACHED();

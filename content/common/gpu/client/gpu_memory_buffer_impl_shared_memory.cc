@@ -17,11 +17,12 @@ void Noop(uint32 sync_point) {
 }  // namespace
 
 GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback,
     scoped_ptr<base::SharedMemory> shared_memory)
-    : GpuMemoryBufferImpl(size, format, callback),
+    : GpuMemoryBufferImpl(id, size, format, callback),
       shared_memory_(shared_memory.Pass()) {
 }
 
@@ -29,7 +30,8 @@ GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
 }
 
 // static
-void GpuMemoryBufferImplSharedMemory::Create(const gfx::Size& size,
+void GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
+                                             const gfx::Size& size,
                                              Format format,
                                              const CreationCallback& callback) {
   DCHECK(IsLayoutSupported(size, format));
@@ -42,11 +44,12 @@ void GpuMemoryBufferImplSharedMemory::Create(const gfx::Size& size,
 
   callback.Run(
       make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplSharedMemory(
-          size, format, base::Bind(&Noop), shared_memory.Pass())));
+          id, size, format, base::Bind(&Noop), shared_memory.Pass())));
 }
 
 // static
 void GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     base::ProcessHandle child_process,
@@ -60,6 +63,7 @@ void GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
   }
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
+  handle.id = id;
   shared_memory.GiveToProcess(child_process, &handle.handle);
   callback.Run(handle);
 }
@@ -78,6 +82,7 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSharedMemory(
+          handle.id,
           size,
           format,
           callback,
@@ -152,6 +157,7 @@ uint32 GpuMemoryBufferImplSharedMemory::GetStride() const {
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
+  handle.id = id_;
   handle.handle = shared_memory_->handle();
   return handle;
 }

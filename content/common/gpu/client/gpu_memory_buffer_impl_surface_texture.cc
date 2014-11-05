@@ -4,7 +4,6 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 
-#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -15,17 +14,17 @@
 namespace content {
 namespace {
 
-base::StaticAtomicSequenceNumber g_next_buffer_id;
-
-void GpuMemoryBufferDeleted(const gfx::GpuMemoryBufferHandle& handle,
+void GpuMemoryBufferDeleted(gfx::GpuMemoryBufferId id,
+                            int client_id,
                             uint32 sync_point) {
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
-                                                                    sync_point);
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
+      gfx::SURFACE_TEXTURE_BUFFER, id, client_id, sync_point);
 }
 
 void GpuMemoryBufferCreated(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
+    int client_id,
     const GpuMemoryBufferImpl::CreationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
   if (handle.is_null()) {
@@ -35,7 +34,10 @@ void GpuMemoryBufferCreated(
 
   DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
   callback.Run(GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
-      handle, size, format, base::Bind(&GpuMemoryBufferDeleted, handle)));
+      handle,
+      size,
+      format,
+      base::Bind(&GpuMemoryBufferDeleted, handle.id, client_id)));
 }
 
 void GpuMemoryBufferCreatedForChildProcess(
@@ -49,15 +51,14 @@ void GpuMemoryBufferCreatedForChildProcess(
 }  // namespace
 
 GpuMemoryBufferImplSurfaceTexture::GpuMemoryBufferImplSurfaceTexture(
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback,
-    const gfx::GpuMemoryBufferId& id,
     ANativeWindow* native_window)
-    : GpuMemoryBufferImpl(size, format, callback),
-      id_(id),
+    : GpuMemoryBufferImpl(id, size, format, callback),
       native_window_(native_window),
-      stride_(0u) {
+      stride_(0) {
 }
 
 GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
@@ -66,37 +67,35 @@ GpuMemoryBufferImplSurfaceTexture::~GpuMemoryBufferImplSurfaceTexture() {
 
 // static
 void GpuMemoryBufferImplSurfaceTexture::Create(
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     int client_id,
     const CreationCallback& callback) {
-  gfx::GpuMemoryBufferHandle handle;
-  handle.global_id.primary_id = g_next_buffer_id.GetNext();
-  handle.global_id.secondary_id = client_id;
-  handle.type = gfx::SURFACE_TEXTURE_BUFFER;
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      handle,
+      gfx::SURFACE_TEXTURE_BUFFER,
+      id,
       size,
       format,
       MAP,
-      base::Bind(&GpuMemoryBufferCreated, size, format, callback));
+      client_id,
+      base::Bind(&GpuMemoryBufferCreated, size, format, client_id, callback));
 }
 
 // static
 void GpuMemoryBufferImplSurfaceTexture::AllocateForChildProcess(
+    gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     Format format,
     int child_client_id,
     const AllocationCallback& callback) {
-  gfx::GpuMemoryBufferHandle handle;
-  handle.global_id.primary_id = g_next_buffer_id.GetNext();
-  handle.global_id.secondary_id = child_client_id;
-  handle.type = gfx::SURFACE_TEXTURE_BUFFER;
   GpuMemoryBufferFactoryHost::GetInstance()->CreateGpuMemoryBuffer(
-      handle,
+      gfx::SURFACE_TEXTURE_BUFFER,
+      id,
       size,
       format,
       MAP,
+      child_client_id,
       base::Bind(&GpuMemoryBufferCreatedForChildProcess, callback));
 }
 
@@ -109,9 +108,8 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     const DestructionCallback& callback) {
   DCHECK(IsFormatSupported(format));
 
-  ANativeWindow* native_window =
-      SurfaceTextureManager::GetInstance()->AcquireNativeWidget(
-          handle.global_id.primary_id, handle.global_id.secondary_id);
+  ANativeWindow* native_window = SurfaceTextureManager::GetInstance()->
+      AcquireNativeWidgetForSurfaceTexture(handle.id);
   if (!native_window)
     return scoped_ptr<GpuMemoryBufferImpl>();
 
@@ -120,18 +118,16 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSurfaceTexture(
-          size, format, callback, handle.global_id, native_window));
+          handle.id, size, format, callback, native_window));
 }
 
 // static
 void GpuMemoryBufferImplSurfaceTexture::DeletedByChildProcess(
-    const gfx::GpuMemoryBufferId& id,
+    gfx::GpuMemoryBufferId id,
+    int child_client_id,
     uint32_t sync_point) {
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::SURFACE_TEXTURE_BUFFER;
-  handle.global_id = id;
-  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(handle,
-                                                                    sync_point);
+  GpuMemoryBufferFactoryHost::GetInstance()->DestroyGpuMemoryBuffer(
+      gfx::SURFACE_TEXTURE_BUFFER, id, child_client_id, sync_point);
 }
 
 // static
@@ -216,7 +212,7 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSurfaceTexture::GetHandle()
     const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SURFACE_TEXTURE_BUFFER;
-  handle.global_id = id_;
+  handle.id = id_;
   return handle;
 }
 

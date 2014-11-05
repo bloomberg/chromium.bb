@@ -13,7 +13,7 @@ namespace {
 
 void DeletedGpuMemoryBuffer(ThreadSafeSender* sender,
                             gfx::GpuMemoryBufferType type,
-                            const gfx::GpuMemoryBufferId& id,
+                            gfx::GpuMemoryBufferId id,
                             uint32 sync_point) {
   TRACE_EVENT0("renderer",
                "ChildGpuMemoryBufferManager::DeletedGpuMemoryBuffer");
@@ -54,11 +54,10 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
       handle,
       size,
       format,
-      base::Bind(
-          &DeletedGpuMemoryBuffer, sender_, handle.type, handle.global_id)));
+      base::Bind(&DeletedGpuMemoryBuffer, sender_, handle.type, handle.id)));
   if (!buffer) {
     sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
-        handle.type, handle.global_id, 0));
+        handle.type, handle.id, 0));
     return scoped_ptr<gfx::GpuMemoryBuffer>();
   }
 

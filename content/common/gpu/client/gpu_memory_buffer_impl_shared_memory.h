@@ -12,11 +12,13 @@ namespace content {
 // Implementation of GPU memory buffer based on shared memory.
 class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
-  static void Create(const gfx::Size& size,
+  static void Create(gfx::GpuMemoryBufferId id,
+                     const gfx::Size& size,
                      Format format,
                      const CreationCallback& callback);
 
-  static void AllocateForChildProcess(const gfx::Size& size,
+  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
+                                      const gfx::Size& size,
                                       Format format,
                                       base::ProcessHandle child_process,
                                       const AllocationCallback& callback);
@@ -41,7 +43,8 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
-  GpuMemoryBufferImplSharedMemory(const gfx::Size& size,
+  GpuMemoryBufferImplSharedMemory(gfx::GpuMemoryBufferId id,
+                                  const gfx::Size& size,
                                   Format format,
                                   const DestructionCallback& callback,
                                   scoped_ptr<base::SharedMemory> shared_memory);

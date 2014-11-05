@@ -19,6 +19,7 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 
@@ -121,9 +122,15 @@ class GpuChannelManager : public IPC::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
   void OnLoadedShader(std::string shader);
-  void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle);
-  void DestroyGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle);
-  void OnDestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                              gfx::GpuMemoryBufferId id,
+                              int client_id);
+  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferType type,
+                                  gfx::GpuMemoryBufferId id,
+                                  int client_id);
+  void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                                gfx::GpuMemoryBufferId id,
+                                int client_id,
                                 int32 sync_point);
 
   void OnLoseAllContexts();

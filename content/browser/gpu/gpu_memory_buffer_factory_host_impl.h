@@ -19,23 +19,24 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHostImpl
 
   // Overridden from GpuMemoryBufferFactoryHost:
   void CreateGpuMemoryBuffer(
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferType type,
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
+      int client_id,
       const CreateGpuMemoryBufferCallback& callback) override;
-  void DestroyGpuMemoryBuffer(const gfx::GpuMemoryBufferHandle& handle,
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
+                              gfx::GpuMemoryBufferId id,
+                              int client_id,
                               int32 sync_point) override;
 
   void set_gpu_host_id(int gpu_host_id) { gpu_host_id_ = gpu_host_id; }
 
  private:
-  void CreateGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
-                                 const gfx::Size& size,
-                                 gfx::GpuMemoryBuffer::Format format,
-                                 gfx::GpuMemoryBuffer::Usage usage,
-                                 const CreateGpuMemoryBufferCallback& callback);
-  void DestroyGpuMemoryBufferOnIO(const gfx::GpuMemoryBufferHandle& handle,
+  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferType type,
+                                  gfx::GpuMemoryBufferId id,
+                                  int client_id,
                                   int32 sync_point);
   void OnGpuMemoryBufferCreated(uint32 request_id,
                                 const gfx::GpuMemoryBufferHandle& handle);
