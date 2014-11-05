@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -17,8 +18,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -29,9 +33,75 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace extensions {
 
 namespace {
+
+// A helper class to create test web contents (tabs) for unit tests, without
+// inheriting from RenderViewTestHarness. Can create web contents, and will
+// clean up after itself upon destruction. Owns all created web contents.
+// A few notes:
+// - Works well allocated on the stack, because it should be destroyed before
+//   associated browser context.
+// - Doesn't play nice with web contents created any other way (because of
+//   the implementation of RenderViewHostTestEnabler). But if you are creating
+//   web contents already, what do you need this for? ;)
+// - This will call aura::Env::Create/DeleteInstance(), because that's needed
+//   for web contents. Nothing else should call it first. (This could be
+//   tweaked by passing in a flag, if there's need.)
+// TODO(devlin): Look around and see if this class is needed elsewhere; if so,
+// move it there and expand the API a bit (methods to, e.g., delete/close a
+// web contents, access existing web contents, etc).
+class TestWebContentsFactory {
+ public:
+  TestWebContentsFactory();
+  ~TestWebContentsFactory();
+
+  // Creates a new WebContents with the given |context|, and returns it.
+  content::WebContents* CreateWebContents(content::BrowserContext* context);
+
+ private:
+  // The test factory (and friends) for creating test web contents.
+  scoped_ptr<content::RenderViewHostTestEnabler> rvh_enabler_;
+
+  // The vector of web contents that this class created.
+  ScopedVector<content::WebContents> web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebContentsFactory);
+};
+
+TestWebContentsFactory::TestWebContentsFactory()
+    : rvh_enabler_(new content::RenderViewHostTestEnabler()) {
+#if defined(USE_AURA)
+  aura::Env::CreateInstance(true);
+#endif
+}
+
+TestWebContentsFactory::~TestWebContentsFactory() {
+  web_contents_.clear();
+  // Let any posted tasks for web contents deletion run.
+  base::RunLoop().RunUntilIdle();
+  rvh_enabler_.reset();
+  // Let any posted tasks for RenderProcess/ViewHost deletion run.
+  base::RunLoop().RunUntilIdle();
+
+#if defined(USE_AURA)
+  aura::Env::DeleteInstance();
+#endif
+}
+
+content::WebContents* TestWebContentsFactory::CreateWebContents(
+    content::BrowserContext* context) {
+  scoped_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(context, nullptr));
+  DCHECK(web_contents);
+  web_contents_.push_back(web_contents.release());
+  return web_contents_.back();
+}
 
 // Creates a new ExtensionToolbarModel for the given |context|.
 KeyedService* BuildToolbarModel(content::BrowserContext* context) {
@@ -94,6 +164,7 @@ class ExtensionToolbarModelTestObserver
   size_t removed_count() const { return removed_count_; }
   size_t moved_count() const { return moved_count_; }
   int highlight_mode_count() const { return highlight_mode_count_; }
+  size_t reorder_count() const { return reorder_count_; }
 
  private:
   // ExtensionToolbarModel::Observer:
@@ -123,6 +194,10 @@ class ExtensionToolbarModelTestObserver
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
 
+  void OnToolbarReorderNecessary(content::WebContents* web_contents) override {
+    ++reorder_count_;
+  }
+
   Browser* GetBrowser() override { return NULL; }
 
   ExtensionToolbarModel* model_;
@@ -132,14 +207,16 @@ class ExtensionToolbarModelTestObserver
   size_t moved_count_;
   // Int because it could become negative (if something goes wrong).
   int highlight_mode_count_;
+  size_t reorder_count_;
 };
 
 ExtensionToolbarModelTestObserver::ExtensionToolbarModelTestObserver(
     ExtensionToolbarModel* model) : model_(model),
-                                    inserted_count_(0u),
-                                    removed_count_(0u),
-                                    moved_count_(0u),
-                                    highlight_mode_count_(0) {
+                                    inserted_count_(0),
+                                    removed_count_(0),
+                                    moved_count_(0),
+                                    highlight_mode_count_(0),
+                                    reorder_count_(0) {
   model_->AddObserver(this);
 }
 
@@ -154,6 +231,8 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
   // Initialize the ExtensionService, ExtensionToolbarModel, and
   // ExtensionSystem.
   void Init();
+
+  void TearDown() override;
 
   // Adds or removes the given |extension| and verify success.
   testing::AssertionResult AddExtension(
@@ -220,6 +299,11 @@ void ExtensionToolbarModelUnitTest::Init() {
   InitializeEmptyExtensionService();
   toolbar_model_ = CreateToolbarModelForProfile(profile());
   model_observer_.reset(new ExtensionToolbarModelTestObserver(toolbar_model_));
+}
+
+void ExtensionToolbarModelUnitTest::TearDown() {
+  model_observer_.reset();
+  ExtensionServiceTestBase::TearDown();
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddExtension(
@@ -695,11 +779,13 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarSizeAfterPrefChange) {
   ASSERT_TRUE(AddBrowserActionExtensions());
   EXPECT_EQ(3u, num_toolbar_items());
 
-  // Should be at max size (-1).
-  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());
+  // Should be at max size.
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+  EXPECT_EQ(num_toolbar_items(), toolbar_model()->visible_icon_count());
   toolbar_model()->OnExtensionToolbarPrefChange();
   // Should still be at max size.
-  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+  EXPECT_EQ(num_toolbar_items(), toolbar_model()->visible_icon_count());
 }
 
 // Test that, in the absence of the extension-action-redesign switch, the
@@ -812,19 +898,20 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
 
   // Extensions in the overflow menu in the regular toolbar should remain in
   // overflow in the incognito toolbar. So, we should have C [B].
-  EXPECT_EQ(1, incognito_model->GetVisibleIconCount());
+  EXPECT_EQ(1u, incognito_model->visible_icon_count());
   // The regular model should still have two icons visible.
-  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
 
   // Changing the incognito model size should not affect the regular model.
   incognito_model->SetVisibleIconCount(0);
-  EXPECT_EQ(0, incognito_model->GetVisibleIconCount());
-  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(0u, incognito_model->visible_icon_count());
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
 
-  // Expanding the incognito model to 2 should register as "all icons" (-1),
+  // Expanding the incognito model to 2 should register as "all icons"
   // since it is all of the incognito-enabled extensions.
   incognito_model->SetVisibleIconCount(2u);
-  EXPECT_EQ(-1, incognito_model->GetVisibleIconCount());
+  EXPECT_EQ(2u, incognito_model->visible_icon_count());
+  EXPECT_TRUE(incognito_model->all_icons_visible());
 
   // Moving icons in the incognito toolbar should not affect the regular
   // toolbar. Incognito currently has C B...
@@ -921,7 +1008,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
   // overflowed in the main bar, it shouldn't be visible.
   EXPECT_EQ(1u, incognito_model->toolbar_items().size());
   EXPECT_EQ(extension_b, GetExtensionAtIndex(0u, incognito_model)->id());
-  EXPECT_EQ(0, incognito_model->GetVisibleIconCount());
+  EXPECT_EQ(0u, incognito_model->visible_icon_count());
 
   // Also enable extension a for incognito (again, wait for the reload).
   {
@@ -936,7 +1023,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
   EXPECT_EQ(2u, incognito_model->toolbar_items().size());
   EXPECT_EQ(extension_a, GetExtensionAtIndex(0u, incognito_model)->id());
   EXPECT_EQ(extension_b, GetExtensionAtIndex(1u, incognito_model)->id());
-  EXPECT_EQ(1, incognito_model->GetVisibleIconCount());
+  EXPECT_EQ(1u, incognito_model->visible_icon_count());
 }
 
 // Test that hiding actions on the toolbar results in sending them to the
@@ -958,7 +1045,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
 
   // Sanity check: Order should start as A B C, with all three visible.
   EXPECT_EQ(3u, num_toolbar_items());
-  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());  // -1 = 'all'.
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
   EXPECT_EQ(extension_a, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_c, GetExtensionAtIndex(2u));
@@ -979,7 +1066,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
 
   // Thus, the order should be A C B, with B in the overflow.
   EXPECT_EQ(3u, num_toolbar_items());
-  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
   EXPECT_EQ(extension_a, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_c, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
@@ -990,7 +1077,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
       prefs, extension_a->id(), false);
   // Thus, the order should be C A B, with A and B in the overflow.
   EXPECT_EQ(3u, num_toolbar_items());
-  EXPECT_EQ(1, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
   EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
@@ -1002,7 +1089,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
       prefs, extension_a->id(), true);
   // So order is C A B, with only B in the overflow.
   EXPECT_EQ(3u, num_toolbar_items());
-  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
   EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
@@ -1011,10 +1098,179 @@ TEST_F(ExtensionToolbarModelUnitTest,
   ExtensionActionAPI::SetBrowserActionVisibility(
       prefs, extension_b->id(), true);
   EXPECT_EQ(3u, num_toolbar_items());
-  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());  // -1 = 'all'
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
   EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
   EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
   EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
+}
+
+// Test that toolbar actions can pop themselves out of overflow if they want
+// to act on a given web contents.
+TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
+  // Extensions popping themselves out to act is part of the toolbar redesign,
+  // and hidden behind a flag.
+  FeatureSwitch::ScopedOverride enable_redesign(
+      FeatureSwitch::extension_action_redesign(), true);
+  Init();
+  TestWebContentsFactory web_contents_factory;
+
+  ASSERT_TRUE(AddActionExtensions());
+
+  // We should start in the order of "browser action" "page action" "no action"
+  // and have all extensions visible.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+  EXPECT_EQ(browser_action(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(page_action(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(no_action(), GetExtensionAtIndex(2u));
+
+  // Shrink the model to only show one action, and move the page action to the
+  // end.
+  toolbar_model()->SetVisibleIconCount(1);
+  toolbar_model()->MoveExtensionIcon(page_action()->id(), 2u);
+
+  // Quickly verify that the move/visible count worked.
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(browser_action(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(no_action(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(page_action(), GetExtensionAtIndex(2u));
+
+  // Create two test web contents, and a session tab helper for each. We need
+  // a session tab helper, since we rely on tab ids.
+  content::WebContents* web_contents =
+      web_contents_factory.CreateWebContents(profile());
+  ASSERT_TRUE(web_contents);
+  SessionTabHelper::CreateForWebContents(web_contents);
+  content::WebContents* second_web_contents =
+      web_contents_factory.CreateWebContents(profile());
+  ASSERT_TRUE(second_web_contents);
+  SessionTabHelper::CreateForWebContents(second_web_contents);
+
+  // Find the tab ids, ensure that the two web contents have different ids, and
+  // verify that neither is -1 (invalid).
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int second_tab_id = SessionTabHelper::IdForTab(second_web_contents);
+  EXPECT_NE(tab_id, second_tab_id);
+  EXPECT_NE(-1, second_tab_id);
+  EXPECT_NE(-1, tab_id);
+
+  // First, check the model order for the first tab. Since we haven't changed
+  // anything (i.e., no extensions want to act), this should be the same as we
+  // left it: "browser action", "no action", "page action", with only one
+  // visible.
+  ExtensionList tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(no_action(), tab_order[1]);
+  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  // And we should have no notifications to reorder the toolbar.
+  EXPECT_EQ(0u, observer()->reorder_count());
+
+  // Make "page action" want to act by making it's page action visible on the
+  // first tab, and notify the API of the change.
+  ExtensionActionManager* action_manager =
+      ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*page_action());
+  ASSERT_TRUE(action);
+  action->SetIsVisible(tab_id, true);
+  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile());
+  extension_action_api->NotifyChange(action, web_contents, profile());
+
+  // This should result in "page action" being popped out of the overflow menu.
+  // This has two visible effects:
+  // - page action should move to the second index (the one right after the last
+  //   originally-visible).
+  // - The visible count should increase by one (so page action is visible).
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(page_action(), tab_order[1]);
+  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  // We should also have been told to reorder the toolbar.
+  EXPECT_EQ(1u, observer()->reorder_count());
+
+  // This should not have any effect on the second tab, which should still have
+  // the original order and visible count.
+  tab_order = toolbar_model()->GetItemOrderForTab(second_web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(no_action(), tab_order[1]);
+  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(1u,
+            toolbar_model()->GetVisibleIconCountForTab(second_web_contents));
+
+  // Now, set the action to be hidden again, and notify of the change.
+  action->SetIsVisible(tab_id, false);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  // The order and visible count should return to normal (the page action should
+  // move back to its original index in overflow). So, order should be "browser
+  // action", "no action", "page action".
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(no_action(), tab_order[1]);
+  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  // This should also result in a reorder.
+  EXPECT_EQ(2u, observer()->reorder_count());
+
+  // Move page action to the first index (so it's naturally visible), and make
+  // it want to act.
+  toolbar_model()->MoveExtensionIcon(page_action()->id(), 0u);
+  action->SetIsVisible(tab_id, true);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  // Since the action is already visible, this should have no effect - the order
+  // and visible count should remain unchanged. Order is "page action", "browser
+  // action", "no action".
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(page_action(), tab_order[0]);
+  EXPECT_EQ(browser_action(), tab_order[1]);
+  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+
+  // We should still be able to increase the size of the model, and to move the
+  // page action.
+  toolbar_model()->SetVisibleIconCount(2);
+  toolbar_model()->MoveExtensionIcon(page_action()->id(), 1u);
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(page_action(), tab_order[1]);
+  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+
+  // Neither of the above operations should have precipitated a reorder.
+  EXPECT_EQ(2u, observer()->reorder_count());
+
+  // If we moved the page action, the move should remain in effect even after
+  // the action no longer wants to act.
+  action->SetIsVisible(tab_id, false);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(browser_action(), tab_order[0]);
+  EXPECT_EQ(page_action(), tab_order[1]);
+  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  // The above change should *not* require a reorder, because the extension is
+  // in a new, visible spot and doesn't need to change its position.
+  EXPECT_EQ(2u, observer()->reorder_count());
+
+  // Test the edge case of having no icons visible.
+  toolbar_model()->SetVisibleIconCount(0);
+  EXPECT_EQ(0u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  action->SetIsVisible(tab_id, true);
+  extension_action_api->NotifyChange(action, web_contents, profile());
+  tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
+  ASSERT_EQ(3u, tab_order.size());
+  EXPECT_EQ(page_action(), tab_order[0]);
+  EXPECT_EQ(browser_action(), tab_order[1]);
+  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
+  EXPECT_EQ(3u, observer()->reorder_count());
 }
 
 }  // namespace extensions

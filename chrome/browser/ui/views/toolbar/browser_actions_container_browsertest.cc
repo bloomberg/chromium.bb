@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
   EXPECT_EQ(3u, container->VisibleBrowserActions());
   EXPECT_FALSE(container->chevron()->visible());
-  EXPECT_EQ(-1, model->GetVisibleIconCount());
+  EXPECT_TRUE(model->all_icons_visible());
 
   // TODO(devlin): Ideally, we'd also have tests for dragging from the legacy
   // overflow menu (i.e., chevron) to the main bar, but this requires either
@@ -438,7 +438,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   overflow_bar()->Layout();
 
   // All actions are showing, and are in the installation order.
-  EXPECT_EQ(-1, model()->GetVisibleIconCount());
+  EXPECT_TRUE(model()->all_icons_visible());
+  EXPECT_EQ(3u, model()->visible_icon_count());
   ASSERT_EQ(3u, main_bar()->num_toolbar_actions());
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_b()->id(), main_bar()->GetIdAt(1u));
