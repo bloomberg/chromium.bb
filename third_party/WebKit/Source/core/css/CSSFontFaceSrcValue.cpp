@@ -43,17 +43,10 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const
 {
     // Normally we would just check the format, but in order to avoid conflicts with the old WinIE style of font-face,
     // we will also check to see if the URL ends with .eot.  If so, we'll go ahead and assume that we shouldn't load it.
-    if (m_format.isEmpty()) {
-        // Check for .eot.
-        if (!m_resource.startsWith("data:", false) && m_resource.endsWith(".eot", false))
-            return false;
-        return true;
-    }
+    if (m_format.isEmpty())
+        return m_resource.startsWith("data:", false) || !m_resource.endsWith(".eot", false);
 
-    if (FontCustomPlatformData::supportsFormat(m_format))
-        return true;
-
-    return false;
+    return FontCustomPlatformData::supportsFormat(m_format);
 }
 
 String CSSFontFaceSrcValue::customCSSText() const
@@ -75,9 +68,7 @@ String CSSFontFaceSrcValue::customCSSText() const
 
 bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 {
-    if (!m_fetched)
-        return false;
-    return m_fetched->loadFailedOrCanceled();
+    return m_fetched && m_fetched->loadFailedOrCanceled();
 }
 
 bool CSSFontFaceSrcValue::shouldSetCrossOriginAccessControl(const KURL& resource, SecurityOrigin* securityOrigin)
