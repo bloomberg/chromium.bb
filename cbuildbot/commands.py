@@ -387,16 +387,24 @@ class MissingBinpkg(failures_lib.InfrastructureFailure):
   """Error class for when we are missing an essential binpkg."""
 
 
-def VerifyBinpkg(buildroot, board, pkg, extra_env=None):
+def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
   """Verify that an appropriate binary package exists for |pkg|.
+
+  Using the depgraph from |packages|, check to see if |pkg| would be pulled in
+  as a binary or from source.  If |pkg| isn't installed at all, then ignore it.
 
   Args:
     buildroot: The buildroot of the current build.
     board: The board to set up.
     pkg: The package to look for.
+    packages: The list of packages that get installed on |board|.
     extra_env: A dictionary of environmental variables to set.
+
+  Raises:
+    If the package is found and is built from source, raise MissingBinpkg.
+    If the package is not found, or it is installed from a binpkg, do nothing.
   """
-  cmd = ['emerge-%s' % board, '-pegNv', '--color=n', 'virtual/target-os']
+  cmd = ['emerge-%s' % board, '-pegNvq', '--color=n'] + list(packages)
   result = RunBuildScript(buildroot, cmd, capture_output=True,
                           enter_chroot=True, extra_env=extra_env)
   pattern = r'^\[(ebuild|binary).*%s' % re.escape(pkg)

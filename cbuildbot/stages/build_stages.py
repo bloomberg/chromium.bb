@@ -227,13 +227,15 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if useflags:
       self._portage_extra_env['USE'] = ' '.join(useflags)
 
-  def VerifyChromeBinpkg(self):
-    # Sanity check: If we didn't check out Chrome, we should be building Chrome
-    # from a binary package.
-    if not self._run.options.managed_chrome:
+  def VerifyChromeBinpkg(self, packages):
+    # Sanity check: If we didn't check out Chrome (and we're running on ToT),
+    # we should be building Chrome from a binary package.
+    if (not self._run.options.managed_chrome and
+        self._run.manifest_branch == 'master'):
       commands.VerifyBinpkg(self._build_root,
                             self._current_board,
                             constants.CHROME_CP,
+                            packages,
                             extra_env=self._portage_extra_env)
 
   def GetListOfPackagesToBuild(self):
@@ -280,8 +282,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
-    self.VerifyChromeBinpkg()
     packages = self.GetListOfPackagesToBuild()
+    self.VerifyChromeBinpkg(packages)
     self.RecordPackagesUnderTest(packages)
 
     commands.Build(self._build_root,
