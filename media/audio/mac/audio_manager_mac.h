@@ -5,6 +5,7 @@
 #ifndef MEDIA_AUDIO_MAC_AUDIO_MANAGER_MAC_H_
 #define MEDIA_AUDIO_MAC_AUDIO_MANAGER_MAC_H_
 
+#include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/AudioHardware.h>
 #include <list>
 #include <string>
@@ -15,6 +16,9 @@
 #include "media/audio/mac/audio_device_listener_mac.h"
 
 namespace media {
+
+class AUAudioInputStream;
+class AUHALStream;
 
 // Mac OS X implementation of the AudioManager singleton. This class is internal
 // to the audio output and only internal users can call methods not exposed by
@@ -75,6 +79,21 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   enum { kStartDelayInSecsForPowerEvents = 1 };
   bool ShouldDeferStreamStart();
 
+  // Changes the buffer size for |device_id| if there are no active input or
+  // output streams on the device or |desired_buffer_size| is lower than the
+  // current device buffer size.
+  //
+  // Returns false if an error occurred. There is no indication if the buffer
+  // size was changed or not.
+  // |element| is 0 for output streams and 1 for input streams.
+  // TODO(dalecurtis): we could change the the last parameter to an input/output
+  // pointer so it can be updated if the buffer size is not changed.
+  // See http://crbug.com/428706 for details.
+  bool MaybeChangeBufferSize(AudioDeviceID device_id,
+                             AudioUnit audio_unit,
+                             AudioUnitElement element,
+                             size_t desired_buffer_size);
+
  protected:
   ~AudioManagerMac() override;
 
@@ -107,8 +126,9 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
 
   // Tracks all constructed input and output streams so they can be stopped at
   // shutdown.  See ShutdownOnAudioThread() for more details.
-  std::list<AudioInputStream*> input_streams_;
-  std::list<AudioOutputStream*> output_streams_;
+  std::list<AudioInputStream*> basic_input_streams_;
+  std::list<AUAudioInputStream*> low_latency_input_streams_;
+  std::list<AUHALStream*> output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };

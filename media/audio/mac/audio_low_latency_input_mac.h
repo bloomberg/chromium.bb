@@ -78,8 +78,10 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   MEDIA_EXPORT static int HardwareSampleRate();
 
   bool started() const { return started_; }
-  AudioUnit audio_unit() { return audio_unit_; }
+  AudioUnit audio_unit() const { return audio_unit_; }
   AudioBufferList* audio_buffer_list() { return &audio_buffer_list_; }
+  AudioDeviceID device_id() const { return input_device_id_; }
+  size_t requested_buffer_size() const { return number_of_frames_; }
 
  private:
   // AudioOutputUnit callback.

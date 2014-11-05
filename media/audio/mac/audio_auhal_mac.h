@@ -69,6 +69,9 @@ class AUHALStream : public AudioOutputStream {
   void SetVolume(double volume) override;
   void GetVolume(double* volume) override;
 
+  AudioDeviceID device_id() const { return device_; }
+  size_t requested_buffer_size() const { return number_of_frames_; }
+
  private:
   // AUHAL callback.
   static OSStatus InputProc(void* user_data,
