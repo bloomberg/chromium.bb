@@ -241,6 +241,9 @@
     'content': {
       'filepath': 'content/',
     },
+    'content_bluetooth': {
+      'filepath': 'content/.*bluetooth'
+    },
     'content_input': {
       'filepath': 'content/browser/renderer_host/input/|'\
                   'content/common/input/|'\
@@ -841,6 +844,7 @@
                 'vitalyp+closure@chromium.org'],
     'content': ['jam@chromium.org',
                 'darin-cc@chromium.org' ],
+    'content_bluetooth': ['scheib+watch@chromium.org'],
     'content_input': ['jdduke+watch@chromium.org'],
     'content_renderer': [ 'mkwst+moarreviews-renderer@chromium.org' ],
     'content_shell': ['jochen+watch@chromium.org',
