@@ -941,7 +941,10 @@ libshared_cairo_la_SOURCES =			\
 # tests subdirectory
 #
 
-TESTS = $(shared_tests) $(module_tests) $(weston_tests) $(ivi_tests)
+TESTS = $(internal_tests) $(shared_tests) $(module_tests) $(weston_tests) $(ivi_tests)
+
+internal_tests = 				\
+	internal-screenshot.weston
 
 shared_tests =					\
 	config-parser.test			\
@@ -988,6 +991,7 @@ noinst_LTLIBRARIES +=			\
 
 noinst_PROGRAMS +=			\
 	$(setbacklight)			\
+	$(internal_tests)		\
 	$(shared_tests)			\
 	$(weston_tests)			\
 	$(ivi_tests)			\
@@ -1039,6 +1043,20 @@ nodist_libtest_client_la_SOURCES =		\
 	protocol/weston-test-client-protocol.h
 libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
+
+
+#
+# Internal tests - tests functionality of the testsuite itself
+#
+
+internal_screenshot_weston_SOURCES = tests/internal-screenshot-test.c
+internal_screenshot_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS) $(CAIRO_CFLAGS)
+internal_screenshot_weston_LDADD = libtest-client.la  $(CAIRO_LIBS)
+
+
+#
+# Weston Tests
+#
 
 bad_buffer_weston_SOURCES = tests/bad-buffer-test.c
 bad_buffer_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
