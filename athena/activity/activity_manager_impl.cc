@@ -34,7 +34,6 @@ views::Widget* CreateWidget(Activity* activity) {
   params.delegate =
       new ActivityWidgetDelegate(activity->GetActivityViewModel());
   widget->Init(params);
-  activity->GetActivityViewModel()->Init();
   return widget;
 }
 
@@ -72,6 +71,8 @@ void ActivityManagerImpl::AddActivity(Activity* activity) {
   activities_.insert(activities_.begin(), activity);
   views::Widget* widget = CreateWidget(activity);
   widget->GetNativeView()->AddObserver(this);
+  activity->GetActivityViewModel()->Init();
+
   FOR_EACH_OBSERVER(ActivityManagerObserver,
                     observers_,
                     OnActivityStarted(activity));
