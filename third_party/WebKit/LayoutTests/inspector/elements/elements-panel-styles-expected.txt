@@ -138,7 +138,7 @@ html  { (elements-panel-styles.css:61 -> elements-panel-styles.css:61:1)
 color: red;
 
 [expanded] 
-.foo, .foo::before  { (elements-panel-styles.css:34 -> elements-panel-styles.css:34:1)
+.foo, .foo::before  { (elements-panel-styles.css:34 -> elements-panel-styles.css:34:7)
 content: "[before Foo]";
 /-- overloaded --/ color: blue;
 display: block !important;
