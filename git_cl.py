@@ -787,6 +787,9 @@ or verify this branch is set up to track another (via the --track argument to
   def GetApprovingReviewers(self):
     return get_approving_reviewers(self.GetIssueProperties())
 
+  def AddComment(self, message):
+    return self.RpcServer().add_comment(self.GetIssue(), message)
+
   def SetIssue(self, issue):
     """Set this branch's issue.  If issue=0, clears the issue."""
     if issue:
@@ -1438,28 +1441,41 @@ def CMDissue(parser, args):
 
 
 def CMDcomments(parser, args):
-  """Shows review comments of the current changelist."""
-  (_, args) = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
+  """Shows or posts review comments for any changelist."""
+  parser.add_option('-a', '--add-comment', dest='comment',
+                    help='comment to add to an issue')
+  parser.add_option('-i', dest='issue',
+                    help="review issue id (defaults to current issue)")
+  options, args = parser.parse_args(args)
 
-  cl = Changelist()
-  if cl.GetIssue():
-    data = cl.GetIssueProperties()
-    for message in sorted(data['messages'], key=lambda x: x['date']):
-      if message['disapproval']:
-        color = Fore.RED
-      elif message['approval']:
-        color = Fore.GREEN
-      elif message['sender'] == data['owner_email']:
-        color = Fore.MAGENTA
-      else:
-        color = Fore.BLUE
-      print '\n%s%s  %s%s' % (
-          color, message['date'].split('.', 1)[0], message['sender'],
-          Fore.RESET)
-      if message['text'].strip():
-        print '\n'.join('  ' + l for l in message['text'].splitlines())
+  issue = None
+  if options.issue:
+    try:
+      issue = int(options.issue)
+    except ValueError:
+      DieWithError('A review issue id is expected to be a number')
+
+  cl = Changelist(issue=issue)
+
+  if options.comment:
+    cl.AddComment(options.comment)
+    return 0
+
+  data = cl.GetIssueProperties()
+  for message in sorted(data['messages'], key=lambda x: x['date']):
+    if message['disapproval']:
+      color = Fore.RED
+    elif message['approval']:
+      color = Fore.GREEN
+    elif message['sender'] == data['owner_email']:
+      color = Fore.MAGENTA
+    else:
+      color = Fore.BLUE
+    print '\n%s%s  %s%s' % (
+        color, message['date'].split('.', 1)[0], message['sender'],
+        Fore.RESET)
+    if message['text'].strip():
+      print '\n'.join('  ' + l for l in message['text'].splitlines())
   return 0
 
 
