@@ -37,6 +37,7 @@
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/android/uma_bridge.h"
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/android/url_utilities.h"
@@ -187,6 +188,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "StartupMetricUtils", RegisterStartupMetricUtils },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TabModelJniBridge", TabModelJniBridge::Register},
+  { "TabState", RegisterTabState },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid },
   { "TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate },
