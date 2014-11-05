@@ -501,6 +501,9 @@ def ExpandTargets(targets_wanted):
     # Filter out all the non-sdk toolchains as we don't want to mess
     # with those in all of our builds.
     targets = toolchain.FilterToolchains(alltargets, 'sdk', True)
+  elif targets_wanted == set(['boards']):
+    # Only pull targets from the boards.
+    targets = {}
   else:
     # Verify user input.
     nonexistent = targets_wanted.difference(alltargets)

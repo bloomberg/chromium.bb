@@ -6,9 +6,11 @@
 
 from __future__ import print_function
 
+import glob
 import json
 import os
 
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
@@ -108,8 +110,9 @@ class SDKTestStage(generic_stages.BuilderStage):
   option_name = 'tests'
 
   def PerformStage(self):
+    new_chroot_dir = 'new-sdk-chroot'
     tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
-    new_chroot_args = ['--chroot', 'new-sdk-chroot']
+    new_chroot_args = ['--chroot', new_chroot_dir]
     if self._run.options.chrome_root:
       new_chroot_args += ['--chrome_root', self._run.options.chrome_root]
 
@@ -120,6 +123,28 @@ class SDKTestStage(generic_stages.BuilderStage):
         [], cwd=self._build_root, enter_chroot=True, chroot_args=chroot_args,
         extra_env=self._portage_extra_env)
 
+    # Inject the toolchain binpkgs from the previous sdk build.  On end user
+    # systems, they'd be fetched from the binpkg mirror, but we don't have one
+    # set up for this local build.
+    pkgdir = os.path.join('var', 'lib', 'portage', 'pkgs')
+    old_pkgdir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
+                              pkgdir)
+    new_pkgdir = os.path.join(self._build_root, new_chroot_dir, pkgdir)
+    osutils.SafeMakedirs(new_pkgdir, sudo=True)
+    cros_build_lib.SudoRunCommand(
+        ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, 'cross-*')) +
+        [new_pkgdir])
+
+    # Now install those toolchains in the new chroot.  We skip the chroot
+    # upgrade below which means we need to install the toolchain manually.
+    cmd = ['cros_setup_toolchains', '--targets=boards',
+           '--include-boards=%s' % ','.join(self._boards)]
+    commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
+                            enter_chroot=True, sudo=True,
+                            chroot_args=new_chroot_args,
+                            extra_env=self._portage_extra_env)
+
+    # Build all the boards with the new sdk.
     for board in self._boards:
       cros_build_lib.PrintBuildbotStepText(board)
       cmd = ['./setup_board', '--board', board, '--skip_chroot_upgrade']

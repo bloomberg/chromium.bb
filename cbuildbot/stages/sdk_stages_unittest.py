@@ -79,5 +79,21 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
                      self.fake_json_data)
 
 
+class SDKTestStageTest(generic_stages_unittest.AbstractStageTest):
+  """Tests SDK test phase."""
+
+  def setUp(self):
+    # This code has its own unit tests, so no need to go testing it here.
+    self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+
+  def ConstructStage(self):
+    return sdk_stages.SDKTestStage(self._run)
+
+  def testNormal(self):
+    """Basic run through the main code."""
+    self._Prepare('chromiumos-sdk')
+    self.RunStage()
+
+
 if __name__ == '__main__':
   cros_test_lib.main()
