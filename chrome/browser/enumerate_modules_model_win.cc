@@ -895,27 +895,28 @@ base::ListValue* EnumerateModulesModel::GetModuleList() const {
               IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPARATOR) +
           base::ASCIIToWide(" ");
 
-      if (module->recommended_action & ModuleEnumerator::NONE) {
+      if (module->recommended_action & ModuleEnumerator::INVESTIGATING) {
         actions = l10n_util::GetStringUTF16(
             IDS_CONFLICTS_CHECK_INVESTIGATING);
-      }
-      if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
-        if (!actions.empty())
-          actions += separator;
-        actions = l10n_util::GetStringUTF16(
-            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
-      }
-      if (module->recommended_action & ModuleEnumerator::UPDATE) {
-        if (!actions.empty())
-          actions += separator;
-        actions += l10n_util::GetStringUTF16(
-            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
-      }
-      if (module->recommended_action & ModuleEnumerator::DISABLE) {
-        if (!actions.empty())
-          actions += separator;
-        actions += l10n_util::GetStringUTF16(
-            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
+      } else {
+        if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
+          if (!actions.empty())
+            actions += separator;
+          actions = l10n_util::GetStringUTF16(
+              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
+        }
+        if (module->recommended_action & ModuleEnumerator::UPDATE) {
+          if (!actions.empty())
+            actions += separator;
+          actions += l10n_util::GetStringUTF16(
+              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
+        }
+        if (module->recommended_action & ModuleEnumerator::DISABLE) {
+          if (!actions.empty())
+            actions += separator;
+          actions += l10n_util::GetStringUTF16(
+              IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
+        }
       }
       base::string16 possible_resolution =
           actions.empty() ? base::ASCIIToWide("")
