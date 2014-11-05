@@ -185,5 +185,18 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   ASSERT_FALSE(IsVirtualKeyboardSuppressed());
 }
 
+// Tests handling multiple keyboards. Catches crbug.com/430252
+TEST_F(VirtualKeyboardControllerAutoTest, HandleMultipleKeyboardsPresent) {
+  std::vector<ui::KeyboardDevice> keyboards;
+  keyboards.push_back(ui::KeyboardDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "keyboard"));
+  keyboards.push_back(ui::KeyboardDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  keyboards.push_back(ui::KeyboardDevice(
+      3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  UpdateKeyboardDevices(keyboards);
+  ASSERT_FALSE(keyboard::IsKeyboardEnabled());
+}
+
 }  // namespace test
 }  // namespace ash
