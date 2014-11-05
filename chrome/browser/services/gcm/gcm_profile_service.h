@@ -11,9 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
-// TODO(jianli): include needed for obsolete methods that are going to be
-// removed soon.
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -26,6 +23,10 @@ namespace gcm {
 
 class GCMClientFactory;
 class GCMDriver;
+
+#if defined(OS_CHROMEOS)
+class GCMConnectionObserver;
+#endif
 
 // Providing GCM service, via GCMDriver, to a profile.
 class GCMProfileService : public KeyedService {
@@ -43,13 +44,6 @@ class GCMProfileService : public KeyedService {
                     scoped_ptr<GCMClientFactory> gcm_client_factory);
 #endif
   ~GCMProfileService() override;
-
-  // TODO(jianli): obsolete methods that are going to be removed soon.
-  void AddAppHandler(const std::string& app_id, GCMAppHandler* handler);
-  void RemoveAppHandler(const std::string& app_id);
-  void Register(const std::string& app_id,
-                const std::vector<std::string>& sender_ids,
-                const GCMDriver::RegisterCallback& callback);
 
   // KeyedService:
   void Shutdown() override;

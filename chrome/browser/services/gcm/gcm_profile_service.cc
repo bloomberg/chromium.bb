@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 #if defined(OS_ANDROID)
@@ -180,24 +181,6 @@ GCMProfileService::GCMProfileService()
 }
 
 GCMProfileService::~GCMProfileService() {
-}
-
-void GCMProfileService::AddAppHandler(const std::string& app_id,
-                                      GCMAppHandler* handler) {
-  if (driver_)
-    driver_->AddAppHandler(app_id, handler);
-}
-
-void GCMProfileService::RemoveAppHandler(const std::string& app_id) {
-  if (driver_)
-    driver_->RemoveAppHandler(app_id);
-}
-
-void GCMProfileService::Register(const std::string& app_id,
-                                 const std::vector<std::string>& sender_ids,
-                                 const GCMDriver::RegisterCallback& callback) {
-  if (driver_)
-    driver_->Register(app_id, sender_ids, callback);
 }
 
 void GCMProfileService::Shutdown() {
