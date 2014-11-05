@@ -354,7 +354,7 @@ TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
 
   // Now ack the first message.
   {
-    scoped_ptr<IPC::Message> response(new ViewHostMsg_SelectRange_ACK(0));
+    scoped_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -367,7 +367,197 @@ TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
 
   // Acking the coalesced msg should not send any more msg.
   {
-    scoped_ptr<IPC::Message> response(new ViewHostMsg_SelectRange_ACK(0));
+    scoped_ptr<IPC::Message> response(new InputHostMsg_SelectRange_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+}
+
+TEST_F(InputRouterImplTest, CoalescesMoveRangeSelectionExtent) {
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(1, 2))));
+  ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(1, 2));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Send two more messages without acking.
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(3, 4))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  // Now ack the first message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  // Verify that the two messages are coalesced into one message.
+  ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(5, 6));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Acking the coalesced msg should not send any more msg.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+}
+
+TEST_F(InputRouterImplTest, InterleaveSelectRangeAndMoveRangeSelectionExtent) {
+  // Send first message: SelectRange.
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
+  ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(1, 2),
+      gfx::Point(3, 4));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Send second message: MoveRangeSelectionExtent.
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  // Send third message: SelectRange.
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_SelectRange(0, gfx::Point(7, 8), gfx::Point(9, 10))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  // Ack the messages and verify that they're not coalesced and that they're in
+  // correct order.
+
+  // Ack the first message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_SelectRange_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(5, 6));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Ack the second message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(7, 8),
+      gfx::Point(9, 10));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Ack the third message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_SelectRange_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+}
+
+TEST_F(InputRouterImplTest,
+       CoalescesInterleavedSelectRangeAndMoveRangeSelectionExtent) {
+  // Send interleaved SelectRange and MoveRangeSelectionExtent messages. They
+  // should be coalesced as shown by the arrows.
+  //  > SelectRange
+  //    MoveRangeSelectionExtent
+  //    MoveRangeSelectionExtent
+  //  > MoveRangeSelectionExtent
+  //    SelectRange
+  //  > SelectRange
+  //  > MoveRangeSelectionExtent
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
+  ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(1, 2),
+      gfx::Point(3, 4));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(5, 6))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(7, 8))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(9, 10))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_SelectRange(0, gfx::Point(11, 12), gfx::Point(13, 14))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_SelectRange(0, gfx::Point(15, 16), gfx::Point(17, 18))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  input_router_->SendInput(scoped_ptr<IPC::Message>(
+      new InputMsg_MoveRangeSelectionExtent(0, gfx::Point(19, 20))));
+  EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
+
+  // Ack the first message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_SelectRange_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  // Verify that the three MoveRangeSelectionExtent messages are coalesced into
+  // one message.
+  ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(9, 10));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Ack the second message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  // Verify that the two SelectRange messages are coalesced into one message.
+  ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(15, 16),
+      gfx::Point(17, 18));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Ack the third message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_SelectRange_ACK(0));
+    input_router_->OnMessageReceived(*response);
+  }
+
+  // Verify the fourth message.
+  ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
+      process_->sink().GetMessageAt(0),
+      gfx::Point(19, 20));
+  EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
+
+  // Ack the fourth message.
+  {
+    scoped_ptr<IPC::Message> response(
+        new InputHostMsg_MoveRangeSelectionExtent_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
@@ -391,7 +581,7 @@ TEST_F(InputRouterImplTest, CoalescesCaretMove) {
 
   // Now ack the first message.
   {
-    scoped_ptr<IPC::Message> response(new ViewHostMsg_MoveCaret_ACK(0));
+    scoped_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
 
@@ -402,7 +592,7 @@ TEST_F(InputRouterImplTest, CoalescesCaretMove) {
 
   // Acking the coalesced msg should not send any more msg.
   {
-    scoped_ptr<IPC::Message> response(new ViewHostMsg_MoveCaret_ACK(0));
+    scoped_ptr<IPC::Message> response(new InputHostMsg_MoveCaret_ACK(0));
     input_router_->OnMessageReceived(*response);
   }
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());

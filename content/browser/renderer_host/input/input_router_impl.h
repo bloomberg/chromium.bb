@@ -95,7 +95,7 @@ private:
                          InputEventAckState ack_result) override;
 
   bool SendMoveCaret(scoped_ptr<IPC::Message> message);
-  bool SendSelectRange(scoped_ptr<IPC::Message> message);
+  bool SendSelectMessage(scoped_ptr<IPC::Message> message);
   bool Send(IPC::Message* message);
 
   // Filters and forwards |input_event| to the appropriate handler.
@@ -148,7 +148,7 @@ private:
   void OnInputEventAck(const InputHostMsg_HandleInputEvent_ACK_Params& ack);
   void OnDidOverscroll(const DidOverscrollParams& params);
   void OnMsgMoveCaretAck();
-  void OnSelectRangeAck();
+  void OnSelectMessageAck();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetTouchAction(TouchAction touch_action);
 
@@ -212,11 +212,13 @@ private:
   InputAckHandler* ack_handler_;
   int routing_id_;
 
-  // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK.
-  bool select_range_pending_;
+  // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK
+  // or MoveRangeSelectionExtent_ACK.
+  bool select_message_pending_;
 
-  // (Similar to |next_mouse_move_|.) The next SelectRange to send, if any.
-  scoped_ptr<IPC::Message> next_selection_range_;
+  // Queue of pending select messages to send after receving the next select
+  // message ack.
+  std::deque<IPC::Message*> pending_select_messages_;
 
   // (Similar to |mouse_move_pending_|.) True while waiting for MoveCaret_ACK.
   bool move_caret_pending_;

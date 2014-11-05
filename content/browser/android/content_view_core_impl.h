@@ -270,8 +270,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
 
-  void SelectBetweenCoordinates(const gfx::PointF& start,
-                                const gfx::PointF& end);
+  void MoveRangeSelectionExtent(const gfx::PointF& extent);
+
+  void SelectBetweenCoordinates(const gfx::PointF& base,
+                                const gfx::PointF& extent);
 
  private:
   class ContentViewUserData;

@@ -770,17 +770,24 @@ void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
     root_layer_->SetIsDrawable(true);
 }
 
-void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& start,
-                                                   const gfx::PointF& end) {
+void ContentViewCoreImpl::MoveRangeSelectionExtent(const gfx::PointF& extent) {
   if (!web_contents_)
     return;
 
-  gfx::Point start_point = gfx::Point(start.x(), start.y());
-  gfx::Point end_point = gfx::Point(end.x(), end.y());
-  if (start_point == end_point)
+  web_contents_->MoveRangeSelectionExtent(gfx::Point(extent.x(), extent.y()));
+}
+
+void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
+                                                   const gfx::PointF& extent) {
+  if (!web_contents_)
     return;
 
-  web_contents_->SelectRange(start_point, end_point);
+  gfx::Point base_point = gfx::Point(base.x(), base.y());
+  gfx::Point extent_point = gfx::Point(extent.x(), extent.y());
+  if (base_point == extent_point)
+    return;
+
+  web_contents_->SelectRange(base_point, extent_point);
 }
 
 ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {

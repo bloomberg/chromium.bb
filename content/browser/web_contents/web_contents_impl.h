@@ -638,9 +638,12 @@ class CONTENT_EXPORT WebContentsImpl
 
   typedef base::Callback<void(WebContents*)> CreatedCallback;
 
+  // Requests the renderer to move the selection extent to a new position.
+  void MoveRangeSelectionExtent(const gfx::Point& extent);
+
   // Requests the renderer to select the region between two points in the
   // currently focused frame.
-  void SelectRange(const gfx::Point& start, const gfx::Point& end);
+  void SelectRange(const gfx::Point& base, const gfx::Point& extent);
 
   // Notifies the main frame that it can continue navigation (if it was deferred
   // immediately at first response).

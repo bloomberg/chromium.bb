@@ -199,8 +199,13 @@ IPC_MESSAGE_ROUTED0(InputMsg_Unselect)
 // Requests the renderer to select the region between two points.
 // Expects a SelectRange_ACK message when finished.
 IPC_MESSAGE_ROUTED2(InputMsg_SelectRange,
-                    gfx::Point /* start */,
-                    gfx::Point /* end */)
+                    gfx::Point /* base */,
+                    gfx::Point /* extent */)
+
+// Requests the renderer to move the selection extent point to a new position.
+// Expects a MoveRangeSelectionExtent_ACK message when finished.
+IPC_MESSAGE_ROUTED1(InputMsg_MoveRangeSelectionExtent,
+                    gfx::Point /* extent */)
 
 // Requests the renderer to move the caret selection toward the point.
 // Expects a MoveCaret_ACK message when finished.
@@ -236,6 +241,15 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
 // restrictions on the root scroll offset.
 IPC_MESSAGE_ROUTED1(InputHostMsg_DidOverscroll,
                     content::DidOverscrollParams /* params */)
+
+// Acknowledges receipt of a InputMsg_MoveCaret message.
+IPC_MESSAGE_ROUTED0(InputHostMsg_MoveCaret_ACK)
+
+// Acknowledges receipt of a InputMsg_MoveRangeSelectionExtent message.
+IPC_MESSAGE_ROUTED0(InputHostMsg_MoveRangeSelectionExtent_ACK)
+
+// Acknowledges receipt of a InputMsg_SelectRange message.
+IPC_MESSAGE_ROUTED0(InputHostMsg_SelectRange_ACK)
 
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(InputHostMsg_ImeCancelComposition)

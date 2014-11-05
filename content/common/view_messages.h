@@ -1330,9 +1330,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     base::string16 /* tooltip text string */,
                     blink::WebTextDirection /* text direction hint */)
 
-IPC_MESSAGE_ROUTED0(ViewHostMsg_SelectRange_ACK)
-IPC_MESSAGE_ROUTED0(ViewHostMsg_MoveCaret_ACK)
-
 // Notification that the text selection has changed.
 // Note: The secound parameter is the character based offset of the
 // base::string16

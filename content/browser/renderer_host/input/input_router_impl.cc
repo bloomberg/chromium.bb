@@ -68,7 +68,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       client_(client),
       ack_handler_(ack_handler),
       routing_id_(routing_id),
-      select_range_pending_(false),
+      select_message_pending_(false),
       move_caret_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
@@ -83,7 +83,9 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
   UpdateTouchAckTimeoutEnabled();
 }
 
-InputRouterImpl::~InputRouterImpl() {}
+InputRouterImpl::~InputRouterImpl() {
+  STLDeleteElements(&pending_select_messages_);
+}
 
 void InputRouterImpl::Flush() {
   flush_requested_ = true;
@@ -95,7 +97,8 @@ bool InputRouterImpl::SendInput(scoped_ptr<IPC::Message> message) {
   switch (message->type()) {
     // Check for types that require an ACK.
     case InputMsg_SelectRange::ID:
-      return SendSelectRange(message.Pass());
+    case InputMsg_MoveRangeSelectionExtent::ID:
+      return SendSelectMessage(message.Pass());
     case InputMsg_MoveCaret::ID:
       return SendMoveCaret(message.Pass());
     case InputMsg_HandleInputEvent::ID:
@@ -267,8 +270,10 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
     IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(InputHostMsg_DidOverscroll, OnDidOverscroll)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
+    IPC_MESSAGE_HANDLER(InputHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
+    IPC_MESSAGE_HANDLER(InputHostMsg_SelectRange_ACK, OnSelectMessageAck)
+    IPC_MESSAGE_HANDLER(InputHostMsg_MoveRangeSelectionExtent_ACK,
+                        OnSelectMessageAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(InputHostMsg_SetTouchAction,
@@ -298,14 +303,25 @@ void InputRouterImpl::OnGestureEventAck(
   ack_handler_->OnGestureEventAck(event, ack_result);
 }
 
-bool InputRouterImpl::SendSelectRange(scoped_ptr<IPC::Message> message) {
-  DCHECK(message->type() == InputMsg_SelectRange::ID);
-  if (select_range_pending_) {
-    next_selection_range_ = message.Pass();
+bool InputRouterImpl::SendSelectMessage(
+    scoped_ptr<IPC::Message> message) {
+  DCHECK(message->type() == InputMsg_SelectRange::ID ||
+         message->type() == InputMsg_MoveRangeSelectionExtent::ID);
+
+  // TODO(jdduke): Factor out common logic between selection and caret-related
+  //               IPC messages.
+  if (select_message_pending_) {
+    if (!pending_select_messages_.empty() &&
+        pending_select_messages_.back()->type() == message->type()) {
+      delete pending_select_messages_.back();
+      pending_select_messages_.pop_back();
+    }
+
+    pending_select_messages_.push_back(message.release());
     return true;
   }
 
-  select_range_pending_ = true;
+  select_message_pending_ = true;
   return Send(message.release());
 }
 
@@ -487,10 +503,15 @@ void InputRouterImpl::OnMsgMoveCaretAck() {
     SendMoveCaret(next_move_caret_.Pass());
 }
 
-void InputRouterImpl::OnSelectRangeAck() {
-  select_range_pending_ = false;
-  if (next_selection_range_)
-    SendSelectRange(next_selection_range_.Pass());
+void InputRouterImpl::OnSelectMessageAck() {
+  select_message_pending_ = false;
+  if (!pending_select_messages_.empty()) {
+    scoped_ptr<IPC::Message> next_message =
+        make_scoped_ptr(pending_select_messages_.front());
+    pending_select_messages_.pop_front();
+
+    SendSelectMessage(next_message.Pass());
+  }
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
@@ -679,7 +700,7 @@ bool InputRouterImpl::HasPendingEvents() const {
          !key_queue_.empty() ||
          mouse_move_pending_ ||
          mouse_wheel_pending_ ||
-         select_range_pending_ ||
+         select_message_pending_ ||
          move_caret_pending_;
 }
 

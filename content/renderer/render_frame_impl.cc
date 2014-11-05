@@ -920,6 +920,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
+    IPC_MESSAGE_HANDLER(InputMsg_MoveRangeSelectionExtent,
+                        OnMoveRangeSelectionExtent)
     IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
     IPC_MESSAGE_HANDLER(InputMsg_ExtendSelectionAndDelete,
@@ -1282,18 +1284,27 @@ void RenderFrameImpl::OnSelectAll() {
   frame_->executeCommand(WebString::fromUTF8("SelectAll"), GetFocusedElement());
 }
 
-void RenderFrameImpl::OnSelectRange(const gfx::Point& start,
-                                    const gfx::Point& end) {
+void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
+                                    const gfx::Point& extent) {
   // This IPC is dispatched by RenderWidgetHost, so use its routing id.
-  Send(new ViewHostMsg_SelectRange_ACK(GetRenderWidget()->routing_id()));
+  Send(new InputHostMsg_SelectRange_ACK(GetRenderWidget()->routing_id()));
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->selectRange(start, end);
+  frame_->selectRange(base, extent);
 }
 
 void RenderFrameImpl::OnUnselect() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->executeCommand(WebString::fromUTF8("Unselect"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {
+  // This IPC is dispatched by RenderWidgetHost, so use its routing id.
+  Send(new InputHostMsg_MoveRangeSelectionExtent_ACK(
+      GetRenderWidget()->routing_id()));
+
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
+  frame_->moveRangeSelectionExtent(point);
 }
 
 void RenderFrameImpl::OnReplace(const base::string16& text) {

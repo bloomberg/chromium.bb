@@ -1160,11 +1160,17 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::PointF& position) {
   MoveCaret(gfx::Point(position.x(), position.y()));
 }
 
-void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
-    const gfx::PointF& start,
-    const gfx::PointF& end) {
+void RenderWidgetHostViewAndroid::MoveRangeSelectionExtent(
+    const gfx::PointF& extent) {
   DCHECK(content_view_core_);
-  content_view_core_->SelectBetweenCoordinates(start, end);
+  content_view_core_->MoveRangeSelectionExtent(extent);
+}
+
+void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
+    const gfx::PointF& base,
+    const gfx::PointF& extent) {
+  DCHECK(content_view_core_);
+  content_view_core_->SelectBetweenCoordinates(base, extent);
 }
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(

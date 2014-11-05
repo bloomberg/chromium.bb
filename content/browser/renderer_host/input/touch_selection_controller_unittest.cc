@@ -42,6 +42,7 @@ class TouchSelectionControllerTest : public testing::Test,
       : last_event_(SELECTION_CLEARED),
         caret_moved_(false),
         selection_moved_(false),
+        selection_points_swapped_(false),
         needs_animate_(false),
         animation_enabled_(true),
         dragging_enabled_(false) {}
@@ -69,11 +70,18 @@ class TouchSelectionControllerTest : public testing::Test,
     caret_position_ = position;
   }
 
-  void SelectBetweenCoordinates(const gfx::PointF& start,
-                                const gfx::PointF& end) override {
+  void SelectBetweenCoordinates(const gfx::PointF& base,
+                                        const gfx::PointF& extent) override {
+    if (base == selection_end_ && extent == selection_start_)
+      selection_points_swapped_ = true;
+
+    selection_start_ = base;
+    selection_end_ = extent;
+  }
+
+  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override {
     selection_moved_ = true;
-    selection_start_ = start;
-    selection_end_ = end;
+    selection_end_ = extent;
   }
 
   void OnSelectionEvent(SelectionEventType event,
@@ -148,6 +156,12 @@ class TouchSelectionControllerTest : public testing::Test,
     return moved;
   }
 
+  bool GetAndResetSelectionPointsSwapped() {
+    bool swapped = selection_points_swapped_;
+    selection_points_swapped_ = false;
+    return swapped;
+  }
+
   const gfx::PointF& GetLastCaretPosition() const { return caret_position_; }
   const gfx::PointF& GetLastSelectionStart() const { return selection_start_; }
   const gfx::PointF& GetLastSelectionEnd() const { return selection_end_; }
@@ -164,6 +178,7 @@ class TouchSelectionControllerTest : public testing::Test,
   SelectionEventType last_event_;
   bool caret_moved_;
   bool selection_moved_;
+  bool selection_points_swapped_;
   bool needs_animate_;
   bool animation_enabled_;
   bool dragging_enabled_;
@@ -597,6 +612,122 @@ TEST_F(TouchSelectionControllerTest, SelectionDraggedWithOverlap) {
             GetLastSelectionEnd());
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+}
+
+TEST_F(TouchSelectionControllerTest, SelectionDraggedToSwitchBaseAndExtent) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  controller().OnLongPressEvent();
+
+  float line_height = 10.f;
+  gfx::RectF start_rect(50, line_height, 0, line_height);
+  gfx::RectF end_rect(100, line_height, 0, line_height);
+  bool visible = true;
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  SetDraggingEnabled(true);
+
+  // Move the extent, not triggering a swap of points.
+  MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time,
+                        end_rect.x(), end_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+
+  gfx::PointF base_offset = start_rect.CenterPoint();
+  gfx::PointF extent_offset = end_rect.CenterPoint();
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time,
+                          end_rect.x(), end_rect.bottom() + 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+  EXPECT_EQ(base_offset, GetLastSelectionStart());
+  EXPECT_EQ(extent_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
+
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+
+  end_rect += gfx::Vector2dF(0, 5);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+
+  // Move the base, triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          start_rect.x(), start_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+  EXPECT_TRUE(GetAndResetSelectionPointsSwapped());
+
+  base_offset = end_rect.CenterPoint();
+  extent_offset = start_rect.CenterPoint();
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time,
+                          start_rect.x(), start_rect.bottom() + 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+  EXPECT_EQ(base_offset, GetLastSelectionStart());
+  EXPECT_EQ(extent_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
+
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+
+  start_rect += gfx::Vector2dF(0, 5);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+
+  // Move the same point again, not triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          start_rect.x(), start_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+
+  base_offset = end_rect.CenterPoint();
+  extent_offset = start_rect.CenterPoint();
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time,
+                          start_rect.x(), start_rect.bottom() + 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+  EXPECT_EQ(base_offset, GetLastSelectionStart());
+  EXPECT_EQ(extent_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
+
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+
+  start_rect += gfx::Vector2dF(0, 5);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+
+  // Move the base, triggering a swap of points.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          end_rect.x(), end_rect.bottom());
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetSelectionMoved());
+  EXPECT_TRUE(GetAndResetSelectionPointsSwapped());
+
+  base_offset = start_rect.CenterPoint();
+  extent_offset = end_rect.CenterPoint();
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time,
+                          end_rect.x(), end_rect.bottom() + 5);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(SELECTION_DRAG_STARTED, GetLastEventType());
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_FALSE(GetAndResetSelectionPointsSwapped());
+  EXPECT_EQ(base_offset, GetLastSelectionStart());
+  EXPECT_EQ(extent_offset + gfx::Vector2dF(0, 5), GetLastSelectionEnd());
+
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 10, 5);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_EQ(SELECTION_DRAG_STOPPED, GetLastEventType());
   EXPECT_FALSE(GetAndResetSelectionMoved());

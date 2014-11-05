@@ -1301,7 +1301,7 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHandleInputEvent_ACK) {
 TEST_F(RenderWidgetHostTest, InputRouterReceivesMoveCaret_ACK) {
   host_->SetupForInputRouterTest();
 
-  host_->OnMessageReceived(ViewHostMsg_MoveCaret_ACK(0));
+  host_->OnMessageReceived(InputHostMsg_MoveCaret_ACK(0));
 
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
 }
@@ -1309,7 +1309,7 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesMoveCaret_ACK) {
 TEST_F(RenderWidgetHostTest, InputRouterReceivesSelectRange_ACK) {
   host_->SetupForInputRouterTest();
 
-  host_->OnMessageReceived(ViewHostMsg_SelectRange_ACK(0));
+  host_->OnMessageReceived(InputHostMsg_SelectRange_ACK(0));
 
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
 }

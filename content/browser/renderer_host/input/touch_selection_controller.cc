@@ -209,13 +209,19 @@ void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
     return;
   }
 
+  gfx::PointF base, extent;
   if (&handle == start_selection_handle_.get()) {
-    fixed_handle_position_ =
-        end_selection_handle_->position() + GetEndLineOffset();
+    base = end_selection_handle_->position() + GetEndLineOffset();
+    extent = start_selection_handle_->position() + GetStartLineOffset();
   } else {
-    fixed_handle_position_ =
-        start_selection_handle_->position() + GetStartLineOffset();
+    base = start_selection_handle_->position() + GetStartLineOffset();
+    extent = end_selection_handle_->position() + GetEndLineOffset();
   }
+
+  // When moving the handle we want to move only the extent point. Before doing
+  // so we must make sure that the base point is set correctly.
+  client_->SelectBetweenCoordinates(base, extent);
+
   client_->OnSelectionEvent(SELECTION_DRAG_STARTED, handle.position());
 }
 
@@ -230,7 +236,7 @@ void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
   if (&handle == insertion_handle_.get()) {
     client_->MoveCaret(line_position);
   } else {
-    client_->SelectBetweenCoordinates(fixed_handle_position_, line_position);
+    client_->MoveRangeSelectionExtent(line_position);
   }
 }
 
