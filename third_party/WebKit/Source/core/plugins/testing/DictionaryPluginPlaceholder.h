@@ -24,6 +24,10 @@ public:
         if (DictionaryHelper::get(options, "message", stringValue))
             placeholder->setMessage(stringValue);
 
+        bool booleanValue;
+        if (DictionaryHelper::get(options, "closeable", booleanValue))
+            placeholder->setIsCloseable(booleanValue);
+
         return adoptPtrWillBeNoop(new DictionaryPluginPlaceholder(placeholder.release()));
     }
 

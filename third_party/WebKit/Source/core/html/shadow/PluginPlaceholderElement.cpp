@@ -30,4 +30,10 @@ void PluginPlaceholderElement::setMessage(const String& message)
     ASSERT_UNUSED(success, success);
 }
 
+void PluginPlaceholderElement::setIsCloseable(bool closeable)
+{
+    bool success = V8PluginPlaceholderElement::PrivateScript::closeableAttributeSetter(document().frame(), this, closeable);
+    ASSERT_UNUSED(success, success);
+}
+
 } // namespace blink

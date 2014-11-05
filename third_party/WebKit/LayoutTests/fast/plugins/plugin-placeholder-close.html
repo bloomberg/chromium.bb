@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<script src="../../resources/js-test.js"></script>
+<div id="description"></div>
+<div id="console"></div>
+
+<object id="plugin1" type="application/x-fake-plugin"></object>
+
+<object id="plugin2" type="application/x-fake-plugin"></object>
+
+<div id="ancestor3" style="width: 400px; height: 300px">
+    <div>
+        <object id="plugin3" type="application/x-fake-plugin" width="400" height="300"></object>
+    </div>
+</div>
+
+<!--
+    None of these ancestors should be hidden.
+    ancestor4a is not explicitly sized.
+    ancestor4b is explicitly sized, but only in one dimension.
+    ancestor4c is explicitly sized, but not in the element's inline style.
+    ancestor4d is explicitly sized to match, but not in pixels.
+    ancestor4e is explicitly sized, but does not match the plugin's attributes.
+-->
+<style>
+#ancestor4c { width: 400px; height: 300px; }
+</style>
+<div id="ancestor4a">
+    <div id="ancestor4b" style="width: 400px">
+        <div id="ancestor4c">
+            <div id="ancestor4d" style="font-size: 100px; width: 4em; height: 3em">
+                <div id="ancestor4e" style="width: 300px; height: 400px">
+                    <object id="plugin4" type="application/x-fake-plugin" width="400" height="300"></object>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- The plugin's size is 300x150, but it was not explicitly specified in the presentation attributes. -->
+<div id="ancestor5" style="width: 300px; height: 150px">
+    <object id="plugin5" type="application/x-fake-plugin"></object>
+</div>
+
+<div id="ancestor6" style="width: 400px; height: 300px">
+    <object id="plugin6" type="application/x-fake-plugin" width="  400   px   " height="300px"></object>
+</div>
+
+<script>
+
+description("Checks that the plugin placeholder close button works as expected.");
+
+// Non-closeable plugins should have no displayed close button.
+var plugin1 = document.getElementById("plugin1");
+internals.forcePluginPlaceholder(plugin1, { closeable: false });
+var closeButton1 = internals.youngestShadowRoot(plugin1).querySelector("#plugin-placeholder-close-button");
+shouldBe("closeButton1.style.display", "'none'");
+
+// After a plugin is closed, it should have "display: none".
+var plugin2 = document.getElementById("plugin2");
+internals.forcePluginPlaceholder(plugin2, { closeable: true });
+var closeButton2 = internals.youngestShadowRoot(plugin2).querySelector("#plugin-placeholder-close-button");
+shouldNotBe("closeButton2.style.display", "'none'");
+closeButton2.click();
+shouldBe("plugin2.style.display", "'none'");
+
+// If the plugin has an ancestor sized to match with inline style, the ancestor should also be hidden.
+var plugin3 = document.getElementById("plugin3");
+internals.forcePluginPlaceholder(plugin3, { closeable: true });
+var closeButton3 = internals.youngestShadowRoot(plugin3).querySelector("#plugin-placeholder-close-button");
+shouldNotBe("closeButton3.style.display", "'none'");
+closeButton3.click();
+var ancestor3 = document.getElementById("ancestor3");
+shouldBe("ancestor3.style.display", "'none'");
+
+// If the plugin has ancestors that don't meet this heuristic, they should be left alone.
+var plugin4 = document.getElementById("plugin4");
+internals.forcePluginPlaceholder(plugin4, { closeable: true });
+var closeButton4 = internals.youngestShadowRoot(plugin4).querySelector("#plugin-placeholder-close-button");
+shouldNotBe("closeButton4.style.display", "'none'");
+closeButton4.click();
+shouldNotBe("document.getElementById('ancestor4a').style.display", "'none'");
+shouldNotBe("document.getElementById('ancestor4b').style.display", "'none'");
+shouldNotBe("document.getElementById('ancestor4c').style.display", "'none'");
+shouldNotBe("document.getElementById('ancestor4d').style.display", "'none'");
+shouldNotBe("document.getElementById('ancestor4e').style.display", "'none'");
+
+// Plugins with no explicit (presentation attribute) size should not hide ancestors.
+var plugin5 = document.getElementById("plugin5");
+internals.forcePluginPlaceholder(plugin5, { closeable: true });
+var closeButton5 = internals.youngestShadowRoot(plugin5).querySelector("#plugin-placeholder-close-button");
+shouldNotBe("closeButton5.style.display", "'none'");
+closeButton5.click();
+shouldNotBe("document.getElementById('ancestor5').style.display", "'none'");
+
+// This should work even if the presentation attribute has spacing and "px".
+var plugin6 = document.getElementById("plugin6");
+internals.forcePluginPlaceholder(plugin6, { closeable: true });
+var closeButton6 = internals.youngestShadowRoot(plugin6).querySelector("#plugin-placeholder-close-button");
+shouldNotBe("closeButton6.style.display", "'none'");
+closeButton6.click();
+shouldBe("document.getElementById('ancestor6').style.display", "'none'");
+
+</script>

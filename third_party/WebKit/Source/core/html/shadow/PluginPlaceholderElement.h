@@ -16,6 +16,7 @@ public:
     static PassRefPtrWillBeRawPtr<PluginPlaceholderElement> create(Document&);
 
     void setMessage(const String&);
+    void setIsCloseable(bool);
 
 private:
     explicit PluginPlaceholderElement(Document&);

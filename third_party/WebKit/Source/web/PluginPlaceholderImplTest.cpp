@@ -5,7 +5,12 @@
 #include "config.h"
 #include "web/PluginPlaceholderImpl.h"
 
+#include "core/CSSPropertyNames.h"
+#include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValue.h"
+#include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TagCollection.h"
 #include "core/testing/DummyPageHolder.h"
@@ -29,9 +34,13 @@ public:
     virtual ~MockWebPluginPlaceholder() { }
 
     MOCK_CONST_METHOD0(message, WebString());
+    MOCK_CONST_METHOD0(isCloseable, bool());
 
 private:
-    MockWebPluginPlaceholder() { }
+    MockWebPluginPlaceholder()
+    {
+        ON_CALL(*this, message()).WillByDefault(Return(WebString()));
+    }
 };
 
 // Fixture which creates a dummy context for running these this test.
@@ -84,6 +93,35 @@ TEST_F(PluginPlaceholderImplTest, MessageDoesNotAcceptElements)
     pluginPlaceholder().loadIntoContainer(documentFragment());
     EXPECT_TRUE(documentFragment().textContent().contains(message));
     EXPECT_FALSE(documentFragment().getElementById("sentinel"));
+}
+
+bool isHiddenWithInlineStyle(Element* element)
+{
+    if (!element->inlineStyle())
+        return false;
+    RefPtrWillBeRawPtr<CSSValue> value = element->inlineStyle()->getPropertyCSSValue(CSSPropertyDisplay);
+    return value && value->isPrimitiveValue() && toCSSPrimitiveValue(value.get())->getValueID() == CSSValueNone;
+}
+
+TEST_F(PluginPlaceholderImplTest, Closeable)
+{
+    // The closing functionality of PluginPlaceholderElement is tested in
+    // LayoutTests/fast/plugins. This test only needs to ensure that the
+    // boolean in WebPluginPlaceholder is respected.
+    EXPECT_CALL(webPluginPlaceholder(), isCloseable()).WillOnce(Return(true));
+    pluginPlaceholder().loadIntoContainer(documentFragment());
+    RefPtrWillBeRawPtr<Element> closeButton = documentFragment().getElementById("plugin-placeholder-close-button");
+    ASSERT_NE(nullptr, closeButton);
+    EXPECT_FALSE(isHiddenWithInlineStyle(closeButton.get()));
+}
+
+TEST_F(PluginPlaceholderImplTest, NotCloseable)
+{
+    EXPECT_CALL(webPluginPlaceholder(), isCloseable()).WillOnce(Return(false));
+    pluginPlaceholder().loadIntoContainer(documentFragment());
+    RefPtrWillBeRawPtr<Element> closeButton = documentFragment().getElementById("plugin-placeholder-close-button");
+    EXPECT_NE(nullptr, closeButton);
+    EXPECT_TRUE(isHiddenWithInlineStyle(closeButton.get()));
 }
 
 } // namespace

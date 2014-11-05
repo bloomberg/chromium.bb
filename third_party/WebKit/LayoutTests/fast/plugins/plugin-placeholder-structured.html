@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 
-<!-- The message inserted below should be shown with some suitable style. -->
-<object type="application/x-fake-plugin"></object>
+<style>
+applet, embed, object { display: block; }
+</style>
+
+<!-- The placeholders inserted below should be shown with some suitable style. -->
+<object id="plugin1" type="application/x-fake-plugin"></object>
+<object id="plugin2" type="application/x-fake-plugin"></object>
 
 <script>
-var plugin = document.querySelector("object");
-internals.forcePluginPlaceholder(plugin, { message: "Sorry, but your plugin couldn't be loaded." });
+internals.forcePluginPlaceholder(document.getElementById('plugin1'), { message: "Sorry, but your plugin couldn't be loaded." });
+internals.forcePluginPlaceholder(document.getElementById('plugin2'), { message: "Sorry, but your plugin couldn't be loaded.", closeable: true });
 </script>

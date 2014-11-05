@@ -1,0 +1,23 @@
+Checks that the plugin placeholder close button works as expected.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS closeButton1.style.display is 'none'
+PASS closeButton2.style.display is not 'none'
+PASS plugin2.style.display is 'none'
+PASS closeButton3.style.display is not 'none'
+PASS ancestor3.style.display is 'none'
+PASS closeButton4.style.display is not 'none'
+PASS document.getElementById('ancestor4a').style.display is not 'none'
+PASS document.getElementById('ancestor4b').style.display is not 'none'
+PASS document.getElementById('ancestor4c').style.display is not 'none'
+PASS document.getElementById('ancestor4d').style.display is not 'none'
+PASS document.getElementById('ancestor4e').style.display is not 'none'
+PASS closeButton5.style.display is not 'none'
+PASS document.getElementById('ancestor5').style.display is not 'none'
+PASS closeButton6.style.display is not 'none'
+PASS document.getElementById('ancestor6').style.display is 'none'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

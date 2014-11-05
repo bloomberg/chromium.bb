@@ -16,6 +16,9 @@ public:
 
     // Returns a plaintext message to be displayed.
     virtual WebString message() const { return WebString(); }
+
+    // If set, the placeholder will present UI to permit dismissing it.
+    virtual bool isCloseable() const { return false; }
 };
 
 } // namespace blink

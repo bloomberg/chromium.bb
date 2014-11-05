@@ -6,5 +6,7 @@
     NoInterfaceObject
 ] interface PluginPlaceholderElement : HTMLDivElement {
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString message;
+    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute boolean closeable;
+
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] void createdCallback();
 };

@@ -39,6 +39,7 @@ void PluginPlaceholderImpl::loadIntoContainer(ContainerNode& container)
 void PluginPlaceholderImpl::update()
 {
     m_placeholderElement->setMessage(m_webPluginPlaceholder->message());
+    m_placeholderElement->setIsCloseable(m_webPluginPlaceholder->isCloseable());
 }
 
 } // namespace blink
