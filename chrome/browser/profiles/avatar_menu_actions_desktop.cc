@@ -54,10 +54,10 @@ void AvatarMenuActionsDesktop::EditProfile(Profile* profile, size_t index) {
     settings_browser = new Browser(
         Browser::CreateParams(profile, chrome::GetActiveDesktop()));
   }
-  std::string page = chrome::kManageProfileSubPage;
-  page += "#";
-  page += base::IntToString(static_cast<int>(index));
-  chrome::ShowSettingsSubPage(settings_browser, page);
+  // TODO(davidben): The manageProfile page only allows editting the profile
+  // associated with the browser it is opened in. AvatarMenuActionsDesktop
+  // should account for this when picking a browser to open in.
+  chrome::ShowSettingsSubPage(settings_browser, chrome::kManageProfileSubPage);
 }
 
 bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
