@@ -11,7 +11,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
+#include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -29,7 +32,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
   virtual ~LorgnetteManagerClientImpl() {}
 
-  virtual void ListScanners(const ListScannersCallback& callback) override {
+  void ListScanners(const ListScannersCallback& callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
                                  lorgnette::kListScannersMethod);
     lorgnette_daemon_proxy_->CallMethod(
@@ -41,12 +44,13 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
   // LorgnetteManagerClient override.
-  virtual void ScanImage(std::string device_name,
-                         base::PlatformFile file,
-                         const ScanProperties& properties,
-                         const ScanImageCallback& callback) override {
+  void ScanImageToFile(
+      std::string device_name,
+      const ScanProperties& properties,
+      const ScanImageToFileCallback& callback,
+      base::File* file) override {
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor();
-    file_descriptor->PutValue(file);
+    file_descriptor->PutValue(file->TakePlatformFile());
     // Punt descriptor validity check to a worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
     base::WorkerPool::PostTaskAndReply(
@@ -62,14 +66,76 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
         false);
   }
 
+  void ScanImageToString(
+      std::string device_name,
+      const ScanProperties& properties,
+      const ScanImageToStringCallback& callback) override {
+    // Owned by the callback created in scan_to_string_completion->Start().
+    ScanToStringCompletion* scan_to_string_completion =
+        new ScanToStringCompletion();
+    base::File file;
+    ScanImageToFileCallback file_callback =
+        scan_to_string_completion->Start(callback, &file);
+    ScanImageToFile(device_name, properties, file_callback, &file);
+  }
+
  protected:
-  virtual void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) override {
     lorgnette_daemon_proxy_ =
         bus->GetObjectProxy(lorgnette::kManagerServiceName,
                             dbus::ObjectPath(lorgnette::kManagerServicePath));
   }
 
  private:
+  class ScanToStringCompletion {
+   public:
+    ScanToStringCompletion() {}
+    virtual ~ScanToStringCompletion() {}
+
+    // Creates a file stream in |file| that will stream image data to
+    // a string that will be supplied to |callback|.  Passes ownership
+    // of |this| to a returned callback that can be handed to a
+    // ScanImageToFile invocation.
+    ScanImageToFileCallback Start(const ScanImageToStringCallback& callback,
+                                  base::File *file) {
+      CHECK(!pipe_reader_.get());
+      const bool kTasksAreSlow = true;
+      scoped_refptr<base::TaskRunner> task_runner =
+          base::WorkerPool::GetTaskRunner(kTasksAreSlow);
+      pipe_reader_.reset(
+          new chromeos::PipeReaderForString(
+              task_runner,
+              base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
+                       base::Unretained(this))));
+      *file = pipe_reader_->StartIO();
+
+      return base::Bind(&ScanToStringCompletion::OnScanToStringCompleted,
+                        base::Owned(this), callback);
+    }
+
+   private:
+    // Called when a |pipe_reader_| completes reading scan data to a string.
+    void OnScanToStringDataCompleted() {
+      pipe_reader_->GetData(&scanned_image_data_string_);
+      pipe_reader_.reset();
+    }
+
+    // Called by LorgnetteManagerImpl when scan completes.
+    void OnScanToStringCompleted(const ScanImageToStringCallback& callback,
+                                 bool succeeded) {
+      if (pipe_reader_.get()) {
+        pipe_reader_->OnDataReady(-1);  // terminate data stream
+      }
+      callback.Run(succeeded, scanned_image_data_string_);
+      scanned_image_data_string_.clear();
+    }
+
+    scoped_ptr<chromeos::PipeReaderForString> pipe_reader_;
+    std::string scanned_image_data_string_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScanToStringCompletion);
+  };
+
   // Called when ListScanners completes.
   void OnListScanners(const ListScannersCallback& callback,
                       dbus::Response* response) {
@@ -130,7 +196,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       dbus::FileDescriptor* file_descriptor,
       std::string device_name,
       const ScanProperties& properties,
-      const ScanImageCallback& callback) {
+      const ScanImageToFileCallback& callback) {
     if (!file_descriptor->is_valid()) {
       LOG(ERROR) << "Failed to scan image: file descriptor is invalid";
       callback.Run(false);
@@ -170,7 +236,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
   // Called when a response for ScanImage() is received.
-  void OnScanImageComplete(const ScanImageCallback& callback,
+  void OnScanImageComplete(const ScanImageToFileCallback& callback,
                            dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to scan image";

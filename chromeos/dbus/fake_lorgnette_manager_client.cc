@@ -28,13 +28,22 @@ void FakeLorgnetteManagerClient::ListScanners(
                                          base::Bind(callback, false, scanners));
 }
 
-void FakeLorgnetteManagerClient::ScanImage(
+void FakeLorgnetteManagerClient::ScanImageToFile(
     std::string device_name,
-    base::PlatformFile file,
     const ScanProperties& properties,
-    const ScanImageCallback& callback) {
+    const ScanImageToFileCallback& callback,
+    base::File* file) {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, false));
+}
+
+void FakeLorgnetteManagerClient::ScanImageToString(
+    std::string device_name,
+    const ScanProperties& properties,
+    const ScanImageToStringCallback& callback) {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, false,
+                                                    std::string()));
 }
 
 }  // namespace chromeos

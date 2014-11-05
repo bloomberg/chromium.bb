@@ -979,6 +979,7 @@ enum HistogramValue {
   VPNPROVIDER_SETPARAMETERS,
   VPNPROVIDER_SENDPACKET,
   VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED,
+  DOCUMENT_SCAN_SCAN,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

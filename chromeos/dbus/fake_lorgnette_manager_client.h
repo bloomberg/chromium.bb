@@ -17,15 +17,20 @@ class CHROMEOS_EXPORT FakeLorgnetteManagerClient
     : public LorgnetteManagerClient {
  public:
   FakeLorgnetteManagerClient();
-  virtual ~FakeLorgnetteManagerClient();
+  ~FakeLorgnetteManagerClient() override;
 
   virtual void Init(dbus::Bus* bus) override;
 
   virtual void ListScanners(const ListScannersCallback& callback) override;
-  virtual void ScanImage(std::string device_name,
-                         base::PlatformFile file,
-                         const ScanProperties& properties,
-                         const ScanImageCallback& callback) override;
+  void ScanImageToFile(
+      std::string device_name,
+      const ScanProperties& properties,
+      const ScanImageToFileCallback& callback,
+      base::File* file) override;
+  void ScanImageToString(
+      std::string device_name,
+      const ScanProperties& properties,
+      const ScanImageToStringCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeLorgnetteManagerClient);

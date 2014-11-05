@@ -91,6 +91,9 @@ class PermissionMessage {
     kTopSites,
     kU2fDevices,
     kVpnProvider,
+    kDocumentScan,
+    // Last entry: Add new entries above and ensure to update the
+    // "ExtensionPermission2" enum in tools/metrics/histograms/histograms.xml.
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

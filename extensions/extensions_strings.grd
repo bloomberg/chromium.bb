@@ -174,6 +174,11 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
 
+      <!-- Document Scan API strings. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN" desc="Permission string for access to document scanning.">
+        Access document scanners attached via USB or on the local network
+      </message>
+
       <!-- General extensions strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
