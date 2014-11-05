@@ -91,8 +91,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
  public:
   RTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
-      PeerConnectionDependencyFactory* dependency_factory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread);
+      PeerConnectionDependencyFactory* dependency_factory);
   virtual ~RTCPeerConnectionHandler();
 
   // Destroy all existing RTCPeerConnectionHandler objects.
@@ -204,6 +203,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const std::string& sdp, const std::string& type,
       webrtc::SdpParseError* error);
 
+  // Virtual to allow mocks to override.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
+
+  void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
+                                              const char* trace_event_name);
+
   base::ThreadChecker thread_checker_;
 
   // |client_| is a weak pointer, and is valid until stop() has returned.
@@ -214,9 +219,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   PeerConnectionDependencyFactory* const dependency_factory_;
 
   blink::WebFrame* frame_;
-
-  // Libjingle's signaling thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 
   ScopedVector<WebRtcMediaStreamAdapter> local_streams_;
 

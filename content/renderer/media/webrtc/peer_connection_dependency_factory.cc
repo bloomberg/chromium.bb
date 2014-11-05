@@ -187,7 +187,7 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
   // webKitRTCPeerConnection.
   UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
 
-  return new RTCPeerConnectionHandler(client, this, GetWebRtcSignalingThread());
+  return new RTCPeerConnectionHandler(client, this);
 }
 
 bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(

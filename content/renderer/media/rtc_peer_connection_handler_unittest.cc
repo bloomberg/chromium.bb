@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
@@ -190,9 +191,8 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
  public:
   RTCPeerConnectionHandlerUnderTest(
       WebRTCPeerConnectionHandlerClient* client,
-      PeerConnectionDependencyFactory* dependency_factory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread)
-      : RTCPeerConnectionHandler(client, dependency_factory, signaling_thread) {
+      PeerConnectionDependencyFactory* dependency_factory)
+      : RTCPeerConnectionHandler(client, dependency_factory) {
   }
 
   MockPeerConnectionImpl* native_peer_connection() {
@@ -202,6 +202,11 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
 
   webrtc::PeerConnectionObserver* observer() {
     return native_peer_connection()->observer();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner>
+  signaling_thread() const override {
+    return base::ThreadTaskRunnerHandle::Get();
   }
 };
 
@@ -216,8 +221,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     pc_handler_.reset(
         new RTCPeerConnectionHandlerUnderTest(
-            mock_client_.get(), mock_dependency_factory_.get(),
-            message_loop_.message_loop_proxy()));
+            mock_client_.get(), mock_dependency_factory_.get()));
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
     blink::WebRTCConfiguration config;
     blink::WebMediaConstraints constraints;
@@ -367,6 +371,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
   EXPECT_CALL(*mock_peer_connection_, SetLocalDescription(_, _));
 
   pc_handler_->setLocalDescription(request, description);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(description.type(), pc_handler_->localDescription().type());
   EXPECT_EQ(description.sdp(), pc_handler_->localDescription().sdp());
 
@@ -392,6 +397,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
   EXPECT_CALL(*mock_peer_connection_, SetRemoteDescription(_, _));
 
   pc_handler_->setRemoteDescription(request, description);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(description.type(), pc_handler_->remoteDescription().type());
   EXPECT_EQ(description.sdp(), pc_handler_->remoteDescription().sdp());
 
@@ -498,6 +504,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsAfterClose) {
   scoped_refptr<MockRTCStatsRequest> request(
       new rtc::RefCountedObject<MockRTCStatsRequest>());
   pc_handler_->stop();
+  base::RunLoop().RunUntilIdle();
   pc_handler_->getStats(request.get());
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(request->result());
