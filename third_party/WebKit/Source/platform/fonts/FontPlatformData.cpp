@@ -189,8 +189,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
 }
 
 #if OS(MACOSX)
-FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
-    : m_typeface(nullptr)
+FontPlatformData::FontPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> tf, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+    : m_typeface(tf)
     , m_family(CString())
     , m_textSize(size)
     , m_syntheticBold(syntheticBold)

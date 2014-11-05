@@ -44,7 +44,7 @@ FontCustomPlatformData::~FontCustomPlatformData()
 
 FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
 {
-    return FontPlatformData(m_cgFont.get(), size, bold, italic, orientation, widthVariant);
+    return FontPlatformData(m_cgFont.get(), m_typeface, size, bold, italic, orientation, widthVariant);
 }
 
 PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer)
@@ -63,10 +63,6 @@ PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* 
     if (!cgFontRef)
         return nullptr;
 
-    // It's unclear whether this is used. It seems like it has the effect of priming the cache.
-    // Since we store this anyways, it might be worthwhile just plumbing this to FontMac.cpp in
-    // a more obvious way.
-    // FIXME: Remove this, add an explicit use, or add a comment explaining why this exists.
     RefPtr<SkMemoryStream> stream = adoptRef(new SkMemoryStream(buffer->getAsSkData().get()));
     RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));
     if (!typeface)
