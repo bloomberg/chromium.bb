@@ -40,7 +40,7 @@ namespace blink {
 class ConsoleMessage;
 class WorkerGlobalScope;
 
-// APIs used by workers to report console activity.
+// APIs used by workers to report console and worker activity.
 class WorkerReportingProxy {
 public:
     virtual ~WorkerReportingProxy() { }
@@ -48,6 +48,10 @@ public:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) = 0;
     virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
+
+    // Invoked when the worker script is evaluated. |success| is true if the
+    // evaluation completed with no uncaught exception.
+    virtual void didEvaluateWorkerScript(bool success) = 0;
 
     // Invoked when the new WorkerGlobalScope is started.
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) = 0;

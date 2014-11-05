@@ -143,6 +143,11 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& mes
     m_document.postInspectorTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, &m_embeddedWorker, message));
 }
 
+void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
+{
+    m_client.didEvaluateWorkerScript(success);
+}
+
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
     ASSERT(!m_workerGlobalScope);

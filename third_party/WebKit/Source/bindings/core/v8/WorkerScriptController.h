@@ -52,7 +52,9 @@ public:
 
     bool isExecutionForbidden() const;
     bool isExecutionTerminating() const;
-    void evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = 0);
+
+    // Returns true if the evaluation completed with no uncaught exception.
+    bool evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = 0);
 
     // Prevents future JavaScript execution. See
     // scheduleExecutionTermination, isExecutionForbidden.

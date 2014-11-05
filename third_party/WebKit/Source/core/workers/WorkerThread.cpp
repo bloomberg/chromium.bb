@@ -320,8 +320,9 @@ void WorkerThread::initialize()
     if (!script->isExecutionForbidden())
         script->initializeContextIfNeeded();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
-    script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
+    bool success = script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
     m_workerGlobalScope->didEvaluateWorkerScript();
+    m_workerReportingProxy.didEvaluateWorkerScript(success);
 
     postInitialize();
 

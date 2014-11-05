@@ -75,6 +75,7 @@ public:
         const WTF::String&, int, int, const WTF::String&) override;
     virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
     virtual void postMessageToPageInspector(const WTF::String&) override;
+    virtual void didEvaluateWorkerScript(bool success) override { };
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     virtual void workerGlobalScopeClosed() override;
     virtual void workerThreadTerminated() override;

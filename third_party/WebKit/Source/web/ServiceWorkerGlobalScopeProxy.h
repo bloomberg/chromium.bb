@@ -80,6 +80,7 @@ public:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) override;
     virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
     virtual void postMessageToPageInspector(const String&) override;
+    virtual void didEvaluateWorkerScript(bool success) override;
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     virtual void workerGlobalScopeClosed() override;
     virtual void willDestroyWorkerGlobalScope() override;

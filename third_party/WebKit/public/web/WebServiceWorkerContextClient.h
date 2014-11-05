@@ -94,6 +94,10 @@ public:
     // This is called on the main thread.
     virtual void workerContextFailedToStart() { }
 
+    // Called when the worker script is evaluated. |success| is true if the
+    // evaluation completed with no uncaught exception.
+    virtual void didEvaluateWorkerScript(bool success) { }
+
     // Called when the WorkerGlobalScope had an error or an exception.
     virtual void reportException(const WebString& errorMessage, int lineNumber, int columnNumber, const WebString& sourceURL) { }
 
