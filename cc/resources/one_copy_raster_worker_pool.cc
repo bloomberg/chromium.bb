@@ -275,61 +275,60 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     const RasterSource* raster_source,
     const gfx::Rect& rect,
     float scale) {
-  CopySequenceNumber sequence;
+  base::AutoLock lock(lock_);
 
-  {
-    base::AutoLock lock(lock_);
+  int failed_attempts = 0;
+  while ((scheduled_copy_operation_count_ + issued_copy_operation_count_) >=
+         kMaxCopyOperations) {
+    // Ignore limit when shutdown is set.
+    if (shutdown_)
+      break;
 
-    int failed_attempts = 0;
-    while ((scheduled_copy_operation_count_ + issued_copy_operation_count_) >=
-           kMaxCopyOperations) {
-      // Ignore limit when shutdown is set.
-      if (shutdown_)
-        break;
+    ++failed_attempts;
 
-      ++failed_attempts;
+    // Schedule a check that will also wait for operations to complete
+    // after too many failed attempts.
+    bool wait_if_needed = failed_attempts > kFailedAttemptsBeforeWaitIfNeeded;
 
-      // Schedule a check that will also wait for operations to complete
-      // after too many failed attempts.
-      bool wait_if_needed = failed_attempts > kFailedAttemptsBeforeWaitIfNeeded;
-
-      // Schedule a check for completed copy operations if too many operations
-      // are currently in-flight.
-      ScheduleCheckForCompletedCopyOperationsWithLockAcquired(wait_if_needed);
-
-      {
-        TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
-
-        // Wait for in-flight copy operations to drop below limit.
-        copy_operation_count_cv_.Wait();
-      }
-    }
-
-    // Increment |scheduled_copy_operation_count_| before releasing |lock_|.
-    ++scheduled_copy_operation_count_;
-
-    // There may be more work available, so wake up another worker thread.
-    copy_operation_count_cv_.Signal();
+    // Schedule a check for completed copy operations if too many operations
+    // are currently in-flight.
+    ScheduleCheckForCompletedCopyOperationsWithLockAcquired(wait_if_needed);
 
     {
-      base::AutoUnlock unlock(lock_);
+      TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
 
-      gfx::GpuMemoryBuffer* gpu_memory_buffer =
-          write_lock->GetGpuMemoryBuffer();
-      if (gpu_memory_buffer) {
-        RasterWorkerPool::PlaybackToMemory(
-            gpu_memory_buffer->Map(), src->format(), src->size(),
-            gpu_memory_buffer->GetStride(), raster_source, rect, scale);
-        gpu_memory_buffer->Unmap();
-      }
+      // Wait for in-flight copy operations to drop below limit.
+      copy_operation_count_cv_.Wait();
     }
-
-    // Acquire a sequence number for this copy operation.
-    sequence = next_copy_operation_sequence_++;
-
-    pending_copy_operations_.push_back(
-        make_scoped_ptr(new CopyOperation(write_lock.Pass(), src.Pass(), dst)));
   }
+
+  // Increment |scheduled_copy_operation_count_| before releasing |lock_|.
+  ++scheduled_copy_operation_count_;
+
+  // There may be more work available, so wake up another worker thread.
+  copy_operation_count_cv_.Signal();
+
+  {
+    base::AutoUnlock unlock(lock_);
+
+    gfx::GpuMemoryBuffer* gpu_memory_buffer = write_lock->GetGpuMemoryBuffer();
+    if (gpu_memory_buffer) {
+      RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
+                                         src->format(),
+                                         src->size(),
+                                         gpu_memory_buffer->GetStride(),
+                                         raster_source,
+                                         rect,
+                                         scale);
+      gpu_memory_buffer->Unmap();
+    }
+  }
+
+  pending_copy_operations_.push_back(
+      make_scoped_ptr(new CopyOperation(write_lock.Pass(), src.Pass(), dst)));
+
+  // Acquire a sequence number for this copy operation.
+  CopySequenceNumber sequence = next_copy_operation_sequence_++;
 
   // Post task that will advance last flushed copy operation to |sequence|
   // if we have reached the flush period.
