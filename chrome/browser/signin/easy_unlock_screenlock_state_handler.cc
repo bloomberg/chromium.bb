@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,10 +65,6 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
          state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
-}
-
-bool IsLocaleEnUS() {
-  return g_browser_process->GetApplicationLocale() == "en-US";
 }
 
 }  // namespace
@@ -235,23 +230,20 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
   }
 
-  // TODO(tbarzic): Remove this condition for M-40.
-  if (IsLocaleEnUS()) {
-    base::string16 tooltip;
-    if (hardlock_state_ == USER_HARDLOCK) {
-      tooltip = l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, GetDeviceName());
-    } else if (hardlock_state_ == PAIRING_CHANGED) {
-      tooltip = l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED);
-    } else if (hardlock_state_ == LOGIN_FAILED) {
-      tooltip = l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
-    } else {
-      LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
-    }
-    icon_options.SetTooltip(tooltip, true /* autoshow */);
+  base::string16 tooltip;
+  if (hardlock_state_ == USER_HARDLOCK) {
+    tooltip = l10n_util::GetStringFUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, GetDeviceName());
+  } else if (hardlock_state_ == PAIRING_CHANGED) {
+    tooltip = l10n_util::GetStringUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED);
+  } else if (hardlock_state_ == LOGIN_FAILED) {
+    tooltip = l10n_util::GetStringUTF16(
+        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
+  } else {
+    LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
   }
+  icon_options.SetTooltip(tooltip, true /* autoshow */);
 
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(user_email_,
                                                             icon_options);
@@ -264,11 +256,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
   size_t resource_id = 0;
   base::string16 device_name;
   if (trial_run && state_ == STATE_AUTHENTICATED) {
-    // TODO(tbarzic): Remove this condition for M-40 branch.
-    if (IsLocaleEnUS())
-      resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED;
-    else
-      resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TUTORIAL;
+    resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED;
   } else {
     resource_id = GetTooltipResourceId(state_);
     if (TooltipContainsDeviceType(state_))

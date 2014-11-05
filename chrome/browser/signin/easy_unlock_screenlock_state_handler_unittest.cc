@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -198,8 +197,6 @@ class EasyUnlockScreenlockStateHandlerTest : public testing::Test {
   ~EasyUnlockScreenlockStateHandlerTest() override {}
 
   void SetUp() override {
-    TestingBrowserProcess::GetGlobal()->SetApplicationLocale("en-US");
-
     // Create and inject fake lock handler to the screenlock bridge.
     lock_handler_.reset(new TestLockHandler(user_email_));
     ScreenlockBridge* screenlock_bridge = ScreenlockBridge::Get();
