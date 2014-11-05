@@ -28,8 +28,12 @@ void GpuMemoryBufferCreated(
     gfx::GpuMemoryBuffer::Format format,
     const GpuMemoryBufferImpl::CreationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
+  if (handle.is_null()) {
+    callback.Run(scoped_ptr<GpuMemoryBufferImpl>());
+    return;
+  }
 
+  DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
   callback.Run(GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
       handle, size, format, base::Bind(&GpuMemoryBufferDeleted, handle)));
 }
@@ -37,7 +41,7 @@ void GpuMemoryBufferCreated(
 void GpuMemoryBufferCreatedForChildProcess(
     const GpuMemoryBufferImpl::AllocationCallback& callback,
     const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_EQ(gfx::SURFACE_TEXTURE_BUFFER, handle.type);
+  DCHECK_IMPLIES(!handle.is_null(), gfx::SURFACE_TEXTURE_BUFFER == handle.type);
 
   callback.Run(handle);
 }
