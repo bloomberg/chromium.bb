@@ -86,12 +86,12 @@ bool CSPDirectiveList::checkInline(SourceListDirective* directive) const
 
 bool CSPDirectiveList::checkNonce(SourceListDirective* directive, const String& nonce) const
 {
-    return !directive || directive->allowNonce(nonce) || checkInline(directive);
+    return !directive || directive->allowNonce(nonce);
 }
 
 bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashValue& hashValue) const
 {
-    return !directive || directive->allowHash(hashValue) || checkInline(directive);
+    return !directive || directive->allowHash(hashValue);
 }
 
 bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& url) const
