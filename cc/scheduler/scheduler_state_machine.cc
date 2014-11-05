@@ -423,6 +423,9 @@ bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
 }
 
 bool SchedulerStateMachine::ShouldAnimate() const {
+  if (!can_draw_)
+    return false;
+
   // If a commit occurred after our last call, we need to do animation again.
   if (HasAnimatedThisFrame() && !did_commit_after_animating_)
     return false;
@@ -762,10 +765,18 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
   if (!HasInitializedOutputSurface())
     return false;
 
+  // If we can't draw, don't tick until we are notified that we can draw again.
+  if (!can_draw_)
+    return false;
+
   // The forced draw respects our normal draw scheduling, so we need to
   // request a BeginImplFrame for it.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
+
+  // There's no need to produce frames if we are not visible.
+  if (!visible_)
+    return false;
 
   // We need to draw a more complete frame than we did the last BeginImplFrame,
   // so request another BeginImplFrame in anticipation that we will have
@@ -773,7 +784,10 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
   if (swap_used_incomplete_tile_)
     return true;
 
-  return needs_animate_ || needs_redraw_;
+  if (needs_animate_)
+    return true;
+
+  return needs_redraw_;
 }
 
 // These are cases where we are very likely to draw soon, but might not

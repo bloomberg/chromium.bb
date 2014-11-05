@@ -45,6 +45,7 @@ class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class LayerImpl;
+class LayerTreeHostImplTimeSourceAdapter;
 class LayerTreeImpl;
 class MemoryHistory;
 class PageScaleAnimation;
@@ -187,6 +188,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void UpdateAnimationState(bool start_ready_animations);
   void ActivateAnimations();
   void MainThreadHasStoppedFlinging();
+  void UpdateBackgroundAnimateTicking(bool should_background_tick);
   void DidAnimateScrollOffset();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
@@ -326,8 +328,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
-
-  bool AnimationsAreVisible() { return visible() && CanDraw(); }
 
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsRedraw();
@@ -506,6 +506,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);
+  virtual base::TimeDelta LowFrequencyAnimationInterval() const;
+
   const AnimationRegistrar::AnimationControllerMap&
       active_animation_controllers() const {
     return animation_registrar_->active_animation_controllers();
@@ -643,6 +645,9 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TopControlsManager> top_controls_manager_;
 
   scoped_ptr<PageScaleAnimation> page_scale_animation_;
+
+  // This is used for ticking animations slowly when hidden.
+  scoped_ptr<LayerTreeHostImplTimeSourceAdapter> time_source_client_adapter_;
 
   scoped_ptr<FrameRateCounter> fps_counter_;
   scoped_ptr<PaintTimeCounter> paint_time_counter_;

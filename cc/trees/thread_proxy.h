@@ -253,6 +253,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
+  void UpdateBackgroundAnimateTicking();
   void HasInitializedOutputSurfaceOnImplThread(
       CompletionEvent* completion,
       bool* has_initialized_output_surface);

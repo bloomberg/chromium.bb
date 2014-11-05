@@ -348,9 +348,8 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
   LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree()
       : active_tree_was_animated_(false) {}
 
-  base::TimeDelta BackgroundAnimationInterval(LayerTreeHostImpl* host_impl) {
-    return base::TimeDelta::FromSecondsD(
-        1.0 / host_impl->settings().background_animation_rate);
+  base::TimeDelta LowFrequencyAnimationInterval() const override {
+    return base::TimeDelta::FromMilliseconds(4);
   }
 
   void BeginTest() override {
@@ -410,9 +409,10 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
           FROM_HERE,
           base::Bind(
               &LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree::
-                  UnblockActivations,
-              base::Unretained(this), host_impl),
-          4 * BackgroundAnimationInterval(host_impl));
+                   UnblockActivations,
+              base::Unretained(this),
+              host_impl),
+          4 * LowFrequencyAnimationInterval());
     }
   }
 
@@ -447,9 +447,10 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
           FROM_HERE,
           base::Bind(
               &LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree::
-                  InitiateNextCommit,
-              base::Unretained(this), host_impl),
-          4 * BackgroundAnimationInterval(host_impl));
+                   InitiateNextCommit,
+              base::Unretained(this),
+              host_impl),
+          4 * LowFrequencyAnimationInterval());
     }
   }
 

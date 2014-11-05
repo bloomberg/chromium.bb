@@ -101,6 +101,7 @@ void SingleThreadProxy::SetVisible(bool visible) {
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
   // Changing visibility could change ShouldComposite().
+  UpdateBackgroundAnimateTicking();
 }
 
 void SingleThreadProxy::RequestNewOutputSurface() {
@@ -160,24 +161,6 @@ void SingleThreadProxy::SetNeedsUpdateLayers() {
   SetNeedsCommit();
 }
 
-void SingleThreadProxy::DoAnimate() {
-  // Don't animate if there is no root layer.
-  // TODO(mithro): Both Animate and UpdateAnimationState already have a
-  // "!active_tree_->root_layer()" check?
-  if (!layer_tree_host_impl_->active_tree()->root_layer()) {
-    return;
-  }
-
-  layer_tree_host_impl_->Animate(
-      layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
-
-  // If animations are not visible, update the animation state now as it
-  // won't happen in DoComposite.
-  if (!layer_tree_host_impl_->AnimationsAreVisible()) {
-    layer_tree_host_impl_->UpdateAnimationState(true);
-  }
-}
-
 void SingleThreadProxy::DoCommit() {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoCommit");
   DCHECK(Proxy::IsMainThread());
@@ -218,6 +201,8 @@ void SingleThreadProxy::DoCommit() {
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
     layer_tree_host_impl_->CommitComplete();
+
+    UpdateBackgroundAnimateTicking();
 
 #if DCHECK_IS_ON
     // In the single-threaded case, the scale and scroll deltas should never be
@@ -343,6 +328,7 @@ void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
   DCHECK(Proxy::IsImplThread());
+  UpdateBackgroundAnimateTicking();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetCanDraw(can_draw);
 }
@@ -361,9 +347,7 @@ void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
 }
 
 void SingleThreadProxy::SetNeedsAnimateOnImplThread() {
-  client_->ScheduleComposite();
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsAnimate();
+  SetNeedsRedrawOnImplThread();
 }
 
 void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
@@ -436,6 +420,7 @@ void SingleThreadProxy::DidActivateSyncTree() {
                    weak_factory_.GetWeakPtr()));
   }
 
+  UpdateBackgroundAnimateTicking();
   timing_history_.DidActivateSyncTree();
 }
 
@@ -513,8 +498,6 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
       layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
     }
 
-    DoAnimate();
-
     LayerTreeHostImpl::FrameData frame;
     DoComposite(frame_begin_time, &frame);
 
@@ -556,6 +539,12 @@ bool SingleThreadProxy::ShouldComposite() const {
          layer_tree_host_impl_->CanDraw();
 }
 
+void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
+  DCHECK(Proxy::IsImplThread());
+  layer_tree_host_impl_->UpdateBackgroundAnimateTicking(
+      !ShouldComposite() && layer_tree_host_impl_->active_tree()->root_layer());
+}
+
 void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
   if (output_surface_creation_callback_.IsCancelled() &&
       !output_surface_creation_requested_) {
@@ -583,10 +572,15 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
     // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
     // CanDraw() as well.
     if (!ShouldComposite()) {
+      UpdateBackgroundAnimateTicking();
       return DRAW_ABORTED_CANT_DRAW;
     }
 
     timing_history_.DidStartDrawing();
+
+    layer_tree_host_impl_->Animate(
+        layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
+    UpdateBackgroundAnimateTicking();
 
     draw_result = layer_tree_host_impl_->PrepareToDraw(frame);
     draw_frame = draw_result == DRAW_SUCCESS;
@@ -748,8 +742,8 @@ void SingleThreadProxy::ScheduledActionCommit() {
 
 void SingleThreadProxy::ScheduledActionAnimate() {
   TRACE_EVENT0("cc", "ScheduledActionAnimate");
-  DebugScopedSetImplThread impl(this);
-  DoAnimate();
+  layer_tree_host_impl_->Animate(
+      layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
 }
 
 void SingleThreadProxy::ScheduledActionUpdateVisibleTiles() {
