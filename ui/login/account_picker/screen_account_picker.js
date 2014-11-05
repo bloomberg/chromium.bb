@@ -55,9 +55,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     onWindowResize: function() {
       $('pod-row').onWindowResize();
 
-      // Reposition the error bubble, if there is one. Since we are just
+      // Reposition the error bubble, if it is showing. Since we are just
       // moving the bubble, the number of login attempts tried doesn't matter.
-      if ($('bubble'))
+      var errorBubble = $('bubble');
+      if (errorBubble && !errorBubble.hidden)
         this.showErrorBubble(0, undefined  /* Reuses the existing message. */);
     },
 
