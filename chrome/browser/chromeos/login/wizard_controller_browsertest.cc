@@ -208,6 +208,9 @@ class MockOutShowHide : public T {
   template <class P> explicit  MockOutShowHide(P p) : T(p) {}
   template <class P> MockOutShowHide(P p, H* actor)
       : T(p, actor), actor_(actor) {}
+  template <class P, class Q>
+  MockOutShowHide(P p, Q q, H* actor)
+      : T(p, q, actor), actor_(actor) {}
 
   H* actor() const { return actor_.get(); }
 
@@ -221,6 +224,16 @@ class MockOutShowHide : public T {
 #define MOCK(mock_var, screen_name, mocked_class, actor_class)               \
   mock_var = new MockOutShowHide<mocked_class, actor_class>(                 \
       WizardController::default_controller(), new actor_class);              \
+  WizardController::default_controller()                                     \
+      ->screens_[WizardController::screen_name] = make_linked_ptr(mock_var); \
+  EXPECT_CALL(*mock_var, Show()).Times(0);                                   \
+  EXPECT_CALL(*mock_var, Hide()).Times(0);
+
+#define MOCK_WITH_DELEGATE(mock_var, screen_name, mocked_class, actor_class) \
+  mock_var = new MockOutShowHide<mocked_class, actor_class>(                 \
+      WizardController::default_controller(),                                \
+      WizardController::default_controller(),                                \
+      new actor_class);                                                      \
   WizardController::default_controller()                                     \
       ->screens_[WizardController::screen_name] = make_linked_ptr(mock_var); \
   EXPECT_CALL(*mock_var, Show()).Times(0);                                   \
@@ -412,10 +425,10 @@ class WizardControllerFlowTest : public WizardControllerTest {
          kUpdateScreenName,
          MockUpdateScreen,
          MockUpdateScreenActor);
-    MOCK(mock_eula_screen_,
-         kEulaScreenName,
-         MockEulaScreen,
-         MockEulaScreenActor);
+    MOCK_WITH_DELEGATE(mock_eula_screen_,
+                       kEulaScreenName,
+                       MockEulaScreen,
+                       MockEulaScreenActor);
     MOCK(mock_enrollment_screen_,
          kEnrollmentScreenName,
          MockEnrollmentScreen,

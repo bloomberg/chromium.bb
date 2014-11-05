@@ -302,10 +302,8 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new chromeos::UserImageScreen(
         this, oobe_display_->GetUserImageScreenActor());
   } else if (screen_name == kEulaScreenName) {
-    scoped_ptr<chromeos::EulaScreen> screen(
-        new chromeos::EulaScreen(this, oobe_display_->GetEulaScreenActor()));
-    screen->SetDelegate(this);
-    return screen.release();
+    return new chromeos::EulaScreen(
+        this, this, oobe_display_->GetEulaScreenActor());
   } else if (screen_name == kEnrollmentScreenName) {
     return new chromeos::EnrollmentScreen(
         this, oobe_display_->GetEnrollmentScreenActor());
@@ -338,25 +336,21 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
       shark_controller_.reset(
           new pairing_chromeos::BluetoothControllerPairingController());
     }
-    scoped_ptr<chromeos::ControllerPairingScreen> screen(
-        new ControllerPairingScreen(
-            this,
-            oobe_display_->GetControllerPairingScreenActor(),
-            shark_controller_.get()));
-    screen->SetDelegate(this);
-    return screen.release();
+    return new ControllerPairingScreen(
+        this,
+        this,
+        oobe_display_->GetControllerPairingScreenActor(),
+        shark_controller_.get());
   } else if (screen_name == kHostPairingScreenName) {
     if (!remora_controller_) {
       remora_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController());
       remora_controller_->StartPairing();
     }
-    scoped_ptr<HostPairingScreen> screen(
-        new HostPairingScreen(this,
-                              oobe_display_->GetHostPairingScreenActor(),
-                              remora_controller_.get()));
-    screen->SetDelegate(this);
-    return screen.release();
+    return new HostPairingScreen(this,
+                                 this,
+                                 oobe_display_->GetHostPairingScreenActor(),
+                                 remora_controller_.get());
   } else if (screen_name == kDeviceDisabledScreenName) {
     return new chromeos::DeviceDisabledScreen(
         this, oobe_display_->GetDeviceDisabledScreenActor());

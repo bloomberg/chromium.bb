@@ -15,12 +15,13 @@ using namespace pairing_chromeos;
 
 HostPairingScreen::HostPairingScreen(
     BaseScreenDelegate* base_screen_delegate,
+    Delegate* delegate,
     HostPairingScreenActor* actor,
     pairing_chromeos::HostPairingController* remora_controller)
     : BaseScreen(base_screen_delegate),
+      delegate_(delegate),
       actor_(actor),
       remora_controller_(remora_controller),
-      delegate_(nullptr),
       current_stage_(HostPairingController::STAGE_NONE) {
   actor_->SetDelegate(this);
   remora_controller_->AddObserver(this);
@@ -30,10 +31,6 @@ HostPairingScreen::~HostPairingScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
   remora_controller_->RemoveObserver(this);
-}
-
-void HostPairingScreen::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
 }
 
 void HostPairingScreen::CommitContextChanges() {

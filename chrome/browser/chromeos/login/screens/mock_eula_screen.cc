@@ -10,16 +10,12 @@ using ::testing::AtLeast;
 using ::testing::NotNull;
 
 MockEulaScreen::MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
+                               Delegate* delegate,
                                EulaScreenActor* actor)
-    : EulaScreen(base_screen_delegate, actor) {
+    : EulaScreen(base_screen_delegate, delegate, actor) {
 }
 
 MockEulaScreen::~MockEulaScreen() {
-}
-
-void MockEulaScreenActor::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
 }
 
 MockEulaScreenActor::MockEulaScreenActor() {
@@ -29,6 +25,11 @@ MockEulaScreenActor::MockEulaScreenActor() {
 MockEulaScreenActor::~MockEulaScreenActor() {
   if (delegate_)
     delegate_->OnActorDestroyed(this);
+}
+
+void MockEulaScreenActor::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  MockSetDelegate(delegate);
 }
 
 }  // namespace chromeos

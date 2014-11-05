@@ -29,11 +29,10 @@ class HostPairingScreen
   };
 
   HostPairingScreen(BaseScreenDelegate* base_screen_delegate,
+                    Delegate* delegate,
                     HostPairingScreenActor* actor,
                     pairing_chromeos::HostPairingController* remora_controller);
   virtual ~HostPairingScreen();
-
-  void SetDelegate(Delegate* delegate);
 
  private:
   typedef pairing_chromeos::HostPairingController::Stage Stage;
@@ -62,12 +61,12 @@ class HostPairingScreen
   // TODO(dzhioev): move to BaseScreen when possible.
   ::login::ScreenContext context_;
 
+  Delegate* delegate_;
+
   HostPairingScreenActor* actor_;
 
   // Controller performing pairing. Owned by the wizard controller.
   pairing_chromeos::HostPairingController* remora_controller_;
-
-  Delegate* delegate_;
 
   // Current stage of pairing process.
   Stage current_stage_;

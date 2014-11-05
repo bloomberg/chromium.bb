@@ -16,12 +16,14 @@
 namespace chromeos {
 
 EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
+                       Delegate* delegate,
                        EulaScreenActor* actor)
     : BaseScreen(base_screen_delegate),
+      delegate_(delegate),
       actor_(actor),
-      delegate_(nullptr),
       password_fetcher_(this) {
   DCHECK(actor_);
+  DCHECK(delegate_);
   if (actor_)
     actor_->SetDelegate(this);
 }
@@ -29,11 +31,6 @@ EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
 EulaScreen::~EulaScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
-}
-
-void EulaScreen::SetDelegate(Delegate* delegate) {
-  DCHECK(delegate);
-  delegate_ = delegate;
 }
 
 void EulaScreen::PrepareToShow() {

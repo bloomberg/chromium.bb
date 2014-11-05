@@ -15,6 +15,7 @@ namespace chromeos {
 class MockEulaScreen : public EulaScreen {
  public:
   MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
+                 Delegate* delegate,
                  EulaScreenActor* actor);
   virtual ~MockEulaScreen();
 };

@@ -30,10 +30,10 @@ class EulaScreen : public BaseScreen,
     virtual bool GetUsageStatisticsReporting() const = 0;
   };
 
-  EulaScreen(BaseScreenDelegate* base_screen_delegate, EulaScreenActor* actor);
+  EulaScreen(BaseScreenDelegate* base_screen_delegate,
+             Delegate* delegate,
+             EulaScreenActor* actor);
   virtual ~EulaScreen();
-
-  void SetDelegate(Delegate* delegate);
 
   // BaseScreen implementation:
   virtual void PrepareToShow() override;
@@ -62,9 +62,9 @@ class EulaScreen : public BaseScreen,
   // it's destroyed.
   std::string tpm_password_;
 
-  EulaScreenActor* actor_;
-
   Delegate* delegate_;
+
+  EulaScreenActor* actor_;
 
   TpmPasswordFetcher password_fetcher_;
 
