@@ -405,11 +405,13 @@ start_element(void *data, const char *element_name, const char **atts)
 			message->destructor = 0;
 
 		if (since != NULL) {
+			int prev_errno = errno;
 			errno = 0;
 			version = strtol(since, &end, 0);
-			if (errno == EINVAL || end == since || *end != '\0')
+			if (errno != 0 || end == since || *end != '\0')
 				fail(&ctx->loc,
 				     "invalid integer (%s)\n", since);
+			errno = prev_errno;
 		} else {
 			version = 1;
 		}

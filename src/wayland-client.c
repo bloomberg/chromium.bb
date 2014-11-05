@@ -829,9 +829,12 @@ wl_display_connect(const char *name)
 
 	connection = getenv("WAYLAND_SOCKET");
 	if (connection) {
+		int prev_errno = errno;
+		errno = 0;
 		fd = strtol(connection, &end, 0);
-		if (*end != '\0')
+		if (errno != 0 || connection == end || *end != '\0')
 			return NULL;
+		errno = prev_errno;
 
 		flags = fcntl(fd, F_GETFD);
 		if (flags != -1)
