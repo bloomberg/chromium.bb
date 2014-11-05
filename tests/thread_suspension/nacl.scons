@@ -28,9 +28,17 @@ test_host = trusted_env.ComponentProgram(
 node = env.CommandTest('thread_suspension_test.out',
                        env.AddBootstrap(test_host, [test_guest]),
                        size='large')
-env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
-                       'run_thread_suspension_test',
-                       is_broken=not env.Bit('nacl_static_link') or
+
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                                 (env.Bit('asan') and env.Bit('host_mac')))
+# nacl-clang's integrated assembler expands "naclcall" to a sequence which
+# separates the push of the return address from the jump, and so breaks the
+# test's expectations for the stack pointer.
+# TODO(dschuff): re-enable this test after we switch to gas with nacl-clang
+# https://code.google.com/p/nativeclient/issues/detail?id=3966
+is_broken= (not env.Bit('nacl_static_link') or
+            (env.Bit('asan') and env.Bit('host_mac')) or
+            env.Bit('nacl_clang'))
+
+env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
+                       'run_thread_suspension_test', is_broken=is_broken)

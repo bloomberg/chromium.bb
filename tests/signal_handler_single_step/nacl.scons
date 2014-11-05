@@ -31,6 +31,7 @@ if env.Bit('host_mac'):
 # separates the push of the return address from the jump, and so breaks the
 # test's expectations for the stack pointer.
 # TODO(dschuff): re-enable this test after we switch to gas with nacl-clang
+# https://code.google.com/p/nativeclient/issues/detail?id=3966
 if env.Bit('nacl_clang'):
   Return()
 
