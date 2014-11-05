@@ -20,7 +20,8 @@ message Study {
   // The expiry date of the study in Unix time format. (Seconds since midnight
   // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
   //
-  // A study that has expired will be disabled, which will take precedence over
+  // A study that has expired will be disabled, and users will be assigned
+  // groups based on the default_experiment_name. This will take precedence over
   // a corresponding hardcoded field trial in the client.
   //
   // Ex: 1330893974  (corresponds to 2012-03-04 20:46:14Z)
