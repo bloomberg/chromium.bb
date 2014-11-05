@@ -63,4 +63,5 @@
     void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
     void setLaxMixedContentCheckingEnabled(boolean enabled);
     void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(boolean enabled);
+    void setImageColorProfilesEnabled(boolean enabled);
 };

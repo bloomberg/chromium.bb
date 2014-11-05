@@ -72,6 +72,7 @@ public:
         String m_defaultVideoPosterURL;
         bool m_originalLayerSquashingEnabled;
         bool m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled;
+        bool m_originalImageColorProfilesEnabled;
     };
 
     static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
@@ -117,8 +118,9 @@ public:
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
-    void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
     void setLaxMixedContentCheckingEnabled(bool);
+    void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
+    void setImageColorProfilesEnabled(bool);
 
     virtual void trace(Visitor*) override;
 
