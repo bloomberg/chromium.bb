@@ -425,18 +425,15 @@ const String& nonBreakingSpaceString()
 }
 
 // FIXME: need to dump this
-bool isSpecialHTMLElement(const Node* n)
+static bool isSpecialHTMLElement(const Node& n)
 {
-    if (!n)
+    if (!n.isHTMLElement())
         return false;
 
-    if (!n->isHTMLElement())
-        return false;
-
-    if (n->isLink())
+    if (n.isLink())
         return true;
 
-    RenderObject* renderer = n->renderer();
+    RenderObject* renderer = n.renderer();
     if (!renderer)
         return false;
 
@@ -453,7 +450,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.containerNode()->rootEditableElement();
     for (Node* n = pos.deprecatedNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
-        if (isSpecialHTMLElement(n)) {
+        if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement), DOWNSTREAM);
@@ -470,7 +467,7 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
 {
     Element* rootEditableElement = pos.containerNode()->rootEditableElement();
     for (Node* n = pos.deprecatedNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
-        if (isSpecialHTMLElement(n)) {
+        if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement), DOWNSTREAM);
