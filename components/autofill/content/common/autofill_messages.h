@@ -112,8 +112,11 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewForm,
 
 // Fill a password form and prepare field autocomplete for multiple
 // matching logins. Lets the renderer know if it should disable the popup
-// because the browser process will own the popup UI.
-IPC_MESSAGE_ROUTED1(AutofillMsg_FillPasswordForm,
+// because the browser process will own the popup UI. |key| serves for
+// identifying the fill form data in subsequent
+// AutofillHostMsg_ShowPasswordSuggestions messages to the browser.
+IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordForm,
+                    int /* key */,
                     autofill::PasswordFormFillData /* the fill form data*/)
 
 // Notification to start (|active| == true) or stop (|active| == false) logging
@@ -280,14 +283,12 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_ShowPasswordEditingPopup,
 // Instructs the browser to hide any password generation popups.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)
 
-// Instruct the browser that a password mapping has been found for a field.
-IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
-                    autofill::FormFieldData, /* the user name field */
-                    autofill::PasswordFormFillData /* password pairings */)
-
-// Instruct the browser to show a popup with suggestions for the form field.
-IPC_MESSAGE_ROUTED4(AutofillHostMsg_ShowPasswordSuggestions,
-                    autofill::FormFieldData /* the form field */,
+// Instruct the browser to show a popup with suggestions filled from data
+// associated with |key|. The popup will use |text_direction| for displaying
+// text.
+IPC_MESSAGE_ROUTED5(AutofillHostMsg_ShowPasswordSuggestions,
+                    int /* key */,
+                    base::i18n::TextDirection /*text_direction */,
                     base::string16 /* username typed by user */,
                     bool /* show all suggestions */,
                     gfx::RectF /* input field bounds, window-relative */)

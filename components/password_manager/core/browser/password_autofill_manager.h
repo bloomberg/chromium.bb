@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
+#include "base/i18n/rtl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -39,12 +40,13 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Invoked when a password mapping is added.
   void OnAddPasswordFormMapping(
-      const autofill::FormFieldData& field,
+      int key,
       const autofill::PasswordFormFillData& fill_data);
 
   // Handles a request from the renderer to show a popup with the given
   // |suggestions| from the password manager.
-  void OnShowPasswordSuggestions(const autofill::FormFieldData& field,
+  void OnShowPasswordSuggestions(int key,
+                                 base::i18n::TextDirection text_direction,
                                  const base::string16& typed_username,
                                  bool show_all,
                                  const gfx::RectF& bounds);
@@ -53,26 +55,21 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void Reset();
 
   // A public version of FillSuggestion(), only for use in tests.
-  bool FillSuggestionForTest(const autofill::FormFieldData& field,
-                             const base::string16& username);
+  bool FillSuggestionForTest(int key, const base::string16& username);
 
   // A public version of PreviewSuggestion(), only for use in tests.
-  bool PreviewSuggestionForTest(const autofill::FormFieldData& field,
-                                const base::string16& username);
+  bool PreviewSuggestionForTest(int key, const base::string16& username);
 
  private:
-  typedef std::map<autofill::FormFieldData, autofill::PasswordFormFillData>
-      LoginToPasswordInfoMap;
+  typedef std::map<int, autofill::PasswordFormFillData> LoginToPasswordInfoMap;
 
   // Attempts to fill the password associated with user name |username|, and
   // returns true if it was successful.
-  bool FillSuggestion(const autofill::FormFieldData& field,
-                      const base::string16& username);
+  bool FillSuggestion(int key, const base::string16& username);
 
   // Attempts to preview the password associated with user name |username|, and
   // returns true if it was successful.
-  bool PreviewSuggestion(const autofill::FormFieldData& field,
-                         const base::string16& username);
+  bool PreviewSuggestion(int key, const base::string16& username);
 
   // If |current_username| matches a username for one of the login mappings in
   // |fill_data|, returns true and assigns the password to |out_password|.
@@ -83,19 +80,19 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
       base::string16* out_password);
 
   // Finds login information for a |node| that was previously filled.
-  bool FindLoginInfo(const autofill::FormFieldData& field,
-                     autofill::PasswordFormFillData* found_password);
+  bool FindLoginInfo(int key, autofill::PasswordFormFillData* found_password);
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
+
+  // When the autofill popup should be shown, |form_data_key_| identifies the
+  // right password info in |login_to_password_info_|.
+  int form_data_key_;
 
   // Provides embedder-level operations on passwords. Must outlive |this|.
   PasswordManagerClient* const password_manager_client_;  // weak
 
   autofill::AutofillClient* const autofill_client_;  // weak
-
-  // The form field on which the autofill popup is shown.
-  autofill::FormFieldData form_field_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 

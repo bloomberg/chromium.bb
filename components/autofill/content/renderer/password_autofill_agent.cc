@@ -1002,6 +1002,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
 }
 
 void PasswordAutofillAgent::OnFillPasswordForm(
+    int key,
     const PasswordFormFillData& form_data) {
   if (usernames_usage_ == NOTHING_TO_AUTOFILL) {
     if (form_data.other_possible_usernames.size())
@@ -1058,16 +1059,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     password_info.password_field = password_element;
     login_to_password_info_[username_element] = password_info;
     password_to_username_[password_element] = username_element;
-
-    FormData form;
-    FormFieldData field;
-    if (form_contains_username_field) {
-      FindFormAndFieldForFormControlElement(
-          username_element, &form, &field, REQUIRE_NONE);
-    }
-
-    Send(new AutofillHostMsg_AddPasswordFormMapping(
-        routing_id(), field, form_data));
+    login_to_password_info_key_[username_element] = key;
   }
 }
 
@@ -1102,13 +1094,18 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   blink::WebInputElement selected_element = user_input;
   gfx::Rect bounding_box(selected_element.boundsInViewportSpace());
 
+  LoginToPasswordInfoKeyMap::const_iterator key_it =
+      login_to_password_info_key_.find(user_input);
+  DCHECK(key_it != login_to_password_info_key_.end());
+
   float scale = web_view_->pageScaleFactor();
   gfx::RectF bounding_box_scaled(bounding_box.x() * scale,
                                  bounding_box.y() * scale,
                                  bounding_box.width() * scale,
                                  bounding_box.height() * scale);
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
-      routing_id(), field, user_input.value(), show_all, bounding_box_scaled));
+      routing_id(), key_it->second, field.text_direction, user_input.value(),
+      show_all, bounding_box_scaled));
 
   bool suggestions_present = false;
   if (GetSuggestionsStats(fill_data, user_input.value(), show_all,
@@ -1160,6 +1157,7 @@ void PasswordAutofillAgent::FrameClosing(const blink::WebFrame* frame) {
     // There may not be a username field, so get the frame from the password
     // field.
     if (iter->second.password_field.document().frame() == frame) {
+      login_to_password_info_key_.erase(iter->first);
       password_to_username_.erase(iter->second.password_field);
       login_to_password_info_.erase(iter++);
     } else {

@@ -63,6 +63,12 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
   PasswordGenerationManager password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
 
+  // Every instance of PasswordFormFillData created by |*this| and sent to
+  // PasswordAutofillManager and PasswordAutofillAgent is given an ID, so that
+  // the latter two classes can reference to the same instance without sending
+  // it to each other over IPC. The counter below is used to generate new IDs.
+  int next_free_key_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentPasswordManagerDriver);
 };
 

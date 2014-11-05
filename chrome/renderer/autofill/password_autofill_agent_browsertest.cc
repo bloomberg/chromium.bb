@@ -36,6 +36,8 @@ using blink::WebView;
 
 namespace {
 
+const int kPasswordFillFormDataId = 1234;
+
 // The name of the username/password element in the form.
 const char kUsernameName[] = "username";
 const char kPasswordName[] = "password";
@@ -175,7 +177,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // protected.
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
-    AutofillMsg_FillPasswordForm msg(0, fill_data);
+    AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
     static_cast<content::RenderViewObserver*>(password_autofill_agent_)
         ->OnMessageReceived(msg);
   }
@@ -394,13 +396,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_ShowPasswordSuggestions::ID);
     EXPECT_TRUE(message);
-    Tuple4<autofill::FormFieldData, base::string16, bool, gfx::RectF> args;
+    Tuple5<int, base::i18n::TextDirection, base::string16, bool, gfx::RectF>
+        args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
     EXPECT_EQ(2u, fill_data_.basic_data.fields.size());
-    EXPECT_EQ(fill_data_.basic_data.fields[0].name, args.a.name);
-    EXPECT_EQ(ASCIIToUTF16(username), args.a.value);
-    EXPECT_EQ(ASCIIToUTF16(username), args.b);
-    EXPECT_EQ(show_all, args.c);
+    EXPECT_EQ(kPasswordFillFormDataId, args.a);
+    EXPECT_EQ(ASCIIToUTF16(username), args.c);
+    EXPECT_EQ(show_all, args.d);
 
     render_thread_->sink().ClearMessages();
   }

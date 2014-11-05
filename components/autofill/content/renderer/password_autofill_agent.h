@@ -98,6 +98,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
     PasswordInfo();
   };
   typedef std::map<blink::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+  typedef std::map<blink::WebElement, int> LoginToPasswordInfoKeyMap;
   typedef std::map<blink::WebElement, blink::WebElement> PasswordToLoginMap;
   typedef std::map<blink::WebFrame*,
                    linked_ptr<PasswordForm> > FrameToPasswordFormMap;
@@ -146,7 +147,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                       const blink::WebFormElement& form) override;
 
   // RenderView IPC handlers:
-  void OnFillPasswordForm(const PasswordFormFillData& form_data);
+  void OnFillPasswordForm(int key, const PasswordFormFillData& form_data);
   void OnSetLoggingState(bool active);
 
   // Scans the given frame for password forms and sends them up to the browser.
@@ -191,6 +192,8 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
+  // And the keys under which PasswordAutofillManager can find the same info.
+  LoginToPasswordInfoKeyMap login_to_password_info_key_;
   // A (sort-of) reverse map to |login_to_password_info_|.
   PasswordToLoginMap password_to_username_;
 
