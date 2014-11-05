@@ -229,6 +229,11 @@ bool DriWrapper::SetProperty(uint32_t connector_id,
   return !drmModeConnectorSetProperty(fd_, connector_id, property_id, value);
 }
 
+bool DriWrapper::GetCapability(uint64_t capability, uint64_t* value) {
+  DCHECK(fd_ >= 0);
+  return !drmGetCap(fd_, capability, value);
+}
+
 ScopedDrmPropertyBlobPtr DriWrapper::GetPropertyBlob(
     drmModeConnector* connector, const char* name) {
   DCHECK(fd_ >= 0);

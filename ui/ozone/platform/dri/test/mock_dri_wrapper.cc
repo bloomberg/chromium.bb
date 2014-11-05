@@ -113,6 +113,10 @@ bool MockDriWrapper::SetProperty(uint32_t connector_id,
   return true;
 }
 
+bool MockDriWrapper::GetCapability(uint64_t capability, uint64_t* value) {
+  return true;
+}
+
 ScopedDrmPropertyBlobPtr MockDriWrapper::GetPropertyBlob(
     drmModeConnector* connector,
     const char* name) {

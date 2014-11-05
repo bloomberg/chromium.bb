@@ -85,6 +85,7 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual bool SetProperty(uint32_t connector_id,
                            uint32_t property_id,
                            uint64_t value) override;
+  virtual bool GetCapability(uint64_t capability, uint64_t* value) override;
   virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
                                                    const char* name) override;
   virtual bool SetCursor(uint32_t crtc_id,

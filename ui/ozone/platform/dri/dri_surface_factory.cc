@@ -25,8 +25,13 @@ namespace ui {
 
 namespace {
 
-// TODO(dnicoara) Read the cursor plane size from the hardware.
-const gfx::Size kCursorSize(64, 64);
+#ifndef DRM_CAP_CURSOR_WIDTH
+#define DRM_CAP_CURSOR_WIDTH 0x8
+#endif
+
+#ifndef DRM_CAP_CURSOR_HEIGHT
+#define DRM_CAP_CURSOR_HEIGHT 0x9
+#endif
 
 void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
@@ -76,8 +81,12 @@ DriSurfaceFactory::HardwareState DriSurfaceFactory::InitializeHardware() {
     return state_;
   }
 
-  SkImageInfo info = SkImageInfo::MakeN32Premul(kCursorSize.width(),
-                                                kCursorSize.height());
+  uint64_t cursor_width = 64;
+  uint64_t cursor_height = 64;
+  drm_->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
+  drm_->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
+
+  SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
   for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
     cursor_buffers_[i] = new DriBuffer(drm_);
     if (!cursor_buffers_[i]->Initialize(info)) {

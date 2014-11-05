@@ -101,6 +101,10 @@ class DriWrapper {
                            uint32_t property_id,
                            uint64_t value);
 
+  // Can be used to query device/driver |capability|. Sets the value of
+  // |capability to |value|. Returns true in case of a succesful query.
+  virtual bool GetCapability(uint64_t capability, uint64_t* value);
+
   // Return a binary blob associated with |connector|. The binary blob is
   // associated with the property with name |name|. Return NULL if the property
   // could not be found or if the property does not have a binary blob. If valid
