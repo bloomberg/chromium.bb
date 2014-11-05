@@ -2488,8 +2488,6 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
          SSL_CONNECTION_COMPRESSION_MASK) <<
         SSL_CONNECTION_COMPRESSION_SHIFT;
 
-    // NSS 3.14.x doesn't have a version macro for TLS 1.2 (because NSS didn't
-    // support it yet), so use 0x0303 directly.
     int version = SSL_CONNECTION_VERSION_UNKNOWN;
     if (channel_info.protocolVersion < SSL_LIBRARY_VERSION_3_0) {
       // All versions less than SSL_LIBRARY_VERSION_3_0 are treated as SSL
@@ -2497,11 +2495,11 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
       version = SSL_CONNECTION_VERSION_SSL2;
     } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_3_0) {
       version = SSL_CONNECTION_VERSION_SSL3;
-    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_3_1_TLS) {
+    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_0) {
       version = SSL_CONNECTION_VERSION_TLS1;
     } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_1) {
       version = SSL_CONNECTION_VERSION_TLS1_1;
-    } else if (channel_info.protocolVersion == 0x0303) {
+    } else if (channel_info.protocolVersion == SSL_LIBRARY_VERSION_TLS_1_2) {
       version = SSL_CONNECTION_VERSION_TLS1_2;
     }
     nss_handshake_state_.ssl_connection_status |=

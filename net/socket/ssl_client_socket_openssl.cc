@@ -101,9 +101,9 @@ int GetNetSSLVersion(SSL* ssl) {
       return SSL_CONNECTION_VERSION_SSL3;
     case TLS1_VERSION:
       return SSL_CONNECTION_VERSION_TLS1;
-    case 0x0302:
+    case TLS1_1_VERSION:
       return SSL_CONNECTION_VERSION_TLS1_1;
-    case 0x0303:
+    case TLS1_2_VERSION:
       return SSL_CONNECTION_VERSION_TLS1_2;
     default:
       return SSL_CONNECTION_VERSION_UNKNOWN;
