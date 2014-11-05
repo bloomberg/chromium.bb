@@ -260,18 +260,20 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
 //
 bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& nonce)
 {
-    DEFINE_STATIC_LOCAL(const String, noncePrefix, ("'nonce-"));
+    size_t nonceLength = end - begin;
+    const char* prefix = "'nonce-";
 
-    if (!equalIgnoringCase(noncePrefix.characters8(), begin, noncePrefix.length()))
+    if (nonceLength <= strlen(prefix) || !equalIgnoringCase(prefix, begin, strlen(prefix)))
         return true;
 
-    const UChar* position = begin + noncePrefix.length();
+    const UChar* position = begin + strlen(prefix);
     const UChar* nonceBegin = position;
 
+    ASSERT(position < end);
     skipWhile<UChar, isNonceCharacter>(position, end);
     ASSERT(nonceBegin <= position);
 
-    if ((position + 1) != end || *position != '\'' || !(position - nonceBegin))
+    if (position + 1 != end || *position != '\'' || position == nonceBegin)
         return false;
 
     nonce = String(nonceBegin, position - nonceBegin);

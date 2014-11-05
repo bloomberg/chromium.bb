@@ -1,5 +1,15 @@
+CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'n".
+
+CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce'. It will be ignored.
+CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce".
+
 CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-''. It will be ignored.
 CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-'".
+
+CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-'. It will be ignored.
+CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src 'nonce-".
+
+CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/script.js' because it violates the following Content Security Policy directive: "script-src nonce-abcd".
 
 CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: ''nonce-'. It will be ignored.
 CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: '''. It will be ignored.
@@ -50,5 +60,25 @@ PASS
 
 --------
 Frame: '<!--framePath //<!--frame5-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame6-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame7-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame8-->-->'
+--------
+PASS
+
+--------
+Frame: '<!--framePath //<!--frame9-->-->'
 --------
 PASS
