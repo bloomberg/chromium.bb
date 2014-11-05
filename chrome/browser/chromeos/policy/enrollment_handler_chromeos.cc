@@ -392,19 +392,17 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
       } else {
-        ReportResult(EnrollmentStatus::ForStatus(
-            EnrollmentStatus::STATUS_LOCK_TIMEOUT));
+        HandleLockDeviceResult(EnterpriseInstallAttributes::LOCK_TIMEOUT);
       }
       break;
-    case EnterpriseInstallAttributes::LOCK_BACKEND_ERROR:
-      ReportResult(EnrollmentStatus::ForStatus(
-          EnrollmentStatus::STATUS_LOCK_ERROR));
-      break;
-    case EnterpriseInstallAttributes::LOCK_WRONG_USER:
-      LOG(ERROR) << "Enrollment cannot proceed because the InstallAttrs "
-                 << "has been locked already!";
-      ReportResult(EnrollmentStatus::ForStatus(
-          EnrollmentStatus::STATUS_LOCK_WRONG_USER));
+    case EnterpriseInstallAttributes::LOCK_TIMEOUT:
+    case EnterpriseInstallAttributes::LOCK_BACKEND_INVALID:
+    case EnterpriseInstallAttributes::LOCK_ALREADY_LOCKED:
+    case EnterpriseInstallAttributes::LOCK_SET_ERROR:
+    case EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
+    case EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
+    case EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+      ReportResult(EnrollmentStatus::ForLockError(lock_result));
       break;
   }
 }
@@ -454,7 +452,8 @@ void EnrollmentHandlerChromeOS::ReportResult(EnrollmentStatus status) {
     LOG(WARNING) << "Enrollment failed: " << status.status()
                  << ", client: " << status.client_status()
                  << ", validation: " << status.validation_status()
-                 << ", store: " << status.store_status();
+                 << ", store: " << status.store_status()
+                 << ", lock: " << status.lock_status();
   }
 
   if (!callback.is_null())

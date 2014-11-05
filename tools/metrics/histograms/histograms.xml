@@ -42728,14 +42728,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Registration / policy fetch failed: DM server reports management not
     supported.
   </int>
-  <int value="5" label="Policy Failed (deprecated)">
-    DEPRECATED: Enrollment failed because it failed to apply device policy.
+  <int value="5" label="Policy Failed (unused)">
+    UNUSED: Enrollment failed because it failed to apply device policy.
   </int>
-  <int value="6" label="Other Failed (deprecated)">
-    DEPRECATED: Enrollment failed due to an unexpected error. This currently
-    happens when the GAIA auth token is not issued for the DM service, the
-    device cloud policy subsystem isn't initialized, or when fetching GAIA
-    tokens fails for an unknown reason.
+  <int value="6" label="Other Failed (unused)">
+    UNUSED: Enrollment failed due to an unexpected error. This currently happens
+    when the GAIA auth token is not issued for the DM service, the device cloud
+    policy subsystem isn't initialized, or when fetching GAIA tokens fails for
+    an unknown reason.
   </int>
   <int value="7" label="OK">Enrollment was successful.</int>
   <int value="8" label="Registration/fetch: invalid Serial">
@@ -42761,10 +42761,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     presently means trying to auto-enroll in kiosk mode.
   </int>
   <int value="16" label="Install attributes timeout">
-    Enrollment failed: lockbox initialization took too long to complete.
+    Lockbox initialization took too long to complete.
   </int>
   <int value="17" label="Re-enrollment: lock domain mismatch">
-    Re-enrollment device lock failed: domain does not match install attributes.
+    Lockbox error at re-enrollment: domain does not match install attributes.
   </int>
   <int value="18" label="Registration/fetch: missing licenses">
     Registration / policy fetch failed: DM server reports licenses expired or
@@ -42805,7 +42805,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="29" label="Error in CloudPolicyStore">
     Failed due to error in CloudPolicyStore.
   </int>
-  <int value="30" label="Error locking device">Failed to lock device.</int>
+  <int value="30" label="Error locking device (unused)">
+    UNUSED: Failed to lock device.
+  </int>
   <int value="31" label="Registration/fetch: request payload invalid">
     Registration / policy fetch failed: DM server reports invalid request
     payload.
@@ -42850,8 +42852,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="44" label="Re-enrollment: pre-check domain mismatch">
     Re-enrollment pre-check failed: domain does not match install attributes.
   </int>
-  <int value="45" label="Re-enrollment: lock domain mismatch">
-    Re-enrollment device lock failed: domain does not match install attributes.
+  <int value="45" label="Lockbox initialization failed">
+    Lockbox backend failed to initialize.
+  </int>
+  <int value="46" label="Lockbox already locked">
+    Lockbox backend (TPM) already locked.
+  </int>
+  <int value="47" label="Lockbox set attribute failed">
+    Lockbox failure setting attributes.
+  </int>
+  <int value="48" label="Lockbox locking failed">
+    Lockbox failure during locking.
+  </int>
+  <int value="49" label="Lockbox inconsistent read back">
+    Lockbox read back is inconsistent.
   </int>
 </enum>
 

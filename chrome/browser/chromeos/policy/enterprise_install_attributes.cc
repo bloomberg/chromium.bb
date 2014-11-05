@@ -161,7 +161,7 @@ void EnterpriseInstallAttributes::LockDevice(
       std::string domain = gaia::ExtractDomainName(user);
       callback.Run(
           (!registration_domain_.empty() && domain == registration_domain_) ?
-              LOCK_SUCCESS : LOCK_WRONG_USER);
+              LOCK_SUCCESS : LOCK_WRONG_DOMAIN);
     }
     return;
   }
@@ -197,12 +197,13 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   // Make sure we really have a working InstallAttrs.
   if (cryptohome_util::InstallAttributesIsInvalid()) {
     LOG(ERROR) << "Install attributes invalid.";
-    callback.Run(LOCK_BACKEND_ERROR);
+    callback.Run(LOCK_BACKEND_INVALID);
     return;
   }
 
   if (!cryptohome_util::InstallAttributesIsFirstInstall()) {
-    callback.Run(LOCK_BACKEND_ERROR);
+    LOG(ERROR) << "Install attributes already installed.";
+    callback.Run(LOCK_ALREADY_LOCKED);
     return;
   }
 
@@ -215,8 +216,8 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
     // Set values in the InstallAttrs and lock it.
     if (!cryptohome_util::InstallAttributesSet(kAttrConsumerKioskEnabled,
                                                "true")) {
-      LOG(ERROR) << "Failed writing attributes";
-      callback.Run(LOCK_BACKEND_ERROR);
+      LOG(ERROR) << "Failed writing attributes.";
+      callback.Run(LOCK_SET_ERROR);
       return;
     }
   } else {
@@ -230,8 +231,8 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseMode, mode) ||
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseDeviceId,
                                                device_id)) {
-      LOG(ERROR) << "Failed writing attributes";
-      callback.Run(LOCK_BACKEND_ERROR);
+      LOG(ERROR) << "Failed writing attributes.";
+      callback.Run(LOCK_SET_ERROR);
       return;
     }
   }
@@ -239,7 +240,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   if (!cryptohome_util::InstallAttributesFinalize() ||
       cryptohome_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Failed locking.";
-    callback.Run(LOCK_BACKEND_ERROR);
+    callback.Run(LOCK_FINALIZE_ERROR);
     return;
   }
 
@@ -255,8 +256,8 @@ void EnterpriseInstallAttributes::OnReadImmutableAttributes(
     const LockResultCallback& callback) {
 
   if (GetRegistrationUser() != registration_user) {
-    LOG(ERROR) << "Locked data doesn't match";
-    callback.Run(LOCK_BACKEND_ERROR);
+    LOG(ERROR) << "Locked data doesn't match.";
+    callback.Run(LOCK_READBACK_ERROR);
     return;
   }
 

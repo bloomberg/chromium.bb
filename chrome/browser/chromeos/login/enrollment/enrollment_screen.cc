@@ -379,12 +379,6 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
       UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
       break;
-    case policy::EnrollmentStatus::STATUS_LOCK_TIMEOUT:
-      UMAFailure(policy::kMetricEnrollmentLockboxTimeoutError);
-      break;
-    case policy::EnrollmentStatus::STATUS_LOCK_WRONG_USER:
-      UMAFailure(policy::kMetricEnrollmentLockDomainMismatch);
-      break;
     case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
       UMAFailure(policy::kMetricEnrollmentNoStateKeys);
       break;
@@ -395,7 +389,33 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
       UMAFailure(policy::kMetricEnrollmentCloudPolicyStoreError);
       break;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
-      UMAFailure(policy::kMetricEnrollmentLockBackendError);
+      switch (status.lock_status()) {
+        case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
+        case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+          NOTREACHED();
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_TIMEOUT:
+          UMAFailure(policy::kMetricEnrollmentLockboxTimeoutError);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_BACKEND_INVALID:
+          UMAFailure(policy::kMetricEnrollmentLockBackendInvalid);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_ALREADY_LOCKED:
+          UMAFailure(policy::kMetricEnrollmentLockAlreadyLocked);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_SET_ERROR:
+          UMAFailure(policy::kMetricEnrollmentLockSetError);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
+          UMAFailure(policy::kMetricEnrollmentLockFinalizeError);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
+          UMAFailure(policy::kMetricEnrollmentLockReadbackError);
+          break;
+        case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+          UMAFailure(policy::kMetricEnrollmentLockDomainMismatch);
+          break;
+      }
       break;
     case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotAuthCodeFetchFailed);

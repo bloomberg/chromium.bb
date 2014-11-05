@@ -25,12 +25,19 @@ namespace policy {
 // TODO(zelidrag, mnissler): Rename + move this class - http://crbug.com/249513.
 class EnterpriseInstallAttributes {
  public:
-  // Return codes for LockDevice().
+  // EnterpriseInstallAttributes status codes.  Do not change the numeric ids or
+  // the meaning of the existing codes to preserve the interpretability of old
+  // logfiles.
   enum LockResult {
-    LOCK_SUCCESS,
-    LOCK_NOT_READY,
-    LOCK_BACKEND_ERROR,
-    LOCK_WRONG_USER,
+    LOCK_SUCCESS = 0,          // Success.
+    LOCK_NOT_READY = 1,        // Backend/TPM still initializing.
+    LOCK_TIMEOUT = 2,          // Backend/TPM timed out.
+    LOCK_BACKEND_INVALID = 3,  // Backend failed to initialize.
+    LOCK_ALREADY_LOCKED = 4,   // TPM has already been locked.
+    LOCK_SET_ERROR = 5,        // Failed to set attributes.
+    LOCK_FINALIZE_ERROR = 6,   // Backend failed to lock.
+    LOCK_READBACK_ERROR = 7,   // Inconsistency reading back registration data.
+    LOCK_WRONG_DOMAIN = 8,     // Device already registered to another domain.
   };
 
   // A callback to handle responses of methods returning a LockResult value.

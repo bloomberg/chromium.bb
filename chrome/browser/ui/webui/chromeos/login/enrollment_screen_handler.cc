@@ -330,13 +330,29 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
           true);
       return;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_ERROR, false);
-      return;
-    case policy::EnrollmentStatus::STATUS_LOCK_TIMEOUT:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_TIMEOUT, false);
-      return;
-    case policy::EnrollmentStatus::STATUS_LOCK_WRONG_USER:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
+      switch (status.lock_status()) {
+        case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
+        case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+          // LOCK_SUCCESS is in contradiction of STATUS_LOCK_ERROR.
+          // LOCK_NOT_READY is transient, if retries are given up, LOCK_TIMEOUT
+          // is reported instead.  This piece of code is unreached.
+          LOG(FATAL) << "Invalid lock status.";
+          return;
+        case policy::EnterpriseInstallAttributes::LOCK_TIMEOUT:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_TIMEOUT, false);
+          return;
+        case policy::EnterpriseInstallAttributes::LOCK_BACKEND_INVALID:
+        case policy::EnterpriseInstallAttributes::LOCK_ALREADY_LOCKED:
+        case policy::EnterpriseInstallAttributes::LOCK_SET_ERROR:
+        case policy::EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
+        case policy::EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_ERROR, false);
+          return;
+        case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
+          return;
+      }
+      NOTREACHED();
       return;
     case policy::EnrollmentStatus::STATUS_STORE_ERROR:
       ShowErrorMessage(

@@ -110,7 +110,7 @@ TEST_F(EnterpriseInstallAttributesTest, Lock) {
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
   // But another domain should fail.
-  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_USER,
+  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN,
             LockDeviceAndWaitForResult(
                 "test@bluebears.com",
                 DEVICE_MODE_ENTERPRISE,
