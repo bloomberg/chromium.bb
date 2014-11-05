@@ -26,6 +26,8 @@ component("app_list") {
     "app_list_switches.h",
     "app_list_view_delegate.cc",
     "app_list_view_delegate.h",
+    "folder_image.cc",
+    "folder_image.h",
     "folder_image_source.cc",
     "folder_image_source.h",
     "pagination_controller.cc",
@@ -217,6 +219,7 @@ test("app_list_unittests") {
   sources = [
     "app_list_item_list_unittest.cc",
     "app_list_model_unittest.cc",
+    "folder_image_unittest.cc",
     "pagination_model_unittest.cc",
     "search/history_data_store_unittest.cc",
     "search/mixer_unittest.cc",

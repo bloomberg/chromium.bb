@@ -10,19 +10,29 @@
 
 namespace app_list {
 
-AllAppsTileItemView::AllAppsTileItemView(ContentsView* contents_view)
-    : contents_view_(contents_view) {
+AllAppsTileItemView::AllAppsTileItemView(ContentsView* contents_view,
+                                         AppListItemList* item_list)
+    : contents_view_(contents_view), folder_image_(item_list) {
   SetTitle(l10n_util::GetStringUTF16(IDS_APP_LIST_ALL_APPS));
-  // TODO(mgiuca): Set the button's icon.
+  folder_image_.AddObserver(this);
 }
 
 AllAppsTileItemView::~AllAppsTileItemView() {
+  folder_image_.RemoveObserver(this);
+}
+
+void AllAppsTileItemView::UpdateIcon() {
+  folder_image_.UpdateIcon();
 }
 
 void AllAppsTileItemView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   contents_view_->SetActivePage(
       contents_view_->GetPageIndexForState(AppListModel::STATE_APPS));
+}
+
+void AllAppsTileItemView::OnFolderImageUpdated() {
+  SetIcon(folder_image_.icon());
 }
 
 }  // namespace app_list

@@ -144,8 +144,10 @@ void StartPageView::InitTilesContainer() {
   }
 
   // Also add a special "all apps" button to the end of the container.
-  all_apps_button_ =
-      new AllAppsTileItemView(app_list_main_view_->contents_view());
+  all_apps_button_ = new AllAppsTileItemView(
+      app_list_main_view_->contents_view(),
+      view_delegate_->GetModel()->top_level_item_list());
+  all_apps_button_->UpdateIcon();
   tiles_container_->AddChildView(all_apps_button_);
 }
 

@@ -7,8 +7,8 @@
 #include "base/guid.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_list.h"
-#include "ui/app_list/folder_image_source.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
 
@@ -16,47 +16,24 @@ AppListFolderItem::AppListFolderItem(const std::string& id,
                                      FolderType folder_type)
     : AppListItem(id),
       folder_type_(folder_type),
-      item_list_(new AppListItemList) {
-  item_list_->AddObserver(this);
+      item_list_(new AppListItemList),
+      folder_image_(item_list_.get()) {
+  folder_image_.AddObserver(this);
 }
 
 AppListFolderItem::~AppListFolderItem() {
-  for (size_t i = 0; i < top_items_.size(); ++i)
-    top_items_[i]->RemoveObserver(this);
-  item_list_->RemoveObserver(this);
-}
-
-void AppListFolderItem::UpdateIcon() {
-  FolderImageSource::Icons top_icons;
-  for (size_t i = 0; i < top_items_.size(); ++i)
-    top_icons.push_back(top_items_[i]->icon());
-
-  const gfx::Size icon_size = gfx::Size(kGridIconDimension, kGridIconDimension);
-  gfx::ImageSkia icon = gfx::ImageSkia(
-      new FolderImageSource(top_icons, icon_size),
-      icon_size);
-  SetIcon(icon, false);
+  folder_image_.RemoveObserver(this);
 }
 
 const gfx::ImageSkia& AppListFolderItem::GetTopIcon(size_t item_index) {
-  CHECK_LT(item_index, top_items_.size());
-  return top_items_[item_index]->icon();
+  return folder_image_.GetTopIcon(item_index);
 }
 
 gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
     AppListItem* item,
     const gfx::Rect& folder_icon_bounds) {
-  for (size_t i = 0; i < top_items_.size(); ++i) {
-    if (item->id() == top_items_[i]->id()) {
-      std::vector<gfx::Rect> rects =
-          FolderImageSource::GetTopIconsBounds(folder_icon_bounds);
-      return rects[i];
-    }
-  }
-
-  gfx::Rect target_rect(folder_icon_bounds);
-  target_rect.ClampToCenteredSize(FolderImageSource::ItemIconSize());
-  return target_rect;
+  return folder_image_.GetTargetIconRectInFolderForItem(item,
+                                                        folder_icon_bounds);
 }
 
 void AppListFolderItem::Activate(int event_flags) {
@@ -107,41 +84,8 @@ std::string AppListFolderItem::GenerateId() {
   return base::GenerateGUID();
 }
 
-void AppListFolderItem::ItemIconChanged() {
-  UpdateIcon();
-}
-
-void AppListFolderItem::OnListItemAdded(size_t index,
-                                        AppListItem* item) {
-  if (index < kNumFolderTopItems)
-    UpdateTopItems();
-}
-
-void AppListFolderItem::OnListItemRemoved(size_t index,
-                                          AppListItem* item) {
-  if (index < kNumFolderTopItems)
-    UpdateTopItems();
-}
-
-void AppListFolderItem::OnListItemMoved(size_t from_index,
-                                        size_t to_index,
-                                        AppListItem* item) {
-  if (from_index < kNumFolderTopItems || to_index < kNumFolderTopItems)
-    UpdateTopItems();
-}
-
-void AppListFolderItem::UpdateTopItems() {
-  for (size_t i = 0; i < top_items_.size(); ++i)
-    top_items_[i]->RemoveObserver(this);
-  top_items_.clear();
-
-  for (size_t i = 0;
-       i < kNumFolderTopItems && i < item_list_->item_count(); ++i) {
-    AppListItem* item = item_list_->item_at(i);
-    item->AddObserver(this);
-    top_items_.push_back(item);
-  }
-  UpdateIcon();
+void AppListFolderItem::OnFolderImageUpdated() {
+  SetIcon(folder_image_.icon(), false);
 }
 
 }  // namespace app_list

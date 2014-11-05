@@ -77,7 +77,7 @@ class AppListModelTest : public testing::Test {
  protected:
   bool ItemObservedByFolder(AppListFolderItem* folder,
                             AppListItem* item) {
-    return item->observers_.HasObserver(folder);
+    return item->observers_.HasObserver(folder->folder_image());
   }
 
   std::string GetItemListContents(AppListItemList* item_list) {
