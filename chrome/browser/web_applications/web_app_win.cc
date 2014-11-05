@@ -12,17 +12,22 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/update_shortcut_worker_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
+#include "net/base/mime_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
@@ -32,6 +37,9 @@ namespace {
 
 const base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
+
+const base::FilePath::CharType kAppShimExe[] =
+    FILE_PATH_LITERAL("app_shim.exe");
 
 // Calculates checksum of an icon family using MD5.
 // The checksum is derived from all of the icons in the family.
@@ -363,10 +371,7 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
                                       shortcut_info.extension_id,
                                       shortcut_info.url);
   base::FilePath icon_file =
-      web_app_path.Append(web_app::internals::GetSanitizedFileName(
-                              shortcut_info.title))
-          .ReplaceExtension(FILE_PATH_LITERAL(".ico"));
-
+      web_app::internals::GetIconFilePath(web_app_path, shortcut_info.title);
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(&CreateIconAndSetRelaunchDetails,
@@ -374,6 +379,136 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
                  icon_file,
                  shortcut_info,
                  hwnd));
+}
+
+// Creates an "app shim exe" by linking or copying the generic app shim exe.
+// This is the binary that will be run when the user opens a file with this
+// application. The name and icon of the binary will be used on the Open With
+// menu. For this reason, we cannot simply launch chrome.exe. We give the app
+// shim exe the same name as the application (with no ".exe" extension), so that
+// the correct title will appear on the Open With menu. (Note: we also need a
+// separate binary per app because Windows only allows a single association with
+// each executable.)
+// |path| is the full path of the shim binary to be created.
+bool CreateAppShimBinary(const base::FilePath& path) {
+  // TODO(mgiuca): Hard-link instead of copying, if on the same file system.
+  base::FilePath chrome_binary_directory;
+  if (!PathService::Get(base::DIR_EXE, &chrome_binary_directory)) {
+    NOTREACHED();
+    return false;
+  }
+
+  base::FilePath generic_shim_path =
+      chrome_binary_directory.Append(kAppShimExe);
+  if (!base::CopyFile(generic_shim_path, path)) {
+    LOG(ERROR) << "Could not copy app shim exe to " << path.value();
+    return false;
+  }
+
+  return true;
+}
+
+// Gets the full command line for calling the shim binary. This will include a
+// placeholder "%1" argument, which Windows will substitute with the filename
+// chosen by the user.
+base::CommandLine GetAppShimCommandLine(const base::FilePath& app_shim_path,
+                                        const std::string& extension_id,
+                                        const base::FilePath& profile_path) {
+  // Get the command-line to pass to the shim (e.g., "chrome.exe --app-id=...").
+  CommandLine chrome_cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+      GURL(), extension_id, profile_path);
+  chrome_cmd_line.AppendArg("%1");
+
+  // Get the command-line for calling the shim (e.g.,
+  // "app_shim [--chrome-sxs] -- --app-id=...").
+  CommandLine shim_cmd_line(app_shim_path);
+  // If this is a canary build, launch the shim in canary mode.
+  if (InstallUtil::IsChromeSxSProcess())
+    shim_cmd_line.AppendSwitch(installer::switches::kChromeSxS);
+  // Ensure all subsequent switches are treated as args to the shim.
+  shim_cmd_line.AppendArg("--");
+  for (const auto& arg : chrome_cmd_line.GetArgs())
+    shim_cmd_line.AppendArgNative(arg);
+
+  return shim_cmd_line;
+}
+
+// Gets the set of file extensions associated with a particular file handler.
+// Uses both the MIME types and extensions.
+void GetHandlerFileExtensions(const extensions::FileHandlerInfo& handler,
+                              std::set<base::string16>* exts) {
+  for (const auto& mime : handler.types) {
+    std::vector<base::string16> mime_type_extensions;
+    net::GetExtensionsForMimeType(mime, &mime_type_extensions);
+    exts->insert(mime_type_extensions.begin(), mime_type_extensions.end());
+  }
+  for (const auto& ext : handler.extensions)
+    exts->insert(base::UTF8ToUTF16(ext));
+}
+
+// Creates operating system file type associations for a given app.
+// This is the platform specific implementation of the CreateFileAssociations
+// function, and is executed on the FILE thread.
+// Returns true on success, false on failure.
+bool CreateFileAssociationsForApp(
+    const std::string& extension_id,
+    const base::string16& title,
+    const base::FilePath& profile_path,
+    const extensions::FileHandlersInfo& file_handlers_info) {
+  base::FilePath web_app_path =
+      web_app::GetWebAppDataDirectory(profile_path, extension_id, GURL());
+  base::FilePath file_name = web_app::internals::GetSanitizedFileName(title);
+
+  // The progid is "chrome-APPID-HANDLERID". This is the internal name Windows
+  // will use for file associations with this application.
+  base::string16 progid_base = L"chrome-";
+  progid_base += base::UTF8ToUTF16(extension_id);
+
+  // Create the app shim binary (see CreateAppShimBinary for rationale). Get the
+  // command line for the shim.
+  base::FilePath app_shim_path = web_app_path.Append(file_name);
+  if (!CreateAppShimBinary(app_shim_path))
+    return false;
+
+  CommandLine shim_cmd_line(
+      GetAppShimCommandLine(app_shim_path, extension_id, profile_path));
+
+  // TODO(mgiuca): Get the file type name from the manifest, or generate a
+  // default one. (If this is blank, Windows will generate one of the form
+  // '<EXT> file'.)
+  base::string16 file_type_name = L"";
+
+  // TODO(mgiuca): Generate a new icon for this application's file associations
+  // that looks like a page with the application icon inside.
+  base::FilePath icon_file =
+      web_app::internals::GetIconFilePath(web_app_path, title);
+
+  // Create a separate file association (ProgId) for each handler. This allows
+  // each handler to have its own filetype name and icon, and also a different
+  // command line (so the app can see which handler was invoked).
+  size_t num_successes = 0;
+  for (const auto& handler : file_handlers_info) {
+    base::string16 progid = progid_base + L"-" + base::UTF8ToUTF16(handler.id);
+
+    std::set<base::string16> exts;
+    GetHandlerFileExtensions(handler, &exts);
+
+    if (ShellUtil::AddFileAssociations(progid, shim_cmd_line, file_type_name,
+                                       icon_file, exts)) {
+      ++num_successes;
+    }
+  }
+
+  if (num_successes == 0) {
+    // There were no successes; delete the shim.
+    base::DeleteFile(app_shim_path, false);
+  } else {
+    // There were some successes; tell Windows Explorer to update its cache.
+    SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST | SHCNF_FLUSHNOWAIT,
+                   nullptr, nullptr);
+  }
+
+  return num_successes == file_handlers_info.size();
 }
 
 }  // namespace
@@ -481,6 +616,12 @@ bool CreatePlatformShortcuts(
         AddExtension(installer::kLnkExt);
     if (!base::win::TaskbarPinShortcutLink(shortcut_to_pin.value().c_str()))
       return false;
+  }
+
+  if (switches::kEnableAppsFileAssociations) {
+    CreateFileAssociationsForApp(
+        shortcut_info.extension_id, shortcut_info.title,
+        shortcut_info.profile_path, file_handlers_info);
   }
 
   return true;
