@@ -267,20 +267,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   if (OnWinXp())
     return;
 
-  if (!HasWebcamOnSystem()) {
-    LOG(INFO)
-        << "Didn't find a webcam on the system; skipping test since Firefox "
-        << "needs to be able to acquire a webcam.";
-    return;
-  }
-
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
     VLOG(1) << "Waiting for AppRTC to come up...";
 
-  GURL room_url = GURL(base::StringPrintf("http://localhost:9999?r=room_%d",
-                                          base::RandInt(0, 65536)));
+  GURL room_url = GURL(
+      "http://localhost:9999?r=some_room_id&firefox_fake_device=1");
   content::WebContents* chrome_tab = OpenPageAndAcceptUserMedia(room_url);
 
   ASSERT_TRUE(LaunchFirefoxWithUrl(room_url));
