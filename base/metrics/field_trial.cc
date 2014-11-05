@@ -67,6 +67,7 @@ const int FieldTrial::kDefaultGroupNumber = 0;
 bool FieldTrial::enable_benchmarking_ = false;
 
 const char FieldTrialList::kPersistentStringSeparator('/');
+const char FieldTrialList::kActivationMarker('*');
 int FieldTrialList::kNoExpirationYear = 0;
 
 //------------------------------------------------------------------------------
@@ -421,7 +422,18 @@ bool FieldTrialList::CreateTrialsFromString(
       return false;
     if (group_name_end == trials_string.npos)
       group_name_end = trials_string.length();
-    std::string name(trials_string, next_item, name_end - next_item);
+
+    // Verify if the trial should be activated or not.
+    std::string name;
+    bool force_activation = false;
+    if (trials_string[next_item] == kActivationMarker) {
+      // Name cannot be only the indicator.
+      if (name_end - next_item == 1)
+        return false;
+      next_item++;
+      force_activation = true;
+    }
+    name.append(trials_string, next_item, name_end - next_item);
     std::string group_name(trials_string, name_end + 1,
                            group_name_end - name_end - 1);
     next_item = group_name_end + 1;
@@ -432,7 +444,7 @@ bool FieldTrialList::CreateTrialsFromString(
     FieldTrial* trial = CreateFieldTrial(name, group_name);
     if (!trial)
       return false;
-    if (mode == ACTIVATE_TRIALS) {
+    if (mode == ACTIVATE_TRIALS || force_activation) {
       // Call |group()| to mark the trial as "used" and notify observers, if
       // any. This is useful to ensure that field trials created in child
       // processes are properly reported in crash reports.

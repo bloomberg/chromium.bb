@@ -428,6 +428,12 @@ TEST_F(FieldTrialTest, BogusRestore) {
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
       "noname, only group/", FieldTrialList::DONT_ACTIVATE_TRIALS,
       std::set<std::string>()));
+  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
+      "/emptyname", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
+  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
+      "*/emptyname", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
 }
 
 TEST_F(FieldTrialTest, DuplicateRestore) {
@@ -486,6 +492,23 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringNotActive) {
   ASSERT_EQ(2U, active_groups.size());
   EXPECT_EQ("Abc", active_groups[0].trial_name);
   EXPECT_EQ("def", active_groups[0].group_name);
+  EXPECT_EQ("Xyz", active_groups[1].trial_name);
+  EXPECT_EQ("zyx", active_groups[1].group_name);
+}
+
+TEST_F(FieldTrialTest, CreateTrialsFromStringForceActivation) {
+  ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("def"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Xyz"));
+  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "*Abc/cba/def/fed/*Xyz/zyx/", FieldTrialList::DONT_ACTIVATE_TRIALS,
+      std::set<std::string>()));
+
+  FieldTrial::ActiveGroups active_groups;
+  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  ASSERT_EQ(2U, active_groups.size());
+  EXPECT_EQ("Abc", active_groups[0].trial_name);
+  EXPECT_EQ("cba", active_groups[0].group_name);
   EXPECT_EQ("Xyz", active_groups[1].trial_name);
   EXPECT_EQ("zyx", active_groups[1].group_name);
 }

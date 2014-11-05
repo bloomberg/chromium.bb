@@ -291,7 +291,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 class BASE_EXPORT FieldTrialList {
  public:
   // Specifies whether field trials should be activated (marked as "used"), when
-  // created using |CreateTrialsFromString()|.
+  // created using |CreateTrialsFromString()|. Has no effect on trials that are
+  // prefixed with |kActivationMarker|, which will always be activated."
   enum FieldTrialActivationMode {
     DONT_ACTIVATE_TRIALS,
     ACTIVATE_TRIALS,
@@ -301,6 +302,10 @@ class BASE_EXPORT FieldTrialList {
   // instance.  This is intended for use as a command line argument, passed to a
   // second process to mimic our state (i.e., provide the same group name).
   static const char kPersistentStringSeparator;  // Currently a slash.
+
+  // Define a marker character to be used as a prefix to a trial name on the
+  // command line which forces its activation.
+  static const char kActivationMarker;  // Currently an asterisk.
 
   // Year that is guaranteed to not be expired when instantiating a field trial
   // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
@@ -412,9 +417,10 @@ class BASE_EXPORT FieldTrialList {
   // used in a non-browser process, to carry randomly selected state in a
   // browser process into this non-browser process, but could also be invoked
   // through a command line argument to the browser process. The created field
-  // trials are marked as "used" for the purposes of active trial reporting if
-  // |mode| is ACTIVATE_TRIALS. Trial names in |ignored_trial_names| are ignored
-  // when parsing |prior_trials|.
+  // trials are all marked as "used" for the purposes of active trial reporting
+  // if |mode| is ACTIVATE_TRIALS, otherwise each trial will be marked as "used"
+  // if it is prefixed with |kActivationMarker|. Trial names in
+  // |ignored_trial_names| are ignored when parsing |prior_trials|.
   static bool CreateTrialsFromString(
       const std::string& prior_trials,
       FieldTrialActivationMode mode,
