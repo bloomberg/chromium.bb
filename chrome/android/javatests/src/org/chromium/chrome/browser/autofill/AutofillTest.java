@@ -8,13 +8,13 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
@@ -46,7 +46,7 @@ public class AutofillTest extends ChromeShellTestBase {
         final ViewAndroidDelegate viewDelegate =
                 activity.getActiveContentViewCore().getViewAndroidDelegate();
 
-        UiUtils.runOnUiThread(getActivity(), new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mAutofillPopup = new AutofillPopup(mWindowAndroid.getActivity().get(),
@@ -105,7 +105,7 @@ public class AutofillTest extends ChromeShellTestBase {
 
     public boolean openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions)
             throws InterruptedException {
-        UiUtils.runOnUiThread(getActivity(), new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mAutofillPopup.filterAndShow(suggestions, false);

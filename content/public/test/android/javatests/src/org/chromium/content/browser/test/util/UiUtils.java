@@ -4,50 +4,20 @@
 
 package org.chromium.content.browser.test.util;
 
-import android.app.Activity;
 import android.app.Instrumentation;
-
-import junit.framework.Assert;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Collection of UI utilities.
  */
 public class UiUtils {
-    // timeout to wait for runOnUiThread()
-    private static final long WAIT_FOR_RESPONSE_MS = scaleTimeout(10000);
 
     /**
-     * Runs the runnable on the UI thread.
-     *
-     * @param activity The activity on which the runnable must run.
-     * @param runnable The runnable to run.
-     */
-    public static void runOnUiThread(Activity activity, final Runnable runnable) {
-        final Semaphore finishedSemaphore = new Semaphore(0);
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                runnable.run();
-                finishedSemaphore.release();
-            }
-        });
-        try {
-            Assert.assertTrue(finishedSemaphore.tryAcquire(1, WAIT_FOR_RESPONSE_MS,
-                    TimeUnit.MILLISECONDS));
-        } catch (InterruptedException ignored) {
-            Assert.assertTrue("Interrupted while waiting for main thread Runnable", false);
-        }
-    }
-
-    /**
-     * Waits for the UI thread to settle down.
+     * Waits for the UI thread to settle down and then waits for another second.
      * <p>
-     * Waits for an extra period of time after the UI loop is idle.
+     * Avoid this method like the plague. It's a fantastically evil source of flakiness in tests.
+     * Instead, you should either:
+     *  - Use an observer interface if possible (preferred), or
+     *  - Use CriteriaHelper to poll for the desired condition becoming true
      *
      * @param instrumentation Instrumentation object used by the test.
      */
