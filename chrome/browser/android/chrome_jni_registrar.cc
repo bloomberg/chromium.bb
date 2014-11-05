@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
+#include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
@@ -152,6 +153,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "FontSizePrefsAndroid", FontSizePrefsAndroid::Register },
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },
+  { "GeneratedPasswordSavedInfoBarDelegate",
+    RegisterGeneratedPasswordSavedInfoBarDelegate },
   { "InfoBarContainer", RegisterInfoBarContainer },
   { "InvalidationServiceFactory",
     invalidation::InvalidationServiceFactoryAndroid::Register },

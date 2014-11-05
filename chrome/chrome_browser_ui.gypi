@@ -1325,6 +1325,8 @@
       'browser/ui/certificate_dialogs.h',
     ],
     'chrome_browser_ui_android_sources': [
+      'browser/ui/android/infobars/generated_password_saved_infobar.cc',
+      'browser/ui/android/infobars/generated_password_saved_infobar.h',
       'browser/ui/auto_login_infobar_delegate.cc',
       'browser/ui/auto_login_infobar_delegate.h',
       'browser/ui/screen_capture_notification_ui_stub.cc',

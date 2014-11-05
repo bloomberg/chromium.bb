@@ -13173,6 +13173,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT" desc="The text that is used in the manage passwords bubble when a generated password is saved. Text inside |bars| is link text.">
       You can access it and all your |Google saved passwords| from any browser.
     </message>
+    <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT_INFOBAR" desc="The message that the browser shows after it saved the password that it automatically generated for the user. This message appears in an infobar on Android only. The infobar does not have a title. The placeholder text is a link.">
+      Generated password saved. You can access it and all your <ph name="SAVED_PASSWORDS_LINK">$1<ex>Google saved passwords</ex></ph> from any browser.
+    </message>
+    <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK" desc="The text for the 'Google saved passwords' link in the following context: 'Generated passwords saved. You can access it and all your Google saved passwords from any browser.'">
+      Google saved passwords
+    </message>
     <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
       Saved passwords for this site:
     </message>

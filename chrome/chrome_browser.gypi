@@ -1910,6 +1910,8 @@
       'browser/media/protected_media_identifier_permission_context.h',
       'browser/media/protected_media_identifier_permission_context_factory.cc',
       'browser/media/protected_media_identifier_permission_context_factory.h',
+      'browser/password_manager/generated_password_saved_infobar_delegate_android.cc',
+      'browser/password_manager/generated_password_saved_infobar_delegate_android.h',
     ],
     # Used everywhere but Android.
     'chrome_browser_non_android_sources': [
@@ -2790,6 +2792,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/AutoLoginDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/DataReductionProxyInfoBarDelegate.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBarDelegate.java',

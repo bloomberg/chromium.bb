@@ -42,6 +42,10 @@
 #include "net/base/url_util.h"
 #include "third_party/re2/re2/re2.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
+#endif
+
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
@@ -176,12 +180,16 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<password_manager::PasswordFormManager> saved_form) {
+#if defined(OS_ANDROID)
+  GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
+#else
   if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsUIController* manage_passwords_ui_controller =
         ManagePasswordsUIController::FromWebContents(web_contents());
     manage_passwords_ui_controller->OnAutomaticPasswordSave(
         saved_form.Pass());
   }
+#endif
 }
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
