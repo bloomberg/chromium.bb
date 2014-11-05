@@ -224,6 +224,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       node->IsCheckable(),
       node->IsChecked(),
       node->IsClickable(),
+      node->IsEditableText(),
       node->IsEnabled(),
       node->IsFocusable(),
       node->IsFocused(),
@@ -404,6 +405,22 @@ void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
   BrowserAccessibility* node = GetFromID(id);
   if (node)
     ScrollToMakeVisible(*node, gfx::Rect(node->GetLocation().size()));
+}
+
+void BrowserAccessibilityManagerAndroid::SetTextFieldValue(
+    JNIEnv* env, jobject obj, jint id, jstring value) {
+  BrowserAccessibility* node = GetFromID(id);
+  if (node) {
+    BrowserAccessibilityManager::SetValue(
+        *node, base::android::ConvertJavaStringToUTF16(env, value));
+  }
+}
+
+void BrowserAccessibilityManagerAndroid::SetSelection(
+    JNIEnv* env, jobject obj, jint id, jint start, jint end) {
+  BrowserAccessibility* node = GetFromID(id);
+  if (node)
+    SetTextSelection(*node, start, end);
 }
 
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(

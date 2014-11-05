@@ -434,6 +434,11 @@ void RenderFrameHostImpl::AccessibilitySetTextSelection(
       routing_id_, object_id, start_offset, end_offset));
 }
 
+void RenderFrameHostImpl::AccessibilitySetValue(
+    int object_id, const base::string16& value) {
+  Send(new AccessibilityMsg_SetValue(routing_id_, object_id, value));
+}
+
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
   RenderWidgetHostView* view = render_view_host_->GetView();
   if (view)

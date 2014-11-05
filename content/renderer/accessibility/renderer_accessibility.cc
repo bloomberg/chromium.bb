@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -71,6 +72,7 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
                         OnScrollToMakeVisible)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint, OnScrollToPoint)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection, OnSetTextSelection)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
@@ -425,15 +427,25 @@ void RendererAccessibility::OnSetTextSelection(
     return;
   }
 
-  // TODO(dmazzoni): support elements other than <input>.
-  blink::WebNode node = obj.node();
-  if (!node.isNull() && node.isElementNode()) {
-    blink::WebElement element = node.to<blink::WebElement>();
-    blink::WebInputElement* input_element =
-        blink::toWebInputElement(&element);
-    if (input_element && input_element->isTextField())
-      input_element->setSelectionRange(start_offset, end_offset);
+  obj.setSelectedTextRange(start_offset, end_offset);
+}
+
+void RendererAccessibility::OnSetValue(
+    int acc_obj_id,
+    base::string16 value) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
+#endif
+    return;
   }
+
+  obj.setValue(value);
 }
 
 }  // namespace content

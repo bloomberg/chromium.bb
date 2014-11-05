@@ -134,6 +134,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AccessibilitySetTextSelection(int acc_obj_id,
                                      int start_offset,
                                      int end_offset) override;
+  void AccessibilitySetValue(int acc_obj_id, const base::string16& value)
+      override;
   bool AccessibilityViewHasFocus() const override;
   gfx::Rect AccessibilityGetViewBounds() const override;
   gfx::Point AccessibilityOriginInScreen(

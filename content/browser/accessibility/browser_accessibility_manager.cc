@@ -284,8 +284,17 @@ void BrowserAccessibilityManager::ScrollToPoint(
   }
 }
 
+void BrowserAccessibilityManager::SetValue(
+    const BrowserAccessibility& node,
+    const base::string16& value) {
+  if (delegate_)
+    delegate_->AccessibilitySetValue(node.GetId(), value);
+}
+
 void BrowserAccessibilityManager::SetTextSelection(
-    const BrowserAccessibility& node, int start_offset, int end_offset) {
+    const BrowserAccessibility& node,
+    int start_offset,
+    int end_offset) {
   if (delegate_) {
     delegate_->AccessibilitySetTextSelection(
         node.GetId(), start_offset, end_offset);

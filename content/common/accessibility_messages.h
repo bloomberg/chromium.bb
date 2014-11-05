@@ -122,6 +122,12 @@ IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
                     int /* New start offset */,
                     int /* New end offset */)
 
+// Relay a request from assistive technology to set the value of an
+// editable text element.
+IPC_MESSAGE_ROUTED2(AccessibilityMsg_SetValue,
+                    int /* object id */,
+                    base::string16 /* Value */)
+
 // Determine the accessibility object under a given point and reply with
 // a AccessibilityHostMsg_HitTestResult with the same id.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,

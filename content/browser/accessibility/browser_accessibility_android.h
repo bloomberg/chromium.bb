@@ -26,6 +26,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsCollectionItem() const;
   bool IsContentInvalid() const;
   bool IsDismissable() const;
+  bool IsEditableText() const;
   bool IsEnabled() const;
   bool IsFocusable() const;
   bool IsFocused() const;

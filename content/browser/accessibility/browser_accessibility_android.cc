@@ -143,6 +143,12 @@ bool BrowserAccessibilityAndroid::IsDismissable() const {
   return false;  // No concept of "dismissable" on the web currently.
 }
 
+bool BrowserAccessibilityAndroid::IsEditableText() const {
+  return (GetRole() == ui::AX_ROLE_EDITABLE_TEXT ||
+          GetRole() == ui::AX_ROLE_TEXT_AREA ||
+          GetRole() == ui::AX_ROLE_TEXT_FIELD);
+}
+
 bool BrowserAccessibilityAndroid::IsEnabled() const {
   return HasState(ui::AX_STATE_ENABLED);
 }

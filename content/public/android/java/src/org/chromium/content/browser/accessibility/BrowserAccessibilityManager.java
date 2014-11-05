@@ -40,6 +40,11 @@ import java.util.Locale;
 public class BrowserAccessibilityManager {
     private static final String TAG = "BrowserAccessibilityManager";
 
+    // Constants from AccessibilityNodeInfo defined in the L SDK.
+    private static final int ACTION_SET_TEXT = 0x200000;
+    private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
+            "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
+
     private ContentViewCore mContentViewCore;
     private final AccessibilityManager mAccessibilityManager;
     private final RenderCoordinates mRenderCoordinates;
@@ -194,7 +199,6 @@ public class BrowserAccessibilityManager {
             case AccessibilityNodeInfo.ACTION_CLEAR_FOCUS:
                 nativeBlur(mNativeObj);
                 return true;
-
             case AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT: {
                 if (arguments == null) return false;
                 String elementType = arguments.getString(
@@ -211,7 +215,28 @@ public class BrowserAccessibilityManager {
                 elementType = elementType.toUpperCase(Locale.US);
                 return jumpToElementType(elementType, false);
             }
-
+            case ACTION_SET_TEXT: {
+                if (arguments == null) return false;
+                String newText = arguments.getString(
+                        ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE);
+                if (newText == null) return false;
+                nativeSetTextFieldValue(mNativeObj, virtualViewId, newText);
+                // Match Android framework and set the cursor to the end of the text field.
+                nativeSetSelection(mNativeObj, virtualViewId, newText.length(), newText.length());
+                break;
+            }
+            case AccessibilityNodeInfo.ACTION_SET_SELECTION: {
+                int selectionStart = 0;
+                int selectionEnd = 0;
+                if (arguments != null) {
+                    selectionStart = arguments.getInt(
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT);
+                    selectionEnd = arguments.getInt(
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT);
+                }
+                nativeSetSelection(mNativeObj, virtualViewId, selectionStart, selectionEnd);
+                break;
+            }
             default:
                 break;
         }
@@ -388,8 +413,8 @@ public class BrowserAccessibilityManager {
      * gets initialized first.
      */
     private boolean isFrameInfoInitialized() {
-        return mRenderCoordinates.getContentWidthCss() != 0.0 ||
-               mRenderCoordinates.getContentHeightCss() != 0.0;
+        return mRenderCoordinates.getContentWidthCss() != 0.0
+                || mRenderCoordinates.getContentHeightCss() != 0.0;
     }
 
     @CalledByNative
@@ -480,8 +505,8 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void setAccessibilityNodeInfoBooleanAttributes(AccessibilityNodeInfo node,
             int virtualViewId, boolean checkable, boolean checked, boolean clickable,
-            boolean enabled, boolean focusable, boolean focused, boolean password,
-            boolean scrollable, boolean selected, boolean visibleToUser) {
+            boolean editableText, boolean enabled, boolean focusable, boolean focused,
+            boolean password, boolean scrollable, boolean selected, boolean visibleToUser) {
         node.setCheckable(checkable);
         node.setChecked(checked);
         node.setClickable(clickable);
@@ -495,6 +520,11 @@ public class BrowserAccessibilityManager {
 
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
+
+        if (editableText && enabled) {
+            node.addAction(ACTION_SET_TEXT);
+            node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+        }
 
         if (focusable) {
             if (focused) {
@@ -739,4 +769,8 @@ public class BrowserAccessibilityManager {
             long nativeBrowserAccessibilityManagerAndroid, int id);
     private native int nativeFindElementType(long nativeBrowserAccessibilityManagerAndroid,
             int startId, String elementType, boolean forwards);
+    private native void nativeSetTextFieldValue(long nativeBrowserAccessibilityManagerAndroid,
+            int id, String newValue);
+    private native void nativeSetSelection(long nativeBrowserAccessibilityManagerAndroid,
+            int id, int start, int end);
 }

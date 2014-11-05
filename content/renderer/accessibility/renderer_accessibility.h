@@ -92,6 +92,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
   void OnSetFocus(int acc_obj_id);
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
+  void OnSetValue(int acc_obj_id, base::string16 value);
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
