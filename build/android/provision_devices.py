@@ -207,8 +207,8 @@ def ProvisionDevice(device, options, is_perf):
     # Device black list is reset by bb_device_status_check.py per build.
     device_blacklist.ExtendBlacklist([str(device)])
   except (device_errors.CommandFailedError):
-    logging.info('Failed to provision device %s. Adding to blacklist.',
-                 str(device))
+    logging.exception('Failed to provision device %s. Adding to blacklist.',
+                      str(device))
     device_blacklist.ExtendBlacklist([str(device)])
 
 
