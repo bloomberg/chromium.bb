@@ -227,6 +227,29 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Scrip
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Node* impl)
+{
+    // Since EventTarget has [Custom=ToV8] and V8EventTarget.h defines its own
+    // v8SetReturnValue family, which are slow, we need to override them with
+    // optimized versions for Node and its subclasses. Without this overload,
+    // v8SetReturnValueForMainWorld for Node would be very slow.
+    //
+    // class hierarchy:
+    //     ScriptWrappable <-- EventTarget <--+-- Node <-- ...
+    //                                        +-- Window
+    // overloads:
+    //     v8SetReturnValueForMainWorld(ScriptWrappable*)
+    //         Optimized and very fast.
+    //     v8SetReturnValueForMainWorld(EventTarget*)
+    //         Uses custom toV8 function and slow.
+    //     v8SetReturnValueForMainWorld(Node*)
+    //         Optimized and very fast.
+    //     v8SetReturnValueForMainWorld(Window*)
+    //         Uses custom toV8 function and slow.
+    v8SetReturnValueForMainWorld(callbackInfo, ScriptWrappable::fromNode(impl));
+}
+
 template<typename CallbackInfo, typename T>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<T> impl)
 {
