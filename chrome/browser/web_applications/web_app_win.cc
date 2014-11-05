@@ -427,8 +427,8 @@ base::CommandLine GetAppShimCommandLine(const base::FilePath& app_shim_path,
     shim_cmd_line.AppendSwitch(installer::switches::kChromeSxS);
   // Ensure all subsequent switches are treated as args to the shim.
   shim_cmd_line.AppendArg("--");
-  for (const auto& arg : chrome_cmd_line.GetArgs())
-    shim_cmd_line.AppendArgNative(arg);
+  for (size_t i = 1; i < chrome_cmd_line.argv().size(); ++i)
+    shim_cmd_line.AppendArgNative(chrome_cmd_line.argv()[i]);
 
   return shim_cmd_line;
 }
