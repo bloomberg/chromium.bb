@@ -8,7 +8,6 @@ installClass('PluginPlaceholderElement', function(PluginPlaceholderElementProtot
     // FIXME: Load this from a .css file.
     var styleSource =
         '#plugin-placeholder {' +
-        '    all: initial;' +
         '    width: 100%;' +
         '    height: 100%;' +
         '    overflow: hidden;' +
