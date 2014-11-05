@@ -152,9 +152,15 @@ MediaStreamRemoteVideoSource::Observer::state() const {
   return state_;
 }
 
-MediaStreamRemoteVideoSource::Observer::~Observer() {
+void MediaStreamRemoteVideoSource::Observer::Unregister() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   track_->UnregisterObserver(this);
+  track_ = nullptr;
+}
+
+MediaStreamRemoteVideoSource::Observer::~Observer() {
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  DCHECK(!track_.get());
 }
 
 void MediaStreamRemoteVideoSource::Observer::SetSource(
@@ -197,6 +203,7 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
 
 MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
   DCHECK(CalledOnValidThread());
+  observer_->Unregister();
   observer_ = nullptr;
 }
 

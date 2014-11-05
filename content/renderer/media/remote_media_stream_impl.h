@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -78,6 +79,7 @@ class CONTENT_EXPORT RemoteMediaStreamImpl {
     base::WeakPtr<RemoteMediaStreamImpl> media_stream_;
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
     const scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
+    base::ThreadChecker ctor_thread_;
   };
 
   void OnChanged(scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,

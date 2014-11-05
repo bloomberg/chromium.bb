@@ -31,6 +31,17 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
     const scoped_refptr<webrtc::VideoTrackInterface>& track();
     webrtc::MediaStreamTrackInterface::TrackState state() const;
 
+    // This needs to be called by the owner of the observer instance before
+    // the owner releases its reference.
+    // The reason for this is to avoid a potential race when unregistration is
+    // done from the main thread while an event is being delivered on the
+    // signaling thread.  If, on the main thread, we're releasing the last
+    // reference to the observer and attempt to unregister from the observer's
+    // dtor, and at the same time receive an OnChanged event on the signaling
+    // thread, we will attempt to increment the refcount in the callback
+    // from 0 to 1 while the object is being freed.  Not good.
+    void Unregister();
+
    private:
     friend class base::RefCountedThreadSafe<Observer>;
     ~Observer() override;
@@ -48,7 +59,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 #if DCHECK_IS_ON
     bool source_set_;
 #endif
-    const scoped_refptr<webrtc::VideoTrackInterface> track_;
+    scoped_refptr<webrtc::VideoTrackInterface> track_;
     webrtc::MediaStreamTrackInterface::TrackState state_;
   };
 

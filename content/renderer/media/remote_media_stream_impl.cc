@@ -154,25 +154,43 @@ class RemoteVideoTrackAdapter
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       webrtc::VideoTrackInterface* webrtc_track)
       : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track) {
-    scoped_refptr<MediaStreamRemoteVideoSource::Observer> source_observer(
-        new MediaStreamRemoteVideoSource::Observer(main_thread,
-            observed_track().get()));
+    source_observer_ = new MediaStreamRemoteVideoSource::Observer(main_thread,
+        observed_track().get());
     // Here, we use base::Unretained() to avoid a circular reference.
     webkit_initialize_ = base::Bind(
         &RemoteVideoTrackAdapter::InitializeWebkitVideoTrack,
-        base::Unretained(this), source_observer, observed_track()->enabled());
+        base::Unretained(this), observed_track()->enabled());
   }
 
  protected:
-  ~RemoteVideoTrackAdapter() override {}
+  ~RemoteVideoTrackAdapter() override {
+    // If the source_observer_ is valid at this point, then that means we
+    // haven't been initialized and we need to unregister the observer before
+    // it gets automatically deleted.  We can't unregister from the destructor
+    // of the observer because at that point, the refcount will be 0 and we
+    // could receive an event during that time which would attempt to increment
+    // the refcount while we're running the dtor on this thread...
+    if (source_observer_.get()) {
+      DCHECK(!initialized());
+      source_observer_->Unregister();
+    }
+
+    // TODO(tommi): There's got to be a smarter way of solving this.
+    // We should probably separate the implementation of the observer itself
+    // and the ownerof the weakptr to the main thread's implementation of
+    // OnChanged.
+  }
 
  private:
-  void InitializeWebkitVideoTrack(
-      const scoped_refptr<MediaStreamRemoteVideoSource::Observer>& observer,
-      bool enabled) {
+  void InitializeWebkitVideoTrack(bool enabled) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     scoped_ptr<MediaStreamRemoteVideoSource> video_source(
-        new MediaStreamRemoteVideoSource(observer));
+        new MediaStreamRemoteVideoSource(source_observer_));
+    // Now that we're being initialized, we do not want to unregister the
+    // observer in the dtor.  This will be done when the source goes out of
+    // scope.  A source can be shared by more than one tracks (e.g via cloning)
+    // so we must not unregister an observer that belongs to a live source.
+    source_observer_ = nullptr;
     InitializeWebkitTrack(blink::WebMediaStreamSource::TypeVideo);
     webkit_track()->source().setExtraData(video_source.get());
     // Initial constraints must be provided to a MediaStreamVideoTrack. But
@@ -184,6 +202,11 @@ class RemoteVideoTrackAdapter
             MediaStreamVideoSource::ConstraintsCallback(), enabled);
     webkit_track()->setExtraData(media_stream_track);
   }
+
+  // We hold on to the source observer in case we don't get initialized and
+  // need to unregister it in the dtor.
+  // TODO(tommi): There has to be a more elegant solution.
+  scoped_refptr<MediaStreamRemoteVideoSource::Observer> source_observer_;
 };
 
 // RemoteAudioTrackAdapter is responsible for listening on state
@@ -196,6 +219,8 @@ class RemoteAudioTrackAdapter
   RemoteAudioTrackAdapter(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       webrtc::AudioTrackInterface* webrtc_track);
+
+  void Unregister();
 
  protected:
   ~RemoteAudioTrackAdapter() override;
@@ -210,6 +235,10 @@ class RemoteAudioTrackAdapter
   void OnChangedOnMainThread(
       webrtc::MediaStreamTrackInterface::TrackState state);
 
+#if DCHECK_IS_ON
+  bool unregistered_;
+#endif
+
   webrtc::MediaStreamTrackInterface::TrackState state_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteAudioTrackAdapter);
@@ -220,6 +249,9 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::AudioTrackInterface* webrtc_track)
     : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track),
+#if DCHECK_IS_ON
+      unregistered_(false),
+#endif
       state_(observed_track()->state()) {
   observed_track()->RegisterObserver(this);
   scoped_ptr<RemoteMediaStreamAudioTrack> media_stream_track(
@@ -232,6 +264,16 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
+#if DCHECK_IS_ON
+  DCHECK(unregistered_);
+#endif
+}
+
+void RemoteAudioTrackAdapter::Unregister() {
+#if DCHECK_IS_ON
+  DCHECK(!unregistered_);
+  unregistered_ = true;
+#endif
   observed_track()->UnregisterObserver(this);
 }
 
@@ -286,7 +328,7 @@ RemoteMediaStreamImpl::Observer::Observer(
 }
 
 RemoteMediaStreamImpl::Observer::~Observer() {
-  // Can in theory be destructed either on the signaling or main thread.
+  DCHECK(ctor_thread_.CalledOnValidThread());
   webrtc_stream_->UnregisterObserver(this);
 }
 
@@ -339,6 +381,8 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
 
 RemoteMediaStreamImpl::~RemoteMediaStreamImpl() {
   DCHECK(observer_->main_thread()->BelongsToCurrentThread());
+  for (auto& track : audio_track_observers_)
+    track->Unregister();
 }
 
 void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
@@ -369,6 +413,7 @@ void RemoteMediaStreamImpl::OnChanged(
   auto audio_it = audio_track_observers_.begin();
   while (audio_it != audio_track_observers_.end()) {
     if (!IsTrackInVector(*audio_tracks.get(), (*audio_it)->id())) {
+      (*audio_it)->Unregister();
        webkit_stream_.removeTrack(*(*audio_it)->webkit_track());
        audio_it = audio_track_observers_.erase(audio_it);
     } else {
@@ -387,11 +432,14 @@ void RemoteMediaStreamImpl::OnChanged(
   }
 
   // Find added tracks.
-  for (const auto& track : *audio_tracks.get()) {
+  for (auto& track : *audio_tracks.get()) {
     if (!IsTrackInVector(audio_track_observers_, track->id())) {
       track->Initialize();
       audio_track_observers_.push_back(track);
       webkit_stream_.addTrack(*track->webkit_track());
+      // Set the track to null to avoid unregistering it below now that it's
+      // been associated with a media stream.
+      track = nullptr;
     }
   }
 
@@ -402,6 +450,14 @@ void RemoteMediaStreamImpl::OnChanged(
       video_track_observers_.push_back(track);
       webkit_stream_.addTrack(*track->webkit_track());
     }
+  }
+
+  // Unregister all the audio track observers that were not used.
+  // We need to do this before destruction since the observers can't unregister
+  // from within the dtor due to a race.
+  for (auto& track : *audio_tracks.get()) {
+    if (track.get())
+      track->Unregister();
   }
 }
 
