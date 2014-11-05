@@ -19,7 +19,7 @@ OS_ARCH_COMBOS = [
     ('mac', 'x86', 'macosx', ['-fPIC'], 'S'),
     ('mac', 'x86_64', 'macosx', [''], 'S'),
     ('win', 'x86', 'win32n', [''], 'asm'),
-    ('win', 'x86_64', 'masm', [''], 'asm'),
+    ('win', 'x86_64', 'nasm', [''], 'asm'),
 ]
 
 # NON_PERL_FILES enumerates assembly files that are not processed by the

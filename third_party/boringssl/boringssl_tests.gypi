@@ -150,13 +150,13 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
-      'target_name': 'boringssl_example_sign',
+      'target_name': 'boringssl_evp_test',
       'type': 'executable',
       'dependencies': [
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/evp/example_sign.c',
+        'src/crypto/evp/evp_test.c',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -305,8 +305,8 @@
       'boringssl_dsa_test',
       'boringssl_ecdsa_test',
       'boringssl_err_test',
+      'boringssl_evp_test',
       'boringssl_example_mul',
-      'boringssl_example_sign',
       'boringssl_gcm_test',
       'boringssl_hmac_test',
       'boringssl_lhash_test',

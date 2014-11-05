@@ -1,19 +1,20 @@
-OPTION	DOTNAME
-.text$	SEGMENT ALIGN(256) 'CODE'
+default	rel
+%define XMMWORD
+%define YMMWORD
+%define ZMMWORD
+section	.text code align=64
 
-PUBLIC	aesni_gcm_encrypt
 
-aesni_gcm_encrypt	PROC PUBLIC
+global	aesni_gcm_encrypt
+
+aesni_gcm_encrypt:
 	xor	eax,eax
 	DB	0F3h,0C3h		;repret
-aesni_gcm_encrypt	ENDP
 
-PUBLIC	aesni_gcm_decrypt
 
-aesni_gcm_decrypt	PROC PUBLIC
+global	aesni_gcm_decrypt
+
+aesni_gcm_decrypt:
 	xor	eax,eax
 	DB	0F3h,0C3h		;repret
-aesni_gcm_decrypt	ENDP
 
-.text$	ENDS
-END

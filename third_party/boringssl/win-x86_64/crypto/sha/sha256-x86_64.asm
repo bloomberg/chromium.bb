@@ -1,26 +1,30 @@
-OPTION	DOTNAME
-.text$	SEGMENT ALIGN(256) 'CODE'
+default	rel
+%define XMMWORD
+%define YMMWORD
+%define ZMMWORD
+section	.text code align=64
 
-EXTERN	OPENSSL_ia32cap_P:NEAR
-PUBLIC	sha256_block_data_order
+
+EXTERN	OPENSSL_ia32cap_P
+global	sha256_block_data_order
 
 ALIGN	16
-sha256_block_data_order	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+sha256_block_data_order:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_sha256_block_data_order::
+$L$SEH_begin_sha256_block_data_order:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
 
 
-	lea	r11,QWORD PTR[OPENSSL_ia32cap_P]
-	mov	r9d,DWORD PTR[r11]
-	mov	r10d,DWORD PTR[4+r11]
-	mov	r11d,DWORD PTR[8+r11]
+	lea	r11,[OPENSSL_ia32cap_P]
+	mov	r9d,DWORD[r11]
+	mov	r10d,DWORD[4+r11]
+	mov	r11d,DWORD[8+r11]
 	test	r10d,512
-	jnz	$L$ssse3_shortcut
+	jnz	NEAR $L$ssse3_shortcut
 	push	rbx
 	push	rbp
 	push	r12
@@ -30,30 +34,30 @@ $L$SEH_begin_sha256_block_data_order::
 	mov	r11,rsp
 	shl	rdx,4
 	sub	rsp,16*4+4*8
-	lea	rdx,QWORD PTR[rdx*4+rsi]
+	lea	rdx,[rdx*4+rsi]
 	and	rsp,-64
-	mov	QWORD PTR[((64+0))+rsp],rdi
-	mov	QWORD PTR[((64+8))+rsp],rsi
-	mov	QWORD PTR[((64+16))+rsp],rdx
-	mov	QWORD PTR[((64+24))+rsp],r11
-$L$prologue::
+	mov	QWORD[((64+0))+rsp],rdi
+	mov	QWORD[((64+8))+rsp],rsi
+	mov	QWORD[((64+16))+rsp],rdx
+	mov	QWORD[((64+24))+rsp],r11
+$L$prologue:
 
-	mov	eax,DWORD PTR[rdi]
-	mov	ebx,DWORD PTR[4+rdi]
-	mov	ecx,DWORD PTR[8+rdi]
-	mov	edx,DWORD PTR[12+rdi]
-	mov	r8d,DWORD PTR[16+rdi]
-	mov	r9d,DWORD PTR[20+rdi]
-	mov	r10d,DWORD PTR[24+rdi]
-	mov	r11d,DWORD PTR[28+rdi]
-	jmp	$L$loop
+	mov	eax,DWORD[rdi]
+	mov	ebx,DWORD[4+rdi]
+	mov	ecx,DWORD[8+rdi]
+	mov	edx,DWORD[12+rdi]
+	mov	r8d,DWORD[16+rdi]
+	mov	r9d,DWORD[20+rdi]
+	mov	r10d,DWORD[24+rdi]
+	mov	r11d,DWORD[28+rdi]
+	jmp	NEAR $L$loop
 
 ALIGN	16
-$L$loop::
+$L$loop:
 	mov	edi,ebx
-	lea	rbp,QWORD PTR[K256]
+	lea	rbp,[K256]
 	xor	edi,ecx
-	mov	r12d,DWORD PTR[rsi]
+	mov	r12d,DWORD[rsi]
 	mov	r13d,r8d
 	mov	r14d,eax
 	bswap	r12d
@@ -64,7 +68,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,r10d
 
-	mov	DWORD PTR[rsp],r12d
+	mov	DWORD[rsp],r12d
 	xor	r14d,eax
 	and	r15d,r8d
 
@@ -77,7 +81,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,eax
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,eax
 
 	xor	r15d,ebx
@@ -92,9 +96,9 @@ $L$loop::
 	add	edx,r12d
 	add	r11d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r11d,r14d
-	mov	r12d,DWORD PTR[4+rsi]
+	mov	r12d,DWORD[4+rsi]
 	mov	r13d,edx
 	mov	r14d,r11d
 	bswap	r12d
@@ -105,7 +109,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,r9d
 
-	mov	DWORD PTR[4+rsp],r12d
+	mov	DWORD[4+rsp],r12d
 	xor	r14d,r11d
 	and	edi,edx
 
@@ -118,7 +122,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,r11d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r11d
 
 	xor	edi,eax
@@ -133,9 +137,9 @@ $L$loop::
 	add	ecx,r12d
 	add	r10d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r10d,r14d
-	mov	r12d,DWORD PTR[8+rsi]
+	mov	r12d,DWORD[8+rsi]
 	mov	r13d,ecx
 	mov	r14d,r10d
 	bswap	r12d
@@ -146,7 +150,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,r8d
 
-	mov	DWORD PTR[8+rsp],r12d
+	mov	DWORD[8+rsp],r12d
 	xor	r14d,r10d
 	and	r15d,ecx
 
@@ -159,7 +163,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,r10d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r10d
 
 	xor	r15d,r11d
@@ -174,9 +178,9 @@ $L$loop::
 	add	ebx,r12d
 	add	r9d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r9d,r14d
-	mov	r12d,DWORD PTR[12+rsi]
+	mov	r12d,DWORD[12+rsi]
 	mov	r13d,ebx
 	mov	r14d,r9d
 	bswap	r12d
@@ -187,7 +191,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,edx
 
-	mov	DWORD PTR[12+rsp],r12d
+	mov	DWORD[12+rsp],r12d
 	xor	r14d,r9d
 	and	edi,ebx
 
@@ -200,7 +204,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,r9d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r9d
 
 	xor	edi,r10d
@@ -215,9 +219,9 @@ $L$loop::
 	add	eax,r12d
 	add	r8d,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
+	lea	rbp,[20+rbp]
 	add	r8d,r14d
-	mov	r12d,DWORD PTR[16+rsi]
+	mov	r12d,DWORD[16+rsi]
 	mov	r13d,eax
 	mov	r14d,r8d
 	bswap	r12d
@@ -228,7 +232,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,ecx
 
-	mov	DWORD PTR[16+rsp],r12d
+	mov	DWORD[16+rsp],r12d
 	xor	r14d,r8d
 	and	r15d,eax
 
@@ -241,7 +245,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,r8d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r8d
 
 	xor	r15d,r9d
@@ -256,9 +260,9 @@ $L$loop::
 	add	r11d,r12d
 	add	edx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	edx,r14d
-	mov	r12d,DWORD PTR[20+rsi]
+	mov	r12d,DWORD[20+rsi]
 	mov	r13d,r11d
 	mov	r14d,edx
 	bswap	r12d
@@ -269,7 +273,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,ebx
 
-	mov	DWORD PTR[20+rsp],r12d
+	mov	DWORD[20+rsp],r12d
 	xor	r14d,edx
 	and	edi,r11d
 
@@ -282,7 +286,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,edx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,edx
 
 	xor	edi,r8d
@@ -297,9 +301,9 @@ $L$loop::
 	add	r10d,r12d
 	add	ecx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	ecx,r14d
-	mov	r12d,DWORD PTR[24+rsi]
+	mov	r12d,DWORD[24+rsi]
 	mov	r13d,r10d
 	mov	r14d,ecx
 	bswap	r12d
@@ -310,7 +314,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,eax
 
-	mov	DWORD PTR[24+rsp],r12d
+	mov	DWORD[24+rsp],r12d
 	xor	r14d,ecx
 	and	r15d,r10d
 
@@ -323,7 +327,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,ecx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ecx
 
 	xor	r15d,edx
@@ -338,9 +342,9 @@ $L$loop::
 	add	r9d,r12d
 	add	ebx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	ebx,r14d
-	mov	r12d,DWORD PTR[28+rsi]
+	mov	r12d,DWORD[28+rsi]
 	mov	r13d,r9d
 	mov	r14d,ebx
 	bswap	r12d
@@ -351,7 +355,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,r11d
 
-	mov	DWORD PTR[28+rsp],r12d
+	mov	DWORD[28+rsp],r12d
 	xor	r14d,ebx
 	and	edi,r9d
 
@@ -364,7 +368,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,ebx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ebx
 
 	xor	edi,ecx
@@ -379,9 +383,9 @@ $L$loop::
 	add	r8d,r12d
 	add	eax,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
+	lea	rbp,[20+rbp]
 	add	eax,r14d
-	mov	r12d,DWORD PTR[32+rsi]
+	mov	r12d,DWORD[32+rsi]
 	mov	r13d,r8d
 	mov	r14d,eax
 	bswap	r12d
@@ -392,7 +396,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,r10d
 
-	mov	DWORD PTR[32+rsp],r12d
+	mov	DWORD[32+rsp],r12d
 	xor	r14d,eax
 	and	r15d,r8d
 
@@ -405,7 +409,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,eax
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,eax
 
 	xor	r15d,ebx
@@ -420,9 +424,9 @@ $L$loop::
 	add	edx,r12d
 	add	r11d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r11d,r14d
-	mov	r12d,DWORD PTR[36+rsi]
+	mov	r12d,DWORD[36+rsi]
 	mov	r13d,edx
 	mov	r14d,r11d
 	bswap	r12d
@@ -433,7 +437,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,r9d
 
-	mov	DWORD PTR[36+rsp],r12d
+	mov	DWORD[36+rsp],r12d
 	xor	r14d,r11d
 	and	edi,edx
 
@@ -446,7 +450,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,r11d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r11d
 
 	xor	edi,eax
@@ -461,9 +465,9 @@ $L$loop::
 	add	ecx,r12d
 	add	r10d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r10d,r14d
-	mov	r12d,DWORD PTR[40+rsi]
+	mov	r12d,DWORD[40+rsi]
 	mov	r13d,ecx
 	mov	r14d,r10d
 	bswap	r12d
@@ -474,7 +478,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,r8d
 
-	mov	DWORD PTR[40+rsp],r12d
+	mov	DWORD[40+rsp],r12d
 	xor	r14d,r10d
 	and	r15d,ecx
 
@@ -487,7 +491,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,r10d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r10d
 
 	xor	r15d,r11d
@@ -502,9 +506,9 @@ $L$loop::
 	add	ebx,r12d
 	add	r9d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	r9d,r14d
-	mov	r12d,DWORD PTR[44+rsi]
+	mov	r12d,DWORD[44+rsi]
 	mov	r13d,ebx
 	mov	r14d,r9d
 	bswap	r12d
@@ -515,7 +519,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,edx
 
-	mov	DWORD PTR[44+rsp],r12d
+	mov	DWORD[44+rsp],r12d
 	xor	r14d,r9d
 	and	edi,ebx
 
@@ -528,7 +532,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,r9d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r9d
 
 	xor	edi,r10d
@@ -543,9 +547,9 @@ $L$loop::
 	add	eax,r12d
 	add	r8d,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
+	lea	rbp,[20+rbp]
 	add	r8d,r14d
-	mov	r12d,DWORD PTR[48+rsi]
+	mov	r12d,DWORD[48+rsi]
 	mov	r13d,eax
 	mov	r14d,r8d
 	bswap	r12d
@@ -556,7 +560,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,ecx
 
-	mov	DWORD PTR[48+rsp],r12d
+	mov	DWORD[48+rsp],r12d
 	xor	r14d,r8d
 	and	r15d,eax
 
@@ -569,7 +573,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,r8d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r8d
 
 	xor	r15d,r9d
@@ -584,9 +588,9 @@ $L$loop::
 	add	r11d,r12d
 	add	edx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	edx,r14d
-	mov	r12d,DWORD PTR[52+rsi]
+	mov	r12d,DWORD[52+rsi]
 	mov	r13d,r11d
 	mov	r14d,edx
 	bswap	r12d
@@ -597,7 +601,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,ebx
 
-	mov	DWORD PTR[52+rsp],r12d
+	mov	DWORD[52+rsp],r12d
 	xor	r14d,edx
 	and	edi,r11d
 
@@ -610,7 +614,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,edx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,edx
 
 	xor	edi,r8d
@@ -625,9 +629,9 @@ $L$loop::
 	add	r10d,r12d
 	add	ecx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	ecx,r14d
-	mov	r12d,DWORD PTR[56+rsi]
+	mov	r12d,DWORD[56+rsi]
 	mov	r13d,r10d
 	mov	r14d,ecx
 	bswap	r12d
@@ -638,7 +642,7 @@ $L$loop::
 	ror	r14d,9
 	xor	r15d,eax
 
-	mov	DWORD PTR[56+rsp],r12d
+	mov	DWORD[56+rsp],r12d
 	xor	r14d,ecx
 	and	r15d,r10d
 
@@ -651,7 +655,7 @@ $L$loop::
 	add	r12d,r15d
 
 	mov	r15d,ecx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ecx
 
 	xor	r15d,edx
@@ -666,9 +670,9 @@ $L$loop::
 	add	r9d,r12d
 	add	ebx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
+	lea	rbp,[4+rbp]
 	add	ebx,r14d
-	mov	r12d,DWORD PTR[60+rsi]
+	mov	r12d,DWORD[60+rsi]
 	mov	r13d,r9d
 	mov	r14d,ebx
 	bswap	r12d
@@ -679,7 +683,7 @@ $L$loop::
 	ror	r14d,9
 	xor	edi,r11d
 
-	mov	DWORD PTR[60+rsp],r12d
+	mov	DWORD[60+rsp],r12d
 	xor	r14d,ebx
 	and	edi,r9d
 
@@ -692,7 +696,7 @@ $L$loop::
 	add	r12d,edi
 
 	mov	edi,ebx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ebx
 
 	xor	edi,ecx
@@ -707,12 +711,12 @@ $L$loop::
 	add	r8d,r12d
 	add	eax,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
-	jmp	$L$rounds_16_xx
+	lea	rbp,[20+rbp]
+	jmp	NEAR $L$rounds_16_xx
 ALIGN	16
-$L$rounds_16_xx::
-	mov	r13d,DWORD PTR[4+rsp]
-	mov	r15d,DWORD PTR[56+rsp]
+$L$rounds_16_xx:
+	mov	r13d,DWORD[4+rsp]
+	mov	r15d,DWORD[56+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -729,9 +733,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[36+rsp]
+	add	r12d,DWORD[36+rsp]
 
-	add	r12d,DWORD PTR[rsp]
+	add	r12d,DWORD[rsp]
 	mov	r13d,r8d
 	add	r12d,r15d
 	mov	r14d,eax
@@ -742,7 +746,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,r10d
 
-	mov	DWORD PTR[rsp],r12d
+	mov	DWORD[rsp],r12d
 	xor	r14d,eax
 	and	r15d,r8d
 
@@ -755,7 +759,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,eax
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,eax
 
 	xor	r15d,ebx
@@ -770,9 +774,9 @@ $L$rounds_16_xx::
 	add	edx,r12d
 	add	r11d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[8+rsp]
-	mov	edi,DWORD PTR[60+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[8+rsp]
+	mov	edi,DWORD[60+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -789,9 +793,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[40+rsp]
+	add	r12d,DWORD[40+rsp]
 
-	add	r12d,DWORD PTR[4+rsp]
+	add	r12d,DWORD[4+rsp]
 	mov	r13d,edx
 	add	r12d,edi
 	mov	r14d,r11d
@@ -802,7 +806,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,r9d
 
-	mov	DWORD PTR[4+rsp],r12d
+	mov	DWORD[4+rsp],r12d
 	xor	r14d,r11d
 	and	edi,edx
 
@@ -815,7 +819,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,r11d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r11d
 
 	xor	edi,eax
@@ -830,9 +834,9 @@ $L$rounds_16_xx::
 	add	ecx,r12d
 	add	r10d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[12+rsp]
-	mov	r15d,DWORD PTR[rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[12+rsp]
+	mov	r15d,DWORD[rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -849,9 +853,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[44+rsp]
+	add	r12d,DWORD[44+rsp]
 
-	add	r12d,DWORD PTR[8+rsp]
+	add	r12d,DWORD[8+rsp]
 	mov	r13d,ecx
 	add	r12d,r15d
 	mov	r14d,r10d
@@ -862,7 +866,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,r8d
 
-	mov	DWORD PTR[8+rsp],r12d
+	mov	DWORD[8+rsp],r12d
 	xor	r14d,r10d
 	and	r15d,ecx
 
@@ -875,7 +879,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,r10d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r10d
 
 	xor	r15d,r11d
@@ -890,9 +894,9 @@ $L$rounds_16_xx::
 	add	ebx,r12d
 	add	r9d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[16+rsp]
-	mov	edi,DWORD PTR[4+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[16+rsp]
+	mov	edi,DWORD[4+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -909,9 +913,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[48+rsp]
+	add	r12d,DWORD[48+rsp]
 
-	add	r12d,DWORD PTR[12+rsp]
+	add	r12d,DWORD[12+rsp]
 	mov	r13d,ebx
 	add	r12d,edi
 	mov	r14d,r9d
@@ -922,7 +926,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,edx
 
-	mov	DWORD PTR[12+rsp],r12d
+	mov	DWORD[12+rsp],r12d
 	xor	r14d,r9d
 	and	edi,ebx
 
@@ -935,7 +939,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,r9d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r9d
 
 	xor	edi,r10d
@@ -950,9 +954,9 @@ $L$rounds_16_xx::
 	add	eax,r12d
 	add	r8d,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
-	mov	r13d,DWORD PTR[20+rsp]
-	mov	r15d,DWORD PTR[8+rsp]
+	lea	rbp,[20+rbp]
+	mov	r13d,DWORD[20+rsp]
+	mov	r15d,DWORD[8+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -969,9 +973,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[52+rsp]
+	add	r12d,DWORD[52+rsp]
 
-	add	r12d,DWORD PTR[16+rsp]
+	add	r12d,DWORD[16+rsp]
 	mov	r13d,eax
 	add	r12d,r15d
 	mov	r14d,r8d
@@ -982,7 +986,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,ecx
 
-	mov	DWORD PTR[16+rsp],r12d
+	mov	DWORD[16+rsp],r12d
 	xor	r14d,r8d
 	and	r15d,eax
 
@@ -995,7 +999,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,r8d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r8d
 
 	xor	r15d,r9d
@@ -1010,9 +1014,9 @@ $L$rounds_16_xx::
 	add	r11d,r12d
 	add	edx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[24+rsp]
-	mov	edi,DWORD PTR[12+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[24+rsp]
+	mov	edi,DWORD[12+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1029,9 +1033,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[56+rsp]
+	add	r12d,DWORD[56+rsp]
 
-	add	r12d,DWORD PTR[20+rsp]
+	add	r12d,DWORD[20+rsp]
 	mov	r13d,r11d
 	add	r12d,edi
 	mov	r14d,edx
@@ -1042,7 +1046,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,ebx
 
-	mov	DWORD PTR[20+rsp],r12d
+	mov	DWORD[20+rsp],r12d
 	xor	r14d,edx
 	and	edi,r11d
 
@@ -1055,7 +1059,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,edx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,edx
 
 	xor	edi,r8d
@@ -1070,9 +1074,9 @@ $L$rounds_16_xx::
 	add	r10d,r12d
 	add	ecx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[28+rsp]
-	mov	r15d,DWORD PTR[16+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[28+rsp]
+	mov	r15d,DWORD[16+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1089,9 +1093,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[60+rsp]
+	add	r12d,DWORD[60+rsp]
 
-	add	r12d,DWORD PTR[24+rsp]
+	add	r12d,DWORD[24+rsp]
 	mov	r13d,r10d
 	add	r12d,r15d
 	mov	r14d,ecx
@@ -1102,7 +1106,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,eax
 
-	mov	DWORD PTR[24+rsp],r12d
+	mov	DWORD[24+rsp],r12d
 	xor	r14d,ecx
 	and	r15d,r10d
 
@@ -1115,7 +1119,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,ecx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ecx
 
 	xor	r15d,edx
@@ -1130,9 +1134,9 @@ $L$rounds_16_xx::
 	add	r9d,r12d
 	add	ebx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[32+rsp]
-	mov	edi,DWORD PTR[20+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[32+rsp]
+	mov	edi,DWORD[20+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1149,9 +1153,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[rsp]
+	add	r12d,DWORD[rsp]
 
-	add	r12d,DWORD PTR[28+rsp]
+	add	r12d,DWORD[28+rsp]
 	mov	r13d,r9d
 	add	r12d,edi
 	mov	r14d,ebx
@@ -1162,7 +1166,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,r11d
 
-	mov	DWORD PTR[28+rsp],r12d
+	mov	DWORD[28+rsp],r12d
 	xor	r14d,ebx
 	and	edi,r9d
 
@@ -1175,7 +1179,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,ebx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ebx
 
 	xor	edi,ecx
@@ -1190,9 +1194,9 @@ $L$rounds_16_xx::
 	add	r8d,r12d
 	add	eax,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
-	mov	r13d,DWORD PTR[36+rsp]
-	mov	r15d,DWORD PTR[24+rsp]
+	lea	rbp,[20+rbp]
+	mov	r13d,DWORD[36+rsp]
+	mov	r15d,DWORD[24+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1209,9 +1213,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[4+rsp]
+	add	r12d,DWORD[4+rsp]
 
-	add	r12d,DWORD PTR[32+rsp]
+	add	r12d,DWORD[32+rsp]
 	mov	r13d,r8d
 	add	r12d,r15d
 	mov	r14d,eax
@@ -1222,7 +1226,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,r10d
 
-	mov	DWORD PTR[32+rsp],r12d
+	mov	DWORD[32+rsp],r12d
 	xor	r14d,eax
 	and	r15d,r8d
 
@@ -1235,7 +1239,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,eax
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,eax
 
 	xor	r15d,ebx
@@ -1250,9 +1254,9 @@ $L$rounds_16_xx::
 	add	edx,r12d
 	add	r11d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[40+rsp]
-	mov	edi,DWORD PTR[28+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[40+rsp]
+	mov	edi,DWORD[28+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1269,9 +1273,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[8+rsp]
+	add	r12d,DWORD[8+rsp]
 
-	add	r12d,DWORD PTR[36+rsp]
+	add	r12d,DWORD[36+rsp]
 	mov	r13d,edx
 	add	r12d,edi
 	mov	r14d,r11d
@@ -1282,7 +1286,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,r9d
 
-	mov	DWORD PTR[36+rsp],r12d
+	mov	DWORD[36+rsp],r12d
 	xor	r14d,r11d
 	and	edi,edx
 
@@ -1295,7 +1299,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,r11d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r11d
 
 	xor	edi,eax
@@ -1310,9 +1314,9 @@ $L$rounds_16_xx::
 	add	ecx,r12d
 	add	r10d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[44+rsp]
-	mov	r15d,DWORD PTR[32+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[44+rsp]
+	mov	r15d,DWORD[32+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1329,9 +1333,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[12+rsp]
+	add	r12d,DWORD[12+rsp]
 
-	add	r12d,DWORD PTR[40+rsp]
+	add	r12d,DWORD[40+rsp]
 	mov	r13d,ecx
 	add	r12d,r15d
 	mov	r14d,r10d
@@ -1342,7 +1346,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,r8d
 
-	mov	DWORD PTR[40+rsp],r12d
+	mov	DWORD[40+rsp],r12d
 	xor	r14d,r10d
 	and	r15d,ecx
 
@@ -1355,7 +1359,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,r10d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r10d
 
 	xor	r15d,r11d
@@ -1370,9 +1374,9 @@ $L$rounds_16_xx::
 	add	ebx,r12d
 	add	r9d,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[48+rsp]
-	mov	edi,DWORD PTR[36+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[48+rsp]
+	mov	edi,DWORD[36+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1389,9 +1393,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[16+rsp]
+	add	r12d,DWORD[16+rsp]
 
-	add	r12d,DWORD PTR[44+rsp]
+	add	r12d,DWORD[44+rsp]
 	mov	r13d,ebx
 	add	r12d,edi
 	mov	r14d,r9d
@@ -1402,7 +1406,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,edx
 
-	mov	DWORD PTR[44+rsp],r12d
+	mov	DWORD[44+rsp],r12d
 	xor	r14d,r9d
 	and	edi,ebx
 
@@ -1415,7 +1419,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,r9d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r9d
 
 	xor	edi,r10d
@@ -1430,9 +1434,9 @@ $L$rounds_16_xx::
 	add	eax,r12d
 	add	r8d,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
-	mov	r13d,DWORD PTR[52+rsp]
-	mov	r15d,DWORD PTR[40+rsp]
+	lea	rbp,[20+rbp]
+	mov	r13d,DWORD[52+rsp]
+	mov	r15d,DWORD[40+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1449,9 +1453,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[20+rsp]
+	add	r12d,DWORD[20+rsp]
 
-	add	r12d,DWORD PTR[48+rsp]
+	add	r12d,DWORD[48+rsp]
 	mov	r13d,eax
 	add	r12d,r15d
 	mov	r14d,r8d
@@ -1462,7 +1466,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,ecx
 
-	mov	DWORD PTR[48+rsp],r12d
+	mov	DWORD[48+rsp],r12d
 	xor	r14d,r8d
 	and	r15d,eax
 
@@ -1475,7 +1479,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,r8d
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,r8d
 
 	xor	r15d,r9d
@@ -1490,9 +1494,9 @@ $L$rounds_16_xx::
 	add	r11d,r12d
 	add	edx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[56+rsp]
-	mov	edi,DWORD PTR[44+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[56+rsp]
+	mov	edi,DWORD[44+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1509,9 +1513,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[24+rsp]
+	add	r12d,DWORD[24+rsp]
 
-	add	r12d,DWORD PTR[52+rsp]
+	add	r12d,DWORD[52+rsp]
 	mov	r13d,r11d
 	add	r12d,edi
 	mov	r14d,edx
@@ -1522,7 +1526,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,ebx
 
-	mov	DWORD PTR[52+rsp],r12d
+	mov	DWORD[52+rsp],r12d
 	xor	r14d,edx
 	and	edi,r11d
 
@@ -1535,7 +1539,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,edx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,edx
 
 	xor	edi,r8d
@@ -1550,9 +1554,9 @@ $L$rounds_16_xx::
 	add	r10d,r12d
 	add	ecx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[60+rsp]
-	mov	r15d,DWORD PTR[48+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[60+rsp]
+	mov	r15d,DWORD[48+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1569,9 +1573,9 @@ $L$rounds_16_xx::
 	ror	r15d,17
 	xor	r12d,r13d
 	xor	r15d,r14d
-	add	r12d,DWORD PTR[28+rsp]
+	add	r12d,DWORD[28+rsp]
 
-	add	r12d,DWORD PTR[56+rsp]
+	add	r12d,DWORD[56+rsp]
 	mov	r13d,r10d
 	add	r12d,r15d
 	mov	r14d,ecx
@@ -1582,7 +1586,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	r15d,eax
 
-	mov	DWORD PTR[56+rsp],r12d
+	mov	DWORD[56+rsp],r12d
 	xor	r14d,ecx
 	and	r15d,r10d
 
@@ -1595,7 +1599,7 @@ $L$rounds_16_xx::
 	add	r12d,r15d
 
 	mov	r15d,ecx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ecx
 
 	xor	r15d,edx
@@ -1610,9 +1614,9 @@ $L$rounds_16_xx::
 	add	r9d,r12d
 	add	ebx,r12d
 
-	lea	rbp,QWORD PTR[4+rbp]
-	mov	r13d,DWORD PTR[rsp]
-	mov	edi,DWORD PTR[52+rsp]
+	lea	rbp,[4+rbp]
+	mov	r13d,DWORD[rsp]
+	mov	edi,DWORD[52+rsp]
 
 	mov	r12d,r13d
 	ror	r13d,11
@@ -1629,9 +1633,9 @@ $L$rounds_16_xx::
 	ror	edi,17
 	xor	r12d,r13d
 	xor	edi,r14d
-	add	r12d,DWORD PTR[32+rsp]
+	add	r12d,DWORD[32+rsp]
 
-	add	r12d,DWORD PTR[60+rsp]
+	add	r12d,DWORD[60+rsp]
 	mov	r13d,r9d
 	add	r12d,edi
 	mov	r14d,ebx
@@ -1642,7 +1646,7 @@ $L$rounds_16_xx::
 	ror	r14d,9
 	xor	edi,r11d
 
-	mov	DWORD PTR[60+rsp],r12d
+	mov	DWORD[60+rsp],r12d
 	xor	r14d,ebx
 	and	edi,r9d
 
@@ -1655,7 +1659,7 @@ $L$rounds_16_xx::
 	add	r12d,edi
 
 	mov	edi,ebx
-	add	r12d,DWORD PTR[rbp]
+	add	r12d,DWORD[rbp]
 	xor	r14d,ebx
 
 	xor	edi,ecx
@@ -1670,91 +1674,90 @@ $L$rounds_16_xx::
 	add	r8d,r12d
 	add	eax,r12d
 
-	lea	rbp,QWORD PTR[20+rbp]
-	cmp	BYTE PTR[3+rbp],0
-	jnz	$L$rounds_16_xx
+	lea	rbp,[20+rbp]
+	cmp	BYTE[3+rbp],0
+	jnz	NEAR $L$rounds_16_xx
 
-	mov	rdi,QWORD PTR[((64+0))+rsp]
+	mov	rdi,QWORD[((64+0))+rsp]
 	add	eax,r14d
-	lea	rsi,QWORD PTR[64+rsi]
+	lea	rsi,[64+rsi]
 
-	add	eax,DWORD PTR[rdi]
-	add	ebx,DWORD PTR[4+rdi]
-	add	ecx,DWORD PTR[8+rdi]
-	add	edx,DWORD PTR[12+rdi]
-	add	r8d,DWORD PTR[16+rdi]
-	add	r9d,DWORD PTR[20+rdi]
-	add	r10d,DWORD PTR[24+rdi]
-	add	r11d,DWORD PTR[28+rdi]
+	add	eax,DWORD[rdi]
+	add	ebx,DWORD[4+rdi]
+	add	ecx,DWORD[8+rdi]
+	add	edx,DWORD[12+rdi]
+	add	r8d,DWORD[16+rdi]
+	add	r9d,DWORD[20+rdi]
+	add	r10d,DWORD[24+rdi]
+	add	r11d,DWORD[28+rdi]
 
-	cmp	rsi,QWORD PTR[((64+16))+rsp]
+	cmp	rsi,QWORD[((64+16))+rsp]
 
-	mov	DWORD PTR[rdi],eax
-	mov	DWORD PTR[4+rdi],ebx
-	mov	DWORD PTR[8+rdi],ecx
-	mov	DWORD PTR[12+rdi],edx
-	mov	DWORD PTR[16+rdi],r8d
-	mov	DWORD PTR[20+rdi],r9d
-	mov	DWORD PTR[24+rdi],r10d
-	mov	DWORD PTR[28+rdi],r11d
-	jb	$L$loop
+	mov	DWORD[rdi],eax
+	mov	DWORD[4+rdi],ebx
+	mov	DWORD[8+rdi],ecx
+	mov	DWORD[12+rdi],edx
+	mov	DWORD[16+rdi],r8d
+	mov	DWORD[20+rdi],r9d
+	mov	DWORD[24+rdi],r10d
+	mov	DWORD[28+rdi],r11d
+	jb	NEAR $L$loop
 
-	mov	rsi,QWORD PTR[((64+24))+rsp]
-	mov	r15,QWORD PTR[rsi]
-	mov	r14,QWORD PTR[8+rsi]
-	mov	r13,QWORD PTR[16+rsi]
-	mov	r12,QWORD PTR[24+rsi]
-	mov	rbp,QWORD PTR[32+rsi]
-	mov	rbx,QWORD PTR[40+rsi]
-	lea	rsp,QWORD PTR[48+rsi]
-$L$epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+	mov	rsi,QWORD[((64+24))+rsp]
+	mov	r15,QWORD[rsi]
+	mov	r14,QWORD[8+rsi]
+	mov	r13,QWORD[16+rsi]
+	mov	r12,QWORD[24+rsi]
+	mov	rbp,QWORD[32+rsi]
+	mov	rbx,QWORD[40+rsi]
+	lea	rsp,[48+rsi]
+$L$epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_sha256_block_data_order::
-sha256_block_data_order	ENDP
+$L$SEH_end_sha256_block_data_order:
 ALIGN	64
 
-K256::
-	DD	0428a2f98h,071374491h,0b5c0fbcfh,0e9b5dba5h
-	DD	0428a2f98h,071374491h,0b5c0fbcfh,0e9b5dba5h
-	DD	03956c25bh,059f111f1h,0923f82a4h,0ab1c5ed5h
-	DD	03956c25bh,059f111f1h,0923f82a4h,0ab1c5ed5h
-	DD	0d807aa98h,012835b01h,0243185beh,0550c7dc3h
-	DD	0d807aa98h,012835b01h,0243185beh,0550c7dc3h
-	DD	072be5d74h,080deb1feh,09bdc06a7h,0c19bf174h
-	DD	072be5d74h,080deb1feh,09bdc06a7h,0c19bf174h
-	DD	0e49b69c1h,0efbe4786h,00fc19dc6h,0240ca1cch
-	DD	0e49b69c1h,0efbe4786h,00fc19dc6h,0240ca1cch
-	DD	02de92c6fh,04a7484aah,05cb0a9dch,076f988dah
-	DD	02de92c6fh,04a7484aah,05cb0a9dch,076f988dah
-	DD	0983e5152h,0a831c66dh,0b00327c8h,0bf597fc7h
-	DD	0983e5152h,0a831c66dh,0b00327c8h,0bf597fc7h
-	DD	0c6e00bf3h,0d5a79147h,006ca6351h,014292967h
-	DD	0c6e00bf3h,0d5a79147h,006ca6351h,014292967h
-	DD	027b70a85h,02e1b2138h,04d2c6dfch,053380d13h
-	DD	027b70a85h,02e1b2138h,04d2c6dfch,053380d13h
-	DD	0650a7354h,0766a0abbh,081c2c92eh,092722c85h
-	DD	0650a7354h,0766a0abbh,081c2c92eh,092722c85h
-	DD	0a2bfe8a1h,0a81a664bh,0c24b8b70h,0c76c51a3h
-	DD	0a2bfe8a1h,0a81a664bh,0c24b8b70h,0c76c51a3h
-	DD	0d192e819h,0d6990624h,0f40e3585h,0106aa070h
-	DD	0d192e819h,0d6990624h,0f40e3585h,0106aa070h
-	DD	019a4c116h,01e376c08h,02748774ch,034b0bcb5h
-	DD	019a4c116h,01e376c08h,02748774ch,034b0bcb5h
-	DD	0391c0cb3h,04ed8aa4ah,05b9cca4fh,0682e6ff3h
-	DD	0391c0cb3h,04ed8aa4ah,05b9cca4fh,0682e6ff3h
-	DD	0748f82eeh,078a5636fh,084c87814h,08cc70208h
-	DD	0748f82eeh,078a5636fh,084c87814h,08cc70208h
-	DD	090befffah,0a4506cebh,0bef9a3f7h,0c67178f2h
-	DD	090befffah,0a4506cebh,0bef9a3f7h,0c67178f2h
+K256:
+	DD	0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5
+	DD	0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5
+	DD	0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5
+	DD	0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5
+	DD	0xd807aa98,0x12835b01,0x243185be,0x550c7dc3
+	DD	0xd807aa98,0x12835b01,0x243185be,0x550c7dc3
+	DD	0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174
+	DD	0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174
+	DD	0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc
+	DD	0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc
+	DD	0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da
+	DD	0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da
+	DD	0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7
+	DD	0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7
+	DD	0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967
+	DD	0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967
+	DD	0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13
+	DD	0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13
+	DD	0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85
+	DD	0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85
+	DD	0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3
+	DD	0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3
+	DD	0xd192e819,0xd6990624,0xf40e3585,0x106aa070
+	DD	0xd192e819,0xd6990624,0xf40e3585,0x106aa070
+	DD	0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5
+	DD	0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5
+	DD	0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3
+	DD	0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3
+	DD	0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208
+	DD	0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208
+	DD	0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+	DD	0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
 
-	DD	000010203h,004050607h,008090a0bh,00c0d0e0fh
-	DD	000010203h,004050607h,008090a0bh,00c0d0e0fh
-	DD	003020100h,00b0a0908h,0ffffffffh,0ffffffffh
-	DD	003020100h,00b0a0908h,0ffffffffh,0ffffffffh
-	DD	0ffffffffh,0ffffffffh,003020100h,00b0a0908h
-	DD	0ffffffffh,0ffffffffh,003020100h,00b0a0908h
+	DD	0x00010203,0x04050607,0x08090a0b,0x0c0d0e0f
+	DD	0x00010203,0x04050607,0x08090a0b,0x0c0d0e0f
+	DD	0x03020100,0x0b0a0908,0xffffffff,0xffffffff
+	DD	0x03020100,0x0b0a0908,0xffffffff,0xffffffff
+	DD	0xffffffff,0xffffffff,0x03020100,0x0b0a0908
+	DD	0xffffffff,0xffffffff,0x03020100,0x0b0a0908
 DB	83,72,65,50,53,54,32,98,108,111,99,107,32,116,114,97
 DB	110,115,102,111,114,109,32,102,111,114,32,120,56,54,95,54
 DB	52,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121
@@ -1762,17 +1765,17 @@ DB	32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46
 DB	111,114,103,62,0
 
 ALIGN	64
-sha256_block_data_order_ssse3	PROC PRIVATE
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+sha256_block_data_order_ssse3:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_sha256_block_data_order_ssse3::
+$L$SEH_begin_sha256_block_data_order_ssse3:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
 
 
-$L$ssse3_shortcut::
+$L$ssse3_shortcut:
 	push	rbx
 	push	rbp
 	push	r12
@@ -1782,61 +1785,61 @@ $L$ssse3_shortcut::
 	mov	r11,rsp
 	shl	rdx,4
 	sub	rsp,160
-	lea	rdx,QWORD PTR[rdx*4+rsi]
+	lea	rdx,[rdx*4+rsi]
 	and	rsp,-64
-	mov	QWORD PTR[((64+0))+rsp],rdi
-	mov	QWORD PTR[((64+8))+rsp],rsi
-	mov	QWORD PTR[((64+16))+rsp],rdx
-	mov	QWORD PTR[((64+24))+rsp],r11
-	movaps	XMMWORD PTR[(64+32)+rsp],xmm6
-	movaps	XMMWORD PTR[(64+48)+rsp],xmm7
-	movaps	XMMWORD PTR[(64+64)+rsp],xmm8
-	movaps	XMMWORD PTR[(64+80)+rsp],xmm9
-$L$prologue_ssse3::
+	mov	QWORD[((64+0))+rsp],rdi
+	mov	QWORD[((64+8))+rsp],rsi
+	mov	QWORD[((64+16))+rsp],rdx
+	mov	QWORD[((64+24))+rsp],r11
+	movaps	XMMWORD[(64+32)+rsp],xmm6
+	movaps	XMMWORD[(64+48)+rsp],xmm7
+	movaps	XMMWORD[(64+64)+rsp],xmm8
+	movaps	XMMWORD[(64+80)+rsp],xmm9
+$L$prologue_ssse3:
 
-	mov	eax,DWORD PTR[rdi]
-	mov	ebx,DWORD PTR[4+rdi]
-	mov	ecx,DWORD PTR[8+rdi]
-	mov	edx,DWORD PTR[12+rdi]
-	mov	r8d,DWORD PTR[16+rdi]
-	mov	r9d,DWORD PTR[20+rdi]
-	mov	r10d,DWORD PTR[24+rdi]
-	mov	r11d,DWORD PTR[28+rdi]
+	mov	eax,DWORD[rdi]
+	mov	ebx,DWORD[4+rdi]
+	mov	ecx,DWORD[8+rdi]
+	mov	edx,DWORD[12+rdi]
+	mov	r8d,DWORD[16+rdi]
+	mov	r9d,DWORD[20+rdi]
+	mov	r10d,DWORD[24+rdi]
+	mov	r11d,DWORD[28+rdi]
 
 
-	jmp	$L$loop_ssse3
+	jmp	NEAR $L$loop_ssse3
 ALIGN	16
-$L$loop_ssse3::
-	movdqa	xmm7,XMMWORD PTR[((K256+512))]
-	movdqu	xmm0,XMMWORD PTR[rsi]
-	movdqu	xmm1,XMMWORD PTR[16+rsi]
-	movdqu	xmm2,XMMWORD PTR[32+rsi]
+$L$loop_ssse3:
+	movdqa	xmm7,XMMWORD[((K256+512))]
+	movdqu	xmm0,XMMWORD[rsi]
+	movdqu	xmm1,XMMWORD[16+rsi]
+	movdqu	xmm2,XMMWORD[32+rsi]
 DB	102,15,56,0,199
-	movdqu	xmm3,XMMWORD PTR[48+rsi]
-	lea	rbp,QWORD PTR[K256]
+	movdqu	xmm3,XMMWORD[48+rsi]
+	lea	rbp,[K256]
 DB	102,15,56,0,207
-	movdqa	xmm4,XMMWORD PTR[rbp]
-	movdqa	xmm5,XMMWORD PTR[32+rbp]
+	movdqa	xmm4,XMMWORD[rbp]
+	movdqa	xmm5,XMMWORD[32+rbp]
 DB	102,15,56,0,215
 	paddd	xmm4,xmm0
-	movdqa	xmm6,XMMWORD PTR[64+rbp]
+	movdqa	xmm6,XMMWORD[64+rbp]
 DB	102,15,56,0,223
-	movdqa	xmm7,XMMWORD PTR[96+rbp]
+	movdqa	xmm7,XMMWORD[96+rbp]
 	paddd	xmm5,xmm1
 	paddd	xmm6,xmm2
 	paddd	xmm7,xmm3
-	movdqa	XMMWORD PTR[rsp],xmm4
+	movdqa	XMMWORD[rsp],xmm4
 	mov	r14d,eax
-	movdqa	XMMWORD PTR[16+rsp],xmm5
+	movdqa	XMMWORD[16+rsp],xmm5
 	mov	edi,ebx
-	movdqa	XMMWORD PTR[32+rsp],xmm6
+	movdqa	XMMWORD[32+rsp],xmm6
 	xor	edi,ecx
-	movdqa	XMMWORD PTR[48+rsp],xmm7
+	movdqa	XMMWORD[48+rsp],xmm7
 	mov	r13d,r8d
-	jmp	$L$ssse3_00_47
+	jmp	NEAR $L$ssse3_00_47
 
 ALIGN	16
-$L$ssse3_00_47::
+$L$ssse3_00_47:
 	sub	rbp,-128
 	ror	r13d,14
 	movdqa	xmm4,xmm1
@@ -1852,7 +1855,7 @@ DB	102,15,58,15,224,4
 	and	r12d,r8d
 	xor	r13d,r8d
 DB	102,15,58,15,250,4
-	add	r11d,DWORD PTR[rsp]
+	add	r11d,DWORD[rsp]
 	mov	r15d,eax
 	xor	r12d,r10d
 	ror	r14d,11
@@ -1889,7 +1892,7 @@ DB	102,15,58,15,250,4
 	and	r12d,edx
 	xor	r13d,edx
 	pslld	xmm5,11
-	add	r10d,DWORD PTR[4+rsp]
+	add	r10d,DWORD[4+rsp]
 	mov	edi,r11d
 	pxor	xmm4,xmm6
 	xor	r12d,r9d
@@ -1925,7 +1928,7 @@ DB	102,15,58,15,250,4
 	and	r12d,ecx
 	pshufd	xmm7,xmm7,128
 	xor	r13d,ecx
-	add	r9d,DWORD PTR[8+rsp]
+	add	r9d,DWORD[8+rsp]
 	mov	r15d,r10d
 	psrldq	xmm7,8
 	xor	r12d,r8d
@@ -1959,7 +1962,7 @@ DB	102,15,58,15,250,4
 	psrlq	xmm6,2
 	and	r12d,ebx
 	xor	r13d,ebx
-	add	r8d,DWORD PTR[12+rsp]
+	add	r8d,DWORD[12+rsp]
 	pxor	xmm7,xmm6
 	mov	edi,r9d
 	xor	r12d,edx
@@ -1967,7 +1970,7 @@ DB	102,15,58,15,250,4
 	pshufd	xmm7,xmm7,8
 	xor	edi,r10d
 	add	r8d,r12d
-	movdqa	xmm6,XMMWORD PTR[rbp]
+	movdqa	xmm6,XMMWORD[rbp]
 	ror	r13d,6
 	and	r15d,edi
 	pslldq	xmm7,8
@@ -1981,7 +1984,7 @@ DB	102,15,58,15,250,4
 	paddd	xmm6,xmm0
 	mov	r13d,eax
 	add	r14d,r8d
-	movdqa	XMMWORD PTR[rsp],xmm6
+	movdqa	XMMWORD[rsp],xmm6
 	ror	r13d,14
 	movdqa	xmm4,xmm2
 	mov	r8d,r14d
@@ -1996,7 +1999,7 @@ DB	102,15,58,15,225,4
 	and	r12d,eax
 	xor	r13d,eax
 DB	102,15,58,15,251,4
-	add	edx,DWORD PTR[16+rsp]
+	add	edx,DWORD[16+rsp]
 	mov	r15d,r8d
 	xor	r12d,ecx
 	ror	r14d,11
@@ -2033,7 +2036,7 @@ DB	102,15,58,15,251,4
 	and	r12d,r11d
 	xor	r13d,r11d
 	pslld	xmm5,11
-	add	ecx,DWORD PTR[20+rsp]
+	add	ecx,DWORD[20+rsp]
 	mov	edi,edx
 	pxor	xmm4,xmm6
 	xor	r12d,ebx
@@ -2069,7 +2072,7 @@ DB	102,15,58,15,251,4
 	and	r12d,r10d
 	pshufd	xmm7,xmm7,128
 	xor	r13d,r10d
-	add	ebx,DWORD PTR[24+rsp]
+	add	ebx,DWORD[24+rsp]
 	mov	r15d,ecx
 	psrldq	xmm7,8
 	xor	r12d,eax
@@ -2103,7 +2106,7 @@ DB	102,15,58,15,251,4
 	psrlq	xmm6,2
 	and	r12d,r9d
 	xor	r13d,r9d
-	add	eax,DWORD PTR[28+rsp]
+	add	eax,DWORD[28+rsp]
 	pxor	xmm7,xmm6
 	mov	edi,ebx
 	xor	r12d,r11d
@@ -2111,7 +2114,7 @@ DB	102,15,58,15,251,4
 	pshufd	xmm7,xmm7,8
 	xor	edi,ecx
 	add	eax,r12d
-	movdqa	xmm6,XMMWORD PTR[32+rbp]
+	movdqa	xmm6,XMMWORD[32+rbp]
 	ror	r13d,6
 	and	r15d,edi
 	pslldq	xmm7,8
@@ -2125,7 +2128,7 @@ DB	102,15,58,15,251,4
 	paddd	xmm6,xmm1
 	mov	r13d,r8d
 	add	r14d,eax
-	movdqa	XMMWORD PTR[16+rsp],xmm6
+	movdqa	XMMWORD[16+rsp],xmm6
 	ror	r13d,14
 	movdqa	xmm4,xmm3
 	mov	eax,r14d
@@ -2140,7 +2143,7 @@ DB	102,15,58,15,226,4
 	and	r12d,r8d
 	xor	r13d,r8d
 DB	102,15,58,15,248,4
-	add	r11d,DWORD PTR[32+rsp]
+	add	r11d,DWORD[32+rsp]
 	mov	r15d,eax
 	xor	r12d,r10d
 	ror	r14d,11
@@ -2177,7 +2180,7 @@ DB	102,15,58,15,248,4
 	and	r12d,edx
 	xor	r13d,edx
 	pslld	xmm5,11
-	add	r10d,DWORD PTR[36+rsp]
+	add	r10d,DWORD[36+rsp]
 	mov	edi,r11d
 	pxor	xmm4,xmm6
 	xor	r12d,r9d
@@ -2213,7 +2216,7 @@ DB	102,15,58,15,248,4
 	and	r12d,ecx
 	pshufd	xmm7,xmm7,128
 	xor	r13d,ecx
-	add	r9d,DWORD PTR[40+rsp]
+	add	r9d,DWORD[40+rsp]
 	mov	r15d,r10d
 	psrldq	xmm7,8
 	xor	r12d,r8d
@@ -2247,7 +2250,7 @@ DB	102,15,58,15,248,4
 	psrlq	xmm6,2
 	and	r12d,ebx
 	xor	r13d,ebx
-	add	r8d,DWORD PTR[44+rsp]
+	add	r8d,DWORD[44+rsp]
 	pxor	xmm7,xmm6
 	mov	edi,r9d
 	xor	r12d,edx
@@ -2255,7 +2258,7 @@ DB	102,15,58,15,248,4
 	pshufd	xmm7,xmm7,8
 	xor	edi,r10d
 	add	r8d,r12d
-	movdqa	xmm6,XMMWORD PTR[64+rbp]
+	movdqa	xmm6,XMMWORD[64+rbp]
 	ror	r13d,6
 	and	r15d,edi
 	pslldq	xmm7,8
@@ -2269,7 +2272,7 @@ DB	102,15,58,15,248,4
 	paddd	xmm6,xmm2
 	mov	r13d,eax
 	add	r14d,r8d
-	movdqa	XMMWORD PTR[32+rsp],xmm6
+	movdqa	XMMWORD[32+rsp],xmm6
 	ror	r13d,14
 	movdqa	xmm4,xmm0
 	mov	r8d,r14d
@@ -2284,7 +2287,7 @@ DB	102,15,58,15,227,4
 	and	r12d,eax
 	xor	r13d,eax
 DB	102,15,58,15,249,4
-	add	edx,DWORD PTR[48+rsp]
+	add	edx,DWORD[48+rsp]
 	mov	r15d,r8d
 	xor	r12d,ecx
 	ror	r14d,11
@@ -2321,7 +2324,7 @@ DB	102,15,58,15,249,4
 	and	r12d,r11d
 	xor	r13d,r11d
 	pslld	xmm5,11
-	add	ecx,DWORD PTR[52+rsp]
+	add	ecx,DWORD[52+rsp]
 	mov	edi,edx
 	pxor	xmm4,xmm6
 	xor	r12d,ebx
@@ -2357,7 +2360,7 @@ DB	102,15,58,15,249,4
 	and	r12d,r10d
 	pshufd	xmm7,xmm7,128
 	xor	r13d,r10d
-	add	ebx,DWORD PTR[56+rsp]
+	add	ebx,DWORD[56+rsp]
 	mov	r15d,ecx
 	psrldq	xmm7,8
 	xor	r12d,eax
@@ -2391,7 +2394,7 @@ DB	102,15,58,15,249,4
 	psrlq	xmm6,2
 	and	r12d,r9d
 	xor	r13d,r9d
-	add	eax,DWORD PTR[60+rsp]
+	add	eax,DWORD[60+rsp]
 	pxor	xmm7,xmm6
 	mov	edi,ebx
 	xor	r12d,r11d
@@ -2399,7 +2402,7 @@ DB	102,15,58,15,249,4
 	pshufd	xmm7,xmm7,8
 	xor	edi,ecx
 	add	eax,r12d
-	movdqa	xmm6,XMMWORD PTR[96+rbp]
+	movdqa	xmm6,XMMWORD[96+rbp]
 	ror	r13d,6
 	and	r15d,edi
 	pslldq	xmm7,8
@@ -2413,9 +2416,9 @@ DB	102,15,58,15,249,4
 	paddd	xmm6,xmm3
 	mov	r13d,r8d
 	add	r14d,eax
-	movdqa	XMMWORD PTR[48+rsp],xmm6
-	cmp	BYTE PTR[131+rbp],0
-	jne	$L$ssse3_00_47
+	movdqa	XMMWORD[48+rsp],xmm6
+	cmp	BYTE[131+rbp],0
+	jne	NEAR $L$ssse3_00_47
 	ror	r13d,14
 	mov	eax,r14d
 	mov	r12d,r9d
@@ -2426,7 +2429,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,eax
 	and	r12d,r8d
 	xor	r13d,r8d
-	add	r11d,DWORD PTR[rsp]
+	add	r11d,DWORD[rsp]
 	mov	r15d,eax
 	xor	r12d,r10d
 	ror	r14d,11
@@ -2452,7 +2455,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r11d
 	and	r12d,edx
 	xor	r13d,edx
-	add	r10d,DWORD PTR[4+rsp]
+	add	r10d,DWORD[4+rsp]
 	mov	edi,r11d
 	xor	r12d,r9d
 	ror	r14d,11
@@ -2478,7 +2481,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r10d
 	and	r12d,ecx
 	xor	r13d,ecx
-	add	r9d,DWORD PTR[8+rsp]
+	add	r9d,DWORD[8+rsp]
 	mov	r15d,r10d
 	xor	r12d,r8d
 	ror	r14d,11
@@ -2504,7 +2507,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r9d
 	and	r12d,ebx
 	xor	r13d,ebx
-	add	r8d,DWORD PTR[12+rsp]
+	add	r8d,DWORD[12+rsp]
 	mov	edi,r9d
 	xor	r12d,edx
 	ror	r14d,11
@@ -2530,7 +2533,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r8d
 	and	r12d,eax
 	xor	r13d,eax
-	add	edx,DWORD PTR[16+rsp]
+	add	edx,DWORD[16+rsp]
 	mov	r15d,r8d
 	xor	r12d,ecx
 	ror	r14d,11
@@ -2556,7 +2559,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,edx
 	and	r12d,r11d
 	xor	r13d,r11d
-	add	ecx,DWORD PTR[20+rsp]
+	add	ecx,DWORD[20+rsp]
 	mov	edi,edx
 	xor	r12d,ebx
 	ror	r14d,11
@@ -2582,7 +2585,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,ecx
 	and	r12d,r10d
 	xor	r13d,r10d
-	add	ebx,DWORD PTR[24+rsp]
+	add	ebx,DWORD[24+rsp]
 	mov	r15d,ecx
 	xor	r12d,eax
 	ror	r14d,11
@@ -2608,7 +2611,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,ebx
 	and	r12d,r9d
 	xor	r13d,r9d
-	add	eax,DWORD PTR[28+rsp]
+	add	eax,DWORD[28+rsp]
 	mov	edi,ebx
 	xor	r12d,r11d
 	ror	r14d,11
@@ -2634,7 +2637,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,eax
 	and	r12d,r8d
 	xor	r13d,r8d
-	add	r11d,DWORD PTR[32+rsp]
+	add	r11d,DWORD[32+rsp]
 	mov	r15d,eax
 	xor	r12d,r10d
 	ror	r14d,11
@@ -2660,7 +2663,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r11d
 	and	r12d,edx
 	xor	r13d,edx
-	add	r10d,DWORD PTR[36+rsp]
+	add	r10d,DWORD[36+rsp]
 	mov	edi,r11d
 	xor	r12d,r9d
 	ror	r14d,11
@@ -2686,7 +2689,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r10d
 	and	r12d,ecx
 	xor	r13d,ecx
-	add	r9d,DWORD PTR[40+rsp]
+	add	r9d,DWORD[40+rsp]
 	mov	r15d,r10d
 	xor	r12d,r8d
 	ror	r14d,11
@@ -2712,7 +2715,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r9d
 	and	r12d,ebx
 	xor	r13d,ebx
-	add	r8d,DWORD PTR[44+rsp]
+	add	r8d,DWORD[44+rsp]
 	mov	edi,r9d
 	xor	r12d,edx
 	ror	r14d,11
@@ -2738,7 +2741,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,r8d
 	and	r12d,eax
 	xor	r13d,eax
-	add	edx,DWORD PTR[48+rsp]
+	add	edx,DWORD[48+rsp]
 	mov	r15d,r8d
 	xor	r12d,ecx
 	ror	r14d,11
@@ -2764,7 +2767,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,edx
 	and	r12d,r11d
 	xor	r13d,r11d
-	add	ecx,DWORD PTR[52+rsp]
+	add	ecx,DWORD[52+rsp]
 	mov	edi,edx
 	xor	r12d,ebx
 	ror	r14d,11
@@ -2790,7 +2793,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,ecx
 	and	r12d,r10d
 	xor	r13d,r10d
-	add	ebx,DWORD PTR[56+rsp]
+	add	ebx,DWORD[56+rsp]
 	mov	r15d,ecx
 	xor	r12d,eax
 	ror	r14d,11
@@ -2816,7 +2819,7 @@ DB	102,15,58,15,249,4
 	xor	r14d,ebx
 	and	r12d,r9d
 	xor	r13d,r9d
-	add	eax,DWORD PTR[60+rsp]
+	add	eax,DWORD[60+rsp]
 	mov	edi,ebx
 	xor	r12d,r11d
 	ror	r14d,11
@@ -2832,53 +2835,52 @@ DB	102,15,58,15,249,4
 	add	eax,r15d
 	mov	r13d,r8d
 	add	r14d,eax
-	mov	rdi,QWORD PTR[((64+0))+rsp]
+	mov	rdi,QWORD[((64+0))+rsp]
 	mov	eax,r14d
 
-	add	eax,DWORD PTR[rdi]
-	lea	rsi,QWORD PTR[64+rsi]
-	add	ebx,DWORD PTR[4+rdi]
-	add	ecx,DWORD PTR[8+rdi]
-	add	edx,DWORD PTR[12+rdi]
-	add	r8d,DWORD PTR[16+rdi]
-	add	r9d,DWORD PTR[20+rdi]
-	add	r10d,DWORD PTR[24+rdi]
-	add	r11d,DWORD PTR[28+rdi]
+	add	eax,DWORD[rdi]
+	lea	rsi,[64+rsi]
+	add	ebx,DWORD[4+rdi]
+	add	ecx,DWORD[8+rdi]
+	add	edx,DWORD[12+rdi]
+	add	r8d,DWORD[16+rdi]
+	add	r9d,DWORD[20+rdi]
+	add	r10d,DWORD[24+rdi]
+	add	r11d,DWORD[28+rdi]
 
-	cmp	rsi,QWORD PTR[((64+16))+rsp]
+	cmp	rsi,QWORD[((64+16))+rsp]
 
-	mov	DWORD PTR[rdi],eax
-	mov	DWORD PTR[4+rdi],ebx
-	mov	DWORD PTR[8+rdi],ecx
-	mov	DWORD PTR[12+rdi],edx
-	mov	DWORD PTR[16+rdi],r8d
-	mov	DWORD PTR[20+rdi],r9d
-	mov	DWORD PTR[24+rdi],r10d
-	mov	DWORD PTR[28+rdi],r11d
-	jb	$L$loop_ssse3
+	mov	DWORD[rdi],eax
+	mov	DWORD[4+rdi],ebx
+	mov	DWORD[8+rdi],ecx
+	mov	DWORD[12+rdi],edx
+	mov	DWORD[16+rdi],r8d
+	mov	DWORD[20+rdi],r9d
+	mov	DWORD[24+rdi],r10d
+	mov	DWORD[28+rdi],r11d
+	jb	NEAR $L$loop_ssse3
 
-	mov	rsi,QWORD PTR[((64+24))+rsp]
-	movaps	xmm6,XMMWORD PTR[((64+32))+rsp]
-	movaps	xmm7,XMMWORD PTR[((64+48))+rsp]
-	movaps	xmm8,XMMWORD PTR[((64+64))+rsp]
-	movaps	xmm9,XMMWORD PTR[((64+80))+rsp]
-	mov	r15,QWORD PTR[rsi]
-	mov	r14,QWORD PTR[8+rsi]
-	mov	r13,QWORD PTR[16+rsi]
-	mov	r12,QWORD PTR[24+rsi]
-	mov	rbp,QWORD PTR[32+rsi]
-	mov	rbx,QWORD PTR[40+rsi]
-	lea	rsp,QWORD PTR[48+rsi]
-$L$epilogue_ssse3::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+	mov	rsi,QWORD[((64+24))+rsp]
+	movaps	xmm6,XMMWORD[((64+32))+rsp]
+	movaps	xmm7,XMMWORD[((64+48))+rsp]
+	movaps	xmm8,XMMWORD[((64+64))+rsp]
+	movaps	xmm9,XMMWORD[((64+80))+rsp]
+	mov	r15,QWORD[rsi]
+	mov	r14,QWORD[8+rsi]
+	mov	r13,QWORD[16+rsi]
+	mov	r12,QWORD[24+rsi]
+	mov	rbp,QWORD[32+rsi]
+	mov	rbx,QWORD[40+rsi]
+	lea	rsp,[48+rsi]
+$L$epilogue_ssse3:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_sha256_block_data_order_ssse3::
-sha256_block_data_order_ssse3	ENDP
-EXTERN	__imp_RtlVirtualUnwind:NEAR
+$L$SEH_end_sha256_block_data_order_ssse3:
+EXTERN	__imp_RtlVirtualUnwind
 
 ALIGN	16
-se_handler	PROC PRIVATE
+se_handler:
 	push	rsi
 	push	rdi
 	push	rbx
@@ -2890,74 +2892,74 @@ se_handler	PROC PRIVATE
 	pushfq
 	sub	rsp,64
 
-	mov	rax,QWORD PTR[120+r8]
-	mov	rbx,QWORD PTR[248+r8]
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
 
-	mov	rsi,QWORD PTR[8+r9]
-	mov	r11,QWORD PTR[56+r9]
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
 
-	mov	r10d,DWORD PTR[r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jb	$L$in_prologue
+	jb	NEAR $L$in_prologue
 
-	mov	rax,QWORD PTR[152+r8]
+	mov	rax,QWORD[152+r8]
 
-	mov	r10d,DWORD PTR[4+r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[4+r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jae	$L$in_prologue
+	jae	NEAR $L$in_prologue
 	mov	rsi,rax
-	mov	rax,QWORD PTR[((64+24))+rax]
-	lea	rax,QWORD PTR[48+rax]
+	mov	rax,QWORD[((64+24))+rax]
+	lea	rax,[48+rax]
 
-	mov	rbx,QWORD PTR[((-8))+rax]
-	mov	rbp,QWORD PTR[((-16))+rax]
-	mov	r12,QWORD PTR[((-24))+rax]
-	mov	r13,QWORD PTR[((-32))+rax]
-	mov	r14,QWORD PTR[((-40))+rax]
-	mov	r15,QWORD PTR[((-48))+rax]
-	mov	QWORD PTR[144+r8],rbx
-	mov	QWORD PTR[160+r8],rbp
-	mov	QWORD PTR[216+r8],r12
-	mov	QWORD PTR[224+r8],r13
-	mov	QWORD PTR[232+r8],r14
-	mov	QWORD PTR[240+r8],r15
+	mov	rbx,QWORD[((-8))+rax]
+	mov	rbp,QWORD[((-16))+rax]
+	mov	r12,QWORD[((-24))+rax]
+	mov	r13,QWORD[((-32))+rax]
+	mov	r14,QWORD[((-40))+rax]
+	mov	r15,QWORD[((-48))+rax]
+	mov	QWORD[144+r8],rbx
+	mov	QWORD[160+r8],rbp
+	mov	QWORD[216+r8],r12
+	mov	QWORD[224+r8],r13
+	mov	QWORD[232+r8],r14
+	mov	QWORD[240+r8],r15
 
-	lea	r10,QWORD PTR[$L$epilogue]
+	lea	r10,[$L$epilogue]
 	cmp	rbx,r10
-	jb	$L$in_prologue
+	jb	NEAR $L$in_prologue
 
-	lea	rsi,QWORD PTR[((64+32))+rsi]
-	lea	rdi,QWORD PTR[512+r8]
+	lea	rsi,[((64+32))+rsi]
+	lea	rdi,[512+r8]
 	mov	ecx,8
-	DD	0a548f3fch
+	DD	0xa548f3fc
 
-$L$in_prologue::
-	mov	rdi,QWORD PTR[8+rax]
-	mov	rsi,QWORD PTR[16+rax]
-	mov	QWORD PTR[152+r8],rax
-	mov	QWORD PTR[168+r8],rsi
-	mov	QWORD PTR[176+r8],rdi
+$L$in_prologue:
+	mov	rdi,QWORD[8+rax]
+	mov	rsi,QWORD[16+rax]
+	mov	QWORD[152+r8],rax
+	mov	QWORD[168+r8],rsi
+	mov	QWORD[176+r8],rdi
 
-	mov	rdi,QWORD PTR[40+r9]
+	mov	rdi,QWORD[40+r9]
 	mov	rsi,r8
 	mov	ecx,154
-	DD	0a548f3fch
+	DD	0xa548f3fc
 
 	mov	rsi,r9
 	xor	rcx,rcx
-	mov	rdx,QWORD PTR[8+rsi]
-	mov	r8,QWORD PTR[rsi]
-	mov	r9,QWORD PTR[16+rsi]
-	mov	r10,QWORD PTR[40+rsi]
-	lea	r11,QWORD PTR[56+rsi]
-	lea	r12,QWORD PTR[24+rsi]
-	mov	QWORD PTR[32+rsp],r10
-	mov	QWORD PTR[40+rsp],r11
-	mov	QWORD PTR[48+rsp],r12
-	mov	QWORD PTR[56+rsp],rcx
-	call	QWORD PTR[__imp_RtlVirtualUnwind]
+	mov	rdx,QWORD[8+rsi]
+	mov	r8,QWORD[rsi]
+	mov	r9,QWORD[16+rsi]
+	mov	r10,QWORD[40+rsi]
+	lea	r11,[56+rsi]
+	lea	r12,[24+rsi]
+	mov	QWORD[32+rsp],r10
+	mov	QWORD[40+rsp],r11
+	mov	QWORD[48+rsp],r12
+	mov	QWORD[56+rsp],rcx
+	call	QWORD[__imp_RtlVirtualUnwind]
 
 	mov	eax,1
 	add	rsp,64
@@ -2971,27 +2973,22 @@ $L$in_prologue::
 	pop	rdi
 	pop	rsi
 	DB	0F3h,0C3h		;repret
-se_handler	ENDP
-.text$	ENDS
-.pdata	SEGMENT READONLY ALIGN(4)
-ALIGN	4
-	DD	imagerel $L$SEH_begin_sha256_block_data_order
-	DD	imagerel $L$SEH_end_sha256_block_data_order
-	DD	imagerel $L$SEH_info_sha256_block_data_order
-	DD	imagerel $L$SEH_begin_sha256_block_data_order_ssse3
-	DD	imagerel $L$SEH_end_sha256_block_data_order_ssse3
-	DD	imagerel $L$SEH_info_sha256_block_data_order_ssse3
-.pdata	ENDS
-.xdata	SEGMENT READONLY ALIGN(8)
-ALIGN	8
-$L$SEH_info_sha256_block_data_order::
-DB	9,0,0,0
-	DD	imagerel se_handler
-	DD	imagerel $L$prologue,imagerel $L$epilogue
-$L$SEH_info_sha256_block_data_order_ssse3::
-DB	9,0,0,0
-	DD	imagerel se_handler
-	DD	imagerel $L$prologue_ssse3,imagerel $L$epilogue_ssse3
 
-.xdata	ENDS
-END
+section	.pdata rdata align=4
+ALIGN	4
+	DD	$L$SEH_begin_sha256_block_data_order wrt ..imagebase
+	DD	$L$SEH_end_sha256_block_data_order wrt ..imagebase
+	DD	$L$SEH_info_sha256_block_data_order wrt ..imagebase
+	DD	$L$SEH_begin_sha256_block_data_order_ssse3 wrt ..imagebase
+	DD	$L$SEH_end_sha256_block_data_order_ssse3 wrt ..imagebase
+	DD	$L$SEH_info_sha256_block_data_order_ssse3 wrt ..imagebase
+section	.xdata rdata align=8
+ALIGN	8
+$L$SEH_info_sha256_block_data_order:
+DB	9,0,0,0
+	DD	se_handler wrt ..imagebase
+	DD	$L$prologue wrt ..imagebase,$L$epilogue wrt ..imagebase
+$L$SEH_info_sha256_block_data_order_ssse3:
+DB	9,0,0,0
+	DD	se_handler wrt ..imagebase
+	DD	$L$prologue_ssse3 wrt ..imagebase,$L$epilogue_ssse3 wrt ..imagebase

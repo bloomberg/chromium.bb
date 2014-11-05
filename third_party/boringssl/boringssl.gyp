@@ -39,8 +39,8 @@
             }],
             ['OS == "win"', {
               'sources': [ '<@(boringssl_win_x86_sources)' ],
-              # Win32 is built with Yasm. The other ports use the platform
-              # assembler.
+              # Windows' assembly is built with Yasm. The other platforms use
+              # the platform assembler.
               'variables': {
                 'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/third_party/boringssl',
               },
@@ -63,6 +63,14 @@
             }],
             ['OS == "win"', {
               'sources': [ '<@(boringssl_win_x86_64_sources)' ],
+              # Windows' assembly is built with Yasm. The other platforms use
+              # the platform assembler.
+              'variables': {
+                'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/third_party/boringssl',
+              },
+              'includes': [
+                '../yasm/yasm_compile.gypi',
+              ],
             }],
             ['OS != "mac" and OS != "linux" and OS != "win" and OS != "android"', {
               'defines': [ 'OPENSSL_NO_ASM' ],

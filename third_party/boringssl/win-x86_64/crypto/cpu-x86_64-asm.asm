@@ -1,14 +1,18 @@
-OPTION	DOTNAME
-.text$	SEGMENT ALIGN(256) 'CODE'
+default	rel
+%define XMMWORD
+%define YMMWORD
+%define ZMMWORD
+section	.text code align=64
 
-PUBLIC	OPENSSL_ia32_cpuid
+
+global	OPENSSL_ia32_cpuid
 
 ALIGN	16
-OPENSSL_ia32_cpuid	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+OPENSSL_ia32_cpuid:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_OPENSSL_ia32_cpuid::
+$L$SEH_begin_OPENSSL_ia32_cpuid:
 	mov	rdi,rcx
 
 
@@ -18,54 +22,54 @@ $L$SEH_begin_OPENSSL_ia32_cpuid::
 	mov	r8,rbx
 
 	xor	eax,eax
-	mov	DWORD PTR[8+rdi],eax
+	mov	DWORD[8+rdi],eax
 	cpuid
 	mov	r11d,eax
 
 	xor	eax,eax
-	cmp	ebx,0756e6547h
+	cmp	ebx,0x756e6547
 	setne	al
 	mov	r9d,eax
-	cmp	edx,049656e69h
+	cmp	edx,0x49656e69
 	setne	al
 	or	r9d,eax
-	cmp	ecx,06c65746eh
+	cmp	ecx,0x6c65746e
 	setne	al
 	or	r9d,eax
-	jz	$L$intel
+	jz	NEAR $L$intel
 
-	cmp	ebx,068747541h
+	cmp	ebx,0x68747541
 	setne	al
 	mov	r10d,eax
-	cmp	edx,069746E65h
+	cmp	edx,0x69746E65
 	setne	al
 	or	r10d,eax
-	cmp	ecx,0444D4163h
+	cmp	ecx,0x444D4163
 	setne	al
 	or	r10d,eax
-	jnz	$L$intel
+	jnz	NEAR $L$intel
 
 
 
 
-	mov	eax,080000000h
+	mov	eax,0x80000000
 	cpuid
 
 
-	cmp	eax,080000001h
-	jb	$L$intel
+	cmp	eax,0x80000001
+	jb	NEAR $L$intel
 	mov	r10d,eax
-	mov	eax,080000001h
+	mov	eax,0x80000001
 	cpuid
 
 
 	or	r9d,ecx
-	and	r9d,000000801h
+	and	r9d,0x00000801
 
-	cmp	r10d,080000008h
-	jb	$L$intel
+	cmp	r10d,0x80000008
+	jb	NEAR $L$intel
 
-	mov	eax,080000008h
+	mov	eax,0x80000008
 	cpuid
 
 	movzx	r10,cl
@@ -75,84 +79,80 @@ $L$SEH_begin_OPENSSL_ia32_cpuid::
 	cpuid
 
 	bt	edx,28
-	jnc	$L$generic
+	jnc	NEAR $L$generic
 	shr	ebx,16
 	cmp	bl,r10b
-	ja	$L$generic
-	and	edx,0efffffffh
-	jmp	$L$generic
+	ja	NEAR $L$generic
+	and	edx,0xefffffff
+	jmp	NEAR $L$generic
 
-$L$intel::
+$L$intel:
 	cmp	r11d,4
 	mov	r10d,-1
-	jb	$L$nocacheinfo
+	jb	NEAR $L$nocacheinfo
 
 	mov	eax,4
 	mov	ecx,0
 	cpuid
 	mov	r10d,eax
 	shr	r10d,14
-	and	r10d,0fffh
+	and	r10d,0xfff
 
 	cmp	r11d,7
-	jb	$L$nocacheinfo
+	jb	NEAR $L$nocacheinfo
 
 	mov	eax,7
 	xor	ecx,ecx
 	cpuid
-	mov	DWORD PTR[8+rdi],ebx
+	mov	DWORD[8+rdi],ebx
 
-$L$nocacheinfo::
+$L$nocacheinfo:
 	mov	eax,1
 	cpuid
 
-	and	edx,0bfefffffh
+	and	edx,0xbfefffff
 	cmp	r9d,0
-	jne	$L$notintel
-	or	edx,040000000h
+	jne	NEAR $L$notintel
+	or	edx,0x40000000
 	and	ah,15
 	cmp	ah,15
-	jne	$L$notintel
-	or	edx,000100000h
-$L$notintel::
+	jne	NEAR $L$notintel
+	or	edx,0x00100000
+$L$notintel:
 	bt	edx,28
-	jnc	$L$generic
-	and	edx,0efffffffh
+	jnc	NEAR $L$generic
+	and	edx,0xefffffff
 	cmp	r10d,0
-	je	$L$generic
+	je	NEAR $L$generic
 
-	or	edx,010000000h
+	or	edx,0x10000000
 	shr	ebx,16
 	cmp	bl,1
-	ja	$L$generic
-	and	edx,0efffffffh
-$L$generic::
-	and	r9d,000000800h
-	and	ecx,0fffff7ffh
+	ja	NEAR $L$generic
+	and	edx,0xefffffff
+$L$generic:
+	and	r9d,0x00000800
+	and	ecx,0xfffff7ff
 	or	r9d,ecx
 
 	mov	r10d,edx
 	bt	r9d,27
-	jnc	$L$clear_avx
+	jnc	NEAR $L$clear_avx
 	xor	ecx,ecx
-DB	00fh,001h,0d0h
+DB	0x0f,0x01,0xd0
 	and	eax,6
 	cmp	eax,6
-	je	$L$done
-$L$clear_avx::
-	mov	eax,0efffe7ffh
+	je	NEAR $L$done
+$L$clear_avx:
+	mov	eax,0xefffe7ff
 	and	r9d,eax
-	and	DWORD PTR[8+rdi],0ffffffdfh
-$L$done::
-	mov	DWORD PTR[4+rdi],r9d
-	mov	DWORD PTR[rdi],r10d
+	and	DWORD[8+rdi],0xffffffdf
+$L$done:
+	mov	DWORD[4+rdi],r9d
+	mov	DWORD[rdi],r10d
 	mov	rbx,r8
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_OPENSSL_ia32_cpuid::
-OPENSSL_ia32_cpuid	ENDP
+$L$SEH_end_OPENSSL_ia32_cpuid:
 
-
-.text$	ENDS
-END

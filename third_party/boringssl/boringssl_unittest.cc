@@ -219,8 +219,8 @@ TEST(BoringSSL, ExampleMul) {
   TestSimple("example_mul");
 }
 
-TEST(BoringSSL, ExampleSign) {
-  TestSimple("example_sign");
+TEST(BoringSSL, EVP) {
+  TestSimple("evp_test");
 }
 
 TEST(BoringSSL, SSL) {

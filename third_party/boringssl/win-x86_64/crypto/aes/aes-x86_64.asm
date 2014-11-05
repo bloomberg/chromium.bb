@@ -1,89 +1,93 @@
-OPTION	DOTNAME
-.text$	SEGMENT ALIGN(256) 'CODE'
+default	rel
+%define XMMWORD
+%define YMMWORD
+%define ZMMWORD
+section	.text code align=64
+
 
 ALIGN	16
-_x86_64_AES_encrypt	PROC PRIVATE
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
+_x86_64_AES_encrypt:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
 
-	mov	r13d,DWORD PTR[240+r15]
+	mov	r13d,DWORD[240+r15]
 	sub	r13d,1
-	jmp	$L$enc_loop
+	jmp	NEAR $L$enc_loop
 ALIGN	16
-$L$enc_loop::
+$L$enc_loop:
 
 	movzx	esi,al
 	movzx	edi,bl
 	movzx	ebp,cl
-	mov	r10d,DWORD PTR[rsi*8+r14]
-	mov	r11d,DWORD PTR[rdi*8+r14]
-	mov	r12d,DWORD PTR[rbp*8+r14]
+	mov	r10d,DWORD[rsi*8+r14]
+	mov	r11d,DWORD[rdi*8+r14]
+	mov	r12d,DWORD[rbp*8+r14]
 
 	movzx	esi,bh
 	movzx	edi,ch
 	movzx	ebp,dl
-	xor	r10d,DWORD PTR[3+rsi*8+r14]
-	xor	r11d,DWORD PTR[3+rdi*8+r14]
-	mov	r8d,DWORD PTR[rbp*8+r14]
+	xor	r10d,DWORD[3+rsi*8+r14]
+	xor	r11d,DWORD[3+rdi*8+r14]
+	mov	r8d,DWORD[rbp*8+r14]
 
 	movzx	esi,dh
 	shr	ecx,16
 	movzx	ebp,ah
-	xor	r12d,DWORD PTR[3+rsi*8+r14]
+	xor	r12d,DWORD[3+rsi*8+r14]
 	shr	edx,16
-	xor	r8d,DWORD PTR[3+rbp*8+r14]
+	xor	r8d,DWORD[3+rbp*8+r14]
 
 	shr	ebx,16
-	lea	r15,QWORD PTR[16+r15]
+	lea	r15,[16+r15]
 	shr	eax,16
 
 	movzx	esi,cl
 	movzx	edi,dl
 	movzx	ebp,al
-	xor	r10d,DWORD PTR[2+rsi*8+r14]
-	xor	r11d,DWORD PTR[2+rdi*8+r14]
-	xor	r12d,DWORD PTR[2+rbp*8+r14]
+	xor	r10d,DWORD[2+rsi*8+r14]
+	xor	r11d,DWORD[2+rdi*8+r14]
+	xor	r12d,DWORD[2+rbp*8+r14]
 
 	movzx	esi,dh
 	movzx	edi,ah
 	movzx	ebp,bl
-	xor	r10d,DWORD PTR[1+rsi*8+r14]
-	xor	r11d,DWORD PTR[1+rdi*8+r14]
-	xor	r8d,DWORD PTR[2+rbp*8+r14]
+	xor	r10d,DWORD[1+rsi*8+r14]
+	xor	r11d,DWORD[1+rdi*8+r14]
+	xor	r8d,DWORD[2+rbp*8+r14]
 
-	mov	edx,DWORD PTR[12+r15]
+	mov	edx,DWORD[12+r15]
 	movzx	edi,bh
 	movzx	ebp,ch
-	mov	eax,DWORD PTR[r15]
-	xor	r12d,DWORD PTR[1+rdi*8+r14]
-	xor	r8d,DWORD PTR[1+rbp*8+r14]
+	mov	eax,DWORD[r15]
+	xor	r12d,DWORD[1+rdi*8+r14]
+	xor	r8d,DWORD[1+rbp*8+r14]
 
-	mov	ebx,DWORD PTR[4+r15]
-	mov	ecx,DWORD PTR[8+r15]
+	mov	ebx,DWORD[4+r15]
+	mov	ecx,DWORD[8+r15]
 	xor	eax,r10d
 	xor	ebx,r11d
 	xor	ecx,r12d
 	xor	edx,r8d
 	sub	r13d,1
-	jnz	$L$enc_loop
+	jnz	NEAR $L$enc_loop
 	movzx	esi,al
 	movzx	edi,bl
 	movzx	ebp,cl
-	movzx	r10d,BYTE PTR[2+rsi*8+r14]
-	movzx	r11d,BYTE PTR[2+rdi*8+r14]
-	movzx	r12d,BYTE PTR[2+rbp*8+r14]
+	movzx	r10d,BYTE[2+rsi*8+r14]
+	movzx	r11d,BYTE[2+rdi*8+r14]
+	movzx	r12d,BYTE[2+rbp*8+r14]
 
 	movzx	esi,dl
 	movzx	edi,bh
 	movzx	ebp,ch
-	movzx	r8d,BYTE PTR[2+rsi*8+r14]
-	mov	edi,DWORD PTR[rdi*8+r14]
-	mov	ebp,DWORD PTR[rbp*8+r14]
+	movzx	r8d,BYTE[2+rsi*8+r14]
+	mov	edi,DWORD[rdi*8+r14]
+	mov	ebp,DWORD[rbp*8+r14]
 
-	and	edi,00000ff00h
-	and	ebp,00000ff00h
+	and	edi,0x0000ff00
+	and	ebp,0x0000ff00
 
 	xor	r10d,edi
 	xor	r11d,ebp
@@ -92,11 +96,11 @@ $L$enc_loop::
 	movzx	esi,dh
 	movzx	edi,ah
 	shr	edx,16
-	mov	esi,DWORD PTR[rsi*8+r14]
-	mov	edi,DWORD PTR[rdi*8+r14]
+	mov	esi,DWORD[rsi*8+r14]
+	mov	edi,DWORD[rdi*8+r14]
 
-	and	esi,00000ff00h
-	and	edi,00000ff00h
+	and	esi,0x0000ff00
+	and	edi,0x0000ff00
 	shr	ebx,16
 	xor	r12d,esi
 	xor	r8d,edi
@@ -105,13 +109,13 @@ $L$enc_loop::
 	movzx	esi,cl
 	movzx	edi,dl
 	movzx	ebp,al
-	mov	esi,DWORD PTR[rsi*8+r14]
-	mov	edi,DWORD PTR[rdi*8+r14]
-	mov	ebp,DWORD PTR[rbp*8+r14]
+	mov	esi,DWORD[rsi*8+r14]
+	mov	edi,DWORD[rdi*8+r14]
+	mov	ebp,DWORD[rbp*8+r14]
 
-	and	esi,000ff0000h
-	and	edi,000ff0000h
-	and	ebp,000ff0000h
+	and	esi,0x00ff0000
+	and	edi,0x00ff0000
+	and	ebp,0x00ff0000
 
 	xor	r10d,esi
 	xor	r11d,edi
@@ -120,13 +124,13 @@ $L$enc_loop::
 	movzx	esi,bl
 	movzx	edi,dh
 	movzx	ebp,ah
-	mov	esi,DWORD PTR[rsi*8+r14]
-	mov	edi,DWORD PTR[2+rdi*8+r14]
-	mov	ebp,DWORD PTR[2+rbp*8+r14]
+	mov	esi,DWORD[rsi*8+r14]
+	mov	edi,DWORD[2+rdi*8+r14]
+	mov	ebp,DWORD[2+rbp*8+r14]
 
-	and	esi,000ff0000h
-	and	edi,0ff000000h
-	and	ebp,0ff000000h
+	and	esi,0x00ff0000
+	and	edi,0xff000000
+	and	ebp,0xff000000
 
 	xor	r8d,esi
 	xor	r10d,edi
@@ -134,45 +138,45 @@ $L$enc_loop::
 
 	movzx	esi,bh
 	movzx	edi,ch
-	mov	edx,DWORD PTR[((16+12))+r15]
-	mov	esi,DWORD PTR[2+rsi*8+r14]
-	mov	edi,DWORD PTR[2+rdi*8+r14]
-	mov	eax,DWORD PTR[((16+0))+r15]
+	mov	edx,DWORD[((16+12))+r15]
+	mov	esi,DWORD[2+rsi*8+r14]
+	mov	edi,DWORD[2+rdi*8+r14]
+	mov	eax,DWORD[((16+0))+r15]
 
-	and	esi,0ff000000h
-	and	edi,0ff000000h
+	and	esi,0xff000000
+	and	edi,0xff000000
 
 	xor	r12d,esi
 	xor	r8d,edi
 
-	mov	ebx,DWORD PTR[((16+4))+r15]
-	mov	ecx,DWORD PTR[((16+8))+r15]
+	mov	ebx,DWORD[((16+4))+r15]
+	mov	ecx,DWORD[((16+8))+r15]
 	xor	eax,r10d
 	xor	ebx,r11d
 	xor	ecx,r12d
 	xor	edx,r8d
-DB	0f3h,0c3h
-_x86_64_AES_encrypt	ENDP
+DB	0xf3,0xc3
+
 
 ALIGN	16
-_x86_64_AES_encrypt_compact	PROC PRIVATE
-	lea	r8,QWORD PTR[128+r14]
-	mov	edi,DWORD PTR[((0-128))+r8]
-	mov	ebp,DWORD PTR[((32-128))+r8]
-	mov	r10d,DWORD PTR[((64-128))+r8]
-	mov	r11d,DWORD PTR[((96-128))+r8]
-	mov	edi,DWORD PTR[((128-128))+r8]
-	mov	ebp,DWORD PTR[((160-128))+r8]
-	mov	r10d,DWORD PTR[((192-128))+r8]
-	mov	r11d,DWORD PTR[((224-128))+r8]
-	jmp	$L$enc_loop_compact
+_x86_64_AES_encrypt_compact:
+	lea	r8,[128+r14]
+	mov	edi,DWORD[((0-128))+r8]
+	mov	ebp,DWORD[((32-128))+r8]
+	mov	r10d,DWORD[((64-128))+r8]
+	mov	r11d,DWORD[((96-128))+r8]
+	mov	edi,DWORD[((128-128))+r8]
+	mov	ebp,DWORD[((160-128))+r8]
+	mov	r10d,DWORD[((192-128))+r8]
+	mov	r11d,DWORD[((224-128))+r8]
+	jmp	NEAR $L$enc_loop_compact
 ALIGN	16
-$L$enc_loop_compact::
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
-	lea	r15,QWORD PTR[16+r15]
+$L$enc_loop_compact:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
+	lea	r15,[16+r15]
 	movzx	r10d,al
 	movzx	r11d,bl
 	movzx	r12d,cl
@@ -181,17 +185,17 @@ $L$enc_loop_compact::
 	movzx	edi,ch
 	shr	ecx,16
 	movzx	ebp,dh
-	movzx	r10d,BYTE PTR[r10*1+r14]
-	movzx	r11d,BYTE PTR[r11*1+r14]
-	movzx	r12d,BYTE PTR[r12*1+r14]
-	movzx	r8d,BYTE PTR[r8*1+r14]
+	movzx	r10d,BYTE[r10*1+r14]
+	movzx	r11d,BYTE[r11*1+r14]
+	movzx	r12d,BYTE[r12*1+r14]
+	movzx	r8d,BYTE[r8*1+r14]
 
-	movzx	r9d,BYTE PTR[rsi*1+r14]
+	movzx	r9d,BYTE[rsi*1+r14]
 	movzx	esi,ah
-	movzx	r13d,BYTE PTR[rdi*1+r14]
+	movzx	r13d,BYTE[rdi*1+r14]
 	movzx	edi,cl
-	movzx	ebp,BYTE PTR[rbp*1+r14]
-	movzx	esi,BYTE PTR[rsi*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
 
 	shl	r9d,8
 	shr	edx,16
@@ -203,16 +207,16 @@ $L$enc_loop_compact::
 	xor	r11d,r13d
 	shl	ebp,8
 	movzx	r13d,al
-	movzx	edi,BYTE PTR[rdi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
 	xor	r12d,ebp
 
 	shl	esi,8
 	movzx	ebp,bl
 	shl	edi,16
 	xor	r8d,esi
-	movzx	r9d,BYTE PTR[r9*1+r14]
+	movzx	r9d,BYTE[r9*1+r14]
 	movzx	esi,dh
-	movzx	r13d,BYTE PTR[r13*1+r14]
+	movzx	r13d,BYTE[r13*1+r14]
 	xor	r10d,edi
 
 	shr	ecx,8
@@ -221,11 +225,11 @@ $L$enc_loop_compact::
 	shr	ebx,8
 	shl	r13d,16
 	xor	r11d,r9d
-	movzx	ebp,BYTE PTR[rbp*1+r14]
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
-	movzx	edx,BYTE PTR[rcx*1+r14]
-	movzx	ecx,BYTE PTR[rbx*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
+	movzx	edx,BYTE[rcx*1+r14]
+	movzx	ecx,BYTE[rbx*1+r14]
 
 	shl	ebp,16
 	xor	r12d,r13d
@@ -240,24 +244,24 @@ $L$enc_loop_compact::
 	mov	ebx,r11d
 	xor	ecx,r12d
 	xor	edx,r8d
-	cmp	r15,QWORD PTR[16+rsp]
-	je	$L$enc_compact_done
-	mov	r10d,080808080h
-	mov	r11d,080808080h
+	cmp	r15,QWORD[16+rsp]
+	je	NEAR $L$enc_compact_done
+	mov	r10d,0x80808080
+	mov	r11d,0x80808080
 	and	r10d,eax
 	and	r11d,ebx
 	mov	esi,r10d
 	mov	edi,r11d
 	shr	r10d,7
-	lea	r8d,DWORD PTR[rax*1+rax]
+	lea	r8d,[rax*1+rax]
 	shr	r11d,7
-	lea	r9d,DWORD PTR[rbx*1+rbx]
+	lea	r9d,[rbx*1+rbx]
 	sub	esi,r10d
 	sub	edi,r11d
-	and	r8d,0fefefefeh
-	and	r9d,0fefefefeh
-	and	esi,01b1b1b1bh
-	and	edi,01b1b1b1bh
+	and	r8d,0xfefefefe
+	and	r9d,0xfefefefe
+	and	esi,0x1b1b1b1b
+	and	edi,0x1b1b1b1b
 	mov	r10d,eax
 	mov	r11d,ebx
 	xor	r8d,esi
@@ -265,9 +269,9 @@ $L$enc_loop_compact::
 
 	xor	eax,r8d
 	xor	ebx,r9d
-	mov	r12d,080808080h
+	mov	r12d,0x80808080
 	rol	eax,24
-	mov	ebp,080808080h
+	mov	ebp,0x80808080
 	rol	ebx,24
 	and	r12d,ecx
 	and	ebp,edx
@@ -277,23 +281,23 @@ $L$enc_loop_compact::
 	ror	r10d,16
 	mov	edi,ebp
 	ror	r11d,16
-	lea	r8d,DWORD PTR[rcx*1+rcx]
+	lea	r8d,[rcx*1+rcx]
 	shr	r12d,7
 	xor	eax,r10d
 	shr	ebp,7
 	xor	ebx,r11d
 	ror	r10d,8
-	lea	r9d,DWORD PTR[rdx*1+rdx]
+	lea	r9d,[rdx*1+rdx]
 	ror	r11d,8
 	sub	esi,r12d
 	sub	edi,ebp
 	xor	eax,r10d
 	xor	ebx,r11d
 
-	and	r8d,0fefefefeh
-	and	r9d,0fefefefeh
-	and	esi,01b1b1b1bh
-	and	edi,01b1b1b1bh
+	and	r8d,0xfefefefe
+	and	r9d,0xfefefefe
+	and	esi,0x1b1b1b1b
+	and	edi,0x1b1b1b1b
 	mov	r12d,ecx
 	mov	ebp,edx
 	xor	r8d,esi
@@ -304,37 +308,37 @@ $L$enc_loop_compact::
 	ror	ebp,16
 	xor	edx,r9d
 	rol	ecx,24
-	mov	esi,DWORD PTR[r14]
+	mov	esi,DWORD[r14]
 	rol	edx,24
 	xor	ecx,r8d
-	mov	edi,DWORD PTR[64+r14]
+	mov	edi,DWORD[64+r14]
 	xor	edx,r9d
-	mov	r8d,DWORD PTR[128+r14]
+	mov	r8d,DWORD[128+r14]
 	xor	ecx,r12d
 	ror	r12d,8
 	xor	edx,ebp
 	ror	ebp,8
 	xor	ecx,r12d
-	mov	r9d,DWORD PTR[192+r14]
+	mov	r9d,DWORD[192+r14]
 	xor	edx,ebp
-	jmp	$L$enc_loop_compact
+	jmp	NEAR $L$enc_loop_compact
 ALIGN	16
-$L$enc_compact_done::
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
-DB	0f3h,0c3h
-_x86_64_AES_encrypt_compact	ENDP
+$L$enc_compact_done:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
+DB	0xf3,0xc3
+
 ALIGN	16
-PUBLIC	asm_AES_encrypt
+global	asm_AES_encrypt
 
 
-asm_AES_encrypt	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+asm_AES_encrypt:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_asm_AES_encrypt::
+$L$SEH_begin_asm_AES_encrypt:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
@@ -349,142 +353,141 @@ $L$SEH_begin_asm_AES_encrypt::
 
 
 	mov	r10,rsp
-	lea	rcx,QWORD PTR[((-63))+rdx]
+	lea	rcx,[((-63))+rdx]
 	and	rsp,-64
 	sub	rcx,rsp
 	neg	rcx
-	and	rcx,03c0h
+	and	rcx,0x3c0
 	sub	rsp,rcx
 	sub	rsp,32
 
-	mov	QWORD PTR[16+rsp],rsi
-	mov	QWORD PTR[24+rsp],r10
-$L$enc_prologue::
+	mov	QWORD[16+rsp],rsi
+	mov	QWORD[24+rsp],r10
+$L$enc_prologue:
 
 	mov	r15,rdx
-	mov	r13d,DWORD PTR[240+r15]
+	mov	r13d,DWORD[240+r15]
 
-	mov	eax,DWORD PTR[rdi]
-	mov	ebx,DWORD PTR[4+rdi]
-	mov	ecx,DWORD PTR[8+rdi]
-	mov	edx,DWORD PTR[12+rdi]
+	mov	eax,DWORD[rdi]
+	mov	ebx,DWORD[4+rdi]
+	mov	ecx,DWORD[8+rdi]
+	mov	edx,DWORD[12+rdi]
 
 	shl	r13d,4
-	lea	rbp,QWORD PTR[r13*1+r15]
-	mov	QWORD PTR[rsp],r15
-	mov	QWORD PTR[8+rsp],rbp
+	lea	rbp,[r13*1+r15]
+	mov	QWORD[rsp],r15
+	mov	QWORD[8+rsp],rbp
 
 
-	lea	r14,QWORD PTR[(($L$AES_Te+2048))]
-	lea	rbp,QWORD PTR[768+rsp]
+	lea	r14,[(($L$AES_Te+2048))]
+	lea	rbp,[768+rsp]
 	sub	rbp,r14
-	and	rbp,0300h
-	lea	r14,QWORD PTR[rbp*1+r14]
+	and	rbp,0x300
+	lea	r14,[rbp*1+r14]
 
 	call	_x86_64_AES_encrypt_compact
 
-	mov	r9,QWORD PTR[16+rsp]
-	mov	rsi,QWORD PTR[24+rsp]
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	r9,QWORD[16+rsp]
+	mov	rsi,QWORD[24+rsp]
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	mov	r15,QWORD PTR[rsi]
-	mov	r14,QWORD PTR[8+rsi]
-	mov	r13,QWORD PTR[16+rsi]
-	mov	r12,QWORD PTR[24+rsi]
-	mov	rbp,QWORD PTR[32+rsi]
-	mov	rbx,QWORD PTR[40+rsi]
-	lea	rsp,QWORD PTR[48+rsi]
-$L$enc_epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+	mov	r15,QWORD[rsi]
+	mov	r14,QWORD[8+rsi]
+	mov	r13,QWORD[16+rsi]
+	mov	r12,QWORD[24+rsi]
+	mov	rbp,QWORD[32+rsi]
+	mov	rbx,QWORD[40+rsi]
+	lea	rsp,[48+rsi]
+$L$enc_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_asm_AES_encrypt::
-asm_AES_encrypt	ENDP
+$L$SEH_end_asm_AES_encrypt:
 
 ALIGN	16
-_x86_64_AES_decrypt	PROC PRIVATE
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
+_x86_64_AES_decrypt:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
 
-	mov	r13d,DWORD PTR[240+r15]
+	mov	r13d,DWORD[240+r15]
 	sub	r13d,1
-	jmp	$L$dec_loop
+	jmp	NEAR $L$dec_loop
 ALIGN	16
-$L$dec_loop::
+$L$dec_loop:
 
 	movzx	esi,al
 	movzx	edi,bl
 	movzx	ebp,cl
-	mov	r10d,DWORD PTR[rsi*8+r14]
-	mov	r11d,DWORD PTR[rdi*8+r14]
-	mov	r12d,DWORD PTR[rbp*8+r14]
+	mov	r10d,DWORD[rsi*8+r14]
+	mov	r11d,DWORD[rdi*8+r14]
+	mov	r12d,DWORD[rbp*8+r14]
 
 	movzx	esi,dh
 	movzx	edi,ah
 	movzx	ebp,dl
-	xor	r10d,DWORD PTR[3+rsi*8+r14]
-	xor	r11d,DWORD PTR[3+rdi*8+r14]
-	mov	r8d,DWORD PTR[rbp*8+r14]
+	xor	r10d,DWORD[3+rsi*8+r14]
+	xor	r11d,DWORD[3+rdi*8+r14]
+	mov	r8d,DWORD[rbp*8+r14]
 
 	movzx	esi,bh
 	shr	eax,16
 	movzx	ebp,ch
-	xor	r12d,DWORD PTR[3+rsi*8+r14]
+	xor	r12d,DWORD[3+rsi*8+r14]
 	shr	edx,16
-	xor	r8d,DWORD PTR[3+rbp*8+r14]
+	xor	r8d,DWORD[3+rbp*8+r14]
 
 	shr	ebx,16
-	lea	r15,QWORD PTR[16+r15]
+	lea	r15,[16+r15]
 	shr	ecx,16
 
 	movzx	esi,cl
 	movzx	edi,dl
 	movzx	ebp,al
-	xor	r10d,DWORD PTR[2+rsi*8+r14]
-	xor	r11d,DWORD PTR[2+rdi*8+r14]
-	xor	r12d,DWORD PTR[2+rbp*8+r14]
+	xor	r10d,DWORD[2+rsi*8+r14]
+	xor	r11d,DWORD[2+rdi*8+r14]
+	xor	r12d,DWORD[2+rbp*8+r14]
 
 	movzx	esi,bh
 	movzx	edi,ch
 	movzx	ebp,bl
-	xor	r10d,DWORD PTR[1+rsi*8+r14]
-	xor	r11d,DWORD PTR[1+rdi*8+r14]
-	xor	r8d,DWORD PTR[2+rbp*8+r14]
+	xor	r10d,DWORD[1+rsi*8+r14]
+	xor	r11d,DWORD[1+rdi*8+r14]
+	xor	r8d,DWORD[2+rbp*8+r14]
 
 	movzx	esi,dh
-	mov	edx,DWORD PTR[12+r15]
+	mov	edx,DWORD[12+r15]
 	movzx	ebp,ah
-	xor	r12d,DWORD PTR[1+rsi*8+r14]
-	mov	eax,DWORD PTR[r15]
-	xor	r8d,DWORD PTR[1+rbp*8+r14]
+	xor	r12d,DWORD[1+rsi*8+r14]
+	mov	eax,DWORD[r15]
+	xor	r8d,DWORD[1+rbp*8+r14]
 
 	xor	eax,r10d
-	mov	ebx,DWORD PTR[4+r15]
-	mov	ecx,DWORD PTR[8+r15]
+	mov	ebx,DWORD[4+r15]
+	mov	ecx,DWORD[8+r15]
 	xor	ecx,r12d
 	xor	ebx,r11d
 	xor	edx,r8d
 	sub	r13d,1
-	jnz	$L$dec_loop
-	lea	r14,QWORD PTR[2048+r14]
+	jnz	NEAR $L$dec_loop
+	lea	r14,[2048+r14]
 	movzx	esi,al
 	movzx	edi,bl
 	movzx	ebp,cl
-	movzx	r10d,BYTE PTR[rsi*1+r14]
-	movzx	r11d,BYTE PTR[rdi*1+r14]
-	movzx	r12d,BYTE PTR[rbp*1+r14]
+	movzx	r10d,BYTE[rsi*1+r14]
+	movzx	r11d,BYTE[rdi*1+r14]
+	movzx	r12d,BYTE[rbp*1+r14]
 
 	movzx	esi,dl
 	movzx	edi,dh
 	movzx	ebp,ah
-	movzx	r8d,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
-	movzx	ebp,BYTE PTR[rbp*1+r14]
+	movzx	r8d,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
 
 	shl	edi,8
 	shl	ebp,8
@@ -496,8 +499,8 @@ $L$dec_loop::
 	movzx	esi,bh
 	movzx	edi,ch
 	shr	eax,16
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
 
 	shl	esi,8
 	shl	edi,8
@@ -509,9 +512,9 @@ $L$dec_loop::
 	movzx	esi,cl
 	movzx	edi,dl
 	movzx	ebp,al
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
-	movzx	ebp,BYTE PTR[rbp*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
 
 	shl	esi,16
 	shl	edi,16
@@ -524,9 +527,9 @@ $L$dec_loop::
 	movzx	esi,bl
 	movzx	edi,bh
 	movzx	ebp,ch
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
-	movzx	ebp,BYTE PTR[rbp*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
 
 	shl	esi,16
 	shl	edi,24
@@ -538,10 +541,10 @@ $L$dec_loop::
 
 	movzx	esi,dh
 	movzx	edi,ah
-	mov	edx,DWORD PTR[((16+12))+r15]
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	edi,BYTE PTR[rdi*1+r14]
-	mov	eax,DWORD PTR[((16+0))+r15]
+	mov	edx,DWORD[((16+12))+r15]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
+	mov	eax,DWORD[((16+0))+r15]
 
 	shl	esi,24
 	shl	edi,24
@@ -549,36 +552,36 @@ $L$dec_loop::
 	xor	r12d,esi
 	xor	r8d,edi
 
-	mov	ebx,DWORD PTR[((16+4))+r15]
-	mov	ecx,DWORD PTR[((16+8))+r15]
-	lea	r14,QWORD PTR[((-2048))+r14]
+	mov	ebx,DWORD[((16+4))+r15]
+	mov	ecx,DWORD[((16+8))+r15]
+	lea	r14,[((-2048))+r14]
 	xor	eax,r10d
 	xor	ebx,r11d
 	xor	ecx,r12d
 	xor	edx,r8d
-DB	0f3h,0c3h
-_x86_64_AES_decrypt	ENDP
+DB	0xf3,0xc3
+
 
 ALIGN	16
-_x86_64_AES_decrypt_compact	PROC PRIVATE
-	lea	r8,QWORD PTR[128+r14]
-	mov	edi,DWORD PTR[((0-128))+r8]
-	mov	ebp,DWORD PTR[((32-128))+r8]
-	mov	r10d,DWORD PTR[((64-128))+r8]
-	mov	r11d,DWORD PTR[((96-128))+r8]
-	mov	edi,DWORD PTR[((128-128))+r8]
-	mov	ebp,DWORD PTR[((160-128))+r8]
-	mov	r10d,DWORD PTR[((192-128))+r8]
-	mov	r11d,DWORD PTR[((224-128))+r8]
-	jmp	$L$dec_loop_compact
+_x86_64_AES_decrypt_compact:
+	lea	r8,[128+r14]
+	mov	edi,DWORD[((0-128))+r8]
+	mov	ebp,DWORD[((32-128))+r8]
+	mov	r10d,DWORD[((64-128))+r8]
+	mov	r11d,DWORD[((96-128))+r8]
+	mov	edi,DWORD[((128-128))+r8]
+	mov	ebp,DWORD[((160-128))+r8]
+	mov	r10d,DWORD[((192-128))+r8]
+	mov	r11d,DWORD[((224-128))+r8]
+	jmp	NEAR $L$dec_loop_compact
 
 ALIGN	16
-$L$dec_loop_compact::
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
-	lea	r15,QWORD PTR[16+r15]
+$L$dec_loop_compact:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
+	lea	r15,[16+r15]
 	movzx	r10d,al
 	movzx	r11d,bl
 	movzx	r12d,cl
@@ -587,16 +590,16 @@ $L$dec_loop_compact::
 	movzx	edi,ah
 	shr	edx,16
 	movzx	ebp,bh
-	movzx	r10d,BYTE PTR[r10*1+r14]
-	movzx	r11d,BYTE PTR[r11*1+r14]
-	movzx	r12d,BYTE PTR[r12*1+r14]
-	movzx	r8d,BYTE PTR[r8*1+r14]
+	movzx	r10d,BYTE[r10*1+r14]
+	movzx	r11d,BYTE[r11*1+r14]
+	movzx	r12d,BYTE[r12*1+r14]
+	movzx	r8d,BYTE[r8*1+r14]
 
-	movzx	r9d,BYTE PTR[rsi*1+r14]
+	movzx	r9d,BYTE[rsi*1+r14]
 	movzx	esi,ch
-	movzx	r13d,BYTE PTR[rdi*1+r14]
-	movzx	ebp,BYTE PTR[rbp*1+r14]
-	movzx	esi,BYTE PTR[rsi*1+r14]
+	movzx	r13d,BYTE[rdi*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
 
 	shr	ecx,16
 	shl	r13d,8
@@ -611,17 +614,17 @@ $L$dec_loop_compact::
 	xor	r11d,r13d
 	shl	esi,8
 	movzx	r13d,al
-	movzx	edi,BYTE PTR[rdi*1+r14]
+	movzx	edi,BYTE[rdi*1+r14]
 	xor	r12d,ebp
 	movzx	ebp,bl
 
 	shl	edi,16
 	xor	r8d,esi
-	movzx	r9d,BYTE PTR[r9*1+r14]
+	movzx	r9d,BYTE[r9*1+r14]
 	movzx	esi,bh
-	movzx	ebp,BYTE PTR[rbp*1+r14]
+	movzx	ebp,BYTE[rbp*1+r14]
 	xor	r10d,edi
-	movzx	r13d,BYTE PTR[r13*1+r14]
+	movzx	r13d,BYTE[r13*1+r14]
 	movzx	edi,ch
 
 	shl	ebp,16
@@ -633,10 +636,10 @@ $L$dec_loop_compact::
 	shr	eax,8
 	xor	r12d,r13d
 
-	movzx	esi,BYTE PTR[rsi*1+r14]
-	movzx	ebx,BYTE PTR[rdi*1+r14]
-	movzx	ecx,BYTE PTR[rbp*1+r14]
-	movzx	edx,BYTE PTR[rax*1+r14]
+	movzx	esi,BYTE[rsi*1+r14]
+	movzx	ebx,BYTE[rdi*1+r14]
+	movzx	ecx,BYTE[rbp*1+r14]
+	movzx	edx,BYTE[rax*1+r14]
 
 	mov	eax,r10d
 	shl	esi,24
@@ -647,16 +650,16 @@ $L$dec_loop_compact::
 	xor	ebx,r11d
 	xor	ecx,r12d
 	xor	edx,r8d
-	cmp	r15,QWORD PTR[16+rsp]
-	je	$L$dec_compact_done
+	cmp	r15,QWORD[16+rsp]
+	je	NEAR $L$dec_compact_done
 
-	mov	rsi,QWORD PTR[((256+0))+r14]
+	mov	rsi,QWORD[((256+0))+r14]
 	shl	rbx,32
 	shl	rdx,32
-	mov	rdi,QWORD PTR[((256+8))+r14]
+	mov	rdi,QWORD[((256+8))+r14]
 	or	rax,rbx
 	or	rcx,rdx
-	mov	rbp,QWORD PTR[((256+16))+r14]
+	mov	rbp,QWORD[((256+16))+r14]
 	mov	r9,rsi
 	mov	r12,rsi
 	and	r9,rax
@@ -664,9 +667,9 @@ $L$dec_loop_compact::
 	mov	rbx,r9
 	mov	rdx,r12
 	shr	r9,7
-	lea	r8,QWORD PTR[rax*1+rax]
+	lea	r8,[rax*1+rax]
 	shr	r12,7
-	lea	r11,QWORD PTR[rcx*1+rcx]
+	lea	r11,[rcx*1+rcx]
 	sub	rbx,r9
 	sub	rdx,r12
 	and	r8,rdi
@@ -683,9 +686,9 @@ $L$dec_loop_compact::
 	mov	rbx,r10
 	mov	rdx,r13
 	shr	r10,7
-	lea	r9,QWORD PTR[r8*1+r8]
+	lea	r9,[r8*1+r8]
 	shr	r13,7
-	lea	r12,QWORD PTR[r11*1+r11]
+	lea	r12,[r11*1+r11]
 	sub	rbx,r10
 	sub	rdx,r13
 	and	r9,rdi
@@ -707,8 +710,8 @@ $L$dec_loop_compact::
 	xor	r11,rcx
 	sub	rbx,r10
 	sub	rdx,r13
-	lea	r10,QWORD PTR[r9*1+r9]
-	lea	r13,QWORD PTR[r12*1+r12]
+	lea	r10,[r9*1+r9]
+	lea	r13,[r12*1+r12]
 	xor	r9,rax
 	xor	r12,rcx
 	and	r10,rdi
@@ -761,37 +764,37 @@ $L$dec_loop_compact::
 	shr	r11,32
 	xor	edx,r13d
 
-	mov	rsi,QWORD PTR[r14]
+	mov	rsi,QWORD[r14]
 	rol	r9d,16
-	mov	rdi,QWORD PTR[64+r14]
+	mov	rdi,QWORD[64+r14]
 	rol	r12d,16
-	mov	rbp,QWORD PTR[128+r14]
+	mov	rbp,QWORD[128+r14]
 	rol	r8d,16
-	mov	r10,QWORD PTR[192+r14]
+	mov	r10,QWORD[192+r14]
 	xor	eax,r9d
 	rol	r11d,16
 	xor	ecx,r12d
-	mov	r13,QWORD PTR[256+r14]
+	mov	r13,QWORD[256+r14]
 	xor	ebx,r8d
 	xor	edx,r11d
-	jmp	$L$dec_loop_compact
+	jmp	NEAR $L$dec_loop_compact
 ALIGN	16
-$L$dec_compact_done::
-	xor	eax,DWORD PTR[r15]
-	xor	ebx,DWORD PTR[4+r15]
-	xor	ecx,DWORD PTR[8+r15]
-	xor	edx,DWORD PTR[12+r15]
-DB	0f3h,0c3h
-_x86_64_AES_decrypt_compact	ENDP
+$L$dec_compact_done:
+	xor	eax,DWORD[r15]
+	xor	ebx,DWORD[4+r15]
+	xor	ecx,DWORD[8+r15]
+	xor	edx,DWORD[12+r15]
+DB	0xf3,0xc3
+
 ALIGN	16
-PUBLIC	asm_AES_decrypt
+global	asm_AES_decrypt
 
 
-asm_AES_decrypt	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+asm_AES_decrypt:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_asm_AES_decrypt::
+$L$SEH_begin_asm_AES_decrypt:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
@@ -806,70 +809,69 @@ $L$SEH_begin_asm_AES_decrypt::
 
 
 	mov	r10,rsp
-	lea	rcx,QWORD PTR[((-63))+rdx]
+	lea	rcx,[((-63))+rdx]
 	and	rsp,-64
 	sub	rcx,rsp
 	neg	rcx
-	and	rcx,03c0h
+	and	rcx,0x3c0
 	sub	rsp,rcx
 	sub	rsp,32
 
-	mov	QWORD PTR[16+rsp],rsi
-	mov	QWORD PTR[24+rsp],r10
-$L$dec_prologue::
+	mov	QWORD[16+rsp],rsi
+	mov	QWORD[24+rsp],r10
+$L$dec_prologue:
 
 	mov	r15,rdx
-	mov	r13d,DWORD PTR[240+r15]
+	mov	r13d,DWORD[240+r15]
 
-	mov	eax,DWORD PTR[rdi]
-	mov	ebx,DWORD PTR[4+rdi]
-	mov	ecx,DWORD PTR[8+rdi]
-	mov	edx,DWORD PTR[12+rdi]
+	mov	eax,DWORD[rdi]
+	mov	ebx,DWORD[4+rdi]
+	mov	ecx,DWORD[8+rdi]
+	mov	edx,DWORD[12+rdi]
 
 	shl	r13d,4
-	lea	rbp,QWORD PTR[r13*1+r15]
-	mov	QWORD PTR[rsp],r15
-	mov	QWORD PTR[8+rsp],rbp
+	lea	rbp,[r13*1+r15]
+	mov	QWORD[rsp],r15
+	mov	QWORD[8+rsp],rbp
 
 
-	lea	r14,QWORD PTR[(($L$AES_Td+2048))]
-	lea	rbp,QWORD PTR[768+rsp]
+	lea	r14,[(($L$AES_Td+2048))]
+	lea	rbp,[768+rsp]
 	sub	rbp,r14
-	and	rbp,0300h
-	lea	r14,QWORD PTR[rbp*1+r14]
+	and	rbp,0x300
+	lea	r14,[rbp*1+r14]
 	shr	rbp,3
 	add	r14,rbp
 
 	call	_x86_64_AES_decrypt_compact
 
-	mov	r9,QWORD PTR[16+rsp]
-	mov	rsi,QWORD PTR[24+rsp]
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	r9,QWORD[16+rsp]
+	mov	rsi,QWORD[24+rsp]
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	mov	r15,QWORD PTR[rsi]
-	mov	r14,QWORD PTR[8+rsi]
-	mov	r13,QWORD PTR[16+rsi]
-	mov	r12,QWORD PTR[24+rsi]
-	mov	rbp,QWORD PTR[32+rsi]
-	mov	rbx,QWORD PTR[40+rsi]
-	lea	rsp,QWORD PTR[48+rsi]
-$L$dec_epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+	mov	r15,QWORD[rsi]
+	mov	r14,QWORD[8+rsi]
+	mov	r13,QWORD[16+rsi]
+	mov	r12,QWORD[24+rsi]
+	mov	rbp,QWORD[32+rsi]
+	mov	rbx,QWORD[40+rsi]
+	lea	rsp,[48+rsi]
+$L$dec_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_asm_AES_decrypt::
-asm_AES_decrypt	ENDP
+$L$SEH_end_asm_AES_decrypt:
 ALIGN	16
-PUBLIC	asm_AES_set_encrypt_key
+global	asm_AES_set_encrypt_key
 
-asm_AES_set_encrypt_key	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+asm_AES_set_encrypt_key:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_asm_AES_set_encrypt_key::
+$L$SEH_begin_asm_AES_set_encrypt_key:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
@@ -882,267 +884,266 @@ $L$SEH_begin_asm_AES_set_encrypt_key::
 	push	r14
 	push	r15
 	sub	rsp,8
-$L$enc_key_prologue::
+$L$enc_key_prologue:
 
 	call	_x86_64_AES_set_encrypt_key
 
-	mov	rbp,QWORD PTR[40+rsp]
-	mov	rbx,QWORD PTR[48+rsp]
+	mov	rbp,QWORD[40+rsp]
+	mov	rbx,QWORD[48+rsp]
 	add	rsp,56
-$L$enc_key_epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+$L$enc_key_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_asm_AES_set_encrypt_key::
-asm_AES_set_encrypt_key	ENDP
+$L$SEH_end_asm_AES_set_encrypt_key:
 
 
 ALIGN	16
-_x86_64_AES_set_encrypt_key	PROC PRIVATE
+_x86_64_AES_set_encrypt_key:
 	mov	ecx,esi
 	mov	rsi,rdi
 	mov	rdi,rdx
 
 	test	rsi,-1
-	jz	$L$badpointer
+	jz	NEAR $L$badpointer
 	test	rdi,-1
-	jz	$L$badpointer
+	jz	NEAR $L$badpointer
 
-	lea	rbp,QWORD PTR[$L$AES_Te]
-	lea	rbp,QWORD PTR[((2048+128))+rbp]
+	lea	rbp,[$L$AES_Te]
+	lea	rbp,[((2048+128))+rbp]
 
 
-	mov	eax,DWORD PTR[((0-128))+rbp]
-	mov	ebx,DWORD PTR[((32-128))+rbp]
-	mov	r8d,DWORD PTR[((64-128))+rbp]
-	mov	edx,DWORD PTR[((96-128))+rbp]
-	mov	eax,DWORD PTR[((128-128))+rbp]
-	mov	ebx,DWORD PTR[((160-128))+rbp]
-	mov	r8d,DWORD PTR[((192-128))+rbp]
-	mov	edx,DWORD PTR[((224-128))+rbp]
+	mov	eax,DWORD[((0-128))+rbp]
+	mov	ebx,DWORD[((32-128))+rbp]
+	mov	r8d,DWORD[((64-128))+rbp]
+	mov	edx,DWORD[((96-128))+rbp]
+	mov	eax,DWORD[((128-128))+rbp]
+	mov	ebx,DWORD[((160-128))+rbp]
+	mov	r8d,DWORD[((192-128))+rbp]
+	mov	edx,DWORD[((224-128))+rbp]
 
 	cmp	ecx,128
-	je	$L$10rounds
+	je	NEAR $L$10rounds
 	cmp	ecx,192
-	je	$L$12rounds
+	je	NEAR $L$12rounds
 	cmp	ecx,256
-	je	$L$14rounds
+	je	NEAR $L$14rounds
 	mov	rax,-2
-	jmp	$L$exit
+	jmp	NEAR $L$exit
 
-$L$10rounds::
-	mov	rax,QWORD PTR[rsi]
-	mov	rdx,QWORD PTR[8+rsi]
-	mov	QWORD PTR[rdi],rax
-	mov	QWORD PTR[8+rdi],rdx
+$L$10rounds:
+	mov	rax,QWORD[rsi]
+	mov	rdx,QWORD[8+rsi]
+	mov	QWORD[rdi],rax
+	mov	QWORD[8+rdi],rdx
 
 	shr	rdx,32
 	xor	ecx,ecx
-	jmp	$L$10shortcut
+	jmp	NEAR $L$10shortcut
 ALIGN	4
-$L$10loop::
-	mov	eax,DWORD PTR[rdi]
-	mov	edx,DWORD PTR[12+rdi]
-$L$10shortcut::
+$L$10loop:
+	mov	eax,DWORD[rdi]
+	mov	edx,DWORD[12+rdi]
+$L$10shortcut:
 	movzx	esi,dl
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,24
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shr	edx,16
 	movzx	esi,dl
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,8
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shl	ebx,16
 	xor	eax,ebx
 
-	xor	eax,DWORD PTR[((1024-128))+rcx*4+rbp]
-	mov	DWORD PTR[16+rdi],eax
-	xor	eax,DWORD PTR[4+rdi]
-	mov	DWORD PTR[20+rdi],eax
-	xor	eax,DWORD PTR[8+rdi]
-	mov	DWORD PTR[24+rdi],eax
-	xor	eax,DWORD PTR[12+rdi]
-	mov	DWORD PTR[28+rdi],eax
+	xor	eax,DWORD[((1024-128))+rcx*4+rbp]
+	mov	DWORD[16+rdi],eax
+	xor	eax,DWORD[4+rdi]
+	mov	DWORD[20+rdi],eax
+	xor	eax,DWORD[8+rdi]
+	mov	DWORD[24+rdi],eax
+	xor	eax,DWORD[12+rdi]
+	mov	DWORD[28+rdi],eax
 	add	ecx,1
-	lea	rdi,QWORD PTR[16+rdi]
+	lea	rdi,[16+rdi]
 	cmp	ecx,10
-	jl	$L$10loop
+	jl	NEAR $L$10loop
 
-	mov	DWORD PTR[80+rdi],10
+	mov	DWORD[80+rdi],10
 	xor	rax,rax
-	jmp	$L$exit
+	jmp	NEAR $L$exit
 
-$L$12rounds::
-	mov	rax,QWORD PTR[rsi]
-	mov	rbx,QWORD PTR[8+rsi]
-	mov	rdx,QWORD PTR[16+rsi]
-	mov	QWORD PTR[rdi],rax
-	mov	QWORD PTR[8+rdi],rbx
-	mov	QWORD PTR[16+rdi],rdx
+$L$12rounds:
+	mov	rax,QWORD[rsi]
+	mov	rbx,QWORD[8+rsi]
+	mov	rdx,QWORD[16+rsi]
+	mov	QWORD[rdi],rax
+	mov	QWORD[8+rdi],rbx
+	mov	QWORD[16+rdi],rdx
 
 	shr	rdx,32
 	xor	ecx,ecx
-	jmp	$L$12shortcut
+	jmp	NEAR $L$12shortcut
 ALIGN	4
-$L$12loop::
-	mov	eax,DWORD PTR[rdi]
-	mov	edx,DWORD PTR[20+rdi]
-$L$12shortcut::
+$L$12loop:
+	mov	eax,DWORD[rdi]
+	mov	edx,DWORD[20+rdi]
+$L$12shortcut:
 	movzx	esi,dl
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,24
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shr	edx,16
 	movzx	esi,dl
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,8
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shl	ebx,16
 	xor	eax,ebx
 
-	xor	eax,DWORD PTR[((1024-128))+rcx*4+rbp]
-	mov	DWORD PTR[24+rdi],eax
-	xor	eax,DWORD PTR[4+rdi]
-	mov	DWORD PTR[28+rdi],eax
-	xor	eax,DWORD PTR[8+rdi]
-	mov	DWORD PTR[32+rdi],eax
-	xor	eax,DWORD PTR[12+rdi]
-	mov	DWORD PTR[36+rdi],eax
+	xor	eax,DWORD[((1024-128))+rcx*4+rbp]
+	mov	DWORD[24+rdi],eax
+	xor	eax,DWORD[4+rdi]
+	mov	DWORD[28+rdi],eax
+	xor	eax,DWORD[8+rdi]
+	mov	DWORD[32+rdi],eax
+	xor	eax,DWORD[12+rdi]
+	mov	DWORD[36+rdi],eax
 
 	cmp	ecx,7
-	je	$L$12break
+	je	NEAR $L$12break
 	add	ecx,1
 
-	xor	eax,DWORD PTR[16+rdi]
-	mov	DWORD PTR[40+rdi],eax
-	xor	eax,DWORD PTR[20+rdi]
-	mov	DWORD PTR[44+rdi],eax
+	xor	eax,DWORD[16+rdi]
+	mov	DWORD[40+rdi],eax
+	xor	eax,DWORD[20+rdi]
+	mov	DWORD[44+rdi],eax
 
-	lea	rdi,QWORD PTR[24+rdi]
-	jmp	$L$12loop
-$L$12break::
-	mov	DWORD PTR[72+rdi],12
+	lea	rdi,[24+rdi]
+	jmp	NEAR $L$12loop
+$L$12break:
+	mov	DWORD[72+rdi],12
 	xor	rax,rax
-	jmp	$L$exit
+	jmp	NEAR $L$exit
 
-$L$14rounds::
-	mov	rax,QWORD PTR[rsi]
-	mov	rbx,QWORD PTR[8+rsi]
-	mov	rcx,QWORD PTR[16+rsi]
-	mov	rdx,QWORD PTR[24+rsi]
-	mov	QWORD PTR[rdi],rax
-	mov	QWORD PTR[8+rdi],rbx
-	mov	QWORD PTR[16+rdi],rcx
-	mov	QWORD PTR[24+rdi],rdx
+$L$14rounds:
+	mov	rax,QWORD[rsi]
+	mov	rbx,QWORD[8+rsi]
+	mov	rcx,QWORD[16+rsi]
+	mov	rdx,QWORD[24+rsi]
+	mov	QWORD[rdi],rax
+	mov	QWORD[8+rdi],rbx
+	mov	QWORD[16+rdi],rcx
+	mov	QWORD[24+rdi],rdx
 
 	shr	rdx,32
 	xor	ecx,ecx
-	jmp	$L$14shortcut
+	jmp	NEAR $L$14shortcut
 ALIGN	4
-$L$14loop::
-	mov	eax,DWORD PTR[rdi]
-	mov	edx,DWORD PTR[28+rdi]
-$L$14shortcut::
+$L$14loop:
+	mov	eax,DWORD[rdi]
+	mov	edx,DWORD[28+rdi]
+$L$14shortcut:
 	movzx	esi,dl
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,24
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shr	edx,16
 	movzx	esi,dl
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,8
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shl	ebx,16
 	xor	eax,ebx
 
-	xor	eax,DWORD PTR[((1024-128))+rcx*4+rbp]
-	mov	DWORD PTR[32+rdi],eax
-	xor	eax,DWORD PTR[4+rdi]
-	mov	DWORD PTR[36+rdi],eax
-	xor	eax,DWORD PTR[8+rdi]
-	mov	DWORD PTR[40+rdi],eax
-	xor	eax,DWORD PTR[12+rdi]
-	mov	DWORD PTR[44+rdi],eax
+	xor	eax,DWORD[((1024-128))+rcx*4+rbp]
+	mov	DWORD[32+rdi],eax
+	xor	eax,DWORD[4+rdi]
+	mov	DWORD[36+rdi],eax
+	xor	eax,DWORD[8+rdi]
+	mov	DWORD[40+rdi],eax
+	xor	eax,DWORD[12+rdi]
+	mov	DWORD[44+rdi],eax
 
 	cmp	ecx,6
-	je	$L$14break
+	je	NEAR $L$14break
 	add	ecx,1
 
 	mov	edx,eax
-	mov	eax,DWORD PTR[16+rdi]
+	mov	eax,DWORD[16+rdi]
 	movzx	esi,dl
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shr	edx,16
 	shl	ebx,8
 	movzx	esi,dl
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	movzx	esi,dh
 	shl	ebx,16
 	xor	eax,ebx
 
-	movzx	ebx,BYTE PTR[((-128))+rsi*1+rbp]
+	movzx	ebx,BYTE[((-128))+rsi*1+rbp]
 	shl	ebx,24
 	xor	eax,ebx
 
-	mov	DWORD PTR[48+rdi],eax
-	xor	eax,DWORD PTR[20+rdi]
-	mov	DWORD PTR[52+rdi],eax
-	xor	eax,DWORD PTR[24+rdi]
-	mov	DWORD PTR[56+rdi],eax
-	xor	eax,DWORD PTR[28+rdi]
-	mov	DWORD PTR[60+rdi],eax
+	mov	DWORD[48+rdi],eax
+	xor	eax,DWORD[20+rdi]
+	mov	DWORD[52+rdi],eax
+	xor	eax,DWORD[24+rdi]
+	mov	DWORD[56+rdi],eax
+	xor	eax,DWORD[28+rdi]
+	mov	DWORD[60+rdi],eax
 
-	lea	rdi,QWORD PTR[32+rdi]
-	jmp	$L$14loop
-$L$14break::
-	mov	DWORD PTR[48+rdi],14
+	lea	rdi,[32+rdi]
+	jmp	NEAR $L$14loop
+$L$14break:
+	mov	DWORD[48+rdi],14
 	xor	rax,rax
-	jmp	$L$exit
+	jmp	NEAR $L$exit
 
-$L$badpointer::
+$L$badpointer:
 	mov	rax,-1
-$L$exit::
-DB	0f3h,0c3h
-_x86_64_AES_set_encrypt_key	ENDP
-ALIGN	16
-PUBLIC	asm_AES_set_decrypt_key
+$L$exit:
+DB	0xf3,0xc3
 
-asm_AES_set_decrypt_key	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+ALIGN	16
+global	asm_AES_set_decrypt_key
+
+asm_AES_set_decrypt_key:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_asm_AES_set_decrypt_key::
+$L$SEH_begin_asm_AES_set_decrypt_key:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
@@ -1155,46 +1156,46 @@ $L$SEH_begin_asm_AES_set_decrypt_key::
 	push	r14
 	push	r15
 	push	rdx
-$L$dec_key_prologue::
+$L$dec_key_prologue:
 
 	call	_x86_64_AES_set_encrypt_key
-	mov	r8,QWORD PTR[rsp]
+	mov	r8,QWORD[rsp]
 	cmp	eax,0
-	jne	$L$abort
+	jne	NEAR $L$abort
 
-	mov	r14d,DWORD PTR[240+r8]
+	mov	r14d,DWORD[240+r8]
 	xor	rdi,rdi
-	lea	rcx,QWORD PTR[r14*4+rdi]
+	lea	rcx,[r14*4+rdi]
 	mov	rsi,r8
-	lea	rdi,QWORD PTR[rcx*4+r8]
+	lea	rdi,[rcx*4+r8]
 ALIGN	4
-$L$invert::
-	mov	rax,QWORD PTR[rsi]
-	mov	rbx,QWORD PTR[8+rsi]
-	mov	rcx,QWORD PTR[rdi]
-	mov	rdx,QWORD PTR[8+rdi]
-	mov	QWORD PTR[rdi],rax
-	mov	QWORD PTR[8+rdi],rbx
-	mov	QWORD PTR[rsi],rcx
-	mov	QWORD PTR[8+rsi],rdx
-	lea	rsi,QWORD PTR[16+rsi]
-	lea	rdi,QWORD PTR[((-16))+rdi]
+$L$invert:
+	mov	rax,QWORD[rsi]
+	mov	rbx,QWORD[8+rsi]
+	mov	rcx,QWORD[rdi]
+	mov	rdx,QWORD[8+rdi]
+	mov	QWORD[rdi],rax
+	mov	QWORD[8+rdi],rbx
+	mov	QWORD[rsi],rcx
+	mov	QWORD[8+rsi],rdx
+	lea	rsi,[16+rsi]
+	lea	rdi,[((-16))+rdi]
 	cmp	rdi,rsi
-	jne	$L$invert
+	jne	NEAR $L$invert
 
-	lea	rax,QWORD PTR[(($L$AES_Te+2048+1024))]
+	lea	rax,[(($L$AES_Te+2048+1024))]
 
-	mov	rsi,QWORD PTR[40+rax]
-	mov	rdi,QWORD PTR[48+rax]
-	mov	rbp,QWORD PTR[56+rax]
+	mov	rsi,QWORD[40+rax]
+	mov	rdi,QWORD[48+rax]
+	mov	rbp,QWORD[56+rax]
 
 	mov	r15,r8
 	sub	r14d,1
 ALIGN	4
-$L$permute::
-	lea	r15,QWORD PTR[16+r15]
-	mov	rax,QWORD PTR[r15]
-	mov	rcx,QWORD PTR[8+r15]
+$L$permute:
+	lea	r15,[16+r15]
+	mov	rax,QWORD[r15]
+	mov	rcx,QWORD[8+r15]
 	mov	r9,rsi
 	mov	r12,rsi
 	and	r9,rax
@@ -1202,9 +1203,9 @@ $L$permute::
 	mov	rbx,r9
 	mov	rdx,r12
 	shr	r9,7
-	lea	r8,QWORD PTR[rax*1+rax]
+	lea	r8,[rax*1+rax]
 	shr	r12,7
-	lea	r11,QWORD PTR[rcx*1+rcx]
+	lea	r11,[rcx*1+rcx]
 	sub	rbx,r9
 	sub	rdx,r12
 	and	r8,rdi
@@ -1221,9 +1222,9 @@ $L$permute::
 	mov	rbx,r10
 	mov	rdx,r13
 	shr	r10,7
-	lea	r9,QWORD PTR[r8*1+r8]
+	lea	r9,[r8*1+r8]
 	shr	r13,7
-	lea	r12,QWORD PTR[r11*1+r11]
+	lea	r12,[r11*1+r11]
 	sub	rbx,r10
 	sub	rdx,r13
 	and	r9,rdi
@@ -1245,8 +1246,8 @@ $L$permute::
 	xor	r11,rcx
 	sub	rbx,r10
 	sub	rdx,r13
-	lea	r10,QWORD PTR[r9*1+r9]
-	lea	r13,QWORD PTR[r12*1+r12]
+	lea	r10,[r9*1+r9]
+	lea	r13,[r12*1+r12]
 	xor	r9,rax
 	xor	r12,rcx
 	and	r10,rdi
@@ -1312,48 +1313,47 @@ $L$permute::
 
 	xor	ebx,r8d
 	xor	edx,r11d
-	mov	DWORD PTR[r15],eax
-	mov	DWORD PTR[4+r15],ebx
-	mov	DWORD PTR[8+r15],ecx
-	mov	DWORD PTR[12+r15],edx
+	mov	DWORD[r15],eax
+	mov	DWORD[4+r15],ebx
+	mov	DWORD[8+r15],ecx
+	mov	DWORD[12+r15],edx
 	sub	r14d,1
-	jnz	$L$permute
+	jnz	NEAR $L$permute
 
 	xor	rax,rax
-$L$abort::
-	mov	r15,QWORD PTR[8+rsp]
-	mov	r14,QWORD PTR[16+rsp]
-	mov	r13,QWORD PTR[24+rsp]
-	mov	r12,QWORD PTR[32+rsp]
-	mov	rbp,QWORD PTR[40+rsp]
-	mov	rbx,QWORD PTR[48+rsp]
+$L$abort:
+	mov	r15,QWORD[8+rsp]
+	mov	r14,QWORD[16+rsp]
+	mov	r13,QWORD[24+rsp]
+	mov	r12,QWORD[32+rsp]
+	mov	rbp,QWORD[40+rsp]
+	mov	rbx,QWORD[48+rsp]
 	add	rsp,56
-$L$dec_key_epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+$L$dec_key_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_asm_AES_set_decrypt_key::
-asm_AES_set_decrypt_key	ENDP
+$L$SEH_end_asm_AES_set_decrypt_key:
 ALIGN	16
-PUBLIC	asm_AES_cbc_encrypt
+global	asm_AES_cbc_encrypt
 
-EXTERN	OPENSSL_ia32cap_P:NEAR
+EXTERN	OPENSSL_ia32cap_P
 
-asm_AES_cbc_encrypt	PROC PUBLIC
-	mov	QWORD PTR[8+rsp],rdi	;WIN64 prologue
-	mov	QWORD PTR[16+rsp],rsi
+asm_AES_cbc_encrypt:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
 	mov	rax,rsp
-$L$SEH_begin_asm_AES_cbc_encrypt::
+$L$SEH_begin_asm_AES_cbc_encrypt:
 	mov	rdi,rcx
 	mov	rsi,rdx
 	mov	rdx,r8
 	mov	rcx,r9
-	mov	r8,QWORD PTR[40+rsp]
-	mov	r9,QWORD PTR[48+rsp]
+	mov	r8,QWORD[40+rsp]
+	mov	r9,QWORD[48+rsp]
 
 
 	cmp	rdx,0
-	je	$L$cbc_epilogue
+	je	NEAR $L$cbc_epilogue
 	pushfq
 	push	rbx
 	push	rbp
@@ -1361,269 +1361,269 @@ $L$SEH_begin_asm_AES_cbc_encrypt::
 	push	r13
 	push	r14
 	push	r15
-$L$cbc_prologue::
+$L$cbc_prologue:
 
 	cld
 	mov	r9d,r9d
 
-	lea	r14,QWORD PTR[$L$AES_Te]
+	lea	r14,[$L$AES_Te]
 	cmp	r9,0
-	jne	$L$cbc_picked_te
-	lea	r14,QWORD PTR[$L$AES_Td]
-$L$cbc_picked_te::
+	jne	NEAR $L$cbc_picked_te
+	lea	r14,[$L$AES_Td]
+$L$cbc_picked_te:
 
-	mov	r10d,DWORD PTR[OPENSSL_ia32cap_P]
+	mov	r10d,DWORD[OPENSSL_ia32cap_P]
 	cmp	rdx,512
-	jb	$L$cbc_slow_prologue
+	jb	NEAR $L$cbc_slow_prologue
 	test	rdx,15
-	jnz	$L$cbc_slow_prologue
+	jnz	NEAR $L$cbc_slow_prologue
 	bt	r10d,28
-	jc	$L$cbc_slow_prologue
+	jc	NEAR $L$cbc_slow_prologue
 
 
-	lea	r15,QWORD PTR[((-88-248))+rsp]
+	lea	r15,[((-88-248))+rsp]
 	and	r15,-64
 
 
 	mov	r10,r14
-	lea	r11,QWORD PTR[2304+r14]
+	lea	r11,[2304+r14]
 	mov	r12,r15
-	and	r10,0FFFh
-	and	r11,0FFFh
-	and	r12,0FFFh
+	and	r10,0xFFF
+	and	r11,0xFFF
+	and	r12,0xFFF
 
 	cmp	r12,r11
-	jb	$L$cbc_te_break_out
+	jb	NEAR $L$cbc_te_break_out
 	sub	r12,r11
 	sub	r15,r12
-	jmp	$L$cbc_te_ok
-$L$cbc_te_break_out::
+	jmp	NEAR $L$cbc_te_ok
+$L$cbc_te_break_out:
 	sub	r12,r10
-	and	r12,0FFFh
+	and	r12,0xFFF
 	add	r12,320
 	sub	r15,r12
 ALIGN	4
-$L$cbc_te_ok::
+$L$cbc_te_ok:
 
 	xchg	r15,rsp
 
-	mov	QWORD PTR[16+rsp],r15
-$L$cbc_fast_body::
-	mov	QWORD PTR[24+rsp],rdi
-	mov	QWORD PTR[32+rsp],rsi
-	mov	QWORD PTR[40+rsp],rdx
-	mov	QWORD PTR[48+rsp],rcx
-	mov	QWORD PTR[56+rsp],r8
-	mov	DWORD PTR[((80+240))+rsp],0
+	mov	QWORD[16+rsp],r15
+$L$cbc_fast_body:
+	mov	QWORD[24+rsp],rdi
+	mov	QWORD[32+rsp],rsi
+	mov	QWORD[40+rsp],rdx
+	mov	QWORD[48+rsp],rcx
+	mov	QWORD[56+rsp],r8
+	mov	DWORD[((80+240))+rsp],0
 	mov	rbp,r8
 	mov	rbx,r9
 	mov	r9,rsi
 	mov	r8,rdi
 	mov	r15,rcx
 
-	mov	eax,DWORD PTR[240+r15]
+	mov	eax,DWORD[240+r15]
 
 	mov	r10,r15
 	sub	r10,r14
-	and	r10,0fffh
+	and	r10,0xfff
 	cmp	r10,2304
-	jb	$L$cbc_do_ecopy
+	jb	NEAR $L$cbc_do_ecopy
 	cmp	r10,4096-248
-	jb	$L$cbc_skip_ecopy
+	jb	NEAR $L$cbc_skip_ecopy
 ALIGN	4
-$L$cbc_do_ecopy::
+$L$cbc_do_ecopy:
 	mov	rsi,r15
-	lea	rdi,QWORD PTR[80+rsp]
-	lea	r15,QWORD PTR[80+rsp]
+	lea	rdi,[80+rsp]
+	lea	r15,[80+rsp]
 	mov	ecx,240/8
-	DD	090A548F3h
-	mov	DWORD PTR[rdi],eax
-$L$cbc_skip_ecopy::
-	mov	QWORD PTR[rsp],r15
+	DD	0x90A548F3
+	mov	DWORD[rdi],eax
+$L$cbc_skip_ecopy:
+	mov	QWORD[rsp],r15
 
 	mov	ecx,18
 ALIGN	4
-$L$cbc_prefetch_te::
-	mov	r10,QWORD PTR[r14]
-	mov	r11,QWORD PTR[32+r14]
-	mov	r12,QWORD PTR[64+r14]
-	mov	r13,QWORD PTR[96+r14]
-	lea	r14,QWORD PTR[128+r14]
+$L$cbc_prefetch_te:
+	mov	r10,QWORD[r14]
+	mov	r11,QWORD[32+r14]
+	mov	r12,QWORD[64+r14]
+	mov	r13,QWORD[96+r14]
+	lea	r14,[128+r14]
 	sub	ecx,1
-	jnz	$L$cbc_prefetch_te
-	lea	r14,QWORD PTR[((-2304))+r14]
+	jnz	NEAR $L$cbc_prefetch_te
+	lea	r14,[((-2304))+r14]
 
 	cmp	rbx,0
-	je	$L$FAST_DECRYPT
+	je	NEAR $L$FAST_DECRYPT
 
 
-	mov	eax,DWORD PTR[rbp]
-	mov	ebx,DWORD PTR[4+rbp]
-	mov	ecx,DWORD PTR[8+rbp]
-	mov	edx,DWORD PTR[12+rbp]
+	mov	eax,DWORD[rbp]
+	mov	ebx,DWORD[4+rbp]
+	mov	ecx,DWORD[8+rbp]
+	mov	edx,DWORD[12+rbp]
 
 ALIGN	4
-$L$cbc_fast_enc_loop::
-	xor	eax,DWORD PTR[r8]
-	xor	ebx,DWORD PTR[4+r8]
-	xor	ecx,DWORD PTR[8+r8]
-	xor	edx,DWORD PTR[12+r8]
-	mov	r15,QWORD PTR[rsp]
-	mov	QWORD PTR[24+rsp],r8
+$L$cbc_fast_enc_loop:
+	xor	eax,DWORD[r8]
+	xor	ebx,DWORD[4+r8]
+	xor	ecx,DWORD[8+r8]
+	xor	edx,DWORD[12+r8]
+	mov	r15,QWORD[rsp]
+	mov	QWORD[24+rsp],r8
 
 	call	_x86_64_AES_encrypt
 
-	mov	r8,QWORD PTR[24+rsp]
-	mov	r10,QWORD PTR[40+rsp]
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	r8,QWORD[24+rsp]
+	mov	r10,QWORD[40+rsp]
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	lea	r8,QWORD PTR[16+r8]
-	lea	r9,QWORD PTR[16+r9]
+	lea	r8,[16+r8]
+	lea	r9,[16+r9]
 	sub	r10,16
 	test	r10,-16
-	mov	QWORD PTR[40+rsp],r10
-	jnz	$L$cbc_fast_enc_loop
-	mov	rbp,QWORD PTR[56+rsp]
-	mov	DWORD PTR[rbp],eax
-	mov	DWORD PTR[4+rbp],ebx
-	mov	DWORD PTR[8+rbp],ecx
-	mov	DWORD PTR[12+rbp],edx
+	mov	QWORD[40+rsp],r10
+	jnz	NEAR $L$cbc_fast_enc_loop
+	mov	rbp,QWORD[56+rsp]
+	mov	DWORD[rbp],eax
+	mov	DWORD[4+rbp],ebx
+	mov	DWORD[8+rbp],ecx
+	mov	DWORD[12+rbp],edx
 
-	jmp	$L$cbc_fast_cleanup
+	jmp	NEAR $L$cbc_fast_cleanup
 
 
 ALIGN	16
-$L$FAST_DECRYPT::
+$L$FAST_DECRYPT:
 	cmp	r9,r8
-	je	$L$cbc_fast_dec_in_place
+	je	NEAR $L$cbc_fast_dec_in_place
 
-	mov	QWORD PTR[64+rsp],rbp
+	mov	QWORD[64+rsp],rbp
 ALIGN	4
-$L$cbc_fast_dec_loop::
-	mov	eax,DWORD PTR[r8]
-	mov	ebx,DWORD PTR[4+r8]
-	mov	ecx,DWORD PTR[8+r8]
-	mov	edx,DWORD PTR[12+r8]
-	mov	r15,QWORD PTR[rsp]
-	mov	QWORD PTR[24+rsp],r8
+$L$cbc_fast_dec_loop:
+	mov	eax,DWORD[r8]
+	mov	ebx,DWORD[4+r8]
+	mov	ecx,DWORD[8+r8]
+	mov	edx,DWORD[12+r8]
+	mov	r15,QWORD[rsp]
+	mov	QWORD[24+rsp],r8
 
 	call	_x86_64_AES_decrypt
 
-	mov	rbp,QWORD PTR[64+rsp]
-	mov	r8,QWORD PTR[24+rsp]
-	mov	r10,QWORD PTR[40+rsp]
-	xor	eax,DWORD PTR[rbp]
-	xor	ebx,DWORD PTR[4+rbp]
-	xor	ecx,DWORD PTR[8+rbp]
-	xor	edx,DWORD PTR[12+rbp]
+	mov	rbp,QWORD[64+rsp]
+	mov	r8,QWORD[24+rsp]
+	mov	r10,QWORD[40+rsp]
+	xor	eax,DWORD[rbp]
+	xor	ebx,DWORD[4+rbp]
+	xor	ecx,DWORD[8+rbp]
+	xor	edx,DWORD[12+rbp]
 	mov	rbp,r8
 
 	sub	r10,16
-	mov	QWORD PTR[40+rsp],r10
-	mov	QWORD PTR[64+rsp],rbp
+	mov	QWORD[40+rsp],r10
+	mov	QWORD[64+rsp],rbp
 
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	lea	r8,QWORD PTR[16+r8]
-	lea	r9,QWORD PTR[16+r9]
-	jnz	$L$cbc_fast_dec_loop
-	mov	r12,QWORD PTR[56+rsp]
-	mov	r10,QWORD PTR[rbp]
-	mov	r11,QWORD PTR[8+rbp]
-	mov	QWORD PTR[r12],r10
-	mov	QWORD PTR[8+r12],r11
-	jmp	$L$cbc_fast_cleanup
+	lea	r8,[16+r8]
+	lea	r9,[16+r9]
+	jnz	NEAR $L$cbc_fast_dec_loop
+	mov	r12,QWORD[56+rsp]
+	mov	r10,QWORD[rbp]
+	mov	r11,QWORD[8+rbp]
+	mov	QWORD[r12],r10
+	mov	QWORD[8+r12],r11
+	jmp	NEAR $L$cbc_fast_cleanup
 
 ALIGN	16
-$L$cbc_fast_dec_in_place::
-	mov	r10,QWORD PTR[rbp]
-	mov	r11,QWORD PTR[8+rbp]
-	mov	QWORD PTR[((0+64))+rsp],r10
-	mov	QWORD PTR[((8+64))+rsp],r11
+$L$cbc_fast_dec_in_place:
+	mov	r10,QWORD[rbp]
+	mov	r11,QWORD[8+rbp]
+	mov	QWORD[((0+64))+rsp],r10
+	mov	QWORD[((8+64))+rsp],r11
 ALIGN	4
-$L$cbc_fast_dec_in_place_loop::
-	mov	eax,DWORD PTR[r8]
-	mov	ebx,DWORD PTR[4+r8]
-	mov	ecx,DWORD PTR[8+r8]
-	mov	edx,DWORD PTR[12+r8]
-	mov	r15,QWORD PTR[rsp]
-	mov	QWORD PTR[24+rsp],r8
+$L$cbc_fast_dec_in_place_loop:
+	mov	eax,DWORD[r8]
+	mov	ebx,DWORD[4+r8]
+	mov	ecx,DWORD[8+r8]
+	mov	edx,DWORD[12+r8]
+	mov	r15,QWORD[rsp]
+	mov	QWORD[24+rsp],r8
 
 	call	_x86_64_AES_decrypt
 
-	mov	r8,QWORD PTR[24+rsp]
-	mov	r10,QWORD PTR[40+rsp]
-	xor	eax,DWORD PTR[((0+64))+rsp]
-	xor	ebx,DWORD PTR[((4+64))+rsp]
-	xor	ecx,DWORD PTR[((8+64))+rsp]
-	xor	edx,DWORD PTR[((12+64))+rsp]
+	mov	r8,QWORD[24+rsp]
+	mov	r10,QWORD[40+rsp]
+	xor	eax,DWORD[((0+64))+rsp]
+	xor	ebx,DWORD[((4+64))+rsp]
+	xor	ecx,DWORD[((8+64))+rsp]
+	xor	edx,DWORD[((12+64))+rsp]
 
-	mov	r11,QWORD PTR[r8]
-	mov	r12,QWORD PTR[8+r8]
+	mov	r11,QWORD[r8]
+	mov	r12,QWORD[8+r8]
 	sub	r10,16
-	jz	$L$cbc_fast_dec_in_place_done
+	jz	NEAR $L$cbc_fast_dec_in_place_done
 
-	mov	QWORD PTR[((0+64))+rsp],r11
-	mov	QWORD PTR[((8+64))+rsp],r12
+	mov	QWORD[((0+64))+rsp],r11
+	mov	QWORD[((8+64))+rsp],r12
 
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	lea	r8,QWORD PTR[16+r8]
-	lea	r9,QWORD PTR[16+r9]
-	mov	QWORD PTR[40+rsp],r10
-	jmp	$L$cbc_fast_dec_in_place_loop
-$L$cbc_fast_dec_in_place_done::
-	mov	rdi,QWORD PTR[56+rsp]
-	mov	QWORD PTR[rdi],r11
-	mov	QWORD PTR[8+rdi],r12
+	lea	r8,[16+r8]
+	lea	r9,[16+r9]
+	mov	QWORD[40+rsp],r10
+	jmp	NEAR $L$cbc_fast_dec_in_place_loop
+$L$cbc_fast_dec_in_place_done:
+	mov	rdi,QWORD[56+rsp]
+	mov	QWORD[rdi],r11
+	mov	QWORD[8+rdi],r12
 
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
 ALIGN	4
-$L$cbc_fast_cleanup::
-	cmp	DWORD PTR[((80+240))+rsp],0
-	lea	rdi,QWORD PTR[80+rsp]
-	je	$L$cbc_exit
+$L$cbc_fast_cleanup:
+	cmp	DWORD[((80+240))+rsp],0
+	lea	rdi,[80+rsp]
+	je	NEAR $L$cbc_exit
 	mov	ecx,240/8
 	xor	rax,rax
-	DD	090AB48F3h
+	DD	0x90AB48F3
 
-	jmp	$L$cbc_exit
+	jmp	NEAR $L$cbc_exit
 
 
 ALIGN	16
-$L$cbc_slow_prologue::
+$L$cbc_slow_prologue:
 
-	lea	rbp,QWORD PTR[((-88))+rsp]
+	lea	rbp,[((-88))+rsp]
 	and	rbp,-64
 
-	lea	r10,QWORD PTR[((-88-63))+rcx]
+	lea	r10,[((-88-63))+rcx]
 	sub	r10,rbp
 	neg	r10
-	and	r10,03c0h
+	and	r10,0x3c0
 	sub	rbp,r10
 
 	xchg	rbp,rsp
 
-	mov	QWORD PTR[16+rsp],rbp
-$L$cbc_slow_body::
+	mov	QWORD[16+rsp],rbp
+$L$cbc_slow_body:
 
 
 
 
-	mov	QWORD PTR[56+rsp],r8
+	mov	QWORD[56+rsp],r8
 	mov	rbp,r8
 	mov	rbx,r9
 	mov	r9,rsi
@@ -1631,972 +1631,971 @@ $L$cbc_slow_body::
 	mov	r15,rcx
 	mov	r10,rdx
 
-	mov	eax,DWORD PTR[240+r15]
-	mov	QWORD PTR[rsp],r15
+	mov	eax,DWORD[240+r15]
+	mov	QWORD[rsp],r15
 	shl	eax,4
-	lea	rax,QWORD PTR[rax*1+r15]
-	mov	QWORD PTR[8+rsp],rax
+	lea	rax,[rax*1+r15]
+	mov	QWORD[8+rsp],rax
 
 
-	lea	r14,QWORD PTR[2048+r14]
-	lea	rax,QWORD PTR[((768-8))+rsp]
+	lea	r14,[2048+r14]
+	lea	rax,[((768-8))+rsp]
 	sub	rax,r14
-	and	rax,0300h
-	lea	r14,QWORD PTR[rax*1+r14]
+	and	rax,0x300
+	lea	r14,[rax*1+r14]
 
 	cmp	rbx,0
-	je	$L$SLOW_DECRYPT
+	je	NEAR $L$SLOW_DECRYPT
 
 
 	test	r10,-16
-	mov	eax,DWORD PTR[rbp]
-	mov	ebx,DWORD PTR[4+rbp]
-	mov	ecx,DWORD PTR[8+rbp]
-	mov	edx,DWORD PTR[12+rbp]
-	jz	$L$cbc_slow_enc_tail
+	mov	eax,DWORD[rbp]
+	mov	ebx,DWORD[4+rbp]
+	mov	ecx,DWORD[8+rbp]
+	mov	edx,DWORD[12+rbp]
+	jz	NEAR $L$cbc_slow_enc_tail
 
 ALIGN	4
-$L$cbc_slow_enc_loop::
-	xor	eax,DWORD PTR[r8]
-	xor	ebx,DWORD PTR[4+r8]
-	xor	ecx,DWORD PTR[8+r8]
-	xor	edx,DWORD PTR[12+r8]
-	mov	r15,QWORD PTR[rsp]
-	mov	QWORD PTR[24+rsp],r8
-	mov	QWORD PTR[32+rsp],r9
-	mov	QWORD PTR[40+rsp],r10
+$L$cbc_slow_enc_loop:
+	xor	eax,DWORD[r8]
+	xor	ebx,DWORD[4+r8]
+	xor	ecx,DWORD[8+r8]
+	xor	edx,DWORD[12+r8]
+	mov	r15,QWORD[rsp]
+	mov	QWORD[24+rsp],r8
+	mov	QWORD[32+rsp],r9
+	mov	QWORD[40+rsp],r10
 
 	call	_x86_64_AES_encrypt_compact
 
-	mov	r8,QWORD PTR[24+rsp]
-	mov	r9,QWORD PTR[32+rsp]
-	mov	r10,QWORD PTR[40+rsp]
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	r8,QWORD[24+rsp]
+	mov	r9,QWORD[32+rsp]
+	mov	r10,QWORD[40+rsp]
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	lea	r8,QWORD PTR[16+r8]
-	lea	r9,QWORD PTR[16+r9]
+	lea	r8,[16+r8]
+	lea	r9,[16+r9]
 	sub	r10,16
 	test	r10,-16
-	jnz	$L$cbc_slow_enc_loop
+	jnz	NEAR $L$cbc_slow_enc_loop
 	test	r10,15
-	jnz	$L$cbc_slow_enc_tail
-	mov	rbp,QWORD PTR[56+rsp]
-	mov	DWORD PTR[rbp],eax
-	mov	DWORD PTR[4+rbp],ebx
-	mov	DWORD PTR[8+rbp],ecx
-	mov	DWORD PTR[12+rbp],edx
+	jnz	NEAR $L$cbc_slow_enc_tail
+	mov	rbp,QWORD[56+rsp]
+	mov	DWORD[rbp],eax
+	mov	DWORD[4+rbp],ebx
+	mov	DWORD[8+rbp],ecx
+	mov	DWORD[12+rbp],edx
 
-	jmp	$L$cbc_exit
+	jmp	NEAR $L$cbc_exit
 
 ALIGN	4
-$L$cbc_slow_enc_tail::
+$L$cbc_slow_enc_tail:
 	mov	r11,rax
 	mov	r12,rcx
 	mov	rcx,r10
 	mov	rsi,r8
 	mov	rdi,r9
-	DD	09066A4F3h
+	DD	0x9066A4F3
 	mov	rcx,16
 	sub	rcx,r10
 	xor	rax,rax
-	DD	09066AAF3h
+	DD	0x9066AAF3
 	mov	r8,r9
 	mov	r10,16
 	mov	rax,r11
 	mov	rcx,r12
-	jmp	$L$cbc_slow_enc_loop
+	jmp	NEAR $L$cbc_slow_enc_loop
 
 ALIGN	16
-$L$SLOW_DECRYPT::
+$L$SLOW_DECRYPT:
 	shr	rax,3
 	add	r14,rax
 
-	mov	r11,QWORD PTR[rbp]
-	mov	r12,QWORD PTR[8+rbp]
-	mov	QWORD PTR[((0+64))+rsp],r11
-	mov	QWORD PTR[((8+64))+rsp],r12
+	mov	r11,QWORD[rbp]
+	mov	r12,QWORD[8+rbp]
+	mov	QWORD[((0+64))+rsp],r11
+	mov	QWORD[((8+64))+rsp],r12
 
 ALIGN	4
-$L$cbc_slow_dec_loop::
-	mov	eax,DWORD PTR[r8]
-	mov	ebx,DWORD PTR[4+r8]
-	mov	ecx,DWORD PTR[8+r8]
-	mov	edx,DWORD PTR[12+r8]
-	mov	r15,QWORD PTR[rsp]
-	mov	QWORD PTR[24+rsp],r8
-	mov	QWORD PTR[32+rsp],r9
-	mov	QWORD PTR[40+rsp],r10
+$L$cbc_slow_dec_loop:
+	mov	eax,DWORD[r8]
+	mov	ebx,DWORD[4+r8]
+	mov	ecx,DWORD[8+r8]
+	mov	edx,DWORD[12+r8]
+	mov	r15,QWORD[rsp]
+	mov	QWORD[24+rsp],r8
+	mov	QWORD[32+rsp],r9
+	mov	QWORD[40+rsp],r10
 
 	call	_x86_64_AES_decrypt_compact
 
-	mov	r8,QWORD PTR[24+rsp]
-	mov	r9,QWORD PTR[32+rsp]
-	mov	r10,QWORD PTR[40+rsp]
-	xor	eax,DWORD PTR[((0+64))+rsp]
-	xor	ebx,DWORD PTR[((4+64))+rsp]
-	xor	ecx,DWORD PTR[((8+64))+rsp]
-	xor	edx,DWORD PTR[((12+64))+rsp]
+	mov	r8,QWORD[24+rsp]
+	mov	r9,QWORD[32+rsp]
+	mov	r10,QWORD[40+rsp]
+	xor	eax,DWORD[((0+64))+rsp]
+	xor	ebx,DWORD[((4+64))+rsp]
+	xor	ecx,DWORD[((8+64))+rsp]
+	xor	edx,DWORD[((12+64))+rsp]
 
-	mov	r11,QWORD PTR[r8]
-	mov	r12,QWORD PTR[8+r8]
+	mov	r11,QWORD[r8]
+	mov	r12,QWORD[8+r8]
 	sub	r10,16
-	jc	$L$cbc_slow_dec_partial
-	jz	$L$cbc_slow_dec_done
+	jc	NEAR $L$cbc_slow_dec_partial
+	jz	NEAR $L$cbc_slow_dec_done
 
-	mov	QWORD PTR[((0+64))+rsp],r11
-	mov	QWORD PTR[((8+64))+rsp],r12
+	mov	QWORD[((0+64))+rsp],r11
+	mov	QWORD[((8+64))+rsp],r12
 
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	lea	r8,QWORD PTR[16+r8]
-	lea	r9,QWORD PTR[16+r9]
-	jmp	$L$cbc_slow_dec_loop
-$L$cbc_slow_dec_done::
-	mov	rdi,QWORD PTR[56+rsp]
-	mov	QWORD PTR[rdi],r11
-	mov	QWORD PTR[8+rdi],r12
+	lea	r8,[16+r8]
+	lea	r9,[16+r9]
+	jmp	NEAR $L$cbc_slow_dec_loop
+$L$cbc_slow_dec_done:
+	mov	rdi,QWORD[56+rsp]
+	mov	QWORD[rdi],r11
+	mov	QWORD[8+rdi],r12
 
-	mov	DWORD PTR[r9],eax
-	mov	DWORD PTR[4+r9],ebx
-	mov	DWORD PTR[8+r9],ecx
-	mov	DWORD PTR[12+r9],edx
+	mov	DWORD[r9],eax
+	mov	DWORD[4+r9],ebx
+	mov	DWORD[8+r9],ecx
+	mov	DWORD[12+r9],edx
 
-	jmp	$L$cbc_exit
+	jmp	NEAR $L$cbc_exit
 
 ALIGN	4
-$L$cbc_slow_dec_partial::
-	mov	rdi,QWORD PTR[56+rsp]
-	mov	QWORD PTR[rdi],r11
-	mov	QWORD PTR[8+rdi],r12
+$L$cbc_slow_dec_partial:
+	mov	rdi,QWORD[56+rsp]
+	mov	QWORD[rdi],r11
+	mov	QWORD[8+rdi],r12
 
-	mov	DWORD PTR[((0+64))+rsp],eax
-	mov	DWORD PTR[((4+64))+rsp],ebx
-	mov	DWORD PTR[((8+64))+rsp],ecx
-	mov	DWORD PTR[((12+64))+rsp],edx
+	mov	DWORD[((0+64))+rsp],eax
+	mov	DWORD[((4+64))+rsp],ebx
+	mov	DWORD[((8+64))+rsp],ecx
+	mov	DWORD[((12+64))+rsp],edx
 
 	mov	rdi,r9
-	lea	rsi,QWORD PTR[64+rsp]
-	lea	rcx,QWORD PTR[16+r10]
-	DD	09066A4F3h
-	jmp	$L$cbc_exit
+	lea	rsi,[64+rsp]
+	lea	rcx,[16+r10]
+	DD	0x9066A4F3
+	jmp	NEAR $L$cbc_exit
 
 ALIGN	16
-$L$cbc_exit::
-	mov	rsi,QWORD PTR[16+rsp]
-	mov	r15,QWORD PTR[rsi]
-	mov	r14,QWORD PTR[8+rsi]
-	mov	r13,QWORD PTR[16+rsi]
-	mov	r12,QWORD PTR[24+rsi]
-	mov	rbp,QWORD PTR[32+rsi]
-	mov	rbx,QWORD PTR[40+rsi]
-	lea	rsp,QWORD PTR[48+rsi]
-$L$cbc_popfq::
+$L$cbc_exit:
+	mov	rsi,QWORD[16+rsp]
+	mov	r15,QWORD[rsi]
+	mov	r14,QWORD[8+rsi]
+	mov	r13,QWORD[16+rsi]
+	mov	r12,QWORD[24+rsi]
+	mov	rbp,QWORD[32+rsi]
+	mov	rbx,QWORD[40+rsi]
+	lea	rsp,[48+rsi]
+$L$cbc_popfq:
 	popfq
-$L$cbc_epilogue::
-	mov	rdi,QWORD PTR[8+rsp]	;WIN64 epilogue
-	mov	rsi,QWORD PTR[16+rsp]
+$L$cbc_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
-$L$SEH_end_asm_AES_cbc_encrypt::
-asm_AES_cbc_encrypt	ENDP
+$L$SEH_end_asm_AES_cbc_encrypt:
 ALIGN	64
-$L$AES_Te::
-	DD	0a56363c6h,0a56363c6h
-	DD	0847c7cf8h,0847c7cf8h
-	DD	0997777eeh,0997777eeh
-	DD	08d7b7bf6h,08d7b7bf6h
-	DD	00df2f2ffh,00df2f2ffh
-	DD	0bd6b6bd6h,0bd6b6bd6h
-	DD	0b16f6fdeh,0b16f6fdeh
-	DD	054c5c591h,054c5c591h
-	DD	050303060h,050303060h
-	DD	003010102h,003010102h
-	DD	0a96767ceh,0a96767ceh
-	DD	07d2b2b56h,07d2b2b56h
-	DD	019fefee7h,019fefee7h
-	DD	062d7d7b5h,062d7d7b5h
-	DD	0e6abab4dh,0e6abab4dh
-	DD	09a7676ech,09a7676ech
-	DD	045caca8fh,045caca8fh
-	DD	09d82821fh,09d82821fh
-	DD	040c9c989h,040c9c989h
-	DD	0877d7dfah,0877d7dfah
-	DD	015fafaefh,015fafaefh
-	DD	0eb5959b2h,0eb5959b2h
-	DD	0c947478eh,0c947478eh
-	DD	00bf0f0fbh,00bf0f0fbh
-	DD	0ecadad41h,0ecadad41h
-	DD	067d4d4b3h,067d4d4b3h
-	DD	0fda2a25fh,0fda2a25fh
-	DD	0eaafaf45h,0eaafaf45h
-	DD	0bf9c9c23h,0bf9c9c23h
-	DD	0f7a4a453h,0f7a4a453h
-	DD	0967272e4h,0967272e4h
-	DD	05bc0c09bh,05bc0c09bh
-	DD	0c2b7b775h,0c2b7b775h
-	DD	01cfdfde1h,01cfdfde1h
-	DD	0ae93933dh,0ae93933dh
-	DD	06a26264ch,06a26264ch
-	DD	05a36366ch,05a36366ch
-	DD	0413f3f7eh,0413f3f7eh
-	DD	002f7f7f5h,002f7f7f5h
-	DD	04fcccc83h,04fcccc83h
-	DD	05c343468h,05c343468h
-	DD	0f4a5a551h,0f4a5a551h
-	DD	034e5e5d1h,034e5e5d1h
-	DD	008f1f1f9h,008f1f1f9h
-	DD	0937171e2h,0937171e2h
-	DD	073d8d8abh,073d8d8abh
-	DD	053313162h,053313162h
-	DD	03f15152ah,03f15152ah
-	DD	00c040408h,00c040408h
-	DD	052c7c795h,052c7c795h
-	DD	065232346h,065232346h
-	DD	05ec3c39dh,05ec3c39dh
-	DD	028181830h,028181830h
-	DD	0a1969637h,0a1969637h
-	DD	00f05050ah,00f05050ah
-	DD	0b59a9a2fh,0b59a9a2fh
-	DD	00907070eh,00907070eh
-	DD	036121224h,036121224h
-	DD	09b80801bh,09b80801bh
-	DD	03de2e2dfh,03de2e2dfh
-	DD	026ebebcdh,026ebebcdh
-	DD	06927274eh,06927274eh
-	DD	0cdb2b27fh,0cdb2b27fh
-	DD	09f7575eah,09f7575eah
-	DD	01b090912h,01b090912h
-	DD	09e83831dh,09e83831dh
-	DD	0742c2c58h,0742c2c58h
-	DD	02e1a1a34h,02e1a1a34h
-	DD	02d1b1b36h,02d1b1b36h
-	DD	0b26e6edch,0b26e6edch
-	DD	0ee5a5ab4h,0ee5a5ab4h
-	DD	0fba0a05bh,0fba0a05bh
-	DD	0f65252a4h,0f65252a4h
-	DD	04d3b3b76h,04d3b3b76h
-	DD	061d6d6b7h,061d6d6b7h
-	DD	0ceb3b37dh,0ceb3b37dh
-	DD	07b292952h,07b292952h
-	DD	03ee3e3ddh,03ee3e3ddh
-	DD	0712f2f5eh,0712f2f5eh
-	DD	097848413h,097848413h
-	DD	0f55353a6h,0f55353a6h
-	DD	068d1d1b9h,068d1d1b9h
-	DD	000000000h,000000000h
-	DD	02cededc1h,02cededc1h
-	DD	060202040h,060202040h
-	DD	01ffcfce3h,01ffcfce3h
-	DD	0c8b1b179h,0c8b1b179h
-	DD	0ed5b5bb6h,0ed5b5bb6h
-	DD	0be6a6ad4h,0be6a6ad4h
-	DD	046cbcb8dh,046cbcb8dh
-	DD	0d9bebe67h,0d9bebe67h
-	DD	04b393972h,04b393972h
-	DD	0de4a4a94h,0de4a4a94h
-	DD	0d44c4c98h,0d44c4c98h
-	DD	0e85858b0h,0e85858b0h
-	DD	04acfcf85h,04acfcf85h
-	DD	06bd0d0bbh,06bd0d0bbh
-	DD	02aefefc5h,02aefefc5h
-	DD	0e5aaaa4fh,0e5aaaa4fh
-	DD	016fbfbedh,016fbfbedh
-	DD	0c5434386h,0c5434386h
-	DD	0d74d4d9ah,0d74d4d9ah
-	DD	055333366h,055333366h
-	DD	094858511h,094858511h
-	DD	0cf45458ah,0cf45458ah
-	DD	010f9f9e9h,010f9f9e9h
-	DD	006020204h,006020204h
-	DD	0817f7ffeh,0817f7ffeh
-	DD	0f05050a0h,0f05050a0h
-	DD	0443c3c78h,0443c3c78h
-	DD	0ba9f9f25h,0ba9f9f25h
-	DD	0e3a8a84bh,0e3a8a84bh
-	DD	0f35151a2h,0f35151a2h
-	DD	0fea3a35dh,0fea3a35dh
-	DD	0c0404080h,0c0404080h
-	DD	08a8f8f05h,08a8f8f05h
-	DD	0ad92923fh,0ad92923fh
-	DD	0bc9d9d21h,0bc9d9d21h
-	DD	048383870h,048383870h
-	DD	004f5f5f1h,004f5f5f1h
-	DD	0dfbcbc63h,0dfbcbc63h
-	DD	0c1b6b677h,0c1b6b677h
-	DD	075dadaafh,075dadaafh
-	DD	063212142h,063212142h
-	DD	030101020h,030101020h
-	DD	01affffe5h,01affffe5h
-	DD	00ef3f3fdh,00ef3f3fdh
-	DD	06dd2d2bfh,06dd2d2bfh
-	DD	04ccdcd81h,04ccdcd81h
-	DD	0140c0c18h,0140c0c18h
-	DD	035131326h,035131326h
-	DD	02fececc3h,02fececc3h
-	DD	0e15f5fbeh,0e15f5fbeh
-	DD	0a2979735h,0a2979735h
-	DD	0cc444488h,0cc444488h
-	DD	03917172eh,03917172eh
-	DD	057c4c493h,057c4c493h
-	DD	0f2a7a755h,0f2a7a755h
-	DD	0827e7efch,0827e7efch
-	DD	0473d3d7ah,0473d3d7ah
-	DD	0ac6464c8h,0ac6464c8h
-	DD	0e75d5dbah,0e75d5dbah
-	DD	02b191932h,02b191932h
-	DD	0957373e6h,0957373e6h
-	DD	0a06060c0h,0a06060c0h
-	DD	098818119h,098818119h
-	DD	0d14f4f9eh,0d14f4f9eh
-	DD	07fdcdca3h,07fdcdca3h
-	DD	066222244h,066222244h
-	DD	07e2a2a54h,07e2a2a54h
-	DD	0ab90903bh,0ab90903bh
-	DD	08388880bh,08388880bh
-	DD	0ca46468ch,0ca46468ch
-	DD	029eeeec7h,029eeeec7h
-	DD	0d3b8b86bh,0d3b8b86bh
-	DD	03c141428h,03c141428h
-	DD	079dedea7h,079dedea7h
-	DD	0e25e5ebch,0e25e5ebch
-	DD	01d0b0b16h,01d0b0b16h
-	DD	076dbdbadh,076dbdbadh
-	DD	03be0e0dbh,03be0e0dbh
-	DD	056323264h,056323264h
-	DD	04e3a3a74h,04e3a3a74h
-	DD	01e0a0a14h,01e0a0a14h
-	DD	0db494992h,0db494992h
-	DD	00a06060ch,00a06060ch
-	DD	06c242448h,06c242448h
-	DD	0e45c5cb8h,0e45c5cb8h
-	DD	05dc2c29fh,05dc2c29fh
-	DD	06ed3d3bdh,06ed3d3bdh
-	DD	0efacac43h,0efacac43h
-	DD	0a66262c4h,0a66262c4h
-	DD	0a8919139h,0a8919139h
-	DD	0a4959531h,0a4959531h
-	DD	037e4e4d3h,037e4e4d3h
-	DD	08b7979f2h,08b7979f2h
-	DD	032e7e7d5h,032e7e7d5h
-	DD	043c8c88bh,043c8c88bh
-	DD	05937376eh,05937376eh
-	DD	0b76d6ddah,0b76d6ddah
-	DD	08c8d8d01h,08c8d8d01h
-	DD	064d5d5b1h,064d5d5b1h
-	DD	0d24e4e9ch,0d24e4e9ch
-	DD	0e0a9a949h,0e0a9a949h
-	DD	0b46c6cd8h,0b46c6cd8h
-	DD	0fa5656ach,0fa5656ach
-	DD	007f4f4f3h,007f4f4f3h
-	DD	025eaeacfh,025eaeacfh
-	DD	0af6565cah,0af6565cah
-	DD	08e7a7af4h,08e7a7af4h
-	DD	0e9aeae47h,0e9aeae47h
-	DD	018080810h,018080810h
-	DD	0d5baba6fh,0d5baba6fh
-	DD	0887878f0h,0887878f0h
-	DD	06f25254ah,06f25254ah
-	DD	0722e2e5ch,0722e2e5ch
-	DD	0241c1c38h,0241c1c38h
-	DD	0f1a6a657h,0f1a6a657h
-	DD	0c7b4b473h,0c7b4b473h
-	DD	051c6c697h,051c6c697h
-	DD	023e8e8cbh,023e8e8cbh
-	DD	07cdddda1h,07cdddda1h
-	DD	09c7474e8h,09c7474e8h
-	DD	0211f1f3eh,0211f1f3eh
-	DD	0dd4b4b96h,0dd4b4b96h
-	DD	0dcbdbd61h,0dcbdbd61h
-	DD	0868b8b0dh,0868b8b0dh
-	DD	0858a8a0fh,0858a8a0fh
-	DD	0907070e0h,0907070e0h
-	DD	0423e3e7ch,0423e3e7ch
-	DD	0c4b5b571h,0c4b5b571h
-	DD	0aa6666cch,0aa6666cch
-	DD	0d8484890h,0d8484890h
-	DD	005030306h,005030306h
-	DD	001f6f6f7h,001f6f6f7h
-	DD	0120e0e1ch,0120e0e1ch
-	DD	0a36161c2h,0a36161c2h
-	DD	05f35356ah,05f35356ah
-	DD	0f95757aeh,0f95757aeh
-	DD	0d0b9b969h,0d0b9b969h
-	DD	091868617h,091868617h
-	DD	058c1c199h,058c1c199h
-	DD	0271d1d3ah,0271d1d3ah
-	DD	0b99e9e27h,0b99e9e27h
-	DD	038e1e1d9h,038e1e1d9h
-	DD	013f8f8ebh,013f8f8ebh
-	DD	0b398982bh,0b398982bh
-	DD	033111122h,033111122h
-	DD	0bb6969d2h,0bb6969d2h
-	DD	070d9d9a9h,070d9d9a9h
-	DD	0898e8e07h,0898e8e07h
-	DD	0a7949433h,0a7949433h
-	DD	0b69b9b2dh,0b69b9b2dh
-	DD	0221e1e3ch,0221e1e3ch
-	DD	092878715h,092878715h
-	DD	020e9e9c9h,020e9e9c9h
-	DD	049cece87h,049cece87h
-	DD	0ff5555aah,0ff5555aah
-	DD	078282850h,078282850h
-	DD	07adfdfa5h,07adfdfa5h
-	DD	08f8c8c03h,08f8c8c03h
-	DD	0f8a1a159h,0f8a1a159h
-	DD	080898909h,080898909h
-	DD	0170d0d1ah,0170d0d1ah
-	DD	0dabfbf65h,0dabfbf65h
-	DD	031e6e6d7h,031e6e6d7h
-	DD	0c6424284h,0c6424284h
-	DD	0b86868d0h,0b86868d0h
-	DD	0c3414182h,0c3414182h
-	DD	0b0999929h,0b0999929h
-	DD	0772d2d5ah,0772d2d5ah
-	DD	0110f0f1eh,0110f0f1eh
-	DD	0cbb0b07bh,0cbb0b07bh
-	DD	0fc5454a8h,0fc5454a8h
-	DD	0d6bbbb6dh,0d6bbbb6dh
-	DD	03a16162ch,03a16162ch
-DB	063h,07ch,077h,07bh,0f2h,06bh,06fh,0c5h
-DB	030h,001h,067h,02bh,0feh,0d7h,0abh,076h
-DB	0cah,082h,0c9h,07dh,0fah,059h,047h,0f0h
-DB	0adh,0d4h,0a2h,0afh,09ch,0a4h,072h,0c0h
-DB	0b7h,0fdh,093h,026h,036h,03fh,0f7h,0cch
-DB	034h,0a5h,0e5h,0f1h,071h,0d8h,031h,015h
-DB	004h,0c7h,023h,0c3h,018h,096h,005h,09ah
-DB	007h,012h,080h,0e2h,0ebh,027h,0b2h,075h
-DB	009h,083h,02ch,01ah,01bh,06eh,05ah,0a0h
-DB	052h,03bh,0d6h,0b3h,029h,0e3h,02fh,084h
-DB	053h,0d1h,000h,0edh,020h,0fch,0b1h,05bh
-DB	06ah,0cbh,0beh,039h,04ah,04ch,058h,0cfh
-DB	0d0h,0efh,0aah,0fbh,043h,04dh,033h,085h
-DB	045h,0f9h,002h,07fh,050h,03ch,09fh,0a8h
-DB	051h,0a3h,040h,08fh,092h,09dh,038h,0f5h
-DB	0bch,0b6h,0dah,021h,010h,0ffh,0f3h,0d2h
-DB	0cdh,00ch,013h,0ech,05fh,097h,044h,017h
-DB	0c4h,0a7h,07eh,03dh,064h,05dh,019h,073h
-DB	060h,081h,04fh,0dch,022h,02ah,090h,088h
-DB	046h,0eeh,0b8h,014h,0deh,05eh,00bh,0dbh
-DB	0e0h,032h,03ah,00ah,049h,006h,024h,05ch
-DB	0c2h,0d3h,0ach,062h,091h,095h,0e4h,079h
-DB	0e7h,0c8h,037h,06dh,08dh,0d5h,04eh,0a9h
-DB	06ch,056h,0f4h,0eah,065h,07ah,0aeh,008h
-DB	0bah,078h,025h,02eh,01ch,0a6h,0b4h,0c6h
-DB	0e8h,0ddh,074h,01fh,04bh,0bdh,08bh,08ah
-DB	070h,03eh,0b5h,066h,048h,003h,0f6h,00eh
-DB	061h,035h,057h,0b9h,086h,0c1h,01dh,09eh
-DB	0e1h,0f8h,098h,011h,069h,0d9h,08eh,094h
-DB	09bh,01eh,087h,0e9h,0ceh,055h,028h,0dfh
-DB	08ch,0a1h,089h,00dh,0bfh,0e6h,042h,068h
-DB	041h,099h,02dh,00fh,0b0h,054h,0bbh,016h
-DB	063h,07ch,077h,07bh,0f2h,06bh,06fh,0c5h
-DB	030h,001h,067h,02bh,0feh,0d7h,0abh,076h
-DB	0cah,082h,0c9h,07dh,0fah,059h,047h,0f0h
-DB	0adh,0d4h,0a2h,0afh,09ch,0a4h,072h,0c0h
-DB	0b7h,0fdh,093h,026h,036h,03fh,0f7h,0cch
-DB	034h,0a5h,0e5h,0f1h,071h,0d8h,031h,015h
-DB	004h,0c7h,023h,0c3h,018h,096h,005h,09ah
-DB	007h,012h,080h,0e2h,0ebh,027h,0b2h,075h
-DB	009h,083h,02ch,01ah,01bh,06eh,05ah,0a0h
-DB	052h,03bh,0d6h,0b3h,029h,0e3h,02fh,084h
-DB	053h,0d1h,000h,0edh,020h,0fch,0b1h,05bh
-DB	06ah,0cbh,0beh,039h,04ah,04ch,058h,0cfh
-DB	0d0h,0efh,0aah,0fbh,043h,04dh,033h,085h
-DB	045h,0f9h,002h,07fh,050h,03ch,09fh,0a8h
-DB	051h,0a3h,040h,08fh,092h,09dh,038h,0f5h
-DB	0bch,0b6h,0dah,021h,010h,0ffh,0f3h,0d2h
-DB	0cdh,00ch,013h,0ech,05fh,097h,044h,017h
-DB	0c4h,0a7h,07eh,03dh,064h,05dh,019h,073h
-DB	060h,081h,04fh,0dch,022h,02ah,090h,088h
-DB	046h,0eeh,0b8h,014h,0deh,05eh,00bh,0dbh
-DB	0e0h,032h,03ah,00ah,049h,006h,024h,05ch
-DB	0c2h,0d3h,0ach,062h,091h,095h,0e4h,079h
-DB	0e7h,0c8h,037h,06dh,08dh,0d5h,04eh,0a9h
-DB	06ch,056h,0f4h,0eah,065h,07ah,0aeh,008h
-DB	0bah,078h,025h,02eh,01ch,0a6h,0b4h,0c6h
-DB	0e8h,0ddh,074h,01fh,04bh,0bdh,08bh,08ah
-DB	070h,03eh,0b5h,066h,048h,003h,0f6h,00eh
-DB	061h,035h,057h,0b9h,086h,0c1h,01dh,09eh
-DB	0e1h,0f8h,098h,011h,069h,0d9h,08eh,094h
-DB	09bh,01eh,087h,0e9h,0ceh,055h,028h,0dfh
-DB	08ch,0a1h,089h,00dh,0bfh,0e6h,042h,068h
-DB	041h,099h,02dh,00fh,0b0h,054h,0bbh,016h
-DB	063h,07ch,077h,07bh,0f2h,06bh,06fh,0c5h
-DB	030h,001h,067h,02bh,0feh,0d7h,0abh,076h
-DB	0cah,082h,0c9h,07dh,0fah,059h,047h,0f0h
-DB	0adh,0d4h,0a2h,0afh,09ch,0a4h,072h,0c0h
-DB	0b7h,0fdh,093h,026h,036h,03fh,0f7h,0cch
-DB	034h,0a5h,0e5h,0f1h,071h,0d8h,031h,015h
-DB	004h,0c7h,023h,0c3h,018h,096h,005h,09ah
-DB	007h,012h,080h,0e2h,0ebh,027h,0b2h,075h
-DB	009h,083h,02ch,01ah,01bh,06eh,05ah,0a0h
-DB	052h,03bh,0d6h,0b3h,029h,0e3h,02fh,084h
-DB	053h,0d1h,000h,0edh,020h,0fch,0b1h,05bh
-DB	06ah,0cbh,0beh,039h,04ah,04ch,058h,0cfh
-DB	0d0h,0efh,0aah,0fbh,043h,04dh,033h,085h
-DB	045h,0f9h,002h,07fh,050h,03ch,09fh,0a8h
-DB	051h,0a3h,040h,08fh,092h,09dh,038h,0f5h
-DB	0bch,0b6h,0dah,021h,010h,0ffh,0f3h,0d2h
-DB	0cdh,00ch,013h,0ech,05fh,097h,044h,017h
-DB	0c4h,0a7h,07eh,03dh,064h,05dh,019h,073h
-DB	060h,081h,04fh,0dch,022h,02ah,090h,088h
-DB	046h,0eeh,0b8h,014h,0deh,05eh,00bh,0dbh
-DB	0e0h,032h,03ah,00ah,049h,006h,024h,05ch
-DB	0c2h,0d3h,0ach,062h,091h,095h,0e4h,079h
-DB	0e7h,0c8h,037h,06dh,08dh,0d5h,04eh,0a9h
-DB	06ch,056h,0f4h,0eah,065h,07ah,0aeh,008h
-DB	0bah,078h,025h,02eh,01ch,0a6h,0b4h,0c6h
-DB	0e8h,0ddh,074h,01fh,04bh,0bdh,08bh,08ah
-DB	070h,03eh,0b5h,066h,048h,003h,0f6h,00eh
-DB	061h,035h,057h,0b9h,086h,0c1h,01dh,09eh
-DB	0e1h,0f8h,098h,011h,069h,0d9h,08eh,094h
-DB	09bh,01eh,087h,0e9h,0ceh,055h,028h,0dfh
-DB	08ch,0a1h,089h,00dh,0bfh,0e6h,042h,068h
-DB	041h,099h,02dh,00fh,0b0h,054h,0bbh,016h
-DB	063h,07ch,077h,07bh,0f2h,06bh,06fh,0c5h
-DB	030h,001h,067h,02bh,0feh,0d7h,0abh,076h
-DB	0cah,082h,0c9h,07dh,0fah,059h,047h,0f0h
-DB	0adh,0d4h,0a2h,0afh,09ch,0a4h,072h,0c0h
-DB	0b7h,0fdh,093h,026h,036h,03fh,0f7h,0cch
-DB	034h,0a5h,0e5h,0f1h,071h,0d8h,031h,015h
-DB	004h,0c7h,023h,0c3h,018h,096h,005h,09ah
-DB	007h,012h,080h,0e2h,0ebh,027h,0b2h,075h
-DB	009h,083h,02ch,01ah,01bh,06eh,05ah,0a0h
-DB	052h,03bh,0d6h,0b3h,029h,0e3h,02fh,084h
-DB	053h,0d1h,000h,0edh,020h,0fch,0b1h,05bh
-DB	06ah,0cbh,0beh,039h,04ah,04ch,058h,0cfh
-DB	0d0h,0efh,0aah,0fbh,043h,04dh,033h,085h
-DB	045h,0f9h,002h,07fh,050h,03ch,09fh,0a8h
-DB	051h,0a3h,040h,08fh,092h,09dh,038h,0f5h
-DB	0bch,0b6h,0dah,021h,010h,0ffh,0f3h,0d2h
-DB	0cdh,00ch,013h,0ech,05fh,097h,044h,017h
-DB	0c4h,0a7h,07eh,03dh,064h,05dh,019h,073h
-DB	060h,081h,04fh,0dch,022h,02ah,090h,088h
-DB	046h,0eeh,0b8h,014h,0deh,05eh,00bh,0dbh
-DB	0e0h,032h,03ah,00ah,049h,006h,024h,05ch
-DB	0c2h,0d3h,0ach,062h,091h,095h,0e4h,079h
-DB	0e7h,0c8h,037h,06dh,08dh,0d5h,04eh,0a9h
-DB	06ch,056h,0f4h,0eah,065h,07ah,0aeh,008h
-DB	0bah,078h,025h,02eh,01ch,0a6h,0b4h,0c6h
-DB	0e8h,0ddh,074h,01fh,04bh,0bdh,08bh,08ah
-DB	070h,03eh,0b5h,066h,048h,003h,0f6h,00eh
-DB	061h,035h,057h,0b9h,086h,0c1h,01dh,09eh
-DB	0e1h,0f8h,098h,011h,069h,0d9h,08eh,094h
-DB	09bh,01eh,087h,0e9h,0ceh,055h,028h,0dfh
-DB	08ch,0a1h,089h,00dh,0bfh,0e6h,042h,068h
-DB	041h,099h,02dh,00fh,0b0h,054h,0bbh,016h
-	DD	000000001h,000000002h,000000004h,000000008h
-	DD	000000010h,000000020h,000000040h,000000080h
-	DD	00000001bh,000000036h,080808080h,080808080h
-	DD	0fefefefeh,0fefefefeh,01b1b1b1bh,01b1b1b1bh
+$L$AES_Te:
+	DD	0xa56363c6,0xa56363c6
+	DD	0x847c7cf8,0x847c7cf8
+	DD	0x997777ee,0x997777ee
+	DD	0x8d7b7bf6,0x8d7b7bf6
+	DD	0x0df2f2ff,0x0df2f2ff
+	DD	0xbd6b6bd6,0xbd6b6bd6
+	DD	0xb16f6fde,0xb16f6fde
+	DD	0x54c5c591,0x54c5c591
+	DD	0x50303060,0x50303060
+	DD	0x03010102,0x03010102
+	DD	0xa96767ce,0xa96767ce
+	DD	0x7d2b2b56,0x7d2b2b56
+	DD	0x19fefee7,0x19fefee7
+	DD	0x62d7d7b5,0x62d7d7b5
+	DD	0xe6abab4d,0xe6abab4d
+	DD	0x9a7676ec,0x9a7676ec
+	DD	0x45caca8f,0x45caca8f
+	DD	0x9d82821f,0x9d82821f
+	DD	0x40c9c989,0x40c9c989
+	DD	0x877d7dfa,0x877d7dfa
+	DD	0x15fafaef,0x15fafaef
+	DD	0xeb5959b2,0xeb5959b2
+	DD	0xc947478e,0xc947478e
+	DD	0x0bf0f0fb,0x0bf0f0fb
+	DD	0xecadad41,0xecadad41
+	DD	0x67d4d4b3,0x67d4d4b3
+	DD	0xfda2a25f,0xfda2a25f
+	DD	0xeaafaf45,0xeaafaf45
+	DD	0xbf9c9c23,0xbf9c9c23
+	DD	0xf7a4a453,0xf7a4a453
+	DD	0x967272e4,0x967272e4
+	DD	0x5bc0c09b,0x5bc0c09b
+	DD	0xc2b7b775,0xc2b7b775
+	DD	0x1cfdfde1,0x1cfdfde1
+	DD	0xae93933d,0xae93933d
+	DD	0x6a26264c,0x6a26264c
+	DD	0x5a36366c,0x5a36366c
+	DD	0x413f3f7e,0x413f3f7e
+	DD	0x02f7f7f5,0x02f7f7f5
+	DD	0x4fcccc83,0x4fcccc83
+	DD	0x5c343468,0x5c343468
+	DD	0xf4a5a551,0xf4a5a551
+	DD	0x34e5e5d1,0x34e5e5d1
+	DD	0x08f1f1f9,0x08f1f1f9
+	DD	0x937171e2,0x937171e2
+	DD	0x73d8d8ab,0x73d8d8ab
+	DD	0x53313162,0x53313162
+	DD	0x3f15152a,0x3f15152a
+	DD	0x0c040408,0x0c040408
+	DD	0x52c7c795,0x52c7c795
+	DD	0x65232346,0x65232346
+	DD	0x5ec3c39d,0x5ec3c39d
+	DD	0x28181830,0x28181830
+	DD	0xa1969637,0xa1969637
+	DD	0x0f05050a,0x0f05050a
+	DD	0xb59a9a2f,0xb59a9a2f
+	DD	0x0907070e,0x0907070e
+	DD	0x36121224,0x36121224
+	DD	0x9b80801b,0x9b80801b
+	DD	0x3de2e2df,0x3de2e2df
+	DD	0x26ebebcd,0x26ebebcd
+	DD	0x6927274e,0x6927274e
+	DD	0xcdb2b27f,0xcdb2b27f
+	DD	0x9f7575ea,0x9f7575ea
+	DD	0x1b090912,0x1b090912
+	DD	0x9e83831d,0x9e83831d
+	DD	0x742c2c58,0x742c2c58
+	DD	0x2e1a1a34,0x2e1a1a34
+	DD	0x2d1b1b36,0x2d1b1b36
+	DD	0xb26e6edc,0xb26e6edc
+	DD	0xee5a5ab4,0xee5a5ab4
+	DD	0xfba0a05b,0xfba0a05b
+	DD	0xf65252a4,0xf65252a4
+	DD	0x4d3b3b76,0x4d3b3b76
+	DD	0x61d6d6b7,0x61d6d6b7
+	DD	0xceb3b37d,0xceb3b37d
+	DD	0x7b292952,0x7b292952
+	DD	0x3ee3e3dd,0x3ee3e3dd
+	DD	0x712f2f5e,0x712f2f5e
+	DD	0x97848413,0x97848413
+	DD	0xf55353a6,0xf55353a6
+	DD	0x68d1d1b9,0x68d1d1b9
+	DD	0x00000000,0x00000000
+	DD	0x2cededc1,0x2cededc1
+	DD	0x60202040,0x60202040
+	DD	0x1ffcfce3,0x1ffcfce3
+	DD	0xc8b1b179,0xc8b1b179
+	DD	0xed5b5bb6,0xed5b5bb6
+	DD	0xbe6a6ad4,0xbe6a6ad4
+	DD	0x46cbcb8d,0x46cbcb8d
+	DD	0xd9bebe67,0xd9bebe67
+	DD	0x4b393972,0x4b393972
+	DD	0xde4a4a94,0xde4a4a94
+	DD	0xd44c4c98,0xd44c4c98
+	DD	0xe85858b0,0xe85858b0
+	DD	0x4acfcf85,0x4acfcf85
+	DD	0x6bd0d0bb,0x6bd0d0bb
+	DD	0x2aefefc5,0x2aefefc5
+	DD	0xe5aaaa4f,0xe5aaaa4f
+	DD	0x16fbfbed,0x16fbfbed
+	DD	0xc5434386,0xc5434386
+	DD	0xd74d4d9a,0xd74d4d9a
+	DD	0x55333366,0x55333366
+	DD	0x94858511,0x94858511
+	DD	0xcf45458a,0xcf45458a
+	DD	0x10f9f9e9,0x10f9f9e9
+	DD	0x06020204,0x06020204
+	DD	0x817f7ffe,0x817f7ffe
+	DD	0xf05050a0,0xf05050a0
+	DD	0x443c3c78,0x443c3c78
+	DD	0xba9f9f25,0xba9f9f25
+	DD	0xe3a8a84b,0xe3a8a84b
+	DD	0xf35151a2,0xf35151a2
+	DD	0xfea3a35d,0xfea3a35d
+	DD	0xc0404080,0xc0404080
+	DD	0x8a8f8f05,0x8a8f8f05
+	DD	0xad92923f,0xad92923f
+	DD	0xbc9d9d21,0xbc9d9d21
+	DD	0x48383870,0x48383870
+	DD	0x04f5f5f1,0x04f5f5f1
+	DD	0xdfbcbc63,0xdfbcbc63
+	DD	0xc1b6b677,0xc1b6b677
+	DD	0x75dadaaf,0x75dadaaf
+	DD	0x63212142,0x63212142
+	DD	0x30101020,0x30101020
+	DD	0x1affffe5,0x1affffe5
+	DD	0x0ef3f3fd,0x0ef3f3fd
+	DD	0x6dd2d2bf,0x6dd2d2bf
+	DD	0x4ccdcd81,0x4ccdcd81
+	DD	0x140c0c18,0x140c0c18
+	DD	0x35131326,0x35131326
+	DD	0x2fececc3,0x2fececc3
+	DD	0xe15f5fbe,0xe15f5fbe
+	DD	0xa2979735,0xa2979735
+	DD	0xcc444488,0xcc444488
+	DD	0x3917172e,0x3917172e
+	DD	0x57c4c493,0x57c4c493
+	DD	0xf2a7a755,0xf2a7a755
+	DD	0x827e7efc,0x827e7efc
+	DD	0x473d3d7a,0x473d3d7a
+	DD	0xac6464c8,0xac6464c8
+	DD	0xe75d5dba,0xe75d5dba
+	DD	0x2b191932,0x2b191932
+	DD	0x957373e6,0x957373e6
+	DD	0xa06060c0,0xa06060c0
+	DD	0x98818119,0x98818119
+	DD	0xd14f4f9e,0xd14f4f9e
+	DD	0x7fdcdca3,0x7fdcdca3
+	DD	0x66222244,0x66222244
+	DD	0x7e2a2a54,0x7e2a2a54
+	DD	0xab90903b,0xab90903b
+	DD	0x8388880b,0x8388880b
+	DD	0xca46468c,0xca46468c
+	DD	0x29eeeec7,0x29eeeec7
+	DD	0xd3b8b86b,0xd3b8b86b
+	DD	0x3c141428,0x3c141428
+	DD	0x79dedea7,0x79dedea7
+	DD	0xe25e5ebc,0xe25e5ebc
+	DD	0x1d0b0b16,0x1d0b0b16
+	DD	0x76dbdbad,0x76dbdbad
+	DD	0x3be0e0db,0x3be0e0db
+	DD	0x56323264,0x56323264
+	DD	0x4e3a3a74,0x4e3a3a74
+	DD	0x1e0a0a14,0x1e0a0a14
+	DD	0xdb494992,0xdb494992
+	DD	0x0a06060c,0x0a06060c
+	DD	0x6c242448,0x6c242448
+	DD	0xe45c5cb8,0xe45c5cb8
+	DD	0x5dc2c29f,0x5dc2c29f
+	DD	0x6ed3d3bd,0x6ed3d3bd
+	DD	0xefacac43,0xefacac43
+	DD	0xa66262c4,0xa66262c4
+	DD	0xa8919139,0xa8919139
+	DD	0xa4959531,0xa4959531
+	DD	0x37e4e4d3,0x37e4e4d3
+	DD	0x8b7979f2,0x8b7979f2
+	DD	0x32e7e7d5,0x32e7e7d5
+	DD	0x43c8c88b,0x43c8c88b
+	DD	0x5937376e,0x5937376e
+	DD	0xb76d6dda,0xb76d6dda
+	DD	0x8c8d8d01,0x8c8d8d01
+	DD	0x64d5d5b1,0x64d5d5b1
+	DD	0xd24e4e9c,0xd24e4e9c
+	DD	0xe0a9a949,0xe0a9a949
+	DD	0xb46c6cd8,0xb46c6cd8
+	DD	0xfa5656ac,0xfa5656ac
+	DD	0x07f4f4f3,0x07f4f4f3
+	DD	0x25eaeacf,0x25eaeacf
+	DD	0xaf6565ca,0xaf6565ca
+	DD	0x8e7a7af4,0x8e7a7af4
+	DD	0xe9aeae47,0xe9aeae47
+	DD	0x18080810,0x18080810
+	DD	0xd5baba6f,0xd5baba6f
+	DD	0x887878f0,0x887878f0
+	DD	0x6f25254a,0x6f25254a
+	DD	0x722e2e5c,0x722e2e5c
+	DD	0x241c1c38,0x241c1c38
+	DD	0xf1a6a657,0xf1a6a657
+	DD	0xc7b4b473,0xc7b4b473
+	DD	0x51c6c697,0x51c6c697
+	DD	0x23e8e8cb,0x23e8e8cb
+	DD	0x7cdddda1,0x7cdddda1
+	DD	0x9c7474e8,0x9c7474e8
+	DD	0x211f1f3e,0x211f1f3e
+	DD	0xdd4b4b96,0xdd4b4b96
+	DD	0xdcbdbd61,0xdcbdbd61
+	DD	0x868b8b0d,0x868b8b0d
+	DD	0x858a8a0f,0x858a8a0f
+	DD	0x907070e0,0x907070e0
+	DD	0x423e3e7c,0x423e3e7c
+	DD	0xc4b5b571,0xc4b5b571
+	DD	0xaa6666cc,0xaa6666cc
+	DD	0xd8484890,0xd8484890
+	DD	0x05030306,0x05030306
+	DD	0x01f6f6f7,0x01f6f6f7
+	DD	0x120e0e1c,0x120e0e1c
+	DD	0xa36161c2,0xa36161c2
+	DD	0x5f35356a,0x5f35356a
+	DD	0xf95757ae,0xf95757ae
+	DD	0xd0b9b969,0xd0b9b969
+	DD	0x91868617,0x91868617
+	DD	0x58c1c199,0x58c1c199
+	DD	0x271d1d3a,0x271d1d3a
+	DD	0xb99e9e27,0xb99e9e27
+	DD	0x38e1e1d9,0x38e1e1d9
+	DD	0x13f8f8eb,0x13f8f8eb
+	DD	0xb398982b,0xb398982b
+	DD	0x33111122,0x33111122
+	DD	0xbb6969d2,0xbb6969d2
+	DD	0x70d9d9a9,0x70d9d9a9
+	DD	0x898e8e07,0x898e8e07
+	DD	0xa7949433,0xa7949433
+	DD	0xb69b9b2d,0xb69b9b2d
+	DD	0x221e1e3c,0x221e1e3c
+	DD	0x92878715,0x92878715
+	DD	0x20e9e9c9,0x20e9e9c9
+	DD	0x49cece87,0x49cece87
+	DD	0xff5555aa,0xff5555aa
+	DD	0x78282850,0x78282850
+	DD	0x7adfdfa5,0x7adfdfa5
+	DD	0x8f8c8c03,0x8f8c8c03
+	DD	0xf8a1a159,0xf8a1a159
+	DD	0x80898909,0x80898909
+	DD	0x170d0d1a,0x170d0d1a
+	DD	0xdabfbf65,0xdabfbf65
+	DD	0x31e6e6d7,0x31e6e6d7
+	DD	0xc6424284,0xc6424284
+	DD	0xb86868d0,0xb86868d0
+	DD	0xc3414182,0xc3414182
+	DD	0xb0999929,0xb0999929
+	DD	0x772d2d5a,0x772d2d5a
+	DD	0x110f0f1e,0x110f0f1e
+	DD	0xcbb0b07b,0xcbb0b07b
+	DD	0xfc5454a8,0xfc5454a8
+	DD	0xd6bbbb6d,0xd6bbbb6d
+	DD	0x3a16162c,0x3a16162c
+DB	0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5
+DB	0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76
+DB	0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0
+DB	0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0
+DB	0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc
+DB	0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15
+DB	0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a
+DB	0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75
+DB	0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0
+DB	0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84
+DB	0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b
+DB	0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf
+DB	0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85
+DB	0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8
+DB	0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5
+DB	0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2
+DB	0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17
+DB	0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73
+DB	0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88
+DB	0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb
+DB	0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c
+DB	0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79
+DB	0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9
+DB	0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08
+DB	0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6
+DB	0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a
+DB	0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e
+DB	0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e
+DB	0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94
+DB	0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf
+DB	0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68
+DB	0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
+DB	0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5
+DB	0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76
+DB	0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0
+DB	0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0
+DB	0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc
+DB	0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15
+DB	0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a
+DB	0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75
+DB	0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0
+DB	0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84
+DB	0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b
+DB	0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf
+DB	0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85
+DB	0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8
+DB	0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5
+DB	0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2
+DB	0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17
+DB	0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73
+DB	0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88
+DB	0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb
+DB	0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c
+DB	0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79
+DB	0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9
+DB	0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08
+DB	0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6
+DB	0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a
+DB	0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e
+DB	0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e
+DB	0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94
+DB	0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf
+DB	0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68
+DB	0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
+DB	0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5
+DB	0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76
+DB	0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0
+DB	0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0
+DB	0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc
+DB	0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15
+DB	0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a
+DB	0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75
+DB	0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0
+DB	0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84
+DB	0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b
+DB	0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf
+DB	0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85
+DB	0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8
+DB	0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5
+DB	0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2
+DB	0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17
+DB	0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73
+DB	0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88
+DB	0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb
+DB	0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c
+DB	0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79
+DB	0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9
+DB	0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08
+DB	0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6
+DB	0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a
+DB	0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e
+DB	0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e
+DB	0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94
+DB	0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf
+DB	0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68
+DB	0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
+DB	0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5
+DB	0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76
+DB	0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0
+DB	0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0
+DB	0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc
+DB	0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15
+DB	0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a
+DB	0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75
+DB	0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0
+DB	0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84
+DB	0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b
+DB	0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf
+DB	0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85
+DB	0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8
+DB	0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5
+DB	0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2
+DB	0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17
+DB	0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73
+DB	0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88
+DB	0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb
+DB	0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c
+DB	0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79
+DB	0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9
+DB	0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08
+DB	0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6
+DB	0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a
+DB	0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e
+DB	0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e
+DB	0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94
+DB	0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf
+DB	0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68
+DB	0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
+	DD	0x00000001,0x00000002,0x00000004,0x00000008
+	DD	0x00000010,0x00000020,0x00000040,0x00000080
+	DD	0x0000001b,0x00000036,0x80808080,0x80808080
+	DD	0xfefefefe,0xfefefefe,0x1b1b1b1b,0x1b1b1b1b
 ALIGN	64
-$L$AES_Td::
-	DD	050a7f451h,050a7f451h
-	DD	05365417eh,05365417eh
-	DD	0c3a4171ah,0c3a4171ah
-	DD	0965e273ah,0965e273ah
-	DD	0cb6bab3bh,0cb6bab3bh
-	DD	0f1459d1fh,0f1459d1fh
-	DD	0ab58faach,0ab58faach
-	DD	09303e34bh,09303e34bh
-	DD	055fa3020h,055fa3020h
-	DD	0f66d76adh,0f66d76adh
-	DD	09176cc88h,09176cc88h
-	DD	0254c02f5h,0254c02f5h
-	DD	0fcd7e54fh,0fcd7e54fh
-	DD	0d7cb2ac5h,0d7cb2ac5h
-	DD	080443526h,080443526h
-	DD	08fa362b5h,08fa362b5h
-	DD	0495ab1deh,0495ab1deh
-	DD	0671bba25h,0671bba25h
-	DD	0980eea45h,0980eea45h
-	DD	0e1c0fe5dh,0e1c0fe5dh
-	DD	002752fc3h,002752fc3h
-	DD	012f04c81h,012f04c81h
-	DD	0a397468dh,0a397468dh
-	DD	0c6f9d36bh,0c6f9d36bh
-	DD	0e75f8f03h,0e75f8f03h
-	DD	0959c9215h,0959c9215h
-	DD	0eb7a6dbfh,0eb7a6dbfh
-	DD	0da595295h,0da595295h
-	DD	02d83bed4h,02d83bed4h
-	DD	0d3217458h,0d3217458h
-	DD	02969e049h,02969e049h
-	DD	044c8c98eh,044c8c98eh
-	DD	06a89c275h,06a89c275h
-	DD	078798ef4h,078798ef4h
-	DD	06b3e5899h,06b3e5899h
-	DD	0dd71b927h,0dd71b927h
-	DD	0b64fe1beh,0b64fe1beh
-	DD	017ad88f0h,017ad88f0h
-	DD	066ac20c9h,066ac20c9h
-	DD	0b43ace7dh,0b43ace7dh
-	DD	0184adf63h,0184adf63h
-	DD	082311ae5h,082311ae5h
-	DD	060335197h,060335197h
-	DD	0457f5362h,0457f5362h
-	DD	0e07764b1h,0e07764b1h
-	DD	084ae6bbbh,084ae6bbbh
-	DD	01ca081feh,01ca081feh
-	DD	0942b08f9h,0942b08f9h
-	DD	058684870h,058684870h
-	DD	019fd458fh,019fd458fh
-	DD	0876cde94h,0876cde94h
-	DD	0b7f87b52h,0b7f87b52h
-	DD	023d373abh,023d373abh
-	DD	0e2024b72h,0e2024b72h
-	DD	0578f1fe3h,0578f1fe3h
-	DD	02aab5566h,02aab5566h
-	DD	00728ebb2h,00728ebb2h
-	DD	003c2b52fh,003c2b52fh
-	DD	09a7bc586h,09a7bc586h
-	DD	0a50837d3h,0a50837d3h
-	DD	0f2872830h,0f2872830h
-	DD	0b2a5bf23h,0b2a5bf23h
-	DD	0ba6a0302h,0ba6a0302h
-	DD	05c8216edh,05c8216edh
-	DD	02b1ccf8ah,02b1ccf8ah
-	DD	092b479a7h,092b479a7h
-	DD	0f0f207f3h,0f0f207f3h
-	DD	0a1e2694eh,0a1e2694eh
-	DD	0cdf4da65h,0cdf4da65h
-	DD	0d5be0506h,0d5be0506h
-	DD	01f6234d1h,01f6234d1h
-	DD	08afea6c4h,08afea6c4h
-	DD	09d532e34h,09d532e34h
-	DD	0a055f3a2h,0a055f3a2h
-	DD	032e18a05h,032e18a05h
-	DD	075ebf6a4h,075ebf6a4h
-	DD	039ec830bh,039ec830bh
-	DD	0aaef6040h,0aaef6040h
-	DD	0069f715eh,0069f715eh
-	DD	051106ebdh,051106ebdh
-	DD	0f98a213eh,0f98a213eh
-	DD	03d06dd96h,03d06dd96h
-	DD	0ae053eddh,0ae053eddh
-	DD	046bde64dh,046bde64dh
-	DD	0b58d5491h,0b58d5491h
-	DD	0055dc471h,0055dc471h
-	DD	06fd40604h,06fd40604h
-	DD	0ff155060h,0ff155060h
-	DD	024fb9819h,024fb9819h
-	DD	097e9bdd6h,097e9bdd6h
-	DD	0cc434089h,0cc434089h
-	DD	0779ed967h,0779ed967h
-	DD	0bd42e8b0h,0bd42e8b0h
-	DD	0888b8907h,0888b8907h
-	DD	0385b19e7h,0385b19e7h
-	DD	0dbeec879h,0dbeec879h
-	DD	0470a7ca1h,0470a7ca1h
-	DD	0e90f427ch,0e90f427ch
-	DD	0c91e84f8h,0c91e84f8h
-	DD	000000000h,000000000h
-	DD	083868009h,083868009h
-	DD	048ed2b32h,048ed2b32h
-	DD	0ac70111eh,0ac70111eh
-	DD	04e725a6ch,04e725a6ch
-	DD	0fbff0efdh,0fbff0efdh
-	DD	05638850fh,05638850fh
-	DD	01ed5ae3dh,01ed5ae3dh
-	DD	027392d36h,027392d36h
-	DD	064d90f0ah,064d90f0ah
-	DD	021a65c68h,021a65c68h
-	DD	0d1545b9bh,0d1545b9bh
-	DD	03a2e3624h,03a2e3624h
-	DD	0b1670a0ch,0b1670a0ch
-	DD	00fe75793h,00fe75793h
-	DD	0d296eeb4h,0d296eeb4h
-	DD	09e919b1bh,09e919b1bh
-	DD	04fc5c080h,04fc5c080h
-	DD	0a220dc61h,0a220dc61h
-	DD	0694b775ah,0694b775ah
-	DD	0161a121ch,0161a121ch
-	DD	00aba93e2h,00aba93e2h
-	DD	0e52aa0c0h,0e52aa0c0h
-	DD	043e0223ch,043e0223ch
-	DD	01d171b12h,01d171b12h
-	DD	00b0d090eh,00b0d090eh
-	DD	0adc78bf2h,0adc78bf2h
-	DD	0b9a8b62dh,0b9a8b62dh
-	DD	0c8a91e14h,0c8a91e14h
-	DD	08519f157h,08519f157h
-	DD	04c0775afh,04c0775afh
-	DD	0bbdd99eeh,0bbdd99eeh
-	DD	0fd607fa3h,0fd607fa3h
-	DD	09f2601f7h,09f2601f7h
-	DD	0bcf5725ch,0bcf5725ch
-	DD	0c53b6644h,0c53b6644h
-	DD	0347efb5bh,0347efb5bh
-	DD	07629438bh,07629438bh
-	DD	0dcc623cbh,0dcc623cbh
-	DD	068fcedb6h,068fcedb6h
-	DD	063f1e4b8h,063f1e4b8h
-	DD	0cadc31d7h,0cadc31d7h
-	DD	010856342h,010856342h
-	DD	040229713h,040229713h
-	DD	02011c684h,02011c684h
-	DD	07d244a85h,07d244a85h
-	DD	0f83dbbd2h,0f83dbbd2h
-	DD	01132f9aeh,01132f9aeh
-	DD	06da129c7h,06da129c7h
-	DD	04b2f9e1dh,04b2f9e1dh
-	DD	0f330b2dch,0f330b2dch
-	DD	0ec52860dh,0ec52860dh
-	DD	0d0e3c177h,0d0e3c177h
-	DD	06c16b32bh,06c16b32bh
-	DD	099b970a9h,099b970a9h
-	DD	0fa489411h,0fa489411h
-	DD	02264e947h,02264e947h
-	DD	0c48cfca8h,0c48cfca8h
-	DD	01a3ff0a0h,01a3ff0a0h
-	DD	0d82c7d56h,0d82c7d56h
-	DD	0ef903322h,0ef903322h
-	DD	0c74e4987h,0c74e4987h
-	DD	0c1d138d9h,0c1d138d9h
-	DD	0fea2ca8ch,0fea2ca8ch
-	DD	0360bd498h,0360bd498h
-	DD	0cf81f5a6h,0cf81f5a6h
-	DD	028de7aa5h,028de7aa5h
-	DD	0268eb7dah,0268eb7dah
-	DD	0a4bfad3fh,0a4bfad3fh
-	DD	0e49d3a2ch,0e49d3a2ch
-	DD	00d927850h,00d927850h
-	DD	09bcc5f6ah,09bcc5f6ah
-	DD	062467e54h,062467e54h
-	DD	0c2138df6h,0c2138df6h
-	DD	0e8b8d890h,0e8b8d890h
-	DD	05ef7392eh,05ef7392eh
-	DD	0f5afc382h,0f5afc382h
-	DD	0be805d9fh,0be805d9fh
-	DD	07c93d069h,07c93d069h
-	DD	0a92dd56fh,0a92dd56fh
-	DD	0b31225cfh,0b31225cfh
-	DD	03b99acc8h,03b99acc8h
-	DD	0a77d1810h,0a77d1810h
-	DD	06e639ce8h,06e639ce8h
-	DD	07bbb3bdbh,07bbb3bdbh
-	DD	0097826cdh,0097826cdh
-	DD	0f418596eh,0f418596eh
-	DD	001b79aech,001b79aech
-	DD	0a89a4f83h,0a89a4f83h
-	DD	0656e95e6h,0656e95e6h
-	DD	07ee6ffaah,07ee6ffaah
-	DD	008cfbc21h,008cfbc21h
-	DD	0e6e815efh,0e6e815efh
-	DD	0d99be7bah,0d99be7bah
-	DD	0ce366f4ah,0ce366f4ah
-	DD	0d4099feah,0d4099feah
-	DD	0d67cb029h,0d67cb029h
-	DD	0afb2a431h,0afb2a431h
-	DD	031233f2ah,031233f2ah
-	DD	03094a5c6h,03094a5c6h
-	DD	0c066a235h,0c066a235h
-	DD	037bc4e74h,037bc4e74h
-	DD	0a6ca82fch,0a6ca82fch
-	DD	0b0d090e0h,0b0d090e0h
-	DD	015d8a733h,015d8a733h
-	DD	04a9804f1h,04a9804f1h
-	DD	0f7daec41h,0f7daec41h
-	DD	00e50cd7fh,00e50cd7fh
-	DD	02ff69117h,02ff69117h
-	DD	08dd64d76h,08dd64d76h
-	DD	04db0ef43h,04db0ef43h
-	DD	0544daacch,0544daacch
-	DD	0df0496e4h,0df0496e4h
-	DD	0e3b5d19eh,0e3b5d19eh
-	DD	01b886a4ch,01b886a4ch
-	DD	0b81f2cc1h,0b81f2cc1h
-	DD	07f516546h,07f516546h
-	DD	004ea5e9dh,004ea5e9dh
-	DD	05d358c01h,05d358c01h
-	DD	0737487fah,0737487fah
-	DD	02e410bfbh,02e410bfbh
-	DD	05a1d67b3h,05a1d67b3h
-	DD	052d2db92h,052d2db92h
-	DD	0335610e9h,0335610e9h
-	DD	01347d66dh,01347d66dh
-	DD	08c61d79ah,08c61d79ah
-	DD	07a0ca137h,07a0ca137h
-	DD	08e14f859h,08e14f859h
-	DD	0893c13ebh,0893c13ebh
-	DD	0ee27a9ceh,0ee27a9ceh
-	DD	035c961b7h,035c961b7h
-	DD	0ede51ce1h,0ede51ce1h
-	DD	03cb1477ah,03cb1477ah
-	DD	059dfd29ch,059dfd29ch
-	DD	03f73f255h,03f73f255h
-	DD	079ce1418h,079ce1418h
-	DD	0bf37c773h,0bf37c773h
-	DD	0eacdf753h,0eacdf753h
-	DD	05baafd5fh,05baafd5fh
-	DD	0146f3ddfh,0146f3ddfh
-	DD	086db4478h,086db4478h
-	DD	081f3afcah,081f3afcah
-	DD	03ec468b9h,03ec468b9h
-	DD	02c342438h,02c342438h
-	DD	05f40a3c2h,05f40a3c2h
-	DD	072c31d16h,072c31d16h
-	DD	00c25e2bch,00c25e2bch
-	DD	08b493c28h,08b493c28h
-	DD	041950dffh,041950dffh
-	DD	07101a839h,07101a839h
-	DD	0deb30c08h,0deb30c08h
-	DD	09ce4b4d8h,09ce4b4d8h
-	DD	090c15664h,090c15664h
-	DD	06184cb7bh,06184cb7bh
-	DD	070b632d5h,070b632d5h
-	DD	0745c6c48h,0745c6c48h
-	DD	04257b8d0h,04257b8d0h
-DB	052h,009h,06ah,0d5h,030h,036h,0a5h,038h
-DB	0bfh,040h,0a3h,09eh,081h,0f3h,0d7h,0fbh
-DB	07ch,0e3h,039h,082h,09bh,02fh,0ffh,087h
-DB	034h,08eh,043h,044h,0c4h,0deh,0e9h,0cbh
-DB	054h,07bh,094h,032h,0a6h,0c2h,023h,03dh
-DB	0eeh,04ch,095h,00bh,042h,0fah,0c3h,04eh
-DB	008h,02eh,0a1h,066h,028h,0d9h,024h,0b2h
-DB	076h,05bh,0a2h,049h,06dh,08bh,0d1h,025h
-DB	072h,0f8h,0f6h,064h,086h,068h,098h,016h
-DB	0d4h,0a4h,05ch,0cch,05dh,065h,0b6h,092h
-DB	06ch,070h,048h,050h,0fdh,0edh,0b9h,0dah
-DB	05eh,015h,046h,057h,0a7h,08dh,09dh,084h
-DB	090h,0d8h,0abh,000h,08ch,0bch,0d3h,00ah
-DB	0f7h,0e4h,058h,005h,0b8h,0b3h,045h,006h
-DB	0d0h,02ch,01eh,08fh,0cah,03fh,00fh,002h
-DB	0c1h,0afh,0bdh,003h,001h,013h,08ah,06bh
-DB	03ah,091h,011h,041h,04fh,067h,0dch,0eah
-DB	097h,0f2h,0cfh,0ceh,0f0h,0b4h,0e6h,073h
-DB	096h,0ach,074h,022h,0e7h,0adh,035h,085h
-DB	0e2h,0f9h,037h,0e8h,01ch,075h,0dfh,06eh
-DB	047h,0f1h,01ah,071h,01dh,029h,0c5h,089h
-DB	06fh,0b7h,062h,00eh,0aah,018h,0beh,01bh
-DB	0fch,056h,03eh,04bh,0c6h,0d2h,079h,020h
-DB	09ah,0dbh,0c0h,0feh,078h,0cdh,05ah,0f4h
-DB	01fh,0ddh,0a8h,033h,088h,007h,0c7h,031h
-DB	0b1h,012h,010h,059h,027h,080h,0ech,05fh
-DB	060h,051h,07fh,0a9h,019h,0b5h,04ah,00dh
-DB	02dh,0e5h,07ah,09fh,093h,0c9h,09ch,0efh
-DB	0a0h,0e0h,03bh,04dh,0aeh,02ah,0f5h,0b0h
-DB	0c8h,0ebh,0bbh,03ch,083h,053h,099h,061h
-DB	017h,02bh,004h,07eh,0bah,077h,0d6h,026h
-DB	0e1h,069h,014h,063h,055h,021h,00ch,07dh
-	DD	080808080h,080808080h,0fefefefeh,0fefefefeh
-	DD	01b1b1b1bh,01b1b1b1bh,0,0
-DB	052h,009h,06ah,0d5h,030h,036h,0a5h,038h
-DB	0bfh,040h,0a3h,09eh,081h,0f3h,0d7h,0fbh
-DB	07ch,0e3h,039h,082h,09bh,02fh,0ffh,087h
-DB	034h,08eh,043h,044h,0c4h,0deh,0e9h,0cbh
-DB	054h,07bh,094h,032h,0a6h,0c2h,023h,03dh
-DB	0eeh,04ch,095h,00bh,042h,0fah,0c3h,04eh
-DB	008h,02eh,0a1h,066h,028h,0d9h,024h,0b2h
-DB	076h,05bh,0a2h,049h,06dh,08bh,0d1h,025h
-DB	072h,0f8h,0f6h,064h,086h,068h,098h,016h
-DB	0d4h,0a4h,05ch,0cch,05dh,065h,0b6h,092h
-DB	06ch,070h,048h,050h,0fdh,0edh,0b9h,0dah
-DB	05eh,015h,046h,057h,0a7h,08dh,09dh,084h
-DB	090h,0d8h,0abh,000h,08ch,0bch,0d3h,00ah
-DB	0f7h,0e4h,058h,005h,0b8h,0b3h,045h,006h
-DB	0d0h,02ch,01eh,08fh,0cah,03fh,00fh,002h
-DB	0c1h,0afh,0bdh,003h,001h,013h,08ah,06bh
-DB	03ah,091h,011h,041h,04fh,067h,0dch,0eah
-DB	097h,0f2h,0cfh,0ceh,0f0h,0b4h,0e6h,073h
-DB	096h,0ach,074h,022h,0e7h,0adh,035h,085h
-DB	0e2h,0f9h,037h,0e8h,01ch,075h,0dfh,06eh
-DB	047h,0f1h,01ah,071h,01dh,029h,0c5h,089h
-DB	06fh,0b7h,062h,00eh,0aah,018h,0beh,01bh
-DB	0fch,056h,03eh,04bh,0c6h,0d2h,079h,020h
-DB	09ah,0dbh,0c0h,0feh,078h,0cdh,05ah,0f4h
-DB	01fh,0ddh,0a8h,033h,088h,007h,0c7h,031h
-DB	0b1h,012h,010h,059h,027h,080h,0ech,05fh
-DB	060h,051h,07fh,0a9h,019h,0b5h,04ah,00dh
-DB	02dh,0e5h,07ah,09fh,093h,0c9h,09ch,0efh
-DB	0a0h,0e0h,03bh,04dh,0aeh,02ah,0f5h,0b0h
-DB	0c8h,0ebh,0bbh,03ch,083h,053h,099h,061h
-DB	017h,02bh,004h,07eh,0bah,077h,0d6h,026h
-DB	0e1h,069h,014h,063h,055h,021h,00ch,07dh
-	DD	080808080h,080808080h,0fefefefeh,0fefefefeh
-	DD	01b1b1b1bh,01b1b1b1bh,0,0
-DB	052h,009h,06ah,0d5h,030h,036h,0a5h,038h
-DB	0bfh,040h,0a3h,09eh,081h,0f3h,0d7h,0fbh
-DB	07ch,0e3h,039h,082h,09bh,02fh,0ffh,087h
-DB	034h,08eh,043h,044h,0c4h,0deh,0e9h,0cbh
-DB	054h,07bh,094h,032h,0a6h,0c2h,023h,03dh
-DB	0eeh,04ch,095h,00bh,042h,0fah,0c3h,04eh
-DB	008h,02eh,0a1h,066h,028h,0d9h,024h,0b2h
-DB	076h,05bh,0a2h,049h,06dh,08bh,0d1h,025h
-DB	072h,0f8h,0f6h,064h,086h,068h,098h,016h
-DB	0d4h,0a4h,05ch,0cch,05dh,065h,0b6h,092h
-DB	06ch,070h,048h,050h,0fdh,0edh,0b9h,0dah
-DB	05eh,015h,046h,057h,0a7h,08dh,09dh,084h
-DB	090h,0d8h,0abh,000h,08ch,0bch,0d3h,00ah
-DB	0f7h,0e4h,058h,005h,0b8h,0b3h,045h,006h
-DB	0d0h,02ch,01eh,08fh,0cah,03fh,00fh,002h
-DB	0c1h,0afh,0bdh,003h,001h,013h,08ah,06bh
-DB	03ah,091h,011h,041h,04fh,067h,0dch,0eah
-DB	097h,0f2h,0cfh,0ceh,0f0h,0b4h,0e6h,073h
-DB	096h,0ach,074h,022h,0e7h,0adh,035h,085h
-DB	0e2h,0f9h,037h,0e8h,01ch,075h,0dfh,06eh
-DB	047h,0f1h,01ah,071h,01dh,029h,0c5h,089h
-DB	06fh,0b7h,062h,00eh,0aah,018h,0beh,01bh
-DB	0fch,056h,03eh,04bh,0c6h,0d2h,079h,020h
-DB	09ah,0dbh,0c0h,0feh,078h,0cdh,05ah,0f4h
-DB	01fh,0ddh,0a8h,033h,088h,007h,0c7h,031h
-DB	0b1h,012h,010h,059h,027h,080h,0ech,05fh
-DB	060h,051h,07fh,0a9h,019h,0b5h,04ah,00dh
-DB	02dh,0e5h,07ah,09fh,093h,0c9h,09ch,0efh
-DB	0a0h,0e0h,03bh,04dh,0aeh,02ah,0f5h,0b0h
-DB	0c8h,0ebh,0bbh,03ch,083h,053h,099h,061h
-DB	017h,02bh,004h,07eh,0bah,077h,0d6h,026h
-DB	0e1h,069h,014h,063h,055h,021h,00ch,07dh
-	DD	080808080h,080808080h,0fefefefeh,0fefefefeh
-	DD	01b1b1b1bh,01b1b1b1bh,0,0
-DB	052h,009h,06ah,0d5h,030h,036h,0a5h,038h
-DB	0bfh,040h,0a3h,09eh,081h,0f3h,0d7h,0fbh
-DB	07ch,0e3h,039h,082h,09bh,02fh,0ffh,087h
-DB	034h,08eh,043h,044h,0c4h,0deh,0e9h,0cbh
-DB	054h,07bh,094h,032h,0a6h,0c2h,023h,03dh
-DB	0eeh,04ch,095h,00bh,042h,0fah,0c3h,04eh
-DB	008h,02eh,0a1h,066h,028h,0d9h,024h,0b2h
-DB	076h,05bh,0a2h,049h,06dh,08bh,0d1h,025h
-DB	072h,0f8h,0f6h,064h,086h,068h,098h,016h
-DB	0d4h,0a4h,05ch,0cch,05dh,065h,0b6h,092h
-DB	06ch,070h,048h,050h,0fdh,0edh,0b9h,0dah
-DB	05eh,015h,046h,057h,0a7h,08dh,09dh,084h
-DB	090h,0d8h,0abh,000h,08ch,0bch,0d3h,00ah
-DB	0f7h,0e4h,058h,005h,0b8h,0b3h,045h,006h
-DB	0d0h,02ch,01eh,08fh,0cah,03fh,00fh,002h
-DB	0c1h,0afh,0bdh,003h,001h,013h,08ah,06bh
-DB	03ah,091h,011h,041h,04fh,067h,0dch,0eah
-DB	097h,0f2h,0cfh,0ceh,0f0h,0b4h,0e6h,073h
-DB	096h,0ach,074h,022h,0e7h,0adh,035h,085h
-DB	0e2h,0f9h,037h,0e8h,01ch,075h,0dfh,06eh
-DB	047h,0f1h,01ah,071h,01dh,029h,0c5h,089h
-DB	06fh,0b7h,062h,00eh,0aah,018h,0beh,01bh
-DB	0fch,056h,03eh,04bh,0c6h,0d2h,079h,020h
-DB	09ah,0dbh,0c0h,0feh,078h,0cdh,05ah,0f4h
-DB	01fh,0ddh,0a8h,033h,088h,007h,0c7h,031h
-DB	0b1h,012h,010h,059h,027h,080h,0ech,05fh
-DB	060h,051h,07fh,0a9h,019h,0b5h,04ah,00dh
-DB	02dh,0e5h,07ah,09fh,093h,0c9h,09ch,0efh
-DB	0a0h,0e0h,03bh,04dh,0aeh,02ah,0f5h,0b0h
-DB	0c8h,0ebh,0bbh,03ch,083h,053h,099h,061h
-DB	017h,02bh,004h,07eh,0bah,077h,0d6h,026h
-DB	0e1h,069h,014h,063h,055h,021h,00ch,07dh
-	DD	080808080h,080808080h,0fefefefeh,0fefefefeh
-	DD	01b1b1b1bh,01b1b1b1bh,0,0
+$L$AES_Td:
+	DD	0x50a7f451,0x50a7f451
+	DD	0x5365417e,0x5365417e
+	DD	0xc3a4171a,0xc3a4171a
+	DD	0x965e273a,0x965e273a
+	DD	0xcb6bab3b,0xcb6bab3b
+	DD	0xf1459d1f,0xf1459d1f
+	DD	0xab58faac,0xab58faac
+	DD	0x9303e34b,0x9303e34b
+	DD	0x55fa3020,0x55fa3020
+	DD	0xf66d76ad,0xf66d76ad
+	DD	0x9176cc88,0x9176cc88
+	DD	0x254c02f5,0x254c02f5
+	DD	0xfcd7e54f,0xfcd7e54f
+	DD	0xd7cb2ac5,0xd7cb2ac5
+	DD	0x80443526,0x80443526
+	DD	0x8fa362b5,0x8fa362b5
+	DD	0x495ab1de,0x495ab1de
+	DD	0x671bba25,0x671bba25
+	DD	0x980eea45,0x980eea45
+	DD	0xe1c0fe5d,0xe1c0fe5d
+	DD	0x02752fc3,0x02752fc3
+	DD	0x12f04c81,0x12f04c81
+	DD	0xa397468d,0xa397468d
+	DD	0xc6f9d36b,0xc6f9d36b
+	DD	0xe75f8f03,0xe75f8f03
+	DD	0x959c9215,0x959c9215
+	DD	0xeb7a6dbf,0xeb7a6dbf
+	DD	0xda595295,0xda595295
+	DD	0x2d83bed4,0x2d83bed4
+	DD	0xd3217458,0xd3217458
+	DD	0x2969e049,0x2969e049
+	DD	0x44c8c98e,0x44c8c98e
+	DD	0x6a89c275,0x6a89c275
+	DD	0x78798ef4,0x78798ef4
+	DD	0x6b3e5899,0x6b3e5899
+	DD	0xdd71b927,0xdd71b927
+	DD	0xb64fe1be,0xb64fe1be
+	DD	0x17ad88f0,0x17ad88f0
+	DD	0x66ac20c9,0x66ac20c9
+	DD	0xb43ace7d,0xb43ace7d
+	DD	0x184adf63,0x184adf63
+	DD	0x82311ae5,0x82311ae5
+	DD	0x60335197,0x60335197
+	DD	0x457f5362,0x457f5362
+	DD	0xe07764b1,0xe07764b1
+	DD	0x84ae6bbb,0x84ae6bbb
+	DD	0x1ca081fe,0x1ca081fe
+	DD	0x942b08f9,0x942b08f9
+	DD	0x58684870,0x58684870
+	DD	0x19fd458f,0x19fd458f
+	DD	0x876cde94,0x876cde94
+	DD	0xb7f87b52,0xb7f87b52
+	DD	0x23d373ab,0x23d373ab
+	DD	0xe2024b72,0xe2024b72
+	DD	0x578f1fe3,0x578f1fe3
+	DD	0x2aab5566,0x2aab5566
+	DD	0x0728ebb2,0x0728ebb2
+	DD	0x03c2b52f,0x03c2b52f
+	DD	0x9a7bc586,0x9a7bc586
+	DD	0xa50837d3,0xa50837d3
+	DD	0xf2872830,0xf2872830
+	DD	0xb2a5bf23,0xb2a5bf23
+	DD	0xba6a0302,0xba6a0302
+	DD	0x5c8216ed,0x5c8216ed
+	DD	0x2b1ccf8a,0x2b1ccf8a
+	DD	0x92b479a7,0x92b479a7
+	DD	0xf0f207f3,0xf0f207f3
+	DD	0xa1e2694e,0xa1e2694e
+	DD	0xcdf4da65,0xcdf4da65
+	DD	0xd5be0506,0xd5be0506
+	DD	0x1f6234d1,0x1f6234d1
+	DD	0x8afea6c4,0x8afea6c4
+	DD	0x9d532e34,0x9d532e34
+	DD	0xa055f3a2,0xa055f3a2
+	DD	0x32e18a05,0x32e18a05
+	DD	0x75ebf6a4,0x75ebf6a4
+	DD	0x39ec830b,0x39ec830b
+	DD	0xaaef6040,0xaaef6040
+	DD	0x069f715e,0x069f715e
+	DD	0x51106ebd,0x51106ebd
+	DD	0xf98a213e,0xf98a213e
+	DD	0x3d06dd96,0x3d06dd96
+	DD	0xae053edd,0xae053edd
+	DD	0x46bde64d,0x46bde64d
+	DD	0xb58d5491,0xb58d5491
+	DD	0x055dc471,0x055dc471
+	DD	0x6fd40604,0x6fd40604
+	DD	0xff155060,0xff155060
+	DD	0x24fb9819,0x24fb9819
+	DD	0x97e9bdd6,0x97e9bdd6
+	DD	0xcc434089,0xcc434089
+	DD	0x779ed967,0x779ed967
+	DD	0xbd42e8b0,0xbd42e8b0
+	DD	0x888b8907,0x888b8907
+	DD	0x385b19e7,0x385b19e7
+	DD	0xdbeec879,0xdbeec879
+	DD	0x470a7ca1,0x470a7ca1
+	DD	0xe90f427c,0xe90f427c
+	DD	0xc91e84f8,0xc91e84f8
+	DD	0x00000000,0x00000000
+	DD	0x83868009,0x83868009
+	DD	0x48ed2b32,0x48ed2b32
+	DD	0xac70111e,0xac70111e
+	DD	0x4e725a6c,0x4e725a6c
+	DD	0xfbff0efd,0xfbff0efd
+	DD	0x5638850f,0x5638850f
+	DD	0x1ed5ae3d,0x1ed5ae3d
+	DD	0x27392d36,0x27392d36
+	DD	0x64d90f0a,0x64d90f0a
+	DD	0x21a65c68,0x21a65c68
+	DD	0xd1545b9b,0xd1545b9b
+	DD	0x3a2e3624,0x3a2e3624
+	DD	0xb1670a0c,0xb1670a0c
+	DD	0x0fe75793,0x0fe75793
+	DD	0xd296eeb4,0xd296eeb4
+	DD	0x9e919b1b,0x9e919b1b
+	DD	0x4fc5c080,0x4fc5c080
+	DD	0xa220dc61,0xa220dc61
+	DD	0x694b775a,0x694b775a
+	DD	0x161a121c,0x161a121c
+	DD	0x0aba93e2,0x0aba93e2
+	DD	0xe52aa0c0,0xe52aa0c0
+	DD	0x43e0223c,0x43e0223c
+	DD	0x1d171b12,0x1d171b12
+	DD	0x0b0d090e,0x0b0d090e
+	DD	0xadc78bf2,0xadc78bf2
+	DD	0xb9a8b62d,0xb9a8b62d
+	DD	0xc8a91e14,0xc8a91e14
+	DD	0x8519f157,0x8519f157
+	DD	0x4c0775af,0x4c0775af
+	DD	0xbbdd99ee,0xbbdd99ee
+	DD	0xfd607fa3,0xfd607fa3
+	DD	0x9f2601f7,0x9f2601f7
+	DD	0xbcf5725c,0xbcf5725c
+	DD	0xc53b6644,0xc53b6644
+	DD	0x347efb5b,0x347efb5b
+	DD	0x7629438b,0x7629438b
+	DD	0xdcc623cb,0xdcc623cb
+	DD	0x68fcedb6,0x68fcedb6
+	DD	0x63f1e4b8,0x63f1e4b8
+	DD	0xcadc31d7,0xcadc31d7
+	DD	0x10856342,0x10856342
+	DD	0x40229713,0x40229713
+	DD	0x2011c684,0x2011c684
+	DD	0x7d244a85,0x7d244a85
+	DD	0xf83dbbd2,0xf83dbbd2
+	DD	0x1132f9ae,0x1132f9ae
+	DD	0x6da129c7,0x6da129c7
+	DD	0x4b2f9e1d,0x4b2f9e1d
+	DD	0xf330b2dc,0xf330b2dc
+	DD	0xec52860d,0xec52860d
+	DD	0xd0e3c177,0xd0e3c177
+	DD	0x6c16b32b,0x6c16b32b
+	DD	0x99b970a9,0x99b970a9
+	DD	0xfa489411,0xfa489411
+	DD	0x2264e947,0x2264e947
+	DD	0xc48cfca8,0xc48cfca8
+	DD	0x1a3ff0a0,0x1a3ff0a0
+	DD	0xd82c7d56,0xd82c7d56
+	DD	0xef903322,0xef903322
+	DD	0xc74e4987,0xc74e4987
+	DD	0xc1d138d9,0xc1d138d9
+	DD	0xfea2ca8c,0xfea2ca8c
+	DD	0x360bd498,0x360bd498
+	DD	0xcf81f5a6,0xcf81f5a6
+	DD	0x28de7aa5,0x28de7aa5
+	DD	0x268eb7da,0x268eb7da
+	DD	0xa4bfad3f,0xa4bfad3f
+	DD	0xe49d3a2c,0xe49d3a2c
+	DD	0x0d927850,0x0d927850
+	DD	0x9bcc5f6a,0x9bcc5f6a
+	DD	0x62467e54,0x62467e54
+	DD	0xc2138df6,0xc2138df6
+	DD	0xe8b8d890,0xe8b8d890
+	DD	0x5ef7392e,0x5ef7392e
+	DD	0xf5afc382,0xf5afc382
+	DD	0xbe805d9f,0xbe805d9f
+	DD	0x7c93d069,0x7c93d069
+	DD	0xa92dd56f,0xa92dd56f
+	DD	0xb31225cf,0xb31225cf
+	DD	0x3b99acc8,0x3b99acc8
+	DD	0xa77d1810,0xa77d1810
+	DD	0x6e639ce8,0x6e639ce8
+	DD	0x7bbb3bdb,0x7bbb3bdb
+	DD	0x097826cd,0x097826cd
+	DD	0xf418596e,0xf418596e
+	DD	0x01b79aec,0x01b79aec
+	DD	0xa89a4f83,0xa89a4f83
+	DD	0x656e95e6,0x656e95e6
+	DD	0x7ee6ffaa,0x7ee6ffaa
+	DD	0x08cfbc21,0x08cfbc21
+	DD	0xe6e815ef,0xe6e815ef
+	DD	0xd99be7ba,0xd99be7ba
+	DD	0xce366f4a,0xce366f4a
+	DD	0xd4099fea,0xd4099fea
+	DD	0xd67cb029,0xd67cb029
+	DD	0xafb2a431,0xafb2a431
+	DD	0x31233f2a,0x31233f2a
+	DD	0x3094a5c6,0x3094a5c6
+	DD	0xc066a235,0xc066a235
+	DD	0x37bc4e74,0x37bc4e74
+	DD	0xa6ca82fc,0xa6ca82fc
+	DD	0xb0d090e0,0xb0d090e0
+	DD	0x15d8a733,0x15d8a733
+	DD	0x4a9804f1,0x4a9804f1
+	DD	0xf7daec41,0xf7daec41
+	DD	0x0e50cd7f,0x0e50cd7f
+	DD	0x2ff69117,0x2ff69117
+	DD	0x8dd64d76,0x8dd64d76
+	DD	0x4db0ef43,0x4db0ef43
+	DD	0x544daacc,0x544daacc
+	DD	0xdf0496e4,0xdf0496e4
+	DD	0xe3b5d19e,0xe3b5d19e
+	DD	0x1b886a4c,0x1b886a4c
+	DD	0xb81f2cc1,0xb81f2cc1
+	DD	0x7f516546,0x7f516546
+	DD	0x04ea5e9d,0x04ea5e9d
+	DD	0x5d358c01,0x5d358c01
+	DD	0x737487fa,0x737487fa
+	DD	0x2e410bfb,0x2e410bfb
+	DD	0x5a1d67b3,0x5a1d67b3
+	DD	0x52d2db92,0x52d2db92
+	DD	0x335610e9,0x335610e9
+	DD	0x1347d66d,0x1347d66d
+	DD	0x8c61d79a,0x8c61d79a
+	DD	0x7a0ca137,0x7a0ca137
+	DD	0x8e14f859,0x8e14f859
+	DD	0x893c13eb,0x893c13eb
+	DD	0xee27a9ce,0xee27a9ce
+	DD	0x35c961b7,0x35c961b7
+	DD	0xede51ce1,0xede51ce1
+	DD	0x3cb1477a,0x3cb1477a
+	DD	0x59dfd29c,0x59dfd29c
+	DD	0x3f73f255,0x3f73f255
+	DD	0x79ce1418,0x79ce1418
+	DD	0xbf37c773,0xbf37c773
+	DD	0xeacdf753,0xeacdf753
+	DD	0x5baafd5f,0x5baafd5f
+	DD	0x146f3ddf,0x146f3ddf
+	DD	0x86db4478,0x86db4478
+	DD	0x81f3afca,0x81f3afca
+	DD	0x3ec468b9,0x3ec468b9
+	DD	0x2c342438,0x2c342438
+	DD	0x5f40a3c2,0x5f40a3c2
+	DD	0x72c31d16,0x72c31d16
+	DD	0x0c25e2bc,0x0c25e2bc
+	DD	0x8b493c28,0x8b493c28
+	DD	0x41950dff,0x41950dff
+	DD	0x7101a839,0x7101a839
+	DD	0xdeb30c08,0xdeb30c08
+	DD	0x9ce4b4d8,0x9ce4b4d8
+	DD	0x90c15664,0x90c15664
+	DD	0x6184cb7b,0x6184cb7b
+	DD	0x70b632d5,0x70b632d5
+	DD	0x745c6c48,0x745c6c48
+	DD	0x4257b8d0,0x4257b8d0
+DB	0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38
+DB	0xbf,0x40,0xa3,0x9e,0x81,0xf3,0xd7,0xfb
+DB	0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87
+DB	0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb
+DB	0x54,0x7b,0x94,0x32,0xa6,0xc2,0x23,0x3d
+DB	0xee,0x4c,0x95,0x0b,0x42,0xfa,0xc3,0x4e
+DB	0x08,0x2e,0xa1,0x66,0x28,0xd9,0x24,0xb2
+DB	0x76,0x5b,0xa2,0x49,0x6d,0x8b,0xd1,0x25
+DB	0x72,0xf8,0xf6,0x64,0x86,0x68,0x98,0x16
+DB	0xd4,0xa4,0x5c,0xcc,0x5d,0x65,0xb6,0x92
+DB	0x6c,0x70,0x48,0x50,0xfd,0xed,0xb9,0xda
+DB	0x5e,0x15,0x46,0x57,0xa7,0x8d,0x9d,0x84
+DB	0x90,0xd8,0xab,0x00,0x8c,0xbc,0xd3,0x0a
+DB	0xf7,0xe4,0x58,0x05,0xb8,0xb3,0x45,0x06
+DB	0xd0,0x2c,0x1e,0x8f,0xca,0x3f,0x0f,0x02
+DB	0xc1,0xaf,0xbd,0x03,0x01,0x13,0x8a,0x6b
+DB	0x3a,0x91,0x11,0x41,0x4f,0x67,0xdc,0xea
+DB	0x97,0xf2,0xcf,0xce,0xf0,0xb4,0xe6,0x73
+DB	0x96,0xac,0x74,0x22,0xe7,0xad,0x35,0x85
+DB	0xe2,0xf9,0x37,0xe8,0x1c,0x75,0xdf,0x6e
+DB	0x47,0xf1,0x1a,0x71,0x1d,0x29,0xc5,0x89
+DB	0x6f,0xb7,0x62,0x0e,0xaa,0x18,0xbe,0x1b
+DB	0xfc,0x56,0x3e,0x4b,0xc6,0xd2,0x79,0x20
+DB	0x9a,0xdb,0xc0,0xfe,0x78,0xcd,0x5a,0xf4
+DB	0x1f,0xdd,0xa8,0x33,0x88,0x07,0xc7,0x31
+DB	0xb1,0x12,0x10,0x59,0x27,0x80,0xec,0x5f
+DB	0x60,0x51,0x7f,0xa9,0x19,0xb5,0x4a,0x0d
+DB	0x2d,0xe5,0x7a,0x9f,0x93,0xc9,0x9c,0xef
+DB	0xa0,0xe0,0x3b,0x4d,0xae,0x2a,0xf5,0xb0
+DB	0xc8,0xeb,0xbb,0x3c,0x83,0x53,0x99,0x61
+DB	0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26
+DB	0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
+	DD	0x80808080,0x80808080,0xfefefefe,0xfefefefe
+	DD	0x1b1b1b1b,0x1b1b1b1b,0,0
+DB	0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38
+DB	0xbf,0x40,0xa3,0x9e,0x81,0xf3,0xd7,0xfb
+DB	0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87
+DB	0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb
+DB	0x54,0x7b,0x94,0x32,0xa6,0xc2,0x23,0x3d
+DB	0xee,0x4c,0x95,0x0b,0x42,0xfa,0xc3,0x4e
+DB	0x08,0x2e,0xa1,0x66,0x28,0xd9,0x24,0xb2
+DB	0x76,0x5b,0xa2,0x49,0x6d,0x8b,0xd1,0x25
+DB	0x72,0xf8,0xf6,0x64,0x86,0x68,0x98,0x16
+DB	0xd4,0xa4,0x5c,0xcc,0x5d,0x65,0xb6,0x92
+DB	0x6c,0x70,0x48,0x50,0xfd,0xed,0xb9,0xda
+DB	0x5e,0x15,0x46,0x57,0xa7,0x8d,0x9d,0x84
+DB	0x90,0xd8,0xab,0x00,0x8c,0xbc,0xd3,0x0a
+DB	0xf7,0xe4,0x58,0x05,0xb8,0xb3,0x45,0x06
+DB	0xd0,0x2c,0x1e,0x8f,0xca,0x3f,0x0f,0x02
+DB	0xc1,0xaf,0xbd,0x03,0x01,0x13,0x8a,0x6b
+DB	0x3a,0x91,0x11,0x41,0x4f,0x67,0xdc,0xea
+DB	0x97,0xf2,0xcf,0xce,0xf0,0xb4,0xe6,0x73
+DB	0x96,0xac,0x74,0x22,0xe7,0xad,0x35,0x85
+DB	0xe2,0xf9,0x37,0xe8,0x1c,0x75,0xdf,0x6e
+DB	0x47,0xf1,0x1a,0x71,0x1d,0x29,0xc5,0x89
+DB	0x6f,0xb7,0x62,0x0e,0xaa,0x18,0xbe,0x1b
+DB	0xfc,0x56,0x3e,0x4b,0xc6,0xd2,0x79,0x20
+DB	0x9a,0xdb,0xc0,0xfe,0x78,0xcd,0x5a,0xf4
+DB	0x1f,0xdd,0xa8,0x33,0x88,0x07,0xc7,0x31
+DB	0xb1,0x12,0x10,0x59,0x27,0x80,0xec,0x5f
+DB	0x60,0x51,0x7f,0xa9,0x19,0xb5,0x4a,0x0d
+DB	0x2d,0xe5,0x7a,0x9f,0x93,0xc9,0x9c,0xef
+DB	0xa0,0xe0,0x3b,0x4d,0xae,0x2a,0xf5,0xb0
+DB	0xc8,0xeb,0xbb,0x3c,0x83,0x53,0x99,0x61
+DB	0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26
+DB	0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
+	DD	0x80808080,0x80808080,0xfefefefe,0xfefefefe
+	DD	0x1b1b1b1b,0x1b1b1b1b,0,0
+DB	0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38
+DB	0xbf,0x40,0xa3,0x9e,0x81,0xf3,0xd7,0xfb
+DB	0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87
+DB	0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb
+DB	0x54,0x7b,0x94,0x32,0xa6,0xc2,0x23,0x3d
+DB	0xee,0x4c,0x95,0x0b,0x42,0xfa,0xc3,0x4e
+DB	0x08,0x2e,0xa1,0x66,0x28,0xd9,0x24,0xb2
+DB	0x76,0x5b,0xa2,0x49,0x6d,0x8b,0xd1,0x25
+DB	0x72,0xf8,0xf6,0x64,0x86,0x68,0x98,0x16
+DB	0xd4,0xa4,0x5c,0xcc,0x5d,0x65,0xb6,0x92
+DB	0x6c,0x70,0x48,0x50,0xfd,0xed,0xb9,0xda
+DB	0x5e,0x15,0x46,0x57,0xa7,0x8d,0x9d,0x84
+DB	0x90,0xd8,0xab,0x00,0x8c,0xbc,0xd3,0x0a
+DB	0xf7,0xe4,0x58,0x05,0xb8,0xb3,0x45,0x06
+DB	0xd0,0x2c,0x1e,0x8f,0xca,0x3f,0x0f,0x02
+DB	0xc1,0xaf,0xbd,0x03,0x01,0x13,0x8a,0x6b
+DB	0x3a,0x91,0x11,0x41,0x4f,0x67,0xdc,0xea
+DB	0x97,0xf2,0xcf,0xce,0xf0,0xb4,0xe6,0x73
+DB	0x96,0xac,0x74,0x22,0xe7,0xad,0x35,0x85
+DB	0xe2,0xf9,0x37,0xe8,0x1c,0x75,0xdf,0x6e
+DB	0x47,0xf1,0x1a,0x71,0x1d,0x29,0xc5,0x89
+DB	0x6f,0xb7,0x62,0x0e,0xaa,0x18,0xbe,0x1b
+DB	0xfc,0x56,0x3e,0x4b,0xc6,0xd2,0x79,0x20
+DB	0x9a,0xdb,0xc0,0xfe,0x78,0xcd,0x5a,0xf4
+DB	0x1f,0xdd,0xa8,0x33,0x88,0x07,0xc7,0x31
+DB	0xb1,0x12,0x10,0x59,0x27,0x80,0xec,0x5f
+DB	0x60,0x51,0x7f,0xa9,0x19,0xb5,0x4a,0x0d
+DB	0x2d,0xe5,0x7a,0x9f,0x93,0xc9,0x9c,0xef
+DB	0xa0,0xe0,0x3b,0x4d,0xae,0x2a,0xf5,0xb0
+DB	0xc8,0xeb,0xbb,0x3c,0x83,0x53,0x99,0x61
+DB	0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26
+DB	0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
+	DD	0x80808080,0x80808080,0xfefefefe,0xfefefefe
+	DD	0x1b1b1b1b,0x1b1b1b1b,0,0
+DB	0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38
+DB	0xbf,0x40,0xa3,0x9e,0x81,0xf3,0xd7,0xfb
+DB	0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87
+DB	0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb
+DB	0x54,0x7b,0x94,0x32,0xa6,0xc2,0x23,0x3d
+DB	0xee,0x4c,0x95,0x0b,0x42,0xfa,0xc3,0x4e
+DB	0x08,0x2e,0xa1,0x66,0x28,0xd9,0x24,0xb2
+DB	0x76,0x5b,0xa2,0x49,0x6d,0x8b,0xd1,0x25
+DB	0x72,0xf8,0xf6,0x64,0x86,0x68,0x98,0x16
+DB	0xd4,0xa4,0x5c,0xcc,0x5d,0x65,0xb6,0x92
+DB	0x6c,0x70,0x48,0x50,0xfd,0xed,0xb9,0xda
+DB	0x5e,0x15,0x46,0x57,0xa7,0x8d,0x9d,0x84
+DB	0x90,0xd8,0xab,0x00,0x8c,0xbc,0xd3,0x0a
+DB	0xf7,0xe4,0x58,0x05,0xb8,0xb3,0x45,0x06
+DB	0xd0,0x2c,0x1e,0x8f,0xca,0x3f,0x0f,0x02
+DB	0xc1,0xaf,0xbd,0x03,0x01,0x13,0x8a,0x6b
+DB	0x3a,0x91,0x11,0x41,0x4f,0x67,0xdc,0xea
+DB	0x97,0xf2,0xcf,0xce,0xf0,0xb4,0xe6,0x73
+DB	0x96,0xac,0x74,0x22,0xe7,0xad,0x35,0x85
+DB	0xe2,0xf9,0x37,0xe8,0x1c,0x75,0xdf,0x6e
+DB	0x47,0xf1,0x1a,0x71,0x1d,0x29,0xc5,0x89
+DB	0x6f,0xb7,0x62,0x0e,0xaa,0x18,0xbe,0x1b
+DB	0xfc,0x56,0x3e,0x4b,0xc6,0xd2,0x79,0x20
+DB	0x9a,0xdb,0xc0,0xfe,0x78,0xcd,0x5a,0xf4
+DB	0x1f,0xdd,0xa8,0x33,0x88,0x07,0xc7,0x31
+DB	0xb1,0x12,0x10,0x59,0x27,0x80,0xec,0x5f
+DB	0x60,0x51,0x7f,0xa9,0x19,0xb5,0x4a,0x0d
+DB	0x2d,0xe5,0x7a,0x9f,0x93,0xc9,0x9c,0xef
+DB	0xa0,0xe0,0x3b,0x4d,0xae,0x2a,0xf5,0xb0
+DB	0xc8,0xeb,0xbb,0x3c,0x83,0x53,0x99,0x61
+DB	0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26
+DB	0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
+	DD	0x80808080,0x80808080,0xfefefefe,0xfefefefe
+	DD	0x1b1b1b1b,0x1b1b1b1b,0,0
 DB	65,69,83,32,102,111,114,32,120,56,54,95,54,52,44,32
 DB	67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97
 DB	112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103
 DB	62,0
 ALIGN	64
-EXTERN	__imp_RtlVirtualUnwind:NEAR
+EXTERN	__imp_RtlVirtualUnwind
 
 ALIGN	16
-block_se_handler	PROC PRIVATE
+block_se_handler:
 	push	rsi
 	push	rdi
 	push	rbx
@@ -2608,53 +2607,53 @@ block_se_handler	PROC PRIVATE
 	pushfq
 	sub	rsp,64
 
-	mov	rax,QWORD PTR[120+r8]
-	mov	rbx,QWORD PTR[248+r8]
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
 
-	mov	rsi,QWORD PTR[8+r9]
-	mov	r11,QWORD PTR[56+r9]
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
 
-	mov	r10d,DWORD PTR[r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jb	$L$in_block_prologue
+	jb	NEAR $L$in_block_prologue
 
-	mov	rax,QWORD PTR[152+r8]
+	mov	rax,QWORD[152+r8]
 
-	mov	r10d,DWORD PTR[4+r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[4+r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jae	$L$in_block_prologue
+	jae	NEAR $L$in_block_prologue
 
-	mov	rax,QWORD PTR[24+rax]
-	lea	rax,QWORD PTR[48+rax]
+	mov	rax,QWORD[24+rax]
+	lea	rax,[48+rax]
 
-	mov	rbx,QWORD PTR[((-8))+rax]
-	mov	rbp,QWORD PTR[((-16))+rax]
-	mov	r12,QWORD PTR[((-24))+rax]
-	mov	r13,QWORD PTR[((-32))+rax]
-	mov	r14,QWORD PTR[((-40))+rax]
-	mov	r15,QWORD PTR[((-48))+rax]
-	mov	QWORD PTR[144+r8],rbx
-	mov	QWORD PTR[160+r8],rbp
-	mov	QWORD PTR[216+r8],r12
-	mov	QWORD PTR[224+r8],r13
-	mov	QWORD PTR[232+r8],r14
-	mov	QWORD PTR[240+r8],r15
+	mov	rbx,QWORD[((-8))+rax]
+	mov	rbp,QWORD[((-16))+rax]
+	mov	r12,QWORD[((-24))+rax]
+	mov	r13,QWORD[((-32))+rax]
+	mov	r14,QWORD[((-40))+rax]
+	mov	r15,QWORD[((-48))+rax]
+	mov	QWORD[144+r8],rbx
+	mov	QWORD[160+r8],rbp
+	mov	QWORD[216+r8],r12
+	mov	QWORD[224+r8],r13
+	mov	QWORD[232+r8],r14
+	mov	QWORD[240+r8],r15
 
-$L$in_block_prologue::
-	mov	rdi,QWORD PTR[8+rax]
-	mov	rsi,QWORD PTR[16+rax]
-	mov	QWORD PTR[152+r8],rax
-	mov	QWORD PTR[168+r8],rsi
-	mov	QWORD PTR[176+r8],rdi
+$L$in_block_prologue:
+	mov	rdi,QWORD[8+rax]
+	mov	rsi,QWORD[16+rax]
+	mov	QWORD[152+r8],rax
+	mov	QWORD[168+r8],rsi
+	mov	QWORD[176+r8],rdi
 
-	jmp	$L$common_seh_exit
-block_se_handler	ENDP
+	jmp	NEAR $L$common_seh_exit
+
 
 
 ALIGN	16
-key_se_handler	PROC PRIVATE
+key_se_handler:
 	push	rsi
 	push	rdi
 	push	rbx
@@ -2666,52 +2665,52 @@ key_se_handler	PROC PRIVATE
 	pushfq
 	sub	rsp,64
 
-	mov	rax,QWORD PTR[120+r8]
-	mov	rbx,QWORD PTR[248+r8]
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
 
-	mov	rsi,QWORD PTR[8+r9]
-	mov	r11,QWORD PTR[56+r9]
+	mov	rsi,QWORD[8+r9]
+	mov	r11,QWORD[56+r9]
 
-	mov	r10d,DWORD PTR[r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jb	$L$in_key_prologue
+	jb	NEAR $L$in_key_prologue
 
-	mov	rax,QWORD PTR[152+r8]
+	mov	rax,QWORD[152+r8]
 
-	mov	r10d,DWORD PTR[4+r11]
-	lea	r10,QWORD PTR[r10*1+rsi]
+	mov	r10d,DWORD[4+r11]
+	lea	r10,[r10*1+rsi]
 	cmp	rbx,r10
-	jae	$L$in_key_prologue
+	jae	NEAR $L$in_key_prologue
 
-	lea	rax,QWORD PTR[56+rax]
+	lea	rax,[56+rax]
 
-	mov	rbx,QWORD PTR[((-8))+rax]
-	mov	rbp,QWORD PTR[((-16))+rax]
-	mov	r12,QWORD PTR[((-24))+rax]
-	mov	r13,QWORD PTR[((-32))+rax]
-	mov	r14,QWORD PTR[((-40))+rax]
-	mov	r15,QWORD PTR[((-48))+rax]
-	mov	QWORD PTR[144+r8],rbx
-	mov	QWORD PTR[160+r8],rbp
-	mov	QWORD PTR[216+r8],r12
-	mov	QWORD PTR[224+r8],r13
-	mov	QWORD PTR[232+r8],r14
-	mov	QWORD PTR[240+r8],r15
+	mov	rbx,QWORD[((-8))+rax]
+	mov	rbp,QWORD[((-16))+rax]
+	mov	r12,QWORD[((-24))+rax]
+	mov	r13,QWORD[((-32))+rax]
+	mov	r14,QWORD[((-40))+rax]
+	mov	r15,QWORD[((-48))+rax]
+	mov	QWORD[144+r8],rbx
+	mov	QWORD[160+r8],rbp
+	mov	QWORD[216+r8],r12
+	mov	QWORD[224+r8],r13
+	mov	QWORD[232+r8],r14
+	mov	QWORD[240+r8],r15
 
-$L$in_key_prologue::
-	mov	rdi,QWORD PTR[8+rax]
-	mov	rsi,QWORD PTR[16+rax]
-	mov	QWORD PTR[152+r8],rax
-	mov	QWORD PTR[168+r8],rsi
-	mov	QWORD PTR[176+r8],rdi
+$L$in_key_prologue:
+	mov	rdi,QWORD[8+rax]
+	mov	rsi,QWORD[16+rax]
+	mov	QWORD[152+r8],rax
+	mov	QWORD[168+r8],rsi
+	mov	QWORD[176+r8],rdi
 
-	jmp	$L$common_seh_exit
-key_se_handler	ENDP
+	jmp	NEAR $L$common_seh_exit
+
 
 
 ALIGN	16
-cbc_se_handler	PROC PRIVATE
+cbc_se_handler:
 	push	rsi
 	push	rdi
 	push	rbx
@@ -2723,82 +2722,82 @@ cbc_se_handler	PROC PRIVATE
 	pushfq
 	sub	rsp,64
 
-	mov	rax,QWORD PTR[120+r8]
-	mov	rbx,QWORD PTR[248+r8]
+	mov	rax,QWORD[120+r8]
+	mov	rbx,QWORD[248+r8]
 
-	lea	r10,QWORD PTR[$L$cbc_prologue]
+	lea	r10,[$L$cbc_prologue]
 	cmp	rbx,r10
-	jb	$L$in_cbc_prologue
+	jb	NEAR $L$in_cbc_prologue
 
-	lea	r10,QWORD PTR[$L$cbc_fast_body]
+	lea	r10,[$L$cbc_fast_body]
 	cmp	rbx,r10
-	jb	$L$in_cbc_frame_setup
+	jb	NEAR $L$in_cbc_frame_setup
 
-	lea	r10,QWORD PTR[$L$cbc_slow_prologue]
+	lea	r10,[$L$cbc_slow_prologue]
 	cmp	rbx,r10
-	jb	$L$in_cbc_body
+	jb	NEAR $L$in_cbc_body
 
-	lea	r10,QWORD PTR[$L$cbc_slow_body]
+	lea	r10,[$L$cbc_slow_body]
 	cmp	rbx,r10
-	jb	$L$in_cbc_frame_setup
+	jb	NEAR $L$in_cbc_frame_setup
 
-$L$in_cbc_body::
-	mov	rax,QWORD PTR[152+r8]
+$L$in_cbc_body:
+	mov	rax,QWORD[152+r8]
 
-	lea	r10,QWORD PTR[$L$cbc_epilogue]
+	lea	r10,[$L$cbc_epilogue]
 	cmp	rbx,r10
-	jae	$L$in_cbc_prologue
+	jae	NEAR $L$in_cbc_prologue
 
-	lea	rax,QWORD PTR[8+rax]
+	lea	rax,[8+rax]
 
-	lea	r10,QWORD PTR[$L$cbc_popfq]
+	lea	r10,[$L$cbc_popfq]
 	cmp	rbx,r10
-	jae	$L$in_cbc_prologue
+	jae	NEAR $L$in_cbc_prologue
 
-	mov	rax,QWORD PTR[8+rax]
-	lea	rax,QWORD PTR[56+rax]
+	mov	rax,QWORD[8+rax]
+	lea	rax,[56+rax]
 
-$L$in_cbc_frame_setup::
-	mov	rbx,QWORD PTR[((-16))+rax]
-	mov	rbp,QWORD PTR[((-24))+rax]
-	mov	r12,QWORD PTR[((-32))+rax]
-	mov	r13,QWORD PTR[((-40))+rax]
-	mov	r14,QWORD PTR[((-48))+rax]
-	mov	r15,QWORD PTR[((-56))+rax]
-	mov	QWORD PTR[144+r8],rbx
-	mov	QWORD PTR[160+r8],rbp
-	mov	QWORD PTR[216+r8],r12
-	mov	QWORD PTR[224+r8],r13
-	mov	QWORD PTR[232+r8],r14
-	mov	QWORD PTR[240+r8],r15
+$L$in_cbc_frame_setup:
+	mov	rbx,QWORD[((-16))+rax]
+	mov	rbp,QWORD[((-24))+rax]
+	mov	r12,QWORD[((-32))+rax]
+	mov	r13,QWORD[((-40))+rax]
+	mov	r14,QWORD[((-48))+rax]
+	mov	r15,QWORD[((-56))+rax]
+	mov	QWORD[144+r8],rbx
+	mov	QWORD[160+r8],rbp
+	mov	QWORD[216+r8],r12
+	mov	QWORD[224+r8],r13
+	mov	QWORD[232+r8],r14
+	mov	QWORD[240+r8],r15
 
-$L$in_cbc_prologue::
-	mov	rdi,QWORD PTR[8+rax]
-	mov	rsi,QWORD PTR[16+rax]
-	mov	QWORD PTR[152+r8],rax
-	mov	QWORD PTR[168+r8],rsi
-	mov	QWORD PTR[176+r8],rdi
+$L$in_cbc_prologue:
+	mov	rdi,QWORD[8+rax]
+	mov	rsi,QWORD[16+rax]
+	mov	QWORD[152+r8],rax
+	mov	QWORD[168+r8],rsi
+	mov	QWORD[176+r8],rdi
 
-$L$common_seh_exit::
+$L$common_seh_exit:
 
-	mov	rdi,QWORD PTR[40+r9]
+	mov	rdi,QWORD[40+r9]
 	mov	rsi,r8
 	mov	ecx,154
-	DD	0a548f3fch
+	DD	0xa548f3fc
 
 	mov	rsi,r9
 	xor	rcx,rcx
-	mov	rdx,QWORD PTR[8+rsi]
-	mov	r8,QWORD PTR[rsi]
-	mov	r9,QWORD PTR[16+rsi]
-	mov	r10,QWORD PTR[40+rsi]
-	lea	r11,QWORD PTR[56+rsi]
-	lea	r12,QWORD PTR[24+rsi]
-	mov	QWORD PTR[32+rsp],r10
-	mov	QWORD PTR[40+rsp],r11
-	mov	QWORD PTR[48+rsp],r12
-	mov	QWORD PTR[56+rsp],rcx
-	call	QWORD PTR[__imp_RtlVirtualUnwind]
+	mov	rdx,QWORD[8+rsi]
+	mov	r8,QWORD[rsi]
+	mov	r9,QWORD[16+rsi]
+	mov	r10,QWORD[40+rsi]
+	lea	r11,[56+rsi]
+	lea	r12,[24+rsi]
+	mov	QWORD[32+rsp],r10
+	mov	QWORD[40+rsp],r11
+	mov	QWORD[48+rsp],r12
+	mov	QWORD[56+rsp],rcx
+	call	QWORD[__imp_RtlVirtualUnwind]
 
 	mov	eax,1
 	add	rsp,64
@@ -2812,53 +2811,48 @@ $L$common_seh_exit::
 	pop	rdi
 	pop	rsi
 	DB	0F3h,0C3h		;repret
-cbc_se_handler	ENDP
 
-.text$	ENDS
-.pdata	SEGMENT READONLY ALIGN(4)
+
+section	.pdata rdata align=4
 ALIGN	4
-	DD	imagerel $L$SEH_begin_asm_AES_encrypt
-	DD	imagerel $L$SEH_end_asm_AES_encrypt
-	DD	imagerel $L$SEH_info_asm_AES_encrypt
+	DD	$L$SEH_begin_asm_AES_encrypt wrt ..imagebase
+	DD	$L$SEH_end_asm_AES_encrypt wrt ..imagebase
+	DD	$L$SEH_info_asm_AES_encrypt wrt ..imagebase
 
-	DD	imagerel $L$SEH_begin_asm_AES_decrypt
-	DD	imagerel $L$SEH_end_asm_AES_decrypt
-	DD	imagerel $L$SEH_info_asm_AES_decrypt
+	DD	$L$SEH_begin_asm_AES_decrypt wrt ..imagebase
+	DD	$L$SEH_end_asm_AES_decrypt wrt ..imagebase
+	DD	$L$SEH_info_asm_AES_decrypt wrt ..imagebase
 
-	DD	imagerel $L$SEH_begin_asm_AES_set_encrypt_key
-	DD	imagerel $L$SEH_end_asm_AES_set_encrypt_key
-	DD	imagerel $L$SEH_info_asm_AES_set_encrypt_key
+	DD	$L$SEH_begin_asm_AES_set_encrypt_key wrt ..imagebase
+	DD	$L$SEH_end_asm_AES_set_encrypt_key wrt ..imagebase
+	DD	$L$SEH_info_asm_AES_set_encrypt_key wrt ..imagebase
 
-	DD	imagerel $L$SEH_begin_asm_AES_set_decrypt_key
-	DD	imagerel $L$SEH_end_asm_AES_set_decrypt_key
-	DD	imagerel $L$SEH_info_asm_AES_set_decrypt_key
+	DD	$L$SEH_begin_asm_AES_set_decrypt_key wrt ..imagebase
+	DD	$L$SEH_end_asm_AES_set_decrypt_key wrt ..imagebase
+	DD	$L$SEH_info_asm_AES_set_decrypt_key wrt ..imagebase
 
-	DD	imagerel $L$SEH_begin_asm_AES_cbc_encrypt
-	DD	imagerel $L$SEH_end_asm_AES_cbc_encrypt
-	DD	imagerel $L$SEH_info_asm_AES_cbc_encrypt
+	DD	$L$SEH_begin_asm_AES_cbc_encrypt wrt ..imagebase
+	DD	$L$SEH_end_asm_AES_cbc_encrypt wrt ..imagebase
+	DD	$L$SEH_info_asm_AES_cbc_encrypt wrt ..imagebase
 
-.pdata	ENDS
-.xdata	SEGMENT READONLY ALIGN(8)
+section	.xdata rdata align=8
 ALIGN	8
-$L$SEH_info_asm_AES_encrypt::
+$L$SEH_info_asm_AES_encrypt:
 DB	9,0,0,0
-	DD	imagerel block_se_handler
-	DD	imagerel $L$enc_prologue,imagerel $L$enc_epilogue
-$L$SEH_info_asm_AES_decrypt::
+	DD	block_se_handler wrt ..imagebase
+	DD	$L$enc_prologue wrt ..imagebase,$L$enc_epilogue wrt ..imagebase
+$L$SEH_info_asm_AES_decrypt:
 DB	9,0,0,0
-	DD	imagerel block_se_handler
-	DD	imagerel $L$dec_prologue,imagerel $L$dec_epilogue
-$L$SEH_info_asm_AES_set_encrypt_key::
+	DD	block_se_handler wrt ..imagebase
+	DD	$L$dec_prologue wrt ..imagebase,$L$dec_epilogue wrt ..imagebase
+$L$SEH_info_asm_AES_set_encrypt_key:
 DB	9,0,0,0
-	DD	imagerel key_se_handler
-	DD	imagerel $L$enc_key_prologue,imagerel $L$enc_key_epilogue
-$L$SEH_info_asm_AES_set_decrypt_key::
+	DD	key_se_handler wrt ..imagebase
+	DD	$L$enc_key_prologue wrt ..imagebase,$L$enc_key_epilogue wrt ..imagebase
+$L$SEH_info_asm_AES_set_decrypt_key:
 DB	9,0,0,0
-	DD	imagerel key_se_handler
-	DD	imagerel $L$dec_key_prologue,imagerel $L$dec_key_epilogue
-$L$SEH_info_asm_AES_cbc_encrypt::
+	DD	key_se_handler wrt ..imagebase
+	DD	$L$dec_key_prologue wrt ..imagebase,$L$dec_key_epilogue wrt ..imagebase
+$L$SEH_info_asm_AES_cbc_encrypt:
 DB	9,0,0,0
-	DD	imagerel cbc_se_handler
-
-.xdata	ENDS
-END
+	DD	cbc_se_handler wrt ..imagebase
