@@ -86,7 +86,6 @@
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/address_list.h"
-#include "net/base/connection_type_histograms.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -3505,8 +3504,11 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
   // TODO(hclam): Skip logging if server cert was expected to be bad because
   // |server_cert_verify_result_| doesn't contain all the information about
   // the cert.
-  if (result == OK)
-    LogConnectionTypeMetrics();
+  if (result == OK) {
+    int ssl_version =
+        SSLConnectionStatusToVersion(core_->state().ssl_connection_status);
+    RecordConnectionTypeMetrics(ssl_version);
+  }
 
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
   if (transport_security_state_ &&
@@ -3572,29 +3574,6 @@ void SSLClientSocketNSS::VerifyCT() {
           << " Verified scts: " << ct_verify_result_.verified_scts.size()
           << " scts from unknown logs: "
           << ct_verify_result_.unknown_logs_scts.size();
-}
-
-void SSLClientSocketNSS::LogConnectionTypeMetrics() const {
-  UpdateConnectionTypeHistograms(CONNECTION_SSL);
-  int ssl_version = SSLConnectionStatusToVersion(
-      core_->state().ssl_connection_status);
-  switch (ssl_version) {
-    case SSL_CONNECTION_VERSION_SSL2:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_SSL2);
-      break;
-    case SSL_CONNECTION_VERSION_SSL3:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_SSL3);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1_1:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1_1);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1_2:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1_2);
-      break;
-  };
 }
 
 void SSLClientSocketNSS::EnsureThreadIdAssigned() const {

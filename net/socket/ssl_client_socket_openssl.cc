@@ -1095,6 +1095,9 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
     }
   }
 
+  if (result == OK)
+    RecordConnectionTypeMetrics(GetNetSSLVersion(ssl_));
+
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
   if (transport_security_state_ &&
       (result == OK ||

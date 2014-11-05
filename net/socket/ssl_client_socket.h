@@ -192,6 +192,9 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       bool channel_id_enabled,
       bool supports_ecc);
 
+  // Records ConnectionType histograms for a successful SSL connection.
+  static void RecordConnectionTypeMetrics(int ssl_version);
+
   // Returns whether TLS channel ID is enabled.
   static bool IsChannelIDEnabled(
       const SSLConfig& ssl_config,

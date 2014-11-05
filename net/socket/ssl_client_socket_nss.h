@@ -144,8 +144,6 @@ class SSLClientSocketNSS : public SSLClientSocket {
 
   void VerifyCT();
 
-  void LogConnectionTypeMetrics() const;
-
   // The following methods are for debugging bug 65948. Will remove this code
   // after fixing bug 65948.
   void EnsureThreadIdAssigned() const;
