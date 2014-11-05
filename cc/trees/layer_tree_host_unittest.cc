@@ -4192,7 +4192,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
       bool fallback) override {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();
-    context_provider->SetMaxTransferBufferUsageBytes(1024 * 1024);
+    context_provider->SetMaxTransferBufferUsageBytes(512 * 512);
     if (delegating_renderer())
       return FakeOutputSurface::CreateDelegating3d(context_provider);
     else
@@ -4203,7 +4203,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
         FakePictureLayer::Create(&client_);
-    root_layer->SetBounds(gfx::Size(6000, 6000));
+    root_layer->SetBounds(gfx::Size(1024, 1024));
     root_layer->SetIsDrawable(true);
 
     layer_tree_host()->SetRootLayer(root_layer);
@@ -4217,7 +4217,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
 
     // Expect that the transfer buffer memory used is equal to the
     // MaxTransferBufferUsageBytes value set in CreateOutputSurface.
-    EXPECT_EQ(1024 * 1024u, context->max_used_transfer_buffer_usage_bytes());
+    EXPECT_EQ(512 * 512u, context->max_used_transfer_buffer_usage_bytes());
     EndTest();
   }
 

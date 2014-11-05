@@ -40,17 +40,15 @@ void FakeContentLayerClient::PaintContents(
     canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
   }
 
-  // Add a rectangle to the middle that doesn't fill |paint_rect| so that solid
-  // color analysis will fail.
   if (fill_with_nonsolid_color_) {
     gfx::RectF draw_rect = paint_rect;
-    draw_rect.Inset(draw_rect.width() / 4.0f, draw_rect.height() / 4.0f);
-    SkPaint paint;
-    canvas->drawRectCoords(draw_rect.x(),
-                           draw_rect.y(),
-                           draw_rect.right(),
-                           draw_rect.bottom(),
-                           paint);
+    bool red = true;
+    while (!draw_rect.IsEmpty()) {
+      SkPaint paint;
+      paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
+      canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
+      draw_rect.Inset(1, 1);
+    }
   }
 }
 
