@@ -8516,6 +8516,31 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "daisy_skate-paladin": {
+        "boards": [
+            "daisy_skate"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_skate-paladin",
+        "overlays": "both",
+        "paladin_builder_name": "daisy_skate paladin",
+        "prebuilts": "private",
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "daisy_skate-payloads": {
         "boards": [
             "daisy_skate"

@@ -2105,6 +2105,12 @@ internal_notest_paladin.add_config('daisy_spring-paladin',
   chroot_replace=True,
 )
 
+internal_notest_paladin.add_config('daisy_skate-paladin',
+  boards=['daisy_skate'],
+  paladin_builder_name='daisy_skate paladin',
+  important=False,
+)
+
 internal_notest_paladin.add_config('kayle-paladin',
   brillo,
   boards=['kayle'],
