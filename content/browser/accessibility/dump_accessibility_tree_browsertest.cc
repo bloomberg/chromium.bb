@@ -30,6 +30,10 @@
 #include "content/test/accessibility_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 // TODO(aboxhall): Create expectations on Android for these
 #if defined(OS_ANDROID)
 #define MAYBE(x) DISABLED_##x
@@ -769,6 +773,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputDateTimeLocal) {
+#if defined(OS_MACOSX)
+  // Fails on OS X 10.9 <https://crbug.com/430622>.
+  if (base::mac::IsOSMavericks())
+    return;
+#endif
   RunTest(FILE_PATH_LITERAL("input-datetime-local.html"));
 }
 
