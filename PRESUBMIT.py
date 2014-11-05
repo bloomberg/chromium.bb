@@ -361,7 +361,8 @@ def _CheckNoNewWStrings(input_api, output_api):
   problems = []
   for f in input_api.AffectedFiles():
     if (not f.LocalPath().endswith(('.cc', '.h')) or
-        f.LocalPath().endswith(('test.cc', '_win.cc', '_win.h'))):
+        f.LocalPath().endswith(('test.cc', '_win.cc', '_win.h')) or
+        '/win/' in f.LocalPath()):
       continue
 
     allowWString = False
