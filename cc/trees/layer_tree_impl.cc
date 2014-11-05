@@ -506,12 +506,9 @@ bool LayerTreeImpl::UpdateDrawProperties() {
   }
 
   {
-    TRACE_EVENT2("cc",
-                 "LayerTreeImpl::UpdateTilePriorities",
-                 "IsActive",
-                 IsActiveTree(),
-                 "SourceFrameNumber",
-                 source_frame_number_);
+    TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateTilePriorities", "IsActive",
+                       IsActiveTree(), "SourceFrameNumber",
+                       source_frame_number_);
     scoped_ptr<OcclusionTracker<LayerImpl>> occlusion_tracker;
     if (settings().use_occlusion_for_tile_prioritization) {
       occlusion_tracker.reset(new OcclusionTracker<LayerImpl>(
@@ -528,6 +525,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     // draw properties) and not because any ordering is required.
     typedef LayerIterator<LayerImpl> LayerIteratorType;
     LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
+    size_t layers_updated_count = 0;
     for (LayerIteratorType it =
              LayerIteratorType::Begin(&render_surface_layer_list_);
          it != end;
@@ -544,6 +542,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
       if (it.represents_itself()) {
         layer->UpdateTiles(occlusion_in_content_space,
                            resourceless_software_draw);
+        ++layers_updated_count;
       }
 
       if (!it.represents_contributing_render_surface()) {
@@ -555,15 +554,20 @@ bool LayerTreeImpl::UpdateDrawProperties() {
       if (layer->mask_layer()) {
         layer->mask_layer()->UpdateTiles(occlusion_in_content_space,
                                          resourceless_software_draw);
+        ++layers_updated_count;
       }
       if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
         layer->replica_layer()->mask_layer()->UpdateTiles(
             occlusion_in_content_space, resourceless_software_draw);
+        ++layers_updated_count;
       }
 
       if (occlusion_tracker)
         occlusion_tracker->LeaveLayer(it);
     }
+
+    TRACE_EVENT_END1("cc", "LayerTreeImpl::UpdateTilePriorities",
+                     "layers_updated_count", layers_updated_count);
   }
 
   DCHECK(!needs_update_draw_properties_) <<

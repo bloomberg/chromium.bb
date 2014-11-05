@@ -836,6 +836,7 @@ void TileManager::SetRasterizerForTesting(Rasterizer* rasterizer) {
 }
 
 bool TileManager::IsReadyToActivate() const {
+  TRACE_EVENT0("cc", "TileManager::IsReadyToActivate");
   const std::vector<PictureLayerImpl*>& layers = client_->GetPictureLayers();
 
   for (std::vector<PictureLayerImpl*>::const_iterator it = layers.begin();

@@ -468,7 +468,6 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
 void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
                                    bool resourceless_software_draw) {
-  TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTiles");
   DCHECK_EQ(1.f, contents_scale_x());
   DCHECK_EQ(1.f, contents_scale_y());
 
@@ -516,9 +515,6 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 void PictureLayerImpl::UpdateTilePriorities(
     const Occlusion& occlusion_in_content_space) {
   DCHECK(!pile_->is_solid_color() || !tilings_->num_tilings());
-
-  TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
-
   double current_frame_time_in_seconds =
       (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
        base::TimeTicks()).InSecondsF();
@@ -790,7 +786,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
-  TRACE_EVENT0("cc", "SyncFromActiveLayer");
   DCHECK(!other->needs_post_commit_initialization_);
   DCHECK(other->tilings_);
 
@@ -1408,8 +1403,6 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
 }
 
 bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
-  TRACE_EVENT0("cc",
-               "PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw");
   if (!layer_tree_impl()->IsPendingTree())
     return true;
 
