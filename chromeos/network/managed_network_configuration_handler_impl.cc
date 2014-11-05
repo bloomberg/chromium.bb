@@ -41,7 +41,7 @@ namespace chromeos {
 
 namespace {
 
-typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
+using GuidToPolicyMap = ManagedNetworkConfigurationHandler::GuidToPolicyMap;
 
 // These are error strings used for error callbacks. None of these error
 // messages are user-facing: they should only appear in logs.
@@ -581,15 +581,26 @@ ManagedNetworkConfigurationHandlerImpl::FindPolicyByGUID(
   return NULL;
 }
 
+const GuidToPolicyMap*
+ManagedNetworkConfigurationHandlerImpl::GetNetworkConfigsFromPolicy(
+    const std::string& userhash) const {
+  const Policies* policies = GetPoliciesForUser(userhash);
+  if (!policies)
+    return NULL;
+
+  return &policies->per_network_config;
+}
+
 const base::DictionaryValue*
 ManagedNetworkConfigurationHandlerImpl::GetGlobalConfigFromPolicy(
-    const std::string userhash) const {
+    const std::string& userhash) const {
   const Policies* policies = GetPoliciesForUser(userhash);
   if (!policies)
     return NULL;
 
   return &policies->global_network_config;
 }
+
 const base::DictionaryValue*
 ManagedNetworkConfigurationHandlerImpl::FindPolicyByGuidAndProfile(
     const std::string& guid,

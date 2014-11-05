@@ -61,8 +61,10 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
                          const std::string userhash,
                          const std::string& guid,
                          ::onc::ONCSource* onc_source));
+  MOCK_CONST_METHOD1(GetNetworkConfigsFromPolicy,
+                     const GuidToPolicyMap*(const std::string& userhash));
   MOCK_CONST_METHOD1(GetGlobalConfigFromPolicy,
-                     const base::DictionaryValue*(const std::string userhash));
+                     const base::DictionaryValue*(const std::string& userhash));
   MOCK_CONST_METHOD2(
       FindPolicyByGuidAndProfile,
       const base::DictionaryValue*(const std::string& guid,
