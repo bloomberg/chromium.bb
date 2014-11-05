@@ -59,7 +59,9 @@ std::string GetBrand() {
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (g_brand_empty)
     return std::string();
-  DCHECK(g_browser_process->local_state());
+  // Unit tests do not have prefs.
+  if (!g_browser_process->local_state())
+    return std::string();
   return g_browser_process->local_state()->GetString(prefs::kRLZBrand);
 }
 
