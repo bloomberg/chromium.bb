@@ -554,6 +554,12 @@ public:
         CSSSelectorPseudoScrollbarThumb = 584,
         CSSSelectorPseudoScrollbarTrack = 585,
         CSSSelectorPseudoScrollbarTrackPiece = 586,
+        LangAttribute = 587,
+        LangAttributeOnHTML = 588,
+        LangAttributeOnBody = 589,
+        LangAttributeDoesNotMatchToUILocale = 590,
+        InputTypeSubmit = 591,
+        InputTypeSubmitWithValue = 592,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

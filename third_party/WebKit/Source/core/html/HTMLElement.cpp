@@ -45,6 +45,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -53,6 +54,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/Language.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRunIterator.h"
@@ -140,6 +142,27 @@ void HTMLElement::mapLanguageAttributeToLocale(const AtomicString& value, Mutabl
     if (!value.isEmpty()) {
         // Have to quote so the locale id is treated as a string instead of as a CSS keyword.
         addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale, quoteCSSString(value));
+
+        // FIXME: Remove the following UseCounter code when we collect enough
+        // data.
+        UseCounter::count(document(), UseCounter::LangAttribute);
+        if (isHTMLHtmlElement(*this))
+            UseCounter::count(document(), UseCounter::LangAttributeOnHTML);
+        else if (isHTMLBodyElement(*this))
+            UseCounter::count(document(), UseCounter::LangAttributeOnBody);
+        String htmlLanguage = value.string();
+        size_t firstSeparator = htmlLanguage.find('-');
+        if (firstSeparator != kNotFound)
+            htmlLanguage = htmlLanguage.left(firstSeparator);
+        String uiLanguage = defaultLanguage();
+        firstSeparator = uiLanguage.find('-');
+        if (firstSeparator != kNotFound)
+            uiLanguage = uiLanguage.left(firstSeparator);
+        firstSeparator = uiLanguage.find('_');
+        if (firstSeparator != kNotFound)
+            uiLanguage = uiLanguage.left(firstSeparator);
+        if (!equalIgnoringCase(htmlLanguage, uiLanguage))
+            UseCounter::count(document(), UseCounter::LangAttributeDoesNotMatchToUILocale);
     } else {
         // The empty string means the language is explicitly unknown.
         addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale, CSSValueAuto);

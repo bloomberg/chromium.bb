@@ -48,6 +48,7 @@ private:
     virtual bool canBeSuccessfulSubmitButton() override;
     virtual String defaultValue() const override;
     virtual bool isTextButton() const override;
+    virtual void valueAttributeChanged() override;
 };
 
 } // namespace blink

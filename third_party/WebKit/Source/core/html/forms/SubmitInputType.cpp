@@ -44,6 +44,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
 {
+    UseCounter::count(element.document(), UseCounter::InputTypeSubmit);
     return adoptRefWillBeNoop(new SubmitInputType(element));
 }
 
@@ -89,6 +90,12 @@ String SubmitInputType::defaultValue() const
 bool SubmitInputType::isTextButton() const
 {
     return true;
+}
+
+void SubmitInputType::valueAttributeChanged()
+{
+    UseCounter::count(element().document(), UseCounter::InputTypeSubmitWithValue);
+    BaseButtonInputType::valueAttributeChanged();
 }
 
 } // namespace blink
