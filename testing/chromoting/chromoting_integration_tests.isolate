@@ -49,6 +49,14 @@
         ],
       },
     }],
+    ['OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/chrome_elf.dll',
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+        ],
+      },
+    }],
     ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
