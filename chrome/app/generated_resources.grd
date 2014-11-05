@@ -9712,17 +9712,17 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
 
       <if expr="not is_android and not is_ios">
         <message name="IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH" desc="Paragraph explaining that the SSL clock interstitial is probably caused by an incorrect clock.">
-          A private connection to <ph name="DOMAIN">$1<ex>paypal.com</ex></ph> can't be established because your computer's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
+          A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your computer's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
         </message>
       </if>
       <if expr="is_android">
         <message name="IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH" desc="Paragraph explaining that the SSL clock interstitial is probably caused by an incorrect clock. (The string is slightly customized for mobile.)">
-          A private connection to <ph name="DOMAIN">$1<ex>paypal.com</ex></ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
+          A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
         </message>
       </if>
       <if expr="is_ios">
         <message name="IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH" desc="Paragraph explaining that the SSL clock interstitial is probably caused by an incorrect clock. On iOS, we can't send the user directly to the date and time panel, so we give them concise instructions.">
-          &lt;p&gt;A private connection to <ph name="DOMAIN">$1<ex>paypal.com</ex></ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.&lt;/p&gt;
+          &lt;p&gt;A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.&lt;/p&gt;
 
           &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;
         </message>
