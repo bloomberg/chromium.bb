@@ -86,9 +86,9 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
-// This test is flaky on MacOS 10.6.
+// This test is flaky on MacOS 10.6 and 10.9.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (base::mac::IsOSSnowLeopard())
+  if (base::mac::IsOSSnowLeopard() || base::mac::IsOSMavericks())
     return;
 #endif
 
@@ -240,9 +240,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenDOM) {
-// This test is flaky on MacOS 10.6.
+// This test is flaky on MacOS 10.6 and 10.9.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (base::mac::IsOSSnowLeopard())
+  if (base::mac::IsOSSnowLeopard() || base::mac::IsOSMavericks())
     return;
 #endif
 
@@ -298,9 +298,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 // and 'overrideEscFullscreen'.
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenOldPermission) {
-// This test is flaky on MacOS 10.6.
+// This test is flaky on MacOS 10.6 and 10.9.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (base::mac::IsOSSnowLeopard())
+  if (base::mac::IsOSSnowLeopard() || base::mac::IsOSMavericks())
     return;
 #endif
 
