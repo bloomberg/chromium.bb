@@ -66,8 +66,12 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
 
     @Override
     public void enterFullscreenVideo(View videoView) {
-        // enterFullscreenVideo will only be called after enterFullscreen.
-        assert mCustomView != null;
+        if (mCustomView == null) {
+            // enterFullscreenVideo will only be called after enterFullscreen, but
+            // in this case exitFullscreen has been invoked in between them.
+            // TODO(igsolla): Fix http://crbug/425926 and replace with assert.
+            return;
+        }
         mCustomView.addView(videoView, 0);
     }
 

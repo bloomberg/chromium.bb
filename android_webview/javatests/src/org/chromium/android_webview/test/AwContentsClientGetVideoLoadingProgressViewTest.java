@@ -52,7 +52,8 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AwTestBase
     @SmallTest
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient =
-                new FullScreenVideoTestAwContentsClient(getActivity()) {
+                new FullScreenVideoTestAwContentsClient(
+                        getActivity(), isHardwareAcceleratedTest()) {
                     @Override
                     protected View getVideoLoadingProgressView() {
                         View view = new View(getInstrumentation().getTargetContext());

@@ -27,17 +27,25 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     private CallbackHelper mOnShowCustomViewCallbackHelper = new CallbackHelper();
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
 
-    private Activity mActivity;
+    private final Activity mActivity;
+    private final boolean mAllowHardwareAcceleration;
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mExitCallback;
 
-    public FullScreenVideoTestAwContentsClient(Activity activity) {
+    public FullScreenVideoTestAwContentsClient(Activity activity,
+            boolean allowHardwareAcceleration) {
         mActivity = activity;
+        mAllowHardwareAcceleration = allowHardwareAcceleration;
     }
 
     @Override
     public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
         mCustomView = view;
+        if (!mAllowHardwareAcceleration) {
+            // The hardware emulation in the testing infrastructure is not perfect, and this is
+            // required to work-around some of the limitations.
+            mCustomView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
         mExitCallback = callback;
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
