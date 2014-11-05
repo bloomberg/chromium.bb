@@ -368,11 +368,17 @@ InspectorTest.getElementStylePropertyTreeItem = function(propertyName)
 // FIXME: this returns the first tree item found (may fail for same-named properties in a style).
 InspectorTest.getMatchedStylePropertyTreeItem = function(propertyName)
 {
-    var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[0];
-    for (var i = 1; i < styleSections.length; ++i) {
-        var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(styleSections[i], propertyName);
-        if (treeItem)
-            return treeItem;
+    var sections = WebInspector.panels.elements.sidebarPanes.styles.sections;
+    for (var pseudoId in sections) {
+        var styleSections = sections[pseudoId];
+        for (var i = 0; i < styleSections.length; ++i) {
+            var section = styleSections[i];
+            if (section.computedStyle)
+                continue;
+            var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(section, propertyName);
+            if (treeItem)
+                return treeItem;
+        }
     }
     return null;
 };

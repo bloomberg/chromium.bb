@@ -75,20 +75,20 @@ function test()
         return true;
     }
 
-    function validateRuleRanges(rules, callback)
+    function validateRuleRanges(selector, rules, callback)
     {
         InspectorTest.selectNodeAndWaitForStyles("other", onOtherSelected);
 
         function onOtherSelected()
         {
-            InspectorTest.selectNodeAndWaitForStyles("container", onContainerSelected);
+            InspectorTest.selectNodeAndWaitForStyles(selector, onContainerSelected);
         }
 
         function onContainerSelected()
         {
             var fetchedRules = getMatchedRules();
             if (fetchedRules.length !== rules.length) {
-                InspectorTest.addResult("Error: rules sizes are not equal!");
+                InspectorTest.addResult(String.sprintf("Error: rules sizes are not equal! Expected: %d, actual: %d", fetchedRules.length, rules.length));
                 InspectorTest.completeTest();
                 return;
             }
@@ -104,70 +104,115 @@ function test()
 
     function getMatchedRules()
     {
-        var matchedStyleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[0];
         var rules = [];
-        for (var i = 1; i < matchedStyleSections.length; ++i) {
-            var rule = matchedStyleSections[i].rule;
-            if (rule)
-                rules.push(rule);
+        for (var pseudoId in WebInspector.panels.elements.sidebarPanes.styles.sections) {
+            var matchedStyleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[pseudoId];
+            for (var i = 0; i < matchedStyleSections.length; ++i) {
+                var section = matchedStyleSections[i];
+                if (section.computedStyle)
+                    continue;
+                var rule = section.rule;
+                if (rule)
+                    rules.push(rule);
+            }
         }
         return rules;
     }
 
-    function insertProperty()
-    {
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
-        var treeElement = treeItem.section().addNewBlankProperty(1);
-        InspectorTest.waitForStyleApplied(onPropertyInserted);
-        treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
-    }
+    InspectorTest.runTestSuite([
+        function selectInitialNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("container", next);
+        },
 
-    function onPropertyInserted()
-    {
-        InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        var rules = getMatchedRules();
-        validateRuleRanges(rules, editSelector);
-    }
+        function testInsertProperty(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            var treeElement = treeItem.section().addNewBlankProperty(1);
+            InspectorTest.waitForStyleApplied(onPropertyInserted);
+            treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
 
-    function editSelector()
-    {
-        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][4];
-        section.startEditingSelector();
-        section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
-        InspectorTest.waitForSelectorCommitted(onSelectorEdited);
-        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-    }
+            function onPropertyInserted()
+            {
+                InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                var rules = getMatchedRules();
+                validateRuleRanges("container", rules, next);
+            }
+        },
 
-    function onSelectorEdited()
-    {
-        InspectorTest.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        var rules = getMatchedRules();
-        validateRuleRanges(rules, disableProperty);
-    }
+        function testEditSelector(next)
+        {
+            var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][4];
+            section.startEditingSelector();
+            section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
+            InspectorTest.waitForSelectorCommitted(onSelectorEdited);
+            section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
 
-    function disableProperty()
-    {
-        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
-        InspectorTest.waitForStyleApplied(onPropertyDisabled);
-        treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
-    }
+            function onSelectorEdited()
+            {
+                InspectorTest.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                var rules = getMatchedRules();
+                validateRuleRanges("container", rules, next);
+            }
+        },
 
-    function onPropertyDisabled()
-    {
-        InspectorTest.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
-        InspectorTest.dumpSelectedElementStyles(true, false, true);
-        var rules = getMatchedRules();
-        validateRuleRanges(rules, InspectorTest.completeTest.bind(InspectorTest));
-    }
+        function testDisableProperty(next)
+        {
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
+            InspectorTest.waitForStyleApplied(onPropertyDisabled);
+            treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
 
-    InspectorTest.selectNodeAndWaitForStyles("container", insertProperty);
+            function onPropertyDisabled()
+            {
+                InspectorTest.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                var rules = getMatchedRules();
+                validateRuleRanges("container", rules, next);
+            }
+        },
+
+        function selectNodeWithPseudoElements(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("pseudo", next);
+        },
+
+        function testPseudoSectionPropertyEdit(next)
+        {
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("pseudo-property");
+            var treeElement = treeItem.section().addNewBlankProperty(1);
+            InspectorTest.waitForStyleApplied(onPropertyInserted);
+            treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
+
+            function onPropertyInserted()
+            {
+                InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTED ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                var rules = getMatchedRules();
+                validateRuleRanges("pseudo", rules, next);
+            }
+        },
+    ]);
 }
 </script>
 <link rel="stylesheet" href="resources/styles-update-links-2.css"></link>
 <link rel="stylesheet" href="resources/styles-update-links.css"></link>
+<style>
+#pseudo::after {
+    pseudo-property: "12";
+    color: red;
+}
+
+#pseudo::after {
+    border: 1px solid black;
+}
+
+#pseudo::before {
+    color: blue;
+}
+</style>
 </head>
 
 <body onload="runTest()">
@@ -180,6 +225,8 @@ Red text here.
 </div>
 
 <div id="other"></div>
+
+<section id="pseudo"></div>
 
 </body>
 </html>
