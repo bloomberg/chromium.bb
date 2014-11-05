@@ -829,6 +829,8 @@ if (is_linux) {
       "nss/lib/util/pkcs11p.h",
       "nss/lib/util/pkcs11t.h",
       "nss/lib/util/pkcs11u.h",
+      "nss/lib/util/pkcs1sig.c",
+      "nss/lib/util/pkcs1sig.h",
       "nss/lib/util/portreg.c",
       "nss/lib/util/portreg.h",
       "nss/lib/util/quickder.c",
@@ -1145,7 +1147,6 @@ if (is_linux) {
       ]
 
       if (cpu_arch == "x86") {
-        sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
         defines += [
           "NSS_X86_OR_X64",
           "NSS_X86",
@@ -1159,7 +1160,11 @@ if (is_linux) {
           "INTEL_GCM",
         ]
       } else if (cpu_arch == "x64") {
-        sources -= [ "nss/lib/freebl/mpi/mpi_x86_asm.c" ]
+        sources -= [
+          "nss/lib/freebl/intel-aes-x86-masm.asm",
+          "nss/lib/freebl/mpi/mpi_amd64.c",
+          "nss/lib/freebl/mpi/mpi_x86_asm.c",
+        ]
         defines += [
           "NSS_USE_64",
           "NSS_X86_OR_X64",
