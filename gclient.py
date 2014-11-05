@@ -782,6 +782,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       return []
     bad_deps = []
     for dep in self._dependencies:
+      # Don't enforce this for custom_deps.
+      if dep.name in self._custom_deps:
+        continue
       if isinstance(dep.url, basestring):
         parsed_url = urlparse.urlparse(dep.url)
         if parsed_url.netloc and parsed_url.netloc not in self._allowed_hosts:
