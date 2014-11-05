@@ -58,8 +58,10 @@ public class PopupTouchHandleDrawable extends View {
 
     private final int[] mTempScreenCoords = new int[2];
 
+    @SuppressLint("RtlHardcoded")
     static final int LEFT = 0;
     static final int CENTER = 1;
+    @SuppressLint("RtlHardcoded")
     static final int RIGHT = 2;
     private int mOrientation = -1;
 

@@ -190,13 +190,13 @@ public class ContentViewCore
         }
 
         @Override
-        @SuppressWarnings("deprecation")  // AbsoluteLayout
         public void setAnchorViewPosition(
                 View view, float x, float y, float width, float height) {
             mAnchorViews.put(view, new Position(x, y, width, height));
             doSetAnchorViewPosition(view, x, y, width, height);
         }
 
+        @SuppressWarnings("deprecation")  // AbsoluteLayout
         private void doSetAnchorViewPosition(
                 View view, float x, float y, float width, float height) {
             if (view.getParent() == null) {
