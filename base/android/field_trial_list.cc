@@ -22,6 +22,11 @@ static jstring FindFullName(JNIEnv* env,
       base::FieldTrialList::FindFullName(trial_name)).Release();
 }
 
+static jboolean TrialExists(JNIEnv* env, jclass clazz, jstring jtrial_name) {
+  std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
+  return base::FieldTrialList::TrialExists(trial_name);
+}
+
 namespace base {
 namespace android {
 
