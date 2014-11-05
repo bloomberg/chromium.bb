@@ -9,8 +9,6 @@
 #include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_action_view_delegate_cocoa.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class ExtensionAction;
 @class ExtensionActionContextMenuController;
@@ -30,8 +28,7 @@ class Extension;
 // Action and notify the extension when the icon is clicked.
 
 class PageActionDecoration : public ImageDecoration,
-                             public ToolbarActionViewDelegateCocoa,
-                             public content::NotificationObserver {
+                             public ToolbarActionViewDelegateCocoa {
  public:
   PageActionDecoration(LocationBarViewMac* owner,
                        Browser* browser,
@@ -74,11 +71,8 @@ class PageActionDecoration : public ImageDecoration,
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   NSPoint GetPopupPoint() override;
-
-  // Overridden from NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void SetContextMenuController(
+      ExtensionActionContextMenuController* menuController) override;
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
@@ -89,18 +83,13 @@ class PageActionDecoration : public ImageDecoration,
   // The string to show for a tooltip.
   base::scoped_nsobject<NSString> tooltip_;
 
-  // The context menu controller for the Page Action.
-  base::scoped_nsobject<
-      ExtensionActionContextMenuController> contextMenuController_;
+  // The context menu controller for the Page Action. Weak.
+  ExtensionActionContextMenuController* contextMenuController_;
 
   // This is used for post-install visual feedback. The page_action
   // icon is briefly shown even if it hasn't been enabled by its
   // extension.
   bool preview_enabled_;
-
-  // Used to register for notifications received by
-  // NotificationObserver.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionDecoration);
 };

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -17,16 +16,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
@@ -170,47 +164,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // A helper class to proxy extension notifications to the view controller's
 // appropriate methods.
 class ExtensionServiceObserverBridge
-    : public content::NotificationObserver,
-      public extensions::ExtensionToolbarModel::Observer {
+    : public extensions::ExtensionToolbarModel::Observer {
  public:
   ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                  Browser* browser)
     : owner_(owner), browser_(browser) {
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                   content::Source<Profile>(browser->profile()));
-    registrar_.Add(
-        this,
-        extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC,
-        content::Source<Profile>(browser->profile()));
-  }
-
-  // Overridden from content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    switch (type) {
-      case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
-        ExtensionPopupController* popup = [ExtensionPopupController popup];
-        if (popup && ![popup isClosing])
-          [popup close];
-
-        break;
-      }
-      case extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC: {
-        std::pair<const std::string, gfx::NativeWindow>* payload =
-            content::Details<std::pair<const std::string, gfx::NativeWindow> >(
-                details).ptr();
-        std::string extension_id = payload->first;
-        gfx::NativeWindow window = payload->second;
-        if (window != browser_->window()->GetNativeWindow())
-          break;
-        [owner_ activateBrowserAction:extension_id];
-        break;
-      }
-      default:
-        NOTREACHED() << L"Unexpected notification";
-    }
   }
 
   // extensions::ExtensionToolbarModel::Observer implementation.
@@ -255,9 +213,6 @@ class ExtensionServiceObserverBridge
 
   // The browser we listen for events from. Weak.
   Browser* browser_;
-
-  // Used for registering to receive notifications and automatic clean up.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionServiceObserverBridge);
 };
@@ -491,19 +446,11 @@ class ExtensionServiceObserverBridge
         << "Don't create a BrowserActionButton if there is no browser action.";
   scoped_ptr<ToolbarActionViewController> viewController(
       new ExtensionActionViewController(extension, browser_, extensionAction));
-  // TODO(devlin): Move ContextMenuController stuff to
-  // ExtensionActionViewController.
-  ExtensionActionContextMenuController* menuController =
-      [[ExtensionActionContextMenuController alloc]
-          initWithExtension:extension
-                    browser:browser_
-            extensionAction:extensionAction];
   BrowserActionButton* newButton =
       [[[BrowserActionButton alloc]
          initWithFrame:buttonFrame
         viewController:viewController.Pass()
-            controller:self
-        menuController:menuController] autorelease];
+            controller:self] autorelease];
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());

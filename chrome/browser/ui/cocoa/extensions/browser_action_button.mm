@@ -40,18 +40,27 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
                                   BrowserActionsController* controller);
   ~ToolbarActionViewDelegateBridge();
 
+  ExtensionActionContextMenuController* menuController() {
+    return menuController_;
+  }
+
  private:
   // ToolbarActionViewDelegateCocoa:
   ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   NSPoint GetPopupPoint() override;
+  void SetContextMenuController(
+      ExtensionActionContextMenuController* menuController) override;
 
   // The owning button. Weak.
   BrowserActionButton* owner_;
 
   // The BrowserActionsController that owns the button. Weak.
   BrowserActionsController* controller_;
+
+  // The context menu controller. Weak.
+  ExtensionActionContextMenuController* menuController_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
 };
@@ -60,7 +69,8 @@ ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
     BrowserActionButton* owner,
     BrowserActionsController* controller)
     : owner_(owner),
-      controller_(controller) {
+      controller_(controller),
+      menuController_(nil) {
 }
 
 ToolbarActionViewDelegateBridge::~ToolbarActionViewDelegateBridge() {
@@ -84,6 +94,11 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
   return [controller_ popupPointForId:[owner_ viewController]->GetId()];
 }
 
+void ToolbarActionViewDelegateBridge::SetContextMenuController(
+    ExtensionActionContextMenuController* menuController) {
+  menuController_ = menuController;
+}
+
 @interface BrowserActionCell (Internals)
 - (void)drawBadgeWithinFrame:(NSRect)frame;
 @end
@@ -102,8 +117,7 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
 
 - (id)initWithFrame:(NSRect)frame
      viewController:(scoped_ptr<ToolbarActionViewController>)viewController
-         controller:(BrowserActionsController*)controller
-     menuController:(ExtensionActionContextMenuController*)menuController {
+         controller:(BrowserActionsController*)controller {
   if ((self = [super initWithFrame:frame])) {
     BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
     // [NSButton setCell:] warns to NOT use setCell: other than in the
@@ -137,8 +151,6 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];
-
-    contextMenuController_.reset(menuController);
 
     base::scoped_nsobject<NSMenu> contextMenu(
         [[NSMenu alloc] initWithTitle:@""]);
@@ -300,7 +312,10 @@ NSPoint ToolbarActionViewDelegateBridge::GetPopupPoint() {
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   [menu removeAllItems];
-  [contextMenuController_ populateMenu:menu];
+  // |menuController()| can be nil if we don't show context menus for the given
+  // action.
+  if (viewControllerDelegate_->menuController())
+    [viewControllerDelegate_->menuController() populateMenu:menu];
 }
 
 @end

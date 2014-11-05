@@ -7,15 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <string>
-
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 class Browser;
 @class BrowserActionsController;
-@class ExtensionActionContextMenuController;
 class ToolbarActionViewController;
 class ToolbarActionViewDelegateBridge;
 
@@ -49,17 +46,13 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   // The point where the mouse down event occurred. Used to prevent a drag from
   // starting until it moves at least kMinimumDragDistance.
   NSPoint dragStartPoint_;
-
-  base::scoped_nsobject<
-      ExtensionActionContextMenuController> contextMenuController_;
 }
 
-// Init the button with the frame. Takes ownership of |viewController| and
-// |menuController|, does not own |controller|.
+// Init the button with the frame. Takes ownership of |viewController|, but
+// does not own |controller|.
 - (id)initWithFrame:(NSRect)frame
      viewController:(scoped_ptr<ToolbarActionViewController>)viewController
-         controller:(BrowserActionsController*)controller
-     menuController:(ExtensionActionContextMenuController*)menuController;
+         controller:(BrowserActionsController*)controller;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
 

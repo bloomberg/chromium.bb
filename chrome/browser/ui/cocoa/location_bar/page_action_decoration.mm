@@ -5,17 +5,12 @@
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/gfx/image/image.h"
@@ -38,6 +33,7 @@ PageActionDecoration::PageActionDecoration(
     Browser* browser,
     ExtensionAction* page_action)
     : owner_(NULL),
+      contextMenuController_(nil),
       preview_enabled_(false) {
   const Extension* extension = extensions::ExtensionRegistry::Get(
       browser->profile())->enabled_extensions().GetByID(
@@ -46,15 +42,7 @@ PageActionDecoration::PageActionDecoration(
 
   viewController_.reset(
       new ExtensionActionViewController(extension, browser, page_action));
-
-  // TODO(devlin): Move these notifications to
-  // ExtensionActionPlatformDelegateCocoa.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(browser->profile()));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
-                 content::Source<Profile>(browser->profile()));
+  viewController_->SetDelegate(this);
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -142,18 +130,15 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSMenu* PageActionDecoration::GetMenu() {
-  const Extension* extension = viewController_->extension();
-  if (!extension->ShowConfigureContextMenus())
-    return nil;
-
-  contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
-      initWithExtension:extension
-                browser:viewController_->browser()
-        extensionAction:GetPageAction()]);
-
-  base::scoped_nsobject<NSMenu> contextMenu([[NSMenu alloc] initWithTitle:@""]);
-  [contextMenuController_ populateMenu:contextMenu];
-  return contextMenu.autorelease();
+  // |contextMenuController| can be nil if we don't show menus for this
+  // extension.
+  if (contextMenuController_) {
+    base::scoped_nsobject<NSMenu> contextMenu(
+        [[NSMenu alloc] initWithTitle:@""]);
+    [contextMenuController_ populateMenu:contextMenu];
+    return contextMenu.autorelease();
+  }
+  return nil;
 }
 
 void PageActionDecoration::SetToolTip(const base::string16& tooltip) {
@@ -189,35 +174,7 @@ NSPoint PageActionDecoration::GetPopupPoint() {
   return anchor;
 }
 
-void PageActionDecoration::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
-      ExtensionPopupController* popup = [ExtensionPopupController popup];
-      if (popup && ![popup isClosing])
-        [popup close];
-
-      break;
-    }
-    case extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC: {
-      std::pair<const std::string, gfx::NativeWindow>* payload =
-      content::Details<std::pair<const std::string, gfx::NativeWindow> >(
-          details).ptr();
-      const std::string& extension_id = payload->first;
-      gfx::NativeWindow window = payload->second;
-      if (window != viewController_->browser()->window()->GetNativeWindow())
-        break;
-      if (extension_id != GetExtension()->id())
-        break;
-      if (IsVisible())
-        ActivatePageAction(true);
-      break;
-    }
-
-    default:
-      NOTREACHED() << "Unexpected notification";
-      break;
-  }
+void PageActionDecoration::SetContextMenuController(
+    ExtensionActionContextMenuController* menuController) {
+  contextMenuController_ = menuController;
 }
