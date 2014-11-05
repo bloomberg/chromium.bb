@@ -54,3 +54,5 @@ Local Modifications:
 
 - Add fallback library loading when SELinux blocks EXEC permission.
 
+- Re-order application of relocation sections to match the system linker.
+

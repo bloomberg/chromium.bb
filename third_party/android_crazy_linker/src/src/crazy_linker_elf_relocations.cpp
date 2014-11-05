@@ -310,15 +310,20 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
     }
   }
 
+#if defined(__arm__) || defined(__aarch64__)
+  if (!ApplyPackedRelocations(error))
+    return false;
+#endif
+
   if (relocations_type_ == DT_REL) {
-    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(plt_relocations_),
-                        plt_relocations_size_ / sizeof(ELF::Rel),
+    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(relocations_),
+                        relocations_size_ / sizeof(ELF::Rel),
                         symbols,
                         resolver,
                         error))
       return false;
-    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(relocations_),
-                        relocations_size_ / sizeof(ELF::Rel),
+    if (!ApplyRelRelocs(reinterpret_cast<ELF::Rel*>(plt_relocations_),
+                        plt_relocations_size_ / sizeof(ELF::Rel),
                         symbols,
                         resolver,
                         error))
@@ -326,24 +331,19 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
   }
 
   if (relocations_type_ == DT_RELA) {
-    if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(plt_relocations_),
-                         plt_relocations_size_ / sizeof(ELF::Rela),
-                         symbols,
-                         resolver,
-                         error))
-      return false;
     if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(relocations_),
                          relocations_size_ / sizeof(ELF::Rela),
                          symbols,
                          resolver,
                          error))
       return false;
+    if (!ApplyRelaRelocs(reinterpret_cast<ELF::Rela*>(plt_relocations_),
+                         plt_relocations_size_ / sizeof(ELF::Rela),
+                         symbols,
+                         resolver,
+                         error))
+      return false;
   }
-
-#if defined(__arm__) || defined(__aarch64__)
-  if (!ApplyPackedRelocations(error))
-    return false;
-#endif
 
 #ifdef __mips__
   if (!RelocateMipsGot(symbols, resolver, error))
