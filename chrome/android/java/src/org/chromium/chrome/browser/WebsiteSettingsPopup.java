@@ -99,7 +99,6 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
     private String mFullUrl;
-    private URI mUrl;
 
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
@@ -196,83 +195,134 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         }
     }
 
+    /**
+     * Gets the color to use for the scheme in the URL title for the given security level. Does not
+     * apply to internal pages.
+     *
+     * @param toolbarModelSecurityLevel A valid ToolbarModelSecurityLevel, which is the security
+     *                                  level of the page.
+     * @return The color ID to color the scheme in the URL title.
+     */
+    private int getSchemeColorId(int toolbarModelSecurityLevel) {
+        switch (toolbarModelSecurityLevel) {
+            case ToolbarModelSecurityLevel.NONE:
+                return R.color.website_settings_popup_url_scheme_http;
+            case ToolbarModelSecurityLevel.SECURE:
+            case ToolbarModelSecurityLevel.EV_SECURE:
+                return R.color.website_settings_popup_url_scheme_https;
+            case ToolbarModelSecurityLevel.SECURITY_WARNING:
+            case ToolbarModelSecurityLevel.SECURITY_POLICY_WARNING:
+                return R.color.website_settings_popup_url_scheme_mixed;
+            case ToolbarModelSecurityLevel.SECURITY_ERROR:
+                return R.color.website_settings_popup_url_scheme_broken;
+            default:
+                assert false : "Invalid security level specified: " + toolbarModelSecurityLevel;
+                return R.color.website_settings_popup_url_scheme_http;
+        }
+    }
+
+    /**
+     * Gets the message to display in the connection message box for the given security level. Does
+     * not apply to SECURITY_ERROR pages, since these have their own coloured/formatted message.
+     *
+     * @param toolbarModelSecurityLevel A valid ToolbarModelSecurityLevel, which is the security
+     *                                  level of the page.
+     * @return The ID of the message to display in the connection message box.
+     */
+    private int getConnectionMessageId(int toolbarModelSecurityLevel) {
+        switch (toolbarModelSecurityLevel) {
+            case ToolbarModelSecurityLevel.NONE:
+                return R.string.page_info_connection_http;
+            case ToolbarModelSecurityLevel.SECURE:
+            case ToolbarModelSecurityLevel.EV_SECURE:
+                return R.string.page_info_connection_https;
+            case ToolbarModelSecurityLevel.SECURITY_WARNING:
+            case ToolbarModelSecurityLevel.SECURITY_POLICY_WARNING:
+                return R.string.page_info_connection_mixed;
+            default:
+                assert false : "Invalid security level specified: " + toolbarModelSecurityLevel;
+                return R.string.page_info_connection_http;
+        }
+    }
+
+    /**
+     * Updates the details (URL title and connection message) displayed in the popup.
+     *
+     * @param isInternalPage Whether or not this page is an internal chrome page (e.g. the
+     *                       chrome://settings page).
+     */
     @CalledByNative
     private void updatePageDetails(boolean isInternalPage) {
         mFullUrl = mWebContents.getVisibleUrl();
         int securityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
 
+        URI parsedUrl;
         try {
-            mUrl = new URI(mFullUrl);
+            parsedUrl = new URI(mFullUrl);
         } catch (URISyntaxException e) {
-            assert false : "Invalid URL specified: " + mFullUrl;
+            parsedUrl = null;
         }
 
-        int schemeColorId = -1;
-        if (securityLevel == ToolbarModelSecurityLevel.SECURITY_ERROR) {
-            schemeColorId = R.color.website_settings_popup_url_scheme_broken;
+        if (parsedUrl != null) {
+            // The URL is valid - color the scheme (and other components) for the security level.
+            SpannableStringBuilder sb = new SpannableStringBuilder();
+
+            int schemeColorId = R.color.website_settings_popup_url_scheme_http;
+            if (!isInternalPage) {
+                schemeColorId = getSchemeColorId(securityLevel);
+            }
+
+            sb.append(parsedUrl.toString());
+            final ForegroundColorSpan schemeColorSpan = new ForegroundColorSpan(
+                    mContext.getResources().getColor(schemeColorId));
+            sb.setSpan(schemeColorSpan, 0, parsedUrl.getScheme().length(),
+                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            if (securityLevel == ToolbarModelSecurityLevel.SECURITY_ERROR) {
+                sb.setSpan(new StrikethroughSpan(), 0, parsedUrl.getScheme().length(),
+                        Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            }
+
+            // The domain is everything after the scheme until the end of the origin.
+            final ForegroundColorSpan domainColorSpan = new ForegroundColorSpan(
+                    mContext.getResources().getColor(R.color.website_settings_popup_url_domain));
+            sb.setSpan(domainColorSpan, parsedUrl.getScheme().length(),
+                    UrlUtilities.getOriginForDisplay(parsedUrl, true).length(),
+                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+            mUrlTitle.setText(sb);
+        } else {
+            // The URL is invalid - still display it in the title, but don't apply any coloring.
+            mUrlTitle.setText(mFullUrl);
+        }
+
+        // Display the appropriate connection message.
+        SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
+        if (securityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
+            messageBuilder.append(mContext.getResources().getString(
+                    getConnectionMessageId(securityLevel)));
+        } else {
+            String originToDisplay;
+            if (parsedUrl != null) {
+                originToDisplay = UrlUtilities.getOriginForDisplay(parsedUrl, false);
+            } else {
+                // The URL is invalid - just display the full URL.
+                originToDisplay = mFullUrl;
+            }
 
             String leadingText = mContext.getResources().getString(
                     R.string.page_info_connection_broken_leading_text);
             String followingText = mContext.getResources().getString(
-                    R.string.page_info_connection_broken_following_text,
-                    UrlUtilities.getOriginForDisplay(mUrl, false));
-            SpannableStringBuilder sb = new SpannableStringBuilder(leadingText + " "
-                    + followingText);
+                    R.string.page_info_connection_broken_following_text, originToDisplay);
+            messageBuilder.append(leadingText + " " + followingText);
             final ForegroundColorSpan redSpan = new ForegroundColorSpan(mContext.getResources()
                     .getColor(R.color.website_settings_popup_url_scheme_broken));
             final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-            sb.setSpan(redSpan, 0, leadingText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            sb.setSpan(boldSpan, 0, leadingText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            mUrlConnectionMessage.setText(sb);
-        } else {
-            int connectionMessageId = 0;
-            if (isInternalPage) {
-                schemeColorId = R.color.website_settings_popup_url_scheme_http;
-                connectionMessageId = R.string.page_info_connection_internal_page;
-            } else {
-                switch (securityLevel) {
-                    case ToolbarModelSecurityLevel.NONE:
-                        schemeColorId = R.color.website_settings_popup_url_scheme_http;
-                        connectionMessageId = R.string.page_info_connection_http;
-                        break;
-                    case ToolbarModelSecurityLevel.SECURE:
-                    case ToolbarModelSecurityLevel.EV_SECURE:
-                        schemeColorId = R.color.website_settings_popup_url_scheme_https;
-                        connectionMessageId = R.string.page_info_connection_https;
-                        break;
-                    case ToolbarModelSecurityLevel.SECURITY_WARNING:
-                    case ToolbarModelSecurityLevel.SECURITY_POLICY_WARNING:
-                        schemeColorId = R.color.website_settings_popup_url_scheme_mixed;
-                        connectionMessageId = R.string.page_info_connection_mixed;
-                        break;
-                    default:
-                        assert false : "Invalid security level specified: " + securityLevel;
-                        schemeColorId = R.color.website_settings_popup_url_scheme_http;
-                        connectionMessageId = R.string.page_info_connection_http;
-                }
-            }
-            mUrlConnectionMessage.setText(mContext.getResources().getString(connectionMessageId));
-        }
-
-        // Color the URI-parsed version of the URL.
-        SpannableStringBuilder sb = new SpannableStringBuilder(mUrl.toString());
-        final ForegroundColorSpan schemeColorSpan = new ForegroundColorSpan(mContext.getResources()
-                .getColor(schemeColorId));
-        sb.setSpan(schemeColorSpan, 0, mUrl.getScheme().length(),
-                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-        if (securityLevel == ToolbarModelSecurityLevel.SECURITY_ERROR) {
-            sb.setSpan(new StrikethroughSpan(), 0, mUrl.getScheme().length(),
+            messageBuilder.setSpan(redSpan, 0, leadingText.length(),
+                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            messageBuilder.setSpan(boldSpan, 0, leadingText.length(),
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
-
-        // The domain is everything after the scheme until the end of the
-        // origin.
-        final ForegroundColorSpan domainColorSpan = new ForegroundColorSpan(
-                mContext.getResources().getColor(R.color.website_settings_popup_url_domain));
-        sb.setSpan(domainColorSpan, mUrl.getScheme().length(),
-                UrlUtilities.getOriginForDisplay(mUrl, true).length(),
-                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-        mUrlTitle.setText(sb);
+        mUrlConnectionMessage.setText(messageBuilder);
     }
 
     /**
