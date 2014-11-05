@@ -21,7 +21,8 @@ extern const char kFontconfigFileHeader[];
 extern const char kFontconfigFileFooter[];
 
 // Strings appearing at the beginning and end of Fontconfig <match> stanzas.
-extern const char kFontconfigMatchHeader[];
+extern const char kFontconfigMatchFontHeader[];
+extern const char kFontconfigMatchPatternHeader[];
 extern const char kFontconfigMatchFooter[];
 
 // Initializes Fontconfig and creates and swaps in a new, empty config.

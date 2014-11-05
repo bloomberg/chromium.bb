@@ -95,75 +95,84 @@ FontRenderParams::SubpixelRendering ConvertFontconfigRgba(int rgba) {
 bool QueryFontconfig(const FontRenderParamsQuery& query,
                      FontRenderParams* params_out,
                      std::string* family_out) {
-  FcPattern* pattern = FcPatternCreate();
-  CHECK(pattern);
+  FcPattern* query_pattern = FcPatternCreate();
+  CHECK(query_pattern);
 
-  FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+  FcPatternAddBool(query_pattern, FC_SCALABLE, FcTrue);
 
   for (std::vector<std::string>::const_iterator it = query.families.begin();
        it != query.families.end(); ++it) {
-    FcPatternAddString(
-        pattern, FC_FAMILY, reinterpret_cast<const FcChar8*>(it->c_str()));
+    FcPatternAddString(query_pattern,
+        FC_FAMILY, reinterpret_cast<const FcChar8*>(it->c_str()));
   }
   if (query.pixel_size > 0)
-    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, query.pixel_size);
+    FcPatternAddDouble(query_pattern, FC_PIXEL_SIZE, query.pixel_size);
   if (query.point_size > 0)
-    FcPatternAddInteger(pattern, FC_SIZE, query.point_size);
+    FcPatternAddInteger(query_pattern, FC_SIZE, query.point_size);
   if (query.style >= 0) {
-    FcPatternAddInteger(pattern, FC_SLANT,
+    FcPatternAddInteger(query_pattern, FC_SLANT,
         (query.style & Font::ITALIC) ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
-    FcPatternAddInteger(pattern, FC_WEIGHT,
+    FcPatternAddInteger(query_pattern, FC_WEIGHT,
         (query.style & Font::BOLD) ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
   }
 
-  FcConfigSubstitute(NULL, pattern, FcMatchPattern);
-  FcDefaultSubstitute(pattern);
-  FcResult result;
-  FcPattern* match = FcFontMatch(NULL, pattern, &result);
-  FcPatternDestroy(pattern);
-  if (!match)
-    return false;
+  FcConfigSubstitute(NULL, query_pattern, FcMatchPattern);
+  FcDefaultSubstitute(query_pattern);
+
+  // If the query was non-empty, match a specific font and destroy the query
+  // pattern. Otherwise, just use the query pattern.
+  FcPattern* result_pattern = query_pattern;
+  if (!query.is_empty()) {
+    FcResult result;
+    result_pattern = FcFontMatch(NULL, query_pattern, &result);
+    FcPatternDestroy(query_pattern);
+    query_pattern = NULL;
+    if (!result_pattern)
+      return false;
+  }
 
   if (family_out) {
     FcChar8* family = NULL;
-    FcPatternGetString(match, FC_FAMILY, 0, &family);
+    FcPatternGetString(result_pattern, FC_FAMILY, 0, &family);
     if (family)
       family_out->assign(reinterpret_cast<const char*>(family));
   }
 
   if (params_out) {
     FcBool fc_antialias = 0;
-    if (FcPatternGetBool(match, FC_ANTIALIAS, 0, &fc_antialias) ==
+    if (FcPatternGetBool(result_pattern, FC_ANTIALIAS, 0, &fc_antialias) ==
         FcResultMatch) {
       params_out->antialiasing = fc_antialias;
     }
 
     FcBool fc_autohint = 0;
-    if (FcPatternGetBool(match, FC_AUTOHINT, 0, &fc_autohint) ==
+    if (FcPatternGetBool(result_pattern, FC_AUTOHINT, 0, &fc_autohint) ==
         FcResultMatch) {
       params_out->autohinter = fc_autohint;
     }
 
     FcBool fc_bitmap = 0;
-    if (FcPatternGetBool(match, FC_EMBEDDED_BITMAP, 0, &fc_bitmap) ==
+    if (FcPatternGetBool(result_pattern, FC_EMBEDDED_BITMAP, 0, &fc_bitmap) ==
         FcResultMatch) {
       params_out->use_bitmaps = fc_bitmap;
     }
 
     FcBool fc_hinting = 0;
-    if (FcPatternGetBool(match, FC_HINTING, 0, &fc_hinting) == FcResultMatch) {
+    if (FcPatternGetBool(result_pattern, FC_HINTING, 0, &fc_hinting) ==
+        FcResultMatch) {
       int fc_hint_style = FC_HINT_NONE;
       if (fc_hinting)
-        FcPatternGetInteger(match, FC_HINT_STYLE, 0, &fc_hint_style);
+        FcPatternGetInteger(result_pattern, FC_HINT_STYLE, 0, &fc_hint_style);
       params_out->hinting = ConvertFontconfigHintStyle(fc_hint_style);
     }
 
     int fc_rgba = FC_RGBA_NONE;
-    if (FcPatternGetInteger(match, FC_RGBA, 0, &fc_rgba) == FcResultMatch)
+    if (FcPatternGetInteger(result_pattern, FC_RGBA, 0, &fc_rgba) ==
+        FcResultMatch)
       params_out->subpixel_rendering = ConvertFontconfigRgba(fc_rgba);
   }
 
-  FcPatternDestroy(match);
+  FcPatternDestroy(result_pattern);
   return true;
 }
 

@@ -57,7 +57,8 @@ const char kFontconfigFileHeader[] =
     "<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n"
     "<fontconfig>\n";
 const char kFontconfigFileFooter[] = "</fontconfig>";
-const char kFontconfigMatchHeader[] = "  <match>\n";
+const char kFontconfigMatchFontHeader[] = "  <match target=\"font\">\n";
+const char kFontconfigMatchPatternHeader[] = "  <match target=\"pattern\">\n";
 const char kFontconfigMatchFooter[] = "  </match>\n";
 
 void SetUpFontconfig() {
